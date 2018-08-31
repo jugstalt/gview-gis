@@ -33,8 +33,8 @@ namespace gView.Framework.Carto
         public event NewExtentRenderedEvent NewExtentRendered;
         public event EventHandler MapRenamed;
 
-        internal ImageMerger2 m_imageMerger;
-        internal TOC _toc;
+        public ImageMerger2 m_imageMerger;
+        public TOC _toc;
         private TOC _dataViewTOC;
         private MemoryStream _msGeometry = null, _msSelection = null;
         private SelectionEnvironment _selectionEnv;
@@ -44,9 +44,9 @@ namespace gView.Framework.Carto
         protected MapTools m_mapTool = MapTools.ZoomIn;
         protected ArrayList m_activeLayerNames;
         protected bool _drawScaleBar = false;
-        internal List<IDataset> _datasets;
-        internal List<ILayer> _layers = new List<ILayer>();
-        internal bool _debug = true;
+        public List<IDataset> _datasets;
+        public List<ILayer> _layers = new List<ILayer>();
+        public bool _debug = true;
         private Envelope _lastRenderExtent = null;
 
         private IntegerSequence _layerIDSequece = new IntegerSequence();
@@ -71,7 +71,7 @@ namespace gView.Framework.Carto
             this.refScale = 500;
         }
 
-        internal Map(Map original, bool writeNamespace)
+        public Map(Map original, bool writeNamespace)
             : this()
         {
             m_name = original.Name;
@@ -118,7 +118,7 @@ namespace gView.Framework.Carto
             }
         }
 
-        internal void Append(Map map, bool writeNamespace)
+        public void Append(Map map, bool writeNamespace)
         {
             Dictionary<IGroupLayer, IGroupLayer> groupLayers = new Dictionary<IGroupLayer, IGroupLayer>();
 
@@ -273,7 +273,7 @@ namespace gView.Framework.Carto
         }
         */
 
-        internal void MapRequestThread_finished(ServiceRequestThread sender, bool succeeded, GeorefBitmap image, int order)
+        public void MapRequestThread_finished(ServiceRequestThread sender, bool succeeded, GeorefBitmap image, int order)
         {
             if (DrawingLayerFinished != null && sender != null && sender.WebServiceLayer != null)
             {
@@ -541,7 +541,7 @@ namespace gView.Framework.Carto
             }
         }
 
-        internal void SetNewLayerID(ILayer layer)
+        public void SetNewLayerID(ILayer layer)
         {
             if (layer == null) return;
 
@@ -1915,8 +1915,8 @@ namespace gView.Framework.Carto
         protected bool m_extentChanged;
         protected double m_fontsizeFactor, m_widthFactor, m_refScale;
         //protected ArrayList m_fixScales;
-        internal System.Drawing.Bitmap _image = null;
-        internal System.Drawing.Graphics _graphics = null;
+        public System.Drawing.Bitmap _image = null;
+        public System.Drawing.Graphics _graphics = null;
         protected ISpatialReference _spatialReference = null;
         protected IGeometricTransformer _geoTransformer = null;
         protected float _OX = 0, _OY = 0;
@@ -2666,7 +2666,7 @@ namespace gView.Framework.Carto
         }
     }
 
-    internal sealed class ServiceRequestThread
+    public sealed class ServiceRequestThread
     {
         private Map _map;
         private IWebServiceLayer _layer;
@@ -2719,7 +2719,7 @@ namespace gView.Framework.Carto
         }
     }
 
-    internal sealed class RenderFeatureLayerThread
+    public sealed class RenderFeatureLayerThread
     {
         private Map _map;
         private IFeatureLayer _layer;
@@ -2935,7 +2935,7 @@ namespace gView.Framework.Carto
         }
     }
 
-    internal sealed class RenderLabelThread
+    public sealed class RenderLabelThread
     {
         private Map _map;
         private IFeatureLayer _layer;
@@ -3027,7 +3027,7 @@ namespace gView.Framework.Carto
         }
     }
 
-    internal sealed class RenderRasterLayerThread
+    public sealed class RenderRasterLayerThread
     {
         protected Map _map;
         private IRasterLayer _layer;
@@ -3322,7 +3322,7 @@ namespace gView.Framework.Carto
         }
     }
 
-    internal sealed class RenderFeatureLayerSelectionThread
+    public sealed class RenderFeatureLayerSelectionThread
     {
         private Map _map;
         private IFeatureLayer _layer;
@@ -3414,7 +3414,7 @@ namespace gView.Framework.Carto
 
     }
 
-    internal sealed class RenderLabelEngineThread
+    public sealed class RenderLabelEngineThread
     {
         private IDisplay _display;
         private ICancelTracker _cancelTracker;
@@ -3436,7 +3436,7 @@ namespace gView.Framework.Carto
         }
     }
 
-    internal class MapHelper
+    public class MapHelper
     {
         static public IEnvelope Project3(IFeatureClass fc, IDisplay display)
         {
@@ -3517,7 +3517,7 @@ namespace gView.Framework.Carto
         }
     }
 
-    internal class FeatureCounter
+    public class FeatureCounter
     {
         public int Counter;
     }

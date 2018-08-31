@@ -59,7 +59,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Proj", "gView.Proj\gV
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Server", "gView.Server\gView.Server.csproj", "{C5E46A29-ECBA-4F6B-A14C-5DE553CE77BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Interoperability.ArcGisServer", "gView.Interoperability.ArcGisServer\gView.Interoperability.ArcGisServer.csproj", "{3043D4C9-D59D-419B-A734-15B93CBB26DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Interoperability.ArcGisServer", "gView.Interoperability.ArcGisServer\gView.Interoperability.ArcGisServer.csproj", "{3043D4C9-D59D-419B-A734-15B93CBB26DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.Shape", "gView.DataSources.Shape\gView.DataSources.Shape.csproj", "{ED4B335F-4967-4245-BCEA-45CE48B4648B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -183,6 +185,10 @@ Global
 		{3043D4C9-D59D-419B-A734-15B93CBB26DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3043D4C9-D59D-419B-A734-15B93CBB26DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3043D4C9-D59D-419B-A734-15B93CBB26DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED4B335F-4967-4245-BCEA-45CE48B4648B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED4B335F-4967-4245-BCEA-45CE48B4648B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED4B335F-4967-4245-BCEA-45CE48B4648B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED4B335F-4967-4245-BCEA-45CE48B4648B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

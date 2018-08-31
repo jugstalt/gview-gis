@@ -13,7 +13,7 @@ namespace gView.Framework.Carto
 	/// <summary>
 	/// Zusammenfassung für ImageMerger.
 	/// </summary>
-	internal class ImageMerger
+	public class ImageMerger
 	{
 		protected ArrayList m_picList,m_orderList;
 		protected int m_max=0;
@@ -124,7 +124,7 @@ namespace gView.Framework.Carto
 	}
 
 
-	internal class ImageMerger2 : IDisposable
+	public class ImageMerger2 : IDisposable
 	{
         protected List<GeorefBitmap> m_picList;
 		protected List<int> m_orderList;

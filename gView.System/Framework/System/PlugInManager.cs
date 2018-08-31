@@ -53,597 +53,69 @@ namespace gView.Framework.system
     public class PlugInManager
     {
         //private static string _configPath = System.Environment.CurrentDirectory;
-        private static XmlDocument _doc = null;
+        //private static XmlDocument _doc = null;
+        private static Dictionary<Guid, Type> _pluginTypes;
 
         public PlugInManager()
         {
-            if (PlugInManager.CompFileName == "")
-            {
-                PlugInManager.CompFileName = SystemVariables.MyCommonApplicationData + @"\gViewGisOS_plugins.xml";
-            }
-            else
-            {
-                Init();
-            }
+            //if (PlugInManager.CompFileName == "")
+            //{
+            //    PlugInManager.CompFileName = (SystemVariables.MyCommonApplicationData + @"\gViewGisOS_plugins.xml").ToPlattformPath();
+            //}
+            //else
+            //{
+            //    Init();
+            //}
+            Init();
         }
 
-        private static void Init()
+        public static void Init()
         {
-            if (_doc != null)
+            //if (_doc != null)
+            //    return;
+            if (_pluginTypes != null)
                 return;
+
             try
             {
-                _doc = new XmlDocument();
-                _doc.Load(PlugInManager.CompFileName);
+                _pluginTypes = new Dictionary<Guid, Type>();
+                FileInfo entryAssembly = new FileInfo(Assembly.GetEntryAssembly().Location);
+                foreach(FileInfo dll in entryAssembly.Directory.GetFiles("*.dll"))
+                {
+                    Assembly assembly = Assembly.LoadFrom(dll.FullName);
+                    foreach(var pluginType in assembly.GetTypes())
+                    {
+                        var registerPluginAttribute = pluginType.GetCustomAttribute<RegisterPlugIn>();
+                        if (registerPluginAttribute == null)
+                            continue;
+
+                        _pluginTypes.Add(registerPluginAttribute.Value, pluginType);
+                    }
+                }
+
+                //_doc = new XmlDocument();
+                //_doc.Load(PlugInManager.CompFileName);
             }
             catch
             {
-                _doc = null;
+                //_doc = null;
+                _pluginTypes = null;
             }
         }
 
-        public static string CompFileName;
+        public IEnumerable<Type> GetPluginNodes(Type interfaceType)
+        {
+            Init();
 
-        /*
-		public XmlNodeList Tools 
-		{
-			get 
-			{
-				try 
-				{
-                    return PlugInManager._doc.SelectNodes("//ITool");
-				} 
-				catch 
-				{
-					return null;
-				}
-			}
-		}
-        public XmlNodeList Toolbars
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("//IToolbar");
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
+            List<Type> pluginTypes = new List<Type>();
 
-        public XmlNodeList ExTools
-        {
-            get
+            foreach(var pluginType in _pluginTypes.Values)
             {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("//IExTool");
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList ExToolbars
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("//IExToolbar");
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-
-        
-		public XmlNodeList DatasetElementContextMenuItems 
-		{
-			get 
-			{
-				try 
-				{
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IDatasetElementContextMenuItem).ToString() + "']");
-				} 
-				catch(Exception ex) 
-				{
-					return null;
-				}
-			} 
-		}
-        public XmlNodeList MapContextMenuItems
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IMapContextMenuItem).ToString());
-                }
-                catch (Exception ex)
-                {
-                    return null;
-                }
-            }
-        }
-		public XmlNodeList DatasetProvider 
-		{
-			get 
-			{
-				try 
-				{
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IDataset).ToString());
-				}
-				catch 
-				{
-					return null;
-				}
-			}
-		}
-		public XmlNodeList FeatureRenderer 
-		{
-			get 
-			{
-				try 
-				{
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IFeatureRenderer));
-				}
-				catch 
-				{
-					return null;
-				}
-			}
-		}
-        public XmlNodeList LabelRenderer 
-        {
-            get 
-            {
-                try 
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(ILabelRenderer));
-                }
-                catch 
-                {
-                    return null;
-                }
-            }
-        }
-		public XmlNodeList Symbols 
-		{
-			get 
-			{	
-				try 
-				{
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(ISymbol));
-				}
-				catch 
-				{
-					return null;
-				}
-			}
-		}
-        public XmlNodeList DockableWindowContainers
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IDockableWindowContainer));  
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList ExplorerObjects
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IExplorerObject));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList ExplorerCommands
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IExplorerCommand));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList ExplorerTabPages
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IExplorerTabPage));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList ServiceRequestInterpreter
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IServiceRequestInterpreter));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList MapOptionPage
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IMapOptionPage));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList ExplorerOptionPage
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IExplorerOptionPage));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList LayerPropertyPage
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(ILayerPropertyPage));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList GraphicElement2
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IGraphicElement2));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList AutoFields
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IAutoField));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList ServiceableDatasets
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IServiceableDataset));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList FileFeatureDatabase
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IFileFeatureDatabase));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList MetadataProvider
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IMetadataProvider));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList Persistable
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IPersistable));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList MapApplicationModule
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IMapApplicationModule));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList FieldDomains
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IFieldDomain));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList GeoProcessingActivities
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(IActivity));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList SimpleNumberCalculations
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("components/plugin[@interface='" + typeof(ISimpleNumberCalculation));
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList NetworkTracers
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("//INetworkTracer");
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList FeatureLayerJoins
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("//IFeatureLayerJoin");
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList FeatureDatabases
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("//IFeatureDatabase");
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList CartoRibbonTabs
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("//ICartoRibbonTab");
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        public XmlNodeList ExplorerRibbonTabs
-        {
-            get
-            {
-                try
-                {
-                    return PlugInManager._doc.SelectNodes("//IExplorerRibbonTab");
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-        */
-
-        public IEnumerable<XmlNode> GetPluginNodes(Plugins.Type type)
-        {
-            return GetPluginNodes(Plugins.TypeName(type));
-        }
-        private IEnumerable<XmlNode> GetPluginNodes(string interfacesTypeName)
-        {
-            var xmlNodeList = _doc?.SelectNodes("components/plugin[@guid and @interface='" + interfacesTypeName + "']");
-
-            List<XmlNode> xmlNodes = new List<XmlNode>();
-            if(xmlNodeList != null)
-            {
-                foreach(var xmlNode in xmlNodeList)
-                {
-                    if (xmlNode is XmlNode)
-                        xmlNodes.Add((XmlNode)xmlNode);
-                }
-            }
-            return xmlNodes;
-        }
-
-        public PlugInTypeList GetPlugins(Type interfaceType)
-        {
-            PlugInTypeList typeList = new PlugInTypeList();
-            List<string> guids = new List<string>();
-
-            foreach (XmlNode plugInNode in _doc.SelectNodes("components/plugin[@guid and @type]"))
-            {
-                #region Load only once ... on plugin instance can implement more than one (plugin)interface
-                string guid = plugInNode.Attributes["guid"].Value;
-                if (guids.Contains(guid)) continue;
-                guids.Add(guid);
-                #endregion
-
-                object plugin = null;
-                try
-                {
-                    plugin = PlugInManager.Create(plugInNode);
-                }
-                catch
-                {
-                    continue;
-                }
-                if (plugin == null || typeList.ContainsType(plugin.GetType()))
-                    continue;
-
-                foreach (Type iType in plugin.GetType().GetInterfaces())
-                {
-                    if (iType.Equals(interfaceType))
-                    {
-                        typeList.Add(new PlugInType(plugin));
-                        break;
-                    }
-                }
+                if (interfaceType.IsAssignableFrom(pluginType))
+                    pluginTypes.Add(pluginType);
             }
 
-            return typeList;
-        }
-
-        public object[] GetPluginInstances(Type interfaceType)
-        {
-            //string typeName = interfaceType.ToString().Substring(
-            //    interfaceType.ToString().LastIndexOf(".") + 1, interfaceType.ToString().Length - interfaceType.ToString().LastIndexOf(".") - 1);
-
-            return GetPluginInstances(interfaceType.ToString());
-        }
-        public object[] GetPluginInstances(string typeName)
-        {
-            List<object> plugins = new List<object>();
-            foreach (XmlNode node in PlugInManager._doc.SelectNodes("components/plugin[@guid and @interface='" + typeName + "']"))
-            {
-                object plugin = CreateInstance(node);
-                if (plugin == null) continue;
-                plugins.Add(plugin);
-            }
-
-            return plugins.ToArray();
-        }
-
-        public string[] GetPluginTypeNames
-        {
-            get
-            {
-                List<string> typeNames=new List<string>();
-                foreach (XmlNode node in PlugInManager._doc.SelectNodes("components/plugin[@guid and @interface]"))
-                {
-                    if (typeNames.Contains(node.Attributes["interface"].Value)) continue;
-                    typeNames.Add(node.Attributes["interface"].Value);
-                }
-
-                typeNames.Sort();
-                return typeNames.ToArray();
-            }
+            return pluginTypes;
         }
 
 		public object CreateInstance(Guid guid) 
@@ -687,15 +159,11 @@ namespace gView.Framework.system
             try
             {
                 Init();
-                //XmlDocument doc = new XmlDocument();
-                //doc.Load(PlugInManager.compFileName);
 
-                foreach (XmlNode node in _doc.ChildNodes[0].ChildNodes)
+                if(_pluginTypes.ContainsKey(guid))
                 {
-                    if (node.Attributes["guid"] == null) continue;
-
-                    if (node.Attributes["guid"].Value == guid.ToString())
-                        return (Create(node));
+                    var pluginType = _pluginTypes[guid];
+                    return Activator.CreateInstance(pluginType);
                 }
 
                 return null;
@@ -713,36 +181,36 @@ namespace gView.Framework.system
 
             return null;
         }
-        public static object Create(string fullName)
-        {
-            try
-            {
-                Init();
+        //public static object Create(string fullName)
+        //{
+        //    try
+        //    {
+        //        Init();
 
-                foreach (XmlNode node in _doc.ChildNodes[0].ChildNodes)
-                {
-                    if (node.Attributes["fullname"] == null) continue;
+        //        foreach (XmlNode node in _doc.ChildNodes[0].ChildNodes)
+        //        {
+        //            if (node.Attributes["fullname"] == null) continue;
 
-                    if (node.Attributes["fullname"].Value == fullName)
-                        return (Create(node));
-                }
+        //            if (node.Attributes["fullname"].Value == fullName)
+        //                return (Create(node));
+        //        }
 
-                return null;
-            }
-            catch
-            {
-                return null;
-            }
-        }
+        //        return null;
+        //    }
+        //    catch
+        //    {
+        //        return null;
+        //    }
+        //}
 
-        public static object Create(XmlNode node, object parameter)
-        {
-            IPlugInParameter plugin = PlugInManager.Create(node) as IPlugInParameter;
-            if (plugin != null)
-                plugin.Parameter = parameter;
+        //public static object Create(XmlNode node, object parameter)
+        //{
+        //    IPlugInParameter plugin = PlugInManager.Create(node) as IPlugInParameter;
+        //    if (plugin != null)
+        //        plugin.Parameter = parameter;
 
-            return plugin;
-        }
+        //    return plugin;
+        //}
         public static object Create(Guid guid, object parameter)
         {
             IPlugInParameter plugin = PlugInManager.Create(guid) as IPlugInParameter;
@@ -759,14 +227,14 @@ namespace gView.Framework.system
 
             return plugin;
         }
-        public static object Create(string fullName, object parameter)
-        {
-            IPlugInParameter plugin = PlugInManager.Create(fullName) as IPlugInParameter;
-            if (plugin != null)
-                plugin.Parameter = parameter;
+        //public static object Create(string fullName, object parameter)
+        //{
+        //    IPlugInParameter plugin = PlugInManager.Create(fullName) as IPlugInParameter;
+        //    if (plugin != null)
+        //        plugin.Parameter = parameter;
 
-            return plugin;
-        }
+        //    return plugin;
+        //}
 
 
 
@@ -894,22 +362,7 @@ namespace gView.Framework.system
             }
             catch { return null; }
         }
-        public IExplorerObject DeserializeExplorerObject(string FullName)
-        {
-            IExplorerObject cached = GetExObjectFromCache(FullName);
-            if (cached != null) return cached;
-
-            PlugInManager compManager = new PlugInManager();
-            foreach (XmlNode exNode in compManager.GetPluginNodes(Plugins.Type.IExplorerObject))
-            {
-                IExplorerObject exObject = (IExplorerObject)compManager.CreateInstance(exNode);
-                if (!(exObject is ISerializableExplorerObject)) continue;
-
-                exObject = ((ISerializableExplorerObject)exObject).CreateInstanceByFullName(FullName,this);
-                if (exObject != null) return exObject;
-            }
-            return null;
-        }
+        
         public List<IExplorerObject> DeserializeExplorerObject(IEnumerable<IExplorerObjectSerialization> list)
         {
             List<IExplorerObject> l = new List<IExplorerObject>();

@@ -1619,9 +1619,9 @@ namespace gView.Interoperability.ArcXML
             PlugInManager pluginMan = new PlugInManager();
             xWriter.WriteStartElement("gv_network_tracers");
             
-            foreach (XmlNode tracerNode in pluginMan.GetPluginNodes(gView.Framework.system.Plugins.Type.INetworkTracer))
+            foreach (Type tracerType in pluginMan.GetPluginNodes(typeof(INetworkTracer)))
             {
-                INetworkTracer tracer = pluginMan.CreateInstance(tracerNode) as INetworkTracer;
+                INetworkTracer tracer = pluginMan.CreateInstance(tracerType) as INetworkTracer;
                 if (tracer == null)
                     continue;
 

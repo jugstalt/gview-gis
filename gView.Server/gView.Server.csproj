@@ -8,4 +8,36 @@
     <PackageReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Carto.Rendering\gView.Carto.Rendering.csproj" />
+    <ProjectReference Include="..\gView.Carto\gView.Carto.csproj" />
+    <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
+    <ProjectReference Include="..\gView.Data.Fields\gView.Data.Fields.csproj" />
+    <ProjectReference Include="..\gView.Data.Joins\gView.Data.Joins.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Fdb\gView.DataSources.Fdb.csproj" />
+    <ProjectReference Include="..\gView.DataSources.MSSqlSpatial\gView.DataSources.MSSqlSpatial.csproj" />
+    <ProjectReference Include="..\gView.DataSources.PostGIS\gView.DataSources.PostGIS.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Raster\gView.DataSources.Raster.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Shape\gView.DataSources.Shape.csproj" />
+    <ProjectReference Include="..\gView.Data\gView.Data.csproj" />
+    <ProjectReference Include="..\gView.Db\gView.Db.csproj" />
+    <ProjectReference Include="..\gView.Drawing.Pro\gView.Drawing.Pro.csproj" />
+    <ProjectReference Include="..\gView.Editor.Core\gView.Editor.Core.csproj" />
+    <ProjectReference Include="..\gView.Geometry\gView.Geometry.csproj" />
+    <ProjectReference Include="..\gView.Interoperability.ArcGisServer\gView.Interoperability.ArcGisServer.csproj" />
+    <ProjectReference Include="..\gView.Interoperability.ArcXML\gView.Interoperability.ArcXML.csproj" />
+    <ProjectReference Include="..\gView.Interoperability.OGC\gView.Interoperability.OGC.csproj" />
+    <ProjectReference Include="..\gView.Math\gView.Math.csproj" />
+    <ProjectReference Include="..\gView.Metadata\gView.Metadata.csproj" />
+    <ProjectReference Include="..\gView.Network\gView.Network.csproj" />
+    <ProjectReference Include="..\gView.Offline\gView.Offline.csproj" />
+    <ProjectReference Include="..\gView.OGC\gView.OGC.csproj" />
+    <ProjectReference Include="..\gView.Proj\gView.Proj.csproj" />
+    <ProjectReference Include="..\gView.Symbology\gView.Symbology.csproj" />
+    <ProjectReference Include="..\gView.System\gView.System.csproj" />
+    <ProjectReference Include="..\gView.Web\gView.Web.csproj" />
+    <ProjectReference Include="..\gView.XML2\gView.XML2.csproj" />
+    <ProjectReference Include="..\gView.XML\gView.XML.csproj" />
+  </ItemGroup>
+
 </Project>

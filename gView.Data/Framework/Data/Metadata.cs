@@ -45,9 +45,9 @@ namespace gView.Framework.Data
                 _providers = new List<IMetadataProvider>();
             }
 
-            foreach (XmlNode providerNode in plugins.GetPluginNodes(Plugins.Type.IMetadataProvider))
+            foreach (Type providerType in plugins.GetPluginNodes(typeof(IMetadataProvider)))
             {
-                IMetadataProvider provider = plugins.CreateInstance(providerNode) as IMetadataProvider;
+                IMetadataProvider provider = plugins.CreateInstance(providerType) as IMetadataProvider;
                 if (provider == null) continue;
 
                 // nach bereits vorhanden suchen...

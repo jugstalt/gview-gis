@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using gView.Framework.system;
+using gView.Server.AppCode;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -59,6 +61,11 @@ namespace gView.Server
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
+            PlugInManager.Init();
+            InternetMapServer.Init(@"C:\ProgramData\gView\mapServer\Services\8001");
+            
+            var maps = InternetMapServer.Instance.Maps;
+            var map = InternetMapServer.Instance["Map1"];
         }
     }
 }
