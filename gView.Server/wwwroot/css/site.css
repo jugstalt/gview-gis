@@ -35,3 +35,19 @@ body {
         display: none;
     }
 }
+
+ul {
+    list-style: none;
+}
+
+.property-name,
+.property-value{
+    display:inline-block;
+}
+.property-name {
+    font-weight:bold;
+}
+
+.property-name.array {
+    display:block;
+}

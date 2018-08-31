@@ -5,15 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Rest\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\gView.Carto.Rendering\gView.Carto.Rendering.csproj" />
+    <ProjectReference Include="..\gView.System\gView.System.csproj" />
   </ItemGroup>
 
 </Project>

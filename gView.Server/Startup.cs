@@ -57,6 +57,16 @@ namespace gView.Server
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
+                    name: "rest_service",
+                    template: "rest/services/{folder}/{id}/mapserver",
+                    defaults: new { controller = "Rest", Action = "service" }
+                );
+                routes.MapRoute(
+                    name: "rest_folder",
+                    template: "rest/services/{id}",
+                    defaults: new { controller = "Rest", Action="Folder" }
+                );
+                routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });

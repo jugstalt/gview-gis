@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using gView.Framework.system;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,6 +12,7 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json
         public double CurrentVersion { get; set; }
 
         [JsonProperty(PropertyName = "folders")]
+        [HtmlLink("{url}/{0}")]
         public string[] Folders { get; set; }
 
         [JsonProperty(PropertyName = "services")]
@@ -21,6 +23,7 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json
         public class AgsServices
         {
             [JsonProperty(PropertyName = "name")]
+            [HtmlLink("{url}/{0}/MapServer")]
             public string Name { get; set; }
 
             [JsonProperty(PropertyName = "type")]
