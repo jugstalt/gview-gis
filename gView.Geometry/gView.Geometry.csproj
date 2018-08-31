@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
+    <ProjectReference Include="..\gView.Db\gView.Db.csproj" />
+    <ProjectReference Include="..\gView.Math\gView.Math.csproj" />
+    <ProjectReference Include="..\gView.Proj\gView.Proj.csproj" />
+    <ProjectReference Include="..\gView.System\gView.System.csproj" />
+  </ItemGroup>
+
+</Project>
