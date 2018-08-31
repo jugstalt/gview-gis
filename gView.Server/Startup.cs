@@ -58,6 +58,7 @@ namespace gView.Server
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
         }
     }
 }
