@@ -19,11 +19,11 @@ namespace gView.Server.AppCode
         static public ServerMapDocument MapDocument = new ServerMapDocument();
         static public ThreadQueue<IServiceRequestContext> ThreadQueue = null;
         static internal string ServicesPath = String.Empty;
-        static private int _port = 0;
         static internal string OutputPath = String.Empty;
         static internal string OutputUrl = String.Empty;
         static internal string TileCachePath = String.Empty;
-        static internal List<IServiceRequestInterpreter> _interpreters = new List<IServiceRequestInterpreter>();
+        static internal string OnlineResource = String.Empty;
+        //static private List<Type> Interpreters = new List<Type>();
         static internal License myLicense = null;
         static internal List<IMapService> mapServices = new List<IMapService>();
         static internal MapServerInstance Instance = null;
@@ -31,7 +31,10 @@ namespace gView.Server.AppCode
 
         static public void Init(string folder, int port = 80)
         {
-            Instance = new MapServerInstance(80);
+            OutputPath = @"C:\temp\output";
+            OutputUrl = @"http://output";
+
+            Instance = new MapServerInstance(port);
 
             ServicesPath = folder;
             foreach (var mapFileInfo in new DirectoryInfo(folder.ToPlattformPath()).GetFiles("*.mxl"))
@@ -47,6 +50,14 @@ namespace gView.Server.AppCode
                     Logger.Log(loggingMethod.error, "LoadConfig - " + mapFileInfo.Name + ": " + ex.Message);
                 }
             }
+
+            //var pluginMananger = new PlugInManager();
+            //foreach (Type interpreterType in pluginMananger.GetPlugins(typeof(IServiceRequestInterpreter)))
+            //{
+            //    Interpreters.Add(interpreterType);
+            //}
+
+            ThreadQueue = new ThreadQueue<IServiceRequestContext>(Globals.MaxThreads, Globals.QueueLength);
         }
 
         internal static void LoadConfigAsync()
@@ -385,50 +396,51 @@ namespace gView.Server.AppCode
             }
         }
 
-        static internal int Port
+        static internal IServiceRequestInterpreter GetInterpreter(Type type)
         {
-            get { return _port; }
-            set
-            {
-                _port = value;
-                MapServerConfig.ServerConfig serverConfig = MapServerConfig.ServerByInstancePort(_port);
-                ServicesPath = gView.Framework.system.SystemVariables.MyCommonApplicationData + @"\mapServer\Services\" + serverConfig.Port;
+            var interpreter = new PlugInManager().CreateInstance<IServiceRequestInterpreter>(type);
+            if (interpreter == null)
+                throw new Exception("Can't intialize interperter");
 
-                try
-                {
-                    MapServerConfig.ServerConfig.InstanceConfig InstanceConfig = MapServerConfig.InstanceByInstancePort(value);
-                    if (serverConfig != null && InstanceConfig != null)
-                    {
-                        OutputPath = serverConfig.OutputPath.Trim();
-                        OutputUrl = serverConfig.OutputUrl.Trim();
-                        TileCachePath = serverConfig.TileCachePath.Trim();
-
-                        Globals.MaxThreads = InstanceConfig.MaxThreads;
-                        Globals.QueueLength = InstanceConfig.MaxQueueLength;
-
-                        Logger.Log(loggingMethod.request, "Output Path: '" + OutputPath + "'");
-                        Logger.Log(loggingMethod.request, "Output Url : '" + OutputUrl + "'");
-                    }
-                    ThreadQueue = new ThreadQueue<IServiceRequestContext>(Globals.MaxThreads, Globals.QueueLength);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log(loggingMethod.error, "IMS.Port(set): " + ex.Message + "\r\n" + ex.StackTrace);
-                }
-            }
+            interpreter.OnCreate(Instance);
+            return interpreter;
         }
 
-        static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            string msg = String.Empty;
-            msg += "UnhandledException:\n";
-            if (e.ExceptionObject is Exception)
-            {
-                msg += "Exception:" + ((Exception)e.ExceptionObject).Message + "\n";
-                msg += "Stacktrace:" + ((Exception)e.ExceptionObject).StackTrace + "\n";
-            }
-            Logger.Log(loggingMethod.error, msg);
-            System.Environment.Exit(1);
-        }
+        #region  ToDo: Diese Konfiguration sollte dann eigentlich im Init() passieren ... Komentar derweil noch nicht löschen
+
+        //static internal int Port
+        //{
+        //    get { return _port; }
+        //    set
+        //    {
+        //        _port = value;
+        //        MapServerConfig.ServerConfig serverConfig = MapServerConfig.ServerByInstancePort(_port);
+        //        ServicesPath = gView.Framework.system.SystemVariables.MyCommonApplicationData + @"\mapServer\Services\" + serverConfig.Port;
+
+        //        try
+        //        {
+        //            MapServerConfig.ServerConfig.InstanceConfig InstanceConfig = MapServerConfig.InstanceByInstancePort(value);
+        //            if (serverConfig != null && InstanceConfig != null)
+        //            {
+        //                OutputPath = serverConfig.OutputPath.Trim();
+        //                OutputUrl = serverConfig.OutputUrl.Trim();
+        //                TileCachePath = serverConfig.TileCachePath.Trim();
+
+        //                Globals.MaxThreads = InstanceConfig.MaxThreads;
+        //                Globals.QueueLength = InstanceConfig.MaxQueueLength;
+
+        //                Logger.Log(loggingMethod.request, "Output Path: '" + OutputPath + "'");
+        //                Logger.Log(loggingMethod.request, "Output Url : '" + OutputUrl + "'");
+        //            }
+        //            ThreadQueue = new ThreadQueue<IServiceRequestContext>(Globals.MaxThreads, Globals.QueueLength);
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            Logger.Log(loggingMethod.error, "IMS.Port(set): " + ex.Message + "\r\n" + ex.StackTrace);
+        //        }
+        //    }
+        //}
+        
+        #endregion
     }
 }

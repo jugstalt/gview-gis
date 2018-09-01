@@ -25,20 +25,11 @@ namespace gView.Server.AppCode
             _resetEvent = resetEvent;
         }
 
-        public void Start()
+        public void Start(object stateInfo)
         {
             try
             {
-                if (_target != null)
-                {
-                    _target(_parameter);
-                }
-                RunAsyncCallback();
-                if (_resetEvent != null)
-                {
-                    _resetEvent.Set();
-                    _resetEvent = null;
-                }
+                _target?.Invoke(_parameter);
             }
             catch (Exception ex)
             {
@@ -47,8 +38,16 @@ namespace gView.Server.AppCode
             }
             finally
             {
+                try
+                {
+                    RunAsyncCallback();
+                }
+                catch { }
                 if (_resetEvent != null)
+                {
                     _resetEvent.Set();
+                    _resetEvent = null;
+                }
             }
         }
 
@@ -56,8 +55,7 @@ namespace gView.Server.AppCode
         {
             try
             {
-                if (_callback != null)
-                    _callback.BeginInvoke(this, null, null);
+                _callback?.Invoke(this);
             }
             catch (Exception ex)
             {
@@ -217,9 +215,14 @@ namespace gView.Server.AppCode
                             if (queuedThread == null)
                                 throw new ArgumentException("Thread Object in Queue is NULL");
 
-                            Thread thread = new Thread(new ThreadStart(queuedThread.Start));
+                            // ThreadPool Way
                             _currentThreads++;
-                            thread.Start();
+                            ThreadPool.QueueUserWorkItem(queuedThread.Start);
+
+                            // Thread Way: mehr overhead
+                            //Thread thread = new Thread(new ThreadStart(queuedThread.Start));
+                            //_currentThreads++;
+                            //thread.Start();
                         }
                         catch (Exception ex)
                         {

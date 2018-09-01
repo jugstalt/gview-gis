@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using gView.Framework.Geometry;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,14 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json
 {
     public class JsonLayer
     {
+        public JsonLayer()
+        {
+            this.SubLayers = new JsonLayer[0];
+        }
+
+        [JsonProperty("currentVersion")]
+        public double CurrentVersion { get; set; }
+
         [JsonProperty("id")]
         public int Id { get; set; }
 
@@ -44,6 +53,7 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json
         [JsonProperty("drawingInfo")]
         public JsonDrawingInfo DrawingInfo { get; set; }
 
+        [JsonIgnore]
         public string FullName
         {
             get
@@ -61,6 +71,7 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json
             }
         }
 
+        [JsonIgnore]
         public string ParentFullName
         {
             get
@@ -71,5 +82,32 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json
                 return String.Empty;
             }
         }
+
+        #region Static Members
+
+        static public EsriGeometryType ToGeometryType(geometryType type)
+        {
+            switch (type)
+            {
+                case geometryType.Point:
+                    return EsriGeometryType.esriGeometryPoint;
+                case geometryType.Multipoint:
+                    return EsriGeometryType.esriGeometryMultipoint;
+                case geometryType.Polyline:
+                    return EsriGeometryType.esriGeometryPolyline;
+                case geometryType.Polygon:
+                    return EsriGeometryType.esriGeometryPolygon;
+                case geometryType.Aggregate:
+                    return EsriGeometryType.esriGeometryBag;
+                case geometryType.Envelope:
+                    return EsriGeometryType.esriGeometryEnvelope;
+                case geometryType.Unknown:
+                case geometryType.Network:
+                default:
+                    return EsriGeometryType.esriGeometryNull;
+            }
+        }
+
+        #endregion
     }
 }

@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace gView.Interoperability.ArcGisServer.Rest.Json
+namespace gView.Interoperability.ArcGisServer.Rest.Json.Response
 {
-    class JsonExportResponse
+    public class JsonExportResponse
     {
-        [JsonProperty("href")]
+        [JsonProperty("href", NullValueHandling = NullValueHandling.Ignore)]
         public string Href { get; set; }
 
-        [JsonProperty("imageData")]
+        [JsonProperty("imageData", NullValueHandling = NullValueHandling.Ignore)]
         public string ImageData { get; set; }
 
         [JsonProperty("contentType")]

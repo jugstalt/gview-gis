@@ -124,7 +124,7 @@ namespace gView.Interoperability.OGC
                 //if (parameters != null)
                 //    _mapServer.Log(loggingMethod.request_detail, "WMS: " + Concat(parameters, "&"));
 
-                using (IServiceMap map = context.ServiceMap)// _mapServer[context];
+                using (IServiceMap map = context.CreateServiceMapInstance())// _mapServer[context];
                 {
                     if (map == null) return "";
 
@@ -583,7 +583,7 @@ namespace gView.Interoperability.OGC
             {
                 if (_mapServer == null) return "";
 
-                using (IServiceMap map = _context.ServiceMap) //_mapServer[_context]
+                using (IServiceMap map = _context.CreateServiceMapInstance()) //_mapServer[_context]
                 {
                     if (map == null) return "";
 
@@ -715,13 +715,18 @@ namespace gView.Interoperability.OGC
             }
         }
 
+        private string MapName(IServiceRequestContext context)
+        {
+            return context.ServiceRequest.Service;
+        }
+
         public string WMS_FeatureInfo(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
         {
             if (parameters == null) return "";
 
             if (_mapServer == null) return "";
 
-            using (IServiceMap map = context.ServiceMap) // _mapServer[context];
+            using (IServiceMap map = context.CreateServiceMapInstance()) // _mapServer[context];
             {
                 if (map == null || map.TOC == null) return "";
 
@@ -807,68 +812,71 @@ namespace gView.Interoperability.OGC
         {
             try
             {
-                TileServiceMetadata metadata = context.ServiceMap.MetadataProvider(_tilemetaprovider) as TileServiceMetadata;
-                if (metadata == null || metadata.Use == false)
+                using (var serviceMap = context.CreateServiceMapInstance())
                 {
-                    return "<Exception>Service is not used with Tile Service</Exception>";
-                }
-
-                WMS_DescribeTilesResponse wms_descripeTiles = new WMS_DescribeTilesResponse();
-                wms_descripeTiles.version = "1.4.0";
-
-                wms_descripeTiles.TiledLayer = new TiledLayer[] { new TiledLayer() };
-                wms_descripeTiles.TiledLayer[0].name = "_alllayers";
-
-                wms_descripeTiles.TiledLayer[0].TiledStyles = new string[] { "default" };
-                wms_descripeTiles.TiledLayer[0].TiledFormats = new string[] { "image/png", "image/jpeg" };
-                wms_descripeTiles.TiledLayer[0].TiledDimension = new TiledDimension[] { new TiledDimension() };
-                wms_descripeTiles.TiledLayer[0].TiledDimension[0].name = "unkown";
-                wms_descripeTiles.TiledLayer[0].TiledDimension[0].Value = new string[] { "unkown" };
-
-                List<TiledCrs> crss = new List<TiledCrs>();
-                foreach (int epsg in metadata.EPSGCodes)
-                {
-                    IEnvelope bounds = metadata.GetEPSGEnvelope(epsg);
-                    if (bounds == null || bounds.Width == 0.0 || bounds.Height == 0.0)
-                        continue;
-
-                    TiledCrs crs = new TiledCrs();
-                    crs.name = "EPSG:" + epsg;
-                    TileMatrixSet matrixSet = crs.TileMatrixSet = new TileMatrixSet();
-                    matrixSet.TileWidth = metadata.TileWidth.ToString();
-                    matrixSet.TileHeight = metadata.TileHeight.ToString();
-
-                    PointType point = new PointType();
-                    point.Item = new DirectPositionType();
-                    ((DirectPositionType)point.Item).Text = bounds.minx.ToString(_nhi) + " " + bounds.maxy.ToString(_nhi);
-                    point.srsDimension = "2";
-
-                    List<TileMatrix> matrixs = new List<TileMatrix>();
-                    foreach (double scale in metadata.Scales)
+                    TileServiceMetadata metadata = serviceMap.MetadataProvider(_tilemetaprovider) as TileServiceMetadata;
+                    if (metadata == null || metadata.Use == false)
                     {
-                        TileMatrix matrix = new TileMatrix();
-                        matrix.scale = scale;
-                        matrix.Point = point;
-                        double res = matrix.scale / (96.0 / 0.0254);
-                        int mw = (int)(bounds.Width / (double.Parse(matrixSet.TileWidth) * res)) + 1;
-                        int mh = (int)(bounds.Height / (double.Parse(matrixSet.TileHeight) * res)) + 1;
-                        matrix.MatrixWidth = mw.ToString();
-                        matrix.MatrixHeight = mh.ToString();
-                        matrixs.Add(matrix);
+                        return "<Exception>Service is not used with Tile Service</Exception>";
                     }
-                    matrixSet.TileMatrix = matrixs.ToArray();
-                    crss.Add(crs);
+
+                    WMS_DescribeTilesResponse wms_descripeTiles = new WMS_DescribeTilesResponse();
+                    wms_descripeTiles.version = "1.4.0";
+
+                    wms_descripeTiles.TiledLayer = new TiledLayer[] { new TiledLayer() };
+                    wms_descripeTiles.TiledLayer[0].name = "_alllayers";
+
+                    wms_descripeTiles.TiledLayer[0].TiledStyles = new string[] { "default" };
+                    wms_descripeTiles.TiledLayer[0].TiledFormats = new string[] { "image/png", "image/jpeg" };
+                    wms_descripeTiles.TiledLayer[0].TiledDimension = new TiledDimension[] { new TiledDimension() };
+                    wms_descripeTiles.TiledLayer[0].TiledDimension[0].name = "unkown";
+                    wms_descripeTiles.TiledLayer[0].TiledDimension[0].Value = new string[] { "unkown" };
+
+                    List<TiledCrs> crss = new List<TiledCrs>();
+                    foreach (int epsg in metadata.EPSGCodes)
+                    {
+                        IEnvelope bounds = metadata.GetEPSGEnvelope(epsg);
+                        if (bounds == null || bounds.Width == 0.0 || bounds.Height == 0.0)
+                            continue;
+
+                        TiledCrs crs = new TiledCrs();
+                        crs.name = "EPSG:" + epsg;
+                        TileMatrixSet matrixSet = crs.TileMatrixSet = new TileMatrixSet();
+                        matrixSet.TileWidth = metadata.TileWidth.ToString();
+                        matrixSet.TileHeight = metadata.TileHeight.ToString();
+
+                        PointType point = new PointType();
+                        point.Item = new DirectPositionType();
+                        ((DirectPositionType)point.Item).Text = bounds.minx.ToString(_nhi) + " " + bounds.maxy.ToString(_nhi);
+                        point.srsDimension = "2";
+
+                        List<TileMatrix> matrixs = new List<TileMatrix>();
+                        foreach (double scale in metadata.Scales)
+                        {
+                            TileMatrix matrix = new TileMatrix();
+                            matrix.scale = scale;
+                            matrix.Point = point;
+                            double res = matrix.scale / (96.0 / 0.0254);
+                            int mw = (int)(bounds.Width / (double.Parse(matrixSet.TileWidth) * res)) + 1;
+                            int mh = (int)(bounds.Height / (double.Parse(matrixSet.TileHeight) * res)) + 1;
+                            matrix.MatrixWidth = mw.ToString();
+                            matrix.MatrixHeight = mh.ToString();
+                            matrixs.Add(matrix);
+                        }
+                        matrixSet.TileMatrix = matrixs.ToArray();
+                        crss.Add(crs);
+                    }
+                    wms_descripeTiles.TiledLayer[0].TiledCrs = crss.ToArray();
+
+                    XsdSchemaSerializer<WMS_DescribeTilesResponse> serializer = new XsdSchemaSerializer<WMS_DescribeTilesResponse>();
+                    string xml = serializer.Serialize(wms_descripeTiles);
+
+                    _mapServer.Log("DescipeTiles:" + serviceMap.Name, loggingMethod.request_detail, xml);
+
+                    byte[] bytes = Encoding.UTF8.GetBytes(xml);
+                    return Convert.ToBase64String(bytes);
+                    //return xml;
                 }
-                wms_descripeTiles.TiledLayer[0].TiledCrs = crss.ToArray();
-
-                XsdSchemaSerializer<WMS_DescribeTilesResponse> serializer = new XsdSchemaSerializer<WMS_DescribeTilesResponse>();
-                string xml = serializer.Serialize(wms_descripeTiles);
-
-                _mapServer.Log("DescipeTiles:" + context.ServiceMap.Name, loggingMethod.request_detail, xml);
-
-                byte[] bytes = Encoding.UTF8.GetBytes(xml);
-                return Convert.ToBase64String(bytes);
-                //return xml;
             }
             catch (Exception ex)
             {
@@ -881,55 +889,55 @@ namespace gView.Interoperability.OGC
             try
             {
                 _mapServer.Log("GetTile", loggingMethod.request_detail, String.Empty);
-
-                TileServiceMetadata metadata = context.ServiceMap.MetadataProvider(_tilemetaprovider) as TileServiceMetadata;
-                if (metadata == null || metadata.Use == false)
-                    return "<Exception>Service is not used with Tile Service</Exception>";
-
-                //if (!metadata.Scales.Contains(parameters.Scale))
-                //    return "<Exception>Scale is not defined with Tile Service</Exception>";
-                parameters.Scale = metadata.Scales.GetScale(parameters.Scale);
-                if (parameters.Scale <= 0.0)
-                    return "<Exception>Scale is not defined with Tile Service</Exception>";
-
-                if (!metadata.EPSGCodes.Contains(parameters.SRS))
-                    return "<Exception>SRS is not defined with Tile Service</Exception>";
-
-                IEnvelope bounds = metadata.GetEPSGEnvelope(parameters.SRS);
-                if (bounds == null || bounds.Width == 0.0 || bounds.Height == 0.0)
-                    return "<Exception>Extent is not defined with Tile Service</Exception>";
-
-                string path = _mapServer.TileCachePath + @"\" + service + @"\_alllayers\" +
-                    TileServiceMetadata.TilePath(
-                        gView.Framework.Geometry.Tiling.GridOrientation.UpperLeft,
-                        parameters.SRS, parameters.Scale, parameters.TileRow, parameters.TileCol);
-
-                string ext = String.Empty;
-                switch (parameters.Format)
+                using (IServiceMap map = context.CreateServiceMapInstance())
                 {
-                    case WMSImageFormat.png:
-                        if (metadata.FormatPng == false)
-                            return "<Exception>image/png not supported</Exception>";
-                        ext = ".png";
-                        break;
-                    case WMSImageFormat.jpeg:
-                        if (metadata.FormatJpg == false)
-                            return "<Exception>image/jpeg not supported</Exception>";
-                        ext = ".jpg";
-                        break;
-                    default:
-                        return "<Exception>Unsupported image format</Exception>";
-                }
-                FileInfo fi = new FileInfo(path + ext);
-                if (metadata.UpperLeftCacheTiles == true && fi.Exists)
-                    return fi.FullName;
+                    TileServiceMetadata metadata = map.MetadataProvider(_tilemetaprovider) as TileServiceMetadata;
+                    if (metadata == null || metadata.Use == false)
+                        return "<Exception>Service is not used with Tile Service</Exception>";
 
-                if (!fi.Directory.Exists)
-                    fi.Directory.Create();
+                    //if (!metadata.Scales.Contains(parameters.Scale))
+                    //    return "<Exception>Scale is not defined with Tile Service</Exception>";
+                    parameters.Scale = metadata.Scales.GetScale(parameters.Scale);
+                    if (parameters.Scale <= 0.0)
+                        return "<Exception>Scale is not defined with Tile Service</Exception>";
 
-                ISpatialReference sRef = SpatialReference.FromID("epsg:" + parameters.SRS);
-                using (IServiceMap map = context.ServiceMap)
-                {
+                    if (!metadata.EPSGCodes.Contains(parameters.SRS))
+                        return "<Exception>SRS is not defined with Tile Service</Exception>";
+
+                    IEnvelope bounds = metadata.GetEPSGEnvelope(parameters.SRS);
+                    if (bounds == null || bounds.Width == 0.0 || bounds.Height == 0.0)
+                        return "<Exception>Extent is not defined with Tile Service</Exception>";
+
+                    string path = _mapServer.TileCachePath + @"\" + service + @"\_alllayers\" +
+                        TileServiceMetadata.TilePath(
+                            gView.Framework.Geometry.Tiling.GridOrientation.UpperLeft,
+                            parameters.SRS, parameters.Scale, parameters.TileRow, parameters.TileCol);
+
+                    string ext = String.Empty;
+                    switch (parameters.Format)
+                    {
+                        case WMSImageFormat.png:
+                            if (metadata.FormatPng == false)
+                                return "<Exception>image/png not supported</Exception>";
+                            ext = ".png";
+                            break;
+                        case WMSImageFormat.jpeg:
+                            if (metadata.FormatJpg == false)
+                                return "<Exception>image/jpeg not supported</Exception>";
+                            ext = ".jpg";
+                            break;
+                        default:
+                            return "<Exception>Unsupported image format</Exception>";
+                    }
+                    FileInfo fi = new FileInfo(path + ext);
+                    if (metadata.UpperLeftCacheTiles == true && fi.Exists)
+                        return fi.FullName;
+
+                    if (!fi.Directory.Exists)
+                        fi.Directory.Create();
+
+                    ISpatialReference sRef = SpatialReference.FromID("epsg:" + parameters.SRS);
+
                     map.Display.SpatialReference = sRef;
 
                     map.Display.iWidth = metadata.TileWidth;

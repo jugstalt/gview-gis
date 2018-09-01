@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\gView.Carto.Rendering\gView.Carto.Rendering.csproj" />
+    <ProjectReference Include="..\gView.Data\gView.Data.csproj" />
     <ProjectReference Include="..\gView.System\gView.System.csproj" />
   </ItemGroup>
 

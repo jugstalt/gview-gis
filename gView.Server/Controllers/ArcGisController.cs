@@ -11,11 +11,22 @@ using static gView.Interoperability.ArcGisServer.Rest.Json.JsonServices;
 using System.Reflection;
 using Newtonsoft.Json;
 using gView.Framework.system;
+using gView.MapServer;
+using gView.Interoperability.ArcGisServer.Request;
+using System.Collections.Specialized;
+using gView.Interoperability.ArcGisServer.Rest.Json.Request;
+using Microsoft.Extensions.Primitives;
+using gView.Interoperability.ArcGisServer.Rest.Json.Response;
 
 namespace gView.Server.Controllers
 {
-    public class RestController : Controller
+    public class ArcGisController : Controller
     {
+        private const double Version = 10.61;
+        private const string DefaultFolder = "default";
+
+        public int JsonExportResponse { get; private set; }
+
         public IActionResult Index()
         {
             return RedirectToAction("Services");
@@ -25,8 +36,8 @@ namespace gView.Server.Controllers
         {
             return Result(new JsonServices()
             {
-                CurrentVersion = 10.61,
-                Folders = new string[] { "gview" },
+                CurrentVersion = Version,
+                Folders = new string[] { DefaultFolder },
                 Services = new AgsServices[0]
             });
         }
@@ -35,7 +46,7 @@ namespace gView.Server.Controllers
         {
             try
             {
-                if (id != "gview")
+                if (id != DefaultFolder)
                     throw new Exception("Unknown folder: " + id);
 
                 List<AgsServices> agsServices = new List<AgsServices>();
@@ -68,7 +79,7 @@ namespace gView.Server.Controllers
         {
             try
             {
-                if (folder != "gview")
+                if (folder != DefaultFolder)
                     throw new Exception("Unknown folder: " + folder);
 
                 var map = InternetMapServer.Instance[id];
@@ -84,8 +95,8 @@ namespace gView.Server.Controllers
                         return new JsonService.Layer()
                         {
                             Id = e.ID,
-                            Name = e.Title,
-                            DefaultVisiblity = tocElement != null ? tocElement.LayerVisible : true,
+                            Name = tocElement != null ? tocElement.Name : e.Title,
+                            DefaultVisibility = tocElement != null ? tocElement.LayerVisible : true,
                             MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale, 0) : 0,
                             MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale, 0) : 0,
                         };
@@ -99,6 +110,139 @@ namespace gView.Server.Controllers
                         SpatialReference = new JsonService.SpatialReference(0)
                     }
                 });
+            }
+            catch (Exception ex)
+            {
+                return Json(new JsonError()
+                {
+                    error = new JsonError.Error() { code = 999, message = ex.Message }
+                });
+            }
+        }
+
+        public IActionResult ServiceLayers(string folder, string id)
+        {
+            try
+            {
+                if (folder != DefaultFolder)
+                    throw new Exception("Unknown folder: " + folder);
+
+                var map = InternetMapServer.Instance[id];
+                if (map == null)
+                    throw new Exception("Unknown service: " + id);
+
+                var jsonLayers = new JsonLayers();
+                jsonLayers.Layers = map.MapElements.Select(e =>
+                {
+                    var tocElement = map.TOC.GetTOCElement(e as ILayer);
+
+                    JsonField[] fields = new JsonField[0];
+                    if(e.Class is ITableClass)
+                    {
+                        fields=((ITableClass)e.Class).Fields.ToEnumerable().Select(f =>
+                        {
+                            return new JsonField()
+                            {
+                                Name = f.name,
+                                Alias = f.aliasname,
+                                Type = JsonField.ToType(f.type).ToString()
+                            };
+                        }).ToArray();
+                    }
+
+                    JsonExtent extent = null;
+                    if (e.Class is IFeatureClass && ((IFeatureClass)e.Class).Envelope != null)
+                    {
+                        extent = new JsonExtent()
+                        {
+                            // DoTo: SpatialReference
+                            Xmin = ((IFeatureClass)e.Class).Envelope.minx,
+                            Ymin = ((IFeatureClass)e.Class).Envelope.miny,
+                            Xmax = ((IFeatureClass)e.Class).Envelope.maxx,
+                            Ymax = ((IFeatureClass)e.Class).Envelope.maxy
+                        };
+                    }
+
+                    string type = "Feature Layer";
+                    if (e.Class is IRasterClass)
+                        type = "Raster Layer";
+
+                    return new JsonLayer()
+                    {
+                        CurrentVersion = Version,
+                        Id = e.ID,
+                        Name = tocElement != null ? tocElement.Name : e.Title,
+                        DefaultVisibility = tocElement != null ? tocElement.LayerVisible : true,
+                        MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale, 0) : 0,
+                        MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale, 0) : 0,
+                        Fields = fields,
+                        Extent = extent,
+                        Type=type,
+                        GeometryType = e.Class is IFeatureClass ? JsonLayer.ToGeometryType(((IFeatureClass)e.Class).GeometryType).ToString() : EsriGeometryType.esriGeometryNull.ToString()
+                    };
+                }).ToArray();
+
+                return Result(jsonLayers);
+            }
+            catch (Exception ex)
+            {
+                return Json(new JsonError()
+                {
+                    error = new JsonError.Error() { code = 999, message = ex.Message }
+                });
+            }
+        }
+
+        public IActionResult ExportMap(string folder, string id)
+        {
+            try
+            {
+                if (folder != DefaultFolder)
+                    throw new Exception("Unknown folder: " + folder);
+
+                var interperter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
+
+                #region Request
+
+                JsonExportMap exportMap = Deserialize<JsonExportMap>(
+                    Request.HasFormContentType ?
+                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Form :
+                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
+
+                ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(exportMap));
+                serviceRequest.OnlineResource = InternetMapServer.OnlineResource;
+
+                #endregion
+
+                #region Security
+
+                Identity identity = Identity.FromFormattedString(String.Empty);
+                identity.HashedPassword = String.Empty;
+                serviceRequest.Identity = identity;
+
+                #endregion
+
+                #region Queue & Wait
+
+                IServiceRequestContext context = new ServiceRequestContext(
+                    InternetMapServer.Instance,
+                    interperter,
+                    serviceRequest);
+
+                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interperter.Request, context);
+
+                #endregion
+
+                if (serviceRequest.Succeeded)
+                {
+                    return Result(JsonConvert.DeserializeObject<JsonExportResponse>(serviceRequest.Response));
+                }
+                else
+                {
+                    return Result(JsonConvert.DeserializeObject<JsonError>(serviceRequest.Response));
+                }
+
+                return null;
             }
             catch (Exception ex)
             {
@@ -140,6 +284,9 @@ namespace gView.Server.Controllers
             sb.Append("<ul class='property-list'>");
             foreach(var propertyInfo in type.GetProperties())
             {
+                if (propertyInfo.GetValue(obj) == null)
+                    continue;
+
                 var jsonPropertyAttribute = propertyInfo.GetCustomAttribute<JsonPropertyAttribute>();
                 if (jsonPropertyAttribute == null)
                     continue;
@@ -221,6 +368,41 @@ namespace gView.Server.Controllers
 
             string link = htmlLink.LinkTemplate.Replace("{url}", Request.Scheme + "://" + Request.Host + "/" + Request.Path).Replace("{0}", val);
             return "<a href='" + link + "'>" + val + "</a>";
+        }
+
+        private T Deserialize<T>(IEnumerable<KeyValuePair<string, StringValues>> nv)
+        {
+            var instance = (T)Activator.CreateInstance(typeof(T));
+
+            foreach(var propertyInfo in typeof(T).GetProperties())
+            {
+                if (propertyInfo.SetMethod == null)
+                    continue;
+
+                var jsonPropertyAttribute = propertyInfo.GetCustomAttribute<JsonPropertyAttribute>();
+                if (jsonPropertyAttribute == null)
+                    continue;
+
+                string key = jsonPropertyAttribute.PropertyName ?? propertyInfo.Name;
+                var keyValuePair = nv.Where(k => k.Key == key).FirstOrDefault();
+                if (keyValuePair.Key == key)
+                {
+                    if(propertyInfo.PropertyType==typeof(double))
+                    {
+                        propertyInfo.SetValue(instance, NumberConverter.ToDouble(keyValuePair.Value.ToString()));
+                    }
+                    else if(propertyInfo.PropertyType==typeof(float))
+                    {
+                        propertyInfo.SetValue(instance, NumberConverter.ToFloat(keyValuePair.Value.ToString()));
+                    }
+                    else
+                    {
+                        propertyInfo.SetValue(instance, Convert.ChangeType(keyValuePair.Value.ToString(), propertyInfo.PropertyType));
+                    }
+                }
+            }
+
+            return instance;
         }
 
         #endregion

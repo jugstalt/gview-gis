@@ -40,6 +40,7 @@ namespace gView.MapServer
         public string Response = "";
         public string OnlineResource = "";
         public IIdentity Identity = null;
+        public bool Succeeded = true;
 
         public ServiceRequest(string service, string request)
         {
@@ -131,7 +132,7 @@ namespace gView.MapServer
         IMapServer MapServer { get; }
         IServiceRequestInterpreter ServiceRequestInterpreter { get; }
         ServiceRequest ServiceRequest { get; }
-        IServiceMap ServiceMap { get; }
+        IServiceMap CreateServiceMapInstance();
     }
 
     public class ServiceRequestContext : IServiceRequestContext
@@ -163,10 +164,11 @@ namespace gView.MapServer
         {
             get { return _request; }
         }
-        public IServiceMap ServiceMap
+        public IServiceMap CreateServiceMapInstance()
         {
-            get { return (_mapServer != null) ? _mapServer[this] : null; }
+            return (_mapServer != null) ? _mapServer[this] : null;
         }
+
         #endregion
     }
 

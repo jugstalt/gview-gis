@@ -71,84 +71,91 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
         public void Request(IServiceRequestContext context)
         {
-            if (context == null || context.ServiceRequest == null || context.ServiceMap == null)
-                return;
-
-            if (_mapServer == null)
+            using (var serviceMap = context.CreateServiceMapInstance())
             {
-                context.ServiceRequest.Response = "<FATALERROR>MapServer Object is not available!</FATALERROR>";
-                return;
-            }
+                if (context == null || context.ServiceRequest == null || serviceMap == null)
+                    return;
 
-            TileServiceMetadata metadata = context.ServiceMap.MetadataProvider(_metaprovider) as TileServiceMetadata;
-            if (metadata == null || metadata.Use == false)
-            {
-                context.ServiceRequest.Response = "<ERROR>Service is not used with Tile Service</ERROR>";
-                return;
-            }
-
-            string service = context.ServiceRequest.Service;
-            string request = context.ServiceRequest.Request;
-
-            //_mapServer.Log("WMTSRequest", loggingMethod.request_detail, request);
-
-            if (request.Contains("=")) // QueryString
-            {
-                QueryString queryString = new QueryString(request);
-                if (queryString.HasValue("service", "wmts") && queryString.HasValue("request", "getcapabilities") && queryString.HasValue("version", "1.0.0"))
+                if (_mapServer == null)
                 {
-                    WmtsCapabilities100(context, metadata);
+                    context.ServiceRequest.Response = "<FATALERROR>MapServer Object is not available!</FATALERROR>";
                     return;
                 }
-            }
 
-            string[] args = request.Split('/');
-
-            if (args.Length == 7)
-            {
-                string cacheFormat = args[0].ToLower();
-                if (args[1].ToLower() != "ul" &&
-                    args[1].ToLower() != "ll")
-                    throw new ArgumentException();
-
-                int epsg = int.Parse(args[2]);
-                string style = args[3].ToLower();
-                double scale = GetScale(metadata, args[4]); // double.Parse(args[4].Replace(",", "."), _nhi);
-                int row = int.Parse(args[5]);
-                int col = int.Parse(args[6].Split('.')[0]);
-                string format = ".png";
-                if (args[6].ToLower().EndsWith(".jpg")) format = ".jpg";
-
-                byte[] imageData = null;
-                if (scale > 0)
+                TileServiceMetadata metadata = serviceMap.MetadataProvider(_metaprovider) as TileServiceMetadata;
+                if (metadata == null || metadata.Use == false)
                 {
-                    if (cacheFormat == "compact")
-                    {
-                        imageData = GetCompactTile(context, metadata, epsg, scale, row, col, format, (args[1].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft));
-                    }
-                    else
-                    {
-                        imageData = GetTile(context, metadata, epsg, scale, row, col, format, (args[1].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft));
-                    }
+                    context.ServiceRequest.Response = "<ERROR>Service is not used with Tile Service</ERROR>";
+                    return;
+                }
 
-                    if (style != "default")
+                string service = context.ServiceRequest.Service;
+                string request = context.ServiceRequest.Request;
+
+                //_mapServer.Log("WMTSRequest", loggingMethod.request_detail, request);
+
+                if (request.Contains("=")) // QueryString
+                {
+                    QueryString queryString = new QueryString(request);
+                    if (queryString.HasValue("service", "wmts") && queryString.HasValue("request", "getcapabilities") && queryString.HasValue("version", "1.0.0"))
                     {
-                        throw new NotImplementedException("Not in .Net Standoard...");
-                        //ImageProcessingFilters filter;
-                        //if (Enum.TryParse<ImageProcessingFilters>(style, true, out filter))
-                        //    imageData = ImageProcessing.ApplyFilter(imageData, filter, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
+                        WmtsCapabilities100(context, metadata);
+                        return;
                     }
                 }
 
-                context.ServiceRequest.Response = new MapServerResponse()
-                {
-                    Data = imageData ?? _emptyPic,
-                    ContentType = "image/jpg",
-                    Expires = DateTime.UtcNow.AddDays(7)
-                }.ToString();
-            }
+                string[] args = request.Split('/');
 
+                if (args.Length == 7)
+                {
+                    string cacheFormat = args[0].ToLower();
+                    if (args[1].ToLower() != "ul" &&
+                        args[1].ToLower() != "ll")
+                        throw new ArgumentException();
+
+                    int epsg = int.Parse(args[2]);
+                    string style = args[3].ToLower();
+                    double scale = GetScale(metadata, args[4]); // double.Parse(args[4].Replace(",", "."), _nhi);
+                    int row = int.Parse(args[5]);
+                    int col = int.Parse(args[6].Split('.')[0]);
+                    string format = ".png";
+                    if (args[6].ToLower().EndsWith(".jpg")) format = ".jpg";
+
+                    byte[] imageData = null;
+                    if (scale > 0)
+                    {
+                        if (cacheFormat == "compact")
+                        {
+                            imageData = GetCompactTile(context, metadata, epsg, scale, row, col, format, (args[1].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft));
+                        }
+                        else
+                        {
+                            imageData = GetTile(context, metadata, epsg, scale, row, col, format, (args[1].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft));
+                        }
+
+                        if (style != "default")
+                        {
+                            throw new NotImplementedException("Not in .Net Standoard...");
+                            //ImageProcessingFilters filter;
+                            //if (Enum.TryParse<ImageProcessingFilters>(style, true, out filter))
+                            //    imageData = ImageProcessing.ApplyFilter(imageData, filter, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
+                        }
+                    }
+
+                    context.ServiceRequest.Response = new MapServerResponse()
+                    {
+                        Data = imageData ?? _emptyPic,
+                        ContentType = "image/jpg",
+                        Expires = DateTime.UtcNow.AddDays(7)
+                    }.ToString();
+                }
+            }
             return;
+        }
+
+        private string MapName(IServiceRequestContext context)
+        {
+            return context.ServiceRequest.Service;
         }
 
         private byte[] GetTile(IServiceRequestContext context, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation)
@@ -174,7 +181,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
             if (format == ".jpg" && metadata.FormatJpg == false)
                 throw new Exception("Format image/jpeg no supported");
 
-            string path = _mapServer.TileCachePath + @"\" + context.ServiceMap.Name + @"\_alllayers\" +
+            string path = _mapServer.TileCachePath + @"/" + MapName(context) + @"/_alllayers/" +
                 TileServiceMetadata.TilePath(orientation, epsg, scale, row, col) + format;
             if ((orientation == GridOrientation.UpperLeft && metadata.UpperLeftCacheTiles) ||
                 (orientation == GridOrientation.LowerLeft && metadata.LowerLeftCacheTiles))
@@ -222,7 +229,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
             if (format == ".jpg" && metadata.FormatJpg == false)
                 throw new Exception("Format image/jpeg no supported");
 
-            string path = _mapServer.TileCachePath + @"\" + context.ServiceMap.Name + @"\_alllayers\compact\" +
+            string path = _mapServer.TileCachePath + @"\" + MapName(context) + @"\_alllayers\compact\" +
                 TileServiceMetadata.ScalePath(orientation, epsg, scale);
 
             string compactTileName = CompactTileName(row, col);
@@ -242,7 +249,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
             {
                 #region On The Fly
 
-                using (IServiceMap map = context.ServiceMap)
+                using (IServiceMap map = context.CreateServiceMapInstance())
                 {
                     ISpatialReference sRef = SpatialReference.FromID("epsg:" + epsg);
 
@@ -279,105 +286,6 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     map.Display.MakeTransparent = maketrans;
 
                     return ms.ToArray();
-                }
-
-                #endregion
-
-                #region Tile from Existing UpLevel Tiles (Vorteil Resampling wird nicht von Browser erledigt, ist meistens Fast -> hier Nearstneigbor)
-
-                int level2 = metadata.Scales.IndexOf(scale);
-                if (level2 <= 0)
-                    return null;
-
-                using (IServiceMap map = context.ServiceMap)
-                {
-                    double res = (double)scale / (metadata.Dpi / 0.0254);
-                    if (map.Display.MapUnits != GeoUnits.Meters)
-                    {
-                        GeoUnitConverter converter = new GeoUnitConverter();
-                        res = converter.Convert(res, GeoUnits.Meters, map.Display.MapUnits);
-                    }
-
-                    double H = metadata.TileHeight * res;
-                    double y = origin.Y - H * (row + 1);
-
-                    double W = metadata.TileWidth * res;
-                    double x = origin.X + W * col;
-
-                    while (true)
-                    {
-                        if (level2 <= 0)
-                            break;
-
-                        double scale2 = metadata.Scales[level2 - 1];
-
-                        string path2 = _mapServer.TileCachePath + @"\" + context.ServiceMap.Name + @"\_alllayers\compact\" +
-                                        TileServiceMetadata.ScalePath(orientation, epsg, scale2);
-                        if (IsDirectoryEmpty(path2))
-                        {
-                            level2--;
-                            continue;
-                        }
-
-
-                        double res2 = scale2 / (metadata.Dpi / 0.0254);
-
-                        double W2 = metadata.TileWidth * res2;
-                        double H2 = metadata.TileHeight * res2;
-
-                        int col2_0 = (int)Math.Floor((x - origin.X) / W2);
-                        int row2_0 = (int)Math.Floor((origin.Y - (y + H)) / H2);
-
-                        int col2_1 = (int)Math.Floor((x + W - origin.X) / W2);
-                        int row2_1 = (int)Math.Floor((origin.Y - y) / H2);
-
-                        double x2_0 = origin.X + W2 * col2_0,
-                               y2_0 = origin.Y - H2 * (row2_1 + 1);
-
-                        double W20 = Math.Abs(col2_1 - col2_0 + 1) * W2,
-                               H20 = Math.Abs(row2_1 - row2_0 + 1) * H2;
-
-                        using (Bitmap bm = new Bitmap(Math.Abs(col2_1 - col2_0 + 1) * metadata.TileWidth, Math.Abs(row2_1 - row2_0 + 1) * metadata.TileHeight))
-                        using (Graphics gr = Graphics.FromImage(bm))
-                        {
-                            for (int r2 = row2_0; r2 <= row2_1; r2++)
-                            {
-                                for (int c2 = col2_0; c2 <= col2_1; c2++)
-                                {
-                                    byte[] buffer = GetCompactTileBytes(context, path2, r2, c2, format);
-                                    if (buffer != null && buffer.Length > 0)
-                                    {
-                                        MemoryStream ms = new MemoryStream(buffer);
-                                        var tileImage = Image.FromStream(ms);
-                                        gr.DrawImage(tileImage, new PointF((c2 - col2_0) * metadata.TileWidth, (r2 - row2_0) * metadata.TileHeight));
-                                    }
-                                }
-                            }
-
-                            float imageX = (float)((x - x2_0) / W20 * (double)bm.Width);
-                            float imageY = bm.Height - (float)((y - y2_0) / H20 * (double)bm.Height);
-
-                            float imageW = (float)((double)metadata.TileWidth * res / res2);
-                            float imageH = (float)((double)metadata.TileHeight * res / res2);
-
-                            using (Bitmap outputBm = new Bitmap(metadata.TileWidth, metadata.TileHeight))
-                            using (Graphics outputGr = Graphics.FromImage(outputBm))
-                            {
-                                outputGr.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-
-                                outputGr.DrawImage(bm,
-                                    new RectangleF(-.5f, -.5f, (float)outputBm.Width + 1f, (float)outputBm.Height + 1f),
-                                    new RectangleF(imageX, imageY - imageH, imageW, imageH),
-                                    GraphicsUnit.Pixel);
-
-
-                                MemoryStream output = new MemoryStream();
-                                outputBm.Save(output, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
-
-                                return output.ToArray();
-                            }
-                        }
-                    }
                 }
 
                 #endregion
@@ -424,17 +332,20 @@ namespace gView.Interoperability.OGC.Request.WMTS
             }
             catch (Exception ex)
             {
-                TileServiceMetadata metadata = context.ServiceMap.MetadataProvider(_metaprovider) as TileServiceMetadata;
-                using (System.Drawing.Bitmap bm = new Bitmap(metadata.TileWidth, metadata.TileHeight))
-                using (System.Drawing.Graphics gr = Graphics.FromImage(bm))
-                using (System.Drawing.Font font = new Font("Arial", 9f))
+                using (var serviceMap = context.CreateServiceMapInstance())
                 {
-                    gr.DrawString(ex.Message, font, Brushes.Red, new RectangleF(0f, 0f, (float)bm.Width, (float)bm.Height));
+                    TileServiceMetadata metadata = serviceMap.MetadataProvider(_metaprovider) as TileServiceMetadata;
+                    using (System.Drawing.Bitmap bm = new Bitmap(metadata.TileWidth, metadata.TileHeight))
+                    using (System.Drawing.Graphics gr = Graphics.FromImage(bm))
+                    using (System.Drawing.Font font = new Font("Arial", 9f))
+                    {
+                        gr.DrawString(ex.Message, font, Brushes.Red, new RectangleF(0f, 0f, (float)bm.Width, (float)bm.Height));
 
-                    MemoryStream ms = new MemoryStream();
-                    bm.Save(ms, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
+                        MemoryStream ms = new MemoryStream();
+                        bm.Save(ms, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
 
-                    return ms.ToArray();
+                        return ms.ToArray();
+                    }
                 }
             }
         }
@@ -480,7 +391,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
             capabilities.ServiceIdentification = new gView.Framework.OGC.WMTS.Version_1_0_0.ServiceIdentification();
             capabilities.ServiceIdentification.Title = new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType[] { new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType() {
-                Value= context.ServiceMap.Name
+                Value= MapName( context)
             } };
             capabilities.ServiceIdentification.ServiceType = new gView.Framework.OGC.WMTS.Version_1_0_0.CodeType() { Value = "OGC WMTS" };
             capabilities.ServiceIdentification.ServiceTypeVersion = new string[] { "1.0.0" };
@@ -551,7 +462,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
                 foreach (string cacheType in new string[] { "classic", "compact" })
                 {
-                    string epsgPath = _mapServer.TileCachePath + @"\" + context.ServiceMap.Name + @"\_alllayers\" + (cacheType == "compact" ? @"compact\" : "") +
+                    string epsgPath = _mapServer.TileCachePath + @"\" + MapName(context) + @"\_alllayers\" + (cacheType == "compact" ? @"compact\" : "") +
                         TileServiceMetadata.EpsgPath(GridOrientation.UpperLeft, epsg);
 
                     if (!new DirectoryInfo(epsgPath).Exists)
@@ -559,8 +470,8 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
                     #region Layer
 
-                    string layerName = context.ServiceMap.Name + " EPSG:" + epsg + " " + cacheType;
-                    string layerId = context.ServiceMap.Name.ToLower().Replace(" ", "_") + "_" + epsg + "_" + cacheType;
+                    string layerName = MapName(context) + " EPSG:" + epsg + " " + cacheType;
+                    string layerId = MapName(context).ToLower().Replace(" ", "_") + "_" + epsg + "_" + cacheType;
 
                     var layer = new gView.Framework.OGC.WMTS.Version_1_0_0.LayerType();
 
@@ -669,7 +580,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
                     for (int s = 0, to = metadata.Scales.Count; s < to; s++)
                     {
-                        string scalePath = _mapServer.TileCachePath + @"\" + context.ServiceMap.Name + @"\_alllayers\" + (cacheType == "compact" ? @"compact\" : "") +
+                        string scalePath = _mapServer.TileCachePath + @"\" + MapName(context) + @"\_alllayers\" + (cacheType == "compact" ? @"compact\" : "") +
                             TileServiceMetadata.ScalePath(GridOrientation.UpperLeft, epsg, metadata.Scales[s]);
 
                         if (!new DirectoryInfo(scalePath).Exists)

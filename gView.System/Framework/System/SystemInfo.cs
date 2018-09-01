@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Collections;
+using System.Globalization;
+using System.Runtime.InteropServices;
 
 namespace gView.Framework.system
 {
@@ -65,6 +67,30 @@ namespace gView.Framework.system
                 str = str.Substring(1, str.Length - 1);
             }
             return str;
+        }
+
+        static public NumberFormatInfo Nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
+        static public NumberFormatInfo Cnf = System.Globalization.CultureInfo.CurrentCulture.NumberFormat;
+
+        static public bool IsLinux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+        static public bool IsWindows = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        static public bool IsOSX = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+
+        static public string Platform
+        {
+            get
+            {
+                if (IsLinux)
+                    return OSPlatform.Linux.ToString();
+
+                if (IsOSX)
+                    return OSPlatform.OSX.ToString();
+
+                if (IsWindows)
+                    return OSPlatform.Windows.ToString();
+
+                return "Unknown";
+            }
         }
 
         #region HelperClasses

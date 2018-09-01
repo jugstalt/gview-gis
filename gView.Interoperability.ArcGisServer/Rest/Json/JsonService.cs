@@ -119,7 +119,7 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json
             public int ParentLayerId { get; set; }
 
             [JsonProperty(PropertyName = "defaultVisibility")]
-            public bool DefaultVisiblity { get; set; }
+            public bool DefaultVisibility { get; set; }
 
             [JsonProperty(PropertyName = "subLayerIds")]
             public int[] SubLayersIds { get; set; }

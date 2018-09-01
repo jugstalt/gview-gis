@@ -659,9 +659,10 @@ namespace gView.Server.AppCode
             get { return _request; }
         }
 
-        IServiceMap IServiceRequestContext.ServiceMap
+        IServiceMap IServiceRequestContext.CreateServiceMapInstance()
         {
-            get { return this; }
+            throw new NotImplementedException();
+            //return this;
         }
 
         #endregion

@@ -52,27 +52,15 @@ namespace gView.Framework.system
 
     public class PlugInManager
     {
-        //private static string _configPath = System.Environment.CurrentDirectory;
-        //private static XmlDocument _doc = null;
         private static Dictionary<Guid, Type> _pluginTypes;
 
         public PlugInManager()
         {
-            //if (PlugInManager.CompFileName == "")
-            //{
-            //    PlugInManager.CompFileName = (SystemVariables.MyCommonApplicationData + @"\gViewGisOS_plugins.xml").ToPlattformPath();
-            //}
-            //else
-            //{
-            //    Init();
-            //}
             Init();
         }
 
         public static void Init()
         {
-            //if (_doc != null)
-            //    return;
             if (_pluginTypes != null)
                 return;
 
@@ -92,18 +80,14 @@ namespace gView.Framework.system
                         _pluginTypes.Add(registerPluginAttribute.Value, pluginType);
                     }
                 }
-
-                //_doc = new XmlDocument();
-                //_doc.Load(PlugInManager.CompFileName);
             }
             catch
             {
-                //_doc = null;
                 _pluginTypes = null;
             }
         }
 
-        public IEnumerable<Type> GetPluginNodes(Type interfaceType)
+        public IEnumerable<Type> GetPlugins(Type interfaceType)
         {
             Init();
 
@@ -122,10 +106,10 @@ namespace gView.Framework.system
 		{
             return PlugInManager.Create(guid);
 		}
-		public object CreateInstance(XmlNode node) 
-		{
-            return PlugInManager.Create(node);
-		}
+        public T CreateInstance<T>(Type type)
+        {
+            return (T)Activator.CreateInstance(type);
+        }
         public object CreateInstance(object plugin)
         {
             return PlugInManager.Create(plugin);
@@ -181,36 +165,6 @@ namespace gView.Framework.system
 
             return null;
         }
-        //public static object Create(string fullName)
-        //{
-        //    try
-        //    {
-        //        Init();
-
-        //        foreach (XmlNode node in _doc.ChildNodes[0].ChildNodes)
-        //        {
-        //            if (node.Attributes["fullname"] == null) continue;
-
-        //            if (node.Attributes["fullname"].Value == fullName)
-        //                return (Create(node));
-        //        }
-
-        //        return null;
-        //    }
-        //    catch
-        //    {
-        //        return null;
-        //    }
-        //}
-
-        //public static object Create(XmlNode node, object parameter)
-        //{
-        //    IPlugInParameter plugin = PlugInManager.Create(node) as IPlugInParameter;
-        //    if (plugin != null)
-        //        plugin.Parameter = parameter;
-
-        //    return plugin;
-        //}
         public static object Create(Guid guid, object parameter)
         {
             IPlugInParameter plugin = PlugInManager.Create(guid) as IPlugInParameter;
@@ -226,29 +180,6 @@ namespace gView.Framework.system
                 plugin.Parameter = parameter;
 
             return plugin;
-        }
-        //public static object Create(string fullName, object parameter)
-        //{
-        //    IPlugInParameter plugin = PlugInManager.Create(fullName) as IPlugInParameter;
-        //    if (plugin != null)
-        //        plugin.Parameter = parameter;
-
-        //    return plugin;
-        //}
-
-
-
-        static public Guid Guid(XmlNode node)
-        {
-            try
-            {
-                if (node == null || node.Attributes["guid"] == null) return new Guid();
-                return new Guid(node.Attributes["guid"].Value);
-            }
-            catch
-            {
-                return new Guid();
-            }
         }
         static public bool IsPlugin(object obj)
         {
@@ -434,16 +365,6 @@ namespace gView.Framework.system
             if (!PlugInManager.IsPlugin(exObject)) return;
             _guid = PlugInManager.PlugInID(exObject);
             _fullname = exObject.FullName;
-
-            //foreach (Type basetype in exObject.GetType().GetInterfaces())
-            //{
-            //    _exObjectTypes.Add(basetype);
-            //}
-            //if (exObject.Object == null) return;
-            //foreach (Type basetype in exObject.Object.GetType().GetInterfaces())
-            //{
-            //    _ObjectTypes.Add(basetype);
-            //}
         }
 
         #region IExplorerObjectSerialization Member

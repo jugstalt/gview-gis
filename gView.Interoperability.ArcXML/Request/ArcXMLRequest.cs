@@ -243,7 +243,7 @@ namespace gView.Interoperability.ArcXML
             getImage.layerDefs = properties.SelectSingleNode("LAYERLIST");
             getImage.LAYERS = rType.SelectNodes("//LAYER");
 
-            using (IServiceMap map = context.ServiceMap)  // _mapServer[context];
+            using (IServiceMap map = context.CreateServiceMapInstance())  // _mapServer[context];
             {
                 if (map == null || map.Display == null)
                 {
@@ -329,7 +329,7 @@ namespace gView.Interoperability.ArcXML
                     return;
                 }
                 string id = layer.Attributes["id"].Value;
-                using (IServiceMap map2 = context.ServiceMap) //  _mapServer[context];
+                using (IServiceMap map2 = context.CreateServiceMapInstance()) //  _mapServer[context];
                 {
                     if (map2 == null)
                     {
@@ -554,7 +554,7 @@ namespace gView.Interoperability.ArcXML
                             }
                         }
 
-                        filter.ContextLayerDefaultSpatialReference = context.ServiceMap is IMap ? ((IMap)context.ServiceMap).LayerDefaultSpatialReference : null;
+                        filter.ContextLayerDefaultSpatialReference = map2 is IMap ? ((IMap)map2).LayerDefaultSpatialReference : null;
                         getFeatures.Filter = filter;
 
                         if (filterQuery != String.Empty)
@@ -614,7 +614,7 @@ namespace gView.Interoperability.ArcXML
                 serviceRequest.Response = CreateException("missing layerid attribute");
                 return;
             }
-            using (IServiceMap map3 = context.ServiceMap) // _mapServer[context];
+            using (IServiceMap map3 = context.CreateServiceMapInstance()) // _mapServer[context];
             {
                 if (map3 == null)
                 {
@@ -921,7 +921,7 @@ namespace gView.Interoperability.ArcXML
                 }
 
                 string id = layer.Attributes["id"].Value;
-                using (IServiceMap map2 = context.ServiceMap) // _mapServer[context];
+                using (IServiceMap map2 = context.CreateServiceMapInstance()) // _mapServer[context];
                 {
                     if (map2 == null)
                     {

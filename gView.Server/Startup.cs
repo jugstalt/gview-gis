@@ -57,14 +57,29 @@ namespace gView.Server
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
-                    name: "rest_service",
-                    template: "rest/services/{folder}/{id}/mapserver",
-                    defaults: new { controller = "Rest", Action = "service" }
+                    name: "arcgis_rest_exportmap",
+                    template: "arcgis/rest/services/{folder}/{id}/mapserver/export",
+                    defaults: new { controller = "ArcGis", Action = "ExportMap" }
                 );
                 routes.MapRoute(
-                    name: "rest_folder",
-                    template: "rest/services/{id}",
-                    defaults: new { controller = "Rest", Action="Folder" }
+                    name: "arcgis_rest_servicelayers",
+                    template: "arcgis/rest/services/{folder}/{id}/mapserver/layers",
+                    defaults: new { controller = "ArcGis", Action = "ServiceLayers" }
+                );
+                routes.MapRoute(
+                    name: "arcgis_rest_service",
+                    template: "arcgis/rest/services/{folder}/{id}/mapserver",
+                    defaults: new { controller = "ArcGis", Action = "Service" }
+                );
+                routes.MapRoute(
+                    name: "arcgis_rest_folder",
+                    template: "arcgis/rest/services/{id}",
+                    defaults: new { controller = "ArcGis", Action="Folder" }
+                );
+                routes.MapRoute(
+                    name: "arcgis_rest_services",
+                    template: "arcgis/rest/services",
+                    defaults: new { controller = "ArcGis", Action = "Services" }
                 );
                 routes.MapRoute(
                     name: "default",

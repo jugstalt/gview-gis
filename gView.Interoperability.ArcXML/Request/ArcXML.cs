@@ -1228,7 +1228,7 @@ namespace gView.Interoperability.ArcXML
         public string GET_SERVICE_INFO(IServiceRequestContext context, bool fields, bool envelope, bool renderers, bool toc, bool gv_meta, bool useTOC)
         {
             if (context == null) return String.Empty;
-            using (IServiceMap map = context.ServiceMap)
+            using (IServiceMap map = context.CreateServiceMapInstance())
             {
 
                 if (map == null) return "";
@@ -1619,7 +1619,7 @@ namespace gView.Interoperability.ArcXML
             PlugInManager pluginMan = new PlugInManager();
             xWriter.WriteStartElement("gv_network_tracers");
             
-            foreach (Type tracerType in pluginMan.GetPluginNodes(typeof(INetworkTracer)))
+            foreach (Type tracerType in pluginMan.GetPlugins(typeof(INetworkTracer)))
             {
                 INetworkTracer tracer = pluginMan.CreateInstance(tracerType) as INetworkTracer;
                 if (tracer == null)

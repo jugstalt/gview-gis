@@ -12,7 +12,9 @@ namespace gView.Server.Controllers
     {
         public IActionResult Index()
         {
-            return RedirectToAction("Services", "Rest");
+            //return RedirectToAction("Services", "Rest");
+
+            return View();
         }
 
         public IActionResult About()
