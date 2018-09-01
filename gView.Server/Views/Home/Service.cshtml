@@ -1,0 +1,37 @@
+﻿@model HomeServiceModel
+
+@{
+    ViewData["Title"] = "Service";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Service @Model.ServiceMap.Name</h2>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Method</th>
+        <th>Request</th>
+        <th>version</th>
+    </tr>
+    @foreach (var interpeter in Model.Interpreters)
+    {
+        <tr>
+            <td colspan="4" class="interpreter-name">
+                @interpeter.IntentityName
+            </td>
+        </tr>
+
+
+            @foreach (var cap in interpeter.Capabilities.Capabilities)
+            {
+                <tr>
+                    <td class="cap-name">@cap.Name</td>
+                    <td class="cap-method">@cap.Method</td>
+                    <td class="cap-request"><a href="@Model.ReplaceRequest(cap.RequestText)" >@Model.ReplaceRequest(cap.RequestText)</a></td>
+                    <td class="cap-version">@cap.Version</td>
+                </tr>
+            }
+
+            }
+    </table>

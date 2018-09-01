@@ -5,6 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using gView.Server.Models;
+using gView.Server.AppCode;
+using System.Linq;
+using gView.Framework.system;
+using gView.MapServer;
 
 namespace gView.Server.Controllers
 {
@@ -12,9 +16,21 @@ namespace gView.Server.Controllers
     {
         public IActionResult Index()
         {
-            //return RedirectToAction("Services", "Rest");
+            return View(new HomeIndexModel()
+            {
+                Services = InternetMapServer.Instance.Maps
+            });
+        }
 
-            return View();
+        public IActionResult Service(string id)
+        {
+            return View(new HomeServiceModel()
+            {
+                Server = Request.Scheme + "://" + Request.Host,
+                OnlineResource= Request.Scheme + "://" + Request.Host+"/ogc?",
+                ServiceMap = InternetMapServer.Instance[id],
+                Interpreters = InternetMapServer.Interpreters.Select(i => new PlugInManager().CreateInstance<IServiceRequestInterpreter>(i))
+            });
         }
 
         public IActionResult About()

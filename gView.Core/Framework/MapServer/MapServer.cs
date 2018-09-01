@@ -82,6 +82,7 @@ namespace gView.MapServer
             public string Name { get; private set; }
             public Method Method { get; private set; }
             public string Version { get; private set; }
+            public string RequestText { get; protected set; }
         }
 
         public class SimpleCapability : Capability
@@ -93,10 +94,8 @@ namespace gView.MapServer
             public SimpleCapability(string name, Method method, string requestText, string version)
                 : base(name, method, version)
             {
-                RequestText = requestText;
+                base.RequestText = requestText;
             }
-
-            public string RequestText { get; private set; }
         }
 
         public class LinkCapability : Capability
@@ -108,10 +107,8 @@ namespace gView.MapServer
             public LinkCapability(string name, Method method, string requestLink, string version)
                 : base(name, method, version)
             {
-                RequestLink = requestLink;
+                base.RequestText = requestLink;
             }
-
-            public string RequestLink { get; private set; }
         }
 
         #endregion

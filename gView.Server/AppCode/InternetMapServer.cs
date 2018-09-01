@@ -23,7 +23,7 @@ namespace gView.Server.AppCode
         static internal string OutputUrl = String.Empty;
         static internal string TileCachePath = String.Empty;
         static internal string OnlineResource = String.Empty;
-        //static private List<Type> Interpreters = new List<Type>();
+        static internal List<Type> Interpreters = new List<Type>();
         static internal License myLicense = null;
         static internal List<IMapService> mapServices = new List<IMapService>();
         static internal MapServerInstance Instance = null;
@@ -32,7 +32,7 @@ namespace gView.Server.AppCode
         static public void Init(string folder, int port = 80)
         {
             OutputPath = @"C:\temp\output";
-            OutputUrl = @"http://output";
+            OutputUrl = @"http://localhost/output";
 
             Instance = new MapServerInstance(port);
 
@@ -51,11 +51,11 @@ namespace gView.Server.AppCode
                 }
             }
 
-            //var pluginMananger = new PlugInManager();
-            //foreach (Type interpreterType in pluginMananger.GetPlugins(typeof(IServiceRequestInterpreter)))
-            //{
-            //    Interpreters.Add(interpreterType);
-            //}
+            var pluginMananger = new PlugInManager();
+            foreach (Type interpreterType in pluginMananger.GetPlugins(typeof(IServiceRequestInterpreter)))
+            {
+                Interpreters.Add(interpreterType);
+            }
 
             ThreadQueue = new ThreadQueue<IServiceRequestContext>(Globals.MaxThreads, Globals.QueueLength);
         }

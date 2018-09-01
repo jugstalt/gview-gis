@@ -56,6 +56,7 @@ namespace gView.Server
 
             app.UseMvc(routes =>
             {
+                // ArcGIS Server
                 routes.MapRoute(
                     name: "arcgis_rest_exportmap",
                     template: "arcgis/rest/services/{folder}/{id}/mapserver/export",
@@ -81,6 +82,19 @@ namespace gView.Server
                     template: "arcgis/rest/services",
                     defaults: new { controller = "ArcGis", Action = "Services" }
                 );
+
+                // ArcIMS
+                routes.MapRoute(
+                    name: "ags-servlet",
+                    template: "servlet/com.esri.esrimap.Esrimap",
+                    defaults: new { controller = "ArcIMS", Action = "Esrimap" }
+                );
+                routes.MapRoute(
+                    name: "ags-servlet2",
+                    template: "arcims/servlet/com.esri.esrimap.Esrimap",
+                    defaults: new { controller = "ArcIMS", Action = "Esrimap" }
+                );
+
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");

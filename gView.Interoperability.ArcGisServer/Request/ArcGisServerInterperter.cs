@@ -24,7 +24,7 @@ namespace gView.Interoperability.ArcGisServer.Request
 
         public InterpreterCapabilities Capabilities =>
             new InterpreterCapabilities(new InterpreterCapabilities.Capability[]{
-                    new InterpreterCapabilities.SimpleCapability("Emulating ArcGIS Server ",InterpreterCapabilities.Method.Post,"{server}/arcgis/rest/services","1.0")
+                    new InterpreterCapabilities.SimpleCapability("Emulating ArcGIS Server ",InterpreterCapabilities.Method.Post,"{server}/arcgis/rest/services/default/{service}/MapServer","1.0")
             });
 
 

@@ -1,0 +1,12 @@
+﻿@{
+    Layout = null;
+
+    var response = this.Context.Response;
+
+    if (ViewData["data"] != null)
+    {
+        response.ContentType = (string)ViewData["content-type"];
+        var buffer = (byte[])ViewData["data"];
+        response.Body.Write(buffer, 0, buffer.Length);
+    }
+}

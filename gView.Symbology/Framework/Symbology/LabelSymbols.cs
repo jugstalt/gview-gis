@@ -34,7 +34,7 @@ namespace gView.Framework.Symbology
 
         protected SimpleTextSymbol(Font font, Color color)
         {
-            _font = font;
+            _font = font ?? new Font("Arial", 10);
             _brush = new SolidBrush(color);
 
             this.ShowInTOC = false;
@@ -754,11 +754,11 @@ namespace gView.Framework.Symbology
                 //
                 //
                 //
-
+                
                 ms.Write(encoder.GetBytes(soap), 0, soap.Length);
                 ms.Position = 0;
                 SoapFormatter formatter = new SoapFormatter();
-                _font = (Font)formatter.Deserialize(ms);
+                _font = (Font)formatter.Deserialize<Font>(ms);
 
                 this.MaxFontSize = (float)stream.Load("maxfontsize", 0f);
                 this.MinFontSize = (float)stream.Load("minfontsize", 0f);

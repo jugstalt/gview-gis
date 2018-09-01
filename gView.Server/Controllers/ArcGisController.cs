@@ -241,8 +241,6 @@ namespace gView.Server.Controllers
                 {
                     return Result(JsonConvert.DeserializeObject<JsonError>(serviceRequest.Response));
                 }
-
-                return null;
             }
             catch (Exception ex)
             {
