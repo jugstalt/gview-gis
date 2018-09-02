@@ -83,6 +83,13 @@ namespace gView.Server
                     defaults: new { controller = "ArcGis", Action = "Services" }
                 );
 
+                // Ogc
+                routes.MapRoute(
+                    name: "ogc_request",
+                    template: "ogc/{id}",
+                    defaults: new { controller = "Ogc", Action = "OgcRequest" }
+                );
+
                 // ArcIMS
                 routes.MapRoute(
                     name: "ags-servlet",

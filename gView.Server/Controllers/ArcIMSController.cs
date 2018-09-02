@@ -41,7 +41,7 @@ namespace gView.Server.Controllers
                 content = @"<?xml version=""1.0"" encoding=""UTF-8""?><ARCXML version=""1.1""><REQUEST><GET_SERVICE_INFO fields=""true"" envelope=""true"" renderer=""true"" extensions=""true"" /></REQUEST></ARCXML>";
             }
 
-            var interperter = InternetMapServer.GetInterpreter(typeof(ArcXMLRequest));
+            var interpreter = InternetMapServer.GetInterpreter(typeof(ArcXMLRequest));
 
             #region Request 
 
@@ -75,22 +75,26 @@ namespace gView.Server.Controllers
 
             IServiceRequestContext context = new ServiceRequestContext(
                 InternetMapServer.Instance,
-                interperter,
+                interpreter,
                 serviceRequest);
 
-            InternetMapServer.ThreadQueue.AddQueuedThreadSync(interperter.Request, context);
+            InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
 
             #endregion
 
             return Result(serviceRequest.Response, "text/xml");
         }
 
-        public IActionResult Result(string response, string contentType)
+        #region Helper
+
+        private IActionResult Result(string response, string contentType)
         {
             ViewData["content-type"] = contentType;
             ViewData["data"] = Encoding.UTF8.GetBytes(response);
 
             return View("_binary");
         }
+
+        #endregion
     }
 }

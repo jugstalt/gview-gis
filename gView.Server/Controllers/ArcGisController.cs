@@ -200,7 +200,7 @@ namespace gView.Server.Controllers
                 if (folder != DefaultFolder)
                     throw new Exception("Unknown folder: " + folder);
 
-                var interperter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
+                var interpreter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
 
                 #region Request
 
@@ -226,10 +226,10 @@ namespace gView.Server.Controllers
 
                 IServiceRequestContext context = new ServiceRequestContext(
                     InternetMapServer.Instance,
-                    interperter,
+                    interpreter,
                     serviceRequest);
 
-                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interperter.Request, context);
+                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
 
                 #endregion
 

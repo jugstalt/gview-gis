@@ -291,15 +291,31 @@ namespace gView.Framework.Proj
             {
                 using (DbConnection connection = _dbFactory.CreateConnection())
                 using (DbCommand command = _dbFactory.CreateCommand())
-                using (DbDataAdapter adapter = _dbFactory.CreateDataAdapter())
                 {
                     connection.ConnectionString = _connectionString;
 
                     command.Connection = connection;
                     command.CommandText = sql;
 
-                    adapter.SelectCommand = command;
-                    adapter.Fill(table);
+                    connection.Open();
+                    using (var reader = command.ExecuteReader())
+                    {
+                        int fieldCount = reader.FieldCount;
+                        for(int i=0;i< fieldCount; i++)
+                        {
+                            table.Columns.Add(new DataColumn(reader.GetName(i), typeof(object)));
+                        }
+
+                        while(reader.Read())
+                        {
+                            DataRow row = table.NewRow();
+                            for(int i=0;i<fieldCount;i++)
+                            {
+                                row[i] = reader.GetValue(i);
+                            }
+                            table.Rows.Add(row);
+                        }
+                    }
 
                     return table;
                 }
