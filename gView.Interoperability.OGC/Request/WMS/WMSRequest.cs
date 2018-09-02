@@ -619,8 +619,6 @@ namespace gView.Interoperability.OGC
 
                     if (map.MapImage != null)
                     {
-                        ret = _mapServer.OutputPath + @"\" + map.Name.Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + ".png";
-
                         //
                         // Zurück in das richtige Koordinatenfenster verzerren
                         //
@@ -649,15 +647,18 @@ namespace gView.Interoperability.OGC
                                 {
                                     bm.MakeTransparent(Color.White);
                                 }
-                                bm.Save(ret, _parameters.GetImageFormat());
-                                return "image:" + ret;
+
+                                MemoryStream ms = new MemoryStream();
+                                bm.Save(ms, _parameters.GetImageFormat());
+                                return "base64:" + _parameters.GetContentType() + ":" + Convert.ToBase64String(ms.ToArray());
                             }
                         }
                         else
                         {
-                            if (map.SaveImage(ret, _parameters.GetImageFormat()))
+                            MemoryStream ms = new MemoryStream();
+                            if (map.SaveImage(ms, _parameters.GetImageFormat()))
                             {
-                                return "image:" + ret;
+                                return "base64:" + _parameters.GetContentType() + ":" + Convert.ToBase64String(ms.ToArray());
                             }
                         }
                     }

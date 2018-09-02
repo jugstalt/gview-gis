@@ -33,6 +33,7 @@ namespace gView.Server.AppCode
         {
             OutputPath = @"C:\temp\output";
             OutputUrl = @"http://localhost/output";
+            OnlineResource = "http://localhost:8889";
 
             Instance = new MapServerInstance(port);
 
@@ -406,6 +407,222 @@ namespace gView.Server.AppCode
             return interpreter;
         }
 
+        static internal IServiceRequestInterpreter GetInterpreter(Guid guid)
+        {
+            var interpreter = new PlugInManager().CreateInstance(guid) as IServiceRequestInterpreter;
+            if (interpreter == null)
+                throw new Exception("Can't intialize interperter");
+
+            interpreter.OnCreate(Instance);
+            return interpreter;
+        }
+
+        #region Manage
+
+        static public bool AddMap(string mapName, string MapXML, string usr, string pwd)
+        {
+            if (String.IsNullOrEmpty(MapXML))
+            {
+                return ReloadMap(mapName, usr, pwd);
+            }
+
+            if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, "admin_addmap"))
+                return false;
+
+            if (InternetMapServer.Instance.Maps.Count >= InternetMapServer.Instance.MaxServices)
+            {
+                // Überprüfen, ob schon eine Service mit gleiche Namen gibt...
+                // wenn ja, ist es nur einem Refresh eines bestehenden Services
+                bool found = false;
+                foreach (IMapService map in InternetMapServer.Instance.Maps)
+                {
+                    if (map.Name == mapName)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                    return false;
+            }
+
+            if (MapXML.IndexOf("<IServiceableDataset") == 0)
+            {
+                XmlStream xmlStream = new XmlStream("");
+
+                StringReader sr = new StringReader("<root>" + MapXML + "</root>");
+                if (!xmlStream.ReadStream(sr)) return false;
+
+                IServiceableDataset sds = xmlStream.Load("IServiceableDataset", null) as IServiceableDataset;
+                if (sds != null && sds.Datasets != null)
+                {
+                    InternetMapServer.SaveServiceableDataset(sds, mapName);
+                    AddMapService(mapName, MapServiceType.SVC);
+                }
+            }
+            else if (MapXML.IndexOf("<ServiceCollection") == 0)
+            {
+                XmlStream stream = new XmlStream("");
+
+                StringReader sr = new StringReader(MapXML);
+                if (!stream.ReadStream(sr)) return false;
+
+                InternetMapServer.SaveServiceCollection(mapName, stream);
+            }
+            else  // Map
+            {
+                XmlStream xmlStream = new XmlStream("IMap");
+
+                StringReader sr = new StringReader(MapXML);
+                if (!xmlStream.ReadStream(sr)) return false;
+
+                Map map = new Map();
+                map.Load(xmlStream);
+                map.Name = mapName;
+
+                //foreach (IMap m in ListOperations<IMap>.Clone(_doc.Maps))
+                //{
+                //    if (m.Name == map.Name) _doc.RemoveMap(m);
+                //}
+
+                //if (!_doc.AddMap(map)) return false;
+                AddMapService(mapName, MapServiceType.MXL);
+
+                InternetMapServer.SaveConfig(map);
+            }
+
+            return true;
+        }
+        static public bool RemoveMap(string mapName, string usr, string pwd)
+        {
+            if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, "admin_removemap"))
+                return false;
+
+            bool found = false;
+
+            foreach (IMapService service in ListOperations<IMapService>.Clone(InternetMapServer.mapServices))
+            {
+                if (service.Name == mapName)
+                {
+                    InternetMapServer.mapServices.Remove(service);
+                    found = true;
+                }
+            }
+
+            foreach (IMapService m in ListOperations<IMapService>.Clone(InternetMapServer.Instance.Maps))
+            {
+                if (m.Name == mapName)
+                {
+                    //_doc.RemoveMap(m);
+                    found = true;
+                }
+            }
+            InternetMapServer.RemoveConfig(mapName);
+
+            return found;
+        }
+
+        static public bool ReloadMap(string mapName, string usr, string pwd)
+        {
+            if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, mapName))
+                return false;
+
+            // ToDo: needfull?
+
+            /*
+            if (_doc == null) return false;
+
+            // Remove map(s) (GDI) from Document
+            List<IMap> maps = new List<IMap>();
+            foreach (IMap m in _doc.Maps)
+            {
+                if (mapName.Contains(","))   // wenn ',' -> nur GDI Service suchen
+                {
+                    if (mapName == m.Name)
+                    {
+                        maps.Add(m);
+                        break;
+                    }
+                }
+                else   // sonst alle Services (incl GDI) suchen und entfernen
+                {
+                    foreach (string name in m.Name.Split(','))
+                    {
+                        if (mapName == name)
+                        {
+                            maps.Add(m);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (maps.Count == 0)
+            {
+                // Reload map...
+                IServiceMap smap = IMS.mapServer[mapName];
+            }
+            else
+            {
+                foreach (IMap m in maps)
+                {
+                    _doc.RemoveMap(m);
+                    // Reload map(s) (GDI)...
+                    IServiceMap smap = IMS.mapServer[m.Name];
+                }
+            }
+
+    */
+            return true;
+        }
+
+        static public string GetMetadata(string mapName, string usr, string pwd)
+        {
+            if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, "admin_metadata_get"))
+                return "ERROR: Not Authorized!";
+
+            if (!ReloadMap(mapName, usr, pwd)) return String.Empty;
+
+            //if (IMS.mapServer == null || IMS.mapServer[mapName] == null)
+            //    return String.Empty;
+
+            FileInfo fi = new FileInfo((InternetMapServer.ServicesPath + @"/" + mapName + ".meta").ToPlattformPath());
+            if (!fi.Exists) return String.Empty;
+
+            using (StreamReader sr = new StreamReader(fi.FullName.ToPlattformPath()))
+            {
+                string ret = sr.ReadToEnd();
+                sr.Close();
+                return ret;
+            }
+        }
+        static public bool SetMetadata(string mapName, string metadata, string usr, string pwd)
+        {
+            if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, "admin_metadata_set"))
+                return false;
+
+            FileInfo fi = new FileInfo(InternetMapServer.ServicesPath + @"/" + mapName + ".meta");
+
+            StringReader sr = new StringReader(metadata);
+            XmlStream xmlStream = new XmlStream("");
+            xmlStream.ReadStream(sr);
+            xmlStream.WriteStream(fi.FullName);
+
+            return ReloadMap(mapName, usr, pwd);
+        }
+
+        static private void AddMapService(string mapName, MapServiceType type)
+        {
+            foreach (IMapService service in InternetMapServer.mapServices)
+            {
+                if (service.Name == mapName)
+                    return;
+            }
+            InternetMapServer.mapServices.Add(new MapService(mapName, type));
+        }
+
+        #endregion
+
         #region  ToDo: Diese Konfiguration sollte dann eigentlich im Init() passieren ... Komentar derweil noch nicht löschen
 
         //static internal int Port
@@ -440,7 +657,7 @@ namespace gView.Server.AppCode
         //        }
         //    }
         //}
-        
+
         #endregion
     }
 }

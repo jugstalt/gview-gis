@@ -50,7 +50,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
             get
             {
                 return new InterpreterCapabilities(new InterpreterCapabilities.Capability[]{
-                    new InterpreterCapabilities.LinkCapability("GetCapabilities","{onlineresource}VERSION=1.0.0&SERVICE=WMTS&REQUEST=GetCapabilities","1.0.0")
+                    new InterpreterCapabilities.LinkCapability("GetCapabilities","{server}/ogc/{service}?VERSION=1.0.0&SERVICE=WMTS&REQUEST=GetCapabilities","1.0.0")
                 }
               );
             }

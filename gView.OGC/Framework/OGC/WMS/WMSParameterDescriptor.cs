@@ -630,6 +630,24 @@ namespace gView.Framework.OGC.WMS
                 default: return ImageFormat.Png;
             }
         }
+
+        public string GetContentType()
+        {
+            switch (this.Format)
+            {
+                case WMSImageFormat.gif:
+                    return "image/gif";
+                case WMSImageFormat.bmp:
+                    return "image/bmp";
+                case WMSImageFormat.jpeg:
+                    return "image/jpg";
+                
+                case WMSImageFormat.png:
+                default:
+                    return "image/png";
+            }
+        }
+
         #endregion
 
         public int FeatureInfoX

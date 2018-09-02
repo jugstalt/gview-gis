@@ -90,14 +90,14 @@ namespace gView.Interoperability.OGC
             get
             {
                 return new InterpreterCapabilities(new InterpreterCapabilities.Capability[]{
-                    new InterpreterCapabilities.LinkCapability("GetCapabilities","{onlineresource}VERSION=1.0.0&SERVICE=WFS&REQUEST=GetCapabilities","1.0.0"),
-                    new InterpreterCapabilities.SimpleCapability("DescribeFeatureType","{onlineresource}VERSION=1.0.0&SERVICE=WFS&REQUEST=DescribeFeatureType&...","1.0.0"),
-                    new InterpreterCapabilities.SimpleCapability("GetFeature","{onlineresource}VERSION=1.0.0&SERVICE=WFS&REQUEST=GetFeatureInfo&...","1.0.0"),     
-                    new InterpreterCapabilities.LinkCapability("GetCapabilities","{onlineresource}VERSION=1.1.0&SERVICE=WFS&REQUEST=GetCapabilities","1.1.0"),
-                    new InterpreterCapabilities.SimpleCapability("DescribeFeatureType","{onlineresource}VERSION=1.1.0&SERVICE=WFS&REQUEST=DescribeFeatureType&...","1.1.0"),
-                    new InterpreterCapabilities.SimpleCapability("GetFeature","{onlineresource}VERSION=1.1.0&SERVICE=WFS&REQUEST=GetFeatureInfo&...","1.1.0"),
-                    new InterpreterCapabilities.SimpleCapability("DescribeFeatureType",InterpreterCapabilities.Method.Post, "{onlineresource}SERVICE=WFS","1.0.0, 1.1.0"),
-                    new InterpreterCapabilities.SimpleCapability("GetFeature",InterpreterCapabilities.Method.Post, "{onlineresource}SERVICE=WFS","1.0.0, 1.1.0")
+                    new InterpreterCapabilities.LinkCapability("GetCapabilities","{server}/ogc/{service}?VERSION=1.0.0&SERVICE=WFS&REQUEST=GetCapabilities","1.0.0"),
+                    //new InterpreterCapabilities.SimpleCapability("DescribeFeatureType","{server}/ogc/{service}?VERSION=1.0.0&SERVICE=WFS&REQUEST=DescribeFeatureType&...","1.0.0"),
+                    //new InterpreterCapabilities.SimpleCapability("GetFeature","{onlineresource}VERSION=1.0.0&SERVICE=WFS&REQUEST=GetFeatureInfo&...","1.0.0"),     
+                    new InterpreterCapabilities.LinkCapability("GetCapabilities","{server}/ogc/{service}?VERSION=1.1.0&SERVICE=WFS&REQUEST=GetCapabilities","1.1.0"),
+                    //new InterpreterCapabilities.SimpleCapability("DescribeFeatureType","{server}/ogc/{service}?VERSION=1.1.0&SERVICE=WFS&REQUEST=DescribeFeatureType&...","1.1.0"),
+                    //new InterpreterCapabilities.SimpleCapability("GetFeature","{onlineresource}VERSION=1.1.0&SERVICE=WFS&REQUEST=GetFeatureInfo&...","1.1.0"),
+                    //new InterpreterCapabilities.SimpleCapability("DescribeFeatureType",InterpreterCapabilities.Method.Post, "{onlineresource}SERVICE=WFS","1.0.0, 1.1.0"),
+                    //new InterpreterCapabilities.SimpleCapability("GetFeature",InterpreterCapabilities.Method.Post, "{onlineresource}SERVICE=WFS","1.0.0, 1.1.0")
                 }
                 );
             }

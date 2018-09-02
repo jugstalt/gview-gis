@@ -102,6 +102,38 @@ namespace gView.Server
                     defaults: new { controller = "ArcIMS", Action = "Esrimap" }
                 );
 
+                // MapServer
+                routes.MapRoute(
+                    name: "mapserver-catelog",
+                    template: "catalog",
+                    defaults: new { controller = "MapServer", Action = "Catalog" }
+                );
+                routes.MapRoute(
+                    name: "mapserver-maprequest",
+                    template: "MapRequest/{guid}/{id}",
+                    defaults: new { controller = "MapServer", Action = "MapRequest" }
+                );
+                routes.MapRoute(
+                    name: "mapserver-addmap",
+                    template: "AddMap/{name}",
+                    defaults: new { controller = "MapServer", Action = "AddMap" }
+                );
+                routes.MapRoute(
+                    name: "mapserver-remotemap",
+                    template: "RemoveMap/{name}",
+                    defaults: new { controller = "MapServer", Action = "RemoveMap" }
+                );
+                routes.MapRoute(
+                    name: "mapserver-getmetadata",
+                    template: "GetMetadata/{name}",
+                    defaults: new { controller = "MapServer", Action = "GetMetadata" }
+                );
+                routes.MapRoute(
+                    name: "mapserver-setmetadata",
+                    template: "SetMetadata/{name}",
+                    defaults: new { controller = "MapServer", Action = "SetMetadata" }
+                );
+
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
