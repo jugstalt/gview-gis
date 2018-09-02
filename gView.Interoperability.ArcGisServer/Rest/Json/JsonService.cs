@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using gView.Framework.system;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -110,6 +111,7 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json
             }
 
             [JsonProperty(PropertyName = "id")]
+            [HtmlLinkAttribute("{url}/{0}")]
             public int Id { get; set; }
 
             [JsonProperty(PropertyName = "name")]

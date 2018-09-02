@@ -52,5 +52,15 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json
         png32,
         jpg
     }
+
+    public enum EsriUnits
+    {
+        esriSRUnit_Meter,
+        esriSRUnit_StatuteMile,
+        esriSRUnit_Foot,
+        esriSRUnit_Kilometer,
+        esriSRUnit_NauticalMile,
+        esriSRUnit_USNauticalMile
+    }
 }
 

@@ -17,6 +17,7 @@ using System.Collections.Specialized;
 using gView.Interoperability.ArcGisServer.Rest.Json.Request;
 using Microsoft.Extensions.Primitives;
 using gView.Interoperability.ArcGisServer.Rest.Json.Response;
+using gView.Framework.Carto;
 
 namespace gView.Server.Controllers
 {
@@ -132,57 +133,32 @@ namespace gView.Server.Controllers
                     throw new Exception("Unknown service: " + id);
 
                 var jsonLayers = new JsonLayers();
-                jsonLayers.Layers = map.MapElements.Select(e =>
-                {
-                    var tocElement = map.TOC.GetTOCElement(e as ILayer);
-
-                    JsonField[] fields = new JsonField[0];
-                    if(e.Class is ITableClass)
-                    {
-                        fields=((ITableClass)e.Class).Fields.ToEnumerable().Select(f =>
-                        {
-                            return new JsonField()
-                            {
-                                Name = f.name,
-                                Alias = f.aliasname,
-                                Type = JsonField.ToType(f.type).ToString()
-                            };
-                        }).ToArray();
-                    }
-
-                    JsonExtent extent = null;
-                    if (e.Class is IFeatureClass && ((IFeatureClass)e.Class).Envelope != null)
-                    {
-                        extent = new JsonExtent()
-                        {
-                            // DoTo: SpatialReference
-                            Xmin = ((IFeatureClass)e.Class).Envelope.minx,
-                            Ymin = ((IFeatureClass)e.Class).Envelope.miny,
-                            Xmax = ((IFeatureClass)e.Class).Envelope.maxx,
-                            Ymax = ((IFeatureClass)e.Class).Envelope.maxy
-                        };
-                    }
-
-                    string type = "Feature Layer";
-                    if (e.Class is IRasterClass)
-                        type = "Raster Layer";
-
-                    return new JsonLayer()
-                    {
-                        CurrentVersion = Version,
-                        Id = e.ID,
-                        Name = tocElement != null ? tocElement.Name : e.Title,
-                        DefaultVisibility = tocElement != null ? tocElement.LayerVisible : true,
-                        MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale, 0) : 0,
-                        MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale, 0) : 0,
-                        Fields = fields,
-                        Extent = extent,
-                        Type=type,
-                        GeometryType = e.Class is IFeatureClass ? JsonLayer.ToGeometryType(((IFeatureClass)e.Class).GeometryType).ToString() : EsriGeometryType.esriGeometryNull.ToString()
-                    };
-                }).ToArray();
+                jsonLayers.Layers = map.MapElements.Select(e => Layer(map, e.ID)).ToArray();
 
                 return Result(jsonLayers);
+            }
+            catch (Exception ex)
+            {
+                return Json(new JsonError()
+                {
+                    error = new JsonError.Error() { code = 999, message = ex.Message }
+                });
+            }
+        }
+
+        public IActionResult ServiceLayer(string folder, string id, int layerId)
+        {
+            try
+            {
+                if (folder != DefaultFolder)
+                    throw new Exception("Unknown folder: " + folder);
+
+                var map = InternetMapServer.Instance[id];
+                if (map == null)
+                    throw new Exception("Unknown service: " + id);
+
+                var jsonLayers = new JsonLayers();
+                return Result(Layer(map, layerId));
             }
             catch (Exception ex)
             {
@@ -209,8 +185,11 @@ namespace gView.Server.Controllers
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Form :
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(exportMap));
-                serviceRequest.OnlineResource = InternetMapServer.OnlineResource;
+                ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(exportMap))
+                {
+                    OnlineResource = InternetMapServer.OnlineResource,
+                    Method = "export"
+                };
 
                 #endregion
 
@@ -252,6 +231,64 @@ namespace gView.Server.Controllers
         }
 
         #region Helper
+
+        #region Json
+
+        private JsonLayer Layer(IServiceMap map, int layerId)
+        {
+            var datasetElement = map.MapElements.Where(e => e.ID == layerId).FirstOrDefault();
+            if (datasetElement == null)
+                throw new Exception("Unknown layer: " + layerId);
+
+            var tocElement = map.TOC.GetTOCElement(datasetElement as ILayer);
+
+            JsonField[] fields = new JsonField[0];
+            if (datasetElement.Class is ITableClass)
+            {
+                fields = ((ITableClass)datasetElement.Class).Fields.ToEnumerable().Select(f =>
+                {
+                    return new JsonField()
+                    {
+                        Name = f.name,
+                        Alias = f.aliasname,
+                        Type = JsonField.ToType(f.type).ToString()
+                    };
+                }).ToArray();
+            }
+
+            JsonExtent extent = null;
+            if (datasetElement.Class is IFeatureClass && ((IFeatureClass)datasetElement.Class).Envelope != null)
+            {
+                extent = new JsonExtent()
+                {
+                    // DoTo: SpatialReference
+                    Xmin = ((IFeatureClass)datasetElement.Class).Envelope.minx,
+                    Ymin = ((IFeatureClass)datasetElement.Class).Envelope.miny,
+                    Xmax = ((IFeatureClass)datasetElement.Class).Envelope.maxx,
+                    Ymax = ((IFeatureClass)datasetElement.Class).Envelope.maxy
+                };
+            }
+
+            string type = "Feature Layer";
+            if (datasetElement.Class is IRasterClass)
+                type = "Raster Layer";
+
+            return new JsonLayer()
+            {
+                CurrentVersion = Version,
+                Id = datasetElement.ID,
+                Name = tocElement != null ? tocElement.Name : datasetElement.Title,
+                DefaultVisibility = tocElement != null ? tocElement.LayerVisible : true,
+                MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale, 0) : 0,
+                MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale, 0) : 0,
+                Fields = fields,
+                Extent = extent,
+                Type = type,
+                GeometryType = datasetElement.Class is IFeatureClass ? JsonLayer.ToGeometryType(((IFeatureClass)datasetElement.Class).GeometryType).ToString() : EsriGeometryType.esriGeometryNull.ToString()
+            };
+        }
+
+        #endregion
 
         private IActionResult Result(object obj)
         {

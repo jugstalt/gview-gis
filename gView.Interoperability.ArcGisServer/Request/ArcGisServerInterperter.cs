@@ -35,6 +35,18 @@ namespace gView.Interoperability.ArcGisServer.Request
 
         public void Request(IServiceRequestContext context)
         {
+            switch(context.ServiceRequest.Method.ToLower())
+            {
+                case "export":
+                    ExportMapRequest(context);
+                    break;
+                default:
+                    throw new NotImplementedException(context.ServiceRequest.Method + " is not support for arcgis server emulator");
+            }
+        }
+
+        public void ExportMapRequest(IServiceRequestContext context)
+        {
             _exportMap = JsonConvert.DeserializeObject<JsonExportMap>(context.ServiceRequest.Request);
             using (var serviceMap = context.CreateServiceMapInstance())
             {
@@ -42,7 +54,7 @@ namespace gView.Interoperability.ArcGisServer.Request
 
                 serviceMap.Display.dpi = _exportMap.Dpi;
 
-                var size= _exportMap.Size.ToSize();
+                var size = _exportMap.Size.ToSize();
                 serviceMap.Display.iWidth = size[0];
                 serviceMap.Display.iHeight = size[1];
 
@@ -66,7 +78,7 @@ namespace gView.Interoperability.ArcGisServer.Request
                 serviceMap.BeforeRenderLayers += ServiceMap_BeforeRenderLayers;
                 serviceMap.Render();
 
-                if (serviceMap.MapImage!=null)
+                if (serviceMap.MapImage != null)
                 {
                     var iFormat = System.Drawing.Imaging.ImageFormat.Png;
                     if (imageFormat == ImageFormat.jpg)

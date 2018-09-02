@@ -41,6 +41,7 @@ namespace gView.MapServer
         public string OnlineResource = "";
         public IIdentity Identity = null;
         public bool Succeeded = true;
+        public string Method = "";
 
         public ServiceRequest(string service, string request)
         {
