@@ -145,10 +145,8 @@ namespace gView.Server
             });
 
             PlugInManager.Init();
-            InternetMapServer.Init(@"C:\ProgramData\gView\mapServer\Services\8001");
-            
-            var maps = InternetMapServer.Instance.Maps;
-            var map = InternetMapServer.Instance["Map1"];
+            //InternetMapServer.Init(@"C:\ProgramData\gView\mapServer\Services\8001");
+            InternetMapServer.Init(@"C:\Development_OpenSource\GeoDaten\MXL\8050");
         }
     }
 }

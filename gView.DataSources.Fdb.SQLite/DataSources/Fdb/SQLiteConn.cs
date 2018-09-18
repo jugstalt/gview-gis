@@ -2,22 +2,22 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using System.Linq;
 using System.Text;
 using System.Xml;
 
-namespace gView.DataSources.Fdb.SQLite
+namespace gView.DataSources.Fdb.Sqlite
 {
-    class SQLiteConn : ICommonDbConnection
+    class SqliteConn : ICommonDbConnection
     {
         private string _connectionString;
         private string _errMsg = String.Empty;
         private Exception _lastException = null;
-        private SQLiteDataAdapter _updateAdapter = null;
+        //private SqliteDataAdapter _updateAdapter = null;
         private DataTable _schemaTable = null;
 
-        public SQLiteConn(string connectionString)
+        public SqliteConn(string connectionString)
         {
             _connectionString = connectionString;
         }
@@ -90,48 +90,50 @@ namespace gView.DataSources.Fdb.SQLite
         {
             if (!writeable) return SQLQuery(ref ds, sql, table);
 
+            throw new NotImplementedException();
             //if(m_updateAdapter!=null) m_updateAdapter.Dispose();
-            try
-            {
-                _updateAdapter = new SQLiteDataAdapter(sql, _connectionString);
-                SQLiteCommandBuilder commandBuilder = new SQLiteCommandBuilder(_updateAdapter);
-                _updateAdapter.Fill(ds, table);
-            }
-            catch (Exception e)
-            {
-                if (_updateAdapter != null)
-                {
-                    _updateAdapter.Dispose();
-                    _updateAdapter = null;
-                }
-                _errMsg = "QUERY WRITEABLE (" + sql + "): " + e.Message;
-                _lastException = e;
-                return false;
-            }
-            return true;
+            //try
+            //{
+            //    _updateAdapter = new SqliteDataAdapter(sql, _connectionString);
+            //    SqliteCommandBuilder commandBuilder = new SqliteCommandBuilder(_updateAdapter);
+            //    _updateAdapter.Fill(ds, table);
+            //}
+            //catch (Exception e)
+            //{
+            //    if (_updateAdapter != null)
+            //    {
+            //        _updateAdapter.Dispose();
+            //        _updateAdapter = null;
+            //    }
+            //    _errMsg = "QUERY WRITEABLE (" + sql + "): " + e.Message;
+            //    _lastException = e;
+            //    return false;
+            //}
+            //return true;
         }
 
         public bool Update(System.Data.DataTable table)
         {
-            try
-            {
-                _updateAdapter.Update(table);
+            throw new NotImplementedException();
+            //try
+            //{
+            //    _updateAdapter.Update(table);
 
-                _updateAdapter.Dispose();
-                _updateAdapter = null;
-            }
-            catch (Exception e)
-            {
-                if (_updateAdapter != null)
-                {
-                    _updateAdapter.Dispose();
-                    _updateAdapter = null;
-                }
-                _errMsg = "UPDATE TABLE " + table + ": " + e.Message;
-                _lastException = e;
-                return false;
-            }
-            return true;
+            //    _updateAdapter.Dispose();
+            //    _updateAdapter = null;
+            //}
+            //catch (Exception e)
+            //{
+            //    if (_updateAdapter != null)
+            //    {
+            //        _updateAdapter.Dispose();
+            //        _updateAdapter = null;
+            //    }
+            //    _errMsg = "UPDATE TABLE " + table + ": " + e.Message;
+            //    _lastException = e;
+            //    return false;
+            //}
+            //return true;
         }
 
         public bool UpdateData(ref System.Data.DataSet ds, string table)
@@ -141,11 +143,11 @@ namespace gView.DataSources.Fdb.SQLite
 
         public void ReleaseUpdateAdapter()
         {
-            if (_updateAdapter != null)
-            {
-                _updateAdapter.Dispose();
-                _updateAdapter = null;
-            }
+            //if (_updateAdapter != null)
+            //{
+            //    _updateAdapter.Dispose();
+            //    _updateAdapter = null;
+            //}
         }
 
         public DataTable Select(string fields, string from)
@@ -178,10 +180,41 @@ namespace gView.DataSources.Fdb.SQLite
         {
             try
             {
-                using (SQLiteDataAdapter adapter = new SQLiteDataAdapter(sql, _connectionString))
+                using (var connection = new SqliteConnection(_connectionString))
                 {
-                    adapter.Fill(ds, table);
+                    var command = new SqliteCommand(sql, connection);
+                    connection.Open();
+
+                    using(var reader=command.ExecuteReader())
+                    {
+                        DataTable tab = null;
+                        while (reader.Read())
+                        {
+                            int fieldCount = reader.FieldCount;
+
+                            if (tab == null)
+                            {
+                                tab = new DataTable(table);
+                                for (int i = 0; i < fieldCount; i++)
+                                {
+                                    tab.Columns.Add(new DataColumn(reader.GetName(i), reader.GetFieldType(i)));
+                                }
+                                ds.Tables.Add(tab);
+                            }
+
+                            DataRow row = tab.NewRow();
+                            for(int i=0;i<fieldCount;i++)
+                            {
+                                row[i] = reader.GetValue(i);
+                            }
+                            tab.Rows.Add(row);
+                        }
+                    }
                 }
+                //using (SqliteDataAdapter adapter = new SqliteDataAdapter(sql, _connectionString))
+                //{
+                //    adapter.Fill(ds, table);
+                //}
             }
             catch (Exception e)
             {
@@ -312,7 +345,7 @@ namespace gView.DataSources.Fdb.SQLite
         {
             try
             {
-                using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+                using (SqliteConnection connection = new SqliteConnection(_connectionString))
                 {
                     connection.Open();
 
@@ -332,7 +365,7 @@ namespace gView.DataSources.Fdb.SQLite
                     }
                     sql += ")";
 
-                    using(SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    using(SqliteCommand command = new SqliteCommand(sql, connection))
                         command.ExecuteNonQuery();
                     connection.Close();
                 }
@@ -350,7 +383,7 @@ namespace gView.DataSources.Fdb.SQLite
         {
             try
             {
-                using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+                using (SqliteConnection connection = new SqliteConnection(_connectionString))
                 {
                     connection.Open();
 
@@ -368,7 +401,7 @@ namespace gView.DataSources.Fdb.SQLite
                     }
                     sql += ");";
 
-                    using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    using (SqliteCommand command = new SqliteCommand(sql, connection))
                         command.ExecuteNonQuery();
                     connection.Close();
                 }
@@ -386,11 +419,11 @@ namespace gView.DataSources.Fdb.SQLite
         {
             try
             {
-                using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+                using (SqliteConnection connection = new SqliteConnection(_connectionString))
                 {
                     connection.Open();
 
-                    using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    using (SqliteCommand command = new SqliteCommand(sql, connection))
                         command.ExecuteNonQuery();
                     connection.Close();
                 }
@@ -413,13 +446,13 @@ namespace gView.DataSources.Fdb.SQLite
         {
             try
             {
-                using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+                using (SqliteConnection connection = new SqliteConnection(_connectionString))
                 {
                     connection.Open();
 
                     string sql = "DROP INDEX " + name + ";";
 
-                    using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    using (SqliteCommand command = new SqliteCommand(sql, connection))
                         command.ExecuteNonQuery();
                     connection.Close();
                 }
@@ -437,13 +470,13 @@ namespace gView.DataSources.Fdb.SQLite
         {
             try
             {
-                using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+                using (SqliteConnection connection = new SqliteConnection(_connectionString))
                 {
                     connection.Open();
 
                     string sql = "DROP TABLE " + name + ";";
 
-                    using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    using (SqliteCommand command = new SqliteCommand(sql, connection))
                         command.ExecuteNonQuery();
                     connection.Close();
                 }
@@ -461,13 +494,13 @@ namespace gView.DataSources.Fdb.SQLite
         {
             try
             {
-                using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+                using (SqliteConnection connection = new SqliteConnection(_connectionString))
                 {
                     connection.Open();
                     if (connection.State == ConnectionState.Open)
                     {
-                        using(SQLiteCommand command = new SQLiteCommand("SELECT * FROM " + name, connection))
-                        using (SQLiteDataReader reader = command.ExecuteReader(CommandBehavior.SchemaOnly))
+                        using(SqliteCommand command = new SqliteCommand("SELECT * FROM " + name, connection))
+                        using (SqliteDataReader reader = command.ExecuteReader(CommandBehavior.SchemaOnly))
                         {
                             _schemaTable = reader.GetSchemaTable();
                         }
@@ -490,13 +523,13 @@ namespace gView.DataSources.Fdb.SQLite
 
             try
             {
-                using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+                using (SqliteConnection connection = new SqliteConnection(_connectionString))
                 {
                     connection.Open();
                     if (connection.State == ConnectionState.Open)
                     {
-                        using(SQLiteCommand command = new SQLiteCommand("SELECT * FROM " + name, connection))
-                        using (SQLiteDataReader reader = command.ExecuteReader(CommandBehavior.SchemaOnly))
+                        using(SqliteCommand command = new SqliteCommand("SELECT * FROM " + name, connection))
+                        using (SqliteDataReader reader = command.ExecuteReader(CommandBehavior.SchemaOnly))
                         {
                             schema = reader.GetSchemaTable();
                         }
@@ -595,7 +628,7 @@ namespace gView.DataSources.Fdb.SQLite
             List<string> tableNames = new List<string>();
             try
             {
-                using (SQLiteConnection connection = new SQLiteConnection(this.ConnectionString))
+                using (SqliteConnection connection = new SqliteConnection(this.ConnectionString))
                 {
                     connection.Open();
                     DataTable tables = connection.GetSchema("Tables");
