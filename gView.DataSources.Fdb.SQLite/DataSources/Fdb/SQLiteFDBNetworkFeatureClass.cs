@@ -678,7 +678,7 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 try
                 {
-                    DbProviderFactory factory = new System.Data.SQLite.SQLiteFactory();
+                    DbProviderFactory factory = Microsoft.Data.Sqlite.SqliteFactory.Instance;
                     using (DbConnection connection = factory.CreateConnection())
                     using (DbCommand command = factory.CreateCommand())
                     {
@@ -705,7 +705,7 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 try
                 {
-                    DbProviderFactory factory = new System.Data.SQLite.SQLiteFactory();
+                    DbProviderFactory factory = Microsoft.Data.Sqlite.SqliteFactory.Instance;
                     using (DbConnection connection = factory.CreateConnection())
                     using (DbCommand command = factory.CreateCommand())
                     {

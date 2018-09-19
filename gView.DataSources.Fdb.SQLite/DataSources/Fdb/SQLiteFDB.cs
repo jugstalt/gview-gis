@@ -833,8 +833,12 @@ namespace gView.DataSources.Fdb.SQLite
 
         #region Internals
 
-        internal IDatasetElement DatasetElement(SQLiteFDBDataset dataset, string elementName)
+        override public IDatasetElement DatasetElement(IDataset ds, string elementName)
         {
+            if (!(ds is SQLiteFDBDataset))
+                throw new ArgumentException("dataset must be SQLiteFDBDataset");
+
+            SQLiteFDBDataset dataset = (SQLiteFDBDataset)ds;
             ISpatialReference sRef = this.SpatialReference(dataset.DatasetName);
 
             if (dataset.DatasetName == elementName)

@@ -1419,6 +1419,7 @@ namespace gView.DataSources.Fdb.MSAccess
         #endregion
 
         #region DB
+
         public bool DropTable(string name)
         {
             if (_conn == null) return false;
@@ -1506,9 +1507,11 @@ namespace gView.DataSources.Fdb.MSAccess
             }
             return fields;
         }
+        
         #endregion
 
         #region SpatialIndex
+
         virtual public ISpatialIndexDef SpatialIndexDef(string dsName)
         {
             return SpatialIndexDef(this.DatasetID(dsName));
@@ -1602,6 +1605,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
             return new gViewSpatialIndexDef();
         }
+        
         #endregion
 
         #region SpatialIndex2
@@ -2861,7 +2865,10 @@ namespace gView.DataSources.Fdb.MSAccess
 
         }
 
-        abstract protected bool UpdateSpatialIndexID(string FCName, List<SpatialIndexNode> nodes);
+        virtual protected bool UpdateSpatialIndexID(string FCName, List<SpatialIndexNode> nodes)
+        {
+            throw new NotImplementedException();
+        }
 
         public bool CalculateSpatialIndex(IFeatureClass fc, int maxPerNode, int maxLevels)
         {
@@ -2947,7 +2954,10 @@ namespace gView.DataSources.Fdb.MSAccess
             }
         }
 
-        abstract public bool ReorderRecords(IFeatureClass fClass);
+        virtual public bool ReorderRecords(IFeatureClass fClass)
+        {
+            throw new NotImplementedException();
+        }
 
         public IGeometryDef GetGeometryDef(string FCName)
         {
@@ -2978,13 +2988,37 @@ namespace gView.DataSources.Fdb.MSAccess
             return geomDef;
         }
 
-        abstract public List<IDataset> Datasets
+        public List<IDataset> Datasets
         {
-            get;
+            get
+            {
+                _errMsg = "";
+                if (_conn == null) return null;
+
+                DataSet ds = new DataSet();
+                if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + DbColName("FDB_Datasets"), "DS"))
+                {
+                    _errMsg = _conn.errorMessage;
+                    return null;
+                }
+
+                List<IDataset> datasets = new List<IDataset>();
+                foreach (DataRow row in ds.Tables[0].Rows)
+                {
+                    AccessFDBDataset dataset = new AccessFDBDataset(this);
+                    dataset.ConnectionString = _filename + ";" + row["Name"].ToString();
+                    if (dataset.Open())
+                        datasets.Add(dataset);
+                }
+
+                ds.Dispose();
+                return datasets;
+            }
         }
+
         abstract public List<IDatasetElement> DatasetLayers(IDataset dataset);
 
-        abstract internal IDatasetElement DatasetElement(IDataset dataset, string elementName);
+        abstract public IDatasetElement DatasetElement(IDataset dataset, string elementName);
 
         virtual public IFeatureClass GetFeatureclass(string fcName)
         {
