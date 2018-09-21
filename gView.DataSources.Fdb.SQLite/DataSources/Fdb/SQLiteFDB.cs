@@ -73,10 +73,10 @@ namespace gView.DataSources.Fdb.SQLite
             if (String.IsNullOrEmpty(_filename))
                 _filename = connectionString;
 
-            if (!connectionString.Contains("="))
-                connectionString = "Data Source=" + _filename;
+            if (!_filename.Contains("="))
+                _filename = "Data Source=" + _filename;
 
-            _conn = new SqliteConn(connectionString);
+            _conn = new SqliteConn(_filename);
 
             SetVersion();
             return true;
@@ -880,11 +880,11 @@ namespace gView.DataSources.Fdb.SQLite
                 IDataset linkedDs = LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                 if (linkedDs == null)
                     return null;
-                IDatasetElement linkedElement = linkedDs[(string)row["Name"]];
+                IDatasetElement linkedElement = linkedDs[row["Name"]?.ToString()];
 
                 LinkedFeatureClass fc = new LinkedFeatureClass(dataset,
                     linkedElement != null && linkedElement.Class is IFeatureClass ? linkedElement.Class as IFeatureClass : null,
-                    (string)row["Name"]);
+                    row["Name"]?.ToString());
 
                 SQLiteFDBDatasetElement linkedLayer = new SQLiteFDBDatasetElement(fc);
                 return linkedLayer;
@@ -904,11 +904,11 @@ namespace gView.DataSources.Fdb.SQLite
             GeometryDef geomDef;
             if (fcRow.Table.Columns["hasz"] != null)
             {
-                geomDef = new GeometryDef((geometryType)fcRow["geometrytype"], null, (bool)fcRow["hasz"]);
+                geomDef = new GeometryDef((geometryType)Convert.ToInt32(fcRow["geometrytype"]), null, Convert.ToBoolean(fcRow["hasz"]));
             }
             else
             {  // alte Version war immer 3D
-                geomDef = new GeometryDef((geometryType)fcRow["geometrytype"], null, true);
+                geomDef = new GeometryDef((geometryType)Convert.ToInt32(fcRow["geometrytype"]), null, true);
             }
 
             DatasetElement layer = new SQLiteFDBDatasetElement(this, dataset, row["name"].ToString(), geomDef);
@@ -1911,6 +1911,7 @@ namespace gView.DataSources.Fdb.SQLite
         {
             SqliteConnection _connection = null;
             SqliteDataReader _reader = null;
+            SqliteCommand _readerCommand = null;
             //DataTable _schemaTable=null;
             string _sql = "", _where = "", _orderby = "";
             int _nid_pos = 0;
@@ -1955,6 +1956,11 @@ namespace gView.DataSources.Fdb.SQLite
             public override void Dispose()
             {
                 base.Dispose();
+                if(_readerCommand!=null)
+                {
+                    _readerCommand.Dispose();
+                    _readerCommand = null;
+                }
                 if (_reader != null)
                 {
                     _reader.Close();
@@ -1969,6 +1975,11 @@ namespace gView.DataSources.Fdb.SQLite
 
             private bool ExecuteReader()
             {
+                if(_readerCommand!=null)
+                {
+                    _readerCommand.Dispose();
+                    _readerCommand = null;
+                }
                 if (_reader != null)
                 {
                     _reader.Close();
@@ -1989,7 +2000,7 @@ namespace gView.DataSources.Fdb.SQLite
                     //    where += "(FDB_NID=" + _nids[_nid_pos].ToString() + ")";
                     //}
 
-                    if (_nid_pos >= _nids.Count) 
+                    if (_nid_pos >= _nids.Count)
                         return false;
                     if (_nids[_nid_pos] < 0)
                     {
@@ -2017,21 +2028,21 @@ namespace gView.DataSources.Fdb.SQLite
                 if (where != "") where = " WHERE " + where;
 
                 _nid_pos++;
-                using (SqliteCommand command = new SqliteCommand(_sql +
+                _readerCommand = new SqliteCommand(_sql +
                                                         where +
                                                         ((_orderby != String.Empty) ? " ORDER BY " + _orderby : ""),
-                                                        _connection))
-                {
-                    if (parameter != null) command.Parameters.Add(parameter);
-                    if (parameter2 != null) command.Parameters.Add(parameter2);
+                                                        _connection);
+                
+                    if (parameter != null) _readerCommand.Parameters.Add(parameter);
+                if (parameter2 != null) _readerCommand.Parameters.Add(parameter2);
 
-                    command.Prepare();
+                _readerCommand.Prepare();
 
-                    if (parameter != null) parameter.Value = pVal;
-                    if (parameter2 != null) parameter2.Value = p2Val;
+                if (parameter != null) parameter.Value = pVal;
+                if (parameter2 != null) parameter2.Value = p2Val;
 
-                    _reader = command.ExecuteReader(CommandBehavior.SequentialAccess);
-                }
+                _reader = _readerCommand.ExecuteReader(CommandBehavior.SequentialAccess);
+
                 return true;
             }
 
@@ -2043,6 +2054,7 @@ namespace gView.DataSources.Fdb.SQLite
                 _pos = 0;
             }
             public void Release()
+
             {
                 this.Dispose();
             }

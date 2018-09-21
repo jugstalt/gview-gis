@@ -187,19 +187,19 @@ namespace gView.DataSources.Fdb.Sqlite
 
                     using(var reader=command.ExecuteReader())
                     {
-                        DataTable tab = null;
+                        DataTable tab = new DataTable(table);
+                        ds.Tables.Add(tab);
+
                         while (reader.Read())
                         {
                             int fieldCount = reader.FieldCount;
 
-                            if (tab == null)
+                            if (tab.Columns.Count==0)
                             {
-                                tab = new DataTable(table);
                                 for (int i = 0; i < fieldCount; i++)
                                 {
                                     tab.Columns.Add(new DataColumn(reader.GetName(i), reader.GetFieldType(i)));
                                 }
-                                ds.Tables.Add(tab);
                             }
 
                             DataRow row = tab.NewRow();

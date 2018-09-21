@@ -3126,7 +3126,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
             foreach (DataRow row in ds.Tables[0].Rows)
             {
-                switch ((FieldType)row["FieldType"])
+                switch ((FieldType)Convert.ToInt32(row["FieldType"]))
                 {
                     case FieldType.Shape:
                     case FieldType.ID:
@@ -3153,9 +3153,9 @@ namespace gView.DataSources.Fdb.MSAccess
                 }
                 field.name = row["FieldName"].ToString();
                 field.aliasname = row["Aliasname"].ToString();
-                field.type = (FieldType)row["FieldType"];
-                field.IsRequired = (bool)row["IsRequired"];
-                field.IsEditable = (bool)row["IsEditable"];
+                field.type = (FieldType)Convert.ToInt32(row["FieldType"]);
+                field.IsRequired = Convert.ToInt32(row["IsRequired"]) != 0;
+                field.IsEditable = Convert.ToInt32(row["IsEditable"]) != 0;
                 field.DefautValue = row["DefaultValue"];
 
                 if (schema != null)
