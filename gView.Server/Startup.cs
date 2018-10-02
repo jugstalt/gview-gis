@@ -62,6 +62,11 @@ namespace gView.Server
                     defaults: new { controller = "ArcGis", Action = "ExportMap" }
                 );
                 routes.MapRoute(
+                    name: "arcgis_rest_query",
+                    template: "arcgis/rest/services/{folder}/{id}/mapserver/{layerId}/query",
+                    defaults: new { controller = "ArcGis", Action = "Query" }
+                );
+                routes.MapRoute(
                     name: "arcgis_rest_servicelayers",
                     template: "arcgis/rest/services/{folder}/{id}/mapserver/layers",
                     defaults: new { controller = "ArcGis", Action = "ServiceLayers" }
@@ -144,8 +149,8 @@ namespace gView.Server
             });
 
             PlugInManager.Init();
-            //InternetMapServer.Init(@"C:\ProgramData\gView\mapServer\Services\8001");
-            InternetMapServer.Init(@"C:\Development_OpenSource\GeoDaten\MXL\8050");
+            InternetMapServer.Init(@"C:\ProgramData\gView\mapServer\Services\8001");
+            //InternetMapServer.Init(@"C:\Development_OpenSource\GeoDaten\MXL\8050");
         }
     }
 }

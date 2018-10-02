@@ -6,21 +6,21 @@ using System.Text;
 
 namespace gView.Interoperability.ArcGisServer.Rest.Json.Features.Geometry
 {
-    class JsonGeometry
+    public class JsonGeometry
     {
         // AREA
-        [JsonProperty("rings")]
-        public double[][,] Rings { get; set; } // JsonRings []
+        [JsonProperty("rings", NullValueHandling = NullValueHandling.Ignore)]
+        public double[][,] Rings { get; set; }
 
         // POLY LINE
-         [JsonProperty("paths")]
-        public double[][,] Paths { get; set; } // JsonPaths[]
+        [JsonProperty("paths", NullValueHandling = NullValueHandling.Ignore)]
+        public double[][,] Paths { get; set; } 
 
         // SINGLE POINT
-        [JsonProperty("x")]
-         public dynamic X { get; set; } // JsonX
-        [JsonProperty("y")]
-        public dynamic Y { get; set; } // JsonY
+        [JsonProperty("x", NullValueHandling = NullValueHandling.Ignore)]
+        public double? X { get; set; } 
+        [JsonProperty("y", NullValueHandling = NullValueHandling.Ignore)]
+        public double? Y { get; set; } 
 
     }
 }

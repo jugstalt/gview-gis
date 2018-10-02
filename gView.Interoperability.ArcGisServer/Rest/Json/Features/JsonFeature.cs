@@ -2,15 +2,21 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 
 namespace gView.Interoperability.ArcGisServer.Rest.Json.Features
 {
-    class JsonFeatures
+    public class JsonFeature
     {
+        public JsonFeature()
+        {
+            this.Attributes = new ExpandoObject();
+        }
+
         [JsonProperty("attributes")]
-        public dynamic Attributes { get; set; }
+        public ExpandoObject Attributes { get; set; }
         //JsonAttributes attributes { get; set; }
         [JsonProperty("geometry")]
         public JsonGeometry Geometry { get; set; }

@@ -230,6 +230,68 @@ namespace gView.Server.Controllers
             }
         }
 
+        public IActionResult Query(string folder, string id, int layerId)
+        {
+            try
+            {
+                if (folder != DefaultFolder)
+                    throw new Exception("Unknown folder: " + folder);
+
+                var interpreter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
+
+                #region Request
+
+                JsonQueryLayer queryLayer = Deserialize<JsonQueryLayer>(
+                    Request.HasFormContentType ?
+                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Form :
+                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
+                queryLayer.LayerId = layerId;
+
+                ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(queryLayer))
+                {
+                    OnlineResource = InternetMapServer.OnlineResource,
+                    Method = "query"
+                };
+
+                #endregion
+
+                #region Security
+
+                Identity identity = Identity.FromFormattedString(String.Empty);
+                identity.HashedPassword = String.Empty;
+                serviceRequest.Identity = identity;
+
+                #endregion
+
+                #region Queue & Wait
+
+                IServiceRequestContext context = new ServiceRequestContext(
+                    InternetMapServer.Instance,
+                    interpreter,
+                    serviceRequest);
+
+                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+
+                #endregion
+
+                if (serviceRequest.Succeeded)
+                {
+                    return Result(JsonConvert.DeserializeObject<JsonFeatureResponse>(serviceRequest.Response));
+                }
+                else
+                {
+                    return Result(JsonConvert.DeserializeObject<JsonError>(serviceRequest.Response));
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new JsonError()
+                {
+                    error = new JsonError.Error() { code = 999, message = ex.Message }
+                });
+            }
+        }
+
         #region Helper
 
         #region Json
@@ -422,13 +484,32 @@ namespace gView.Server.Controllers
                 var keyValuePair = nv.Where(k => k.Key == key).FirstOrDefault();
                 if (keyValuePair.Key == key)
                 {
+                    var val = keyValuePair.Value.ToString();
+
                     if(propertyInfo.PropertyType==typeof(double))
                     {
-                        propertyInfo.SetValue(instance, NumberConverter.ToDouble(keyValuePair.Value.ToString()));
+                        if (!String.IsNullOrWhiteSpace(val))
+                            propertyInfo.SetValue(instance, NumberConverter.ToDouble(keyValuePair.Value.ToString()));
                     }
                     else if(propertyInfo.PropertyType==typeof(float))
                     {
-                        propertyInfo.SetValue(instance, NumberConverter.ToFloat(keyValuePair.Value.ToString()));
+                        if (!String.IsNullOrWhiteSpace(val))
+                            propertyInfo.SetValue(instance, NumberConverter.ToFloat(keyValuePair.Value.ToString()));
+                    }
+                    else if(propertyInfo.PropertyType==typeof(System.Int16))
+                    {
+                        if (!String.IsNullOrWhiteSpace(val))
+                            propertyInfo.SetValue(instance, Convert.ToInt16(val));
+                    }
+                    else if (propertyInfo.PropertyType == typeof(System.Int32))
+                    {
+                        if (!String.IsNullOrWhiteSpace(val))
+                            propertyInfo.SetValue(instance, Convert.ToInt32(val));
+                    }
+                    else if (propertyInfo.PropertyType == typeof(System.Int64))
+                    {
+                        if (!String.IsNullOrWhiteSpace(val))
+                            propertyInfo.SetValue(instance, Convert.ToInt64(val));
                     }
                     else
                     {

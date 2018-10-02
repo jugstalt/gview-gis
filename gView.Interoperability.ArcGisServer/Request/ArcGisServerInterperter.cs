@@ -1,6 +1,9 @@
-﻿using gView.Framework.Geometry;
+﻿using gView.Framework.Carto;
+using gView.Framework.Data;
+using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Interoperability.ArcGisServer.Rest.Json;
+using gView.Interoperability.ArcGisServer.Rest.Json.Features;
 using gView.Interoperability.ArcGisServer.Rest.Json.Request;
 using gView.Interoperability.ArcGisServer.Rest.Json.Response;
 using gView.MapServer;
@@ -17,6 +20,7 @@ namespace gView.Interoperability.ArcGisServer.Request
     {
         private IMapServer _mapServer;
         private JsonExportMap _exportMap = null;
+        private bool _useTOC = false;
 
         #region IServiceRequestInterpreter
 
@@ -40,12 +44,17 @@ namespace gView.Interoperability.ArcGisServer.Request
                 case "export":
                     ExportMapRequest(context);
                     break;
+                case "query":
+                    Query(context);
+                    break;
                 default:
                     throw new NotImplementedException(context.ServiceRequest.Method + " is not support for arcgis server emulator");
             }
         }
 
-        public void ExportMapRequest(IServiceRequestContext context)
+        #region Export
+
+        private void ExportMapRequest(IServiceRequestContext context)
         {
             _exportMap = JsonConvert.DeserializeObject<JsonExportMap>(context.ServiceRequest.Request);
             using (var serviceMap = context.CreateServiceMapInstance())
@@ -151,6 +160,114 @@ namespace gView.Interoperability.ArcGisServer.Request
                 }
                 
             }
+        }
+
+        #endregion
+
+        #region Query
+
+        private void Query(IServiceRequestContext context)
+        {
+            try
+            {
+                var query = JsonConvert.DeserializeObject<JsonQueryLayer>(context.ServiceRequest.Request);
+
+                List<JsonFeature> jsonFeatures = new List<JsonFeature>();
+
+                using (var serviceMap = context.CreateServiceMapInstance())
+                {
+                    string filterQuery;
+                    foreach (var tableClass in FindTableClass(serviceMap, query.LayerId.ToString(), out filterQuery))
+                    {
+                        QueryFilter filter = new QueryFilter();
+                        filter.SubFields = query.OutFields;
+                        filter.WhereClause = query.Where;
+
+                        if (filterQuery != String.Empty)
+                            filter.WhereClause = (filter.WhereClause != String.Empty) ?
+                                "(" + filter.WhereClause + ") AND " + filterQuery :
+                                filterQuery;
+
+                        var cursor = tableClass.Search(filter);
+
+                        if (cursor is IFeatureCursor)
+                        {
+                            IFeature feature;
+                            IFeatureCursor featureCursor = (IFeatureCursor)cursor;
+                            while ((feature = featureCursor.NextFeature) != null)
+                            {
+                                var jsonFeature = new JsonFeature();
+                                var attributesDict = (IDictionary<string, object>)jsonFeature.Attributes;
+
+                                if (feature.Fields != null)
+                                {
+
+                                    foreach (var field in feature.Fields)
+                                    {
+                                        attributesDict[field.Name] = field.Value;
+                                    }
+                                }
+
+                                jsonFeatures.Add(jsonFeature);
+                            }
+                        }
+                    }
+                }
+
+                context.ServiceRequest.Succeeded = true;
+                context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonFeatureResponse()
+                {
+                    Features = jsonFeatures.ToArray()
+                });
+            }
+            catch (Exception ex)
+            {
+                context.ServiceRequest.Succeeded = true;
+                context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
+                {
+                    error = new JsonError.Error()
+                    {
+                        code = -1,
+                        message = ex.Message
+                    }
+                });
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Helper
+
+        private List<ITableClass> FindTableClass(IServiceMap map, string id, out string filterQuery)
+        {
+            filterQuery = String.Empty;
+            if (map == null) return null;
+
+            List<ITableClass> classes = new List<ITableClass>();
+            foreach (ILayer element in MapServerHelper.FindMapLayers(map, _useTOC, id))
+            {
+                if (element.Class is ITableClass)
+                    classes.Add(element.Class as ITableClass);
+
+                if (element is IFeatureLayer)
+                {
+                    if (((IFeatureLayer)element).FilterQuery != null)
+                    {
+                        string fquery = ((IFeatureLayer)element).FilterQuery.WhereClause;
+                        if (filterQuery == String.Empty)
+                        {
+                            filterQuery = fquery;
+                        }
+                        else if (filterQuery != fquery && fquery.Trim() != String.Empty)
+                        {
+                            filterQuery += " AND " + fquery;
+                        }
+                    }
+                }
+            }
+            return classes;
         }
 
         #endregion

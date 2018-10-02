@@ -102,5 +102,8 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json.Request
 
         [JsonProperty(PropertyName = "historicMoment")]
         public long HistoricMoment { get; set; }
+
+        [JsonProperty(PropertyName = "layerId")]
+        public int LayerId { get; set; }
     }
 }

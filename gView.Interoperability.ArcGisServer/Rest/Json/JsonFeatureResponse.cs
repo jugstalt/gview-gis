@@ -7,7 +7,7 @@ using System.Text;
 
 namespace gView.Interoperability.ArcGisServer.Rest.Json
 {
-    class JsonFeatureResponse
+    public class JsonFeatureResponse
     {
         [JsonProperty("displayFieldName")]
         public string DisplayFieldName { get; set; }
@@ -25,7 +25,7 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json
         public Field[] Fields { get; set; }
 
         [JsonProperty("features")]
-        public JsonFeatures[] Features { get; set; }
+        public JsonFeature[] Features { get; set; }
 
         #region Classes
 
