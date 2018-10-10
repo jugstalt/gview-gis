@@ -89,7 +89,7 @@ namespace gView.DataSources.Fdb.MSSql
                 }
             }
             _pageManager = new NetworkObjectSerializer.PageManager(
-                System.Data.Common.DbProviderFactories.GetFactory("System.Data.SqlClient"),
+                System.Data.SqlClient.SqlClientFactory.Instance,
                 _fdb.ConnectionString, _name,
                 _fdb.TableName("FC_" + _name),
                 _fdb.TableName(_name + "_Edges"),

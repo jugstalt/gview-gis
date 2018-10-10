@@ -155,26 +155,30 @@ namespace gView.DataSources.Fdb.PostgreSql
         #endregion
 
         #region Internals
-        internal IDatasetElement DatasetElement(pgDataset dataset, string elementName)
+        override public IDatasetElement DatasetElement(IDataset dataset, string elementName)
         {
-            ISpatialReference sRef = this.SpatialReference(dataset.DatasetName);
+            pgDataset pgDataset = dataset as pgDataset;
+            if (pgDataset == null)
+                throw new Exception("datasset is null or not an PostgresDataset");
 
-            if (dataset.DatasetName == elementName)
+            ISpatialReference sRef = this.SpatialReference(pgDataset.DatasetName);
+
+            if (pgDataset.DatasetName == elementName)
             {
                 string imageSpace;
-                if (IsImageDataset(dataset.DatasetName, out imageSpace))
+                if (IsImageDataset(pgDataset.DatasetName, out imageSpace))
                 {
-                    IDatasetElement fLayer = DatasetElement(dataset, elementName + "_IMAGE_POLYGONS") as IDatasetElement;
+                    IDatasetElement fLayer = DatasetElement(pgDataset, elementName + "_IMAGE_POLYGONS") as IDatasetElement;
                     if (fLayer != null && fLayer.Class is IFeatureClass)
                     {
-                        pgImageCatalogClass iClass = new pgImageCatalogClass(dataset, this, fLayer.Class as IFeatureClass, sRef, imageSpace);
+                        pgImageCatalogClass iClass = new pgImageCatalogClass(pgDataset, this, fLayer.Class as IFeatureClass, sRef, imageSpace);
                         iClass.SpatialReference = sRef;
                         return new DatasetElement(iClass);
                     }
                 }
             }
 
-            DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + dataset._dsID + " AND " + DbColName("Name") + "='" + elementName + "'");
+            DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + pgDataset._dsID + " AND " + DbColName("Name") + "='" + elementName + "'");
             if (tab == null || tab.Rows == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -200,7 +204,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                     return null;
                 IDatasetElement linkedElement = linkedDs[(string)row["Name"]];
 
-                LinkedFeatureClass fc = new LinkedFeatureClass(dataset,
+                LinkedFeatureClass fc = new LinkedFeatureClass(pgDataset,
                     linkedElement != null && linkedElement.Class is IFeatureClass ? linkedElement.Class as IFeatureClass : null,
                     (string)row["Name"]);
 
@@ -213,7 +217,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 string[] viewNames = row["Name"].ToString().Split('@');
                 if (viewNames.Length != 2)
                     return null;
-                DataTable tab2 = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + dataset._dsID + " AND " + DbColName("Name") + "='" + viewNames[0] + "'");
+                DataTable tab2 = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + pgDataset._dsID + " AND " + DbColName("Name") + "='" + viewNames[0] + "'");
                 if (tab2 == null || tab2.Rows.Count != 1)
                     return null;
                 fcRow = tab2.Rows[0];
@@ -229,7 +233,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 geomDef = new GeometryDef((geometryType)fcRow["geometrytype"], null, true);
             }
 
-            DatasetElement layer = new pgDatasetElement(this, dataset, row["name"].ToString(), geomDef);
+            DatasetElement layer = new pgDatasetElement(this, pgDataset, row["name"].ToString(), geomDef);
             if (layer.Class is pgFeatureClass) // kann auch SqlFDBNetworkClass sein
             {
                 ((pgFeatureClass)layer.Class).Envelope = this.FeatureClassExtent(layer.Class.Name);
@@ -238,7 +242,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 //((SqlFDBFeatureClass)layer.FeatureClass).SetSpatialTreeInfo(this.SpatialTreeInfo(row["Name"].ToString()));
                 ((pgFeatureClass)layer.Class).SpatialReference = sRef;
             }
-            var fields = this.FeatureClassFields(dataset._dsID, layer.Class.Name);
+            var fields = this.FeatureClassFields(pgDataset._dsID, layer.Class.Name);
             if (fields != null && layer.Class is ITableClass)
             {
                 foreach (IField field in fields)

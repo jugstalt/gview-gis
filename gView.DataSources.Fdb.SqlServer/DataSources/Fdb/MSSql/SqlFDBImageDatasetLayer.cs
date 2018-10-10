@@ -813,19 +813,6 @@ namespace gView.DataSources.Fdb.MSSql
                                 }
                             }
                         }
-                        else if ((bool)feature["MANAGED"] && _layer._imageSpaceType == SqlFDBImageCatalogClass.ImageSpaceType.FileSystem)
-                        {
-                            gView.DataSources.Raster.File.PyramidFileClass rasterClass = new gView.DataSources.Raster.File.PyramidFileClass(_layer._dataset, _layer._imageSpace + @"\" + (string)feature["MANAGED_FILE"], feature.Shape as IPolygon);
-                            if (rasterClass.isValid)
-                            {
-                                rLayer = LayerFactory.Create(rasterClass) as IRasterLayer;
-                                if (rLayer != null)
-                                {
-                                    rLayer.InterpolationMethod = _layer.InterpolationMethod;
-                                    if (rasterClass.SpatialReference == null) rasterClass.SpatialReference = _layer._sRef;
-                                }
-                            }
-                        }
                         else if (!(bool)feature["MANAGED"])
                         {
                             if (feature["RF_PROVIDER"] == null || feature["RF_PROVIDER"] == DBNull.Value)
@@ -921,7 +908,7 @@ namespace gView.DataSources.Fdb.MSSql
                 if (tab.Rows.Count != 1) return;
                 DataRow row = tab.Rows[0];
 
-                _bm = (System.Drawing.Bitmap)ImageFast.FromStream((byte[])row["IMG"]);
+                _bm = (System.Drawing.Bitmap)System.Drawing.Bitmap.FromStream(new MemoryStream((byte[])row["IMG"]));
                 _X = (double)tab.Rows[0]["X"];
                 _Y = (double)tab.Rows[0]["Y"];
                 _dx_X = (double)tab.Rows[0]["dx1"];
@@ -1012,162 +999,5 @@ namespace gView.DataSources.Fdb.MSSql
         }
 
         #endregion
-    }
-
-    internal class ImageFast
-    {
-        [DllImport("gdiplus.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
-        private static extern int GdipLoadImageFromFile(string filename, out IntPtr image);
-
-        [DllImport("gdiplus.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
-        private static extern int GdipLoadImageFromStream(UCOMIStream istream, out IntPtr image);
-
-        [DllImport("gdiplus.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
-        private static extern int GdiplusStartup(out IntPtr token, ref StartupInput input, out StartupOutput output);
-
-        [DllImport("gdiplus.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
-        private static extern int GdiplusShutdown(IntPtr token);
-
-        [DllImport("gdiplus.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
-        private static extern int GdipGetImageType(IntPtr image, out GdipImageTypeEnum type);
-
-        [DllImport("ole32.dll")]
-        static extern int CreateStreamOnHGlobal(IntPtr hGlobal, bool fDeleteOnRelease, out UCOMIStream ppstm);
-
-        private static IntPtr gdipToken = IntPtr.Zero;
-
-        static ImageFast()
-        {
-#if DEBUG
-            //Console.WriteLine("Initializing GDI+");
-#endif
-            if (gdipToken == IntPtr.Zero)
-            {
-                StartupInput input = StartupInput.GetDefaultStartupInput();
-                StartupOutput output;
-
-                int status = GdiplusStartup(out gdipToken, ref input, out output);
-#if DEBUG
-                //if (status == 0)
-                //    Console.WriteLine("Initializing GDI+ completed successfully");
-#endif
-                if (status == 0)
-                    AppDomain.CurrentDomain.ProcessExit += new EventHandler(Cleanup_Gdiplus);
-            }
-        }
-
-        private static void Cleanup_Gdiplus(object sender, EventArgs e)
-        {
-#if DEBUG
-            //Console.WriteLine("GDI+ shutdown entered through ProcessExit event");
-#endif
-            if (gdipToken != IntPtr.Zero)
-                GdiplusShutdown(gdipToken);
-
-#if DEBUG
-            //Console.WriteLine("GDI+ shutdown completed");
-#endif
-        }
-
-        private static Type bmpType = typeof(System.Drawing.Bitmap);
-        private static Type emfType = typeof(System.Drawing.Imaging.Metafile);
-
-        public static System.Drawing.Image FromFile(string filename)
-        {
-            filename = System.IO.Path.GetFullPath(filename);
-            IntPtr loadingImage = IntPtr.Zero;
-
-            // We are not using ICM at all, fudge that, this should be FAAAAAST!
-            if (GdipLoadImageFromFile(filename, out loadingImage) != 0)
-            {
-                throw new Exception("GDI+ threw a status error code.");
-            }
-
-            GdipImageTypeEnum imageType;
-            if (GdipGetImageType(loadingImage, out imageType) != 0)
-            {
-                throw new Exception("GDI+ couldn't get the image type");
-            }
-
-            switch (imageType)
-            {
-                case GdipImageTypeEnum.Bitmap:
-                    return (System.Drawing.Bitmap)bmpType.InvokeMember("FromGDIplus", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.InvokeMethod, null, null, new object[] { loadingImage });
-                case GdipImageTypeEnum.Metafile:
-                    return (System.Drawing.Imaging.Metafile)emfType.InvokeMember("FromGDIplus", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.InvokeMethod, null, null, new object[] { loadingImage });
-            }
-
-            throw new Exception("Couldn't convert underlying GDI+ object to managed object");
-        }
-
-        public static System.Drawing.Image FromStream(byte[] b)
-        {
-            IntPtr loadingImage = IntPtr.Zero;
-
-            IntPtr nativePtr = Marshal.AllocHGlobal(b.Length);
-            // copy byte array to native heap
-            Marshal.Copy(b, 0, nativePtr, b.Length);
-            // Create a UCOMIStream from the allocated memory
-            UCOMIStream comStream;
-            CreateStreamOnHGlobal(nativePtr, true, out comStream);
-
-            // We are not using ICM at all, fudge that, this should be FAAAAAST!
-            if (GdipLoadImageFromStream(comStream, out loadingImage) != 0)
-            {
-                //Marshal.FreeHGlobal(nativePtr);
-                throw new Exception("GDI+ threw a status error code.");
-            }
-            //Marshal.FreeHGlobal(nativePtr);
-
-            GdipImageTypeEnum imageType;
-            if (GdipGetImageType(loadingImage, out imageType) != 0)
-            {
-                throw new Exception("GDI+ couldn't get the image type");
-            }
-
-            switch (imageType)
-            {
-                case GdipImageTypeEnum.Bitmap:
-                    return (System.Drawing.Bitmap)bmpType.InvokeMember("FromGDIplus", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.InvokeMethod, null, null, new object[] { loadingImage });
-                case GdipImageTypeEnum.Metafile:
-                    return (System.Drawing.Imaging.Metafile)emfType.InvokeMember("FromGDIplus", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.InvokeMethod, null, null, new object[] { loadingImage });
-            }
-
-            throw new Exception("Couldn't convert underlying GDI+ object to managed object");
-        }
-
-        private ImageFast() { }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct StartupInput
-    {
-        public int GdiplusVersion;
-        public IntPtr DebugEventCallback;
-        public bool SuppressBackgroundThread;
-        public bool SuppressExternalCodecs;
-
-        public static StartupInput GetDefaultStartupInput()
-        {
-            StartupInput result = new StartupInput();
-            result.GdiplusVersion = 1;
-            result.SuppressBackgroundThread = false;
-            result.SuppressExternalCodecs = false;
-            return result;
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct StartupOutput
-    {
-        public IntPtr Hook;
-        public IntPtr Unhook;
-    }
-
-    internal enum GdipImageTypeEnum
-    {
-        Unknown = 0,
-        Bitmap = 1,
-        Metafile = 2
     }
 }

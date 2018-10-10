@@ -425,26 +425,30 @@ namespace gView.DataSources.Fdb.MSSql
         }
         #endregion
 
-        internal IDatasetElement DatasetElement(SqlFDBDataset dataset, string elementName)
+        override public IDatasetElement DatasetElement(/*SqlFDBDataset*/IDataset dataset, string elementName)
         {
-            ISpatialReference sRef = this.SpatialReference(dataset.DatasetName);
+            SqlFDBDataset sqlDataset = dataset as SqlFDBDataset;
+            if (sqlDataset == null)
+                throw new Exception("datasset is null or not an SqlFDBDataset");
 
-            if (dataset.DatasetName == elementName)
+            ISpatialReference sRef = this.SpatialReference(sqlDataset.DatasetName);
+
+            if (sqlDataset.DatasetName == elementName)
             {
                 string imageSpace;
-                if (IsImageDataset(dataset.DatasetName, out imageSpace))
+                if (IsImageDataset(sqlDataset.DatasetName, out imageSpace))
                 {
-                    IDatasetElement fLayer = DatasetElement(dataset, elementName + "_IMAGE_POLYGONS") as IDatasetElement;
+                    IDatasetElement fLayer = DatasetElement(sqlDataset, elementName + "_IMAGE_POLYGONS") as IDatasetElement;
                     if (fLayer != null && fLayer.Class is IFeatureClass)
                     {
-                        SqlFDBImageCatalogClass iClass = new SqlFDBImageCatalogClass(dataset, this, fLayer.Class as IFeatureClass, sRef, imageSpace);
+                        SqlFDBImageCatalogClass iClass = new SqlFDBImageCatalogClass(sqlDataset, this, fLayer.Class as IFeatureClass, sRef, imageSpace);
                         iClass.SpatialReference = sRef;
                         return new DatasetElement(iClass);
                     }
                 }
             }
 
-            DataTable tab = _conn.Select("*", "FDB_FeatureClasses", "DatasetID=" + dataset._dsID + " AND Name='" + elementName + "'");
+            DataTable tab = _conn.Select("*", "FDB_FeatureClasses", "DatasetID=" + sqlDataset._dsID + " AND Name='" + elementName + "'");
             if (tab == null || tab.Rows == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -470,7 +474,7 @@ namespace gView.DataSources.Fdb.MSSql
                     return null;
                 IDatasetElement linkedElement = linkedDs[(string)row["Name"]];
 
-                LinkedFeatureClass fc = new LinkedFeatureClass(dataset,
+                LinkedFeatureClass fc = new LinkedFeatureClass(sqlDataset,
                     linkedElement != null && linkedElement.Class is IFeatureClass ? linkedElement.Class as IFeatureClass : null,
                     (string)row["Name"]);
 
@@ -483,7 +487,7 @@ namespace gView.DataSources.Fdb.MSSql
                 string[] viewNames = row["Name"].ToString().Split('@');
                 if (viewNames.Length != 2)
                     return null;
-                DataTable tab2 = _conn.Select("*", "FDB_FeatureClasses", "DatasetID=" + dataset._dsID + " AND Name='" + viewNames[0] + "'");
+                DataTable tab2 = _conn.Select("*", "FDB_FeatureClasses", "DatasetID=" + sqlDataset._dsID + " AND Name='" + viewNames[0] + "'");
                 if (tab2 == null || tab2.Rows.Count !=1)
                     return null;
                 fcRow = tab2.Rows[0];
@@ -499,7 +503,7 @@ namespace gView.DataSources.Fdb.MSSql
                 geomDef = new GeometryDef((geometryType)fcRow["GeometryType"], null, true);
             }
 
-            SqlFDBDatasetElement layer = new SqlFDBDatasetElement(this, dataset, row["Name"].ToString(), geomDef);
+            SqlFDBDatasetElement layer = new SqlFDBDatasetElement(this, sqlDataset, row["Name"].ToString(), geomDef);
             if (layer.Class is SqlFDBFeatureClass) // kann auch SqlFDBNetworkClass sein
             {
                 ((SqlFDBFeatureClass)layer.Class).Envelope = this.FeatureClassExtent(layer.Class.Name);
@@ -508,7 +512,7 @@ namespace gView.DataSources.Fdb.MSSql
                 //((SqlFDBFeatureClass)layer.FeatureClass).SetSpatialTreeInfo(this.SpatialTreeInfo(row["Name"].ToString()));
                 ((SqlFDBFeatureClass)layer.Class).SpatialReference = sRef;
             }
-            var fields = this.FeatureClassFields(dataset._dsID, layer.Class.Name);
+            var fields = this.FeatureClassFields(sqlDataset._dsID, layer.Class.Name);
             if (fields != null && layer.Class is ITableClass)
             {
                 foreach (IField field in fields)
@@ -2521,7 +2525,7 @@ namespace gView.DataSources.Fdb.MSSql
             get
             {
                 if (_factory == null)
-                    _factory = DbProviderFactories.GetFactory("System.Data.SqlClient");
+                    _factory = System.Data.SqlClient.SqlClientFactory.Instance;
 
                 return _factory;
             }
