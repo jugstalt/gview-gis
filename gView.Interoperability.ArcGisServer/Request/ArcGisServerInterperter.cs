@@ -188,6 +188,17 @@ namespace gView.Interoperability.ArcGisServer.Request
                                 "(" + filter.WhereClause + ") AND " + filterQuery :
                                 filterQuery;
 
+                        #region Feature Spatial Reference
+
+                        if (query.OutSRef != null)
+                        {
+                            filter.FeatureSpatialReference = 
+                                SpatialReference.FromID("epsg:" + query.OutSRef.Wkid) ??
+                                SpatialReference.FromID("epsg:" + query.OutSRef.LatestWkid);
+                        }
+
+                        #endregion
+
                         var cursor = tableClass.Search(filter);
 
                         if (cursor is IFeatureCursor)
@@ -207,6 +218,8 @@ namespace gView.Interoperability.ArcGisServer.Request
                                         attributesDict[field.Name] = field.Value;
                                     }
                                 }
+
+                                jsonFeature.Geometry = feature.Shape?.ToJsonGeometry();
 
                                 jsonFeatures.Add(jsonFeature);
                             }

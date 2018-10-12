@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static gView.Interoperability.ArcGisServer.Rest.Json.JsonService;
 
 namespace gView.Interoperability.ArcGisServer.Rest.Json.Request
 {
@@ -17,7 +18,7 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json.Request
         public string geometryType { get; set; }
 
         [JsonProperty(PropertyName = "inSR")]
-        public string InSRef { get; set; }
+        public SpatialReference InSRef { get; set; }
 
         [JsonProperty(PropertyName = "relationParam")]
         public string relationParam { get; set; }
@@ -50,7 +51,7 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json.Request
         public int GeometryPrecision { get; set; }
 
         [JsonProperty(PropertyName = "outSR")]
-        public string OutSRef { get; set; }
+        public SpatialReference OutSRef { get; set; }
 
         [JsonProperty(PropertyName = "returnIdsOnly")]
         public bool ReturnIdsOnly { get; set; }

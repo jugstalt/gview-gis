@@ -513,7 +513,15 @@ namespace gView.Server.Controllers
                     }
                     else
                     {
-                        propertyInfo.SetValue(instance, Convert.ChangeType(keyValuePair.Value.ToString(), propertyInfo.PropertyType));
+                        if ((val.Trim().StartsWith("{") && val.Trim().EndsWith("}")) ||
+                            (val.Trim().StartsWith("[") && val.Trim().EndsWith("]")))
+                        {
+                            propertyInfo.SetValue(instance, JsonConvert.DeserializeObject(val, propertyInfo.PropertyType));
+                        }
+                        else
+                        {
+                            propertyInfo.SetValue(instance, Convert.ChangeType(keyValuePair.Value.ToString(), propertyInfo.PropertyType));
+                        }
                     }
                 }
             }
