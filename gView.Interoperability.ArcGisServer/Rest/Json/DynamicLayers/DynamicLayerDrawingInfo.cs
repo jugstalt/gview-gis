@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using gView.Interoperability.ArcGisServer.Rest.Json.Renderers.SimpleRenderers;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,21 +7,21 @@ using System.Text;
 
 namespace gView.Interoperability.ArcGisServer.Rest.Json.DynamicLayers
 {
-    class DynamicLayerDrawingInfo
+    public class DynamicLayerDrawingInfo
     {
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public object renderer { get; set; }
+        [JsonProperty("renderer", NullValueHandling = NullValueHandling.Ignore)]
+        public RestRenderer Renderer { get; set; }
 
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public int? transparency { get; set; }
+        [JsonProperty("transparency", NullValueHandling = NullValueHandling.Ignore)]
+        public int? Transparency { get; set; }
 
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public bool? scaleSymbols { get; set; }
+        [JsonProperty("scaleSymbols", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? ScaleSymbols { get; set; }
 
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public bool? showLabels { get; set; }
+        [JsonProperty("showLabels", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? ShowLabels { get; set; }
 
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public LabelingInfo[] labelingInfo { get; set; }
+        [JsonProperty("labelingInfo", NullValueHandling = NullValueHandling.Ignore)]
+        public LabelingInfo[] LabelingInfo { get; set; }
     }
 }

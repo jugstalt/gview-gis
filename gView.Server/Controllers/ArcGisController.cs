@@ -55,7 +55,7 @@ namespace gView.Server.Controllers
                 {
                     agsServices.Add(new AgsServices()
                     {
-                        Name = service.Name,
+                        Name = DefaultFolder + "/" + service.Name,
                         Type = "MapServer"
                     });
                 }
@@ -354,9 +354,11 @@ namespace gView.Server.Controllers
 
         private IActionResult Result(object obj)
         {
-            if (Request.Query["f"] == "json")
+            string format = ResultFormat();
+
+            if (format == "json")
                 return Json(obj);
-            else if (Request.Query["f"] == "pjson")
+            else if (format == "pjson")
                 return Json(obj, new Newtonsoft.Json.JsonSerializerSettings()
                 {
                     Formatting = Newtonsoft.Json.Formatting.Indented
@@ -368,6 +370,20 @@ namespace gView.Server.Controllers
             return View("_htmlbody");
 
             #endregion
+        }
+
+        private string ResultFormat()
+        {
+            if(!String.IsNullOrWhiteSpace(Request.Query["f"]))
+            {
+                return Request.Query["f"].ToString().ToLower();
+            }
+            if(Request.HasFormContentType && !String.IsNullOrWhiteSpace(Request.Form["f"].ToString().ToLower()))
+            {
+                return Request.Form["f"];
+            }
+
+            return String.Empty;
         }
 
         private string ToHtml(object obj)
@@ -482,6 +498,12 @@ namespace gView.Server.Controllers
 
                 string key = jsonPropertyAttribute.PropertyName ?? propertyInfo.Name;
                 var keyValuePair = nv.Where(k => k.Key == key).FirstOrDefault();
+                if (keyValuePair.Key == null)
+                {
+                    key = "&" + key;
+                    keyValuePair = nv.Where(k => k.Key == key).FirstOrDefault();   // Sometimes the keyvalue-key starts with an & ??
+                }
+
                 if (keyValuePair.Key == key)
                 {
                     var val = keyValuePair.Value.ToString();
@@ -510,6 +532,10 @@ namespace gView.Server.Controllers
                     {
                         if (!String.IsNullOrWhiteSpace(val))
                             propertyInfo.SetValue(instance, Convert.ToInt64(val));
+                    }
+                    else if(propertyInfo.PropertyType==typeof(System.String))
+                    {
+                        propertyInfo.SetValue(instance, val);
                     }
                     else
                     {

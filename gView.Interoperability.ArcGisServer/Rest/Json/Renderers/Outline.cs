@@ -6,7 +6,7 @@ using System.Text;
 
 namespace gView.Interoperability.ArcGisServer.Rest.Json.Renderers
 {
-    class Outline
+    public class Outline
     {        
         [JsonProperty("type")]
         public string Type { get; set; } // optional - one use is a Simple Fill Symbol Renderer

@@ -18,7 +18,7 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json.Request
         public string geometryType { get; set; }
 
         [JsonProperty(PropertyName = "inSR")]
-        public SpatialReference InSRef { get; set; }
+        public string InSRef { get; set; }
 
         [JsonProperty(PropertyName = "relationParam")]
         public string relationParam { get; set; }
@@ -51,7 +51,7 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json.Request
         public int GeometryPrecision { get; set; }
 
         [JsonProperty(PropertyName = "outSR")]
-        public SpatialReference OutSRef { get; set; }
+        public string OutSRef { get; set; }
 
         [JsonProperty(PropertyName = "returnIdsOnly")]
         public bool ReturnIdsOnly { get; set; }

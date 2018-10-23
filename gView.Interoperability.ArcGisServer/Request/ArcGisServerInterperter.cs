@@ -160,6 +160,36 @@ namespace gView.Interoperability.ArcGisServer.Request
                 }
                 
             }
+
+            if(!String.IsNullOrWhiteSpace(_exportMap.DynamicLayers))
+            {
+                var jsonDynamicLayers = JsonConvert.DeserializeObject<JsonDynamicLayer[]>(_exportMap.DynamicLayers);
+                foreach(var jsonDynamicLayer in jsonDynamicLayers)
+                {
+                    if (jsonDynamicLayer.Source != null)
+                    {
+                        var featureLayers = MapServerHelper.FindMapLayers(sender, _useTOC, jsonDynamicLayer.Source.MapLayerId.ToString());
+
+                        foreach (var featureLayer in featureLayers)
+                        {
+                            if (!(featureLayer.Class is IFeatureClass))
+                                continue;
+
+                            var dynLayer = LayerFactory.Create(featureLayer.Class, featureLayer) as IFeatureLayer;
+                            if (dynLayer != null)
+                            {
+                                dynLayer.FilterQuery = new QueryFilter()
+                                {
+                                    SubFields = "*",
+                                    WhereClause = jsonDynamicLayer.DefinitionExpression
+                                };
+                                dynLayer.Visible = true;
+                                layers.Add(dynLayer);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         #endregion
@@ -173,13 +203,25 @@ namespace gView.Interoperability.ArcGisServer.Request
                 var query = JsonConvert.DeserializeObject<JsonQueryLayer>(context.ServiceRequest.Request);
 
                 List<JsonFeature> jsonFeatures = new List<JsonFeature>();
+                List<JsonFeatureResponse.Field> jsonFields = new List<JsonFeatureResponse.Field>();
 
                 using (var serviceMap = context.CreateServiceMapInstance())
                 {
                     string filterQuery;
                     foreach (var tableClass in FindTableClass(serviceMap, query.LayerId.ToString(), out filterQuery))
                     {
-                        QueryFilter filter = new QueryFilter();
+                        QueryFilter filter;
+                        if (!String.IsNullOrWhiteSpace(query.Geometry))
+                        {
+                            filter = new SpatialFilter();
+                            var jsonGeometry = JsonConvert.DeserializeObject<Rest.Json.Features.Geometry.JsonGeometry>(query.Geometry);
+                            ((SpatialFilter)filter).Geometry = jsonGeometry.ToGeometry();
+                            ((SpatialFilter)filter).FilterSpatialReference = SRef(query.InSRef);
+                        }
+                        else
+                        {
+                            filter = new QueryFilter();
+                        }
                         filter.SubFields = query.OutFields;
                         filter.WhereClause = query.Where;
 
@@ -192,15 +234,14 @@ namespace gView.Interoperability.ArcGisServer.Request
 
                         if (query.OutSRef != null)
                         {
-                            filter.FeatureSpatialReference = 
-                                SpatialReference.FromID("epsg:" + query.OutSRef.Wkid) ??
-                                SpatialReference.FromID("epsg:" + query.OutSRef.LatestWkid);
+                            filter.FeatureSpatialReference = SRef(query.OutSRef);
                         }
 
                         #endregion
 
                         var cursor = tableClass.Search(filter);
 
+                        bool firstFeature = true;
                         if (cursor is IFeatureCursor)
                         {
                             IFeature feature;
@@ -212,16 +253,28 @@ namespace gView.Interoperability.ArcGisServer.Request
 
                                 if (feature.Fields != null)
                                 {
-
                                     foreach (var field in feature.Fields)
                                     {
                                         attributesDict[field.Name] = field.Value;
+
+                                        var tableField = tableClass.FindField(field.Name);
+                                        if(tableField!=null)
+                                        {
+                                            jsonFields.Add(new JsonFeatureResponse.Field()
+                                            {
+                                                Name = tableField.name,
+                                                Alias = tableField.aliasname,
+                                                Length = tableField.size,
+                                                Type = JsonField.ToType(tableField.type).ToString()
+                                            });
+                                        }
                                     }
                                 }
 
                                 jsonFeature.Geometry = feature.Shape?.ToJsonGeometry();
 
                                 jsonFeatures.Add(jsonFeature);
+                                firstFeature = false;
                             }
                         }
                     }
@@ -230,6 +283,7 @@ namespace gView.Interoperability.ArcGisServer.Request
                 context.ServiceRequest.Succeeded = true;
                 context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonFeatureResponse()
                 {
+                    Fields = jsonFields.ToArray(),
                     Features = jsonFeatures.ToArray()
                 });
             }
@@ -281,6 +335,23 @@ namespace gView.Interoperability.ArcGisServer.Request
                 }
             }
             return classes;
+        }
+
+        private ISpatialReference SRef(string sref)
+        {
+            if (String.IsNullOrWhiteSpace(sref))
+                return null;
+
+            sref = sref.Trim();
+            if (sref.StartsWith("{") && sref.EndsWith("}"))
+            {
+                var spatialReference = JsonConvert.DeserializeObject<Rest.Json.JsonService.SpatialReference>(sref);
+
+                return SpatialReference.FromID("epsg:" + spatialReference.Wkid) ??
+                       SpatialReference.FromID("epsg:" + spatialReference.LatestWkid);
+            }
+
+            return SpatialReference.FromID("epsg:" + sref);
         }
 
         #endregion

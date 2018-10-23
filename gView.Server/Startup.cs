@@ -149,7 +149,7 @@ namespace gView.Server
             });
 
             PlugInManager.Init();
-             InternetMapServer.Init(@"C:\ProgramData\gView\mapServer\Services\8001");
+            InternetMapServer.Init(@"C:\ProgramData\gView\mapServer\Services\8001");
             //InternetMapServer.Init(@"C:\Development_OpenSource\GeoDaten\MXL\8050");
         }
     }

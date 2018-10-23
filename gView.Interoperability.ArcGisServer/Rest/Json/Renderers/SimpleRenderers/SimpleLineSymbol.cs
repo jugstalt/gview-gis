@@ -6,7 +6,7 @@ using System.Text;
 
 namespace gView.Interoperability.ArcGisServer.Rest.Json.Renderers.SimpleRenderers
 {
-    class SimpleLineSymbol
+    public class SimpleLineSymbol
     {
         [JsonProperty("type")]
         public string Type { get; set; }

@@ -59,6 +59,16 @@ namespace gView.Interoperability.ArcGisServer.Request
 
                 return jsonPoint;
             }
+            if(shape is IEnvelope)
+            {
+                return new JsonGeometry()
+                {
+                    XMin = ((IEnvelope)shape).minx,
+                    YMin = ((IEnvelope)shape).miny,
+                    XMax = ((IEnvelope)shape).maxx,
+                    YMax = ((IEnvelope)shape).maxy,
+                };
+            }
             if (shape is IPolyline)
             {
                 var polyline = (IPolyline)shape;
@@ -115,6 +125,23 @@ namespace gView.Interoperability.ArcGisServer.Request
 
                 return jsonPolylgon;
             }
+            return null;
+        }
+
+        static public IGeometry ToGeometry(this JsonGeometry geometry)
+        {
+            if (geometry == null)
+                return null;
+
+            if(geometry.X.HasValue && geometry.Y.HasValue)
+            {
+                return new Point(geometry.X.Value, geometry.Y.Value);
+            }
+            if(geometry.XMin.HasValue && geometry.YMin.HasValue && geometry.XMax.HasValue && geometry.YMax.HasValue)
+            {
+                return new Envelope(geometry.XMin.Value, geometry.YMin.Value, geometry.XMax.Value, geometry.YMax.Value);
+            }
+
             return null;
         }
 

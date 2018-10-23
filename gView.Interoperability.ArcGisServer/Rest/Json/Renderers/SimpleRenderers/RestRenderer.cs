@@ -6,7 +6,7 @@ using System.Text;
 
 namespace gView.Interoperability.ArcGisServer.Rest.Json.Renderers.SimpleRenderers
 {
-    class RestRenderer
+    public class RestRenderer
     {
         public RestRenderer()
         {

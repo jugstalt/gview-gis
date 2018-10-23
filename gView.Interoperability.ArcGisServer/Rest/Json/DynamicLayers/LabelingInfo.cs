@@ -7,7 +7,7 @@ using System.Text;
 
 namespace gView.Interoperability.ArcGisServer.Rest.Json.DynamicLayers
 {
-    class LabelingInfo
+    public class LabelingInfo
     {
         [JsonProperty("labelPlacement", NullValueHandling = NullValueHandling.Ignore)]
         public string LabelPlacement { get; set; }

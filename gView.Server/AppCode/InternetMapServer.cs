@@ -31,7 +31,7 @@ namespace gView.Server.AppCode
 
         static public void Init(string folder, int port = 80)
         {
-            OutputPath = @"C:\temp\output";
+            OutputPath = @"C:\ArcIMS\Output";
             OutputUrl = @"http://localhost/output";
             OnlineResource = "http://localhost:8889";
 

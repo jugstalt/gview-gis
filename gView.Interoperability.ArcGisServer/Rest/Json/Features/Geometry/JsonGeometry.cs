@@ -22,5 +22,14 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json.Features.Geometry
         [JsonProperty("y", NullValueHandling = NullValueHandling.Ignore)]
         public double? Y { get; set; } 
 
+        // Envelope
+        [JsonProperty("xmin", NullValueHandling = NullValueHandling.Ignore)]
+        public double? XMin { get; set; }
+        [JsonProperty("ymin", NullValueHandling = NullValueHandling.Ignore)]
+        public double? YMin { get; set; }
+        [JsonProperty("xmax", NullValueHandling = NullValueHandling.Ignore)]
+        public double? XMax { get; set; }
+        [JsonProperty("ymax", NullValueHandling = NullValueHandling.Ignore)]
+        public double? YMax { get; set; }
     }
 }
