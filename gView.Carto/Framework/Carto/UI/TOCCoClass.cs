@@ -317,6 +317,69 @@ namespace gView.Framework.Carto.UI
             return bm;
         }
 
+        public TocLegendItems LegendSymbol(ITOCElement element)
+        {
+            var items = new List<TocLegendItem>();
+            if (element == null || element.Layers == null || !_elements.Contains(element)) return null;
+
+            try
+            {
+                foreach (ILayer layer in element.Layers)
+                {
+                    if (layer is IWebServiceLayer && layer.Class is IWebServiceClass)
+                    {
+                        IWebServiceClass wClass = layer.Class as IWebServiceClass;
+                        if (wClass.LegendRequest(_map.Display))
+                        {
+                            System.Drawing.Bitmap lBm = wClass.Legend;
+
+                            if (lBm == null) continue;
+                            items.Add(new TocLegendItem()
+                            {
+                                Image = lBm
+                            });
+                        }
+                    }
+                    else if (layer is IFeatureLayer && ((IFeatureLayer)layer).FeatureRenderer is ILegendGroup)
+                    {
+                        IFeatureLayer fLayer = layer as IFeatureLayer;
+                        ILegendGroup lGroup = fLayer.FeatureRenderer as ILegendGroup;
+
+                        for (int i = 0; i < lGroup.LegendItemCount; i++)
+                        {
+                            ILegendItem lItem = lGroup.LegendItem(i);
+                            if (lItem is ISymbol)
+                            {
+                                var bm = new System.Drawing.Bitmap(20, 20);
+                                using (var gr = System.Drawing.Graphics.FromImage(bm))
+                                {
+                                    ISymbol symbol = lItem as ISymbol;
+                                    SymbolPreview.Draw(gr,
+                                        new System.Drawing.Rectangle(0, 0, 20, 20),
+                                        symbol);
+                                }
+                                items.Add(new TocLegendItem()
+                                {
+                                    Image = bm,
+                                    Label = lItem.LegendLabel
+                                });
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            catch
+            {
+                
+            }
+
+            return new TocLegendItems()
+            {
+                Items = items
+            };
+        }
+
         /*
         public List<ITOCElement> VisibleElements
         {
@@ -393,7 +456,7 @@ namespace gView.Framework.Carto.UI
         }
         */
 
-		public void Add2Group(ITOCElement element, ITOCElement Group)
+        public void Add2Group(ITOCElement element, ITOCElement Group)
 		{
 			if(element==null) return;
 			if(_elements.IndexOf(element)==-1) return;

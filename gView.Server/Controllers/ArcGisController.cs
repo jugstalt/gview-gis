@@ -18,6 +18,7 @@ using gView.Interoperability.ArcGisServer.Rest.Json.Request;
 using Microsoft.Extensions.Primitives;
 using gView.Interoperability.ArcGisServer.Rest.Json.Response;
 using gView.Framework.Carto;
+using gView.Interoperability.ArcGisServer.Rest.Json.Legend;
 
 namespace gView.Server.Controllers
 {
@@ -98,8 +99,8 @@ namespace gView.Server.Controllers
                             Id = e.ID,
                             Name = tocElement != null ? tocElement.Name : e.Title,
                             DefaultVisibility = tocElement != null ? tocElement.LayerVisible : true,
-                            MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale, 0) : 0,
-                            MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale, 0) : 0,
+                            MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale > 1 ? tocElement.Layers[0].MinimumScale : 0, 0) : 0,
+                            MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale > 1 ? tocElement.Layers[0].MaximumScale : 0, 0) : 0,
                         };
                     }).ToArray(),
                     FullExtent = new JsonService.Extent()
@@ -276,12 +277,68 @@ namespace gView.Server.Controllers
 
                 if (serviceRequest.Succeeded)
                 {
-                    return Result(JsonConvert.DeserializeObject<JsonFeatureResponse>(serviceRequest.Response));
+                    if (queryLayer.ReturnCountOnly == true)
+                    {
+                        return Result(JsonConvert.DeserializeObject<JsonFeatureCountResponse>(serviceRequest.Response));
+                    }
+                    else
+                    {
+                        return Result(JsonConvert.DeserializeObject<JsonFeatureResponse>(serviceRequest.Response));
+                    }
                 }
                 else
                 {
                     return Result(JsonConvert.DeserializeObject<JsonError>(serviceRequest.Response));
                 }
+            }
+            catch (Exception ex)
+            {
+                return Json(new JsonError()
+                {
+                    error = new JsonError.Error() { code = 999, message = ex.Message }
+                });
+            }
+        }
+
+        public IActionResult Legend(string folder, string id)
+        {
+            try
+            {
+                if (folder != DefaultFolder)
+                    throw new Exception("Unknown folder: " + folder);
+
+                var interpreter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
+
+                #region Request
+
+                ServiceRequest serviceRequest = new ServiceRequest(id, String.Empty)
+                {
+                    OnlineResource = InternetMapServer.OnlineResource,
+                    Method = "legend"
+                };
+
+                #endregion
+
+                #region Security
+
+                Identity identity = Identity.FromFormattedString(String.Empty);
+                identity.HashedPassword = String.Empty;
+                serviceRequest.Identity = identity;
+
+                #endregion
+
+                #region Queue & Wait
+
+                IServiceRequestContext context = new ServiceRequestContext(
+                    InternetMapServer.Instance,
+                    interpreter,
+                    serviceRequest);
+
+                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+
+                #endregion
+
+                return Result(JsonConvert.DeserializeObject<LegendResponse>(serviceRequest.Response));
             }
             catch (Exception ex)
             {
@@ -341,8 +398,8 @@ namespace gView.Server.Controllers
                 Id = datasetElement.ID,
                 Name = tocElement != null ? tocElement.Name : datasetElement.Title,
                 DefaultVisibility = tocElement != null ? tocElement.LayerVisible : true,
-                MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale, 0) : 0,
-                MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale, 0) : 0,
+                MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale > 1 ? tocElement.Layers[0].MinimumScale : 0, 0) : 0,
+                MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale > 1 ? tocElement.Layers[0].MaximumScale : 0, 0) : 0,
                 Fields = fields,
                 Extent = extent,
                 Type = type,

@@ -1,15 +1,18 @@
 ﻿using gView.Framework.Carto;
+using gView.Framework.Carto.Rendering;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Interoperability.ArcGisServer.Rest.Json;
 using gView.Interoperability.ArcGisServer.Rest.Json.Features;
+using gView.Interoperability.ArcGisServer.Rest.Json.Renderers.SimpleRenderers;
 using gView.Interoperability.ArcGisServer.Rest.Json.Request;
 using gView.Interoperability.ArcGisServer.Rest.Json.Response;
 using gView.MapServer;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -47,6 +50,11 @@ namespace gView.Interoperability.ArcGisServer.Request
                 case "query":
                     Query(context);
                     break;
+                case "legend":
+                    Legend(context);
+                    break;
+                case "featureservice_query":
+                    break;
                 default:
                     throw new NotImplementedException(context.ServiceRequest.Method + " is not support for arcgis server emulator");
             }
@@ -70,6 +78,15 @@ namespace gView.Interoperability.ArcGisServer.Request
                 var bbox = _exportMap.BBox.ToBBox();
                 serviceMap.Display.ZoomTo(new Envelope(bbox[0], bbox[1], bbox[2], bbox[3]));
 
+                #endregion
+
+                #region ImageFormat / Transparency
+
+                var imageFormat = (ImageFormat)Enum.Parse(typeof(ImageFormat), _exportMap.ImageFormat);
+                var iFormat = System.Drawing.Imaging.ImageFormat.Png;
+                if (imageFormat == ImageFormat.jpg)
+                    iFormat = System.Drawing.Imaging.ImageFormat.Jpeg;
+
                 if (_exportMap.Transparent)
                 {
                     serviceMap.Display.MakeTransparent = true;
@@ -80,18 +97,22 @@ namespace gView.Interoperability.ArcGisServer.Request
                     serviceMap.Display.MakeTransparent = false;
                 }
 
-                #endregion
+                if (serviceMap.Display.MakeTransparent && iFormat == System.Drawing.Imaging.ImageFormat.Png)
+                {
+                    // Beim Png sollt dann beim zeichnen keine Hintergrund Rectangle gemacht werden
+                    // Darum Farbe mit A=0
+                    // Sonst schaut das Bild beim PNG32 und Antialiasing immer zerrupft aus...
+                    serviceMap.Display.BackgroundColor = System.Drawing.Color.Transparent;
+                }
 
-                var imageFormat = (ImageFormat)Enum.Parse(typeof(ImageFormat), _exportMap.ImageFormat);
+                #endregion
 
                 serviceMap.BeforeRenderLayers += ServiceMap_BeforeRenderLayers;
                 serviceMap.Render();
 
                 if (serviceMap.MapImage != null)
                 {
-                    var iFormat = System.Drawing.Imaging.ImageFormat.Png;
-                    if (imageFormat == ImageFormat.jpg)
-                        iFormat = System.Drawing.Imaging.ImageFormat.Jpeg;
+                    
 
                     string fileName = serviceMap.Name.Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + "." + iFormat.ToString().ToLower();
                     string path = (_mapServer.OutputPath + @"/" + fileName).ToPlattformPath();
@@ -157,8 +178,7 @@ namespace gView.Interoperability.ArcGisServer.Request
                         if (layerIds.Contains(layer.ID))
                             layer.Visible = false;
                         break;
-                }
-                
+                }   
             }
 
             if(!String.IsNullOrWhiteSpace(_exportMap.DynamicLayers))
@@ -175,9 +195,74 @@ namespace gView.Interoperability.ArcGisServer.Request
                             if (!(featureLayer.Class is IFeatureClass))
                                 continue;
 
+                            IFeatureClass fc = (IFeatureClass)featureLayer.Class;
                             var dynLayer = LayerFactory.Create(featureLayer.Class, featureLayer) as IFeatureLayer;
                             if (dynLayer != null)
                             {
+                                if (jsonDynamicLayer.DrawingInfo.Renderer != null)
+                                {
+                                    if (jsonDynamicLayer.DrawingInfo.Renderer.Type.ToLower() == "simple")
+                                    {
+                                        var renderer = new SimpleRenderer();
+                                        if (fc.GeometryType == geometryType.Point)
+                                        {
+                                            var jsonRenderer = JsonConvert.DeserializeObject<SimpleMarkerSymbol>(jsonDynamicLayer.DrawingInfo.Renderer.Symbol.ToString());
+
+                                            if (jsonRenderer.Style == "esriSMSCircle")
+                                            {
+                                                var symbol = new gView.Framework.Symbology.SimplePointSymbol();
+                                                symbol.SymbolSmothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
+                                                symbol.FillColor = ToColor(jsonRenderer.Color);
+                                                symbol.Size = jsonRenderer.Size;
+                                                if (jsonRenderer.Outline != null)
+                                                {
+                                                    symbol.OutlineColor = ToColor(jsonRenderer.Outline.Color);
+                                                    symbol.OutlineWidth = jsonRenderer.Outline.Width;
+                                                }
+                                                renderer.Symbol = symbol;
+                                            }
+                                            else
+                                            {
+                                                throw new Exception("Unsupported MarkerSymbolStyle: " + jsonRenderer.Style);
+                                            }
+                                        }
+                                        else if (fc.GeometryType == geometryType.Polyline)
+                                        {
+                                            var jsonRenderer = JsonConvert.DeserializeObject<SimpleLineSymbol>(jsonDynamicLayer.DrawingInfo.Renderer.Symbol.ToString());
+
+                                            var symbol = new gView.Framework.Symbology.SimpleLineSymbol();
+                                            symbol.SymbolSmothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
+                                            symbol.Color = ToColor(jsonRenderer.Color);
+                                            symbol.Width = jsonRenderer.Width;
+                                            renderer.Symbol = symbol;
+                                        }
+                                        else if (fc.GeometryType == geometryType.Polygon)
+                                        {
+                                            var jsonRenderer = JsonConvert.DeserializeObject<SimpleFillSymbol>(jsonDynamicLayer.DrawingInfo.Renderer.Symbol.ToString());
+
+                                            var symbol = new gView.Framework.Symbology.SimpleFillSymbol();
+                                            symbol.SymbolSmothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
+                                            symbol.FillColor = ToColor(jsonRenderer.Color);
+
+                                            if(jsonRenderer.Outline!=null)
+                                            {
+                                                symbol.OutlineColor = ToColor(jsonRenderer.Outline.Color);
+                                                symbol.OutlineWidth = jsonRenderer.Outline.Width;
+                                            }
+                                            renderer.Symbol = symbol;
+                                        }
+                                        else
+                                        {
+                                            throw new ArgumentException("Unsupported dynamic layer geometry: " + fc.GeometryType.ToString());
+                                        }
+
+                                        dynLayer.FeatureRenderer = renderer;
+                                    }
+                                    else
+                                    {
+                                        throw new ArgumentException("Unknwon renderer type: " + jsonDynamicLayer.DrawingInfo.Renderer.Type);
+                                    }
+                                }
                                 dynLayer.FilterQuery = new QueryFilter()
                                 {
                                     SubFields = "*",
@@ -222,7 +307,14 @@ namespace gView.Interoperability.ArcGisServer.Request
                         {
                             filter = new QueryFilter();
                         }
-                        filter.SubFields = query.OutFields;
+                        if (query.ReturnCountOnly == true)
+                        {
+                            filter.SubFields = !String.IsNullOrWhiteSpace(tableClass.IDFieldName) ? tableClass.IDFieldName : "*";
+                        }
+                        else
+                        {
+                            filter.SubFields = query.OutFields;
+                        }
                         filter.WhereClause = query.Where;
 
                         if (filterQuery != String.Empty)
@@ -257,16 +349,19 @@ namespace gView.Interoperability.ArcGisServer.Request
                                     {
                                         attributesDict[field.Name] = field.Value;
 
-                                        var tableField = tableClass.FindField(field.Name);
-                                        if(tableField!=null)
+                                        if (firstFeature)
                                         {
-                                            jsonFields.Add(new JsonFeatureResponse.Field()
+                                            var tableField = tableClass.FindField(field.Name);
+                                            if (tableField != null)
                                             {
-                                                Name = tableField.name,
-                                                Alias = tableField.aliasname,
-                                                Length = tableField.size,
-                                                Type = JsonField.ToType(tableField.type).ToString()
-                                            });
+                                                jsonFields.Add(new JsonFeatureResponse.Field()
+                                                {
+                                                    Name = tableField.name,
+                                                    Alias = tableField.aliasname,
+                                                    Length = tableField.size,
+                                                    Type = JsonField.ToType(tableField.type).ToString()
+                                                });
+                                            }
                                         }
                                     }
                                 }
@@ -281,11 +376,22 @@ namespace gView.Interoperability.ArcGisServer.Request
                 }
 
                 context.ServiceRequest.Succeeded = true;
-                context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonFeatureResponse()
+
+                if (query.ReturnCountOnly == true)
                 {
-                    Fields = jsonFields.ToArray(),
-                    Features = jsonFeatures.ToArray()
-                });
+                    context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonFeatureCountResponse()
+                    {
+                        Count = jsonFeatures.Count()
+                    });
+                }
+                else
+                {
+                    context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonFeatureResponse()
+                    {
+                        Fields = jsonFields.ToArray(),
+                        Features = jsonFeatures.ToArray()
+                    });
+                }
             }
             catch (Exception ex)
             {
@@ -299,6 +405,79 @@ namespace gView.Interoperability.ArcGisServer.Request
                     }
                 });
             }
+        } 
+
+        #endregion
+
+        #region Legend
+
+        private void Legend(IServiceRequestContext context)
+        {
+            var legendLayers = new List<Rest.Json.Legend.Layer>();
+
+            using (var serviceMap = context.CreateServiceMapInstance())
+            {
+                foreach (var layer in serviceMap.MapElements)
+                {
+                    if (!(layer is IFeatureLayer) || ((IFeatureLayer)layer).FeatureRenderer == null)
+                        continue;
+
+                    var featureLayer = (IFeatureLayer)layer;
+
+                    var tocElement = serviceMap.TOC.GetTOCElement(featureLayer);
+                    using (var tocLegendItems = serviceMap.TOC.LegendSymbol(tocElement))
+                    {
+                        if (tocLegendItems.Items == null || tocLegendItems.Items.Count() == 0)
+                            continue;
+
+                        var legendLayer = new Rest.Json.Legend.Layer()
+                        {
+                            LayerId = featureLayer.ID,
+                            LayerName = featureLayer.Title,
+                            LayerType = "Feature-Layer",
+                            MinScale = Convert.ToInt32(featureLayer.MaximumScale > 1 ? featureLayer.MaximumScale : 0),
+                            MaxScale = Convert.ToInt32(featureLayer.MinimumScale > 1 ? featureLayer.MinimumScale : 0)
+                        };
+
+                        var legends = new List<Rest.Json.Legend.Legend>();
+                        foreach(var tocLegendItem in tocLegendItems.Items)
+                        {
+                            if (tocLegendItem.Image == null)
+                                continue;
+
+                            MemoryStream ms = new MemoryStream();
+                            tocLegendItem.Image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+
+                            legends.Add(new Rest.Json.Legend.Legend()
+                            {
+                                Label = String.Empty,
+                                Url = Guid.NewGuid().ToString("N").ToString(),
+                                ImageData = Convert.ToBase64String(ms.ToArray()),
+                                ContentType = "image/png",
+                                Width = tocLegendItem.Image.Width,
+                                Height = tocLegendItem.Image.Height
+                            });
+                        }
+                        legendLayer.Legend = legends.ToArray();
+                        legendLayers.Add(legendLayer);
+                    }
+                }
+            }
+
+            context.ServiceRequest.Succeeded = true;
+            context.ServiceRequest.Response = JsonConvert.SerializeObject(new Rest.Json.Legend.LegendResponse()
+            {
+                Layers = legendLayers.ToArray()
+            });
+        }
+
+        #endregion
+
+        #region FeatureService Query
+
+        public void FeatureServiceQuery(IServiceRequestContext context)
+        {
+
         }
 
         #endregion
@@ -352,6 +531,18 @@ namespace gView.Interoperability.ArcGisServer.Request
             }
 
             return SpatialReference.FromID("epsg:" + sref);
+        }
+
+        private System.Drawing.Color ToColor(int[] col)
+        {
+            if (col == null)
+                return System.Drawing.Color.Transparent;
+            if (col.Length == 3)
+                return System.Drawing.Color.FromArgb(col[0], col[1], col[2]);
+            if(col.Length==4)
+                return System.Drawing.Color.FromArgb(col[3], col[0], col[1], col[2]);
+
+            throw new Exception("Invalid symbol color: [" + String.Join(",", col) + "]");
         }
 
         #endregion

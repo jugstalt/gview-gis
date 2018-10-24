@@ -282,9 +282,10 @@ namespace gView.Server.AppCode
             }
 
             _graphics = System.Drawing.Graphics.FromImage(_image);
+            //_graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
             this.dpi = _graphics.DpiX * this.ScaleSymbolFactor;
 
-            if (BackgroundColor.A != 0 /* && !Display.MakeTransparent*/)
+            if (BackgroundColor.A != 0 && !Display.MakeTransparent)
             {
                 using (System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(BackgroundColor))
                 {

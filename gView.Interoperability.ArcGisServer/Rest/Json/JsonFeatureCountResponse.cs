@@ -6,7 +6,7 @@ using System.Text;
 
 namespace gView.Interoperability.ArcGisServer.Rest.Json
 {
-    class JsonFeatureCountResponse
+    public class JsonFeatureCountResponse
     {
         [JsonProperty("count")]
         public int Count { get; set; }

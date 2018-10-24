@@ -141,6 +141,46 @@ namespace gView.Interoperability.ArcGisServer.Request
             {
                 return new Envelope(geometry.XMin.Value, geometry.YMin.Value, geometry.XMax.Value, geometry.YMax.Value);
             }
+            if(geometry.Paths!=null && geometry.Paths.Length>0)
+            {
+                var polyline = new Polyline();
+
+                for(int p=0,pathCount=geometry.Paths.Length;p<pathCount;p++)
+                {
+                    var jsonPath = geometry.Paths[p];
+                    if (jsonPath.Length < 1)
+                        continue;
+
+                    var path = new Path();
+                    for(int i=0,pointCount=jsonPath.GetLength(0);i<pointCount;i++)
+                    {
+                        path.AddPoint(new Point(jsonPath[i, 0], jsonPath[i, 1]));
+                    }
+                    polyline.AddPath(path);
+                }
+
+                return polyline;
+            }
+            if(geometry.Rings!=null && geometry.Rings.Length>0)
+            {
+                var polygon = new Polygon();
+
+                for (int p = 0, ringCount = geometry.Rings.Length; p < ringCount; p++)
+                {
+                    var jsonRing = geometry.Rings[p];
+                    if (jsonRing.Length < 1)
+                        continue;
+
+                    var ring = new Ring();
+                    for (int i = 0, pointCount = jsonRing.GetLength(0); i < pointCount; i++)
+                    {
+                        ring.AddPoint(new Point(jsonRing[i, 0], jsonRing[i, 1]));
+                    }
+                    polygon.AddRing(ring);
+                }
+
+                return polygon;
+            }
 
             return null;
         }

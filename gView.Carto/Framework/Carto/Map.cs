@@ -820,7 +820,6 @@ namespace gView.Framework.Carto
                         brush.Dispose();
                     }
 
-
                     if (DoRefreshMapView != null)
                     {
                         mapRefreshThread.Start(cancelTracker);

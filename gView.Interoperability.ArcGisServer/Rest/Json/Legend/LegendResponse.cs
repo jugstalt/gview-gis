@@ -6,7 +6,7 @@ using System.Text;
 
 namespace gView.Interoperability.ArcGisServer.Rest.Json.Legend
 {
-    class LegendResponse
+    public class LegendResponse
     {
         [JsonProperty("layers")]
         public Layer[] Layers { get; set; }

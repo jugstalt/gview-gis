@@ -72,6 +72,11 @@ namespace gView.Server
                     defaults: new { controller = "ArcGis", Action = "ServiceLayers" }
                 );
                 routes.MapRoute(
+                    name: "arcgis_rest_servicelegend",
+                    template: "arcgis/rest/services/{folder}/{id}/mapserver/legend",
+                    defaults: new { controller = "ArcGis", Action = "Legend" }
+                );
+                routes.MapRoute(
                    name: "arcgis_rest_servicelayer",
                    template: "arcgis/rest/services/{folder}/{id}/mapserver/{layerId}",
                    defaults: new { controller = "ArcGis", Action = "ServiceLayer" }

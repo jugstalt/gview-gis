@@ -215,6 +215,36 @@ namespace gView.Framework.UI
     {
     }
 
+
+    public class TocLegendItem : IDisposable
+    {
+        public string Label { get; set; }
+        public System.Drawing.Bitmap Image { get; set; }
+
+        public void Dispose()
+        {
+            if(Image != null)
+            {
+                Image.Dispose();
+                Image = null;
+            }
+        }
+    }
+    public class TocLegendItems : IDisposable
+    {
+        public IEnumerable<TocLegendItem> Items { get; set; }
+
+        public void Dispose()
+        {
+            if (Items != null)
+            {
+                foreach (var item in Items)
+                    item.Dispose();
+                Items = null;
+            }
+        }
+    }
+
     public interface ITOC : IClone, IClone3
     {
         event EventHandler TocChanged;
@@ -251,6 +281,7 @@ namespace gView.Framework.UI
         global::System.Drawing.Bitmap Legend();
         global::System.Drawing.Bitmap Legend(ITOCElement element);
         global::System.Drawing.Bitmap Legend(List<ITOCElement> elements);
+        TocLegendItems LegendSymbol(ITOCElement element);
     }
 
     public enum TOCElementType { Layer, Legend, OpenedGroup, ClosedGroup }
