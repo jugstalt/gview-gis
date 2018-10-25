@@ -19,6 +19,7 @@ using Microsoft.Extensions.Primitives;
 using gView.Interoperability.ArcGisServer.Rest.Json.Response;
 using gView.Framework.Carto;
 using gView.Interoperability.ArcGisServer.Rest.Json.Legend;
+using gView.Interoperability.ArcGisServer.Rest.Json.FeatureServer;
 
 namespace gView.Server.Controllers
 {
@@ -169,6 +170,8 @@ namespace gView.Server.Controllers
                 });
             }
         }
+
+        #region MapServer
 
         public IActionResult ExportMap(string folder, string id)
         {
@@ -348,6 +351,272 @@ namespace gView.Server.Controllers
                 });
             }
         }
+
+        #endregion
+
+        #region FeatureServer
+
+        public IActionResult FeatureServerQuery(string folder, string id, int layerId)
+        {
+            try
+            {
+                if (folder != DefaultFolder)
+                    throw new Exception("Unknown folder: " + folder);
+
+                var interpreter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
+
+                #region Request
+
+                JsonQueryLayer queryLayer = Deserialize<JsonQueryLayer>(
+                    Request.HasFormContentType ?
+                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Form :
+                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
+                queryLayer.LayerId = layerId;
+
+                ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(queryLayer))
+                {
+                    OnlineResource = InternetMapServer.OnlineResource,
+                    Method = "featureserver_query"
+                };
+
+                #endregion
+
+                #region Security
+
+                Identity identity = Identity.FromFormattedString(String.Empty);
+                identity.HashedPassword = String.Empty;
+                serviceRequest.Identity = identity;
+
+                #endregion
+
+                #region Queue & Wait
+
+                IServiceRequestContext context = new ServiceRequestContext(
+                    InternetMapServer.Instance,
+                    interpreter,
+                    serviceRequest);
+
+                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+
+                #endregion
+
+                if (serviceRequest.Succeeded)
+                {
+                    return Result(JsonConvert.DeserializeObject<JsonFeatureServiceQueryResponse>(serviceRequest.Response));
+                }
+                else
+                {
+                    return Result(JsonConvert.DeserializeObject<JsonError>(serviceRequest.Response));
+                }
+            }
+            catch (Exception ex)
+            {
+                return Result(new JsonError()
+                {
+                    error = new JsonError.Error() { code = 999, message = ex.Message }
+                });
+            }
+        }
+
+        public IActionResult FeatureServerAddFeatures(string folder, string id, int layerId)
+        {
+            try
+            {
+                if (folder != DefaultFolder)
+                    throw new Exception("Unknown folder: " + folder);
+
+                var interpreter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
+
+                #region Request
+
+                JsonFeatureServerEditRequest editRequest = Deserialize<JsonFeatureServerEditRequest>(
+                    Request.HasFormContentType ?
+                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Form :
+                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
+                editRequest.LayerId = layerId;
+
+                ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(editRequest))
+                {
+                    OnlineResource = InternetMapServer.OnlineResource,
+                    Method = "featureserver_addfeatures"
+                };
+
+                #endregion
+
+                #region Security
+
+                Identity identity = Identity.FromFormattedString(String.Empty);
+                identity.HashedPassword = String.Empty;
+                serviceRequest.Identity = identity;
+
+                #endregion
+
+                #region Queue & Wait
+
+                IServiceRequestContext context = new ServiceRequestContext(
+                    InternetMapServer.Instance,
+                    interpreter,
+                    serviceRequest);
+
+                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+
+                #endregion
+
+                return Result(JsonConvert.DeserializeObject<JsonFeatureServerResponse>(serviceRequest.Response));
+            }
+            catch (Exception ex)
+            {
+                return Result(new JsonFeatureServerResponse()
+                {
+                    AddResults = new JsonFeatureServerResponse.JsonResponse[]
+                    {
+                        new JsonFeatureServerResponse.JsonResponse()
+                        {
+                            Success=false,
+                            Error=new JsonFeatureServerResponse.JsonError()
+                            {
+                                Code=999,
+                                Description=ex.Message
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        public IActionResult FeatureServerUpdateFeatures(string folder, string id, int layerId)
+        {
+            try
+            {
+                if (folder != DefaultFolder)
+                    throw new Exception("Unknown folder: " + folder);
+
+                var interpreter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
+
+                #region Request
+
+                JsonFeatureServerEditRequest editRequest = Deserialize<JsonFeatureServerEditRequest>(
+                    Request.HasFormContentType ?
+                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Form :
+                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
+                editRequest.LayerId = layerId;
+
+                ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(editRequest))
+                {
+                    OnlineResource = InternetMapServer.OnlineResource,
+                    Method = "featureserver_updatefeatures"
+                };
+
+                #endregion
+
+                #region Security
+
+                Identity identity = Identity.FromFormattedString(String.Empty);
+                identity.HashedPassword = String.Empty;
+                serviceRequest.Identity = identity;
+
+                #endregion
+
+                #region Queue & Wait
+
+                IServiceRequestContext context = new ServiceRequestContext(
+                    InternetMapServer.Instance,
+                    interpreter,
+                    serviceRequest);
+
+                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+
+                #endregion
+
+                return Result(JsonConvert.DeserializeObject<JsonFeatureServerResponse>(serviceRequest.Response));
+            }
+            catch (Exception ex)
+            {
+                return Result(new JsonFeatureServerResponse()
+                {
+                    UpdateResults = new JsonFeatureServerResponse.JsonResponse[]
+                    {
+                        new JsonFeatureServerResponse.JsonResponse()
+                        {
+                            Success=false,
+                            Error=new JsonFeatureServerResponse.JsonError()
+                            {
+                                Code=999,
+                                Description=ex.Message
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        public IActionResult FeatureServerDeleteFeatures(string folder, string id, int layerId)
+        {
+            try
+            {
+                if (folder != DefaultFolder)
+                    throw new Exception("Unknown folder: " + folder);
+
+                var interpreter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
+
+                #region Request
+
+                JsonFeatureServerEditRequest editRequest = Deserialize<JsonFeatureServerEditRequest>(
+                    Request.HasFormContentType ?
+                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Form :
+                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
+                editRequest.LayerId = layerId;
+
+                ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(editRequest))
+                {
+                    OnlineResource = InternetMapServer.OnlineResource,
+                    Method = "featureserver_deletefeatures"
+                };
+
+                #endregion
+
+                #region Security
+
+                Identity identity = Identity.FromFormattedString(String.Empty);
+                identity.HashedPassword = String.Empty;
+                serviceRequest.Identity = identity;
+
+                #endregion
+
+                #region Queue & Wait
+
+                IServiceRequestContext context = new ServiceRequestContext(
+                    InternetMapServer.Instance,
+                    interpreter,
+                    serviceRequest);
+
+                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+
+                #endregion
+
+                return Result(JsonConvert.DeserializeObject<JsonFeatureServerResponse>(serviceRequest.Response));
+            }
+            catch (Exception ex)
+            {
+                return Result(new JsonFeatureServerResponse()
+                {
+                    DeleteResults = new JsonFeatureServerResponse.JsonResponse[]
+                    {
+                        new JsonFeatureServerResponse.JsonResponse()
+                        {
+                            Success=false,
+                            Error=new JsonFeatureServerResponse.JsonError()
+                            {
+                                Code=999,
+                                Description=ex.Message
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        #endregion
 
         #region Helper
 

@@ -97,6 +97,27 @@ namespace gView.Server
                     defaults: new { controller = "ArcGis", Action = "Services" }
                 );
 
+                routes.MapRoute(
+                    name: "arcgis_rest_featureserver_query",
+                    template: "arcgis/rest/services/{folder}/{id}/featureserver/{layerId}/query",
+                    defaults: new { controller = "ArcGis", Action = "FeatureServerQuery" }
+                );
+                routes.MapRoute(
+                    name: "arcgis_rest_featureserver_addfeatures",
+                    template: "arcgis/rest/services/{folder}/{id}/featureserver/{layerId}/addfeatures",
+                    defaults: new { controller = "ArcGis", Action = "FeatureServerAddFeatures" }
+                );
+                routes.MapRoute(
+                    name: "arcgis_rest_featureserver_updatefeatures",
+                    template: "arcgis/rest/services/{folder}/{id}/featureserver/{layerId}/updatefeatures",
+                    defaults: new { controller = "ArcGis", Action = "FeatureServerUpdateFeatures" }
+                );
+                routes.MapRoute(
+                    name: "arcgis_rest_featureserver_deletefeatures",
+                    template: "arcgis/rest/services/{folder}/{id}/featureserver/{layerId}/deletefeatures",
+                    defaults: new { controller = "ArcGis", Action = "FeatureServerDeleteFeatures" }
+                );
+
                 // Ogc
                 routes.MapRoute(
                     name: "ogc_request",

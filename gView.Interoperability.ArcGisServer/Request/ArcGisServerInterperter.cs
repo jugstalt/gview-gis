@@ -1,10 +1,12 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Carto.Rendering;
 using gView.Framework.Data;
+using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Interoperability.ArcGisServer.Rest.Json;
 using gView.Interoperability.ArcGisServer.Rest.Json.Features;
+using gView.Interoperability.ArcGisServer.Rest.Json.FeatureServer;
 using gView.Interoperability.ArcGisServer.Rest.Json.Renderers.SimpleRenderers;
 using gView.Interoperability.ArcGisServer.Rest.Json.Request;
 using gView.Interoperability.ArcGisServer.Rest.Json.Response;
@@ -34,7 +36,6 @@ namespace gView.Interoperability.ArcGisServer.Request
                     new InterpreterCapabilities.SimpleCapability("Emulating ArcGIS Server ",InterpreterCapabilities.Method.Post,"{server}/arcgis/rest/services/default/{service}/MapServer","1.0")
             });
 
-
         public void OnCreate(IMapServer mapServer)
         {
             _mapServer = mapServer;
@@ -42,7 +43,7 @@ namespace gView.Interoperability.ArcGisServer.Request
 
         public void Request(IServiceRequestContext context)
         {
-            switch(context.ServiceRequest.Method.ToLower())
+            switch (context.ServiceRequest.Method.ToLower())
             {
                 case "export":
                     ExportMapRequest(context);
@@ -53,7 +54,17 @@ namespace gView.Interoperability.ArcGisServer.Request
                 case "legend":
                     Legend(context);
                     break;
-                case "featureservice_query":
+                case "featureserver_query":
+                    Query(context, true);
+                    break;
+                case "featureserver_addfeatures":
+                    AddFeatures(context);
+                    break;
+                case "featureserver_updatefeatures":
+                    UpdateFeatures(context);
+                    break;
+                case "featureserver_deletefeatures":
+                    DeleteFeatures(context);
                     break;
                 default:
                     throw new NotImplementedException(context.ServiceRequest.Method + " is not support for arcgis server emulator");
@@ -64,90 +75,105 @@ namespace gView.Interoperability.ArcGisServer.Request
 
         private void ExportMapRequest(IServiceRequestContext context)
         {
-            _exportMap = JsonConvert.DeserializeObject<JsonExportMap>(context.ServiceRequest.Request);
-            using (var serviceMap = context.CreateServiceMapInstance())
+            try
             {
-                #region Display
-
-                serviceMap.Display.dpi = _exportMap.Dpi;
-
-                var size = _exportMap.Size.ToSize();
-                serviceMap.Display.iWidth = size[0];
-                serviceMap.Display.iHeight = size[1];
-
-                var bbox = _exportMap.BBox.ToBBox();
-                serviceMap.Display.ZoomTo(new Envelope(bbox[0], bbox[1], bbox[2], bbox[3]));
-
-                #endregion
-
-                #region ImageFormat / Transparency
-
-                var imageFormat = (ImageFormat)Enum.Parse(typeof(ImageFormat), _exportMap.ImageFormat);
-                var iFormat = System.Drawing.Imaging.ImageFormat.Png;
-                if (imageFormat == ImageFormat.jpg)
-                    iFormat = System.Drawing.Imaging.ImageFormat.Jpeg;
-
-                if (_exportMap.Transparent)
+                _exportMap = JsonConvert.DeserializeObject<JsonExportMap>(context.ServiceRequest.Request);
+                using (var serviceMap = context.CreateServiceMapInstance())
                 {
-                    serviceMap.Display.MakeTransparent = true;
-                    serviceMap.Display.TransparentColor = System.Drawing.Color.White;
-                }
-                else
-                {
-                    serviceMap.Display.MakeTransparent = false;
-                }
+                    #region Display
 
-                if (serviceMap.Display.MakeTransparent && iFormat == System.Drawing.Imaging.ImageFormat.Png)
-                {
-                    // Beim Png sollt dann beim zeichnen keine Hintergrund Rectangle gemacht werden
-                    // Darum Farbe mit A=0
-                    // Sonst schaut das Bild beim PNG32 und Antialiasing immer zerrupft aus...
-                    serviceMap.Display.BackgroundColor = System.Drawing.Color.Transparent;
-                }
+                    serviceMap.Display.dpi = _exportMap.Dpi;
 
-                #endregion
+                    var size = _exportMap.Size.ToSize();
+                    serviceMap.Display.iWidth = size[0];
+                    serviceMap.Display.iHeight = size[1];
 
-                serviceMap.BeforeRenderLayers += ServiceMap_BeforeRenderLayers;
-                serviceMap.Render();
+                    var bbox = _exportMap.BBox.ToBBox();
+                    serviceMap.Display.ZoomTo(new Envelope(bbox[0], bbox[1], bbox[2], bbox[3]));
 
-                if (serviceMap.MapImage != null)
-                {
-                    
+                    #endregion
 
-                    string fileName = serviceMap.Name.Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + "." + iFormat.ToString().ToLower();
-                    string path = (_mapServer.OutputPath + @"/" + fileName).ToPlattformPath();
-                    serviceMap.SaveImage(path, iFormat);
+                    #region ImageFormat / Transparency
 
-                    context.ServiceRequest.Succeeded = true;
-                    context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonExportResponse()
+                    var imageFormat = (ImageFormat)Enum.Parse(typeof(ImageFormat), _exportMap.ImageFormat);
+                    var iFormat = System.Drawing.Imaging.ImageFormat.Png;
+                    if (imageFormat == ImageFormat.jpg)
+                        iFormat = System.Drawing.Imaging.ImageFormat.Jpeg;
+
+                    if (_exportMap.Transparent)
                     {
-                        Href = _mapServer.OutputUrl + "/" + fileName,
-                        Width = serviceMap.Display.iWidth,
-                        Height = serviceMap.Display.iHeight,
-                        ContentType = "image/" + iFormat.ToString().ToLower(),
-                        Scale = serviceMap.Display.mapScale,
-                        Extent = new JsonExtent()
-                        {
-                            Xmin = serviceMap.Display.Envelope.minx,
-                            Ymin = serviceMap.Display.Envelope.miny,
-                            Xmax = serviceMap.Display.Envelope.maxx,
-                            Ymax = serviceMap.Display.Envelope.maxy
-                            // ToDo: SpatialReference
-                        }
-                    });
-                }
-                else
-                {
-                    context.ServiceRequest.Succeeded = false;
-                    context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
+                        serviceMap.Display.MakeTransparent = true;
+                        serviceMap.Display.TransparentColor = System.Drawing.Color.White;
+                    }
+                    else
                     {
-                        error = new JsonError.Error()
+                        serviceMap.Display.MakeTransparent = false;
+                    }
+
+                    if (serviceMap.Display.MakeTransparent && iFormat == System.Drawing.Imaging.ImageFormat.Png)
+                    {
+                        // Beim Png sollt dann beim zeichnen keine Hintergrund Rectangle gemacht werden
+                        // Darum Farbe mit A=0
+                        // Sonst schaut das Bild beim PNG32 und Antialiasing immer zerrupft aus...
+                        serviceMap.Display.BackgroundColor = System.Drawing.Color.Transparent;
+                    }
+
+                    #endregion
+
+                    serviceMap.BeforeRenderLayers += ServiceMap_BeforeRenderLayers;
+                    serviceMap.Render();
+
+                    if (serviceMap.MapImage != null)
+                    {
+
+
+                        string fileName = serviceMap.Name.Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + "." + iFormat.ToString().ToLower();
+                        string path = (_mapServer.OutputPath + @"/" + fileName).ToPlattformPath();
+                        serviceMap.SaveImage(path, iFormat);
+
+                        context.ServiceRequest.Succeeded = true;
+                        context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonExportResponse()
                         {
-                            code = -1,
-                            message = "No image data"
-                        }
-                    });
+                            Href = _mapServer.OutputUrl + "/" + fileName,
+                            Width = serviceMap.Display.iWidth,
+                            Height = serviceMap.Display.iHeight,
+                            ContentType = "image/" + iFormat.ToString().ToLower(),
+                            Scale = serviceMap.Display.mapScale,
+                            Extent = new JsonExtent()
+                            {
+                                Xmin = serviceMap.Display.Envelope.minx,
+                                Ymin = serviceMap.Display.Envelope.miny,
+                                Xmax = serviceMap.Display.Envelope.maxx,
+                                Ymax = serviceMap.Display.Envelope.maxy
+                                // ToDo: SpatialReference
+                            }
+                        });
+                    }
+                    else
+                    {
+                        context.ServiceRequest.Succeeded = false;
+                        context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
+                        {
+                            error = new JsonError.Error()
+                            {
+                                code = -1,
+                                message = "No image data"
+                            }
+                        });
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                context.ServiceRequest.Succeeded = false;
+                context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
+                {
+                    error = new JsonError.Error()
+                    {
+                        code = -1,
+                        message = ex.Message
+                    }
+                });
             }
         }
 
@@ -162,7 +188,7 @@ namespace gView.Interoperability.ArcGisServer.Request
 
             foreach (var layer in layers)
             {
-                switch(option)
+                switch (option)
                 {
                     case "show":
                         layer.Visible = layerIds.Contains(layer.ID);
@@ -178,13 +204,13 @@ namespace gView.Interoperability.ArcGisServer.Request
                         if (layerIds.Contains(layer.ID))
                             layer.Visible = false;
                         break;
-                }   
+                }
             }
 
-            if(!String.IsNullOrWhiteSpace(_exportMap.DynamicLayers))
+            if (!String.IsNullOrWhiteSpace(_exportMap.DynamicLayers))
             {
                 var jsonDynamicLayers = JsonConvert.DeserializeObject<JsonDynamicLayer[]>(_exportMap.DynamicLayers);
-                foreach(var jsonDynamicLayer in jsonDynamicLayers)
+                foreach (var jsonDynamicLayer in jsonDynamicLayers)
                 {
                     if (jsonDynamicLayer.Source != null)
                     {
@@ -244,7 +270,7 @@ namespace gView.Interoperability.ArcGisServer.Request
                                             symbol.SymbolSmothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
                                             symbol.FillColor = ToColor(jsonRenderer.Color);
 
-                                            if(jsonRenderer.Outline!=null)
+                                            if (jsonRenderer.Outline != null)
                                             {
                                                 symbol.OutlineColor = ToColor(jsonRenderer.Outline.Color);
                                                 symbol.OutlineWidth = jsonRenderer.Outline.Width;
@@ -281,7 +307,7 @@ namespace gView.Interoperability.ArcGisServer.Request
 
         #region Query
 
-        private void Query(IServiceRequestContext context)
+        private void Query(IServiceRequestContext context, bool isFeatureServer = false)
         {
             try
             {
@@ -289,12 +315,28 @@ namespace gView.Interoperability.ArcGisServer.Request
 
                 List<JsonFeature> jsonFeatures = new List<JsonFeature>();
                 List<JsonFeatureResponse.Field> jsonFields = new List<JsonFeatureResponse.Field>();
+                string objectIdFieldName = String.Empty;
+                EsriGeometryType esriGeometryType = EsriGeometryType.esriGeometryAny;
+                JsonSpatialReference featureSref = null;
 
                 using (var serviceMap = context.CreateServiceMapInstance())
                 {
                     string filterQuery;
-                    foreach (var tableClass in FindTableClass(serviceMap, query.LayerId.ToString(), out filterQuery))
+
+                    var tableClasses = FindTableClass(serviceMap, query.LayerId.ToString(), out filterQuery);
+                    if (isFeatureServer == true && tableClasses.Count > 1)
                     {
+                        throw new Exception("FeatureService can't be used with aggregated feature classes");
+                    }
+
+                    foreach (var tableClass in tableClasses)
+                    {
+                        objectIdFieldName = tableClass.IDFieldName;
+                        if (tableClass is IFeatureClass)
+                        {
+                            esriGeometryType = JsonLayer.ToGeometryType(((IFeatureClass)tableClass).GeometryType);
+                        }
+
                         QueryFilter filter;
                         if (!String.IsNullOrWhiteSpace(query.Geometry))
                         {
@@ -316,6 +358,26 @@ namespace gView.Interoperability.ArcGisServer.Request
                             filter.SubFields = query.OutFields;
                         }
                         filter.WhereClause = query.Where;
+
+                        if (!String.IsNullOrWhiteSpace(query.OutSRef))
+                        {
+                            filter.FeatureSpatialReference = SRef(query.OutSRef);
+                        }
+                        else if (tableClass is IFeatureClass)
+                        {
+                            filter.FeatureSpatialReference = ((IFeatureClass)tableClass).SpatialReference;
+                        }
+                        if (filter.FeatureSpatialReference != null)
+                        {
+                            try
+                            {
+                                featureSref = new JsonSpatialReference()
+                                {
+                                    Wkid = int.Parse(filter.FeatureSpatialReference.Name.Split(':')[1])
+                                };
+                            }
+                            catch { }
+                        }
 
                         if (filterQuery != String.Empty)
                             filter.WhereClause = (filter.WhereClause != String.Empty) ?
@@ -347,7 +409,12 @@ namespace gView.Interoperability.ArcGisServer.Request
                                 {
                                     foreach (var field in feature.Fields)
                                     {
-                                        attributesDict[field.Name] = field.Value;
+                                        object val = field.Value;
+                                        if (val is DateTime)
+                                        {
+                                            val = Convert.ToInt64(((DateTime)val - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
+                                        }
+                                        attributesDict[field.Name] = val;
 
                                         if (firstFeature)
                                         {
@@ -377,7 +444,18 @@ namespace gView.Interoperability.ArcGisServer.Request
 
                 context.ServiceRequest.Succeeded = true;
 
-                if (query.ReturnCountOnly == true)
+                if (isFeatureServer)
+                {
+                    context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonFeatureServiceQueryResponse()
+                    {
+                        ObjectIdFieldName = objectIdFieldName,
+                        GeometryType = esriGeometryType.ToString(),
+                        SpatialReference = featureSref,
+                        Fields = jsonFields.ToArray(),
+                        Features = jsonFeatures.ToArray()
+                    });
+                }
+                else if (query.ReturnCountOnly == true)
                 {
                     context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonFeatureCountResponse()
                     {
@@ -388,6 +466,8 @@ namespace gView.Interoperability.ArcGisServer.Request
                 {
                     context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonFeatureResponse()
                     {
+                        GeometryType = esriGeometryType.ToString(),
+                        SpatialReference = featureSref,
                         Fields = jsonFields.ToArray(),
                         Features = jsonFeatures.ToArray()
                     });
@@ -395,7 +475,7 @@ namespace gView.Interoperability.ArcGisServer.Request
             }
             catch (Exception ex)
             {
-                context.ServiceRequest.Succeeded = true;
+                context.ServiceRequest.Succeeded = false;
                 context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
                 {
                     error = new JsonError.Error()
@@ -405,7 +485,7 @@ namespace gView.Interoperability.ArcGisServer.Request
                     }
                 });
             }
-        } 
+        }
 
         #endregion
 
@@ -413,78 +493,348 @@ namespace gView.Interoperability.ArcGisServer.Request
 
         private void Legend(IServiceRequestContext context)
         {
-            var legendLayers = new List<Rest.Json.Legend.Layer>();
-
-            using (var serviceMap = context.CreateServiceMapInstance())
+            try
             {
-                foreach (var layer in serviceMap.MapElements)
+                var legendLayers = new List<Rest.Json.Legend.Layer>();
+
+                using (var serviceMap = context.CreateServiceMapInstance())
                 {
-                    if (!(layer is IFeatureLayer) || ((IFeatureLayer)layer).FeatureRenderer == null)
-                        continue;
-
-                    var featureLayer = (IFeatureLayer)layer;
-
-                    var tocElement = serviceMap.TOC.GetTOCElement(featureLayer);
-                    using (var tocLegendItems = serviceMap.TOC.LegendSymbol(tocElement))
+                    foreach (var layer in serviceMap.MapElements)
                     {
-                        if (tocLegendItems.Items == null || tocLegendItems.Items.Count() == 0)
+                        if (!(layer is IFeatureLayer) || ((IFeatureLayer)layer).FeatureRenderer == null)
                             continue;
 
-                        var legendLayer = new Rest.Json.Legend.Layer()
-                        {
-                            LayerId = featureLayer.ID,
-                            LayerName = featureLayer.Title,
-                            LayerType = "Feature-Layer",
-                            MinScale = Convert.ToInt32(featureLayer.MaximumScale > 1 ? featureLayer.MaximumScale : 0),
-                            MaxScale = Convert.ToInt32(featureLayer.MinimumScale > 1 ? featureLayer.MinimumScale : 0)
-                        };
+                        var featureLayer = (IFeatureLayer)layer;
 
-                        var legends = new List<Rest.Json.Legend.Legend>();
-                        foreach(var tocLegendItem in tocLegendItems.Items)
+                        var tocElement = serviceMap.TOC.GetTOCElement(featureLayer);
+                        using (var tocLegendItems = serviceMap.TOC.LegendSymbol(tocElement))
                         {
-                            if (tocLegendItem.Image == null)
+                            if (tocLegendItems.Items == null || tocLegendItems.Items.Count() == 0)
                                 continue;
 
-                            MemoryStream ms = new MemoryStream();
-                            tocLegendItem.Image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-
-                            legends.Add(new Rest.Json.Legend.Legend()
+                            var legendLayer = new Rest.Json.Legend.Layer()
                             {
-                                Label = String.Empty,
-                                Url = Guid.NewGuid().ToString("N").ToString(),
-                                ImageData = Convert.ToBase64String(ms.ToArray()),
-                                ContentType = "image/png",
-                                Width = tocLegendItem.Image.Width,
-                                Height = tocLegendItem.Image.Height
-                            });
+                                LayerId = featureLayer.ID,
+                                LayerName = featureLayer.Title,
+                                LayerType = "Feature-Layer",
+                                MinScale = Convert.ToInt32(featureLayer.MaximumScale > 1 ? featureLayer.MaximumScale : 0),
+                                MaxScale = Convert.ToInt32(featureLayer.MinimumScale > 1 ? featureLayer.MinimumScale : 0)
+                            };
+
+                            var legends = new List<Rest.Json.Legend.Legend>();
+                            foreach (var tocLegendItem in tocLegendItems.Items)
+                            {
+                                if (tocLegendItem.Image == null)
+                                    continue;
+
+                                MemoryStream ms = new MemoryStream();
+                                tocLegendItem.Image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+
+                                legends.Add(new Rest.Json.Legend.Legend()
+                                {
+                                    Label = String.Empty,
+                                    Url = Guid.NewGuid().ToString("N").ToString(),
+                                    ImageData = Convert.ToBase64String(ms.ToArray()),
+                                    ContentType = "image/png",
+                                    Width = tocLegendItem.Image.Width,
+                                    Height = tocLegendItem.Image.Height
+                                });
+                            }
+                            legendLayer.Legend = legends.ToArray();
+                            legendLayers.Add(legendLayer);
                         }
-                        legendLayer.Legend = legends.ToArray();
-                        legendLayers.Add(legendLayer);
                     }
                 }
-            }
 
-            context.ServiceRequest.Succeeded = true;
-            context.ServiceRequest.Response = JsonConvert.SerializeObject(new Rest.Json.Legend.LegendResponse()
+                context.ServiceRequest.Succeeded = true;
+                context.ServiceRequest.Response = JsonConvert.SerializeObject(new Rest.Json.Legend.LegendResponse()
+                {
+                    Layers = legendLayers.ToArray()
+                });
+            }
+            catch (Exception ex)
             {
-                Layers = legendLayers.ToArray()
-            });
+                context.ServiceRequest.Succeeded = false;
+                context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
+                {
+                    error = new JsonError.Error()
+                    {
+                        code = -1,
+                        message = ex.Message
+                    }
+                });
+            }
         }
 
         #endregion
 
-        #region FeatureService Query
+        #region FeatureService
 
-        public void FeatureServiceQuery(IServiceRequestContext context)
+        private void AddFeatures(IServiceRequestContext context)
         {
+            try
+            {
+                var editRequest = JsonConvert.DeserializeObject<JsonFeatureServerEditRequest>(context.ServiceRequest.Request);
 
+                using (var serviceMap = context.CreateServiceMapInstance())
+                {
+                    var featureClass = GetFeatureClass(serviceMap, editRequest);
+                    var dataset = featureClass.Dataset;
+                    var database = dataset?.Database as IFeatureUpdater;
+                    if (database == null)
+                    {
+                        throw new Exception("Featureclass is not editable");
+                    }
+
+                    List<IFeature> features = GetFeatures(featureClass, editRequest);
+                    if (features.Count == 0)
+                        throw new Exception("No features to add");
+
+                    if (features.Where(f => f.OID > 0).Count() > 0)
+                        throw new Exception("Can't insert features with existing ObjectId");
+
+                    if (!database.Insert(featureClass, features))
+                        throw new Exception(database.lastErrorMsg);
+
+                    context.ServiceRequest.Succeeded = true;
+                    context.ServiceRequest.Response = JsonConvert.SerializeObject(
+                        new JsonFeatureServerResponse()
+                        {
+                            AddResults = new JsonFeatureServerResponse.JsonResponse[]
+                            {
+                            new JsonFeatureServerResponse.JsonResponse()
+                            {
+                                Success=true
+                            }
+                            }
+                        });
+                }
+            }
+            catch (Exception ex)
+            {
+                context.ServiceRequest.Succeeded = false;
+                context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonFeatureServerResponse()
+                {
+                    AddResults = new JsonFeatureServerResponse.JsonResponse[]
+                    {
+                        new JsonFeatureServerResponse.JsonResponse()
+                        {
+                            Success=false,
+                            Error=new JsonFeatureServerResponse.JsonError()
+                            {
+                                Code=999,
+                                Description=ex.Message.Split('\n')[0]
+                            }
+                        }
+                    }
+                });
+            }
         }
+
+        private void UpdateFeatures(IServiceRequestContext context)
+        {
+            try
+            {
+                var editRequest = JsonConvert.DeserializeObject<JsonFeatureServerEditRequest>(context.ServiceRequest.Request);
+
+                using (var serviceMap = context.CreateServiceMapInstance())
+                {
+                    var featureClass = GetFeatureClass(serviceMap, editRequest);
+                    var dataset = featureClass.Dataset;
+                    var database = dataset?.Database as IFeatureUpdater;
+                    if (database == null)
+                    {
+                        throw new Exception("Featureclass is not editable");
+                    }
+
+                    List<IFeature> features = GetFeatures(featureClass, editRequest);
+                    if (features.Count == 0)
+                        throw new Exception("No features to add");
+
+                    if (features.Where(f => f.OID <= 0).Count() > 0)
+                        throw new Exception("Can't update features without existing ObjectId");
+
+                    if (!database.Update(featureClass, features))
+                        throw new Exception(database.lastErrorMsg);
+
+                    context.ServiceRequest.Succeeded = true;
+                    context.ServiceRequest.Response = JsonConvert.SerializeObject(
+                        new JsonFeatureServerResponse()
+                        {
+                            UpdateResults = new JsonFeatureServerResponse.JsonResponse[]
+                            {
+                            new JsonFeatureServerResponse.JsonResponse()
+                            {
+                                Success=true
+                            }
+                            }
+                        });
+                }
+            }
+            catch (Exception ex)
+            {
+                context.ServiceRequest.Succeeded = false;
+                context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonFeatureServerResponse()
+                {
+                    UpdateResults = new JsonFeatureServerResponse.JsonResponse[]
+                    {
+                        new JsonFeatureServerResponse.JsonResponse()
+                        {
+                            Success=false,
+                            Error=new JsonFeatureServerResponse.JsonError()
+                            {
+                                Code=999,
+                                Description=ex.Message.Split('\n')[0]
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        private void DeleteFeatures(IServiceRequestContext context)
+        {
+            try
+            {
+                var editRequest = JsonConvert.DeserializeObject<JsonFeatureServerEditRequest>(context.ServiceRequest.Request);
+
+                using (var serviceMap = context.CreateServiceMapInstance())
+                {
+                    var featureClass = GetFeatureClass(serviceMap, editRequest);
+                    var dataset = featureClass.Dataset;
+                    var database = dataset?.Database as IFeatureUpdater;
+                    if (database == null)
+                    {
+                        throw new Exception("Featureclass is not editable");
+                    }
+
+                    foreach (int objectId in editRequest.ObjectIds.Split(',').Select(s => int.Parse(s)))
+                    {
+                        if (!database.Delete(featureClass, objectId))
+                            throw new Exception(database.lastErrorMsg);
+                    }
+
+                    context.ServiceRequest.Succeeded = true;
+                    context.ServiceRequest.Response = JsonConvert.SerializeObject(
+                        new JsonFeatureServerResponse()
+                        {
+                            DeleteResults = new JsonFeatureServerResponse.JsonResponse[]
+                            {
+                            new JsonFeatureServerResponse.JsonResponse()
+                            {
+                                Success=true
+                            }
+                            }
+                        });
+                }
+            }
+            catch (Exception ex)
+            {
+                context.ServiceRequest.Succeeded = false;
+                context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonFeatureServerResponse()
+                {
+                    DeleteResults = new JsonFeatureServerResponse.JsonResponse[]
+                    {
+                        new JsonFeatureServerResponse.JsonResponse()
+                        {
+                            Success=false,
+                            Error=new JsonFeatureServerResponse.JsonError()
+                            {
+                                Code=999,
+                                Description=ex.Message.Split('\n')[0]
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        #region Helper
+
+        private IFeatureClass GetFeatureClass(IServiceMap serviceMap, JsonFeatureServerEditRequest editRequest)
+        {
+            string filterQuery;
+
+            var tableClasses = FindTableClass(serviceMap, editRequest.LayerId.ToString(), out filterQuery);
+            if (tableClasses.Count > 1)
+            {
+                throw new Exception("FeatureService can't be used with aggregated feature classes");
+            }
+            if (tableClasses.Count == 0 || !(tableClasses[0] is IFeatureClass))
+            {
+                throw new Exception("FeatureService can only used with feature classes");
+            }
+
+            var featureClass = (IFeatureClass)tableClasses[0];
+
+            return featureClass;
+        }
+
+        private List<IFeature> GetFeatures(IFeatureClass featureClass, JsonFeatureServerEditRequest editRequest)
+        {
+            List<IFeature> features = new List<IFeature>();
+            foreach (var jsonFeature in editRequest.Features)
+            {
+                features.Add(ToFeature(featureClass, jsonFeature));
+            }
+
+            return features;
+        }
+
+        #endregion
 
         #endregion
 
         #endregion
 
         #region Helper
+
+        private Feature ToFeature(IFeatureClass fc, JsonFeature jsonFeature)
+        {
+            var feature = new Feature();
+
+            feature.Shape = jsonFeature.Geometry.ToGeometry();
+            var attributes = (IDictionary<string, object>)jsonFeature.Attributes;
+            if (attributes == null)
+                throw new ArgumentException("No features attributes!");
+
+            for (int f = 0, fieldCount = fc.Fields.Count; f < fieldCount; f++)
+            {
+                var field = fc.Fields[f];
+
+                if(attributes.ContainsKey(field.name))
+                {
+                    switch(field.type)
+                    {
+                        case FieldType.ID:
+                            feature.Fields.Add(new FieldValue(field.name, attributes[field.name]));
+                            feature.OID = Convert.ToInt32(attributes[field.name]);
+                            break;
+                        case FieldType.Date:
+                            object val = attributes[field.name];
+                            if (val is string)
+                            {
+                                if (val.ToString().Contains(" "))
+                                    val = DateTime.ParseExact(val.ToString(), "dd.MM.yyyy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+                                else
+                                    val = DateTime.ParseExact(val.ToString(), "dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                            }
+                            else if (val is long || val is int)
+                            {
+                                long esriDate = Convert.ToInt64(val);
+                                val = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(esriDate);
+                            }
+                            feature.Fields.Add(new FieldValue(field.name, val));
+                            break;
+                        default:
+                            feature.Fields.Add(new FieldValue(field.name, attributes[field.name]));
+                            break;
+                    }
+                }
+            }
+
+            return feature;
+        }
 
         private List<ITableClass> FindTableClass(IServiceMap map, string id, out string filterQuery)
         {

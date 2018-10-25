@@ -25,34 +25,9 @@ namespace gView.Interoperability.ArcGisServer.Rest.Json
         public JsonSpatialReference SpatialReference { get; set; }
 
         [JsonProperty("fields")]
-        public Field[] Fields { get; set; }
+        public JsonFeatureResponse.Field[] Fields { get; set; }
 
         [JsonProperty("features")]
         public JsonFeature[] Features { get; set; }
-
-        #region Classes
-
-        public class Field
-        {
-            [JsonProperty("name")]
-            public string Name { get; set; }
-
-            [JsonProperty("type")]
-            public string Type { get; set; }
-            
-            [JsonProperty("alias")]
-            public string Alias { get; set; }
-
-            [JsonProperty("length")]
-            public int? Length { get; set; }
-
-            //public class VType
-            //{
-            //    [JsonProperty("value")]
-            //    public string Value { get; set; }
-            //}
-        }
-
-        #endregion
     }
 }
