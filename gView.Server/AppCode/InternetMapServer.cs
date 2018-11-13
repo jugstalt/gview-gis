@@ -3,6 +3,7 @@ using gView.Framework.Data;
 using gView.Framework.IO;
 using gView.Framework.system;
 using gView.MapServer;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -29,16 +30,18 @@ namespace gView.Server.AppCode
         static internal MapServerInstance Instance = null;
         static internal Acl acl = null;
 
-        static public void Init(string folder, int port = 80)
+        static public void Init(string rootPath, int port = 80)
         {
-            OutputPath = @"C:\ArcIMS\Output";
-            OutputUrl = @"http://localhost/output";
-            OnlineResource = "http://localhost:8889";
+            var mapServerConfig = JsonConvert.DeserializeObject<MapServerConfig>(File.ReadAllText(rootPath + "/_config/mapserver.json"));
+
+            OutputPath = mapServerConfig.OuputPath.ToPlattformPath();
+            OutputUrl = mapServerConfig.OutputUrl;
+            OnlineResource = mapServerConfig.OnlineResourceUrl;
 
             Instance = new MapServerInstance(port);
 
-            ServicesPath = folder;
-            foreach (var mapFileInfo in new DirectoryInfo(folder.ToPlattformPath()).GetFiles("*.mxl"))
+            ServicesPath = mapServerConfig.ServiceFolder;
+            foreach (var mapFileInfo in new DirectoryInfo(ServicesPath.ToPlattformPath()).GetFiles("*.mxl"))
             {
                 try
                 {
