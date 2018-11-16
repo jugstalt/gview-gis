@@ -616,6 +616,29 @@ namespace gView.Server.Controllers
             }
         }
 
+        public IActionResult FeatureServiceLayer(string folder, string id, int layerId)
+        {
+            try
+            {
+                if (folder != DefaultFolder)
+                    throw new Exception("Unknown folder: " + folder);
+
+                var map = InternetMapServer.Instance[id];
+                if (map == null)
+                    throw new Exception("Unknown service: " + id);
+
+                var jsonLayers = new JsonLayers();
+                return Result(Layer(map, layerId));
+            }
+            catch (Exception ex)
+            {
+                return Json(new JsonError()
+                {
+                    error = new JsonError.Error() { code = 999, message = ex.Message }
+                });
+            }
+        }
+
         #endregion
 
         #region Helper
