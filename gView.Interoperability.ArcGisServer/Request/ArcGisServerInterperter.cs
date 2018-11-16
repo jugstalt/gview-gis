@@ -815,9 +815,30 @@ namespace gView.Interoperability.ArcGisServer.Request
                             if (val is string)
                             {
                                 if (val.ToString().Contains(" "))
-                                    val = DateTime.ParseExact(val.ToString(), "dd.MM.yyyy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+                                {
+                                    val = DateTime.ParseExact(val.ToString(),
+                                        new string[]{
+                                            "dd.MM.yyyy HH:mm:ss",
+                                            "dd.MM.yyyy HH:mm",
+                                            "yyyy.MM.dd HH:mm:ss",
+                                            "yyyy.MM.dd HH:mm",
+                                            "yyyy-MM-dd HH:mm:ss",
+                                            "yyyy-MM-dd HH:mm"
+                                        },
+                                        System.Globalization.CultureInfo.InvariantCulture,
+                                        System.Globalization.DateTimeStyles.None);
+                                }
                                 else
-                                    val = DateTime.ParseExact(val.ToString(), "dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                                {
+                                    val = DateTime.ParseExact(val.ToString(),
+                                        new string[]{
+                                            "dd.MM.yyyy",
+                                            "yyyy.MM.dd",
+                                            "yyyy-MM-dd"
+                                            },
+                                        System.Globalization.CultureInfo.InvariantCulture,
+                                        System.Globalization.DateTimeStyles.None);
+                                }
                             }
                             else if (val is long || val is int)
                             {
