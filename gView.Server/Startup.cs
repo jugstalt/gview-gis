@@ -97,6 +97,7 @@ namespace gView.Server
                     defaults: new { controller = "ArcGis", Action = "Services" }
                 );
 
+                
                 routes.MapRoute(
                     name: "arcgis_rest_featureserver_query",
                     template: "arcgis/rest/services/{folder}/{id}/featureserver/{layerId}/query",
@@ -117,6 +118,12 @@ namespace gView.Server
                     template: "arcgis/rest/services/{folder}/{id}/featureserver/{layerId}/deletefeatures",
                     defaults: new { controller = "ArcGis", Action = "FeatureServerDeleteFeatures" }
                 );
+                routes.MapRoute(
+                  name: "arcgis_rest_featureservicelayer",
+                  template: "arcgis/rest/services/{folder}/{id}/featureserver/{layerId}",
+                  defaults: new { controller = "ArcGis", Action = "FeatureServiceLayer" }
+                );
+
 
                 // Ogc
                 routes.MapRoute(
@@ -175,8 +182,9 @@ namespace gView.Server
             });
 
             PlugInManager.Init();
-            //InternetMapServer.Init(@"C:\ProgramData\gView\mapServer\Services\8001");
-            InternetMapServer.Init(@"C:\Development_OpenSource\GeoDaten\MXL\8050");
+            
+            InternetMapServer.Init(env.ContentRootPath);
+            //InternetMapServer.Init(@"C:\Development_OpenSource\GeoDaten\MXL\8050");
         }
     }
 }

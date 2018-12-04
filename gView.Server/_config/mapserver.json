@@ -1,0 +1,6 @@
+{
+  "services-folder": "C:\\ProgramData\\gView\\mapServer\\Services\\8001",
+  "output-path": "C:\\ArcIMS\\Output",
+  "output-url": "http://localhost/output",
+  "onlineresource-url": "http://localhost:8889"
+}
