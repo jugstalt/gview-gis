@@ -1138,7 +1138,7 @@ namespace gView.Interoperability.OGC
                     string output = String.Empty;
                     try
                     {
-                        output = this.TransformXML(xml.ToString(), System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"\misc\wms\GetFeatureInfo\" + formatXsl.Replace("/", "\\"));
+                        output = this.TransformXML(xml.ToString(), System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"/misc/wms/GetFeatureInfo/" + formatXsl.Replace("/", "\\"));
                     
                         /*
                         var xslTrans = new XslCompiledTransform();

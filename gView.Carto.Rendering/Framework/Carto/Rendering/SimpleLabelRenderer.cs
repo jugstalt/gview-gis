@@ -244,6 +244,22 @@ namespace gView.Framework.Carto.Rendering
                     if (_howManyLabels == howManyLabels.one_per_name) _labelStrings.Add(_symbol.Text.Trim());
                 }
             }
+            else if (feature.Shape is IMultiPoint)
+            {
+                var multiPoint = (IMultiPoint)feature.Shape;
+                for (int i = 0, i_to = multiPoint.PointCount; i < i_to; i++)
+                {
+                    if (multiPoint[i] == null)
+                        continue;
+
+                    if (disp.LabelEngine.TryAppend(disp, _symbol, multiPoint[i], _labelPriority != labelPriority.always) == LabelAppendResult.Succeeded)
+                    {
+                        if (_howManyLabels == howManyLabels.one_per_name) _labelStrings.Add(_symbol.Text.Trim());
+                        if (_howManyLabels == howManyLabels.one_per_part)
+                            break;
+                    }
+                }
+            }
             else if (feature.Shape is IPolyline)
             {
                 IPoint point1 = null, point2 = null;

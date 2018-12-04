@@ -34,7 +34,7 @@ namespace gView.Framework.Symbology
 
         protected SimpleTextSymbol(Font font, Color color)
         {
-            _font = font ?? new Font("Arial", 10);
+            _font = font;
             _brush = new SolidBrush(color);
 
             this.ShowInTOC = false;
@@ -81,7 +81,7 @@ namespace gView.Framework.Symbology
                 {
                     display.GraphicsContext.RotateTransform(angle + _angle + _rotation);
                 }
-                display.GraphicsContext.DrawString(text, _font, _brush, (float)_xOffset, (float)_yOffset, format);
+                DrawString(display.GraphicsContext, text, _font, _brush, (float)_xOffset, (float)_yOffset, format);
                 display.GraphicsContext.ResetTransform();
                 display.GraphicsContext.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
             }
@@ -480,6 +480,9 @@ namespace gView.Framework.Symbology
         [Category("Reference Scaling")]
         public float MinFontSize { get; set; }
 
+        [Browsable(true)]
+        public bool IncludesSuperScript { get; set; }
+
         #endregion
 
         #region ISymbol Members
@@ -754,7 +757,7 @@ namespace gView.Framework.Symbology
                 //
                 //
                 //
-                
+
                 ms.Write(encoder.GetBytes(soap), 0, soap.Length);
                 ms.Position = 0;
                 SoapFormatter formatter = new SoapFormatter();
@@ -774,6 +777,7 @@ namespace gView.Framework.Symbology
             VerticalOffset = (float)stream.Load("yOffset", (float)0);
             Angle = (float)stream.Load("Angle", (float)0);
             _align = (TextSymbolAlignment)stream.Load("Alignment", (int)TextSymbolAlignment.Center);
+            this.IncludesSuperScript = (bool)stream.Load("includessuperscript", false);
         }
 
         virtual public void Save(IPersistStream stream)
@@ -803,6 +807,7 @@ namespace gView.Framework.Symbology
 
             stream.Save("maxfontsize", this.MaxFontSize);
             stream.Save("minfontsize", this.MinFontSize);
+            stream.Save("includessuperscript", this.IncludesSuperScript);
         }
 
         #endregion
@@ -829,6 +834,7 @@ namespace gView.Framework.Symbology
             tSym.Angle = Angle;
             tSym._align = _align;
             tSym.Smoothingmode = this.Smoothingmode;
+            tSym.IncludesSuperScript = this.IncludesSuperScript;
 
             return tSym;
         }
@@ -897,6 +903,61 @@ namespace gView.Framework.Symbology
         virtual public SymbolSmoothing SymbolSmothingMode
         {
             set { this.Smoothingmode = value; }
+        }
+
+        #endregion
+
+        #region Helper
+
+        protected void DrawString(Graphics gr, string text, Font font, SolidBrush brush, float xOffset, float yOffset, StringFormat format)
+        {
+            if (IncludesSuperScript == true)
+            {
+                if (!text.Contains("^"))
+                {
+                    gr.DrawString(text, font, brush, xOffset, yOffset, format);
+                }
+                else
+                {
+                    float fontSize = font.Size;
+                    while (!String.IsNullOrWhiteSpace(text))
+                    {
+                        var pos = text.IndexOf("^");
+                        string subText = String.Empty;
+                        if (pos < 0)
+                        {
+                            subText = text;
+                        }
+                        if (pos > 0)
+                        {
+                            subText = text.Substring(0, text.IndexOf("^"));
+                        }
+
+                        using (var subFont = new Font(font.Name, fontSize))
+                        {
+                            gr.DrawString(subText, subFont, brush, xOffset, yOffset, format);
+                            var size = gr.MeasureString(subText, subFont);
+                            if (!String.IsNullOrWhiteSpace(subText))
+                                xOffset += size.Width - subFont.Size * .2f;
+                            yOffset -= subFont.Size * .4f;
+                        }
+
+                        if (pos >= 0)
+                        {
+                            text = text.Substring(pos + 1);
+                            fontSize *= .9f;
+                        }
+                        else
+                        {
+                            text = String.Empty;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                gr.DrawString(text, font, brush, xOffset, yOffset, format);
+            }
         }
 
         #endregion
@@ -983,6 +1044,7 @@ namespace gView.Framework.Symbology
             tSym.Smoothingmode = this.Smoothingmode;
             tSym.GlowingSmoothingmode = this.GlowingSmoothingmode;
             tSym.GlowingWidth = this.GlowingWidth;
+            tSym.IncludesSuperScript = this.IncludesSuperScript;
 
             return tSym;
         }
@@ -1048,7 +1110,7 @@ namespace gView.Framework.Symbology
                             for (int y = _outlineWidth; y >= -_outlineWidth; y--)
                             {
                                 if (x == 0 && y == 0) continue;
-                                display.GraphicsContext.DrawString(text, _font, _outlinebrush, (float)_xOffset + x, (float)_yOffset + y, format);
+                                DrawString(display.GraphicsContext, text, _font, _outlinebrush, (float)_xOffset + x, (float)_yOffset + y, format);
                             }
                         }
                     }
@@ -1058,7 +1120,7 @@ namespace gView.Framework.Symbology
                 {
                     display.GraphicsContext.TextRenderingHint = ((this.Smoothingmode == SymbolSmoothing.None) ? System.Drawing.Text.TextRenderingHint.SystemDefault : System.Drawing.Text.TextRenderingHint.AntiAlias);
 
-                    display.GraphicsContext.DrawString(text, _font, _brush, (float)_xOffset, (float)_yOffset, format);
+                    DrawString(display.GraphicsContext, text, _font, _brush, (float)_xOffset, (float)_yOffset, format);
                 }
 
                 display.GraphicsContext.ResetTransform();
@@ -1126,6 +1188,7 @@ namespace gView.Framework.Symbology
             tSym.Angle = Angle;
             tSym._align = _align;
             tSym.Smoothingmode = this.Smoothingmode;
+            tSym.IncludesSuperScript = this.IncludesSuperScript;
 
             return tSym;
         }
@@ -1195,7 +1258,7 @@ namespace gView.Framework.Symbology
                 {
                     display.GraphicsContext.TextRenderingHint = ((this.Smoothingmode == SymbolSmoothing.None) ? System.Drawing.Text.TextRenderingHint.SystemDefault : System.Drawing.Text.TextRenderingHint.AntiAlias);
 
-                    display.GraphicsContext.DrawString(text, _font, _brush, (float)_xOffset, (float)_yOffset, format);
+                    DrawString(display.GraphicsContext, text, _font, _brush, (float)_xOffset, (float)_yOffset, format);
 
                     display.GraphicsContext.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
                 }
