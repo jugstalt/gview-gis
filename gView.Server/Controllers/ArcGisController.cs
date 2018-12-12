@@ -828,7 +828,7 @@ namespace gView.Server.Controllers
             if (htmlLink == null)
                 return val;
 
-            string link = htmlLink.LinkTemplate.Replace("{url}", Request.Scheme + "://" + Request.Host + "/" + Request.Path).Replace("{0}", val);
+            string link = htmlLink.LinkTemplate.Replace("{url}", InternetMapServer.AppRootUrl(this.Request) + "/" + Request.Path).Replace("{0}", val);
             return "<a href='" + link + "'>" + val + "</a>";
         }
 

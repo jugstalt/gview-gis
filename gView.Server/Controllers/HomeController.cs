@@ -24,9 +24,10 @@ namespace gView.Server.Controllers
 
         public IActionResult Service(string id)
         {
+ 
             return View(new HomeServiceModel()
             {
-                Server = Request.Scheme + "://" + Request.Host,
+                Server = InternetMapServer.AppRootUrl(this.Request), 
                 OnlineResource= Request.Scheme + "://" + Request.Host+"/ogc?",
                 ServiceMap = InternetMapServer.Instance[id],
                 Interpreters = InternetMapServer.Interpreters.Select(i => new PlugInManager().CreateInstance<IServiceRequestInterpreter>(i))

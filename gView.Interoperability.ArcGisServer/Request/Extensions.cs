@@ -73,8 +73,8 @@ namespace gView.Interoperability.ArcGisServer.Request
             {
                 var polyline = (IPolyline)shape;
 
-                List<double[,]> rings = new List<double[,]>();
-                for (int r = 0, ringCount = polyline.PathCount; r < ringCount; r++)
+                List<double[,]> paths = new List<double[,]>();
+                for (int r = 0, pathCount = polyline.PathCount; r < pathCount; r++)
                 {
                     var path = polyline[r];
                     if (path == null || path.PointCount == 0)
@@ -87,12 +87,12 @@ namespace gView.Interoperability.ArcGisServer.Request
                         points[p, 0] = point.X;
                         points[p, 1] = point.Y;
                     }
-                    rings.Add(points);
+                    paths.Add(points);
                 }
 
                 var jsonPolyline = new JsonGeometry()
                 {
-                    Rings = rings.ToArray()
+                    Paths = paths.ToArray()
                 };
 
                 return jsonPolyline;

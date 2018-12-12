@@ -3,6 +3,8 @@ using gView.Framework.Data;
 using gView.Framework.IO;
 using gView.Framework.system;
 using gView.MapServer;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -622,6 +624,21 @@ namespace gView.Server.AppCode
                     return;
             }
             InternetMapServer.mapServices.Add(new MapService(mapName, type));
+        }
+
+        #endregion
+
+        #region Http
+
+        static public string AppRootUrl(HttpRequest request)
+        {
+            //string url = String.Format("{0}{1}{2}", UrlScheme(request, httpSchema), request..Authority, urlHelper.UrlContent("~"));
+            //if (url.EndsWith("/"))
+            //    return url.Substring(0, url.Length - 1);
+
+            //return url;
+
+            return $"{request.Scheme}://{request.Host}{request.PathBase}";
         }
 
         #endregion

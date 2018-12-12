@@ -8,7 +8,7 @@
         @foreach(var mapService in Model.Services)
         {
             <li>
-                <a href="/Home/Service/@(mapService.Name)" >@mapService.Name</a>
+                @Html.ActionLink(mapService.Name, "Service", "Home", new { id = mapService.Name })
             </li>
         }
     </ul>
