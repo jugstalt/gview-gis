@@ -40,14 +40,30 @@ ul {
     list-style: none;
 }
 
-.property-name,
-.property-value{
+.html-body {
+    padding:10px;
+}
+
+.code-block {
+    padding: 8px;
+    background-color: #ddd;
+    border: solid 1px #ccc;
+    border-radius: 4px;
+}
+
+.yaml-code {
+    font-family: Courier New, Courier, monospace;
+    font-size:14px;
+}
+
+.yaml-code .property-name,
+.yaml-code .property-value{
     display:inline-block;
 }
-.property-name {
+.yaml-code .property-name {
     font-weight:bold;
 }
 
-.property-name.array {
+.yaml-code .property-name.array {
     display:block;
 }

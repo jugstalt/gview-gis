@@ -89,12 +89,22 @@ namespace gView.Server.Controllers
                 if (map == null)
                     throw new Exception("Unknown service: " + id);
 
+                gView.Framework.Geometry.Envelope fullExtent = null;
                 return Result(new JsonService()
                 {
                     CurrentVersion = 10.61,
                     Layers = map.MapElements.Select(e =>
                     {
                         var tocElement = map.TOC.GetTOCElement(e as ILayer);
+
+                        if (e.Class is IFeatureClass && ((IFeatureClass)e.Class).Envelope != null)
+                        {
+                            if (fullExtent == null)
+                                fullExtent = new Framework.Geometry.Envelope(((IFeatureClass)e.Class).Envelope);
+                            else
+                                fullExtent.Union(((IFeatureClass)e.Class).Envelope);
+                        }
+
                         return new JsonService.Layer()
                         {
                             Id = e.ID,
@@ -106,10 +116,10 @@ namespace gView.Server.Controllers
                     }).ToArray(),
                     FullExtent = new JsonService.Extent()
                     {
-                        XMin = map?.Display?.Envelope.minx ?? 0D,
-                        YMin = map?.Display?.Envelope.miny ?? 0D,
-                        XMax = map?.Display?.Envelope.maxx ?? 0D,
-                        YMax = map?.Display?.Envelope.maxy ?? 0D,
+                        XMin = fullExtent != null ? fullExtent.minx : 0D,
+                        YMin = fullExtent != null ? fullExtent.miny : 0D,
+                        XMax = fullExtent != null ? fullExtent.maxx : 0D,
+                        YMax = fullExtent != null ? fullExtent.maxy : 0D,
                         SpatialReference = new JsonService.SpatialReference(0)
                     }
                 });
@@ -737,13 +747,33 @@ namespace gView.Server.Controllers
 
         private string ToHtml(object obj)
         {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("<div class='html-body'>");
+
+            sb.Append("<h3>" + obj.GetType().ToString() + " (YAML):</h3>");
+
+            sb.Append("<div class='code-block'>");
+            sb.Append(ToYamlHtml(obj));
+            sb.Append("</div>");
+
+            sb.Append("</div>");
+
+            return sb.ToString();
+        }
+
+        private string ToYamlHtml(object obj, int spaces=0, bool isArray=false)
+        {
             if (obj == null)
                 return String.Empty;
 
             var type = obj.GetType();
 
             StringBuilder sb = new StringBuilder();
-            sb.Append("<ul class='property-list'>");
+            sb.Append("<div class='yaml-code'>");
+
+            bool isFirst = true;
+
             foreach(var propertyInfo in type.GetProperties())
             {
                 if (propertyInfo.GetValue(obj) == null)
@@ -755,8 +785,6 @@ namespace gView.Server.Controllers
 
                 var linkAttribute = propertyInfo.GetCustomAttribute<HtmlLinkAttribute>();
 
-                sb.Append("<li>");
-
                 bool newLine = !(propertyInfo.PropertyType.IsValueType || propertyInfo.PropertyType == typeof(string));
                 if (newLine == true)
                 {
@@ -764,8 +792,15 @@ namespace gView.Server.Controllers
                         newLine = false;
                 }
 
-                sb.Append("<div class='property-name" +  (newLine ? " array" : "") + "'>" + propertyInfo.Name + ":&nbsp;</div>");
+                string spacesValue = HtmlYamlSpaces(spaces);
+                if(isArray && isFirst)
+                {
+                    spacesValue += "-&nbsp;";
+                    spaces += 2;
+                }
+                sb.Append("<div class='property-name" + (newLine ? " array" : "") + "'>" + spacesValue + propertyInfo.Name + ":&nbsp;</div>");
                 sb.Append("<div class='property-value'>");
+
                 if(propertyInfo.PropertyType.IsArray)
                 {
                     var array = (Array)propertyInfo.GetValue(obj);
@@ -779,15 +814,9 @@ namespace gView.Server.Controllers
                     }
                     else
                     {
-                        sb.Append("<ul class='property-array'>");
-                        //sb.Append("<li>[</li>");
                         for (int i = 0; i < array.Length; i++)
                         {
-                            if(i>0)
-                            {
-                                sb.Append("<li>,</li>");
-                            }
-                            sb.Append("<li class='array-value'>");
+                            
                             var val = array.GetValue(i);
                             if(val==null)
                             {
@@ -795,41 +824,61 @@ namespace gView.Server.Controllers
                             }
                             else if (val.GetType().IsValueType || val.GetType() == typeof(string))
                             {
-                                sb.Append(HtmlValue(linkAttribute, val.ToString()));
+                                sb.Append(HtmlYamlValue(linkAttribute, val));
                             }
                             else
                             {
-                                sb.Append(ToHtml(val));
+                                sb.Append(ToYamlHtml(val, spaces + 2, true));
                             }
-                            sb.Append("</li>");
                         }
-                        //sb.Append("<li>]</li>");
-                        sb.Append("</ul>");
                     }
                 }
                 else if(propertyInfo.PropertyType.IsValueType || propertyInfo.PropertyType == typeof(string))
                 {
-                    sb.Append(HtmlValue(linkAttribute, propertyInfo.GetValue(obj)?.ToString() ?? String.Empty));
+                    sb.Append(HtmlYamlValue(linkAttribute, propertyInfo.GetValue(obj)));
                 }
                 else
                 {
-                    sb.Append(ToHtml(propertyInfo.GetValue(obj)));
+                    sb.Append(ToYamlHtml(propertyInfo.GetValue(obj), spaces + 2));
                 }
                 sb.Append("</div>");
-                sb.Append("</li>");
+                sb.Append("<br/>");
+
+                isFirst = false;
             }
-            sb.Append("</ul>");
+            sb.Append("</div>");
 
             return sb.ToString();
         }
 
-        private string HtmlValue(HtmlLinkAttribute htmlLink, string val)
+        private string HtmlYamlSpaces(int spaces)
         {
-            if (htmlLink == null)
-                return val;
+            StringBuilder sb = new StringBuilder();
 
-            string link = htmlLink.LinkTemplate.Replace("{url}", InternetMapServer.AppRootUrl(this.Request) + "/" + Request.Path).Replace("{0}", val);
-            return "<a href='" + link + "'>" + val + "</a>";
+            for(int i=0;i<spaces;i++)
+            {
+                sb.Append("&nbsp;");
+            }
+
+            return sb.ToString();
+        }
+
+        private string HtmlYamlValue(HtmlLinkAttribute htmlLink, object val)
+        {
+            string valString = val?.ToString() ?? String.Empty;
+
+            if(val is double || val is float)
+            {
+                valString = valString.Replace(",", ".");
+            }
+
+            if (htmlLink == null)
+                return valString;
+
+            
+
+            string link = htmlLink.LinkTemplate.Replace("{url}", InternetMapServer.AppRootUrl(this.Request) + "/" + Request.Path).Replace("{0}", valString);
+            return "<a href='" + link + "'>" + valString + "</a>";
         }
 
         private T Deserialize<T>(IEnumerable<KeyValuePair<string, StringValues>> nv)

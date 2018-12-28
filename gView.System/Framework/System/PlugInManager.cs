@@ -64,26 +64,35 @@ namespace gView.Framework.system
             if (_pluginTypes != null)
                 return;
 
+            string currentDll = String.Empty;
             try
             {
                 _pluginTypes = new Dictionary<Guid, Type>();
                 FileInfo entryAssembly = new FileInfo(Assembly.GetEntryAssembly().Location);
                 foreach(FileInfo dll in entryAssembly.Directory.GetFiles("*.dll"))
                 {
-                    Assembly assembly = Assembly.LoadFrom(dll.FullName);
-                    foreach(var pluginType in assembly.GetTypes())
-                    {
-                        var registerPluginAttribute = pluginType.GetCustomAttribute<RegisterPlugIn>();
-                        if (registerPluginAttribute == null)
-                            continue;
+                    currentDll = dll.Name;
 
-                        _pluginTypes.Add(registerPluginAttribute.Value, pluginType);
+                    try
+                    {
+                        Assembly assembly = Assembly.LoadFrom(dll.FullName);
+                        foreach (var pluginType in assembly.GetTypes())
+                        {
+                            var registerPluginAttribute = pluginType.GetCustomAttribute<RegisterPlugIn>();
+                            if (registerPluginAttribute == null)
+                                continue;
+
+                            _pluginTypes.Add(registerPluginAttribute.Value, pluginType);
+                        }
+                    }
+                    catch (BadImageFormatException)
+                    {
                     }
                 }
             }
-            catch
+            catch(Exception ex)
             {
-                _pluginTypes = null;
+                throw new Exception("PluginMananger.Init() " + currentDll, ex);
             }
         }
 
