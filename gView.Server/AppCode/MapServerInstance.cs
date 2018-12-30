@@ -220,7 +220,15 @@ namespace gView.Server.AppCode
         private IServiceMap FindServiceMap(string name, string alias, IServiceRequestContext context)
         {
             Map map = FindMap(alias, context);
-            if (map != null) return new ServiceMap(map, this);
+            if (map != null)
+            {
+                IEnumerable<IMapApplicationModule> modules = null;
+                if(InternetMapServer.MapDocument is IMapDocumentModules)
+                {
+                    modules = ((IMapDocumentModules)InternetMapServer.MapDocument).GetMapModules(map);
+                }
+                return new ServiceMap(map, this, modules);
+            }
 
             if (name.Contains(",") /* && _serverLicType == ServerLicType.gdi*/)
             {
@@ -314,7 +322,7 @@ namespace gView.Server.AppCode
 
                     if (!found) InternetMapServer.mapServices.Add(new MapService(name, MapServiceType.GDI));
 
-                    return new ServiceMap(newMap, this);
+                    return new ServiceMap(newMap, this, null);
                 }
             }
 

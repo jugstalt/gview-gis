@@ -339,6 +339,11 @@ namespace gView.Framework.UI
         ITableRelations TableRelations { get; }
     }
 
+    public interface IMapDocumentModules
+    {
+        IEnumerable<IMapApplicationModule> GetMapModules(IMap map);
+    }
+
     public interface IDockableWindowContainer
     {
         string Name { get; }

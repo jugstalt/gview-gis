@@ -67,12 +67,14 @@ namespace gView.Framework.Editor.Core
         event OnEditLayerCollectionChangedEventHandler OnEditLayerCollectionChanged;
     }
 
+    [Flags]
     public enum EditStatements { NONE = 0, INSERT = 1, UPDATE = 2, DELETE = 4 }
 
     public interface IEditLayer
     {
-        IFeatureLayer FeatureLayer { get; }
-        EditStatements AllowedStatements { get; }
+        int LayerId { get; }
+        string ClassName { get; }
+        EditStatements Statements { get; }
     }
 
     public interface IEditableDatabase

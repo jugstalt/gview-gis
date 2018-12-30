@@ -2,6 +2,7 @@
 using gView.Framework.Data;
 using gView.Framework.IO;
 using gView.Framework.system;
+using gView.Framework.UI;
 using gView.MapServer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -281,7 +282,13 @@ namespace gView.Server.AppCode
                 if (map == null) return;
                 FileInfo fi = new FileInfo(ServicesPath + @"\" + map.Name + ".meta");
 
-                IServiceMap sMap = new ServiceMap(map, Instance);
+                IEnumerable<IMapApplicationModule> modules = null;
+                if (InternetMapServer.MapDocument is IMapDocumentModules)
+                {
+                    modules = ((IMapDocumentModules)InternetMapServer.MapDocument).GetMapModules(map);
+                }
+
+                IServiceMap sMap = new ServiceMap(map, Instance, modules);
                 XmlStream xmlStream;
                 // 1. Bestehende Metadaten auf sds anwenden
                 if (fi.Exists)
@@ -478,12 +485,19 @@ namespace gView.Server.AppCode
             {
                 XmlStream xmlStream = new XmlStream("IMap");
 
-                StringReader sr = new StringReader(MapXML);
-                if (!xmlStream.ReadStream(sr)) return false;
+                using (StringReader sr = new StringReader(MapXML))
+                    if (!xmlStream.ReadStream(sr)) return false;
 
                 Map map = new Map();
                 map.Load(xmlStream);
                 map.Name = mapName;
+
+                XmlStream pluginStream = new XmlStream("Moduls");
+                using (StringReader sr = new StringReader(MapXML))
+                    if (!xmlStream.ReadStream(sr)) return false;
+
+                ModulesPersists modules = new ModulesPersists(map);
+                modules.Load(pluginStream);
 
                 //foreach (IMap m in ListOperations<IMap>.Clone(_doc.Maps))
                 //{

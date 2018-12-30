@@ -65,11 +65,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Shape", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Fdb.SQLite", "gView.DataSources.Fdb.SQLite\gView.DataSources.Fdb.SQLite.csproj", "{F11B1BE8-7D8A-4B23-AF7B-DB27A0BC9086}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.Fdb.SqlServer", "gView.DataSources.Fdb.SqlServer\gView.DataSources.Fdb.SqlServer.csproj", "{D890DD88-58CD-4DC1-8664-38F273D74692}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Fdb.SqlServer", "gView.DataSources.Fdb.SqlServer\gView.DataSources.Fdb.SqlServer.csproj", "{D890DD88-58CD-4DC1-8664-38F273D74692}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.Fdb.PostgreSql", "gView.DataSources.Fdb.PostgreSql\gView.DataSources.Fdb.PostgreSql.csproj", "{01AD9E16-2249-4A46-9173-2EC727A6026E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Fdb.PostgreSql", "gView.DataSources.Fdb.PostgreSql\gView.DataSources.Fdb.PostgreSql.csproj", "{01AD9E16-2249-4A46-9173-2EC727A6026E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.OSGeo", "gView.DataSources.OSGeo\gView.DataSources.OSGeo.csproj", "{78971780-E6B2-423B-B61D-7CAEFBB25282}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.OSGeo", "gView.DataSources.OSGeo\gView.DataSources.OSGeo.csproj", "{78971780-E6B2-423B-B61D-7CAEFBB25282}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Plugins.Modules", "gView.Plugins.Modules\gView.Plugins.Modules.csproj", "{04E002F8-468C-45E8-997B-332E5048BA31}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -213,6 +215,10 @@ Global
 		{78971780-E6B2-423B-B61D-7CAEFBB25282}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78971780-E6B2-423B-B61D-7CAEFBB25282}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78971780-E6B2-423B-B61D-7CAEFBB25282}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04E002F8-468C-45E8-997B-332E5048BA31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04E002F8-468C-45E8-997B-332E5048BA31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04E002F8-468C-45E8-997B-332E5048BA31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04E002F8-468C-45E8-997B-332E5048BA31}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

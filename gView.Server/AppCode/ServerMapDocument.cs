@@ -2,17 +2,21 @@
 using gView.Framework.Data;
 using gView.Framework.Data.Relations;
 using gView.Framework.IO;
+using gView.Framework.system;
 using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Server.AppCode
 {
-    public class ServerMapDocument : IMapDocument, IPersistable
+    public class ServerMapDocument : IMapDocument, IMapDocumentModules, IPersistable
     {
         private List<IMap> _maps = new List<IMap>();
+        // ToDo: ThreadSafe
+        private Dictionary<IMap, ModulesPersists> _mapModules = new Dictionary<IMap, ModulesPersists>();
         private ITableRelations _tableRelations;
 
         public ServerMapDocument()
@@ -143,6 +147,10 @@ namespace gView.Server.AppCode
             while ((map = (IMap)stream.Load("IMap", null, new gView.Framework.Carto.Map())) != null)
             {
                 this.AddMap(map);
+
+                var modules = new ModulesPersists(map);
+                stream.Load("Moduls", null, modules);
+                _mapModules.Add(map, modules);
             }
         }
 
@@ -151,7 +159,113 @@ namespace gView.Server.AppCode
             foreach (IMap map in _maps)
             {
                 stream.Save("IMap", map);
+
+                if (_mapModules.ContainsKey(map))
+                {
+                    stream.Save("Moduls", _mapModules[map]);
+                }
+
             }
+        }
+
+        #endregion
+
+        #region IMapDocumentModules
+
+        public IEnumerable<IMapApplicationModule> GetMapModules(IMap map)
+        {
+            if(_mapModules.ContainsKey(map))
+            {
+                return _mapModules[map].Modules;
+            }
+
+            return new IMapApplicationModule[0];
+        }
+
+        #endregion
+    }
+
+    internal class ModulesPersists : IPersistable
+    {
+        private IMap _map;
+        private List<IMapApplicationModule> _modules = new List<IMapApplicationModule>();
+
+        public ModulesPersists(IMap map)
+        {
+            _map = map;
+        }
+
+        public IEnumerable<IMapApplicationModule> Modules => _modules;
+
+        #region IPersistable Member
+
+        public void Load(IPersistStream stream)
+        {
+            if (_map == null) return;
+
+            while (true)
+            {
+                ModulePersist module = stream.Load("Module", null, new ModulePersist()) as ModulePersist;
+                if (module == null)
+                    break;
+
+                if (module.Module != null)
+                    _modules.Add(module.Module);
+            }
+        }
+
+        public void Save(IPersistStream stream)
+        {
+            if (_map == null) return;
+
+            PlugInManager pluginManager = new PlugInManager();
+            foreach(IMapApplicationModule module in _modules)
+            {
+                if (module is IPersistable)
+                {
+                    stream.Save("Module", new ModulePersist(module));
+                }
+            }
+        }
+
+        #endregion
+    }
+
+    internal class ModulePersist : IPersistable
+    {
+        private IMapApplicationModule _module = null;
+
+        public ModulePersist(IMapApplicationModule module)
+        {
+            _module = module;
+        }
+        public ModulePersist()
+        {
+        }
+
+        public IMapApplicationModule Module => _module;
+
+        #region IPersistable Member
+
+        public void Load(IPersistStream stream)
+        {
+            try
+            {
+                Guid guid = new Guid(stream.Load("GUID") as string);
+                _module = (IMapApplicationModule)PlugInManager.Create(guid);
+
+                if (!(_module is IPersistable)) return;
+                ((IPersistable)_module).Load(stream);
+            }
+            catch { }
+        }
+
+        public void Save(IPersistStream stream)
+        {
+            if (_module == null || !(_module is IPersistable)) return;
+
+            stream.Save("GUID", PlugInManager.PlugInID(_module).ToString());
+            ((IPersistable)_module).Save(stream);
         }
 
         #endregion

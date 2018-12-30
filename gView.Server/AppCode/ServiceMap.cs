@@ -22,11 +22,14 @@ namespace gView.Server.AppCode
         private IMapServer _mapServer = null;
         private IServiceRequestInterpreter _interpreter = null;
         private ServiceRequest _request = null;
+        private IEnumerable<IMapApplicationModule> _modules = null;
+
         //private bool _ceckLayerVisibilityBeforeDrawing;
 
-        public ServiceMap(Map original, IMapServer mapServer)
+        public ServiceMap(Map original, IMapServer mapServer, IEnumerable<IMapApplicationModule> modules)
         {
             _mapServer = mapServer;
+            _modules = modules;
             _layers = original._layers;
             _datasets = original._datasets;
 
@@ -641,6 +644,16 @@ namespace gView.Server.AppCode
                 _request = context.ServiceRequest;
             }
         }
+
+        public T GetModule<T>()
+        {
+            if (_modules == null)
+                return default(T);
+
+            var module = _modules.Where(m => m.GetType().Equals(typeof(T))).FirstOrDefault();
+            return (T)module;
+        }
+
         #endregion
 
         #region IServiceRequestContext Member

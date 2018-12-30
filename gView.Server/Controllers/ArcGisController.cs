@@ -745,6 +745,8 @@ namespace gView.Server.Controllers
             return String.Empty;
         }
 
+        #region Html
+
         private string ToHtml(object obj)
         {
             StringBuilder sb = new StringBuilder();
@@ -880,6 +882,8 @@ namespace gView.Server.Controllers
             string link = htmlLink.LinkTemplate.Replace("{url}", InternetMapServer.AppRootUrl(this.Request) + "/" + Request.Path).Replace("{0}", valString);
             return "<a href='" + link + "'>" + valString + "</a>";
         }
+
+        #endregion
 
         private T Deserialize<T>(IEnumerable<KeyValuePair<string, StringValues>> nv)
         {

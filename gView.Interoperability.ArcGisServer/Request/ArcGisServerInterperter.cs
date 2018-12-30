@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Carto.Rendering;
 using gView.Framework.Data;
+using gView.Framework.Editor.Core;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
@@ -578,6 +579,8 @@ namespace gView.Interoperability.ArcGisServer.Request
 
                 using (var serviceMap = context.CreateServiceMapInstance())
                 {
+                    CheckEditableStatement(serviceMap, editRequest, EditStatements.INSERT);
+
                     var featureClass = GetFeatureClass(serviceMap, editRequest);
                     var dataset = featureClass.Dataset;
                     var database = dataset?.Database as IFeatureUpdater;
@@ -639,6 +642,8 @@ namespace gView.Interoperability.ArcGisServer.Request
 
                 using (var serviceMap = context.CreateServiceMapInstance())
                 {
+                    CheckEditableStatement(serviceMap, editRequest, EditStatements.UPDATE);
+
                     var featureClass = GetFeatureClass(serviceMap, editRequest);
                     var dataset = featureClass.Dataset;
                     var database = dataset?.Database as IFeatureUpdater;
@@ -700,6 +705,8 @@ namespace gView.Interoperability.ArcGisServer.Request
 
                 using (var serviceMap = context.CreateServiceMapInstance())
                 {
+                    CheckEditableStatement(serviceMap, editRequest, EditStatements.DELETE);
+
                     var featureClass = GetFeatureClass(serviceMap, editRequest);
                     var dataset = featureClass.Dataset;
                     var database = dataset?.Database as IFeatureUpdater;
@@ -751,6 +758,11 @@ namespace gView.Interoperability.ArcGisServer.Request
 
         #region Helper
 
+        private IFeatureLayer GetFeatureLayer(IServiceMap serviceMap, JsonFeatureServerEditRequest editRequest)
+        {
+            return serviceMap.MapElements.Where(e => e.ID == editRequest.LayerId).FirstOrDefault() as IFeatureLayer;
+        }
+
         private IFeatureClass GetFeatureClass(IServiceMap serviceMap, JsonFeatureServerEditRequest editRequest)
         {
             string filterQuery;
@@ -779,6 +791,20 @@ namespace gView.Interoperability.ArcGisServer.Request
             }
 
             return features;
+        }
+
+        private void CheckEditableStatement(IServiceMap serviceMap, JsonFeatureServerEditRequest editRequest, EditStatements statement)
+        {
+            var editModule = serviceMap.GetModule<gView.Plugins.Modules.EditorModule>();
+            if (editModule == null)
+                throw new Exception("Not editor module available for service");
+
+            var editLayer = editModule.GetEditLayer(editRequest.LayerId);
+            if (editLayer == null)
+                throw new Exception("No editable layer found with id=" + editRequest.LayerId);
+
+            if (!editLayer.Statements.HasFlag(statement))
+                throw new Exception("Editoperation " + statement + " not allowed for layer with id=" + editRequest.LayerId);
         }
 
         #endregion

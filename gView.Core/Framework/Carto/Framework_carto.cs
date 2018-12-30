@@ -130,6 +130,8 @@ namespace gView.Framework.Carto
         void ReleaseImage();
 
         float ScaleSymbolFactor { get; set; }
+
+        T GetModule<T>();
     }
 
     public delegate void MapScaleChangedEvent(IDisplay sender);
