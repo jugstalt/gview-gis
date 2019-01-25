@@ -66,6 +66,8 @@ namespace Proj4Net.Datum
         public static readonly Datum Hermannskogel = new Datum("hermannskogel", 653.0, -212.0, 449.0, Ellipsoid.BESSEL, "Hermannskogel");
         public static readonly Datum IRE65 = new Datum("ire65", 482.530, -130.596, 564.557, -1.042, -0.214, -0.631, 8.15, Ellipsoid.MOD_AIRY, "Ireland 1965");
         public static readonly Datum OSGB36 = new Datum("OSGB36", 446.448, -125.157, 542.060, 0.1502, 0.2470, 0.8421, -20.4894, Ellipsoid.AIRY, "Airy 1830");
+
+        public static readonly Datum @null = new Datum("@null", 0, 0, 0, Ellipsoid.SPHERE, "@null");
                                                           //+towgs84=446.448,-125.157, 542.06,  0.15,   0.247,  0.842,  -20.489 +units=m +no_defs
 
         private readonly String _code;
@@ -78,7 +80,7 @@ namespace Proj4Net.Datum
             String transformSpec,
             Ellipsoid ellipsoid,
             String name)
-            : this(code, (double[])null, ellipsoid, name)
+            : this(code, (double[])null, ellipsoid ?? Ellipsoid.WGS84, name)
         {
             transformSpec=transformSpec.Replace("@null", "");
             if (string.IsNullOrEmpty(transformSpec))
