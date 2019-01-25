@@ -13,6 +13,7 @@ using gView.Framework.SpatialAlgorithms;
 using gView.Framework.Proj;
 using Proj4Net;
 using gView.Framework.SpatialAlgorithms.Clipper;
+using System.Linq;
 
 //[assembly: InternalsVisibleTo("gView.OGC, PublicKey=0024000004800000940000000602000000240000525341310004000001000100916d0be3f662c2d3589fbe93479f3215e23fd195db9a20e77f42dc1d2942bd48cad3ea36b797f57880e6c31af0c238d2e445898c8ecce990aacbb70ae05a10aff73ab65c7db86366697f934b780238ed8fd1b2e28ba679a97e060b53fce66118e129b91d24f392d4dd3d482fa4173e61f18c74cda9f35721a97e77afbbc96dd2")]
 
@@ -2798,41 +2799,55 @@ namespace gView.Framework.Geometry
 
             if (from == null || to == null) return geometry;
 
-            BasicCoordinateTransform t = new BasicCoordinateTransform(from, to);
-
             if (geometry is PointCollection)
             {
-                PointCollection pColl = (PointCollection)geometry;
+                IPointCollection pColl = (IPointCollection)geometry;
                 int pointCount = pColl.PointCount;
                 if (pointCount == 0) return geometry;
 
                 IPointCollection target = null;
-                if (pColl is IRing)
-                    target = new Ring();
-                else if (pColl is IPath)
-                    target = new Path();
-                else if (pColl is IMultiPoint)
-                    target = new MultiPoint();
-                else
-                    target = new PointCollection();
+                
+                var projectionPipeline = ProjectionPipeline(from, to);
 
-                for (int i = 0; i < pointCount; i++)
+                for (int p = 0, p_to = projectionPipeline.Length; p < p_to - 1; p++)
                 {
-                    ProjCoordinate cFrom = new ProjCoordinate(pColl[i].X, pColl[i].Y), cTo = new ProjCoordinate();
-                    t.Transform(cFrom, cTo);
-                    target.AddPoint(new Point(cTo.X, cTo.Y));
-                }
+                    BasicCoordinateTransform t = new BasicCoordinateTransform(projectionPipeline[p], projectionPipeline[p + 1]);
 
+                    if (pColl is IRing)
+                        target = new Ring();
+                    else if (pColl is IPath)
+                        target = new Path();
+                    else if (pColl is IMultiPoint)
+                        target = new MultiPoint();
+                    else
+                        target = new PointCollection();
+
+                    for (int i = 0; i < pointCount; i++)
+                    {
+                        ProjCoordinate cFrom = new ProjCoordinate(pColl[i].X, pColl[i].Y), cTo = new ProjCoordinate();
+                        t.Transform(cFrom, cTo);
+                        target.AddPoint(new Point(cTo.X, cTo.Y));
+                    }
+
+                    pColl = target;
+                }
                 return target;
             }
             if (geometry is IPoint)
             {
-                double[] x = { ((IPoint)geometry).X };
-                double[] y = { ((IPoint)geometry).Y };
+                IPoint target = null;
+                var projectionPipeline = ProjectionPipeline(from, to);
+                for (int p = 0, p_to = projectionPipeline.Length; p < p_to - 1; p++)
+                {
+                    BasicCoordinateTransform t = new BasicCoordinateTransform(projectionPipeline[p], projectionPipeline[p + 1]);
 
-                ProjCoordinate cFrom = new ProjCoordinate(((IPoint)geometry).X, ((IPoint)geometry).Y), cTo = new ProjCoordinate();
-                t.Transform(cFrom, cTo);
-                return new Point(cTo.X, cTo.Y);
+                    ProjCoordinate cFrom = new ProjCoordinate(((IPoint)geometry).X, ((IPoint)geometry).Y), cTo = new ProjCoordinate();
+                    t.Transform(cFrom, cTo);
+                    target = new Point(cTo.X, cTo.Y);
+
+                    geometry = target;
+                }
+                return target;
             }
             if (geometry is IEnvelope)
             {
@@ -2871,6 +2886,44 @@ namespace gView.Framework.Geometry
             }
 
             return null;
+        }
+
+        private CoordinateReferenceSystem[] ProjectionPipeline(CoordinateReferenceSystem from, CoordinateReferenceSystem to)
+        {
+            //
+            //  Proj4net berücksichtigt nadgrids=@null nicht, wodurch bei Koordinatensystem mit diesem Parametern ein Fehler im Hochwert entsteht!
+            //  Workaround: Zuerst nach WGS84 projezieren und dann weiter...
+            //
+            if (from.Parameters.Contains("+nadgrids=@null") || to.Parameters.Contains("+nadgrids=@null"))
+            {
+                var wgs84 = _factory.CreateFromParameters("epsg:4326", "+proj=longlat +ellps=WGS84 +datum=WGS84 +towgs84=0,0,0,0,0,0,0");
+
+                if (!IsEqual(wgs84, from) && !IsEqual(wgs84, to))
+                {
+                    return new CoordinateReferenceSystem[]
+                    {
+                        from,
+                        wgs84,
+                        to
+                    };
+                }
+            }
+
+            return new CoordinateReferenceSystem[] { from, to };
+        }
+
+        private bool IsEqual(CoordinateReferenceSystem c1, CoordinateReferenceSystem c2)
+        {
+            if (c1.Parameters.Length != c2.Parameters.Length)
+                return false;
+
+            foreach (var p in c1.Parameters)
+            {
+                if (!c2.Parameters.Contains(p))
+                    return false;
+            }
+
+            return true;
         }
 
         private void ToDeg(double[] x, double[] y)

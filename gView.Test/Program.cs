@@ -26,12 +26,22 @@ namespace gView.Test
             using (var transformer = new GeometricTransformer())
             {
                 //var point = new Point(1443413.9574, 6133464.20414);
-                var point = new Point(-27239.046, 335772.696625);
-                Console.WriteLine(point.X.ToString() + "    " + point.Y.ToString());
+                ////var point = new Point(-27239.046, 335772.696625);
+                //Console.WriteLine(point.X.ToString() + "    " + point.Y.ToString());
+
+                //transformer.SetSpatialReferences(sRef3857, sRef4326);
+                //point = (Point)transformer.Transform2D(point);
+                //Console.WriteLine(point.X.ToString() + "    " + point.Y.ToString());
+
+                var pCollection = new PointCollection();
+                //pCollection.AddPoint(new Point(1443413.9574, 6133464.20414));
+                pCollection.AddPoint(new Point(-27239.046, 335772.696625));
+                Console.WriteLine(pCollection[0].X.ToString() + "    " + pCollection[0].Y.ToString());
 
                 transformer.SetSpatialReferences(sRef31255, sRef3857);
-                point = (Point)transformer.Transform2D(point);
-                Console.WriteLine(point.X.ToString() + "    " + point.Y.ToString());
+                pCollection = (PointCollection)transformer.Transform2D(pCollection);
+                Console.WriteLine(pCollection[0].X.ToString() + "    " + pCollection[0].Y.ToString());
+
 
                 //transformer.SetSpatialReferences(sRef3857, sRef4326);
                 //point = (Point)transformer.Transform2D(point);

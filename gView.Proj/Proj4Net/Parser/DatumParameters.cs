@@ -150,7 +150,7 @@ namespace Proj4Net.Parser
 
         public void SetNadGrids(string grids)
         {
-            _nadGrids = grids;
+
         }
 
     }

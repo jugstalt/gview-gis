@@ -80,7 +80,7 @@ namespace Proj4Net.Datum
             String transformSpec,
             Ellipsoid ellipsoid,
             String name)
-            : this(code, (double[])null, ellipsoid ?? Ellipsoid.WGS84, name)
+            : this(code, (double[])null, ellipsoid, name)
         {
             transformSpec=transformSpec.Replace("@null", "");
             if (string.IsNullOrEmpty(transformSpec))
