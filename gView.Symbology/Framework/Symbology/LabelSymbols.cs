@@ -922,7 +922,37 @@ namespace gView.Framework.Symbology
                     float fontSize = font.Size;
                     while (!String.IsNullOrWhiteSpace(text))
                     {
-                        var pos = text.IndexOf("^");
+                        var pos1 = text.IndexOf("^");
+                        var pos2 = text.IndexOf("~");
+                        int pos;
+                        bool superScript = true;
+
+                        if (pos1 >= 0 && pos2 >= 0)
+                        {
+                            if (pos1 < pos2)
+                            {
+                                pos = pos1;
+                            }
+                            else
+                            {
+                                pos = pos2;
+                                superScript = false;
+                            }
+                        }
+                        else if (pos1 >= 0 && pos2 < 0)
+                        {
+                            pos = pos1;
+                        }
+                        else if (pos2 >= 0 && pos1 < 0)
+                        {
+                            pos = pos2;
+                            superScript = false;
+                        }
+                        else
+                        {
+                            pos = -1;
+                        }
+
                         string subText = String.Empty;
                         if (pos < 0)
                         {
@@ -930,7 +960,7 @@ namespace gView.Framework.Symbology
                         }
                         if (pos > 0)
                         {
-                            subText = text.Substring(0, text.IndexOf("^"));
+                            subText = text.Substring(0, text.IndexOf(superScript ? "^" : "~"));
                         }
 
                         using (var subFont = new Font(font.Name, fontSize))
@@ -939,13 +969,28 @@ namespace gView.Framework.Symbology
                             var size = gr.MeasureString(subText, subFont);
                             if (!String.IsNullOrWhiteSpace(subText))
                                 xOffset += size.Width - subFont.Size * .2f;
-                            yOffset -= subFont.Size * .4f;
+
+                            if (superScript)
+                            {
+                                yOffset -= subFont.Size * .4f;
+                            }
+                            else
+                            {
+                                yOffset += subFont.Size * .4f;
+                            }
                         }
 
                         if (pos >= 0)
                         {
                             text = text.Substring(pos + 1);
-                            fontSize *= .9f;
+                            if (superScript)
+                            {
+                                fontSize *= .9f;
+                            }
+                            else
+                            {
+                                fontSize /= .9f;
+                            }
                         }
                         else
                         {
