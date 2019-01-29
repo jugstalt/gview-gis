@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Geometry;
+using gView.Interoperability.ArcGisServer.Rest.Reflection;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Text;
 
 namespace gView.Interoperability.ArcGisServer.Rest.Json
 {
+    [ServiceMethod("Query", "query")]
     public class JsonLayer
     {
         public JsonLayer()

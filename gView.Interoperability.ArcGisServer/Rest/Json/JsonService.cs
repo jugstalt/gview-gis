@@ -1,4 +1,5 @@
 ﻿using gView.Framework.system;
+using gView.Interoperability.ArcGisServer.Rest.Reflection;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Text;
 
 namespace gView.Interoperability.ArcGisServer.Rest.Json
 {
+    [ServiceMethod("ExportMap", "export")]
     public class JsonService
     {
         public JsonService()

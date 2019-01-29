@@ -194,7 +194,7 @@ namespace gView.Framework.system
         {
             if (obj == null) return false;
 
-            RegisterPlugIn plugin = (RegisterPlugIn)Attribute.GetCustomAttribute(obj.GetType(), typeof(RegisterPlugIn));
+            RegisterPlugIn plugin = (RegisterPlugIn)Attribute.GetCustomAttribute(obj is Type ? (Type)obj : obj.GetType(), typeof(RegisterPlugIn));
             return (plugin != null);
         }
 
@@ -208,7 +208,7 @@ namespace gView.Framework.system
             }
             else
             {
-                RegisterPlugIn plugin = (RegisterPlugIn)Attribute.GetCustomAttribute(obj.GetType(), typeof(RegisterPlugIn));
+                RegisterPlugIn plugin = (RegisterPlugIn)Attribute.GetCustomAttribute(obj is Type ? (Type)obj : obj.GetType(), typeof(RegisterPlugIn));
                 if (plugin == null) return new Guid();
 
                 return plugin.Value;

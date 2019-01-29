@@ -67,3 +67,22 @@ ul {
 .yaml-code .property-name.array {
     display:block;
 }
+
+.html-body form  {
+    background-color:#eee;
+}
+
+.html-body form table {
+    width:100%
+}
+
+.html-body form table td {
+    padding:5px;
+}
+
+    .html-body form table td.input {
+        width: 100%;
+    }
+    .html-body form table td.input * {
+        min-width:100%;
+    }

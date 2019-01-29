@@ -20,6 +20,8 @@ using gView.Interoperability.ArcGisServer.Rest.Json.Response;
 using gView.Framework.Carto;
 using gView.Interoperability.ArcGisServer.Rest.Json.Legend;
 using gView.Interoperability.ArcGisServer.Rest.Json.FeatureServer;
+using Newtonsoft.Json.Serialization;
+using gView.Interoperability.ArcGisServer.Rest.Reflection;
 
 namespace gView.Server.Controllers
 {
@@ -199,6 +201,12 @@ namespace gView.Server.Controllers
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Form :
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
 
+                string format = ResultFormat();
+                if (String.IsNullOrWhiteSpace(format))
+                {
+                    return FormResult(exportMap);
+                }
+
                 ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(exportMap))
                 {
                     OnlineResource = InternetMapServer.OnlineResource,
@@ -260,6 +268,12 @@ namespace gView.Server.Controllers
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Form :
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
                 queryLayer.LayerId = layerId;
+
+                string format = ResultFormat();
+                if (String.IsNullOrWhiteSpace(format))
+                {
+                    return FormResult(queryLayer);
+                }
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(queryLayer))
                 {
@@ -731,6 +745,12 @@ namespace gView.Server.Controllers
             #endregion
         }
 
+        public IActionResult FormResult(object obj)
+        {
+            ViewData["htmlBody"] = ToHtmlForm(obj);
+            return View("_htmlbody");
+        }
+
         private string ResultFormat()
         {
             if(!String.IsNullOrWhiteSpace(Request.Query["f"]))
@@ -758,6 +778,11 @@ namespace gView.Server.Controllers
             sb.Append("<div class='code-block'>");
             sb.Append(ToYamlHtml(obj));
             sb.Append("</div>");
+
+            foreach(var serviceMethodAttribute in obj.GetType().GetCustomAttributes<ServiceMethodAttribute>())
+            {
+                sb.Append("<a href='" + this.Request.Path + "/" + serviceMethodAttribute.Method + "'>" + serviceMethodAttribute.Name + "</a><br/>");
+            }
 
             sb.Append("</div>");
 
@@ -881,6 +906,71 @@ namespace gView.Server.Controllers
 
             string link = htmlLink.LinkTemplate.Replace("{url}", InternetMapServer.AppRootUrl(this.Request) + "/" + Request.Path).Replace("{0}", valString);
             return "<a href='" + link + "'>" + valString + "</a>";
+        }
+
+        private string ToHtmlForm(object obj)
+        {
+            if (obj == null)
+                return String.Empty;
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("<div class='html-body'>");
+
+            sb.Append("<form>");
+
+            sb.Append("<table>");
+
+            foreach (var propertyInfo in obj.GetType().GetProperties())
+            {
+                var jsonPropertyAttribute = propertyInfo.GetCustomAttribute<JsonPropertyAttribute>();
+                if (jsonPropertyAttribute == null)
+                    continue;
+
+                if (propertyInfo.GetMethod.IsPublic && propertyInfo.SetMethod.IsPublic)
+                {
+                    sb.Append("<tr>");
+                    sb.Append("<td>");
+                    sb.Append("<span>" + propertyInfo.Name + ":</span>");
+                    sb.Append("</td><td class='input'>");
+
+                    if (propertyInfo.PropertyType.Equals(typeof(bool)))
+                    {
+                        sb.Append("<select name='" + jsonPropertyAttribute.PropertyName + "'><option value='true'>True</option><option value='false'>False</option></select>");
+                    }
+                    else
+                    {
+                        sb.Append("<input name='" + jsonPropertyAttribute.PropertyName + "' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");
+                    }
+                    sb.Append("</td>");
+                    sb.Append("</tr>");
+                }
+            }
+
+            sb.Append("<tr>");
+            sb.Append("<td>");
+            sb.Append("<span>Format:</span>");
+            sb.Append("</td><td>");
+            sb.Append("<select name='f'><option value='pjson'>JSON</option></select>");
+            sb.Append("</td>");
+            sb.Append("</tr>");
+
+            sb.Append("<tr>");
+            sb.Append("<td>");
+            sb.Append("</td><td>");
+            sb.Append("<button>Submit</button>");
+            sb.Append("</td>");
+            sb.Append("</tr>");
+
+            sb.Append("</table>");
+
+            
+            
+            sb.Append("</form>");
+
+            sb.Append("</div>");
+
+            return sb.ToString();
         }
 
         #endregion

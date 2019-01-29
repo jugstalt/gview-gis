@@ -178,7 +178,7 @@ namespace gView.Framework.Metadata
             if (Object == null)
                 return false;
 
-            return Object.GetType().ToString() == "gView.MapServer.Instance.ServiceMap";
+            return Object.GetType().ToString() == "gView.Server.AppCode.ServiceMap";
         }
 
         public string Name
