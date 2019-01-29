@@ -305,7 +305,11 @@ namespace gView.Server.AppCode
                     ((Metadata)map).Providers = sMap.Providers;
 
                 // Overriding: no good idea -> problem, if multiple instances do this -> killing the metadata file!!!
-                //xmlStream.WriteStream(fi.FullName);
+                fi.Refresh();
+                if (!fi.Exists)
+                {
+                    xmlStream.WriteStream(fi.FullName);
+                }
             }
             catch (Exception ex)
             {
@@ -326,6 +330,9 @@ namespace gView.Server.AppCode
                 stream.Save("MapDocument", doc);
 
                 stream.WriteStream(ServicesPath + @"\" + map.Name + ".mxl");
+
+                if (map is Map)
+                    ApplyMetadata((Map)map);
             }
             catch (Exception ex)
             {
