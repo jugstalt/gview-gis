@@ -55,73 +55,73 @@ namespace gView.Server
 
             app.UseMvc(routes =>
             {
-                // ArcGIS Server
+                // geoservices Server
                 routes.MapRoute(
-                    name: "arcgis_rest_exportmap",
-                    template: "arcgis/rest/services/{folder}/{id}/mapserver/export",
-                    defaults: new { controller = "ArcGis", Action = "ExportMap" }
+                    name: "geoservices_rest_exportmap",
+                    template: "geoservices/rest/services/{folder}/{id}/mapserver/export",
+                    defaults: new { controller = "GeoServicesRest", Action = "ExportMap" }
                 );
                 routes.MapRoute(
-                    name: "arcgis_rest_query",
-                    template: "arcgis/rest/services/{folder}/{id}/mapserver/{layerId}/query",
-                    defaults: new { controller = "ArcGis", Action = "Query" }
+                    name: "geoservices_rest_query",
+                    template: "geoservices/rest/services/{folder}/{id}/mapserver/{layerId}/query",
+                    defaults: new { controller = "GeoServicesRest", Action = "Query" }
                 );
                 routes.MapRoute(
-                    name: "arcgis_rest_servicelayers",
-                    template: "arcgis/rest/services/{folder}/{id}/mapserver/layers",
-                    defaults: new { controller = "ArcGis", Action = "ServiceLayers" }
+                    name: "geoservices_rest_servicelayers",
+                    template: "geoservices/rest/services/{folder}/{id}/mapserver/layers",
+                    defaults: new { controller = "GeoServicesRest", Action = "ServiceLayers" }
                 );
                 routes.MapRoute(
-                    name: "arcgis_rest_servicelegend",
-                    template: "arcgis/rest/services/{folder}/{id}/mapserver/legend",
-                    defaults: new { controller = "ArcGis", Action = "Legend" }
+                    name: "geoservices_rest_servicelegend",
+                    template: "geoservices/rest/services/{folder}/{id}/mapserver/legend",
+                    defaults: new { controller = "GeoServicesRest", Action = "Legend" }
                 );
                 routes.MapRoute(
-                   name: "arcgis_rest_servicelayer",
-                   template: "arcgis/rest/services/{folder}/{id}/mapserver/{layerId}",
-                   defaults: new { controller = "ArcGis", Action = "ServiceLayer" }
+                   name: "geoservices_rest_servicelayer",
+                   template: "geoservices/rest/services/{folder}/{id}/mapserver/{layerId}",
+                   defaults: new { controller = "GeoServicesRest", Action = "ServiceLayer" }
                );
                 routes.MapRoute(
-                    name: "arcgis_rest_service",
-                    template: "arcgis/rest/services/{folder}/{id}/mapserver",
-                    defaults: new { controller = "ArcGis", Action = "Service" }
+                    name: "geoservices_rest_service",
+                    template: "geoservices/rest/services/{folder}/{id}/mapserver",
+                    defaults: new { controller = "GeoServicesRest", Action = "Service" }
                 );
                 routes.MapRoute(
-                    name: "arcgis_rest_folder",
-                    template: "arcgis/rest/services/{id}",
-                    defaults: new { controller = "ArcGis", Action="Folder" }
+                    name: "geoservices_rest_folder",
+                    template: "geoservices/rest/services/{id}",
+                    defaults: new { controller = "GeoServicesRest", Action="Folder" }
                 );
                 routes.MapRoute(
-                    name: "arcgis_rest_services",
-                    template: "arcgis/rest/services",
-                    defaults: new { controller = "ArcGis", Action = "Services" }
+                    name: "geoservices_rest_services",
+                    template: "geoservices/rest/services",
+                    defaults: new { controller = "GeoServicesRest", Action = "Services" }
                 );
 
                 
                 routes.MapRoute(
-                    name: "arcgis_rest_featureserver_query",
-                    template: "arcgis/rest/services/{folder}/{id}/featureserver/{layerId}/query",
-                    defaults: new { controller = "ArcGis", Action = "FeatureServerQuery" }
+                    name: "geoservices_rest_featureserver_query",
+                    template: "geoservices/rest/services/{folder}/{id}/featureserver/{layerId}/query",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerQuery" }
                 );
                 routes.MapRoute(
-                    name: "arcgis_rest_featureserver_addfeatures",
-                    template: "arcgis/rest/services/{folder}/{id}/featureserver/{layerId}/addfeatures",
-                    defaults: new { controller = "ArcGis", Action = "FeatureServerAddFeatures" }
+                    name: "geoservices_rest_featureserver_addfeatures",
+                    template: "geoservices/rest/services/{folder}/{id}/featureserver/{layerId}/addfeatures",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerAddFeatures" }
                 );
                 routes.MapRoute(
-                    name: "arcgis_rest_featureserver_updatefeatures",
-                    template: "arcgis/rest/services/{folder}/{id}/featureserver/{layerId}/updatefeatures",
-                    defaults: new { controller = "ArcGis", Action = "FeatureServerUpdateFeatures" }
+                    name: "geoservices_rest_featureserver_updatefeatures",
+                    template: "geoservices/rest/services/{folder}/{id}/featureserver/{layerId}/updatefeatures",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerUpdateFeatures" }
                 );
                 routes.MapRoute(
-                    name: "arcgis_rest_featureserver_deletefeatures",
-                    template: "arcgis/rest/services/{folder}/{id}/featureserver/{layerId}/deletefeatures",
-                    defaults: new { controller = "ArcGis", Action = "FeatureServerDeleteFeatures" }
+                    name: "geoservices_rest_featureserver_deletefeatures",
+                    template: "geoservices/rest/services/{folder}/{id}/featureserver/{layerId}/deletefeatures",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerDeleteFeatures" }
                 );
                 routes.MapRoute(
-                  name: "arcgis_rest_featureservicelayer",
-                  template: "arcgis/rest/services/{folder}/{id}/featureserver/{layerId}",
-                  defaults: new { controller = "ArcGis", Action = "FeatureServiceLayer" }
+                  name: "geoservices_rest_featureservicelayer",
+                  template: "geoservices/rest/services/{folder}/{id}/featureserver/{layerId}",
+                  defaults: new { controller = "GeoServicesRest", Action = "FeatureServiceLayer" }
                 );
 
 

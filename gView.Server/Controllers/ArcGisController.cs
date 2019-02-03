@@ -4,28 +4,28 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using gView.Framework.Data;
-using gView.Interoperability.ArcGisServer.Rest.Json;
+using gView.Interoperability.GeoServices.Rest.Json;
 using gView.Server.AppCode;
 using Microsoft.AspNetCore.Mvc;
-using static gView.Interoperability.ArcGisServer.Rest.Json.JsonServices;
+using static gView.Interoperability.GeoServices.Rest.Json.JsonServices;
 using System.Reflection;
 using Newtonsoft.Json;
 using gView.Framework.system;
 using gView.MapServer;
-using gView.Interoperability.ArcGisServer.Request;
+using gView.Interoperability.GeoServices.Request;
 using System.Collections.Specialized;
-using gView.Interoperability.ArcGisServer.Rest.Json.Request;
+using gView.Interoperability.GeoServices.Rest.Json.Request;
 using Microsoft.Extensions.Primitives;
-using gView.Interoperability.ArcGisServer.Rest.Json.Response;
+using gView.Interoperability.GeoServices.Rest.Json.Response;
 using gView.Framework.Carto;
-using gView.Interoperability.ArcGisServer.Rest.Json.Legend;
-using gView.Interoperability.ArcGisServer.Rest.Json.FeatureServer;
+using gView.Interoperability.GeoServices.Rest.Json.Legend;
+using gView.Interoperability.GeoServices.Rest.Json.FeatureServer;
 using Newtonsoft.Json.Serialization;
-using gView.Interoperability.ArcGisServer.Rest.Reflection;
+using gView.Interoperability.GeoServices.Rest.Reflection;
 
 namespace gView.Server.Controllers
 {
-    public class ArcGisController : Controller
+    public class GeoServicesRestController : Controller
     {
         private const double Version = 10.61;
         private const string DefaultFolder = "default";
@@ -192,7 +192,7 @@ namespace gView.Server.Controllers
                 if (folder != DefaultFolder)
                     throw new Exception("Unknown folder: " + folder);
 
-                var interpreter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
+                var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
 
@@ -259,7 +259,7 @@ namespace gView.Server.Controllers
                 if (folder != DefaultFolder)
                     throw new Exception("Unknown folder: " + folder);
 
-                var interpreter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
+                var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
 
@@ -334,7 +334,7 @@ namespace gView.Server.Controllers
                 if (folder != DefaultFolder)
                     throw new Exception("Unknown folder: " + folder);
 
-                var interpreter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
+                var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
 
@@ -387,7 +387,7 @@ namespace gView.Server.Controllers
                 if (folder != DefaultFolder)
                     throw new Exception("Unknown folder: " + folder);
 
-                var interpreter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
+                var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
 
@@ -449,7 +449,7 @@ namespace gView.Server.Controllers
                 if (folder != DefaultFolder)
                     throw new Exception("Unknown folder: " + folder);
 
-                var interpreter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
+                var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
 
@@ -515,7 +515,7 @@ namespace gView.Server.Controllers
                 if (folder != DefaultFolder)
                     throw new Exception("Unknown folder: " + folder);
 
-                var interpreter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
+                var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
 
@@ -581,7 +581,7 @@ namespace gView.Server.Controllers
                 if (folder != DefaultFolder)
                     throw new Exception("Unknown folder: " + folder);
 
-                var interpreter = InternetMapServer.GetInterpreter(typeof(ArcGisServerInterperter));
+                var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
 
