@@ -20,7 +20,6 @@ namespace gView.Test
             var sRef31255 = SpatialReference.FromID("epsg:31255");
             var sRef31256 = SpatialReference.FromID("epsg:31256");
             var sRef3857 = SpatialReference.FromID("epsg:3857");
-
             var sRef23032= new SpatialReference("test", "", "+proj=utm +zone=32 +ellps=intl +towgs84=-87,-98,-121,0,0,0,0 +units=m +no_defs ", null);
 
             using (var transformer = new GeometricTransformer())
