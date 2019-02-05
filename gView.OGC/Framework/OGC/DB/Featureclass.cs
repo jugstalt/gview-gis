@@ -24,7 +24,9 @@ namespace gView.Framework.OGC.DB
         {
             _dataset = dataset;
 
-            if (_dataset == null || geometry_columns_row == null) return;
+            if (_dataset == null || geometry_columns_row == null)
+                return;
+
             try
             {
                 _lastException = null;

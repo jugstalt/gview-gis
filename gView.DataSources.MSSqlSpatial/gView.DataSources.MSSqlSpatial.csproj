@@ -5,10 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="DataSources\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
     <ProjectReference Include="..\gView.Data\gView.Data.csproj" />
     <ProjectReference Include="..\gView.Editor.Core\gView.Editor.Core.csproj" />

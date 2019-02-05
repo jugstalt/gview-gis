@@ -131,7 +131,7 @@ namespace gView.Framework.OGC.DB
             get { return _state; }
         }
 
-        public bool Open()
+        virtual public bool Open()
         {
             _state = DatasetState.opened;
             return true;

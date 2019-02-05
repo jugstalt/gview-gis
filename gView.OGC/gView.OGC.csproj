@@ -21,8 +21,4 @@
     <ProjectReference Include="..\gView.Web\gView.Web.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Framework\" />
-  </ItemGroup>
-
 </Project>
