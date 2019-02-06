@@ -1,4 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using gView.Framework.Carto;
+using gView.Framework.Carto.Rendering;
+using gView.Interoperability.GeoServices.Rest.Json.DynamicLayers;
+using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,30 +13,16 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonDrawingInfo
     {
-
+        [JsonProperty("renderer")]
         public JsonRenderer Renderer
         {
             get;set;
         }
 
-        #region Classes
+        [JsonProperty("transparency")]
+        public double Transparency { get; set; }
 
-        public class JsonRenderer
-        {
-            [JsonProperty(PropertyName = "type")]
-            public string Type { get; set; }
-
-            [JsonProperty(PropertyName = "field1")]
-            public string Field1 { get; set; }
-            [JsonProperty(PropertyName = "field2")]
-            public string Field2 { get; set; }
-            [JsonProperty(PropertyName = "field3")]
-            public string Field3 { get; set; }
-
-            [JsonProperty(PropertyName = "fieldDelimiter")]
-            public string FieldDelimiter { get; set; }
-        }
-
-        #endregion
+        [JsonProperty("labelingInfo")]
+        public LabelingInfo[] LabelingInfo { get; set; }  
     }
 }

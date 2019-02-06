@@ -8,6 +8,11 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
 {
     public class SimpleLineSymbol
     {
+        public SimpleLineSymbol()
+        {
+            this.Type = "esriSLS";
+        }
+
         [JsonProperty("type")]
         public string Type { get; set; }
 
@@ -18,7 +23,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
         public int[] Color { get; set; }
 
         [JsonProperty("width")]
-        public int Width { get; set; }
+        public float Width { get; set; }
     }
 
     /*

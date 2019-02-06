@@ -13,7 +13,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
     {
         public JsonLayer()
         {
-            this.SubLayers = new JsonLayer[0];
+            this.SubLayers = new JsonLayerLink[0];
         }
 
         [JsonProperty("currentVersion")]
@@ -32,10 +32,10 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         public string GeometryType { get; set; }
 
         [JsonProperty("subLayers")]
-        public JsonLayer[] SubLayers { get; set; }
+        public JsonLayerLink[] SubLayers { get; set; }
 
         [JsonProperty("parentLayer")]
-        public JsonLayer ParentLayer { get; set; }
+        public JsonLayerLink ParentLayer { get; set; }
 
         [JsonProperty("minScale")]
         public double MinScale { get; set; }
@@ -55,35 +55,35 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         [JsonProperty("drawingInfo")]
         public JsonDrawingInfo DrawingInfo { get; set; }
 
-        [JsonIgnore]
-        public string FullName
-        {
-            get
-            {
-                StringBuilder sb = new StringBuilder();
+        //[JsonIgnore]
+        //public string FullName
+        //{
+        //    get
+        //    {
+        //        StringBuilder sb = new StringBuilder();
 
-                if (this.ParentLayer != null)
-                {
-                    sb.Append(this.ParentLayer.FullName);
-                    sb.Append("\\");
-                }
-                sb.Append(this.Name);
+        //        if (this.ParentLayer != null)
+        //        {
+        //            sb.Append(this.ParentLayer.FullName);
+        //            sb.Append("\\");
+        //        }
+        //        sb.Append(this.Name);
 
-                return sb.ToString();
-            }
-        }
+        //        return sb.ToString();
+        //    }
+        //}
 
-        [JsonIgnore]
-        public string ParentFullName
-        {
-            get
-            {
-                if (this.ParentLayer != null)
-                    return ParentLayer.FullName + @"\";
+        //[JsonIgnore]
+        //public string ParentFullName
+        //{
+        //    get
+        //    {
+        //        if (this.ParentLayer != null)
+        //            return ParentLayer.FullName + @"\";
 
-                return String.Empty;
-            }
-        }
+        //        return String.Empty;
+        //    }
+        //}
 
         #region Static Members
 
@@ -111,5 +111,14 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         }
 
         #endregion
+    }
+
+    public class JsonLayerLink
+    {
+        [JsonProperty("id")]
+        public int Id { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
     }
 }

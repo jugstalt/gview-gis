@@ -226,69 +226,23 @@ namespace gView.Interoperability.GeoServices.Request
                             var dynLayer = LayerFactory.Create(featureLayer.Class, featureLayer) as IFeatureLayer;
                             if (dynLayer != null)
                             {
-                                if (jsonDynamicLayer.DrawingInfo.Renderer != null)
+                                if (jsonDynamicLayer.DrawingInfo?.Renderer != null)
                                 {
-                                    if (jsonDynamicLayer.DrawingInfo.Renderer.Type.ToLower() == "simple")
-                                    {
-                                        var renderer = new SimpleRenderer();
-                                        if (fc.GeometryType == geometryType.Point)
-                                        {
-                                            var jsonRenderer = JsonConvert.DeserializeObject<SimpleMarkerSymbol>(jsonDynamicLayer.DrawingInfo.Renderer.Symbol.ToString());
+                                    dynLayer.FeatureRenderer = JsonRenderer.FromJsonRenderer(jsonDynamicLayer.DrawingInfo.Renderer);
+                                }
+                                else
+                                {
+                                    dynLayer.FeatureRenderer = null;
+                                }
 
-                                            if (jsonRenderer.Style == "esriSMSCircle")
-                                            {
-                                                var symbol = new gView.Framework.Symbology.SimplePointSymbol();
-                                                symbol.SymbolSmothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
-                                                symbol.FillColor = ToColor(jsonRenderer.Color);
-                                                symbol.Size = jsonRenderer.Size;
-                                                if (jsonRenderer.Outline != null)
-                                                {
-                                                    symbol.OutlineColor = ToColor(jsonRenderer.Outline.Color);
-                                                    symbol.OutlineWidth = jsonRenderer.Outline.Width;
-                                                }
-                                                renderer.Symbol = symbol;
-                                            }
-                                            else
-                                            {
-                                                throw new Exception("Unsupported MarkerSymbolStyle: " + jsonRenderer.Style);
-                                            }
-                                        }
-                                        else if (fc.GeometryType == geometryType.Polyline)
-                                        {
-                                            var jsonRenderer = JsonConvert.DeserializeObject<SimpleLineSymbol>(jsonDynamicLayer.DrawingInfo.Renderer.Symbol.ToString());
-
-                                            var symbol = new gView.Framework.Symbology.SimpleLineSymbol();
-                                            symbol.SymbolSmothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
-                                            symbol.Color = ToColor(jsonRenderer.Color);
-                                            symbol.Width = jsonRenderer.Width;
-                                            renderer.Symbol = symbol;
-                                        }
-                                        else if (fc.GeometryType == geometryType.Polygon)
-                                        {
-                                            var jsonRenderer = JsonConvert.DeserializeObject<SimpleFillSymbol>(jsonDynamicLayer.DrawingInfo.Renderer.Symbol.ToString());
-
-                                            var symbol = new gView.Framework.Symbology.SimpleFillSymbol();
-                                            symbol.SymbolSmothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
-                                            symbol.FillColor = ToColor(jsonRenderer.Color);
-
-                                            if (jsonRenderer.Outline != null)
-                                            {
-                                                symbol.OutlineColor = ToColor(jsonRenderer.Outline.Color);
-                                                symbol.OutlineWidth = jsonRenderer.Outline.Width;
-                                            }
-                                            renderer.Symbol = symbol;
-                                        }
-                                        else
-                                        {
-                                            throw new ArgumentException("Unsupported dynamic layer geometry: " + fc.GeometryType.ToString());
-                                        }
-
-                                        dynLayer.FeatureRenderer = renderer;
-                                    }
-                                    else
-                                    {
-                                        throw new ArgumentException("Unknwon renderer type: " + jsonDynamicLayer.DrawingInfo.Renderer.Type);
-                                    }
+                                if (jsonDynamicLayer.DrawingInfo?.LabelingInfo != null && jsonDynamicLayer.DrawingInfo.LabelingInfo.Length==1)
+                                {
+                                    var labelRenderer = jsonDynamicLayer.DrawingInfo.LabelingInfo[0].ToLabelRenderer();
+                                    dynLayer.LabelRenderer = labelRenderer;
+                                }
+                                else
+                                {
+                                    dynLayer.LabelRenderer = null;
                                 }
                                 dynLayer.FilterQuery = new QueryFilter()
                                 {
@@ -508,6 +462,9 @@ namespace gView.Interoperability.GeoServices.Request
                         var featureLayer = (IFeatureLayer)layer;
 
                         var tocElement = serviceMap.TOC.GetTOCElement(featureLayer);
+                        if (tocElement == null)
+                            continue;
+
                         using (var tocLegendItems = serviceMap.TOC.LegendSymbol(tocElement))
                         {
                             if (tocLegendItems.Items == null || tocLegendItems.Items.Count() == 0)
@@ -516,7 +473,7 @@ namespace gView.Interoperability.GeoServices.Request
                             var legendLayer = new Rest.Json.Legend.Layer()
                             {
                                 LayerId = featureLayer.ID,
-                                LayerName = featureLayer.Title,
+                                LayerName = tocElement.Name,
                                 LayerType = "Feature-Layer",
                                 MinScale = Convert.ToInt32(featureLayer.MaximumScale > 1 ? featureLayer.MaximumScale : 0),
                                 MaxScale = Convert.ToInt32(featureLayer.MinimumScale > 1 ? featureLayer.MinimumScale : 0)
@@ -533,7 +490,7 @@ namespace gView.Interoperability.GeoServices.Request
 
                                 legends.Add(new Rest.Json.Legend.Legend()
                                 {
-                                    Label = String.Empty,
+                                    Label = tocLegendItem?.Label,
                                     Url = Guid.NewGuid().ToString("N").ToString(),
                                     ImageData = Convert.ToBase64String(ms.ToArray()),
                                     ContentType = "image/png",

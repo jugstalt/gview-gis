@@ -12,19 +12,19 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         [JsonProperty("layers")]
         public JsonLayer[] Layers { get; set; }
 
-        public void SetParentLayers()
-        {
-            if (Layers == null)
-                return;
+        //public void SetParentLayers()
+        //{
+        //    if (Layers == null)
+        //        return;
 
-            foreach (var layer in Layers)
-            {
-                if (layer.ParentLayer != null)
-                {
-                    layer.ParentLayer = LayerById(layer.ParentLayer.Id);
-                }
-            }
-        }
+        //    foreach (var layer in Layers)
+        //    {
+        //        if (layer.ParentLayer != null)
+        //        {
+        //            layer.ParentLayer = LayerById(layer.ParentLayer.Id);
+        //        }
+        //    }
+        //}
 
         public JsonLayer LayerById(int id)
         {

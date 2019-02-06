@@ -7,13 +7,13 @@ using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Renderers
 {
-    class Font
+    public class Font
     {
         [JsonProperty("family")]
         public string Family { get; set; }
 
         [JsonProperty("size")]
-        public int Size { get; set; }
+        public float Size { get; set; }
 
         [JsonProperty("style")]
         public string Style { get; set; }

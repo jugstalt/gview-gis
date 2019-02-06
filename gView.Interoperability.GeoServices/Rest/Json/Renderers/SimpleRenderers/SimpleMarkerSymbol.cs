@@ -8,6 +8,11 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
 {
     public class SimpleMarkerSymbol
     {
+        public SimpleMarkerSymbol()
+        {
+            this.Type = "esriSMS";
+        }
+
         [JsonProperty("type")]
         public string Type { get; set; }
 
@@ -18,20 +23,20 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
         public int [] Color { get; set; }
 
         [JsonProperty("size")]
-        public int Size { get; set; }
+        public float Size { get; set; }
 
         [JsonProperty("angle")]
-        public int Angle { get; set; }
+        public float Angle { get; set; }
 
         [JsonProperty("xoffset")]
-        public int Xoffset { get; set; }
+        public float Xoffset { get; set; }
 
         [JsonProperty("yoffset")]
-        public int Yoffset { get; set; }
+        public float Yoffset { get; set; }
 
 
         [JsonProperty("outline")]
-        public Outline Outline { get; set; }
+        public SimpleLineSymbol Outline { get; set; }
     }
 
     /*

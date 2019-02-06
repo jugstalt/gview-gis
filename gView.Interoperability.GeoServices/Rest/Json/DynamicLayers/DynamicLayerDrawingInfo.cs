@@ -10,7 +10,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.DynamicLayers
     public class DynamicLayerDrawingInfo
     {
         [JsonProperty("renderer", NullValueHandling = NullValueHandling.Ignore)]
-        public RestRenderer Renderer { get; set; }
+        public JsonRenderer Renderer { get; set; }
 
         [JsonProperty("transparency", NullValueHandling = NullValueHandling.Ignore)]
         public int? Transparency { get; set; }

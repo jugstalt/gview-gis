@@ -13,8 +13,8 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.OtherRenderers
         public string ContentType { get; set; }
         public double Width { get; set; }
         public double Height { get; set; }
-        public int Angle { get; set; }
-        public int Xoffset { get; set; }
-        public int Yoffset { get; set; }
+        public float Angle { get; set; }
+        public float Xoffset { get; set; }
+        public float Yoffset { get; set; }
     }
 }

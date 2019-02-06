@@ -22,6 +22,7 @@ using gView.Interoperability.GeoServices.Rest.Json.Legend;
 using gView.Interoperability.GeoServices.Rest.Json.FeatureServer;
 using Newtonsoft.Json.Serialization;
 using gView.Interoperability.GeoServices.Rest.Reflection;
+using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
 
 namespace gView.Server.Controllers
 {
@@ -147,7 +148,10 @@ namespace gView.Server.Controllers
                     throw new Exception("Unknown service: " + id);
 
                 var jsonLayers = new JsonLayers();
-                jsonLayers.Layers = map.MapElements.Select(e => Layer(map, e.ID)).ToArray();
+                jsonLayers.Layers = map.MapElements
+                    .Where(e=>map.TOC.GetTOCElement(e as ILayer)!=null)  // Just show layer in Toc
+                    .Select(e => Layer(map, e.ID))
+                    .ToArray();
 
                 return Result(jsonLayers);
             }
@@ -677,50 +681,105 @@ namespace gView.Server.Controllers
 
             var tocElement = map.TOC.GetTOCElement(datasetElement as ILayer);
 
-            JsonField[] fields = new JsonField[0];
-            if (datasetElement.Class is ITableClass)
+            JsonLayerLink parentLayer = null;
+            if(datasetElement is ILayer && ((ILayer)datasetElement).GroupLayer!=null)
             {
-                fields = ((ITableClass)datasetElement.Class).Fields.ToEnumerable().Select(f =>
+                parentLayer = new JsonLayerLink()
                 {
-                    return new JsonField()
-                    {
-                        Name = f.name,
-                        Alias = f.aliasname,
-                        Type = JsonField.ToType(f.type).ToString()
-                    };
-                }).ToArray();
-            }
-
-            JsonExtent extent = null;
-            if (datasetElement.Class is IFeatureClass && ((IFeatureClass)datasetElement.Class).Envelope != null)
-            {
-                extent = new JsonExtent()
-                {
-                    // DoTo: SpatialReference
-                    Xmin = ((IFeatureClass)datasetElement.Class).Envelope.minx,
-                    Ymin = ((IFeatureClass)datasetElement.Class).Envelope.miny,
-                    Xmax = ((IFeatureClass)datasetElement.Class).Envelope.maxx,
-                    Ymax = ((IFeatureClass)datasetElement.Class).Envelope.maxy
+                    Id = ((ILayer)datasetElement).GroupLayer.ID,
+                    Name = ((ILayer)datasetElement).GroupLayer.Title
                 };
             }
 
-            string type = "Feature Layer";
-            if (datasetElement.Class is IRasterClass)
-                type = "Raster Layer";
-
-            return new JsonLayer()
+            if (datasetElement is GroupLayer && datasetElement.Class==null)  // GroupLayer
             {
-                CurrentVersion = Version,
-                Id = datasetElement.ID,
-                Name = tocElement != null ? tocElement.Name : datasetElement.Title,
-                DefaultVisibility = tocElement != null ? tocElement.LayerVisible : true,
-                MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale > 1 ? tocElement.Layers[0].MinimumScale : 0, 0) : 0,
-                MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale > 1 ? tocElement.Layers[0].MaximumScale : 0, 0) : 0,
-                Fields = fields,
-                Extent = extent,
-                Type = type,
-                GeometryType = datasetElement.Class is IFeatureClass ? JsonLayer.ToGeometryType(((IFeatureClass)datasetElement.Class).GeometryType).ToString() : EsriGeometryType.esriGeometryNull.ToString()
-            };
+                var groupLayer = (GroupLayer)datasetElement;
+                string type = "Group Layer";
+
+                return new JsonLayer()
+                {
+                    CurrentVersion = Version,
+                    Id = groupLayer.ID,
+                    Name = groupLayer.Title,
+                    DefaultVisibility = groupLayer.Visible,
+                    MaxScale = Math.Max(groupLayer.MinimumScale > 1 ? groupLayer.MinimumScale : 0, 0),
+                    MinScale = Math.Max(groupLayer.MaximumScale > 1 ? groupLayer.MaximumScale : 0, 0),
+                    Type = type,
+                    ParentLayer = parentLayer,
+                    SubLayers = groupLayer.ChildLayer != null ?
+                        groupLayer.ChildLayer.Where(l => map.TOC.GetTOCElement(l as ILayer) != null).Select(l =>
+                            {
+                                var childTocElement = map.TOC.GetTOCElement(l as ILayer);
+
+                                return new JsonLayerLink()
+                                {
+                                    Id = l.ID,
+                                    Name = childTocElement.Name
+                                };
+                            }).ToArray() :
+                        new JsonLayerLink[0]
+                };
+            }
+            else // Featurelayer, Rasterlayer
+            {
+                JsonField[] fields = new JsonField[0];
+                if (datasetElement.Class is ITableClass)
+                {
+                    fields = ((ITableClass)datasetElement.Class).Fields.ToEnumerable().Select(f =>
+                    {
+                        return new JsonField()
+                        {
+                            Name = f.name,
+                            Alias = f.aliasname,
+                            Type = JsonField.ToType(f.type).ToString()
+                        };
+                    }).ToArray();
+                }
+
+                JsonExtent extent = null;
+                if (datasetElement.Class is IFeatureClass && ((IFeatureClass)datasetElement.Class).Envelope != null)
+                {
+                    extent = new JsonExtent()
+                    {
+                        // DoTo: SpatialReference
+                        Xmin = ((IFeatureClass)datasetElement.Class).Envelope.minx,
+                        Ymin = ((IFeatureClass)datasetElement.Class).Envelope.miny,
+                        Xmax = ((IFeatureClass)datasetElement.Class).Envelope.maxx,
+                        Ymax = ((IFeatureClass)datasetElement.Class).Envelope.maxy
+                    };
+                }
+
+                string type = "Feature Layer";
+                if (datasetElement.Class is IRasterClass)
+                    type = "Raster Layer";
+
+                JsonDrawingInfo drawingInfo = null;
+                if(datasetElement is IFeatureLayer)
+                {
+                    var featureLayer = (IFeatureLayer)datasetElement;
+
+                    drawingInfo = new JsonDrawingInfo()
+                    {
+                        Renderer = JsonRenderer.FromFeatureRenderer(featureLayer.FeatureRenderer)
+                    };
+                }
+
+                return new JsonLayer()
+                {
+                    CurrentVersion = Version,
+                    Id = datasetElement.ID,
+                    Name = tocElement != null ? tocElement.Name : datasetElement.Title,
+                    DefaultVisibility = tocElement != null ? tocElement.LayerVisible : true,
+                    MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale > 1 ? tocElement.Layers[0].MinimumScale : 0, 0) : 0,
+                    MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale > 1 ? tocElement.Layers[0].MaximumScale : 0, 0) : 0,
+                    Fields = fields,
+                    Extent = extent,
+                    Type = type,
+                    ParentLayer = parentLayer,
+                    DrawingInfo = drawingInfo,
+                    GeometryType = datasetElement.Class is IFeatureClass ? JsonLayer.ToGeometryType(((IFeatureClass)datasetElement.Class).GeometryType).ToString() : EsriGeometryType.esriGeometryNull.ToString()
+                };
+            }
         }
 
         #endregion

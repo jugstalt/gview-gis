@@ -1,5 +1,7 @@
-﻿using gView.Framework.Geometry;
+﻿using gView.Framework.Carto;
+using gView.Framework.Geometry;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,6 +46,24 @@ namespace gView.Interoperability.GeoServices.Rest.Json.DynamicLayers
 
             return String.Empty;
         }
+
+        #region Members
+
+        public ILabelRenderer ToLabelRenderer()
+        {
+            var labelRenderer = new Framework.Carto.Rendering.SimpleLabelRenderer();
+
+            if (!String.IsNullOrWhiteSpace(LabelExpression))
+            {
+                labelRenderer.UseExpression = true;
+                labelRenderer.LabelExpression = LabelExpression;
+            }
+            labelRenderer.TextSymbol = Renderers.SimpleRenderers.JsonRenderer.FromSymbolJObject(Symbol as JObject) as Framework.Symbology.ITextSymbol;
+
+            return labelRenderer;
+        } 
+
+        #endregion
     }
 }
 

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.OtherRenderers
 {
-    class TextSymbol
+    public class TextSymbol
     {
         public TextSymbol()
         {
@@ -60,13 +60,13 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.OtherRenderers
         public bool RightToLeft { get; set; }
 
         [JsonProperty("angle")]
-        public int Angle { get; set; }
+        public float Angle { get; set; }
 
         [JsonProperty("xoffset")]
-        public int Xoffset { get; set; }
+        public float Xoffset { get; set; }
 
         [JsonProperty("yoffset")]
-        public int Yoffset { get; set; }
+        public float Yoffset { get; set; }
 
         [JsonProperty("kerning")]
         public bool Kerning { get; set; }

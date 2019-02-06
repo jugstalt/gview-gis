@@ -8,6 +8,11 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
 {
     public class SimpleFillSymbol
     {
+        public SimpleFillSymbol()
+        {
+            this.Type = "esriSFS";
+        }
+
         [JsonProperty("type")]
         public string Type { get; set; }
 
@@ -18,7 +23,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
         public int[] Color { get; set; }
 
         [JsonProperty("outline")]
-        public Outline Outline { get; set; }
+        public SimpleLineSymbol Outline { get; set; }
     }
 
     /*
