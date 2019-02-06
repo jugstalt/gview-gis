@@ -3,6 +3,7 @@ using gView.Framework.FDB;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb
 {
@@ -36,32 +37,32 @@ namespace gView.DataSources.Fdb
             get { return _fc != null ? _fc.CountFeatures : 0; }
         }
 
-        public IFeatureCursor GetFeatures(IQueryFilter filter)
+        async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
             if (_fc == null)
                 return null;
 
-            return _fc.GetFeatures(filter);
+            return await _fc.GetFeatures(filter);
         }
 
         #endregion
 
         #region ITableClass Members
 
-        public ICursor Search(IQueryFilter filter)
+        async public Task<ICursor> Search(IQueryFilter filter)
         {
             if (_fc == null)
                 return null;
 
-            return _fc.Search(filter);
+            return await _fc.Search(filter);
         }
 
-        public ISelectionSet Select(IQueryFilter filter)
+        async public Task<ISelectionSet> Select(IQueryFilter filter)
         {
             if (_fc == null)
                 return null;
 
-            return Select(filter);
+            return await Select(filter);
         }
 
         public IFields Fields

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
@@ -57,17 +58,17 @@ namespace gView.Framework.XML
 
         //public ArrayList SpatialIndexNodes { get { return null; } }
 
-        public ICursor Search(IQueryFilter filter)
+        public Task<ICursor> Search(IQueryFilter filter)
         {
             filter=WrapFilter2ArcXML(filter);
 
             if (BeforeQuery != null)
                 BeforeQuery(this, ref filter);
 
-            return new AXLFeatureCursor(this, filter);
+            return Task.FromResult<ICursor>(new AXLFeatureCursor(this, filter));
         }
 
-        public ISelectionSet Select(IQueryFilter filter)
+        async public Task<ISelectionSet> Select(IQueryFilter filter)
         {
             if (BeforeQuery != null)
                 BeforeQuery(this, ref filter);
@@ -76,11 +77,11 @@ namespace gView.Framework.XML
             {
                 filter.SubFields = this.IDFieldName;
 
-                IFeatureCursor cursor = (IFeatureCursor)this.Search(filter);
+                IFeatureCursor cursor = (IFeatureCursor)await this.Search(filter);
                 IFeature feat;
 
                 GlobalIDSelectionSet selSet = new GlobalIDSelectionSet();
-                while ((feat = cursor.NextFeature) != null)
+                while ((feat = await cursor.NextFeature()) != null)
                 {
                     if (feat is IGlobalFeature)
                         selSet.AddID(((IGlobalFeature)feat).GlobalOID);
@@ -166,14 +167,14 @@ namespace gView.Framework.XML
         }
         */
 
-        public IFeatureCursor GetFeatures(IQueryFilter filter/*, getFeatureQueryType type*/)
+        public Task<IFeatureCursor> GetFeatures(IQueryFilter filter/*, getFeatureQueryType type*/)
         {
             filter = WrapFilter2ArcXML(filter);
 
             if (BeforeQuery != null)
                 BeforeQuery(this, ref filter);
 
-            return new AXLFeatureCursor(this, filter);
+            return Task.FromResult<IFeatureCursor>(new AXLFeatureCursor(this, filter));
         }
 
         public IGeometryDef GeometryDef
@@ -893,7 +894,7 @@ namespace gView.Framework.XML
             }
         }
         public AXLFeatureCursor(string resp, AXLFeatureClass fc, ISpatialReference toSRef)
-            : base((fc!=null) ? fc.SpatialReference : null,
+            : base((fc != null) ? fc.SpatialReference : null,
                    toSRef)
         {
             _pos = 0;
@@ -911,14 +912,14 @@ namespace gView.Framework.XML
             }
         }
         public AXLFeatureCursor(AXLFeatureClass fc, IQueryFilter filter)
-            : base((fc!=null) ? fc.SpatialReference : null,
-                   (filter!=null) ? filter.FeatureSpatialReference : null)
+            : base((fc != null) ? fc.SpatialReference : null,
+                   (filter != null) ? filter.FeatureSpatialReference : null)
         {
             _fc = fc;
             _filter = filter;
             _attributes = _filter as IArcXmlGET_FEATURES_Attributes;
 
-            if(_attributes==null)
+            if (_attributes == null)
                 _filter.BeginRecord = 1;
 
             PerformQuery();
@@ -983,54 +984,51 @@ namespace gView.Framework.XML
             base.Dispose();
         }
 
-        public override IFeature NextFeature
+        public override Task<IFeature> NextFeature()
         {
-            get
+            if (_features == null)  // First Call (XPath for features)
             {
-                if (_features == null)  // First Call (XPath for features)
-                {
-                    if(_doc==null) return null;
-                    _features = _doc.SelectNodes("//FEATURE");
-                }
+                if (_doc == null) return null;
+                _features = _doc.SelectNodes("//FEATURE");
+            }
 
-                if (_fc == null && _filter == null)
-                {
-                    if (_pos >= _features.Count) return null;
+            if (_fc == null && _filter == null)
+            {
+                if (_pos >= _features.Count) return null;
 
-                    IFeature feature = AXLFeatureClass.ConvertAXLNode2Feature(_features[_pos++], _fc, _attributes);
-                    Transform(feature);
-                    return feature;
-                }
-                else
+                IFeature feature = AXLFeatureClass.ConvertAXLNode2Feature(_features[_pos++], _fc, _attributes);
+                Transform(feature);
+                return Task.FromResult<IFeature>(feature);
+            }
+            else
+            {
+                if (_filter != null)
                 {
-                    if (_filter != null)
+                    if (_pos >= _features.Count)
                     {
-                        if (_pos >= _features.Count)
+                        // bei diesen Typen wurden nur "featurelimit" features abgefragt...
+                        // Kein automatisches Nachladen...!!!
+                        //if (_filter is ArcXMLQueryFilter ||
+                        //    _filter is ArcXMLSpatialFilter) return null;
+
+                        if (_filter.HasMore)
                         {
-                            // bei diesen Typen wurden nur "featurelimit" features abgefragt...
-                            // Kein automatisches Nachladen...!!!
-                            //if (_filter is ArcXMLQueryFilter ||
-                            //    _filter is ArcXMLSpatialFilter) return null;
+                            _pos = 0;
+                            PerformQuery();
 
-                            if (_filter.HasMore)
-                            {
-                                _pos = 0;
-                                PerformQuery();
-
-                                return this.NextFeature;
-                            }
-                            else return null;
+                            return this.NextFeature();
                         }
+                        else return null;
                     }
-                    IFeature feature = AXLFeatureClass.ConvertAXLNode2Feature(_features[_pos++], _fc, _attributes);
-                    
-                    // kein Transform durchführen, da der Server schon automatisch
-                    // die Projektion durchführen sollte, wenn ein FeatureCoordSys Knoten
-                    // im Request steht...
-                    // Transform(feature);
-
-                    return feature;
                 }
+                IFeature feature = AXLFeatureClass.ConvertAXLNode2Feature(_features[_pos++], _fc, _attributes);
+
+                // kein Transform durchführen, da der Server schon automatisch
+                // die Projektion durchführen sollte, wenn ein FeatureCoordSys Knoten
+                // im Request steht...
+                // Transform(feature);
+
+                return Task.FromResult<IFeature>(feature);
             }
         }
         #endregion
@@ -1226,58 +1224,56 @@ namespace gView.Framework.XML
         }
         #region IRowCursor Member
 
-        public IRow NextRow
+        async public Task<IRow> NextRow()
         {
-            get
+            if (_raster_infos == null || _pos >= _raster_infos.Count) return null;
+
+            XmlNode raster_info = _raster_infos[_pos++];
+            if (raster_info == null) return await NextRow();
+
+            Row row = new Row();
+
+            foreach (XmlNode bands in raster_info.SelectNodes("BANDS"))
             {
-                if (_raster_infos == null || _pos >= _raster_infos.Count) return null;
+                string rasterid = (bands.Attributes["rasterid"] != null) ?
+                    bands.Attributes["rasterid"].Value : String.Empty;
 
-                XmlNode raster_info = _raster_infos[_pos++];
-                if (raster_info == null) return NextRow;
-
-                Row row = new Row();
-                
-                foreach (XmlNode bands in raster_info.SelectNodes("BANDS"))
+                foreach (XmlNode band in bands.SelectNodes("BAND"))
                 {
-                    string rasterid = (bands.Attributes["rasterid"] != null) ?
-                        bands.Attributes["rasterid"].Value : String.Empty;
+                    if (band.Attributes["number"] == null ||
+                        band.Attributes["value"] == null) continue;
 
-                    foreach (XmlNode band in bands.SelectNodes("BAND"))
+                    string fieldName = "Band " + band.Attributes["number"].Value;
+                    if (raster_info.SelectNodes("BANDS").Count > 1 &&
+                        !String.IsNullOrEmpty(rasterid))
                     {
-                        if (band.Attributes["number"] == null ||
-                            band.Attributes["value"] == null) continue;
-
-                        string fieldName = "Band " + band.Attributes["number"].Value;
-                        if (raster_info.SelectNodes("BANDS").Count > 1 &&
-                            !String.IsNullOrEmpty(rasterid))
-                        {
-                            fieldName += " (" + rasterid + ")";
-                        }
-                        row.Fields.Add(new FieldValue(fieldName, band.Attributes["value"].Value));
+                        fieldName += " (" + rasterid + ")";
                     }
-
-                    foreach (XmlNode attribute in bands.SelectNodes("attribute"))
-                    {
-                        if (attribute.Attributes["name"] == null ||
-                            attribute.Attributes["value"] == null) continue;
-
-                        string fieldName = attribute.Attributes["name"].Value;
-                        if (raster_info.SelectNodes("BANDS").Count > 1 &&
-                            !String.IsNullOrEmpty(rasterid))
-                        {
-                            fieldName += " (" + rasterid + ")";
-                        }
-                        row.Fields.Add(new FieldValue(fieldName, attribute.Attributes["value"].Value));
-                    }
+                    row.Fields.Add(new FieldValue(fieldName, band.Attributes["value"].Value));
                 }
 
-                if (raster_info.Attributes["x"] != null)
-                    row.Fields.Add(new FieldValue("x", raster_info.Attributes["x"].Value));
-                if (raster_info.Attributes["y"] != null)
-                    row.Fields.Add(new FieldValue("y", raster_info.Attributes["y"].Value));
+                foreach (XmlNode attribute in bands.SelectNodes("attribute"))
+                {
+                    if (attribute.Attributes["name"] == null ||
+                        attribute.Attributes["value"] == null) continue;
 
-                return row;
+                    string fieldName = attribute.Attributes["name"].Value;
+                    if (raster_info.SelectNodes("BANDS").Count > 1 &&
+                        !String.IsNullOrEmpty(rasterid))
+                    {
+                        fieldName += " (" + rasterid + ")";
+                    }
+                    row.Fields.Add(new FieldValue(fieldName, attribute.Attributes["value"].Value));
+                }
             }
+
+            if (raster_info.Attributes["x"] != null)
+                row.Fields.Add(new FieldValue("x", raster_info.Attributes["x"].Value));
+            if (raster_info.Attributes["y"] != null)
+                row.Fields.Add(new FieldValue("y", raster_info.Attributes["y"].Value));
+
+            return row;
+
         }
 
         #endregion

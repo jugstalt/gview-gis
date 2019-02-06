@@ -19,6 +19,7 @@ using gView.Framework.Symbology;
 using gView.Framework.Offline;
 using gView.Framework.Network;
 using gView.Framework.Editor.Core;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.MSAccess
 {
@@ -1236,14 +1237,14 @@ namespace gView.DataSources.Fdb.MSAccess
             return new AccessFDBFeatureCursor(_conn.connectionString,sql,where,filter.OrderBy,NIDs,queryGeometry,this.GetGeometryDef(FCName));
         }
         */
-        abstract public IFeatureCursor Query(IFeatureClass fc, IQueryFilter filter);
+        abstract public Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter);
 
         //virtual public IFeatureCursor QueryIDs(string FCName,string subFields,List<int> IDs, ISpatialReference toSRef) 
         //{
         //    string sql="SELECT "+subFields+" FROM FC_"+FCName;
         //    return new AccessFDBFeatureCursorIDs(_conn.connectionString,sql,IDs,this.GetGeometryDef(FCName),toSRef);
         //}
-        abstract public IFeatureCursor QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef);
+        abstract public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef);
 
         public delegate void FeatureClassRenamedEventHandler(string oldName, string newName);
         public event FeatureClassRenamedEventHandler FeatureClassRenamed = null;

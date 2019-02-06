@@ -6,6 +6,7 @@ using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Framework.Network;
+using System.Threading.Tasks;
 
 namespace gView.Framework.FDB
 {
@@ -46,7 +47,7 @@ namespace gView.Framework.FDB
         bool RenameDataset(string name, string newName);
         bool RenameFeatureClass(string name, string newName);
 
-		IFeatureCursor Query(IFeatureClass fc,IQueryFilter filter);
+		Task<IFeatureCursor> Query(IFeatureClass fc,IQueryFilter filter);
 
         string[] DatasetNames { get; }
 	}

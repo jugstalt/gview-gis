@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using gView.Framework.Geometry;
 using gView.Framework.Data;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.OGR
 {
@@ -95,21 +96,21 @@ namespace gView.DataSources.OGR
             get { return _countFeatures; }
         }
 
-        public IFeatureCursor GetFeatures(IQueryFilter filter)
+        public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
-            return new FeatureCursor(_ogrLayer, filter);
+            return Task.FromResult<IFeatureCursor>(new FeatureCursor(_ogrLayer, filter));
         }
 
         #endregion
 
         #region ITableClass Member
 
-        public ICursor Search(IQueryFilter filter)
+        async public Task<ICursor> Search(IQueryFilter filter)
         {
-            return GetFeatures(filter);
+            return await GetFeatures(filter);
         }
 
-        public ISelectionSet Select(IQueryFilter filter)
+        public Task<ISelectionSet> Select(IQueryFilter filter)
         {
             throw new Exception("The method or operation is not implemented.");
         }

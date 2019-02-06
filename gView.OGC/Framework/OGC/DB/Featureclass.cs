@@ -5,6 +5,7 @@ using System.Data;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using System.Data.Common;
+using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.DB
 {
@@ -272,7 +273,7 @@ namespace gView.Framework.OGC.DB
             }
         }
 
-        public IFeatureCursor GetFeatures(IQueryFilter filter)
+        async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
             _lastException = null;
             if (filter is IBufferQueryFilter)
@@ -280,7 +281,7 @@ namespace gView.Framework.OGC.DB
                 ISpatialFilter sFilter = BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
                 if (sFilter == null) return null;
 
-                return GetFeatures(sFilter);
+                return await GetFeatures(sFilter);
             }
 
             return new OgcSpatialFeatureCursor(this, filter);
@@ -290,13 +291,13 @@ namespace gView.Framework.OGC.DB
 
         #region ITableClass Member
 
-        public ICursor Search(IQueryFilter filter)
+        async public Task<ICursor> Search(IQueryFilter filter)
         {
             _lastException = null;
-            return GetFeatures(filter);
+            return await GetFeatures(filter);
         }
 
-        public ISelectionSet Select(IQueryFilter filter)
+        async public Task<ISelectionSet> Select(IQueryFilter filter)
         {
             filter.SubFields = this.IDFieldName;
             if (filter is ISpatialFilter)
@@ -307,7 +308,7 @@ namespace gView.Framework.OGC.DB
                 IFeature feat;
 
                 SpatialIndexedIDSelectionSet selSet = new SpatialIndexedIDSelectionSet(this.Envelope);
-                while ((feat = cursor.NextFeature) != null)
+                while ((feat = await cursor.NextFeature()) != null)
                 {
                     selSet.AddID(feat.OID, feat.Shape);
                 }

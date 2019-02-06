@@ -4,6 +4,7 @@ using System.Text;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using System.Xml;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Dataset.GML
 {
@@ -41,7 +42,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             get { return 0; }
         }
 
-        public IFeatureCursor GetFeatures(IQueryFilter filter)
+        public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
             gView.Framework.OGC.GML.FeatureCursor2 cursor =
                 new gView.Framework.OGC.GML.FeatureCursor2(this,
@@ -49,21 +50,21 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 _dataset.NamespaceManager,
                 filter, _gmlVersion);
 
-            return cursor;
+            return Task.FromResult<IFeatureCursor>(cursor);
         }
 
         #endregion
 
         #region ITableClass Member
 
-        public ICursor Search(IQueryFilter filter)
+        async public Task<ICursor> Search(IQueryFilter filter)
         {
-            return GetFeatures(filter);
+            return await GetFeatures(filter);
         }
 
-        public ISelectionSet Select(IQueryFilter filter)
+        public Task<ISelectionSet> Select(IQueryFilter filter)
         {
-            return null;
+            return Task.FromResult<ISelectionSet>(null);
         }
 
         public IFields Fields

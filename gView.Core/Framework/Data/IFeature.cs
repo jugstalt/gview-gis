@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data
 {
@@ -69,7 +70,7 @@ namespace gView.Framework.Data
         /// <remarks>
         /// Return <c>null</c> after the last row is reached.
         /// </remarks>
-        IRow NextRow { get; }
+        Task<IRow> NextRow();
     }
 
     /// <summary>
@@ -83,7 +84,7 @@ namespace gView.Framework.Data
         /// /// <remarks>
         /// Return <c>null</c> after the last row is reached.
         /// </remarks>
-        IFeature NextFeature { get; }
+        Task<IFeature> NextFeature();
     }
 
     public interface IFeatureCursorSkills : IFeatureCursor

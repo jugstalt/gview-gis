@@ -9,6 +9,7 @@ using gView.Framework.IO;
 using gView.Framework.system;
 using gView.MapServer;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Carto
 {
@@ -80,7 +81,7 @@ namespace gView.Framework.Carto
 
         ITOC TOC { get; }
 
-        bool RefreshMap(DrawPhase phase, ICancelTracker cancelTracker);
+        Task<bool> RefreshMap(DrawPhase phase, ICancelTracker cancelTracker);
 
         ISelectionEnvironment SelectionEnvironment { get; }
 
@@ -122,7 +123,7 @@ namespace gView.Framework.Carto
         List<IDatasetElement> MapElements { get; }
 
         void Release();
-        bool Render();
+        Task<bool> Render();
         global::System.Drawing.Bitmap Legend();
         global::System.Drawing.Bitmap MapImage { get; }
         bool SaveImage(string path, global::System.Drawing.Imaging.ImageFormat format);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 
@@ -36,44 +37,41 @@ namespace gView.DataSources.OGR
 
         #region IFeatureCursor Member
 
-        public IFeature NextFeature
+        public Task<IFeature> NextFeature()
         {
-            get
+            if (_layer == null) return null;
+            OSGeo.OGR.Feature ogrfeature = _layer.GetNextFeature();
+            if (ogrfeature == null) return null;
+
+            Feature feature = new Feature();
+            feature.OID = ogrfeature.GetFID();
+
+            OSGeo.OGR.FeatureDefn defn = ogrfeature.GetDefnRef();
+            int fieldCount = defn.GetFieldCount();
+            for (int i = 0; i < fieldCount; i++)
             {
-                if (_layer == null) return null;
-                OSGeo.OGR.Feature ogrfeature = _layer.GetNextFeature();
-                if (ogrfeature == null) return null;
+                OSGeo.OGR.FieldDefn fdefn = defn.GetFieldDefn(i);
+                FieldValue fv = new FieldValue(fdefn.GetName());
 
-                Feature feature = new Feature();
-                feature.OID = ogrfeature.GetFID();
-
-                OSGeo.OGR.FeatureDefn defn = ogrfeature.GetDefnRef();
-                int fieldCount = defn.GetFieldCount();
-                for (int i = 0; i < fieldCount; i++)
+                switch (fdefn.GetFieldTypeName(fdefn.GetFieldType()).ToLower())
                 {
-                    OSGeo.OGR.FieldDefn fdefn = defn.GetFieldDefn(i);
-                    FieldValue fv = new FieldValue(fdefn.GetName());
-
-                    switch (fdefn.GetFieldTypeName(fdefn.GetFieldType()).ToLower())
-                    {
-                        case "integer":
-                            fv.Value = ogrfeature.GetFieldAsInteger(i);
-                            break;
-                        case "real":
-                            fv.Value = ogrfeature.GetFieldAsDouble(i);
-                            break;
-                        default:
-                            fv.Value = ogrfeature.GetFieldAsString(i);
-                            break;
-                    }
-                    feature.Fields.Add(fv);
+                    case "integer":
+                        fv.Value = ogrfeature.GetFieldAsInteger(i);
+                        break;
+                    case "real":
+                        fv.Value = ogrfeature.GetFieldAsDouble(i);
+                        break;
+                    default:
+                        fv.Value = ogrfeature.GetFieldAsString(i);
+                        break;
                 }
-
-                OSGeo.OGR.Geometry geom = ogrfeature.GetGeometryRef();
-                feature.Shape = gView.Framework.OGC.GML.GeometryTranslator.GML2Geometry(geom.ExportToGML(), GmlVersion.v1);
-
-                return feature;
+                feature.Fields.Add(fv);
             }
+
+            OSGeo.OGR.Geometry geom = ogrfeature.GetGeometryRef();
+            feature.Shape = gView.Framework.OGC.GML.GeometryTranslator.GML2Geometry(geom.ExportToGML(), GmlVersion.v1);
+
+            return Task.FromResult<IFeature>(feature);
         }
 
         #endregion

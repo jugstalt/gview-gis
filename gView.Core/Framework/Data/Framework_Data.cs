@@ -8,6 +8,7 @@ using gView.Framework.system;
 using gView.Framework.FDB;
 using System.Drawing;
 using gView.Framework.IO;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data
 {
@@ -267,8 +268,8 @@ namespace gView.Framework.Data
         //IQueryResult QueryResult { get ; set ; }
         //IQueryResult Search(IQueryFilter filter,bool queryGeometry);
 
-        ICursor Search(IQueryFilter filter);
-        ISelectionSet Select(IQueryFilter filter);
+        Task<ICursor> Search(IQueryFilter filter);
+        Task<ISelectionSet> Select(IQueryFilter filter);
 
         IFields Fields { get; }
         IField FindField(string name);
@@ -285,7 +286,7 @@ namespace gView.Framework.Data
 
         //IFeature GetFeature(int id, getFeatureQueryType type);
         //IFeatureCursor GetFeatures(List<int> ids, getFeatureQueryType type);
-        IFeatureCursor GetFeatures(IQueryFilter filter);
+        Task<IFeatureCursor> GetFeatures(IQueryFilter filter);
     }
 
     public delegate void BeforeQueryEventHandler(ITableClass sender, ref IQueryFilter filter);
@@ -811,7 +812,7 @@ namespace gView.Framework.Data
         event BeforeClearSelectionEvent BeforeClearSelection;
 
         ISelectionSet SelectionSet { get; set; }
-        bool Select(IQueryFilter filter, CombinationMethod methode);
+        Task<bool> Select(IQueryFilter filter, CombinationMethod methode);
         void ClearSelection();
         void FireSelectionChangedEvent();
     }

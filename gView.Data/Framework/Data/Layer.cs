@@ -11,6 +11,7 @@ using gView.Framework.system;
 using gView.Framework.Geometry;
 using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data
 {
@@ -1116,7 +1117,7 @@ namespace gView.Framework.Data
             }
         }
 
-        public bool Select(IQueryFilter filter, CombinationMethod methode)
+        async public Task<bool> Select(IQueryFilter filter, CombinationMethod methode)
         {
             if (this.FeatureClass != null)
             {
@@ -1124,7 +1125,7 @@ namespace gView.Framework.Data
                 {
                     filter.WhereClause = String.IsNullOrEmpty(filter.WhereClause) ? this.FilterQuery.WhereClause : filter.WhereClause + " AND " + this.FilterQuery.WhereClause;
                 }
-                ISelectionSet selSet = this.FeatureClass.Select(filter);
+                ISelectionSet selSet = await this.FeatureClass.Select(filter);
 
                 if (methode == CombinationMethod.New)
                 {
@@ -1713,9 +1714,9 @@ namespace gView.Framework.Data
 
         #region IFeatureClass Member
 
-        public IFeatureCursor GetFeatures(IQueryFilter filter/*, gView.Framework.Data.getFeatureQueryType type*/)
+        public Task<IFeatureCursor> GetFeatures(IQueryFilter filter/*, gView.Framework.Data.getFeatureQueryType type*/)
         {
-            return null;
+            return Task.FromResult<IFeatureCursor>(null);
         }
 
         /*
@@ -1788,14 +1789,14 @@ namespace gView.Framework.Data
             return null;
         }
 
-        public ICursor Search(IQueryFilter filter)
+        public Task<ICursor> Search(IQueryFilter filter)
         {
-            return null;
+            return Task.FromResult<ICursor>(null);
         }
 
-        public ISelectionSet Select(IQueryFilter filter)
+        public Task<ISelectionSet> Select(IQueryFilter filter)
         {
-            return null;
+            return Task.FromResult<ISelectionSet>(null);
         }
 
         public IFields Fields
@@ -1901,10 +1902,7 @@ namespace gView.Framework.Data
 
         #region IFeatureCursor Member
 
-        abstract public IFeature NextFeature
-        {
-            get;
-        }
+        abstract public Task<IFeature> NextFeature();
 
         #endregion
 
@@ -1932,7 +1930,7 @@ namespace gView.Framework.Data
 
         #region DataTable Functions
 
-        public static DataTable ToDataTable(IFeatureCursor cursor)
+        async public static Task<DataTable> ToDataTable(IFeatureCursor cursor)
         {
             DataTable tab = new DataTable();
             tab.Columns.Add("#SHAPE#", typeof(object));
@@ -1941,7 +1939,7 @@ namespace gView.Framework.Data
             if (cursor != null)
             {
                 IFeature feature;
-                while ((feature = cursor.NextFeature) != null)
+                while ((feature = await cursor.NextFeature()) != null)
                 {
                     #region Columns
                     foreach (FieldValue fv in feature.Fields)
@@ -1970,10 +1968,10 @@ namespace gView.Framework.Data
             return tab;
         }
 
-        public class DataRowCursor : IFeatureCursor 
+        public class DataRowCursor : IFeatureCursor
         {
             private DataRow[] _rows;
-            private int _pos=0;
+            private int _pos = 0;
 
             public DataRowCursor(DataRow[] rows)
             {
@@ -1982,32 +1980,29 @@ namespace gView.Framework.Data
 
             #region IFeatureCursor Member
 
-            public IFeature NextFeature
+            public Task<IFeature> NextFeature()
             {
-                get
+                if (_rows == null || _pos >= _rows.Length)
+                    return null;
+
+                DataRow row = _rows[_pos++];
+                DataTable tab = row.Table;
+                Feature feature = new Feature();
+
+                if (tab.Columns["#OID#"] != null)
+                    feature.OID = (int)row["#OID#"];
+                if (tab.Columns["#SHAPE#"] != null)
+                    feature.Shape = row["#SHAPE#"] as IGeometry;
+
+                foreach (DataColumn col in tab.Columns)
                 {
-                    if (_rows == null || _pos >= _rows.Length)
-                        return null;
+                    if (col.ColumnName == "#OID#" || col.ColumnName == "#SHAPE#")
+                        continue;
 
-                    DataRow row=_rows[_pos++];
-                    DataTable tab=row.Table;
-                    Feature feature = new Feature();
-
-                    if (tab.Columns["#OID#"] != null)
-                        feature.OID = (int)row["#OID#"];
-                    if (tab.Columns["#SHAPE#"] != null)
-                        feature.Shape = row["#SHAPE#"] as IGeometry;
-                    
-                    foreach (DataColumn col in tab.Columns)
-                    {
-                        if (col.ColumnName=="#OID#" || col.ColumnName == "#SHAPE#")
-                            continue;
-
-                        feature.Fields.Add(new FieldValue(col.ColumnName, row[col.ColumnName]));
-                    }
-
-                    return feature;
+                    feature.Fields.Add(new FieldValue(col.ColumnName, row[col.ColumnName]));
                 }
+
+                return Task.FromResult<IFeature>(feature);
             }
 
             #endregion
@@ -2016,7 +2011,7 @@ namespace gView.Framework.Data
 
             public void Dispose()
             {
-                
+
             }
 
             #endregion

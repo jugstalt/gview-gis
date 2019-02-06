@@ -15,6 +15,7 @@ using gView.Interoperability.ArcXML.Dataset;
 using gView.Framework.Carto.UI;
 using gView.Framework.Carto.Rendering;
 using gView.Framework.Network;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.ArcXML
 {
@@ -24,7 +25,7 @@ namespace gView.Interoperability.ArcXML
         public List<ITableClass> Classes = null;
         public IServiceMap ServiceMap = null;
 
-        public string Request()
+        async public Task<string> Request()
         {
             int beginrecord = 0;
             int featurelimit = 1000;
@@ -106,7 +107,7 @@ namespace gView.Interoperability.ArcXML
                 }
 
                 IRow row;
-                while ((row = ReadNext(cursor)) != null)
+                while ((row = await ReadNext(cursor)) != null)
                 {
                     if ((counter + 1) < beginrecord)
                     {
@@ -242,13 +243,13 @@ namespace gView.Interoperability.ArcXML
             return axl.ToString();
         }
 
-        private IRow ReadNext(ICursor cursor)
+        async private Task<IRow> ReadNext(ICursor cursor)
         {
             if (cursor == null) return null;
             if (cursor is IRowCursor)
-                return ((IRowCursor)cursor).NextRow;
+                return await ((IRowCursor)cursor).NextRow();
             else if (cursor is IFeatureCursor)
-                return ((IFeatureCursor)cursor).NextFeature;
+                return await ((IFeatureCursor)cursor).NextFeature();
             return null;
         }
     }
@@ -927,14 +928,14 @@ namespace gView.Interoperability.ArcXML
             return axl.ToString();
         }
 
-        private void AddRasterInfo(XmlTextWriter xWriter, ICursor cursor, IPoint point)
+        async private Task AddRasterInfo(XmlTextWriter xWriter, ICursor cursor, IPoint point)
         {
             if (cursor == null) return;
 
             if (cursor is IRowCursor)
             {
                 IRow row;
-                while ((row = ReadNext(cursor)) != null)
+                while ((row = await ReadNext(cursor)) != null)
                 {
                     if (row.Fields != null)
                     {
@@ -1000,7 +1001,7 @@ namespace gView.Interoperability.ArcXML
             }
         }
 
-        private void AddCompactRasterInfo(XmlTextWriter xWriter, ICursor cursor, IPoint point)
+        async private Task AddCompactRasterInfo(XmlTextWriter xWriter, ICursor cursor, IPoint point)
         {
             xWriter.WriteRaw(point.X.ToString(_nhi) + "," + point.Y.ToString(_nhi));
 
@@ -1009,7 +1010,7 @@ namespace gView.Interoperability.ArcXML
                 if (cursor is IRowCursor)
                 {
                     IRow row;
-                    while ((row = ReadNext(cursor)) != null)
+                    while ((row = await ReadNext(cursor)) != null)
                     {
                         foreach (FieldValue fv in row.Fields)
                         {
@@ -1033,14 +1034,14 @@ namespace gView.Interoperability.ArcXML
             xWriter.WriteRaw(" ");
         }
 
-        private void AddCompactRasterInfo2(XmlTextWriter xWriter, ICursor cursor, IPoint point)
+        async private Task AddCompactRasterInfo2(XmlTextWriter xWriter, ICursor cursor, IPoint point)
         {
             List<IPoint> clonePointList = ListOperations<IPoint>.Clone(Points);
 
             if (cursor is IRowCursor)
             {
                 IRow row;
-                while ((row = ReadNext(cursor)) != null)
+                while ((row = await ReadNext(cursor)) != null)
                 {
                     Point p = new Point((double)row["x"], (double)row["y"]);
                     double val = double.NaN;
@@ -1078,13 +1079,13 @@ namespace gView.Interoperability.ArcXML
             }
             xWriter.WriteRaw(sb.ToString());
         }
-        private IRow ReadNext(ICursor cursor)
+        async private Task<IRow> ReadNext(ICursor cursor)
         {
             if (cursor == null) return null;
             if (cursor is IRowCursor)
-                return ((IRowCursor)cursor).NextRow;
+                return await ((IRowCursor)cursor).NextRow();
             else if (cursor is IFeatureCursor)
-                return ((IFeatureCursor)cursor).NextFeature;
+                return await ((IFeatureCursor)cursor).NextFeature();
             return null;
         }
     }

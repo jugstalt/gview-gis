@@ -266,7 +266,7 @@ namespace gView.Server.AppCode
             return toc.Legend();
         }
 
-        override public bool RefreshMap(DrawPhase phase, ICancelTracker cancelTracker)
+        async override public Task<bool> RefreshMap(DrawPhase phase, ICancelTracker cancelTracker)
         {
             base._requestExceptions = null;
 
@@ -454,7 +454,7 @@ namespace gView.Server.AppCode
 
                             if (rlt.UseLabelRenderer) labelLayers.Remove(fLayer);
 
-                            rlt.Render();
+                            await rlt.Render();
                         }
                         //thread = new Thread(new ThreadStart(rlt.Render));
                         //thread.Start();
@@ -617,9 +617,9 @@ namespace gView.Server.AppCode
         //public event LayerIsVisibleHook OverrideLayerIsVisible;
         public event BeforeRenderLayersEvent BeforeRenderLayers;
 
-        public bool Render()
+        async public Task<bool> Render()
         {
-            return RefreshMap(DrawPhase.All, null);
+            return await RefreshMap(DrawPhase.All, null);
         }
 
         private float _scaleSymbolFactor = 1f;

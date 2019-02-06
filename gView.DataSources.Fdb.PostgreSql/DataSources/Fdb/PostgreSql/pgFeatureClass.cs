@@ -5,6 +5,7 @@ using gView.Framework.Data;
 using gView.Framework.system;
 using gView.Framework.Geometry;
 using gView.Framework.FDB;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.PostgreSql
 {
@@ -77,7 +78,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
-        public IFeatureCursor GetFeatures(IQueryFilter filter/*, gView.Framework.Data.getFeatureQueryType type*/)
+        async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter/*, gView.Framework.Data.getFeatureQueryType type*/)
         {
             if (_fdb == null) return null;
 
@@ -89,20 +90,20 @@ namespace gView.DataSources.Fdb.PostgreSql
             if (filter is IRowIDFilter)
             {
                 filter.fieldPostfix = filter.fieldPrefix = "\"";
-                return _fdb.QueryIDs(this, filter.SubFieldsAndAlias, ((IRowIDFilter)filter).IDs, filter.FeatureSpatialReference);
+                return await _fdb.QueryIDs(this, filter.SubFieldsAndAlias, ((IRowIDFilter)filter).IDs, filter.FeatureSpatialReference);
             }
             else
             {
-                return _fdb.Query(this, filter);
+                return await _fdb.Query(this, filter);
             }
         }
 
-        public ICursor Search(IQueryFilter filter)
+        async public Task<ICursor> Search(IQueryFilter filter)
         {
-            return GetFeatures(filter);
+            return await GetFeatures(filter);
         }
 
-        public ISelectionSet Select(IQueryFilter filter)
+        async public Task<ISelectionSet> Select(IQueryFilter filter)
         {
             filter.SubFields = this.IDFieldName;
 
@@ -113,7 +114,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 IFeature feat;
 
                 SpatialIndexedIDSelectionSet selSet = new SpatialIndexedIDSelectionSet(this.Envelope);
-                while ((feat = cursor.NextFeature) != null)
+                while ((feat = await cursor.NextFeature()) != null)
                 {
                     selSet.AddID(feat.OID, feat.Shape);
                 }

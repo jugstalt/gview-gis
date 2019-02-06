@@ -10,6 +10,7 @@ using gView.Framework.Db;
 using System.Data.Common;
 using gView.Framework.FDB;
 using gView.Framework.Offline;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.PostgreSql
 {
@@ -564,7 +565,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             return String.Empty;
         }
 
-        override public IFeatureCursor Query(IFeatureClass fc, IQueryFilter filter)
+        override public Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
         {
             if (_conn == null || fc == null || !(fc.Dataset is IFDBDataset)) return null;
 
@@ -636,16 +637,16 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 }
             }
 
-            return new pgFeatureCursor(_conn.ConnectionString, sql, DataProvider.ToDbWhereClause("npgsql", where), orederBy, filter.NoLock, NIDs, sFilter, fc,
-                (filter != null) ? filter.FeatureSpatialReference : null);
+            return Task.FromResult<IFeatureCursor>(new pgFeatureCursor(_conn.ConnectionString, sql, DataProvider.ToDbWhereClause("npgsql", where), orederBy, filter.NoLock, NIDs, sFilter, fc,
+                (filter != null) ? filter.FeatureSpatialReference : null));
 
         }
 
-        override public IFeatureCursor QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef)
+        override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef)
         {
             string tabName = ((fc is pgFeatureClass) ? ((pgFeatureClass)fc).DbTableName : "fc_" + fc.Name);
             string sql = "SELECT " + subFields + " FROM " + tabName;
-            return new pgFeatureCursorIDs(_conn.ConnectionString, sql, IDs, this.GetGeometryDef(fc.Name), toSRef);
+            return Task.FromResult<IFeatureCursor>(new pgFeatureCursorIDs(_conn.ConnectionString, sql, IDs, this.GetGeometryDef(fc.Name), toSRef));
         }
 
         override public List<IDatasetElement> DatasetLayers(IDataset dataset)
@@ -1599,10 +1600,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 }
             }
 
-            public bool Select(IQueryFilter filter, gView.Framework.Data.CombinationMethod methode)
+            async public Task<bool> Select(IQueryFilter filter, gView.Framework.Data.CombinationMethod methode)
             {
                 if (!(this.Class is ITableClass)) return false;
-                ISelectionSet selSet = ((ITableClass)this.Class).Select(filter);
+                ISelectionSet selSet = await ((ITableClass)this.Class).Select(filter);
 
                 SelectionSet = selSet;
                 FireSelectionChangedEvent();
@@ -1821,86 +1822,83 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 this.Dispose();
             }
 
-            public override IFeature NextFeature
+            async public override Task<IFeature> NextFeature()
             {
-                get
+                try
                 {
-                    try
+                    while (true)
                     {
-                        while (true)
+                        if (_reader == null)
                         {
-                            if (_reader == null)
-                            {
-                                this.Dispose();
-                                return null;
-                            }
-                            if (!_reader.Read())
-                            {
-                                this.ExecuteReader();
-                                return this.NextFeature;
-                            }
-
-                            Feature feature = new Feature();
-                            for (int i = 0; i < _reader.FieldCount; i++)
-                            {
-                                string name = _reader.GetName(i);
-                                object obj = _reader.GetValue(i);
-                                if (name == "FDB_SHAPE" && obj != DBNull.Value)
-                                {
-                                    BinaryReader r = new BinaryReader(new MemoryStream());
-                                    r.BaseStream.Write((byte[])obj, 0, ((byte[])obj).Length);
-                                    r.BaseStream.Position = 0;
-
-                                    IGeometry p = null;
-                                    switch (_geomDef.GeometryType)
-                                    {
-                                        case geometryType.Point:
-                                            p = new gView.Framework.Geometry.Point();
-                                            break;
-                                        case geometryType.Polyline:
-                                            p = new gView.Framework.Geometry.Polyline();
-                                            break;
-                                        case geometryType.Polygon:
-                                            p = new gView.Framework.Geometry.Polygon();
-                                            break;
-                                    }
-                                    if (p != null)
-                                    {
-                                        p.Deserialize(r, _geomDef);
-
-                                        r.Close();
-
-                                        if (_spatialFilter != null)
-                                        {
-                                            if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialFilter, p))
-                                            {
-                                                feature = null;
-                                                break;
-                                            }
-                                        }
-                                        feature.Shape = p;
-                                    }
-                                }
-                                else
-                                {
-                                    FieldValue fv = new FieldValue(name, obj);
-                                    feature.Fields.Add(fv);
-                                    if (fv.Name == "FDB_OID")
-                                        feature.OID = Convert.ToInt32(obj);
-                                }
-                            }
-                            if (feature == null) continue;
-
-                            Transform(feature);
-                            return feature;
+                            this.Dispose();
+                            return null;
                         }
+                        if (!await _reader.ReadAsync())
+                        {
+                            this.ExecuteReader();
+                            return await this.NextFeature();
+                        }
+
+                        Feature feature = new Feature();
+                        for (int i = 0; i < _reader.FieldCount; i++)
+                        {
+                            string name = _reader.GetName(i);
+                            object obj = _reader.GetValue(i);
+                            if (name == "FDB_SHAPE" && obj != DBNull.Value)
+                            {
+                                BinaryReader r = new BinaryReader(new MemoryStream());
+                                r.BaseStream.Write((byte[])obj, 0, ((byte[])obj).Length);
+                                r.BaseStream.Position = 0;
+
+                                IGeometry p = null;
+                                switch (_geomDef.GeometryType)
+                                {
+                                    case geometryType.Point:
+                                        p = new gView.Framework.Geometry.Point();
+                                        break;
+                                    case geometryType.Polyline:
+                                        p = new gView.Framework.Geometry.Polyline();
+                                        break;
+                                    case geometryType.Polygon:
+                                        p = new gView.Framework.Geometry.Polygon();
+                                        break;
+                                }
+                                if (p != null)
+                                {
+                                    p.Deserialize(r, _geomDef);
+
+                                    r.Close();
+
+                                    if (_spatialFilter != null)
+                                    {
+                                        if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialFilter, p))
+                                        {
+                                            feature = null;
+                                            break;
+                                        }
+                                    }
+                                    feature.Shape = p;
+                                }
+                            }
+                            else
+                            {
+                                FieldValue fv = new FieldValue(name, obj);
+                                feature.Fields.Add(fv);
+                                if (fv.Name == "FDB_OID")
+                                    feature.OID = Convert.ToInt32(obj);
+                            }
+                        }
+                        if (feature == null) continue;
+
+                        Transform(feature);
+                        return feature;
                     }
-                    catch (Exception ex)
-                    {
-                        Dispose();
-                        throw (ex);
-                        //return null;
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Dispose();
+                    throw (ex);
+                    //return null;
                 }
             }
 
@@ -2043,68 +2041,65 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 this.Dispose();
             }
 
-            public override IFeature NextFeature
+            async public override Task<IFeature> NextFeature()
             {
-                get
+                try
                 {
-                    try
+                    if (_reader == null) return null;
+                    if (!await _reader.ReadAsync())
                     {
-                        if (_reader == null) return null;
-                        if (!_reader.Read())
-                        {
-                            ExecuteReader();
-                            return NextFeature;
-                        }
+                        ExecuteReader();
+                        return await NextFeature();
+                    }
 
-                        Feature feature = new Feature();
-                        for (int i = 0; i < _reader.FieldCount; i++)
+                    Feature feature = new Feature();
+                    for (int i = 0; i < _reader.FieldCount; i++)
+                    {
+                        string name = _reader.GetName(i);
+                        object obj = _reader.GetValue(i);
+                        if (name == "FDB_SHAPE")
                         {
-                            string name = _reader.GetName(i);
-                            object obj = _reader.GetValue(i);
-                            if (name == "FDB_SHAPE")
+                            BinaryReader r = new BinaryReader(new MemoryStream());
+                            r.BaseStream.Write((byte[])obj, 0, ((byte[])obj).Length);
+                            r.BaseStream.Position = 0;
+
+                            IGeometry p = null;
+                            switch (_geomDef.GeometryType)
                             {
-                                BinaryReader r = new BinaryReader(new MemoryStream());
-                                r.BaseStream.Write((byte[])obj, 0, ((byte[])obj).Length);
-                                r.BaseStream.Position = 0;
-
-                                IGeometry p = null;
-                                switch (_geomDef.GeometryType)
-                                {
-                                    case geometryType.Point:
-                                        p = new gView.Framework.Geometry.Point();
-                                        break;
-                                    case geometryType.Polyline:
-                                        p = new gView.Framework.Geometry.Polyline();
-                                        break;
-                                    case geometryType.Polygon:
-                                        p = new gView.Framework.Geometry.Polygon();
-                                        break;
-                                }
-                                if (p != null)
-                                {
-                                    p.Deserialize(r, _geomDef);
-                                    r.Close();
-
-                                    feature.Shape = p;
-                                }
+                                case geometryType.Point:
+                                    p = new gView.Framework.Geometry.Point();
+                                    break;
+                                case geometryType.Polyline:
+                                    p = new gView.Framework.Geometry.Polyline();
+                                    break;
+                                case geometryType.Polygon:
+                                    p = new gView.Framework.Geometry.Polygon();
+                                    break;
                             }
-                            else
+                            if (p != null)
                             {
-                                FieldValue fv = new FieldValue(/*_schemaTable.Rows[i][0].ToString()*/name, obj);
-                                feature.Fields.Add(fv);
-                                if (fv.Name == "FDB_OID")
-                                    feature.OID = Convert.ToInt32(obj);
+                                p.Deserialize(r, _geomDef);
+                                r.Close();
+
+                                feature.Shape = p;
                             }
                         }
+                        else
+                        {
+                            FieldValue fv = new FieldValue(/*_schemaTable.Rows[i][0].ToString()*/name, obj);
+                            feature.Fields.Add(fv);
+                            if (fv.Name == "FDB_OID")
+                                feature.OID = Convert.ToInt32(obj);
+                        }
+                    }
 
-                        Transform(feature);
-                        return feature;
-                    }
-                    catch
-                    {
-                        Dispose();
-                        return null;
-                    }
+                    Transform(feature);
+                    return feature;
+                }
+                catch
+                {
+                    Dispose();
+                    return null;
                 }
             }
 

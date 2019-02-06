@@ -12,6 +12,7 @@ using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Framework.Carto.UI;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Carto
 {
@@ -772,7 +773,7 @@ namespace gView.Framework.Carto
             }
         }
 
-        virtual public bool RefreshMap(DrawPhase phase, ICancelTracker cancelTracker)
+        async virtual public Task<bool> RefreshMap(DrawPhase phase, ICancelTracker cancelTracker)
         {
             _requestExceptions = null;
             bool printerMap = (this.GetType() == typeof(PrinterMap));
@@ -922,10 +923,11 @@ namespace gView.Framework.Carto
 
                                 if (rlt.UseLabelRenderer) labelLayers.Remove(fLayer);
 
-                                thread = new Thread(new ThreadStart(rlt.Render));
-                                thread.Start();
+                                //thread = new Thread(new ThreadStart(rlt.Render));
+                                //thread.Start();
 
                                 if (DrawingLayer != null && cancelTracker.Continue) DrawingLayer(layer.Title);
+                                await rlt.Render();
                             }
                         }
                         if (layer is IRasterLayer && ((IRasterLayer)layer).RasterClass != null)
@@ -989,31 +991,15 @@ namespace gView.Framework.Carto
                             DateTime startTime = DateTime.Now;
 
                             RenderLabelThread rlt = new RenderLabelThread(this, fLayer, cancelTracker);
-                            Thread thread = new Thread(new ThreadStart(rlt.Render));
-                            thread.Start();
 
                             if (DrawingLayer != null && cancelTracker.Continue) DrawingLayer(fLayer.Title);
 
-                            if (thread == null) continue;
-                            thread.Join();
+                            await rlt.Render();
 
                             if (DrawingLayerFinished != null)
                             {
                                 DrawingLayerFinished(this, new gView.Framework.system.TimeEvent("Labelling: " + fLayer.Title, startTime, DateTime.Now));
                             }
-
-                            //int count = 0;
-                            //while (thread.IsAlive)
-                            //{
-                            //    Thread.Sleep(10);
-                            //    if (DoRefreshMapView != null && (count % 100) == 0 && cancelTracker.Continue)
-                            //    {
-                            //        _labelEngine.Draw(this.Display, cancelTracker);
-                            //        DoRefreshMapView();
-                            //    }
-                            //    count++;
-                            //}
-                            //if (DoRefreshMapView != null && cancelTracker.Continue) DoRefreshMapView();
                         }
                         DrawStream(_msGeometry);
                     }
@@ -1080,7 +1066,7 @@ namespace gView.Framework.Carto
                             ((IFeatureSelection)layer).SelectionSet.Count > 0)
                         {
                             SetGeotransformer((ILayer)layer, geoTransformer);
-                            RenderSelection(layer as IFeatureLayer, cancelTracker);
+                            await RenderSelection(layer as IFeatureLayer, cancelTracker);
                         } // Andere Layer (zB IRasterLayer)
                         else if (layer is IWebServiceLayer)
                         {
@@ -1096,7 +1082,7 @@ namespace gView.Framework.Carto
                                     ((IFeatureSelection)theme).SelectionSet.Count > 0)
                                 {
                                     SetGeotransformer((ILayer)theme, geoTransformer);
-                                    RenderSelection(theme as IFeatureLayer, cancelTracker);
+                                    await RenderSelection(theme as IFeatureLayer, cancelTracker);
                                 }
                             }
                         }
@@ -1277,7 +1263,7 @@ namespace gView.Framework.Carto
             return false;
         }
 
-        private void RenderSelection(IFeatureLayer fLayer, ICancelTracker cancelTracker)
+        async private Task RenderSelection(IFeatureLayer fLayer, ICancelTracker cancelTracker)
         {
             if (fLayer == null || !(fLayer is IFeatureSelection)) return;
             if (fLayer.SelectionRenderer == null) return;
@@ -1287,21 +1273,23 @@ namespace gView.Framework.Carto
             RenderFeatureLayerSelectionThread rlt = new RenderFeatureLayerSelectionThread(this, fLayer, cancelTracker);
             //rlt.Render();
 
-            Thread thread = new Thread(new ThreadStart(rlt.Render));
-            thread.Start();
+            //Thread thread = new Thread(new ThreadStart(rlt.Render));
+            //thread.Start();
 
             if (DrawingLayer != null && cancelTracker.Continue) DrawingLayer(fLayer.Title);
 
+            await rlt.Render();
+
             int count = 0;
-            while (thread.IsAlive)
-            {
-                Thread.Sleep(10);
-                if (DoRefreshMapView != null && (count % 100) == 0 && cancelTracker.Continue)
-                {
-                    DoRefreshMapView();
-                }
-                count++;
-            }
+            //while (thread.IsAlive)
+            //{
+            //    Thread.Sleep(10);
+            //    if (DoRefreshMapView != null && (count % 100) == 0 && cancelTracker.Continue)
+            //    {
+            //        DoRefreshMapView();
+            //    }
+            //    count++;
+            //}
             if (DoRefreshMapView != null && cancelTracker.Continue) DoRefreshMapView();
         }
 
@@ -2742,7 +2730,7 @@ namespace gView.Framework.Carto
             set { _useLabelRenderer = value; }
         }
 
-        public void Render()
+        async public Task Render()
         {
             if (_layer == null || _map == null) return;
 
@@ -2788,9 +2776,9 @@ namespace gView.Framework.Carto
             }
             #endregion
 
-            Render(_layer);
+            await Render(_layer);
         }
-        private void Render(IFeatureLayer layer)
+        async private Task Render(IFeatureLayer layer)
         {
             try
             {
@@ -2856,7 +2844,7 @@ namespace gView.Framework.Carto
 
                 IDisplay display = (IDisplay)_map;
                 double refScale = display.refScale;
-                using (IFeatureCursor fCursor = fClass.GetFeatures(MapHelper.MapQueryFilter(filter)))
+                using (IFeatureCursor fCursor = await fClass.GetFeatures(MapHelper.MapQueryFilter(filter)))
                 {
                     if (fCursor != null)
                     {
@@ -2890,7 +2878,7 @@ namespace gView.Framework.Carto
 
                         if (renderer != null)
                         {
-                            while ((feature = fCursor.NextFeature) != null)
+                            while ((feature = await fCursor.NextFeature()) != null)
                             {
                                 if (_cancelTracker != null)
                                     if (!_cancelTracker.Continue)
@@ -2903,7 +2891,7 @@ namespace gView.Framework.Carto
                         }
                         else if (labelRenderer != null)
                         {
-                            while ((feature = fCursor.NextFeature) != null)
+                            while ((feature = await fCursor.NextFeature()) != null)
                             {
                                 if (_cancelTracker != null)
                                     if (!_cancelTracker.Continue)
@@ -2948,7 +2936,7 @@ namespace gView.Framework.Carto
             _cancelTracker = ((cancelTracker == null) ? new CancelTracker() : cancelTracker);
         }
 
-        public void Render()
+        async public Task Render()
         {
             try
             {
@@ -2983,7 +2971,7 @@ namespace gView.Framework.Carto
 
                 _layer.LabelRenderer.PrepareQueryFilter(_map.Display, _layer, filter);
 
-                using (IFeatureCursor fCursor = fClass.GetFeatures(filter))
+                using (IFeatureCursor fCursor = await fClass.GetFeatures(filter))
                 {
                     if (fCursor != null)
                     {
@@ -2998,7 +2986,7 @@ namespace gView.Framework.Carto
                         }
                         IFeature feature;
 
-                        while ((feature = fCursor.NextFeature) != null)
+                        while ((feature = await fCursor.NextFeature()) != null)
                         {
                             if (_cancelTracker != null)
                                 if (!_cancelTracker.Continue)
@@ -3334,7 +3322,7 @@ namespace gView.Framework.Carto
             _cancelTracker = ((cancelTracker == null) ? new CancelTracker() : cancelTracker);
         }
 
-        public void Render()
+        async public Task Render()
         {
             if (_layer == null) return;
             if (_layer.SelectionRenderer == null) return;
@@ -3392,13 +3380,13 @@ namespace gView.Framework.Carto
             filter.AddField(fClass.ShapeFieldName);
             _layer.SelectionRenderer.PrepareQueryFilter(_layer, filter);
 
-            using (IFeatureCursor fCursor = (fClass is ISelectionCache) ? ((ISelectionCache)fClass).GetSelectedFeatures(_map.Display) : fClass.GetFeatures(filter))
+            using (IFeatureCursor fCursor = (fClass is ISelectionCache) ? ((ISelectionCache)fClass).GetSelectedFeatures(_map.Display) : await fClass.GetFeatures(filter))
             {
                 if (fCursor != null)
                 {
                     //_layer.SelectionRenderer.Draw(_map, fCursor, DrawPhase.Geography, _cancelTracker);
                     IFeature feature;
-                    while ((feature = fCursor.NextFeature) != null)
+                    while ((feature = await fCursor.NextFeature()) != null)
                     {
                         if (_cancelTracker != null)
                             if (!_cancelTracker.Continue)

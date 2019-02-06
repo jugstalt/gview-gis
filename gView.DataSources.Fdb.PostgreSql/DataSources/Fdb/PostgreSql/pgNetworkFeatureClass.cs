@@ -9,6 +9,7 @@ using System.Data.Common;
 using gView.Framework.Network.Build;
 using gView.Framework.Network.Algorthm;
 using gView.Framework.FDB;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.PostgreSql
 {
@@ -151,7 +152,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
-        public IFeatureCursor GetFeatures(IQueryFilter filter)
+        public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
             List<IFeatureClass> edgeFcs = new List<IFeatureClass>();
             if (_edgeFcs != null)
@@ -160,7 +161,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                     edgeFcs.Add(fc);
             }
 
-            return new NetworkFeatureCursor(_fdb, _name, edgeFcs, _nodeFc, filter);
+            return Task.FromResult<IFeatureCursor>(new NetworkFeatureCursor(_fdb, _name, edgeFcs, _nodeFc, filter));
         }
 
         #endregion

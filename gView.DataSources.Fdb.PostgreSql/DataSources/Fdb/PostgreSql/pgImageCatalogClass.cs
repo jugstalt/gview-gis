@@ -9,6 +9,7 @@ using System.IO;
 using System.Data;
 using System.Runtime.InteropServices;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.PostgreSql
 {
@@ -71,27 +72,24 @@ namespace gView.DataSources.Fdb.PostgreSql
             _polygon.AddRing(ring);
         }
 
-        public ICursor ImageList
+        async public Task<ICursor> ImageList()
         {
-            get
+            try
             {
-                try
-                {
-                    if (_fc == null) return null;
+                if (_fc == null) return null;
 
-                    QueryFilter filter = new QueryFilter();
-                    filter.AddField("PATH");
-                    filter.AddField("LAST_MODIFIED");
-                    filter.AddField("PATH2");
-                    filter.AddField("LAST_MODIFIED2");
-                    filter.AddField("MANAGED");
+                QueryFilter filter = new QueryFilter();
+                filter.AddField("PATH");
+                filter.AddField("LAST_MODIFIED");
+                filter.AddField("PATH2");
+                filter.AddField("LAST_MODIFIED2");
+                filter.AddField("MANAGED");
 
-                    return _fc.Search(filter);
-                }
-                catch
-                {
-                    return null;
-                }
+                return await _fc.Search(filter);
+            }
+            catch
+            {
+                return null;
             }
         }
 
@@ -110,7 +108,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                     cursor = _fc.Search(filter) as IFeatureCursor;
 
                     if (cursor == null) return null;
-                    return cursor.NextFeature;
+                    return cursor.NextFeature();
                 }
                 catch
                 {
