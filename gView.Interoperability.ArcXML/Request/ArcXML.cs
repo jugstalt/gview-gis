@@ -63,7 +63,7 @@ namespace gView.Interoperability.ArcXML
 
                 if (Classes.Count > 1)
                 {
-                    if (!MapServerHelper.ModifyFilter(ServiceMap, Class, filter)) continue;
+                    if (!await MapServerHelper.ModifyFilter(ServiceMap, Class, filter)) continue;
                 }
 
                 if (Class != null && Class.Dataset is ArcIMSDataset && filter is IArcXmlGET_FEATURES_Attributes)
@@ -81,11 +81,11 @@ namespace gView.Interoperability.ArcXML
 
                 if (Class is IFeatureClass)
                 {
-                    cursor = Class.Search(filter) as IFeatureCursor;
+                    cursor = await Class.Search(filter) as IFeatureCursor;
                 }
                 else if (Class is ITableClass)
                 {
-                    cursor = Class.Search(filter) as IRowCursor;
+                    cursor = await Class.Search(filter) as IRowCursor;
                 }
                 if (cursor == null) continue;
 
@@ -270,12 +270,12 @@ namespace gView.Interoperability.ArcXML
             this.ImageFormat = System.Drawing.Imaging.ImageFormat.Png;
         }
 
-        public string ImageRequest(IServiceMap map, IMapServer mapServer, bool useTOC)
+        async public Task<string> ImageRequest(IServiceMap map, IMapServer mapServer, bool useTOC)
         {
             string ret = "";
             _useTOC = useTOC;
 
-            ModifyLAYERS(map);
+            await ModifyLAYERS(map);
 
             AXL response = new AXL("ARCXML", "1.1");
 
@@ -286,7 +286,7 @@ namespace gView.Interoperability.ArcXML
             //map.Display.drawScaleBar = false;
             map.BeforeRenderLayers += new BeforeRenderLayersEvent(map_BeforeRenderLayers);
             map.ScaleSymbolFactor = symbolScaleFactor;
-            map.Render();
+            await map.Render();
 
             string title = map.Name.Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + _imageExtension;
             if (map.SaveImage(mapServer.OutputPath + @"\" + title, _imageFormat))
@@ -481,7 +481,7 @@ namespace gView.Interoperability.ArcXML
                                     IQueryFilter filter = ParseChildNodesForQueryFilter(LAYER, e.Class as ITableClass);
                                     if (filter != null)
                                     {
-                                        if (!MapServerHelper.ModifyFilter(sender, e.Class as ITableClass, filter))
+                                        if (!MapServerHelper.ModifyFilter(sender, e.Class as ITableClass, filter).Result)
                                             continue;
 
                                         ReplaceQueryWhereClause(clonedLAYER, filter.WhereClause);
@@ -510,7 +510,7 @@ namespace gView.Interoperability.ArcXML
                                             sender.Display.GraphicsContainer.Elements.Add(
                                                 ObjectFromAXLFactory.GraphicElement(
                                                     ((SimpleRenderer)fLayer.FeatureRenderer).Symbol,
-                                                    (IBufferQueryFilter)fLayer.FilterQuery));
+                                                    (IBufferQueryFilter)fLayer.FilterQuery).Result);
                                         }
                                         continue;
                                     }
@@ -737,7 +737,7 @@ namespace gView.Interoperability.ArcXML
         /// zB beim Serviceübergreifenden Buffern...
         /// </summary>
         /// <param name="map"></param>
-        private void ModifyLAYERS(IServiceMap map)
+        async private Task ModifyLAYERS(IServiceMap map)
         {
             if (LAYERS == null) return;
 
@@ -779,7 +779,7 @@ namespace gView.Interoperability.ArcXML
                                 if (filter is IBufferQueryFilter)
                                 {
                                     ((IBufferQueryFilter)filter).RootFilter.SetUserData("IServiceRequestContext", map as IServiceRequestContext);
-                                    filter = BufferQueryFilter.ConvertToSpatialFilter((IBufferQueryFilter)filter);
+                                    filter = await BufferQueryFilter.ConvertToSpatialFilter((IBufferQueryFilter)filter);
                                 }
 
                                 if (target[0].Class is IBeforeQueryEventHandler)
@@ -843,7 +843,7 @@ namespace gView.Interoperability.ArcXML
         public int CompactRows = 0, CompactCols = 0;
         public double GridDx = 1, GridDy = 1;
 
-        public string Request()
+        async public Task<string> Request()
         {
             if (Classes == null || Points == null) return String.Empty;
 
@@ -862,7 +862,7 @@ namespace gView.Interoperability.ArcXML
                 if (Classes.Count == 1 && Classes[0] is IMultiGridIdentify)
                 {
                     IMultiGridIdentify mgi = (IMultiGridIdentify)Classes[0];
-                    float[] vals = mgi.MultiGridQuery(Display, Points.ToArray(), GridDx, GridDy, SpatialReference, UserData);
+                    float[] vals = await mgi.MultiGridQuery(Display, Points.ToArray(), GridDx, GridDy, SpatialReference, UserData);
 
                     xWriter.WriteStartElement("DATA");
                     xWriter.WriteAttributeString("rows", ((int)vals[0]).ToString());
@@ -891,24 +891,24 @@ namespace gView.Interoperability.ArcXML
                     if (rasterClass is IMulitPointIdentify)
                     {
                         PointCollection pColl = new PointCollection(Points);
-                        using (ICursor cursor = ((IMulitPointIdentify)rasterClass).MultiPointQuery(Display, pColl, SpatialReference, UserData))
+                        using (ICursor cursor = await ((IMulitPointIdentify)rasterClass).MultiPointQuery(Display, pColl, SpatialReference, UserData))
                         {
                             if (Compact)
-                                AddCompactRasterInfo2(xWriter, cursor, null);
+                                await AddCompactRasterInfo2(xWriter, cursor, null);
                             else
-                                AddRasterInfo(xWriter, cursor, null);
+                                await AddRasterInfo(xWriter, cursor, null);
                         }
                     }
                     else if (rasterClass is IPointIdentify)
                     {
                         foreach (IPoint point in Points)
                         {
-                            using (ICursor cursor = ((IPointIdentify)rasterClass).PointQuery(Display, point, SpatialReference, UserData))
+                            using (ICursor cursor = await ((IPointIdentify)rasterClass).PointQuery(Display, point, SpatialReference, UserData))
                             {
                                 if (Compact)
-                                    AddCompactRasterInfo(xWriter, cursor, point);
+                                    await AddCompactRasterInfo(xWriter, cursor, point);
                                 else
-                                    AddRasterInfo(xWriter, cursor, point);
+                                    await AddRasterInfo(xWriter, cursor, point);
                             }
                         }
                     }

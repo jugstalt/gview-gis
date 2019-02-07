@@ -7,6 +7,7 @@ using gView.Framework.Db;
 using System.Data;
 using gView.Framework.UI;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Joins
 {
@@ -74,10 +75,10 @@ namespace gView.Framework.Data.Joins
             }
         }
 
-        public IRow GetJoinedRow(string val)
+        public Task<IRow> GetJoinedRow(string val)
         {
             if (_rows.ContainsKey(val))
-                return _rows[val];
+                return Task.FromResult<IRow>(_rows[val]);
 
             if (_provider == null)
                 return null;
@@ -94,10 +95,10 @@ namespace gView.Framework.Data.Joins
             }
 
             _rows.Add(val, row);
-            return row;
+            return Task.FromResult<IRow>(row);
         }
 
-        public void PerformCacheQuery(string[] vals)
+        async public Task PerformCacheQuery(string[] vals)
         {
             IField field = _fields.FindField(this.JoinField);
             StringBuilder where = new StringBuilder();
@@ -133,7 +134,7 @@ namespace gView.Framework.Data.Joins
             }
         }
 
-        public ICursor PerformQuery(IQueryFilter filter)
+        public Task<ICursor> PerformQuery(IQueryFilter filter)
         {
             if (_provider == null || filter==null)
                 return null;
@@ -145,7 +146,7 @@ namespace gView.Framework.Data.Joins
             if (!String.IsNullOrEmpty(filter.WhereClause)) sql += " where " + _provider.ToWhereClause(filter.WhereClause);
             if (!String.IsNullOrEmpty(filter.OrderBy)) sql += " order by " + _provider.ToFieldNames(filter.OrderBy);
 
-            return new RowCursor(_provider.ExecuteQuery(sql));
+            return Task.FromResult<ICursor>(new RowCursor(_provider.ExecuteQuery(sql)));
         }
 
         public void Init(string selectFieldNames)
@@ -308,23 +309,20 @@ namespace gView.Framework.Data.Joins
 
             #region IRowCursor Member
 
-            public IRow NextRow
+            public Task<IRow> NextRow()
             {
-                get
+                if (_tab == null || _pos >= _tab.Rows.Count)
+                    return null;
+
+                DataRow tabRow = _tab.Rows[_pos++];
+
+                Row row = new Row();
+                foreach (DataColumn col in _tab.Columns)
                 {
-                    if (_tab == null || _pos >= _tab.Rows.Count)
-                        return null;
-
-                    DataRow tabRow = _tab.Rows[_pos++];
-
-                    Row row = new Row();
-                    foreach (DataColumn col in _tab.Columns)
-                    {
-                        row.Fields.Add(new FieldValue(col.ColumnName, tabRow[col.ColumnName]));
-                    }
-
-                    return row;
+                    row.Fields.Add(new FieldValue(col.ColumnName, tabRow[col.ColumnName]));
                 }
+
+                return Task.FromResult<IRow>(row);
             }
 
             #endregion

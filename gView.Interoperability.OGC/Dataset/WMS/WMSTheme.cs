@@ -6,6 +6,7 @@ using gView.Framework.Web;
 using System.Xml;
 using gView.Framework.system;
 using gView.Framework.Geometry;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Dataset.WMS
 {
@@ -85,9 +86,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
         #region IPointIdentify Member
 
-        public ICursor PointQuery(gView.Framework.Carto.IDisplay display, gView.Framework.Geometry.IPoint point, ISpatialReference sRef, IUserData userdata)
+        public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, gView.Framework.Geometry.IPoint point, ISpatialReference sRef, IUserData userdata)
         {
-            if (display == null || point == null) return null;
+            if (display == null || point == null)
+                return Task.FromResult<ICursor>(null);
 
             IEnvelope dispEnvelope = display.Envelope;
             if (sRef != null)
@@ -129,7 +131,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
             if (_getFeatureInfo.Formats[_getFeatureInfo.FormatIndex].ToLower().StartsWith("xsl/"))
             {
-                return new UrlCursor(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString()));
+                return Task.FromResult<ICursor>(new UrlCursor(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString())));
             }
             else
             {
@@ -137,15 +139,15 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 {
                     case "text/plain":
                         response = WebFunctions.HttpSendRequest(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString()));
-                        return new TextCursor(response);
+                        return Task.FromResult<ICursor>(new TextCursor(response));
                     case "text/html":
-                        return new UrlCursor(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString()));
+                        return Task.FromResult<ICursor>(new UrlCursor(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString())));
                     case "text/xml":
                         response = WebFunctions.HttpSendRequest(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString()));
-                        return new RowCursor(Xml2Rows(response));
+                        return Task.FromResult<ICursor>(new RowCursor(Xml2Rows(response)));
                     case "application/vnd.ogc.gml":
                         response = WebFunctions.HttpSendRequest(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString()));
-                        return new RowCursor(Gml2Rows(response));
+                        return Task.FromResult<ICursor>(new RowCursor(Gml2Rows(response)));
                 }
             }
             return null;
@@ -264,14 +266,12 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
             #region IRowCursor Member
 
-            public IRow NextRow
+            public Task<IRow> NextRow()
             {
-                get
-                {
-                    if (_rows == null || pos >= _rows.Count) return null;
 
-                    return _rows[pos++];
-                }
+                if (_rows == null || pos >= _rows.Count) return null;
+
+                return Task.FromResult<IRow>(_rows[pos++]);
             }
 
             #endregion

@@ -57,7 +57,7 @@ namespace gView.Server.AppCode
                         name = ((MapServiceAlias)ms).ServiceName;
                     }
 
-                    return FindServiceMap(name, alias, context);
+                    return FindServiceMap(name, alias, context).Result;
                 }
             }
             catch (Exception ex)
@@ -217,9 +217,9 @@ namespace gView.Server.AppCode
             return false;
         }
 
-        private IServiceMap FindServiceMap(string name, string alias, IServiceRequestContext context)
+        async private Task<IServiceMap> FindServiceMap(string name, string alias, IServiceRequestContext context)
         {
-            Map map = FindMap(alias, context);
+            Map map = await FindMap(alias, context);
             if (map != null)
             {
                 IEnumerable<IMapApplicationModule> modules = null;
@@ -264,7 +264,7 @@ namespace gView.Server.AppCode
 
                 foreach (string n in names)
                 {
-                    Map m1 = FindMap(n, context);
+                    Map m1 = await FindMap(n, context);
                     if (m1.Name == n)
                     {
                         if (newMap == null)
@@ -339,7 +339,7 @@ namespace gView.Server.AppCode
             return null;
         }
 
-        private Map FindMap(string name, IServiceRequestContext context)
+        async private Task<Map> FindMap(string name, IServiceRequestContext context)
         {
             foreach (IMap map in InternetMapServer.MapDocument.Maps)
             {
@@ -349,7 +349,7 @@ namespace gView.Server.AppCode
 
             if (name.Contains(",")) return null;
 
-            IMap m = InternetMapServer.LoadMap(name, context);
+            IMap m = await InternetMapServer.LoadMap(name, context);
             if (m is Map)
                 return (Map)m;
 

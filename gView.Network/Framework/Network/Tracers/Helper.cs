@@ -6,6 +6,7 @@ using gView.Framework.UI;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.Network.Algorthm;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
 {
@@ -19,7 +20,7 @@ namespace gView.Framework.Network.Tracers
             return ids;
         }
 
-        public static void AppendNodeFlags(INetworkFeatureClass network, GraphTable gt, List<int> nodeIds, NetworkTracerOutputCollection output/*, IProgressReporterEvent reportEvent, ProgressReport report*/)
+        async public static Task AppendNodeFlags(INetworkFeatureClass network, GraphTable gt, List<int> nodeIds, NetworkTracerOutputCollection output/*, IProgressReporterEvent reportEvent, ProgressReport report*/)
         {
             try
             {
@@ -37,7 +38,7 @@ namespace gView.Framework.Network.Tracers
                     int fcId = gt.GetNodeFcid(nodeId);
                     if (fcId >= 0)
                     {
-                        IFeature nodeFeature = network.GetNodeFeature(nodeId);
+                        IFeature nodeFeature = await network.GetNodeFeature(nodeId);
                         if (nodeFeature != null && nodeFeature.Shape is IPoint)
                         {
                             if (!fcNames.ContainsKey(fcId))

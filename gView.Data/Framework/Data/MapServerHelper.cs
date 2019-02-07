@@ -6,6 +6,7 @@ using gView.Framework.UI;
 using gView.Framework.system;
 using gView.Framework.Geometry;
 using System.Xml;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data
 {
@@ -269,7 +270,7 @@ namespace gView.Framework.Data
             return -1;
         }
 
-        public static bool ModifyFilter(IServiceMap map, ITableClass tClass, IQueryFilter filter)
+        async public static Task<bool> ModifyFilter(IServiceMap map, ITableClass tClass, IQueryFilter filter)
         {
             if (filter == null || tClass == null) return false;
             string subFields = filter.SubFields;
@@ -298,7 +299,7 @@ namespace gView.Framework.Data
             try
             {
                 XmlDocument xmlFilter = new XmlDocument();
-                string xml = Xml.ToXml(tClass, filter);
+                string xml = await Xml.ToXml(tClass, filter);
                 xmlFilter.LoadXml(xml);
 
                 XmlNodeList propertyNames = xmlFilter.SelectNodes("//PropertyName");

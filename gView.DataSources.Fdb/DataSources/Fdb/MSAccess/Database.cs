@@ -280,17 +280,17 @@ namespace gView.DataSources.Fdb.MSAccess
         public string lastErrorMsg { get { return _errMsg; } }
         public Exception lastException { get { return (_conn != null ? _conn.lastException : null); } }
 
-        virtual public int CreateDataset(string name, ISpatialReference sRef)
+        virtual public Task<int> CreateDataset(string name, ISpatialReference sRef)
         {
             return this.CreateDataset(name, sRef, null);
         }
 
-        virtual public int CreateDataset(string name, ISpatialReference sRef, ISpatialIndexDef sIndexDef)
+        virtual public Task<int> CreateDataset(string name, ISpatialReference sRef, ISpatialIndexDef sIndexDef)
         {
             return CreateDataset(name, sRef, sIndexDef, false, String.Empty);
         }
 
-        virtual protected int CreateDataset(string name, ISpatialReference sRef, ISpatialIndexDef sIndexDef, bool imagedataset, string imageSpace)
+        async virtual protected Task<int> CreateDataset(string name, ISpatialReference sRef, ISpatialIndexDef sIndexDef, bool imagedataset, string imageSpace)
         {
             _errMsg = "";
             if (_conn == null) return -1;
@@ -332,7 +332,7 @@ namespace gView.DataSources.Fdb.MSAccess
                     ds = new DataSet();
                     if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_DatasetGeometryType") + " WHERE " + DbColName("DatasetID") + "=" + dsID, "DSGT", true))
                     {
-                        DeleteDataset(name);
+                        await DeleteDataset(name);
                         _errMsg = _conn.errorMessage;
                         return -1;
                     }
@@ -387,7 +387,7 @@ namespace gView.DataSources.Fdb.MSAccess
                     ds.Tables["DSGT"].Rows.Add(row);
                     if (!_conn.UpdateData(ref ds, "DSGT"))
                     {
-                        DeleteDataset(name);
+                        await DeleteDataset(name);
                         _errMsg = _conn.errorMessage;
                         return -1;
                     }
@@ -397,7 +397,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
             catch (Exception ex)
             {
-                DeleteDataset(name);
+                await DeleteDataset(name);
                 _errMsg = ex.Message + "\n" + ex.StackTrace; ;
                 return -1;
             }
@@ -949,7 +949,7 @@ namespace gView.DataSources.Fdb.MSAccess
             return true;
         }
 
-        virtual public bool DeleteDataset(string dsname)
+        async virtual public Task<bool> DeleteDataset(string dsname)
         {
             if (_conn == null) return false;
 
@@ -972,12 +972,12 @@ namespace gView.DataSources.Fdb.MSAccess
                         IFeatureClass fc = this.GetFeatureclass(dsname, dsname + "_IMAGE_POLYGONS");
                         QueryFilter filter = new QueryFilter();
                         filter.AddField(DbColName("MANAGED_FILE"));
-                        IFeatureCursor cursor = fc.Search(filter) as IFeatureCursor;
+                        IFeatureCursor cursor = await fc.Search(filter) as IFeatureCursor;
 
                         if (cursor != null)
                         {
                             IFeature feature;
-                            while ((feature = cursor.NextFeature) != null)
+                            while ((feature = await cursor.NextFeature()) != null)
                             {
                                 if (feature[ColumnName("MANAGED_FILE")] == System.DBNull.Value) continue;
                                 string file = feature[ColumnName("MANAGED_FILE")].ToString();
@@ -1398,19 +1398,19 @@ namespace gView.DataSources.Fdb.MSAccess
 
         #region IFeatureUpdater Member
 
-        public virtual bool Insert(IFeatureClass fClass, IFeature feature)
+        public virtual Task<bool> Insert(IFeatureClass fClass, IFeature feature)
         {
             List<IFeature> features = new List<IFeature>();
             features.Add(feature);
             return Insert(fClass, features);
         }
-        public abstract bool Insert(IFeatureClass fClass, List<IFeature> features);
+        public abstract Task<bool> Insert(IFeatureClass fClass, List<IFeature> features);
 
-        public abstract bool Update(IFeatureClass fClass, IFeature feature);
-        public abstract bool Update(IFeatureClass fClass, List<IFeature> features);
+        public abstract Task<bool> Update(IFeatureClass fClass, IFeature feature);
+        public abstract Task<bool> Update(IFeatureClass fClass, List<IFeature> features);
 
-        public abstract bool Delete(IFeatureClass fClass, int oid);
-        public abstract bool Delete(IFeatureClass fClass, string where);
+        public abstract Task<bool> Delete(IFeatureClass fClass, int oid);
+        public abstract Task<bool> Delete(IFeatureClass fClass, string where);
 
         public virtual int SuggestedInsertFeatureCountPerTransaction
         {
@@ -2187,7 +2187,7 @@ namespace gView.DataSources.Fdb.MSAccess
         }
 
         #region Rebuild Index
-        virtual public bool RebuildSpatialIndexDef(string fcName, BinaryTreeDef def, EventHandler callback)
+        async virtual public Task<bool> RebuildSpatialIndexDef(string fcName, BinaryTreeDef def, EventHandler callback)
         {
             if (_conn == null) return false;
             try
@@ -2223,7 +2223,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 if (callback != null)
                     callback(this, new UpdateSIDefEventArgs());
 
-                if (!RecalcFeatureSpatialIndex(fcName, callback))
+                if (!await RecalcFeatureSpatialIndex(fcName, callback))
                 {
                     return false;
                 }
@@ -2235,7 +2235,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 return false;
             }
         }
-        virtual protected bool RecalcFeatureSpatialIndex(string fcName, EventHandler callback)
+        async virtual protected Task<bool> RecalcFeatureSpatialIndex(string fcName, EventHandler callback)
         {
             try
             {
@@ -2269,7 +2269,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 filter.AddField(fc.ShapeFieldName);
 
                 Dictionary<int, long> nids = new Dictionary<int, long>();
-                using (IFeatureCursor cursor = fc.GetFeatures(filter))
+                using (IFeatureCursor cursor = await fc.GetFeatures(filter))
                 {
                     if (cursor == null)
                     {
@@ -2278,7 +2278,7 @@ namespace gView.DataSources.Fdb.MSAccess
                     }
 
                     IFeature feature;
-                    while ((feature = cursor.NextFeature) != null)
+                    while ((feature = await cursor.NextFeature()) != null)
                     {
                         if (feature.Shape != null)
                         {
@@ -2319,7 +2319,7 @@ namespace gView.DataSources.Fdb.MSAccess
         #endregion
 
         #region Repair
-        virtual public bool RepairSpatialIndex(string fcName, EventHandler callback)
+        async virtual public Task<bool> RepairSpatialIndex(string fcName, EventHandler callback)
         {
             try
             {
@@ -2347,7 +2347,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 filter.AddField("FDB_NID");
 
                 Dictionary<int, long> nids = new Dictionary<int, long>();
-                using (IFeatureCursor cursor = fc.GetFeatures(filter))
+                using (IFeatureCursor cursor = await fc.GetFeatures(filter))
                 {
                     if (cursor == null)
                     {
@@ -2356,7 +2356,7 @@ namespace gView.DataSources.Fdb.MSAccess
                     }
 
                     IFeature feature;
-                    while ((feature = cursor.NextFeature) != null)
+                    while ((feature = await cursor.NextFeature()) != null)
                     {
                         long NID = Convert.ToInt64(feature["FDB_NID"]);
                         if (feature.Shape != null)
@@ -2412,9 +2412,9 @@ namespace gView.DataSources.Fdb.MSAccess
 
         #region ImageDataset
 
-        public int CreateImageDataset(string name, ISpatialReference sRef, ISpatialIndexDef sIndexDef, string imageSpace, IFields additionalFields)
+        async public Task<int> CreateImageDataset(string name, ISpatialReference sRef, ISpatialIndexDef sIndexDef, string imageSpace, IFields additionalFields)
         {
-            int dsID = this.CreateDataset(name, sRef, sIndexDef, true, imageSpace);
+            int dsID = await this.CreateDataset(name, sRef, sIndexDef, true, imageSpace);
             if (dsID == -1) return -1;
 
             Fields fields = new Fields();
@@ -2637,7 +2637,7 @@ namespace gView.DataSources.Fdb.MSAccess
             {
                 if (element == null || element.Class == null) continue;
 
-                foreach (IDatasetElement orig in dataset.Elements)
+                foreach (IDatasetElement orig in dataset.Elements().Result)
                 {
                     if (orig == null || orig.Class == null) continue;
 
@@ -2739,7 +2739,7 @@ namespace gView.DataSources.Fdb.MSAccess
             return true;
         }
 
-        virtual public bool CalculateExtent(string fcName)
+        async virtual public Task<bool> CalculateExtent(string fcName)
         {
             IFeatureClass fc = this.GetFeatureclass(fcName);
             if (fc == null)
@@ -2748,9 +2748,9 @@ namespace gView.DataSources.Fdb.MSAccess
                 return false;
             }
 
-            return CalculateExtent(fc);
+            return await CalculateExtent(fc);
         }
-        virtual public bool CalculateExtent(IFeatureClass fc)
+        async virtual public Task<bool> CalculateExtent(IFeatureClass fc)
         {
             if (_conn == null || fc == null)
             {
@@ -2765,12 +2765,12 @@ namespace gView.DataSources.Fdb.MSAccess
             QueryFilter filter = new QueryFilter();
             filter.AddField(ColumnName("FDB_SHAPE"));
 
-            IFeatureCursor cursor = Query(fc, filter);
+            IFeatureCursor cursor = await Query(fc, filter);
             IFeature feat;
             Envelope envelope = null;
 
             int counter = 0;
-            while ((feat = cursor.NextFeature) != null)
+            while ((feat = await cursor.NextFeature()) != null)
             {
                 if (feat.Shape == null || feat.Shape.Envelope == null) continue;
 
@@ -2871,7 +2871,7 @@ namespace gView.DataSources.Fdb.MSAccess
             throw new NotImplementedException();
         }
 
-        public bool CalculateSpatialIndex(IFeatureClass fc, int maxPerNode, int maxLevels)
+        async public Task<bool> CalculateSpatialIndex(IFeatureClass fc, int maxPerNode, int maxLevels)
         {
             if (_conn == null)
             {
@@ -2881,7 +2881,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
             try
             {
-                if (!CalculateExtent(fc))
+                if (!await CalculateExtent(fc))
                 {
                     return false;
                 }
@@ -2911,10 +2911,10 @@ namespace gView.DataSources.Fdb.MSAccess
                 filter.AddField(ColumnName("FDB_OID"));
                 filter.AddField(ColumnName("FDB_SHAPE"));
 
-                IFeatureCursor cursor = Query(fc, filter);
+                IFeatureCursor cursor = await Query(fc, filter);
                 IFeature feat;
 
-                while ((feat = cursor.NextFeature) != null)
+                while ((feat = await cursor.NextFeature()) != null)
                 {
                     if (feat.Shape == null) continue;
 
@@ -3134,7 +3134,7 @@ namespace gView.DataSources.Fdb.MSAccess
                         continue;
                 }
 
-                if (ds.Tables[0].Columns["AutoFieldGUID"] != null && row["AutoFieldGUID"] != DBNull.Value && row["AutoFieldGUID"] != String.Empty)
+                if (ds.Tables[0].Columns["AutoFieldGUID"] != null && row["AutoFieldGUID"] != DBNull.Value && row["AutoFieldGUID"]?.ToString() != String.Empty)
                 {
                     try
                     {
@@ -3291,7 +3291,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 {
                     IGeodeticDatum datum = null;
                     if (ds.Tables[0].Rows[0]["DatumParam"] != System.DBNull.Value &&
-                        ds.Tables[0].Rows[0]["DatumParam"] != "")
+                        ds.Tables[0].Rows[0]["DatumParam"]?.ToString() != "")
                     {
                         datum = new GeodeticDatum();
                         ((GeodeticDatum)datum).Name = ds.Tables[0].Rows[0]["DatumName"].ToString();
@@ -3306,156 +3306,6 @@ namespace gView.DataSources.Fdb.MSAccess
             }
             return null;
         }
-
-        /*
-        public bool LoadFeatureClass(string fcName,IFeatureClass fc) 
-        {
-            try 
-            {
-                if(_dsname=="") 
-                {
-                    _errMsg="Dataset parameter (dsname) is not defined in connection string...";
-                    return false;
-                }
-                int dsID=OpenDataset(_dsname);
-                if(dsID==-1) 
-                {
-                    return false;
-                }
-
-                ProgressReport report=new ProgressReport();
-
-                if(fc is IReportProgress) 
-                {
-                    ((IReportProgress)fc).AddDelegate(reportProgress);
-                }
-
-                List<IField> fields=new List<IField>();
-                foreach(IField field_ in fc.Fields) 
-                {
-                    if( field_.type==FieldType.ID ||
-                        field_.type==FieldType.Shape ||
-                        (field_.type==FieldType.binary && field_.name=="FDB_SHAPE") ) continue;
-
-                    fields.Add(field_);
-                }
-				
-                report.Message="Create new Featureclass...";
-                Report(report);
-				
-                CreateFeatureClass(dsID,fcName,fc.GeometryType,fields);
-
-                report.Message="Read Source Spatial Index...";
-                Report(report);
-                List<SpatialIndexNode> nodes=null;
-				
-                if(fc is ISpatialTreeInfo) 
-                {
-                    nodes=((ISpatialTreeInfo)fc).SpatialIndexNodes;
-				
-                    if(nodes!=null) 
-                    {
-                        _conn.ExecuteNoneQuery("DELETE FROM FCSI_"+fcName);
-                        this.InsertSpatialIndexNodes2(fcName,nodes);
-                    }
-                    this.SetSpatialTreeInfo(fcName,((ISpatialTreeInfo)fc));
-                }
-
-                report.Message="Insert Features...";
-                if(Report(report)) 
-                {
-                    report.featureMax=report.featurePos=0;
-                    foreach(SpatialIndexNode node in nodes) 
-                    {
-                        if(node.IDs==null) continue;
-                        report.featureMax+=node.IDs.Count;
-                    }
-                }
-                IFeature feature;
-
-                if(nodes.Count==0) nodes=null;
-                if(nodes!=null) 
-                {
-                    foreach(SpatialIndexNode node in nodes) 
-                    {
-                        if(node.IDs==null) continue;
-                        if(node.IDs.Count==0) continue;
-						
-                        Report(report);
-						
-                        IFeatureCursor cursor=fc.GetFeatures(node.IDs,getFeatureQueryType.All);
-                        if(cursor==null) 
-                        {
-                            System.Windows.Forms.MessageBox.Show(_conn.errorMessage);
-                            return false;
-                        }
-                        List<IFeature> features=new List<IFeature>();
-                        int count=0;
-                        while((feature=cursor.NextFeature)!=null) 
-                        {
-                            features.Add(feature);
-                            count++;
-                            if(count>499) 
-                            {
-                                this.Insert(fcName,features);
-                                report.featurePos+=features.Count;
-                                features=new List<IFeature>();
-                                count=0;
-                                Report(report);
-                            }
-                        }
-                        if(features.Count>0) 
-                        {
-                            this.Insert(fcName,features);
-                            report.featurePos+=features.Count;
-                            features=new List<IFeature>();
-                            Report(report);
-                        }
-                    }
-                }
-                else 
-                {
-                    report.featureMax=fc.CountFeatures;
-                    IQueryFilter filter=new QueryFilter();
-                    filter.SubFields="*";
-
-                    IFeatureCursor cursor=(IFeatureCursor)fc.Search(filter);
-
-                    List<IFeature> features=new List<IFeature>();
-                    int count=0;
-                    while((feature=cursor.NextFeature)!=null) 
-                    {
-                        features.Add(feature);
-                        count++;
-                        if(count>499) 
-                        {
-                            this.Insert(fcName,features);
-                            report.featurePos+=features.Count;
-                            features=new List<IFeature>();
-                            count=0;
-                            Report(report);
-                        }
-                    }
-                    if(features.Count>0) 
-                    {
-                        this.Insert(fcName,features);
-                        report.featurePos+=features.Count;
-                        features=new List<IFeature>();
-                        Report(report);
-                    }
-					
-                    CalculateSpatialIndex(fcName,200);
-                }
-                this.CalculateExtent(fcName);
-            } 
-            catch(Exception ex)
-            {
-                _errMsg=ex.Message;
-                return false;
-            }
-            return true;
-        }
-        */
 
         public bool ProjectFeatureClass(IFeatureClass fc, ISpatialReference destSRef)
         {

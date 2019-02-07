@@ -8,6 +8,7 @@ using gView.Framework.Geometry;
 using gView.Framework.Data;
 using gView.Framework.FDB;
 using gView.DataSources.Shape.Lib;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Shape
 {
@@ -46,11 +47,11 @@ namespace gView.DataSources.Shape
             }
         }
 
-        public bool Select(IQueryFilter filter, CombinationMethod method)
+        async public Task<bool> Select(IQueryFilter filter, CombinationMethod method)
         {
             if (!(this.Class is ITableClass)) return false;
 
-            ISelectionSet selSet = ((ITableClass)this.Class).Select(filter);
+            ISelectionSet selSet = await ((ITableClass)this.Class).Select(filter);
 
             if (method == CombinationMethod.New || SelectionSet == null)
             {
@@ -97,7 +98,7 @@ namespace gView.DataSources.Shape
         }
     }
 
-    internal class ShapeFeatureClass : gView.Framework.Data.IFeatureClass, IDisposable
+    internal class ShapeFeatureClass : IFeatureClass, IDisposable
     {
         private GeometryDef _geomDef = new GeometryDef();
         private SHPFile _file = null;
@@ -154,7 +155,7 @@ namespace gView.DataSources.Shape
 
         #region IFeatureClass Member
 
-        public gView.Framework.Data.IFeatureCursor GetFeatures(gView.Framework.Data.IQueryFilter filter/*, gView.Framework.Data.getFeatureQueryType type*/)
+        async public Task<IFeatureCursor> GetFeatures(gView.Framework.Data.IQueryFilter filter/*, gView.Framework.Data.getFeatureQueryType type*/)
         {
             if (filter != null)
             {
@@ -175,9 +176,9 @@ namespace gView.DataSources.Shape
             }
             if (filter is IBufferQueryFilter)
             {
-                ISpatialFilter sFilter = BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
+                ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
                 if (sFilter == null) return null;
-                return GetFeatures(sFilter);
+                return await GetFeatures(sFilter);
             }
 
             if (filter is IRowIDFilter)
@@ -286,27 +287,27 @@ namespace gView.DataSources.Shape
             return null;
         }
 
-        public gView.Framework.Data.ICursor Search(gView.Framework.Data.IQueryFilter filter)
+        async public Task<ICursor> Search(gView.Framework.Data.IQueryFilter filter)
         {
-            return GetFeatures(filter);
+            return await GetFeatures(filter);
         }
 
-        public gView.Framework.Data.ISelectionSet Select(gView.Framework.Data.IQueryFilter filter)
+        async public Task<ISelectionSet> Select(gView.Framework.Data.IQueryFilter filter)
         {
             if (filter is IBufferQueryFilter)
             {
-                ISpatialFilter sFilter = BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
+                ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
                 if (sFilter == null) return null;
-                return Select(sFilter);
+                return await Select(sFilter);
             }
 
             filter.SubFields = this.IDFieldName;
 
-            IFeatureCursor cursor = (IFeatureCursor)(new ShapeFeatureCursor(this, _file, filter, _tree));
+            IFeatureCursor cursor = new ShapeFeatureCursor(this, _file, filter, _tree);
             IFeature feat;
 
             IDSelectionSet selSet = new IDSelectionSet();
-            while ((feat = cursor.NextFeature) != null)
+            while ((feat = await cursor.NextFeature()) != null)
             {
                 selSet.AddID((int)((uint)feat.OID));
             }
@@ -644,133 +645,135 @@ namespace gView.DataSources.Shape
 
         #region IFeatureCursor Member
 
-        public override IFeature NextFeature
+        public override Task<IFeature> NextFeature()
         {
-            get
+            if (_file == null)
+                return Task.FromResult<IFeature>(null);
+
+            IFeature feature;
+            if (_IDs == null)
             {
-                if (_file == null) return null;
-
-                IFeature feature;
-                if (_IDs == null)
+                while (true)
                 {
-                    while (true)
+                    if (_shape >= _file.Entities)
+                        Task.FromResult<IFeature>(null);
+
+                    if (_queryShape)
                     {
-                        if (_shape >= _file.Entities) return null;
-                        if (_queryShape)
+                        if (_bounds != null)
                         {
-                            if (_bounds != null)
+                            while (true)
                             {
-                                while (true)
+                                if (_shape >= _file.Entities) return null;
+                                //IEnvelope e = _file.ReadEnvelope((uint)_shape);
+                                feature = _file.ReadShape((uint)_shape++, _bounds);  // wenn nicht in Box -> feature.Shape==null
+                                if (feature == null || feature.Shape == null)
                                 {
-                                    if (_shape >= _file.Entities) return null;
-                                    //IEnvelope e = _file.ReadEnvelope((uint)_shape);
-                                    feature = _file.ReadShape((uint)_shape++, _bounds);  // wenn nicht in Box -> feature.Shape==null
-                                    if (feature == null || feature.Shape == null)
+                                    //_shape++;
+                                    continue;
+                                }
+
+                                if (_spatialFilter != null)
+                                {
+                                    if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialFilter, feature.Shape))
                                     {
-                                        //_shape++;
                                         continue;
                                     }
-
-                                    if (_spatialFilter != null)
-                                    {
-                                        if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialFilter, feature.Shape))
-                                        {
-                                            continue;
-                                        }
-                                    }
-                                    //if (!_fuzzyQuery)
-                                    //{
-                                    //    if (!SpatialAlgorithms.Algorithm.IntersectBox(feature.Shape, _bounds))
-                                    //    {
-                                    //        //_shape++;
-                                    //        continue;
-                                    //    }
-                                    //}
-                                    break;
                                 }
-                            }
-                            else
-                            {
-                                //if (_shape == 3200)
+                                //if (!_fuzzyQuery)
                                 //{
-                                //    feature = null;
+                                //    if (!SpatialAlgorithms.Algorithm.IntersectBox(feature.Shape, _bounds))
+                                //    {
+                                //        //_shape++;
+                                //        continue;
+                                //    }
                                 //}
-                                feature = _file.ReadShape((uint)_shape++);
+                                break;
                             }
                         }
                         else
                         {
-                            feature = new Feature();
-                            ((Feature)feature).OID = ((int)_shape++) + 1;
+                            //if (_shape == 3200)
+                            //{
+                            //    feature = null;
+                            //}
+                            feature = _file.ReadShape((uint)_shape++);
                         }
-
-                        if (feature == null || !AppendAttributes(feature)) continue;
-
-                        // DistinctFilter
-                        if (_unique != null && !String.IsNullOrEmpty(_uniqueField))
-                        {
-                            if (_unique.Contains(feature[_uniqueField]))
-                                continue;
-                            _unique.Add(feature[_uniqueField]);
-                        }
-
-                        Transform(feature);
-                        return feature;
                     }
-                }
-                else
-                {
-                    while (true)
+                    else
                     {
-                        if (_shape >= _IDs.Count) return null;
-                        if (_queryShape)
+                        feature = new Feature();
+                        ((Feature)feature).OID = ((int)_shape++) + 1;
+                    }
+
+                    if (feature == null || !AppendAttributes(feature)) continue;
+
+                    // DistinctFilter
+                    if (_unique != null && !String.IsNullOrEmpty(_uniqueField))
+                    {
+                        if (_unique.Contains(feature[_uniqueField]))
+                            continue;
+                        _unique.Add(feature[_uniqueField]);
+                    }
+
+                    Transform(feature);
+                    return Task.FromResult<IFeature>(feature);
+                }
+            }
+            else
+            {
+                while (true)
+                {
+                    if (_shape >= _IDs.Count)
+                        Task.FromResult<IFeature>(null);
+
+                    if (_queryShape)
+                    {
+                        if (_bounds != null)
                         {
-                            if (_bounds != null)
+                            while (true)
                             {
-                                while (true)
+                                if (_shape >= _IDs.Count) return null;
+                                //IEnvelope e = _file.ReadEnvelope((uint)_shape);
+                                feature = _file.ReadShape((uint)((int)_IDs[(int)_shape++]), _bounds); // wenn nicht in Box -> feature.Shape==null
+                                if (feature == null || feature.Shape == null)
                                 {
-                                    if (_shape >= _IDs.Count) return null;
-                                    //IEnvelope e = _file.ReadEnvelope((uint)_shape);
-                                    feature = _file.ReadShape((uint)((int)_IDs[(int)_shape++]), _bounds); // wenn nicht in Box -> feature.Shape==null
-                                    if (feature == null || feature.Shape == null)
+                                    //_shape++;
+                                    continue;
+                                }
+                                if (_spatialFilter != null)
+                                {
+                                    if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialFilter, feature.Shape))
                                     {
-                                        //_shape++;
                                         continue;
                                     }
-                                    if (_spatialFilter != null)
-                                    {
-                                        if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialFilter, feature.Shape))
-                                        {
-                                            continue;
-                                        }
-                                    }
-                                    //if (!_fuzzyQuery)
-                                    //{
-                                    //    if (!SpatialAlgorithms.Algorithm.IntersectBox(feature.Shape, _bounds))
-                                    //    {
-                                    //        //_shape++;
-                                    //        continue;
-                                    //    }
-                                    //}
-                                    break;
                                 }
-                            }
-                            else
-                            {
-                                feature = _file.ReadShape((uint)((int)_IDs[(int)_shape++]));
+                                //if (!_fuzzyQuery)
+                                //{
+                                //    if (!SpatialAlgorithms.Algorithm.IntersectBox(feature.Shape, _bounds))
+                                //    {
+                                //        //_shape++;
+                                //        continue;
+                                //    }
+                                //}
+                                break;
                             }
                         }
                         else
                         {
-                            feature = new Feature();
-                            ((Feature)feature).OID = ((int)_IDs[(int)_shape++]) + 1;
+                            feature = _file.ReadShape((uint)((int)_IDs[(int)_shape++]));
                         }
-
-                        if (feature == null || !AppendAttributes(feature)) continue;
-
-                        Transform(feature);
-                        return feature;
                     }
+                    else
+                    {
+                        feature = new Feature();
+                        ((Feature)feature).OID = ((int)_IDs[(int)_shape++]) + 1;
+                    }
+
+                    if (feature == null || !AppendAttributes(feature)) continue;
+
+                    Transform(feature);
+                    return Task.FromResult<IFeature>(feature);
                 }
             }
         }

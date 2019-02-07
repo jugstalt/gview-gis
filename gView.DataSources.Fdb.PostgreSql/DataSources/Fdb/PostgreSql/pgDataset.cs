@@ -6,6 +6,7 @@ using gView.Framework.FDB;
 using gView.Framework.IO;
 using gView.Framework.Geometry;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.PostgreSql
 {
@@ -51,43 +52,41 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         #region IFeatureDataset Member
 
-        public IEnvelope Envelope
+        public Task<IEnvelope> Envelope()
         {
-            get
+            if (_layers == null)
+                return Task.FromResult<IEnvelope>(null);
+
+            bool first = true;
+            IEnvelope env = null;
+
+            foreach (IDatasetElement layer in _layers)
             {
-                if (_layers == null) return null;
-
-                bool first = true;
-                IEnvelope env = null;
-
-                foreach (IDatasetElement layer in _layers)
+                IEnvelope envelope = null;
+                if (layer.Class is IFeatureClass)
                 {
-                    IEnvelope envelope = null;
-                    if (layer.Class is IFeatureClass)
-                    {
-                        envelope = ((IFeatureClass)layer.Class).Envelope;
-                        if (envelope.Width > 1e10 && ((IFeatureClass)layer.Class).CountFeatures == 0)
-                            envelope = null;
-                    }
-                    else if (layer.Class is IRasterClass)
-                    {
-                        if (((IRasterClass)layer.Class).Polygon == null) continue;
-                        envelope = ((IRasterClass)layer.Class).Polygon.Envelope;
-                    }
-                    if (gView.Framework.Geometry.Envelope.IsNull(envelope)) continue;
-
-                    if (first)
-                    {
-                        first = false;
-                        env = new Envelope(envelope);
-                    }
-                    else
-                    {
-                        env.Union(envelope);
-                    }
+                    envelope = ((IFeatureClass)layer.Class).Envelope;
+                    if (envelope.Width > 1e10 && ((IFeatureClass)layer.Class).CountFeatures == 0)
+                        envelope = null;
                 }
-                return env;
+                else if (layer.Class is IRasterClass)
+                {
+                    if (((IRasterClass)layer.Class).Polygon == null) continue;
+                    envelope = ((IRasterClass)layer.Class).Polygon.Envelope;
+                }
+                if (gView.Framework.Geometry.Envelope.IsNull(envelope)) continue;
+
+                if (first)
+                {
+                    first = false;
+                    env = new Envelope(envelope);
+                }
+                else
+                {
+                    env.Union(envelope);
+                }
             }
+            return Task.FromResult(env);
         }
 
         public ISpatialReference SpatialReference
@@ -198,43 +197,42 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
-        public List<IDatasetElement> Elements
+        public Task<List<IDatasetElement>> Elements()
         {
-            get
+            if (_layers == null || _layers.Count == 0)
             {
-                if (_layers == null || _layers.Count == 0)
+                _layers = _fdb.DatasetLayers(this);
+
+                if (_layers != null && _addedLayers.Count != 0)
                 {
-                    _layers = _fdb.DatasetLayers(this);
-
-                    if (_layers != null && _addedLayers.Count != 0)
+                    List<IDatasetElement> list = new List<IDatasetElement>();
+                    foreach (IDatasetElement element in _layers)
                     {
-                        List<IDatasetElement> list = new List<IDatasetElement>();
-                        foreach (IDatasetElement element in _layers)
+                        if (element is IFeatureLayer)
                         {
-                            if (element is IFeatureLayer)
-                            {
-                                if (_addedLayers.Contains(((IFeatureLayer)element).FeatureClass.Name))
-                                    list.Add(element);
-                            }
-                            else if (element is IRasterLayer)
-                            {
-                                if (_addedLayers.Contains(((IRasterLayer)element).Title))
-                                    list.Add(element);
-                            }
-                            else
-                            {
-                                if (_addedLayers.Contains(element.Title))
-                                    list.Add(element);
-                            }
+                            if (_addedLayers.Contains(((IFeatureLayer)element).FeatureClass.Name))
+                                list.Add(element);
                         }
-                        _layers = list;
+                        else if (element is IRasterLayer)
+                        {
+                            if (_addedLayers.Contains(((IRasterLayer)element).Title))
+                                list.Add(element);
+                        }
+                        else
+                        {
+                            if (_addedLayers.Contains(element.Title))
+                                list.Add(element);
+                        }
                     }
-
+                    _layers = list;
                 }
 
-                if (_layers == null) return new List<IDatasetElement>();
-                return _layers;
             }
+
+            if (_layers == null)
+                return Task.FromResult(new List<IDatasetElement>());
+
+            return Task.FromResult(_layers);
         }
 
         public string Query_FieldPrefix
@@ -252,20 +250,18 @@ namespace gView.DataSources.Fdb.PostgreSql
             get { return _fdb; }
         }
 
-        public IDatasetElement this[string title]
+        public Task<IDatasetElement> Element(string title)
         {
-            get
+            if (_fdb == null)
+                return Task.FromResult<IDatasetElement>(null);
+            IDatasetElement element = _fdb.DatasetElement(this, title);
+
+            if (element != null && element.Class is pgFeatureClass)
             {
-                if (_fdb == null) return null;
-                IDatasetElement element = _fdb.DatasetElement(this, title);
-
-                if (element != null && element.Class is pgFeatureClass)
-                {
-                    ((pgFeatureClass)element.Class).SpatialReference = _sRef;
-                }
-
-                return element;
+                ((pgFeatureClass)element.Class).SpatialReference = _sRef;
             }
+
+            return Task.FromResult(element);
         }
 
         public void RefreshClasses()
@@ -287,13 +283,15 @@ namespace gView.DataSources.Fdb.PostgreSql
             return dataset;
         }
 
-        public void AppendElement(string elementName)
+        async public Task AppendElement(string elementName)
         {
-            if (_layers == null) _layers = new List<IDatasetElement>();
+            if (_layers == null)
+                _layers = new List<IDatasetElement>();
 
             foreach (IDatasetElement e in _layers)
             {
-                if (e.Title == elementName) return;
+                if (e.Title == elementName)
+                    return;
             }
 
             IDatasetElement element = _fdb.DatasetElement(this, elementName);

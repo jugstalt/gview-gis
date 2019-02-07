@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using gView.Framework.system;
 using gView.Framework.Geometry;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Network
 {
@@ -559,7 +560,7 @@ namespace gView.Framework.Network
     {
         string Name { get; }
         bool CanTrace(NetworkTracerInputCollection input);
-        NetworkTracerOutputCollection Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, ICancelTracker cancelTraker);
+        Task<NetworkTracerOutputCollection> Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, ICancelTracker cancelTraker);
     }
 
     public interface INetworkTracerProperties

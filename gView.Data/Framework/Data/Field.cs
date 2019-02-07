@@ -65,28 +65,34 @@ namespace gView.Framework.Data
 
             this.name = schemaRow["ColumnName"].ToString();
 
-            if (schemaRow["DataType"] == typeof(System.Int32))
-                this.type = FieldType.integer;
-            else if (schemaRow["DataType"] == typeof(System.Int16))
-                this.type = FieldType.smallinteger;
-            else if (schemaRow["DataType"] == typeof(System.Int64))
-                this.type = FieldType.biginteger;
-            else if (schemaRow["DataType"] == typeof(System.DateTime))
-                this.type = FieldType.Date;
-            else if (schemaRow["DataType"] == typeof(System.Double))
-                this.type = FieldType.Double;
-            else if (schemaRow["DataType"] == typeof(System.Single))
-                this.type = FieldType.Float;
-            else if (schemaRow["DataType"] == typeof(System.Boolean))
-                this.type = FieldType.boolean;
-            else if (schemaRow["DataType"] == typeof(System.Char))
-                this.type = FieldType.character;
-            else if (schemaRow["DataType"] == typeof(System.String))
-                this.type = FieldType.String;
-            else if (schemaRow["DataType"] == typeof(System.Byte[]))
-                this.type = FieldType.binary;
-            else
+            if (schemaRow["DataType"].GetType() == typeof(Type))
+            {
+                if ((Type)schemaRow["DataType"] == typeof(System.Int32))
+                    this.type = FieldType.integer;
+                else if ((Type)schemaRow["DataType"] == typeof(System.Int16))
+                    this.type = FieldType.smallinteger;
+                else if ((Type)schemaRow["DataType"] == typeof(System.Int64))
+                    this.type = FieldType.biginteger;
+                else if ((Type)schemaRow["DataType"] == typeof(System.DateTime))
+                    this.type = FieldType.Date;
+                else if ((Type)schemaRow["DataType"] == typeof(System.Double))
+                    this.type = FieldType.Double;
+                else if ((Type)schemaRow["DataType"] == typeof(System.Single))
+                    this.type = FieldType.Float;
+                else if ((Type)schemaRow["DataType"] == typeof(System.Boolean))
+                    this.type = FieldType.boolean;
+                else if ((Type)schemaRow["DataType"] == typeof(System.Char))
+                    this.type = FieldType.character;
+                else if ((Type)schemaRow["DataType"] == typeof(System.String))
+                    this.type = FieldType.String;
+                else if ((Type)schemaRow["DataType"] == typeof(System.Byte[]))
+                    this.type = FieldType.binary;
+                else
+                    this.type = FieldType.unknown;
+            } else
+            {
                 this.type = FieldType.unknown;
+            }
 
             this.size = Convert.ToInt32(schemaRow["ColumnSize"]);
             this.precision = Convert.ToInt32(schemaRow["NumericPrecision"]);

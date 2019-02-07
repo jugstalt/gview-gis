@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using gView.Framework.UI;
 using gView.Framework.Carto;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Relations
 {
@@ -55,13 +56,13 @@ namespace gView.Framework.Data.Relations
             set;
         }
 
-        public ICursor GetLeftRows(string leftFields, object rightValue)
+        async public Task<ICursor> GetLeftRows(string leftFields, object rightValue)
         {
             try
             {
                 IQueryFilter filter = GetLeftFilter(leftFields, rightValue);
 
-                return ((ITableClass)this.LeftTable.Class).Search(filter);
+                return await ((ITableClass)this.LeftTable.Class).Search(filter);
             }
             catch
             {
@@ -80,13 +81,13 @@ namespace gView.Framework.Data.Relations
             return filter;
         }
 
-        public ICursor GetRightRows(string rightFields, object leftValue)
+        async public Task<ICursor> GetRightRows(string rightFields, object leftValue)
         {
             try
             {
                 IQueryFilter filter = GetRightFilter(rightFields, leftValue);
 
-                return ((ITableClass)this.RightTable.Class).Search(filter);
+                return await ((ITableClass)this.RightTable.Class).Search(filter);
             }
             catch
             {

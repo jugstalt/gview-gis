@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using gView.Framework.Data;
 
 namespace gView.Framework.Network
@@ -9,14 +10,14 @@ namespace gView.Framework.Network
     {
         IGraphTableAdapter GraphTableAdapter();
 
-        IFeatureCursor GetNodeFeatures(IQueryFilter filter);
-        IFeatureCursor GetEdgeFeatures(IQueryFilter filter);
+        Task<IFeatureCursor> GetNodeFeatures(IQueryFilter filter);
+        Task<IFeatureCursor> GetEdgeFeatures(IQueryFilter filter);
 
-        IFeature GetNodeFeature(int nid);
-        IFeature GetEdgeFeature(int eid);
+        Task<IFeature> GetNodeFeature(int nid);
+        Task<IFeature> GetEdgeFeature(int eid);
 
-        IFeature GetNodeFeatureAttributes(int nodeId, string[] attributes);
-        IFeature GetEdgeFeatureAttributes(int edgeId, string[] attributes);
+        Task<IFeature> GetNodeFeatureAttributes(int nodeId, string[] attributes);
+        Task<IFeature> GetEdgeFeatureAttributes(int edgeId, string[] attributes);
 
         List<IFeatureClass> NetworkClasses { get; }
         string NetworkClassName(int fcid);
@@ -26,6 +27,6 @@ namespace gView.Framework.Network
         bool HasDisabledSwitches { get; }
         GraphWeights GraphWeights { get; }
 
-        IGraphEdge GetGraphEdge(gView.Framework.Geometry.IPoint point, double tolerance);
+        Task<IGraphEdge> GetGraphEdge(gView.Framework.Geometry.IPoint point, double tolerance);
     }
 }

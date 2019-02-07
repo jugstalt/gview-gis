@@ -58,14 +58,14 @@ namespace gView.Framework.XML
 
         //public ArrayList SpatialIndexNodes { get { return null; } }
 
-        public Task<ICursor> Search(IQueryFilter filter)
+        async public Task<ICursor> Search(IQueryFilter filter)
         {
-            filter=WrapFilter2ArcXML(filter);
+            filter= await WrapFilter2ArcXML(filter);
 
             if (BeforeQuery != null)
                 BeforeQuery(this, ref filter);
 
-            return Task.FromResult<ICursor>(new AXLFeatureCursor(this, filter));
+            return new AXLFeatureCursor(this, filter);
         }
 
         async public Task<ISelectionSet> Select(IQueryFilter filter)
@@ -167,14 +167,14 @@ namespace gView.Framework.XML
         }
         */
 
-        public Task<IFeatureCursor> GetFeatures(IQueryFilter filter/*, getFeatureQueryType type*/)
+        async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter/*, getFeatureQueryType type*/)
         {
-            filter = WrapFilter2ArcXML(filter);
+            filter = await WrapFilter2ArcXML(filter);
 
             if (BeforeQuery != null)
                 BeforeQuery(this, ref filter);
 
-            return Task.FromResult<IFeatureCursor>(new AXLFeatureCursor(this, filter));
+            return new AXLFeatureCursor(this, filter);
         }
 
         public IGeometryDef GeometryDef
@@ -424,7 +424,7 @@ namespace gView.Framework.XML
             }
         }
 
-        private IQueryFilter WrapFilter2ArcXML(IQueryFilter filter)
+        async private Task<IQueryFilter> WrapFilter2ArcXML(IQueryFilter filter)
         {
             if (filter is ArcXMLQueryFilter ||
                 filter is ArcXMLSpatialFilter) return filter;
@@ -432,7 +432,7 @@ namespace gView.Framework.XML
             if (filter is ArcXMLBufferQueryFilter)
             {
                 ArcXMLBufferQueryFilter bFilter = filter as ArcXMLBufferQueryFilter;
-                filter = BufferQueryFilter.ConvertToSpatialFilter(bFilter);
+                filter = await BufferQueryFilter.ConvertToSpatialFilter(bFilter);
                 if (filter == null) return null;
 
                 ArcXMLSpatialFilter aFilter = new ArcXMLSpatialFilter(filter as ISpatialFilter);
@@ -457,7 +457,7 @@ namespace gView.Framework.XML
             }
             if (filter is IBufferQueryFilter)
             {
-                filter = BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
+                filter = await BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
                 if (filter == null) return null;
                 ArcXMLSpatialFilter sFilter = new ArcXMLSpatialFilter(filter as ISpatialFilter);
                 sFilter.outputmode = OutputMode.newxml;
@@ -791,11 +791,11 @@ namespace gView.Framework.XML
             axl.xmlWriter.WriteRaw(bufferNode.OuterXml);
         }
 
-        public string AXLSearch(IQueryFilter filter)
+        async public Task<string> AXLSearch(IQueryFilter filter)
         {
             if (filter is IBufferQueryFilter)
             {
-                filter = BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
+                filter = await BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
                 if (filter == null) return "";
             }
             if (filter is ISpatialFilter)
@@ -922,16 +922,16 @@ namespace gView.Framework.XML
             if (_attributes == null)
                 _filter.BeginRecord = 1;
 
-            PerformQuery();
+            PerformQuery().Wait();
         }
 
         private XmlDocument _doc;
-        private void PerformQuery()
+        async private Task PerformQuery()
         {
             try
             {
                 _doc = new XmlDocument();
-                _doc.LoadXml(CBF.CBF2AXL(_fc.AXLSearch(_filter)));
+                _doc.LoadXml(CBF.CBF2AXL(await _fc.AXLSearch(_filter)));
 
                 XmlNode featureCount = _doc.SelectSingleNode("//FEATURECOUNT");
                 if (featureCount != null)
@@ -974,7 +974,7 @@ namespace gView.Framework.XML
                 if (_filter.BeginRecord > 1 || _features == null)
                 {
                     _filter.BeginRecord = 1;
-                    PerformQuery();
+                    PerformQuery().Wait();
                 }
             }
         }
@@ -984,7 +984,7 @@ namespace gView.Framework.XML
             base.Dispose();
         }
 
-        public override Task<IFeature> NextFeature()
+        async public override Task<IFeature> NextFeature()
         {
             if (_features == null)  // First Call (XPath for features)
             {
@@ -998,7 +998,7 @@ namespace gView.Framework.XML
 
                 IFeature feature = AXLFeatureClass.ConvertAXLNode2Feature(_features[_pos++], _fc, _attributes);
                 Transform(feature);
-                return Task.FromResult<IFeature>(feature);
+                return feature;
             }
             else
             {
@@ -1014,9 +1014,9 @@ namespace gView.Framework.XML
                         if (_filter.HasMore)
                         {
                             _pos = 0;
-                            PerformQuery();
+                            await PerformQuery();
 
-                            return this.NextFeature();
+                            return await this.NextFeature();
                         }
                         else return null;
                     }
@@ -1028,7 +1028,7 @@ namespace gView.Framework.XML
                 // im Request steht...
                 // Transform(feature);
 
-                return Task.FromResult<IFeature>(feature);
+                return feature;
             }
         }
         #endregion
@@ -1078,9 +1078,9 @@ namespace gView.Framework.XML
 
         #region IPointIdentify Member
 
-        public ICursor PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata)
+        public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata)
         {
-            if(point==null) return null;
+            if(point==null) return Task.FromResult<ICursor>(null);
 
             FireBeforePointIdentify(display, ref point, ref sRef, userdata);
 
@@ -1124,19 +1124,19 @@ namespace gView.Framework.XML
                 switch (respNode.ChildNodes[0].Name)
                 {
                     case "RASTER_INFO":
-                        return new AXLRasterInfoRowCursor(respNode.SelectNodes("RASTER_INFO"));
+                        return Task.FromResult<ICursor>(new AXLRasterInfoRowCursor(respNode.SelectNodes("RASTER_INFO")));
                     case "gv_url_info":
                         if (infoNode.Attributes["url"] != null)
-                            return new AXLUrlCursor(infoNode.Attributes["url"].Value);
+                            return Task.FromResult<ICursor>(new AXLUrlCursor(infoNode.Attributes["url"].Value));
                         break;
                     case "gv_text_info":
                         if (infoNode.Attributes["text"] != null)
-                            return new AXLTextCursur(infoNode.Attributes["text"].Value.Replace("\\n", "\n"));
+                            return Task.FromResult<ICursor>(new AXLTextCursur(infoNode.Attributes["text"].Value.Replace("\\n", "\n")));
                         break;
                 }
             }
             catch { }
-            return null;
+            return Task.FromResult<ICursor>(null);
         }
 
         #endregion

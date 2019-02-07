@@ -19,7 +19,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
         protected IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
 
         internal RepoProvider RepoProvider = null;
-        
+
         public SdeDataset()
             : base()
         {
@@ -294,46 +294,40 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             return RepoProvider.FeatureClassEnveolpe(fc);
         }
 
-        public override List<IDatasetElement> Elements
+        public override Task<List<IDatasetElement>> Elements()
         {
-            get
+            if (RepoProvider == null)
+                throw new Exception("Repository not initialized");
+
+            if (_layers == null || _layers.Count == 0)
             {
-                if (RepoProvider == null)
-                    throw new Exception("Repository not initialized");
+                List<IDatasetElement> layers = new List<IDatasetElement>();
 
-                if (_layers == null || _layers.Count == 0)
+                foreach (var sdeLayer in RepoProvider.Layers)
                 {
-                    List<IDatasetElement> layers = new List<IDatasetElement>();
-
-                    foreach (var sdeLayer in RepoProvider.Layers)
-                    {
-                        layers.Add(new DatasetElement(
-                            new SdeFeatureClass(this, sdeLayer.Owner + "." + sdeLayer.TableName)));
-                    }
-
-                    _layers = layers;
+                    layers.Add(new DatasetElement(
+                        new SdeFeatureClass(this, sdeLayer.Owner + "." + sdeLayer.TableName)));
                 }
-                return _layers;
+
+                _layers = layers;
             }
+            return Task.FromResult(_layers);
         }
 
-        public override IDatasetElement this[string title]
+        public override Task<IDatasetElement> Element(string title)
         {
-            get
+            if (RepoProvider == null)
+                throw new Exception("Repository not initialized");
+
+            title = title.ToLower();
+            var sdeLayer = RepoProvider.Layers.Where(l => (l.Owner + "." + l.TableName).ToLower() == title).FirstOrDefault();
+
+            if (sdeLayer != null)
             {
-                if (RepoProvider == null)
-                    throw new Exception("Repository not initialized");
-
-                title = title.ToLower();
-                var sdeLayer = RepoProvider.Layers.Where(l => (l.Owner + "." + l.TableName).ToLower() == title).FirstOrDefault();
-
-                if(sdeLayer!=null)
-                {
-                    return new DatasetElement(new SdeFeatureClass(this, sdeLayer.Owner + "." + sdeLayer.TableName));
-                }
-
-                return null;
+                return Task.FromResult<IDatasetElement>(new DatasetElement(new SdeFeatureClass(this, sdeLayer.Owner + "." + sdeLayer.TableName)));
             }
+
+            return Task.FromResult<IDatasetElement>(null);
         }
     }
 }

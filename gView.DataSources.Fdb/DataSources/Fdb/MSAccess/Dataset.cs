@@ -62,45 +62,44 @@ namespace gView.DataSources.Fdb.MSAccess
 
         #region IFeatureDataset Member
 
-        public List<IDatasetElement> Elements
+        async public Task<List<IDatasetElement>> Elements()
         {
-            get
+            if (_fdb == null)
+                return new List<IDatasetElement>();
+
+            if (_layers == null || _layers.Count == 0)
             {
-                if (_fdb == null) return new List<IDatasetElement>();
+                _layers = _fdb.DatasetLayers(this);
 
-                if (_layers == null || _layers.Count == 0)
+                if (_layers != null && _addedLayers.Count != 0)
                 {
-                    _layers = _fdb.DatasetLayers(this);
-
-                    if (_layers != null && _addedLayers.Count != 0)
+                    List<IDatasetElement> list = new List<IDatasetElement>();
+                    foreach (IDatasetElement element in _layers)
                     {
-                        List<IDatasetElement> list = new List<IDatasetElement>();
-                        foreach (IDatasetElement element in _layers)
+                        if (element is IFeatureLayer)
                         {
-                            if (element is IFeatureLayer)
-                            {
-                                if (_addedLayers.Contains(((IFeatureLayer)element).FeatureClass.Name))
-                                    list.Add(element);
-                            }
-                            else if (element is IRasterLayer)
-                            {
-                                if (_addedLayers.Contains(((IRasterLayer)element).Title))
-                                    list.Add(element);
-                            }
-                            else
-                            {
-                                if (_addedLayers.Contains(element.Title))
-                                    list.Add(element);
-                            }
+                            if (_addedLayers.Contains(((IFeatureLayer)element).FeatureClass.Name))
+                                list.Add(element);
                         }
-                        _layers = list;
+                        else if (element is IRasterLayer)
+                        {
+                            if (_addedLayers.Contains(((IRasterLayer)element).Title))
+                                list.Add(element);
+                        }
+                        else
+                        {
+                            if (_addedLayers.Contains(element.Title))
+                                list.Add(element);
+                        }
                     }
-
+                    _layers = list;
                 }
 
-                if (_layers == null) return new List<IDatasetElement>();
-                return _layers;
             }
+
+            if (_layers == null)
+                return new List<IDatasetElement>();
+            return _layers;
         }
 
         public bool canRenderImage
@@ -119,36 +118,34 @@ namespace gView.DataSources.Fdb.MSAccess
         {
             return false;
         }
-        public IEnvelope Envelope
+        async public Task<IEnvelope> Envelope()
         {
-            get
+            if (_layers == null)
+                return null;
+
+            bool first = true;
+            IEnvelope env = null;
+
+            foreach (IDatasetElement layer in _layers)
             {
-                if (_layers == null) return null;
+                if (!(layer.Class is IFeatureClass)) continue;
+                IEnvelope envelope = ((IFeatureClass)layer.Class).Envelope;
+                if (envelope.Width > 1e10 && ((IFeatureClass)layer.Class).CountFeatures == 0)
+                    envelope = null;
 
-                bool first = true;
-                IEnvelope env = null;
+                if (gView.Framework.Geometry.Envelope.IsNull(envelope)) continue;
 
-                foreach (IDatasetElement layer in _layers)
+                if (first)
                 {
-                    if (!(layer.Class is IFeatureClass)) continue;
-                    IEnvelope envelope = ((IFeatureClass)layer.Class).Envelope;
-                    if (envelope.Width > 1e10 && ((IFeatureClass)layer.Class).CountFeatures == 0)
-                        envelope = null;
-
-                    if (gView.Framework.Geometry.Envelope.IsNull(envelope)) continue;
-
-                    if (first)
-                    {
-                        first = false;
-                        env = new Envelope(((IFeatureClass)layer.Class).Envelope);
-                    }
-                    else
-                    {
-                        env.Union(((IFeatureClass)layer.Class).Envelope);
-                    }
+                    first = false;
+                    env = new Envelope(((IFeatureClass)layer.Class).Envelope);
                 }
-                return env;
+                else
+                {
+                    env.Union(((IFeatureClass)layer.Class).Envelope);
+                }
             }
+            return env;
         }
 
         /*
@@ -378,20 +375,17 @@ namespace gView.DataSources.Fdb.MSAccess
                 _dsname = newName;
         }
 
-        public IDatasetElement this[string DatasetElementTitle]
+        public Task<IDatasetElement> Element(string DatasetElementTitle)
         {
-            get
+            if (_fdb == null) return null;
+            IDatasetElement element = _fdb.DatasetElement(this, DatasetElementTitle);
+
+            if (element != null && element.Class is AccessFDBFeatureClass)
             {
-                if (_fdb == null) return null;
-                IDatasetElement element = _fdb.DatasetElement(this, DatasetElementTitle);
-
-                if (element != null && element.Class is AccessFDBFeatureClass)
-                {
-                    ((AccessFDBFeatureClass)element.Class).SpatialReference = _sRef;
-                }
-
-                return element;
+                ((AccessFDBFeatureClass)element.Class).SpatialReference = _sRef;
             }
+
+            return Task.FromResult<IDatasetElement>(element);
         }
 
         public override string ToString()
@@ -476,7 +470,7 @@ namespace gView.DataSources.Fdb.MSAccess
             return dataset;
         }
 
-        public void AppendElement(string elementName)
+        async public Task AppendElement(string elementName)
         {
             if (_fdb == null) return;
 
@@ -633,13 +627,13 @@ namespace gView.DataSources.Fdb.MSAccess
 
             filter.AddField("FDB_OID");
             filter.AddField("FDB_SHAPE");
-            IFeatureCursor cursor = (IFeatureCursor)_fdb.Query(this, filter);
+            IFeatureCursor cursor = await _fdb.Query(this, filter);
             IFeature feat;
 
             SpatialIndexedIDSelectionSet selSet = new SpatialIndexedIDSelectionSet(this.Envelope);
             while ((feat = await cursor.NextFeature()) != null)
             {
-                int nid = 0;
+                //int nid = 0;
                 foreach (FieldValue fv in feat.Fields)
                 {
                     //if (fv.Name == "FDB_NID")

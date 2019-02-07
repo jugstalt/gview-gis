@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using gView.Framework.Data;
 using gView.Framework.Network;
 
@@ -15,7 +16,7 @@ namespace gView.Framework.Network.Algorthm
             _nfc = nfc;
         }
 
-        public Items PathDescription(Dijkstra dijkstra, int targetNode)
+        async public Task<Items> PathDescription(Dijkstra dijkstra, int targetNode)
         {
             Items items = new Items();
 
@@ -25,7 +26,7 @@ namespace gView.Framework.Network.Algorthm
 
             foreach (Dijkstra.Node node in nodes)
             {
-                IFeature feature = _nfc.GetEdgeFeatureAttributes(node.EId, new string[] { "*" });
+                IFeature feature = await _nfc.GetEdgeFeatureAttributes(node.EId, new string[] { "*" });
                 if (feature == null)
                     continue;
 

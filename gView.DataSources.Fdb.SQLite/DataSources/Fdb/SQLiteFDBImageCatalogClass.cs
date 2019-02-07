@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.SQLite
 {
@@ -72,55 +73,49 @@ namespace gView.DataSources.Fdb.SQLite
             _polygon.AddRing(ring);
         }
 
-        public ICursor ImageList
+        async public Task<ICursor> ImageList()
         {
-            get
+            try
             {
-                try
-                {
-                    if (_fc == null) return null;
+                if (_fc == null) return null;
 
-                    QueryFilter filter = new QueryFilter();
-                    filter.AddField("PATH");
-                    filter.AddField("LAST_MODIFIED");
-                    filter.AddField("PATH2");
-                    filter.AddField("LAST_MODIFIED2");
-                    filter.AddField("MANAGED");
+                QueryFilter filter = new QueryFilter();
+                filter.AddField("PATH");
+                filter.AddField("LAST_MODIFIED");
+                filter.AddField("PATH2");
+                filter.AddField("LAST_MODIFIED2");
+                filter.AddField("MANAGED");
 
-                    return _fc.Search(filter);
-                }
-                catch
-                {
-                    return null;
-                }
+                return await _fc.Search(filter);
+            }
+            catch
+            {
+                return null;
             }
         }
 
-        public IFeature this[string filename]
+        async public Task<IFeature> GetFeature(string filename)
         {
-            get
+            IFeatureCursor cursor = null;
+            try
             {
-                IFeatureCursor cursor = null;
-                try
-                {
-                    if (_fc == null) return null;
+                if (_fc == null) return null;
 
-                    QueryFilter filter = new QueryFilter();
-                    filter.AddField("*");
-                    filter.WhereClause = "\"PATH\"='" + filename + "'";
-                    cursor = _fc.Search(filter) as IFeatureCursor;
+                QueryFilter filter = new QueryFilter();
+                filter.AddField("*");
+                filter.WhereClause = "\"PATH\"='" + filename + "'";
+                cursor = await _fc.Search(filter) as IFeatureCursor;
 
-                    if (cursor == null) return null;
-                    return cursor.NextFeature;
-                }
-                catch
-                {
-                    return null;
-                }
-                finally
-                {
-                    if (cursor != null) cursor.Dispose();
-                }
+                if (cursor == null) return null;
+                return await cursor.NextFeature();
+            }
+            catch
+            {
+                return null;
+            }
+            finally
+            {
+                if (cursor != null) cursor.Dispose();
             }
         }
 
@@ -216,7 +211,7 @@ namespace gView.DataSources.Fdb.SQLite
             }
         }
 
-        public IRasterLayerCursor ChildLayers(gView.Framework.Carto.IDisplay display, string filterClause)
+        async public Task<IRasterLayerCursor> ChildLayers(gView.Framework.Carto.IDisplay display, string filterClause)
         {
             if (_fc == null || display == null || _fdb == null)
                 return new SimpleRasterlayerCursor(new List<IRasterLayer>());
@@ -236,7 +231,7 @@ namespace gView.DataSources.Fdb.SQLite
             filter.WhereClause = filterClause;
             filter.SpatialRelation = spatialRelation.SpatialRelationIntersects;
 
-            return new RasterLayerCursor(this, _fc.Search(filter) as IFeatureCursor,
+            return new RasterLayerCursor(this, await _fc.Search(filter) as IFeatureCursor,
                 dispEnvelope, pix);
         }
 
@@ -339,26 +334,26 @@ namespace gView.DataSources.Fdb.SQLite
             }
         }
 
-        public IFeatureCursor GetFeatures(IQueryFilter filter)
+        async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
             if (_fc == null) return null;
-            return _fc.GetFeatures(filter);
+            return await _fc.GetFeatures(filter);
         }
 
         #endregion
 
         #region ITableClass Member
 
-        public ICursor Search(IQueryFilter filter)
+        async public Task<ICursor> Search(IQueryFilter filter)
         {
             if (_fc == null) return null;
-            return _fc.Search(filter);
+            return await _fc.Search(filter);
         }
 
-        public ISelectionSet Select(IQueryFilter filter)
+        async public Task<ISelectionSet> Select(IQueryFilter filter)
         {
             if (_fc == null) return null;
-            return _fc.Select(filter);
+            return await _fc.Select(filter);
         }
 
         public IFields Fields
@@ -444,22 +439,22 @@ namespace gView.DataSources.Fdb.SQLite
 
         #region IPointIdentify Member
 
-        public ICursor PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata)
+        async public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata)
         {
             PointCollection pColl = new PointCollection();
             pColl.AddPoint(point);
 
-            return MultiPointQuery(display, pColl, sRef, userdata);
+            return await MultiPointQuery(display, pColl, sRef, userdata);
         }
 
         #endregion
 
         #region IMulitPointIdentify Member
 
-        public ICursor MultiPointQuery(gView.Framework.Carto.IDisplay dispaly, IPointCollection points, ISpatialReference sRef, IUserData userdata)
+        async public Task<ICursor> MultiPointQuery(gView.Framework.Carto.IDisplay dispaly, IPointCollection points, ISpatialReference sRef, IUserData userdata)
         {
             IMultiPoint mPoint = new MultiPoint(points);
-            List<IRasterLayer> layers = QueryChildLayers(mPoint, String.Empty);
+            List<IRasterLayer> layers = await QueryChildLayers(mPoint, String.Empty);
 
             if (layers == null || layers.Count == 0) return null;
             List<IRow> cursorRows = new List<IRow>();
@@ -477,12 +472,12 @@ namespace gView.DataSources.Fdb.SQLite
                         ((IRasterClass)layer.Class).Polygon,
                         point.X, point.Y))
                     {
-                        using (ICursor cursor = ((IPointIdentify)layer.Class).PointQuery(dispaly, point, sRef, userdata))
+                        using (ICursor cursor =await ((IPointIdentify)layer.Class).PointQuery(dispaly, point, sRef, userdata))
                         {
                             if (cursor is IRowCursor)
                             {
                                 IRow row;
-                                while ((row = ((IRowCursor)cursor).NextRow) != null)
+                                while ((row = await ((IRowCursor)cursor).NextRow()) != null)
                                 {
                                     row.Fields.Add(new FieldValue("x", point.X));
                                     row.Fields.Add(new FieldValue("y", point.Y));
@@ -501,7 +496,7 @@ namespace gView.DataSources.Fdb.SQLite
 
         #region IMultiGridIdentify
 
-        public float[] MultiGridQuery(gView.Framework.Carto.IDisplay display, IPoint[] Points, double dx, double dy, ISpatialReference sRef, IUserData userdata)
+        async public Task<float[]> MultiGridQuery(gView.Framework.Carto.IDisplay display, IPoint[] Points, double dx, double dy, ISpatialReference sRef, IUserData userdata)
         {
             if (Points == null || Points.Length != 3)
                 return null;
@@ -524,7 +519,7 @@ namespace gView.DataSources.Fdb.SQLite
             vals.Add((float)(stepX + 1));
             vals.Add((float)(stepY + 1));
 
-            List<IRasterLayer> layers = QueryChildLayers(pColl.Envelope, String.Empty);
+            List<IRasterLayer> layers = await QueryChildLayers(pColl.Envelope, String.Empty);
             try
             {
                 for (int y = 0; y <= stepY; y++)
@@ -665,7 +660,7 @@ namespace gView.DataSources.Fdb.SQLite
         }
         #endregion
 
-        public List<IRasterLayer> QueryChildLayers(IGeometry geometry, string filterClause)
+        async public Task<List<IRasterLayer>> QueryChildLayers(IGeometry geometry, string filterClause)
         {
             List<IRasterLayer> childlayers = new List<IRasterLayer>();
 
@@ -678,10 +673,10 @@ namespace gView.DataSources.Fdb.SQLite
             filter.SpatialRelation = spatialRelation.SpatialRelationIntersects;
 
             using (IRasterLayerCursor cursor = new RasterLayerCursor(
-                this, _fc.Search(filter) as IFeatureCursor))
+                this, await _fc.Search(filter) as IFeatureCursor))
             {
                 IRasterLayer layer;
-                while ((layer = cursor.NextRasterLayer) != null)
+                while ((layer = await cursor.NextRasterLayer()) != null)
                 {
                     childlayers.Add(layer);
                 }
@@ -755,80 +750,78 @@ namespace gView.DataSources.Fdb.SQLite
 
         #region IRasterLayerCursor Member
 
-        public IRasterLayer NextRasterLayer
+        public Task<IRasterLayer> NextRasterLayer()
         {
-            get
+            if (_cursor == null || _layer == null) return
+                    Task.FromResult<IRasterLayer>(null);
+
+            try
             {
-                if (_cursor == null || _layer == null) return null;
-
-                try
+                while (true)
                 {
-                    while (true)
-                    {
-                        throw new NotImplementedException();
-                        //IFeature feature = _cursor.NextFeature;
-                        //if (feature == null) return null;
+                    throw new NotImplementedException();
+                    //IFeature feature = _cursor.NextFeature;
+                    //if (feature == null) return null;
 
-                        //IRasterLayer rLayer = null;
+                    //IRasterLayer rLayer = null;
 
-                        //double cell = Math.Max((double)feature["CELLX"], (double)feature["CELLY"]);
-                        //int levels = Convert.ToInt32(feature["LEVELS"]);
+                    //double cell = Math.Max((double)feature["CELLX"], (double)feature["CELLY"]);
+                    //int levels = Convert.ToInt32(feature["LEVELS"]);
 
-                        //if ((bool)feature["MANAGED"] && _layer._imageSpaceType == SQLiteFDBImageCatalogClass.ImageSpaceType.FileSystem)
-                        //{
-                        //    gView.DataSources.Raster.File.PyramidFileClass rasterClass = new gView.DataSources.Raster.File.PyramidFileClass(_layer._dataset, _layer._imageSpace + @"\" + (string)feature["MANAGED_FILE"], feature.Shape as IPolygon);
-                        //    if (rasterClass.isValid)
-                        //    {
-                        //        rLayer = LayerFactory.Create(rasterClass) as IRasterLayer;
-                        //        if (rLayer != null)
-                        //        {
-                        //            rLayer.InterpolationMethod = _layer.InterpolationMethod;
-                        //            if (rasterClass.SpatialReference == null) rasterClass.SpatialReference = _layer._sRef;
-                        //        }
-                        //    }
-                        //}
-                        //else if (!(bool)feature["MANAGED"])
-                        //{
-                        //    if (feature["RF_PROVIDER"] == null || feature["RF_PROVIDER"] == DBNull.Value)
-                        //    {
-                        //        gView.DataSources.Raster.File.RasterFileDataset rDataset = new gView.DataSources.Raster.File.RasterFileDataset();
-                        //        rLayer = rDataset.AddRasterFile((string)feature["PATH"], feature.Shape as IPolygon);
-                        //    }
-                        //    else
-                        //    {
-                        //        IRasterFileDataset rDataset = _layer._compMan.CreateInstance(new Guid(feature["RF_PROVIDER"].ToString())) as IRasterFileDataset;
-                        //        if (rDataset == null) continue;
-                        //        rLayer = rDataset.AddRasterFile((string)feature["PATH"], feature.Shape as IPolygon);
-                        //    }
-                        //    if (rLayer != null && rLayer.RasterClass != null)
-                        //    {
-                        //        rLayer.InterpolationMethod = _layer.InterpolationMethod;
-                        //        if (rLayer.RasterClass.SpatialReference == null) rLayer.RasterClass.SpatialReference = _layer._sRef;
-                        //    }
-                        //}
+                    //if ((bool)feature["MANAGED"] && _layer._imageSpaceType == SQLiteFDBImageCatalogClass.ImageSpaceType.FileSystem)
+                    //{
+                    //    gView.DataSources.Raster.File.PyramidFileClass rasterClass = new gView.DataSources.Raster.File.PyramidFileClass(_layer._dataset, _layer._imageSpace + @"\" + (string)feature["MANAGED_FILE"], feature.Shape as IPolygon);
+                    //    if (rasterClass.isValid)
+                    //    {
+                    //        rLayer = LayerFactory.Create(rasterClass) as IRasterLayer;
+                    //        if (rLayer != null)
+                    //        {
+                    //            rLayer.InterpolationMethod = _layer.InterpolationMethod;
+                    //            if (rasterClass.SpatialReference == null) rasterClass.SpatialReference = _layer._sRef;
+                    //        }
+                    //    }
+                    //}
+                    //else if (!(bool)feature["MANAGED"])
+                    //{
+                    //    if (feature["RF_PROVIDER"] == null || feature["RF_PROVIDER"] == DBNull.Value)
+                    //    {
+                    //        gView.DataSources.Raster.File.RasterFileDataset rDataset = new gView.DataSources.Raster.File.RasterFileDataset();
+                    //        rLayer = rDataset.AddRasterFile((string)feature["PATH"], feature.Shape as IPolygon);
+                    //    }
+                    //    else
+                    //    {
+                    //        IRasterFileDataset rDataset = _layer._compMan.CreateInstance(new Guid(feature["RF_PROVIDER"].ToString())) as IRasterFileDataset;
+                    //        if (rDataset == null) continue;
+                    //        rLayer = rDataset.AddRasterFile((string)feature["PATH"], feature.Shape as IPolygon);
+                    //    }
+                    //    if (rLayer != null && rLayer.RasterClass != null)
+                    //    {
+                    //        rLayer.InterpolationMethod = _layer.InterpolationMethod;
+                    //        if (rLayer.RasterClass.SpatialReference == null) rLayer.RasterClass.SpatialReference = _layer._sRef;
+                    //    }
+                    //}
 
-                        //if (rLayer != null)
-                        //{
-                        //    if (rLayer.Class is IGridClass)
-                        //    {
-                        //        IGridClass gridClass = (IGridClass)rLayer.Class;
-                        //        gridClass.ColorClasses = _layer.ColorClasses;
-                        //        gridClass.UseHillShade = _layer.UseHillShade;
-                        //        gridClass.HillShadeVector = _layer.HillShadeVector;
-                        //        gridClass.UseIgnoreDataValue = _layer.UseIgnoreDataValue;
-                        //        gridClass.IgnoreDataValue = _layer.IgnoreDataValue;
-                        //        gridClass.RenderRawGridValues = _layer.RenderRawGridValues;
-                        //    }
+                    //if (rLayer != null)
+                    //{
+                    //    if (rLayer.Class is IGridClass)
+                    //    {
+                    //        IGridClass gridClass = (IGridClass)rLayer.Class;
+                    //        gridClass.ColorClasses = _layer.ColorClasses;
+                    //        gridClass.UseHillShade = _layer.UseHillShade;
+                    //        gridClass.HillShadeVector = _layer.HillShadeVector;
+                    //        gridClass.UseIgnoreDataValue = _layer.UseIgnoreDataValue;
+                    //        gridClass.IgnoreDataValue = _layer.IgnoreDataValue;
+                    //        gridClass.RenderRawGridValues = _layer.RenderRawGridValues;
+                    //    }
 
-                        //    return rLayer;
-                        //}
-                    }
+                    //    return rLayer;
+                    //}
                 }
-                catch
-                {
-                }
-                return null;
             }
+            catch
+            {
+            }
+            return null;
         }
 
         #endregion

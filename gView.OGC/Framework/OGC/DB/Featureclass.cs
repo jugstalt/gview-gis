@@ -21,88 +21,97 @@ namespace gView.Framework.OGC.DB
         internal string _geometry_columns_type = String.Empty;
 
         protected OgcSpatialFeatureclass() { }
-        public OgcSpatialFeatureclass(OgcSpatialDataset dataset, DataRow geometry_columns_row)
+        private OgcSpatialFeatureclass(OgcSpatialDataset dataset, DataRow geometry_columns_row)
         {
-            _dataset = dataset;
+            
+        }
 
-            if (_dataset == null || geometry_columns_row == null)
-                return;
+        async public static Task<IFeatureClass> Create(OgcSpatialDataset dataset, DataRow geometry_columns_row)
+        {
+            var featureClass = new OgcSpatialFeatureclass(dataset, geometry_columns_row);
+
+            featureClass._dataset = dataset;
+
+            if (featureClass._dataset == null || geometry_columns_row == null)
+                return featureClass;
 
             try
             {
-                _lastException = null;
+                featureClass._lastException = null;
 
                 string schema = String.Empty;
                 try
                 {
-                    if (!String.IsNullOrEmpty(_dataset.OgcDictionary("geometry_columns.f_table_schema")))
-                        schema = geometry_columns_row[_dataset.OgcDictionary("geometry_columns.f_table_schema")].ToString();
+                    if (!String.IsNullOrEmpty(featureClass._dataset.OgcDictionary("geometry_columns.f_table_schema")))
+                        schema = geometry_columns_row[featureClass._dataset.OgcDictionary("geometry_columns.f_table_schema")].ToString();
                     if (!String.IsNullOrEmpty(schema))
                         schema += ".";
                 }
                 catch { schema = ""; }
-                _name = schema + geometry_columns_row[_dataset.OgcDictionary("geometry_columns.f_table_name")].ToString();
-                _shapefield = geometry_columns_row[_dataset.OgcDictionary("geometry_columns.f_geometry_column")].ToString();
-                _idfield = _dataset.OgcDictionary("gid");
+                featureClass._name = schema + geometry_columns_row[featureClass._dataset.OgcDictionary("geometry_columns.f_table_name")].ToString();
+                featureClass._shapefield = geometry_columns_row[featureClass._dataset.OgcDictionary("geometry_columns.f_geometry_column")].ToString();
+                featureClass._idfield = featureClass._dataset.OgcDictionary("gid");
 
                 // Read Primary Key -> PostGIS id is not always "gid";
-                string pKey = GetPKey();
-                if (!String.IsNullOrWhiteSpace(pKey) && !pKey.Equals(_idfield))
-                    _idfield = pKey;
+                string pKey = featureClass.GetPKey();
+                if (!String.IsNullOrWhiteSpace(pKey) && !pKey.Equals(featureClass._idfield))
+                    featureClass._idfield = pKey;
 
-                _geometry_columns_type = geometry_columns_row[_dataset.OgcDictionary("geometry_columns.type")].ToString().ToUpper();
-                switch (_geometry_columns_type)
+                featureClass._geometry_columns_type = geometry_columns_row[featureClass._dataset.OgcDictionary("geometry_columns.type")].ToString().ToUpper();
+                switch (featureClass._geometry_columns_type)
                 {
                     case "MULTIPOLYGON":
                     case "POLYGON":
                     case "MULTIPOLYGONM":
                     case "POLYGONM":
-                        _geomType = geometryType.Polygon;
+                        featureClass._geomType = geometryType.Polygon;
                         break;
                     case "MULTILINESTRING":
                     case "LINESTRING":
                     case "MULTILINESTRINGM":
                     case "LINESTRINGM":
-                        _geomType = geometryType.Polyline;
+                        featureClass._geomType = geometryType.Polyline;
                         break;
                     case "POINT":
                     case "POINTM":
                     case "MULTIPOINT":
                     case "MULTIPOINTM":
-                        _geomType = geometryType.Point;
+                        featureClass._geomType = geometryType.Point;
                         break;
                     default:
-                        _geomType = geometryType.Unknown;
+                        featureClass._geomType = geometryType.Unknown;
                         break;
                 }
 
-                _hasZ = (int)geometry_columns_row[_dataset.OgcDictionary("geometry_columns.coord_dimension")] == 3;
+                featureClass._hasZ = (int)geometry_columns_row[featureClass._dataset.OgcDictionary("geometry_columns.coord_dimension")] == 3;
 
                 try
                 {
-                    int srid = int.Parse(geometry_columns_row[_dataset.OgcDictionary("geometry_columns.srid")].ToString());
+                    int srid = int.Parse(geometry_columns_row[featureClass._dataset.OgcDictionary("geometry_columns.srid")].ToString());
                     if (srid > 0)
                     {
-                        _sRef = gView.Framework.Geometry.SpatialReference.FromID("epsg:" + srid.ToString());
+                        featureClass._sRef = gView.Framework.Geometry.SpatialReference.FromID("epsg:" + srid.ToString());
                     }
                     else
                     {
-                        _sRef = TrySelectSpatialReference(dataset, this);
+                        featureClass._sRef = await TrySelectSpatialReference(dataset, featureClass);
                     }
                 }
                 catch { }
-                ReadSchema();
+                await featureClass.ReadSchema();
             }
             catch (Exception ex)
             {
-                _lastException = ex;
+                featureClass._lastException = ex;
                 string msg = ex.Message;
             }
+
+            return featureClass;
         }
 
         private Exception _lastException = null;
 
-        protected void ReadSchema()
+        async protected Task ReadSchema()
         {
             if (_dataset == null) return;
             try
@@ -111,14 +120,14 @@ namespace gView.Framework.OGC.DB
                 using (DbConnection connection = _dataset.ProviderFactory.CreateConnection())
                 {
                     connection.ConnectionString = _dataset.ConnectionString;
-                    connection.Open();
+                    await connection.OpenAsync();
 
                     DbCommand command = _dataset.ProviderFactory.CreateCommand();
                     command.CommandText = _dataset.SelectReadSchema(this.Name); // "select * from " + this.Name;
                     command.Connection = connection;
 
                     //NpgsqlCommand command = new NpgsqlCommand("select * from " + this.Name, connection);
-                    using (DbDataReader schemareader = command.ExecuteReader(CommandBehavior.SchemaOnly))
+                    using (DbDataReader schemareader = await command.ExecuteReaderAsync(CommandBehavior.SchemaOnly))
                     {
                         DataTable schema = schemareader.GetSchemaTable();
 
@@ -153,31 +162,34 @@ namespace gView.Framework.OGC.DB
                             }
 
                             Field field = new Field(row["ColumnName"].ToString());
-                            if (row["DataType"] == typeof(System.Int32))
-                                field.type = FieldType.integer;
-                            else if (row["DataType"] == typeof(System.Int16))
-                                field.type = FieldType.smallinteger;
-                            else if (row["DataType"] == typeof(System.Int64))
-                                field.type = FieldType.biginteger;
-                            else if (row["DataType"] == typeof(System.DateTime))
-                                field.type = FieldType.Date;
-                            else if (row["DataType"] == typeof(System.Double))
-                                field.type = FieldType.Double;
-                            else if (row["DataType"] == typeof(System.Decimal))
-                                field.type = FieldType.Float;
-                            else if (row["DataType"] == typeof(System.Boolean))
-                                field.type = FieldType.boolean;
-                            else if (row["DataType"] == typeof(System.Char))
-                                field.type = FieldType.character;
-                            else if (row["DataType"] == typeof(System.String))
-                                field.type = FieldType.String;
-                            else if (row["DataType"].ToString() == "Microsoft.SqlServer.Types.SqlGeometry" ||
-                                     row["DataType"].ToString() == "Microsoft.SqlServer.Types.SqlGeography")
+                            if (row["DataType"]?.GetType() == typeof(Type))
                             {
-                                if (foundShape == false)
-                                    _shapefield = row["ColumnName"].ToString();
-                                foundShape = true;
-                                field.type = FieldType.String;
+                                if ((Type)row["DataType"] == typeof(System.Int32))
+                                    field.type = FieldType.integer;
+                                else if ((Type)row["DataType"] == typeof(System.Int16))
+                                    field.type = FieldType.smallinteger;
+                                else if ((Type)row["DataType"] == typeof(System.Int64))
+                                    field.type = FieldType.biginteger;
+                                else if ((Type)row["DataType"] == typeof(System.DateTime))
+                                    field.type = FieldType.Date;
+                                else if ((Type)row["DataType"] == typeof(System.Double))
+                                    field.type = FieldType.Double;
+                                else if ((Type)row["DataType"] == typeof(System.Decimal))
+                                    field.type = FieldType.Float;
+                                else if ((Type)row["DataType"] == typeof(System.Boolean))
+                                    field.type = FieldType.boolean;
+                                else if ((Type)row["DataType"] == typeof(System.Char))
+                                    field.type = FieldType.character;
+                                else if ((Type)row["DataType"] == typeof(System.String))
+                                    field.type = FieldType.String;
+                                else if (row["DataType"].ToString() == "Microsoft.SqlServer.Types.SqlGeometry" ||
+                                         row["DataType"].ToString() == "Microsoft.SqlServer.Types.SqlGeography")
+                                {
+                                    if (foundShape == false)
+                                        _shapefield = row["ColumnName"].ToString();
+                                    foundShape = true;
+                                    field.type = FieldType.String;
+                                }
                             }
 
 
@@ -278,13 +290,13 @@ namespace gView.Framework.OGC.DB
             _lastException = null;
             if (filter is IBufferQueryFilter)
             {
-                ISpatialFilter sFilter = BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
+                ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
                 if (sFilter == null) return null;
 
                 return await GetFeatures(sFilter);
             }
 
-            return new OgcSpatialFeatureCursor(this, filter);
+            return await OgcSpatialFeatureCursor.Create(this, filter);
         }
 
         #endregion
@@ -303,7 +315,7 @@ namespace gView.Framework.OGC.DB
             if (filter is ISpatialFilter)
                 filter.AddField(this.ShapeFieldName);
 
-            using (IFeatureCursor cursor = (IFeatureCursor)new OgcSpatialFeatureCursor(this, filter))
+            using (IFeatureCursor cursor = await OgcSpatialFeatureCursor.Create(this, filter))
             {
                 IFeature feat;
 
@@ -405,7 +417,7 @@ namespace gView.Framework.OGC.DB
         }
         #endregion
 
-        public static ISpatialReference TrySelectSpatialReference(OgcSpatialDataset dataset, OgcSpatialFeatureclass fc)
+        async public static Task<ISpatialReference> TrySelectSpatialReference(OgcSpatialDataset dataset, OgcSpatialFeatureclass fc)
         {
             try
             {
@@ -416,11 +428,11 @@ namespace gView.Framework.OGC.DB
                     {
                         connection.ConnectionString = dataset.ConnectionString;
                         sridCommand.Connection = connection;
-                        connection.Open();
+                        await connection.OpenAsync();
 
-                        using (DbDataReader reader = sridCommand.ExecuteReader())
+                        using (DbDataReader reader = await sridCommand.ExecuteReaderAsync())
                         {
-                            while (reader.Read())
+                            while (await reader.ReadAsync())
                             {
                                 object sridObj = reader["srid"];
                                 if (sridObj != null && sridObj != DBNull.Value)

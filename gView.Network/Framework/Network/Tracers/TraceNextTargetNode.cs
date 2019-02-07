@@ -8,6 +8,7 @@ using gView.Framework.Network.Algorthm;
 using System.ComponentModel;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
 {
@@ -31,7 +32,7 @@ namespace gView.Framework.Network.Tracers
                    input.Collect(NetworkTracerInputType.SoruceEdge).Count == 1;
         }
 
-        public NetworkTracerOutputCollection Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, ICancelTracker cancelTraker)
+        async public Task<NetworkTracerOutputCollection> Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, ICancelTracker cancelTraker)
         {
             if (network == null || !CanTrace(input))
                 return null;
@@ -165,7 +166,7 @@ namespace gView.Framework.Network.Tracers
                 int fcId = gt.GetNodeFcid(endNode.Id);
                 if (neighborNodeFcIds.Contains(fcId) && gt.GetNodeType(endNode.Id) == this.TargetNodeType)
                 {
-                    IFeature nodeFeature = network.GetNodeFeature(endNode.Id);
+                    IFeature nodeFeature = await network.GetNodeFeature(endNode.Id);
                     if (nodeFeature != null && nodeFeature.Shape is IPoint)
                     {
                         string fcName = neighborFcs.ContainsKey(fcId) ?

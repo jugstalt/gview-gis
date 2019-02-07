@@ -203,7 +203,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 IDataset linkedDs = LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                 if (linkedDs == null)
                     return null;
-                IDatasetElement linkedElement = linkedDs[(string)row["Name"]];
+                IDatasetElement linkedElement = linkedDs.Element((string)row["Name"]).Result;
 
                 LinkedFeatureClass fc = new LinkedFeatureClass(pgDataset,
                     linkedElement != null && linkedElement.Class is IFeatureClass ? linkedElement.Class as IFeatureClass : null,
@@ -510,7 +510,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             dataset.ConnectionString = _conn.ConnectionString + ";dsname=" + dsName;
             dataset.Open();
 
-            IDatasetElement element = dataset[fcName];
+            IDatasetElement element = dataset.Element(fcName).Result;
             if (element != null && element.Class is IFeatureClass)
             {
                 return element.Class as IFeatureClass;
@@ -565,17 +565,17 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             return String.Empty;
         }
 
-        override public Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
+        async override public Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
         {
             if (_conn == null || fc == null || !(fc.Dataset is IFDBDataset)) return null;
 
             filter.fieldPostfix = filter.fieldPrefix = "\"";
             if (filter is IBufferQueryFilter)
             {
-                ISpatialFilter bFilter = BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
+                ISpatialFilter bFilter = await BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
                 if (bFilter == null) return null;
 
-                return Query(fc, bFilter);
+                return await Query(fc, bFilter);
             }
             if (filter is ISpatialFilter)
             {
@@ -637,8 +637,8 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 }
             }
 
-            return Task.FromResult<IFeatureCursor>(new pgFeatureCursor(_conn.ConnectionString, sql, DataProvider.ToDbWhereClause("npgsql", where), orederBy, filter.NoLock, NIDs, sFilter, fc,
-                (filter != null) ? filter.FeatureSpatialReference : null));
+            return new pgFeatureCursor(_conn.ConnectionString, sql, DataProvider.ToDbWhereClause("npgsql", where), orederBy, filter.NoLock, NIDs, sFilter, fc,
+                (filter != null) ? filter.FeatureSpatialReference : null);
 
         }
 
@@ -714,7 +714,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     IDataset linkedDs = LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                     if (linkedDs == null)
                         continue;
-                    IDatasetElement linkedElement = linkedDs[(string)row["Name"]];
+                    IDatasetElement linkedElement = linkedDs.Element((string)row["Name"]).Result;
 
                     LinkedFeatureClass fc = new LinkedFeatureClass(dataset,
                         linkedElement != null && linkedElement.Class is IFeatureClass ? linkedElement.Class as IFeatureClass : null,
@@ -780,13 +780,13 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
         #endregion
 
         #region IFeatureUpdater
-        public override bool Insert(IFeatureClass fClass, IFeature feature)
+        public override Task<bool> Insert(IFeatureClass fClass, IFeature feature)
         {
             List<IFeature> features = new List<IFeature>();
             features.Add(feature);
             return Insert(fClass, features);
         }
-        public override bool Insert(IFeatureClass fClass, List<IFeature> features)
+        async public override Task<bool> Insert(IFeatureClass fClass, List<IFeature> features)
         {
             if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset)) return false;
             if (features.Count == 0) return true;
@@ -814,7 +814,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 using (DbConnection connection = factory.CreateConnection())
                 {
                     connection.ConnectionString = _conn.ConnectionString;
-                    connection.Open();
+                    await connection.OpenAsync();
 
                     using (DbCommand command = factory.CreateCommand())
                     using (DbTransaction transaction = connection.BeginTransaction())
@@ -825,7 +825,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                         foreach (IFeature feature in features)
                         {
-                            if (!feature.BeforeInsert(fClass))
+                            if (!await feature.BeforeInsert(fClass))
                             {
                                 _errMsg = "Insert: Error in Feature.BeforeInsert (AutoFields,...)";
                                 return false;
@@ -908,7 +908,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             }
 
                             command.CommandText = "INSERT INTO " + FcTableName(fClass) + " (" + fields.ToString() + ") VALUES (" + parameters + ")";
-                            command.ExecuteNonQuery();
+                            await command.ExecuteNonQueryAsync();
                         }
 
                         transaction.Commit();
@@ -923,18 +923,17 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             }
         }
 
-        public override bool Update(IFeatureClass fClass, IFeature feature)
+        public override Task<bool> Update(IFeatureClass fClass, IFeature feature)
         {
             List<IFeature> features = new List<IFeature>();
             features.Add(feature);
             return Update(fClass, features);
         }
-        public override bool Update(IFeatureClass fClass, List<IFeature> features)
+        async public override Task<bool> Update(IFeatureClass fClass, List<IFeature> features)
         {
             if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset)) return false;
             if (features.Count == 0) return true;
 
-            int counter = 0;
             BinarySearchTree2 tree = null;
 
             CheckSpatialSearchTreeVersion(fClass.Name);
@@ -957,7 +956,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 using (DbConnection connection = _dbProviderFactory.CreateConnection())
                 {
                     connection.ConnectionString = _conn.ConnectionString;
-                    connection.Open();
+                    await connection.OpenAsync();
 
                     using (DbCommand command = _dbProviderFactory.CreateCommand())
                     using (DbTransaction transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
@@ -968,7 +967,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                         foreach (IFeature feature in features)
                         {
-                            if (!feature.BeforeUpdate(fClass))
+                            if (!await feature.BeforeUpdate(fClass))
                             {
                                 _errMsg = "Insert: Error in Feature.BeforeInsert (AutoFields,...)";
                                 return false;
@@ -976,7 +975,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             if (!String.IsNullOrEmpty(replicationField))
                             {
                                 if (!Replication.WriteDifferencesToTable(fClass,
-                                    Replication.FeatureObjectGuid(fClass, feature, replicationField),
+                                    await Replication.FeatureObjectGuid(fClass, feature, replicationField),
                                     Replication.SqlStatement.UPDATE, replTrans, out _errMsg))
                                 {
                                     _errMsg = "Replication Error: " + _errMsg;
@@ -1054,7 +1053,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                             commandText.Append("UPDATE " + FcTableName(fClass) + " SET " + fields.ToString() + " WHERE \"FDB_OID\"=" + feature.OID);
                             command.CommandText = commandText.ToString();
-                            command.ExecuteNonQuery();
+                            await command.ExecuteNonQueryAsync();
                         }
 
                         transaction.Commit();
@@ -1070,11 +1069,11 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             }
         }
 
-        public override bool Delete(IFeatureClass fClass, int oid)
+        public override Task<bool> Delete(IFeatureClass fClass, int oid)
         {
             return Delete(fClass, DbColName("FDB_OID") + "=" + oid.ToString());
         }
-        public override bool Delete(IFeatureClass fClass, string where)
+        async public override Task<bool> Delete(IFeatureClass fClass, string where)
         {
             if (fClass == null) return false;
 
@@ -1123,7 +1122,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             }
                         }
 
-                        command.ExecuteNonQuery();
+                        await command.ExecuteNonQueryAsync();
                         transaction.Commit();
                     }
                     return true;

@@ -8,6 +8,7 @@ using System.Data.Common;
 using gView.Framework.Geometry;
 using System.Data;
 using gView.Framework.Editor.Core;
+using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.DB
 {
@@ -22,31 +23,28 @@ namespace gView.Framework.OGC.DB
 
         #region IFeatureDataset Member
 
-        public gView.Framework.Geometry.IEnvelope Envelope
+        async public Task<IEnvelope> Envelope()
         {
-            get
+            IEnvelope env = null;
+            foreach (IDatasetElement element in await this.Elements())
             {
-                IEnvelope env = null;
-                foreach (IDatasetElement element in this.Elements)
+                if (element != null && element.Class is IFeatureClass)
                 {
-                    if (element != null && element.Class is IFeatureClass)
+                    IEnvelope fcEnv = ((IFeatureClass)element.Class).Envelope;
+                    if (fcEnv != null)
                     {
-                        IEnvelope fcEnv = ((IFeatureClass)element.Class).Envelope;
-                        if (fcEnv != null)
-                        {
-                            if (env == null)
-                                env = new Envelope(fcEnv);
-                            else
-                                env.Union(fcEnv);
-                        }
+                        if (env == null)
+                            env = new Envelope(fcEnv);
+                        else
+                            env.Union(fcEnv);
                     }
                 }
-
-                if (env != null)
-                    return env;
-
-                return new Envelope();
             }
+
+            if (env != null)
+                return env;
+
+            return new Envelope();
         }
 
         public gView.Framework.Geometry.ISpatialReference SpatialReference
@@ -161,45 +159,42 @@ namespace gView.Framework.OGC.DB
             get { return null; }
         }
 
-        virtual public List<IDatasetElement> Elements
+        async virtual public Task<List<IDatasetElement>> Elements()
         {
-            get
+            if (_layers == null || _layers.Count == 0)
             {
-                if (_layers == null || _layers.Count == 0)
+                List<IDatasetElement> layers = new List<IDatasetElement>();
+                DataTable tab = new DataTable();
+                try
                 {
-                    List<IDatasetElement> layers = new List<IDatasetElement>();
-                    DataTable tab = new DataTable();
-                    try
+                    using (DbConnection conn = this.ProviderFactory.CreateConnection())
                     {
-                        using (DbConnection conn = this.ProviderFactory.CreateConnection())
-                        {
-                            conn.ConnectionString = _connectionString;
-                            conn.Open();
+                        conn.ConnectionString = _connectionString;
+                        conn.Open();
 
-                            DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
-                            adapter.SelectCommand = this.ProviderFactory.CreateCommand();
-                            adapter.SelectCommand.CommandText = "SELECT * FROM " + DbSchemaPrefix + OgcDictionary("geometry_columns");
-                            adapter.SelectCommand.Connection = conn;
-                            adapter.Fill(tab);
-                            conn.Close();
-                        }
+                        DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
+                        adapter.SelectCommand = this.ProviderFactory.CreateCommand();
+                        adapter.SelectCommand.CommandText = "SELECT * FROM " + DbSchemaPrefix + OgcDictionary("geometry_columns");
+                        adapter.SelectCommand.Connection = conn;
+                        adapter.Fill(tab);
+                        conn.Close();
                     }
-                    catch (Exception ex)
-                    {
-                        _errMsg = ex.Message;
-                        return layers;
-                    }
-
-                    foreach (DataRow row in tab.Rows)
-                    {
-                        OgcSpatialFeatureclass fc = new OgcSpatialFeatureclass(this, row);
-                        layers.Add(new DatasetElement(fc));
-                    }
-
-                    _layers = layers;
                 }
-                return _layers;
+                catch (Exception ex)
+                {
+                    _errMsg = ex.Message;
+                    return layers;
+                }
+
+                foreach (DataRow row in tab.Rows)
+                {
+                    IFeatureClass fc = await OgcSpatialFeatureclass.Create(this, row);
+                    layers.Add(new DatasetElement(fc));
+                }
+
+                _layers = layers;
             }
+            return _layers;
         }
 
         public string Query_FieldPrefix
@@ -217,49 +212,46 @@ namespace gView.Framework.OGC.DB
             get { return this; }
         }
 
-        virtual public IDatasetElement this[string title]
+        async virtual public Task<IDatasetElement> Element(string title)
         {
-            get
+            try
             {
-                try
+                DataTable tab = new DataTable();
+                using (DbConnection conn = this.ProviderFactory.CreateConnection())
                 {
-                    DataTable tab = new DataTable();
-                    using (DbConnection conn = this.ProviderFactory.CreateConnection())
+                    conn.ConnectionString = _connectionString;
+                    await conn.OpenAsync();
+
+                    DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
+                    adapter.SelectCommand = this.ProviderFactory.CreateCommand();
+
+                    if (title.Contains("."))
                     {
-                        conn.ConnectionString = _connectionString;
-                        conn.Open();
-
-                        DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
-                        adapter.SelectCommand = this.ProviderFactory.CreateCommand();
-
-                        if (title.Contains("."))
-                        {
-                            string schema = title.Split('.')[0];
-                            string table = title.Substring(schema.Length + 1);
-                            adapter.SelectCommand.CommandText = "SELECT * FROM " + DbSchemaPrefix + OgcDictionary("geometry_columns") + " WHERE " + OgcDictionary("geometry_columns.f_table_name") + "='" + table + "' AND " + OgcDictionary("geometry_columns.f_table_schema") + "='" + schema + "'";
-                        }
-                        else
-                        {
-                            adapter.SelectCommand.CommandText = "SELECT * FROM " + DbSchemaPrefix + OgcDictionary("geometry_columns") + " WHERE " + OgcDictionary("geometry_columns.f_table_name") + "='" + title + "'";
-                        }
-                        adapter.SelectCommand.Connection = conn;
-
-                        adapter.Fill(tab);
-                        conn.Close();
+                        string schema = title.Split('.')[0];
+                        string table = title.Substring(schema.Length + 1);
+                        adapter.SelectCommand.CommandText = "SELECT * FROM " + DbSchemaPrefix + OgcDictionary("geometry_columns") + " WHERE " + OgcDictionary("geometry_columns.f_table_name") + "='" + table + "' AND " + OgcDictionary("geometry_columns.f_table_schema") + "='" + schema + "'";
                     }
-                    if (tab.Rows.Count != 1)
+                    else
                     {
-                        _errMsg = "Layer not found: " + title;
-                        return null;
+                        adapter.SelectCommand.CommandText = "SELECT * FROM " + DbSchemaPrefix + OgcDictionary("geometry_columns") + " WHERE " + OgcDictionary("geometry_columns.f_table_name") + "='" + title + "'";
                     }
+                    adapter.SelectCommand.Connection = conn;
 
-                    return new DatasetElement(new OgcSpatialFeatureclass(this, tab.Rows[0]));
+                    adapter.Fill(tab);
+                    conn.Close();
                 }
-                catch (Exception ex)
+                if (tab.Rows.Count != 1)
                 {
-                    _errMsg = ex.Message;
+                    _errMsg = "Layer not found: " + title;
                     return null;
                 }
+
+                return new DatasetElement(await OgcSpatialFeatureclass.Create(this, tab.Rows[0]));
+            }
+            catch (Exception ex)
+            {
+                _errMsg = ex.Message;
+                return null;
             }
         }
 
@@ -288,7 +280,7 @@ namespace gView.Framework.OGC.DB
             return dataset;
         }
 
-        public void AppendElement(string elementName)
+        async public Task AppendElement(string elementName)
         {
             if (_layers == null) _layers = new List<IDatasetElement>();
 
@@ -298,7 +290,7 @@ namespace gView.Framework.OGC.DB
             }
 
             //IDatasetElement element = _fdb.DatasetElement(this, elementName);
-            IDatasetElement element = this[elementName];
+            IDatasetElement element = await Element(elementName);
             if (element != null) _layers.Add(element);
         }
 
@@ -336,7 +328,7 @@ namespace gView.Framework.OGC.DB
 
         #region IFeatureDatabase Member
 
-        virtual public int CreateDataset(string name, ISpatialReference sRef)
+        virtual public Task<int> CreateDataset(string name, ISpatialReference sRef)
         {
             throw new Exception("The method or operation is not implemented.");
         }
@@ -500,7 +492,7 @@ namespace gView.Framework.OGC.DB
             }
         }
 
-        virtual public bool DeleteDataset(string dsName)
+        virtual public Task<bool> DeleteDataset(string dsName)
         {
             throw new Exception("The method or operation is not implemented.");
         }
@@ -522,10 +514,10 @@ namespace gView.Framework.OGC.DB
             }
         }
 
-        public IFeatureCursor Query(IFeatureClass fc, IQueryFilter filter)
+        async public Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
         {
             if (fc == null) return null;
-            return fc.GetFeatures(filter);
+            return await fc.GetFeatures(filter);
         }
 
         #endregion
@@ -533,14 +525,14 @@ namespace gView.Framework.OGC.DB
         #region IFeatureUpdater Member
 
         Encoding _encoder = new UTF7Encoding();
-        virtual public bool Insert(IFeatureClass fClass, IFeature feature)
+        virtual public Task<bool> Insert(IFeatureClass fClass, IFeature feature)
         {
             List<IFeature> features = new List<IFeature>();
             features.Add(feature);
             return Insert(fClass, features);
         }
 
-        virtual public bool Insert(IFeatureClass fClass, List<IFeature> features)
+        async virtual public Task<bool> Insert(IFeatureClass fClass, List<IFeature> features)
         {
             DatasetNameCase nameCase = DatasetNameCase.ignore;
             foreach (System.Attribute attribute in System.Attribute.GetCustomAttributes(this.GetType()))
@@ -569,7 +561,7 @@ namespace gView.Framework.OGC.DB
                 using (DbConnection connection = this.ProviderFactory.CreateConnection())
                 {
                     connection.ConnectionString = _connectionString;
-                    connection.Open();
+                    await connection.OpenAsync();
 
                     DbCommand command = this.ProviderFactory.CreateCommand();
                     command.Connection = connection;
@@ -652,7 +644,7 @@ namespace gView.Framework.OGC.DB
                         try
                         {
                             command.CommandTimeout = 600;
-                            command.ExecuteNonQuery();
+                            await command.ExecuteNonQueryAsync();
                         }
                         catch (Exception ex)
                         {
@@ -671,16 +663,16 @@ namespace gView.Framework.OGC.DB
             }
         }
 
-        public bool Update(IFeatureClass fClass, IFeature feature)
+        async public Task<bool> Update(IFeatureClass fClass, IFeature feature)
         {
             if (feature == null || fClass == null) return false;
             List<IFeature> features = new List<IFeature>();
             features.Add(feature);
 
-            return Update(fClass, features);
+            return await Update(fClass, features);
         }
 
-        public bool Update(IFeatureClass fClass, List<IFeature> features)
+        async public Task<bool> Update(IFeatureClass fClass, List<IFeature> features)
         {
             if (fClass == null) return false;
 
@@ -702,7 +694,7 @@ namespace gView.Framework.OGC.DB
                     }
 
                     connection.ConnectionString = _connectionString;
-                    connection.Open();
+                    await connection.OpenAsync();
 
 
                     DbCommand command = this.ProviderFactory.CreateCommand();
@@ -751,7 +743,7 @@ namespace gView.Framework.OGC.DB
                         }
 
                         command.CommandText = "UPDATE " + fClass.Name + " SET " + fields.ToString() + " WHERE " + fClass.IDFieldName + "=" + feature.OID;
-                        command.ExecuteNonQuery();
+                        await command.ExecuteNonQueryAsync();
                     }
                 }
 
@@ -764,13 +756,13 @@ namespace gView.Framework.OGC.DB
             }
         }
 
-        public bool Delete(IFeatureClass fClass, int oid)
+        async public Task<bool> Delete(IFeatureClass fClass, int oid)
         {
             if (fClass == null) return false;
-            return Delete(fClass, fClass.IDFieldName + "=" + oid.ToString());
+            return await Delete(fClass, fClass.IDFieldName + "=" + oid.ToString());
         }
 
-        public bool Delete(IFeatureClass fClass, string where)
+        async public Task<bool> Delete(IFeatureClass fClass, string where)
         {
             if (fClass == null) return false;
 
@@ -782,14 +774,14 @@ namespace gView.Framework.OGC.DB
                 using (DbConnection connection = this.ProviderFactory.CreateConnection())
                 {
                     connection.ConnectionString = _connectionString;
-                    connection.Open();
+                    await connection.OpenAsync();
 
 
                     DbCommand command = this.ProviderFactory.CreateCommand();
                     command.Connection = connection;
                     command.CommandText = "DELETE FROM " + fClass.Name + ((where != String.Empty) ? " WHERE " + where : "");
 
-                    command.ExecuteNonQuery();
+                    await command.ExecuteNonQueryAsync();
                     connection.Close();
                     return true;
                 }

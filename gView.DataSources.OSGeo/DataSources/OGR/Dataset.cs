@@ -5,6 +5,7 @@ using gView.Framework.Data;
 using gView.Framework.system;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.OGR
 {
@@ -18,9 +19,9 @@ namespace gView.DataSources.OGR
 
         #region IFeatureDataset Member
 
-        public gView.Framework.Geometry.IEnvelope Envelope
+        public Task<IEnvelope> Envelope()
         {
-            get { return new Envelope(); }
+            return Task.FromResult<IEnvelope>(new Envelope());
         }
 
         public gView.Framework.Geometry.ISpatialReference SpatialReference
@@ -114,27 +115,24 @@ namespace gView.DataSources.OGR
             get { return null; }
         }
 
-        public List<IDatasetElement> Elements
+        public Task<List<IDatasetElement>> Elements()
         {
-            get
+            if (_elements != null && _elements.Count > 0)
+                return Task.FromResult(_elements);
+
+            _elements = new List<IDatasetElement>();
+
+            if (_dataSource == null) return Task.FromResult(_elements);
+            for (int i = 0; i < _dataSource.GetLayerCount(); i++)
             {
-                if (_elements != null && _elements.Count > 0)
-                    return _elements;
+                OSGeo.OGR.Layer ogrLayer = _dataSource.GetLayerByIndex(i);
+                if (ogrLayer == null) continue;
 
-                _elements = new List<IDatasetElement>();
-
-                if (_dataSource == null) return _elements;
-                for (int i = 0; i < _dataSource.GetLayerCount(); i++)
-                {
-                    OSGeo.OGR.Layer ogrLayer = _dataSource.GetLayerByIndex(i);
-                    if (ogrLayer == null) continue;
-
-                    _elements.Add(new DatasetElement(
-                        new FeatureClass(this, ogrLayer)));
-                }
-
-                return _elements;
+                _elements.Add(new DatasetElement(
+                    new FeatureClass(this, ogrLayer)));
             }
+
+            return Task.FromResult(_elements);
         }
 
         public string Query_FieldPrefix
@@ -155,19 +153,16 @@ namespace gView.DataSources.OGR
             }
         }
 
-        public IDatasetElement this[string title]
+        async public Task<IDatasetElement> Element(string title)
         {
-            get
+            foreach (IDatasetElement element in await this.Elements())
             {
-                foreach (DatasetElement element in this.Elements)
-                {
-                    if (element.Class != null &&
-                        element.Class.Name == title)
-                        return element;
-                }
-
-                return null;
+                if (element.Class != null &&
+                    element.Class.Name == title)
+                    return element;
             }
+
+            return null;
         }
 
         public void RefreshClasses()
@@ -216,13 +211,14 @@ namespace gView.DataSources.OGR
             return dataset;
         }
 
-        public void AppendElement(string elementName)
+        async public Task AppendElement(string elementName)
         {
             if (_elements == null) _elements = new List<IDatasetElement>();
 
             foreach (IDatasetElement e in _elements)
             {
-                if (e.Title == elementName) return;
+                if (e.Title == elementName)
+                    return;
             }
 
             if (_dataSource != null)

@@ -4,6 +4,7 @@ using System.Text;
 using System.Data;
 using gView.Framework.Data;
 using gView.Framework.Network;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Algorthm
 {
@@ -78,17 +79,17 @@ namespace gView.Framework.Network.Algorthm
             return NetworkNodeType.Unknown;
         }
 
-        public Features QueryNodeEdgeFeatures(int n1)
+        async public Task<Features> QueryNodeEdgeFeatures(int n1)
         {
             if (_adapter == null)
                 return new Features();
-            return _adapter.QueryNodeEdgeFeatures(n1);
+            return await _adapter.QueryNodeEdgeFeatures(n1);
         }
-        public Features QueryNodeFeatures(int n1)
+        async public Task<Features> QueryNodeFeatures(int n1)
         {
             if (_adapter == null)
                 return new Features();
-            return _adapter.QueryNodeFeatures(n1);
+            return await _adapter.QueryNodeFeatures(n1);
         }
     }
 }

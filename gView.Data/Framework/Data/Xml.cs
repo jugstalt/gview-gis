@@ -5,17 +5,18 @@ using gView.Framework.Data;
 using System.IO;
 using System.Xml;
 using gView.Framework.system;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data
 {
     internal class Xml
     {
         #region Static Members
-        static public string ToXml(ITableClass fc, IQueryFilter filter)
+        async static public Task<string> ToXml(ITableClass fc, IQueryFilter filter)
         {
             if (filter is IBufferQueryFilter)
             {
-                filter = BufferQueryFilter.ConvertToSpatialFilter((IBufferQueryFilter)filter);
+                filter = await BufferQueryFilter.ConvertToSpatialFilter((IBufferQueryFilter)filter);
             }
             MemoryStream ms = new MemoryStream();
             StreamWriter sw = new StreamWriter(ms, Encoding.UTF8);

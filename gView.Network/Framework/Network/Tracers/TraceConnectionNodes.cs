@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.Network.Framework.Network.Tracers
 {
@@ -32,7 +33,7 @@ namespace gView.Network.Framework.Network.Tracers
                    input.Collect(NetworkTracerInputType.SoruceEdge).Count == 1;
         }
 
-        public NetworkTracerOutputCollection Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, gView.Framework.system.ICancelTracker cancelTraker)
+        async public Task<NetworkTracerOutputCollection> Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, gView.Framework.system.ICancelTracker cancelTraker)
         {
             if (network == null || !CanTrace(input))
                 return null;
@@ -157,7 +158,7 @@ namespace gView.Network.Framework.Network.Tracers
             foreach (int nodeId in nodeIds)
             {
                 int fcId = gt.GetNodeFcid(nodeId);
-                IFeature nodeFeature = network.GetNodeFeature(nodeId);
+                IFeature nodeFeature = await network.GetNodeFeature(nodeId);
                 if (nodeFeature != null && nodeFeature.Shape is IPoint)
                 {
                     //outputCollection.Add(new NetworkNodeFlagOuput(endNode.Id, nodeFeature.Shape as IPoint));
@@ -192,7 +193,7 @@ namespace gView.Network.Framework.Network.Tracers
             output.Add(pathOutput);
 
             if (input.Collect(NetworkTracerInputType.AppendNodeFlags).Count > 0)
-                Helper.AppendNodeFlags(network, gt, Helper.NodeIds(dijkstraNodes), output);
+                await Helper.AppendNodeFlags(network, gt, Helper.NodeIds(dijkstraNodes), output);
 
             #endregion
 

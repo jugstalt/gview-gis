@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using gView.Framework.Geometry;
 using gView.Framework.FDB;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data
 {
@@ -119,7 +120,7 @@ namespace gView.Framework.Data
 
         #region IDBOperations Member
 
-        public bool BeforeInsert(ITableClass tClass)
+        async public Task<bool> BeforeInsert(ITableClass tClass)
         {
             if (!(tClass is IFeatureClass)) return false;
 
@@ -128,14 +129,14 @@ namespace gView.Framework.Data
             {
                 if (field is IAutoField)
                 {
-                    if (!((IAutoField)field).OnInsert(fc, this as IFeature)) return false;
+                    if (!await ((IAutoField)field).OnInsert(fc, this as IFeature)) return false;
                 }
             }
 
             return true;
         }
 
-        public bool BeforeUpdate(ITableClass tClass)
+        async public Task<bool> BeforeUpdate(ITableClass tClass)
         {
             if (!(tClass is IFeatureClass)) return false;
 
@@ -144,16 +145,16 @@ namespace gView.Framework.Data
             {
                 if (field is IAutoField)
                 {
-                    if (!((IAutoField)field).OnUpdate(fc, this as IFeature)) return false;
+                    if (!await ((IAutoField)field).OnUpdate(fc, this as IFeature)) return false;
                 }
             }
 
             return true;
         }
 
-        public bool BeforeDelete(ITableClass tClass)
+        public Task<bool> BeforeDelete(ITableClass tClass)
         {
-            return true;
+            return Task.FromResult<bool>(true);
         }
 
 

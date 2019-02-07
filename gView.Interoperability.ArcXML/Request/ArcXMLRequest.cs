@@ -12,6 +12,7 @@ using gView.Framework.system;
 using gView.Framework.Network;
 using System.IO;
 using gView.Framework.Network.Algorthm;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.ArcXML
 {
@@ -34,7 +35,7 @@ namespace gView.Interoperability.ArcXML
             _mapServer = mapServer;
         }
 
-        public void Request(IServiceRequestContext context)
+        async public Task Request(IServiceRequestContext context)
         {
             if (context == null || context.ServiceRequest == null)
                 return;
@@ -86,7 +87,7 @@ namespace gView.Interoperability.ArcXML
 #if(DEBUG)
                         Logger.LogDebug("Start ArcXML GET_IMAGE Request");
 #endif
-                        PerformGetImageRequest(context, rType);
+                        await PerformGetImageRequest(context, rType);
 #if(DEBUG)
                         Logger.LogDebug("ArcXML GET_IMAGE Request Finished");
 #endif
@@ -95,7 +96,7 @@ namespace gView.Interoperability.ArcXML
 #if(DEBUG)
                         Logger.LogDebug("Start ArcXML GET_FEATURES Request");
 #endif
-                        PerformGetFeatureRequest(context, rType);
+                        await PerformGetFeatureRequest(context, rType);
 #if(DEBUG)
                         Logger.LogDebug("ArcXML GET_FEATURES Request Finished");
 #endif
@@ -104,17 +105,17 @@ namespace gView.Interoperability.ArcXML
 #if(DEBUG)
                         Logger.LogDebug("Start ArcXML GET_RASTER_INFO Request");
 #endif
-                        PerformGetRasterInfoRequest(context, rType);
+                        await PerformGetRasterInfoRequest(context, rType);
                         Logger.LogDebug("ArcXML GET_RASTER_INFO Request Finished");
                         break;
 #if(DEBUG)
                         
 #endif
                     case "gv_CAN_TRACE_NETWORK":
-                        PerformCanTraceNetwork(context, rType);
+                        await PerformCanTraceNetwork(context, rType);
                         break;
                     case "gv_TRACE_NETWORK":
-                        PerformTraceNetwork(context, rType);
+                        await PerformTraceNetwork(context, rType);
                         break;
                 }
             }
@@ -175,7 +176,7 @@ namespace gView.Interoperability.ArcXML
 
             _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
         }
-        private void PerformGetImageRequest(IServiceRequestContext context, XmlNode rType)
+        async private Task PerformGetImageRequest(IServiceRequestContext context, XmlNode rType)
         {
             if (context == null || context.ServiceRequest == null)
             {
@@ -299,13 +300,13 @@ namespace gView.Interoperability.ArcXML
                 }
                 else
                 {
-                    serviceRequest.Response = getImage.ImageRequest(map, _mapServer, _useTOC);
+                    serviceRequest.Response = await getImage.ImageRequest(map, _mapServer, _useTOC);
                 }
                 //map.Release();
             }
             _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
         }
-        private void PerformGetFeatureRequest(IServiceRequestContext context, XmlNode rType)
+        async private Task PerformGetFeatureRequest(IServiceRequestContext context, XmlNode rType)
         {
             if (context == null || context.ServiceRequest == null)
             {
@@ -438,7 +439,7 @@ namespace gView.Interoperability.ArcXML
                                 foreach (ITableClass rootClass in getFeatures.Classes)
                                 {
                                     IQueryFilter cloned = filter.Clone() as IQueryFilter;
-                                    if (!MapServerHelper.ModifyFilter(map2, rootClass, cloned)) continue;
+                                    if (!await MapServerHelper.ModifyFilter(map2, rootClass, cloned)) continue;
                                     BufferQueryFilter bFilter = new BufferQueryFilter();
                                     bFilter.RootFilter = cloned;
                                     bFilter.RootFeatureClass = rootClass as IFeatureClass;
@@ -446,7 +447,7 @@ namespace gView.Interoperability.ArcXML
 
                                     try
                                     {
-                                        ISpatialFilter sFilter = BufferQueryFilter.ConvertToSpatialFilter(bFilter);
+                                        ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(bFilter);
                                         IPolygon polygon = sFilter.Geometry as IPolygon;
                                         if (sFilter.FilterSpatialReference != null &&
                                             !sFilter.FilterSpatialReference.Equals(map2.Display.SpatialReference))
@@ -587,7 +588,7 @@ namespace gView.Interoperability.ArcXML
                     if (getFeatures.Filter is IBufferQueryFilter)
                         ((IBufferQueryFilter)getFeatures.Filter).RootFilter.SetUserData("IServiceRequestContext", context);
 
-                    serviceRequest.Response = getFeatures.Request();
+                    serviceRequest.Response = await getFeatures.Request();
                 }
                 
                 _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
@@ -600,7 +601,7 @@ namespace gView.Interoperability.ArcXML
                 return;
             }
         }
-        private void PerformGetRasterInfoRequest(IServiceRequestContext context, XmlNode rType)
+        async private Task PerformGetRasterInfoRequest(IServiceRequestContext context, XmlNode rType)
         {
             if (context == null || context.ServiceRequest == null)
             {
@@ -746,14 +747,14 @@ namespace gView.Interoperability.ArcXML
                 raster_request.CompactRows = rows;
                 raster_request.CompactCols = cols;
 
-                serviceRequest.Response = raster_request.Request();
+                serviceRequest.Response = await raster_request.Request();
             }
             _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
         }
 
         #region Network Methods
 
-        private void PerformCanTraceNetwork(IServiceRequestContext context, XmlNode rType)
+        async private Task PerformCanTraceNetwork(IServiceRequestContext context, XmlNode rType)
         {
             if (context == null || context.ServiceRequest == null)
             {
@@ -766,10 +767,12 @@ namespace gView.Interoperability.ArcXML
 
             try
             {
-                INetworkTracer tracer=null;
-                INetworkFeatureClass netFc=null;
+                var result = await GetNetworkTracerInputCollection(context, rType);
 
-                var networkInput = GetNetworkTracerInputCollection(context,rType,out netFc,out tracer);
+                INetworkTracer tracer=result.tracer;
+                INetworkFeatureClass netFc=result.netFc;
+
+                var networkInput = result.inputCollection;
 
                 int counter = 0;
                 bool hasMore = false;
@@ -782,13 +785,13 @@ namespace gView.Interoperability.ArcXML
                         if(inputItem is NetworkSourceInput) 
                         {
                             counter++;
-                            IFeature node=netFc.GetNodeFeature(((NetworkSourceInput)inputItem).NodeId);
+                            IFeature node= await netFc.GetNodeFeature(((NetworkSourceInput)inputItem).NodeId);
                             WriteNetworkNodeFeature(xWriter, ((NetworkSourceInput)inputItem).NodeId, node.Shape as IPoint, null);
                         }
                         else if (inputItem is NetworkSourceEdgeInput)
                         {
                             counter++;
-                            IFeature edge = netFc.GetEdgeFeature(((NetworkSourceEdgeInput)inputItem).EdgeId);
+                            IFeature edge = await netFc.GetEdgeFeature(((NetworkSourceEdgeInput)inputItem).EdgeId);
                             WriteNetworkEdgeFeature(xWriter, ((NetworkSourceEdgeInput)inputItem).EdgeId, edge.Shape as IPolyline, null);
                         }
                     }
@@ -804,7 +807,7 @@ namespace gView.Interoperability.ArcXML
             }
         }
 
-        private void PerformTraceNetwork(IServiceRequestContext context, XmlNode rType)
+        async private Task PerformTraceNetwork(IServiceRequestContext context, XmlNode rType)
         {
             if (context == null || context.ServiceRequest == null)
             {
@@ -817,10 +820,12 @@ namespace gView.Interoperability.ArcXML
 
             try
             {
-                INetworkTracer tracer = null;
-                INetworkFeatureClass netFc = null;
+                var result = await GetNetworkTracerInputCollection(context, rType);
 
-                var input = GetNetworkTracerInputCollection(context, rType, out netFc, out tracer);
+                INetworkTracer tracer = result.tracer;
+                INetworkFeatureClass netFc = result.netFc;
+
+                var input = result.inputCollection;
 
                 int counter = 0;
                 bool hasMore = false;
@@ -828,16 +833,16 @@ namespace gView.Interoperability.ArcXML
 
                 if (input != null && netFc != null && tracer != null)
                 {
-                    var networkOutput = tracer.Trace(netFc, input, new CancelTracker());
+                    var networkOutput = await tracer.Trace(netFc, input, new CancelTracker());
 
                     foreach (var outputItem in networkOutput)
                     {
                         if (outputItem is NetworkEdgeCollectionOutput)
                         {
-                            using (IFeatureCursor cursor = NetworkPathEdges(netFc, (NetworkEdgeCollectionOutput)outputItem))
+                            using (IFeatureCursor cursor = await NetworkPathEdges(netFc, (NetworkEdgeCollectionOutput)outputItem))
                             {
                                 IFeature feature;
-                                while ((feature = cursor.NextFeature) != null)
+                                while ((feature = await cursor.NextFeature()) != null)
                                 {
                                     if (!(feature.Shape is IPolyline))
                                         continue;
@@ -870,7 +875,7 @@ namespace gView.Interoperability.ArcXML
 
                             if (nodeId > 0)
                             {
-                                nodeFeature = netFc.GetNodeFeatureAttributes(nodeId, null);
+                                nodeFeature = await netFc.GetNodeFeatureAttributes(nodeId, null);
                                 if (nodeFeature != null)
                                 {
                                     if (nodeFeature.FindField("FDB_OID") == null)
@@ -898,14 +903,13 @@ namespace gView.Interoperability.ArcXML
 
         #region Network Helper
 
-        private NetworkTracerInputCollection GetNetworkTracerInputCollection(IServiceRequestContext context, XmlNode rType,
-            out INetworkFeatureClass netFc, out INetworkTracer tracer
-            ) 
+        async private Task<(NetworkTracerInputCollection inputCollection, INetworkFeatureClass netFc, INetworkTracer tracer)> 
+            GetNetworkTracerInputCollection(IServiceRequestContext context, XmlNode rType) 
         {
             ServiceRequest serviceRequest = context.ServiceRequest;
 
-            netFc = null;
-            tracer = null;
+            INetworkFeatureClass netFc = null;
+            INetworkTracer tracer = null;
 
             try 
             {
@@ -917,7 +921,7 @@ namespace gView.Interoperability.ArcXML
                 {
                     //((AXLRequest)axlrequest).ResetEvent.Set();
                     serviceRequest.Response = CreateException("No Layerdefinition");
-                    return null;
+                    return (null,netFc, tracer);
                 }
 
                 string id = layer.Attributes["id"].Value;
@@ -927,7 +931,7 @@ namespace gView.Interoperability.ArcXML
                     {
                         //((AXLRequest)axlrequest).ResetEvent.Set();
                         serviceRequest.Response = CreateException("Service not available...");
-                        return null;
+                        return (null, netFc, tracer);
                     }
 
                     string filterQuery = String.Empty;
@@ -936,7 +940,7 @@ namespace gView.Interoperability.ArcXML
                     {
                         //((AXLRequest)axlrequest).ResetEvent.Set();
                         serviceRequest.Response = CreateException("Can't find network layer with id='" + id + "'");
-                        return null;
+                        return (null, netFc, tracer);
                     }
                     netFc = (INetworkFeatureClass)classes[0];
 
@@ -946,7 +950,7 @@ namespace gView.Interoperability.ArcXML
                     {
                         //((AXLRequest)axlrequest).ResetEvent.Set();
                         serviceRequest.Response = CreateException("No Tracer definition");
-                        return null;
+                        return (null, netFc, tracer);
                     }
                     string tracerguid = tracerNode.Attributes["id"].Value;
 
@@ -963,7 +967,7 @@ namespace gView.Interoperability.ArcXML
                     {
                         //((AXLRequest)axlrequest).ResetEvent.Set();
                         serviceRequest.Response = CreateException("No Tracer-Plugin with guid: " + tracerguid);
-                        return null;
+                        return (null, netFc, tracer);
                     }
 
                 #endregion
@@ -978,7 +982,7 @@ namespace gView.Interoperability.ArcXML
                     {
                         //((AXLRequest)axlrequest).ResetEvent.Set();
                         serviceRequest.Response = CreateException("No Filter!");
-                        return null;
+                        return (null, netFc, tracer);
                     }
 
                     #endregion
@@ -1008,10 +1012,10 @@ namespace gView.Interoperability.ArcXML
                         p = ((ISpatialFilter)filter).Geometry.Envelope.Center;
                     }
 
-                    using (IFeatureCursor cursor = netFc.GetNodeFeatures(filter))
+                    using (IFeatureCursor cursor = await netFc.GetNodeFeatures(filter))
                     {
                         IFeature feature;
-                        while ((feature = cursor.NextFeature) != null)
+                        while ((feature = await cursor.NextFeature()) != null)
                         {
                             if (p != null)
                             {
@@ -1041,18 +1045,18 @@ namespace gView.Interoperability.ArcXML
 
                         if (tracer.CanTrace(input))
                         {
-                            return input;
+                            return (input, netFc, tracer);
                         }
                     }
 
-                    return null;
+                    return (null, netFc, tracer);
                 }
             }
             catch (Exception ex)
             {
                 _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
                 serviceRequest.Response = CreateException(ex.Message);
-                return null;
+                return (null, netFc, tracer);
             }
         }
 
@@ -1144,7 +1148,7 @@ namespace gView.Interoperability.ArcXML
             xWriter.WriteEndElement();  // FEATURE
         }
 
-        private IFeatureCursor NetworkPathEdges(INetworkFeatureClass nfc, NetworkEdgeCollectionOutput edgeCollection)
+        async private Task<IFeatureCursor> NetworkPathEdges(INetworkFeatureClass nfc, NetworkEdgeCollectionOutput edgeCollection)
         {
             if (nfc == null)
                 return null;
@@ -1156,10 +1160,10 @@ namespace gView.Interoperability.ArcXML
                 filter.IDs.Add(edge.EdgeId);
             }
 
-            return nfc.GetEdgeFeatures(filter);
+            return await nfc.GetEdgeFeatures(filter);
         }
 
-        private IFeatureCursor NetworkNodes(INetworkFeatureClass nfc, int[] nodeIds)
+        async private Task<IFeatureCursor> NetworkNodes(INetworkFeatureClass nfc, int[] nodeIds)
         {
             if (nfc == null)
                 return null;
@@ -1167,7 +1171,7 @@ namespace gView.Interoperability.ArcXML
             RowIDFilter filter = new RowIDFilter(String.Empty);
             filter.IDs.AddRange(nodeIds);
 
-            return nfc.GetNodeFeatures(filter);
+            return await nfc.GetNodeFeatures(filter);
         }
 
         private class NetworkElementTracer : INetworkTracer
@@ -1185,7 +1189,7 @@ namespace gView.Interoperability.ArcXML
                        input.Collect(NetworkTracerInputType.SoruceEdge).Count > 0*/;
             }
 
-            public NetworkTracerOutputCollection Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, ICancelTracker cancelTraker)
+            async public Task<NetworkTracerOutputCollection> Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, ICancelTracker cancelTraker)
             {
                 NetworkTracerOutputCollection outputCollection = new NetworkTracerOutputCollection();
                 GraphTable gt = new GraphTable(network.GraphTableAdapter());
@@ -1194,7 +1198,7 @@ namespace gView.Interoperability.ArcXML
                 {
                     int fcId = gt.GetNodeFcid(nodeInput.NodeId);
 
-                    IFeature nodeFeature = network.GetNodeFeature(nodeInput.NodeId);
+                    IFeature nodeFeature = await network.GetNodeFeature(nodeInput.NodeId);
                     if (nodeFeature != null && nodeFeature.Shape is IPoint)
                     {
                         outputCollection.Add(new NetworkFlagOutput(nodeFeature.Shape as IPoint,

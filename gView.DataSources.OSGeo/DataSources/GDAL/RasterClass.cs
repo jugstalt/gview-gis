@@ -9,6 +9,7 @@ using System.Drawing.Imaging;
 using gView.Framework.IO;
 using gView.Framework.LinAlg;
 using gView.Framework.system;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.GDAL
 {
@@ -704,10 +705,10 @@ namespace gView.DataSources.GDAL
 
         #region IPointIdentify Member
 
-        public ICursor PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata)
+        public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata)
         {
             TFWFile tfw = this.WorldFile as TFWFile;
-            if (tfw == null) return null;
+            if (tfw == null) return Task.FromResult<ICursor>(null);
 
             if (this.SpatialReference != null && sRef != null &&
                 !sRef.Equals(this.SpatialReference))
@@ -727,9 +728,9 @@ namespace gView.DataSources.GDAL
             switch (_type)
             {
                 case RasterType.image:
-                    return QueryImage((int)Math.Floor(vecs[0].x), (int)Math.Floor(vecs[0].y));
+                    return Task.FromResult<ICursor>(QueryImage((int)Math.Floor(vecs[0].x), (int)Math.Floor(vecs[0].y)));
                 case RasterType.grid:
-                    return QueryGrid((int)Math.Floor(vecs[0].x), (int)Math.Floor(vecs[0].y));
+                    return Task.FromResult<ICursor>(QueryGrid((int)Math.Floor(vecs[0].x), (int)Math.Floor(vecs[0].y)));
             }
 
             return null;
@@ -931,34 +932,31 @@ namespace gView.DataSources.GDAL
 
             #region IRowCursor Member
 
-            public IRow NextRow
+            public Task<IRow> NextRow()
             {
-                get
+                if (_pos > 0) return Task.FromResult<IRow>(null);
+
+                Row row = new Row();
+                row.OID = 1;
+
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < _tag.Length; i++)
                 {
-                    if (_pos > 0) return null;
-
-                    Row row = new Row();
-                    row.OID = 1;
-
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < _tag.Length; i++)
-                    {
-                        if (_tag[i] == "ImageX" || _tag[i] == "ImageY") continue;
-                        if (_values[_pos] == null) continue;
-                        if (sb.Length > 0) sb.Append(",");
-                        sb.Append(_values[i].ToString());
-                    }
-                    row.Fields.Add(new FieldValue("Bands", "(" + sb.ToString() + ")"));
-
-                    for (int i = 0; i < _tag.Length; i++)
-                    {
-                        if (_tag[_pos] == null) continue;
-                        row.Fields.Add(new FieldValue(_tag[i], _values[i]));
-                    }
-                    _pos++;
-
-                    return row;
+                    if (_tag[i] == "ImageX" || _tag[i] == "ImageY") continue;
+                    if (_values[_pos] == null) continue;
+                    if (sb.Length > 0) sb.Append(",");
+                    sb.Append(_values[i].ToString());
                 }
+                row.Fields.Add(new FieldValue("Bands", "(" + sb.ToString() + ")"));
+
+                for (int i = 0; i < _tag.Length; i++)
+                {
+                    if (_tag[_pos] == null) continue;
+                    row.Fields.Add(new FieldValue(_tag[i], _values[i]));
+                }
+                _pos++;
+
+                return Task.FromResult<IRow>(row);
             }
 
             #endregion

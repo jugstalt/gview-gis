@@ -6,9 +6,9 @@ namespace gView.Framework.Data
 {
     public interface IDBOperations
     {
-        bool BeforeInsert(ITableClass tClass);
-        bool BeforeUpdate(ITableClass tClass);
-        bool BeforeDelete(ITableClass tClass);
+        Task<bool> BeforeInsert(ITableClass tClass);
+        Task<bool> BeforeUpdate(ITableClass tClass);
+        Task<bool> BeforeDelete(ITableClass tClass);
     }
 
     public interface IOID

@@ -6,6 +6,7 @@ using gView.Framework.Carto;
 using gView.Framework.system;
 using gView.Framework.UI;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Joins
 {
@@ -52,7 +53,7 @@ namespace gView.Framework.Data.Joins
             }
         }
 
-        public IRow GetJoinedRow(string val)
+        async public Task<IRow> GetJoinedRow(string val)
         {
             if (_rows.ContainsKey(val))
                 return _rows[val];
@@ -66,18 +67,18 @@ namespace gView.Framework.Data.Joins
             filter.WhereClause = this.JoinField + "=" + QueryValue(field, val);
 
             IRow ret = null;
-            using (ICursor cursor = ((ITableClass)this.FeatureLayer.Class).Search(filter))
+            using (ICursor cursor = await ((ITableClass)this.FeatureLayer.Class).Search(filter))
             {
                 if (cursor is IFeatureCursor)
-                    ret= ((IFeatureCursor)cursor).NextFeature;
+                    ret= await ((IFeatureCursor)cursor).NextFeature();
                 else if (cursor is IRowCursor)
-                    ret= ((IRowCursor)cursor).NextRow;
+                    ret= await ((IRowCursor)cursor).NextRow();
             }
             _rows.Add(val, ret);
             return ret;
         }
 
-        public void PerformCacheQuery(string[] vals)
+        async public Task PerformCacheQuery(string[] vals)
         {
             if (this.FeatureLayer == null || !(this.FeatureLayer.Class is ITableClass) || vals == null)
                 return;
@@ -97,15 +98,15 @@ namespace gView.Framework.Data.Joins
             if (where.Length == 0) return;
             filter.WhereClause = this.JoinField + " in (" + where.ToString() + ")";
 
-            using (ICursor cursor = ((ITableClass)this.FeatureLayer.Class).Search(filter))
+            using (ICursor cursor = await ((ITableClass)this.FeatureLayer.Class).Search(filter))
             {
                 while (true)
                 {
                     IRow row = null;
                     if (cursor is IFeatureCursor)
-                        row = ((IFeatureCursor)cursor).NextFeature;
+                        row = await ((IFeatureCursor)cursor).NextFeature();
                     else if (cursor is IRowCursor)
-                        row = ((IRowCursor)cursor).NextRow;
+                        row = await ((IRowCursor)cursor).NextRow();
                     if (row == null)
                         break;
 
@@ -115,12 +116,12 @@ namespace gView.Framework.Data.Joins
             }
         }
 
-        public ICursor PerformQuery(IQueryFilter filter)
+        async public Task<ICursor> PerformQuery(IQueryFilter filter)
         {
             if (this.FeatureLayer == null || !(this.FeatureLayer.Class is ITableClass) || filter == null)
                 return null;
 
-            return ((ITableClass)this.FeatureLayer.Class).Search(filter);
+            return await ((ITableClass)this.FeatureLayer.Class).Search(filter);
         }
 
         public void Init(string selectFieldNames)

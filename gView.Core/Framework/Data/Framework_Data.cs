@@ -20,10 +20,7 @@ namespace gView.Framework.Data
 
     public interface IRasterDataset : IDataset
     {
-        IEnvelope Envelope
-        {
-            get;
-        }
+        Task<IEnvelope> Envelope();
 
         ISpatialReference SpatialReference { get; set; }
     }
@@ -39,10 +36,7 @@ namespace gView.Framework.Data
 
     public interface IFeatureDataset : IDataset
     {
-        IEnvelope Envelope
-        {
-            get;
-        }
+        Task<IEnvelope> Envelope();
 
         ISpatialReference SpatialReference { get; set; }
     }
@@ -50,7 +44,7 @@ namespace gView.Framework.Data
     public interface IDataset2 : IDataset
     {
         IDataset2 EmptyCopy();
-        void AppendElement(string elementName);
+        Task AppendElement(string elementName);
     }
 
     //public interface IQueryOperations
@@ -205,17 +199,13 @@ namespace gView.Framework.Data
             get;
         }
 
-        List<IDatasetElement> Elements
-        {
-            get;
-        }
+        Task<List<IDatasetElement>> Elements();
+        Task<IDatasetElement> Element(string title);
 
         string Query_FieldPrefix { get; }
         string Query_FieldPostfix { get; }
 
         IDatabase Database { get; }
-
-        IDatasetElement this[string title] { get; }
 
         void RefreshClasses();
     }
@@ -312,9 +302,9 @@ namespace gView.Framework.Data
     {
         event RowsAddedToTableEvent RowsAddedToTable;
 
-        int Fill();
-        int Fill(int next_N_Rows);
-        int FillAtLeast(List<int> IDs);
+        Task<int> Fill();
+        Task<int> Fill(int next_N_Rows);
+        Task<int> FillAtLeast(List<int> IDs);
 
         bool hasMore { get; }
 
@@ -551,12 +541,12 @@ namespace gView.Framework.Data
 
     public interface IRasterLayerCursor : ICursor
     {
-        IRasterLayer NextRasterLayer { get; }
+        Task<IRasterLayer> NextRasterLayer();
     }
 
     public interface IParentRasterLayer
     {
-        IRasterLayerCursor ChildLayers(gView.Framework.Carto.IDisplay display, string filterClause);
+        Task<IRasterLayerCursor> ChildLayers(gView.Framework.Carto.IDisplay display, string filterClause);
     }
 
     public enum joinType
@@ -574,9 +564,9 @@ namespace gView.Framework.Data
         string Field { get; set; }
 
         IFields JoinFields { get; set; }
-        IRow GetJoinedRow(string val);
-        void PerformCacheQuery(string[] vals);
-        ICursor PerformQuery(IQueryFilter filter);
+        Task<IRow> GetJoinedRow(string val);
+        Task PerformCacheQuery(string[] vals);
+        Task<ICursor> PerformQuery(IQueryFilter filter);
 
         void Init(string selectFieldNames);
 
@@ -662,8 +652,8 @@ namespace gView.Framework.Data
 
         string LogicalOperator { get; }
 
-        ICursor GetLeftRows(string leftFields, object rightValue);
-        ICursor GetRightRows(string rightFields, object leftValue);
+        Task<ICursor> GetLeftRows(string leftFields, object rightValue);
+        Task<ICursor> GetRightRows(string rightFields, object leftValue);
 
         IQueryFilter GetLeftFilter(string leftFields, object rightValue);
         IQueryFilter GetRightFilter(string rightFields, object leftValue);
@@ -705,12 +695,12 @@ namespace gView.Framework.Data
 
     public interface IPointIdentify
     {
-        ICursor PointQuery(IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata);
+       Task<ICursor> PointQuery(IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata);
     }
 
     public interface IMulitPointIdentify
     {
-        ICursor MultiPointQuery(IDisplay display, IPointCollection points, ISpatialReference sRef, IUserData userdata);
+        Task<ICursor> MultiPointQuery(IDisplay display, IPointCollection points, ISpatialReference sRef, IUserData userdata);
     }
 
     public interface IGridIdentify
@@ -722,7 +712,7 @@ namespace gView.Framework.Data
 
     public interface IMultiGridIdentify
     {
-        float[] MultiGridQuery(gView.Framework.Carto.IDisplay display, IPoint[] Points, double dx, double dy, ISpatialReference sRef, IUserData userdata);
+        Task<float[]> MultiGridQuery(gView.Framework.Carto.IDisplay display, IPoint[] Points, double dx, double dy, ISpatialReference sRef, IUserData userdata);
     }
 
     public interface ISearchTree

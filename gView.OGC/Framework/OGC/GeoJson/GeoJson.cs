@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 
@@ -28,13 +29,13 @@ namespace gView.Framework.OGC.GeoJson
             return sb.ToString();
         }
 
-        public static string ToGeoJsonFeatures(IFeatureCursor cursor, int maxFeatures)
+        async public static Task<string> ToGeoJsonFeatures(IFeatureCursor cursor, int maxFeatures)
         {
             StringBuilder sb=new StringBuilder();
 
             int counter = 0;
             IFeature feature;
-            while ((feature = cursor.NextFeature) != null)
+            while ((feature = await cursor.NextFeature()) != null)
             {
                 if (counter != 0)
                     sb.Append(",");

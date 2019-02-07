@@ -9,6 +9,7 @@ using gView.Framework.Web;
 using gView.Framework.OGC.WFS;
 using gView.Interoperability.OGC.Dataset.GML;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Dataset.WFS
 {
@@ -198,7 +199,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
 
         #endregion
 
-        protected override IFeatureCursor FeatureCursor(IQueryFilter filter)
+        async protected override Task<IFeatureCursor> FeatureCursor(IQueryFilter filter)
         {
             string response = "";
 
@@ -217,7 +218,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
                     _dataset._getCapabilities.Get_OnlineResource.IndexOf("?SERVICE=") == -1)
                     param = "SERVICE=WFS&" + param;
 
-                string wfsFilter = Filter.ToWFS(this, filter, _dataset._filter_capabilites, _dataset._gmlVersion);
+                string wfsFilter = await Filter.ToWFS(this, filter, _dataset._filter_capabilites, _dataset._gmlVersion);
                 string url = _dataset._getFeature.Get_OnlineResource;
 
                 response = WebFunctions.HttpSendRequest(url, "GET", null);

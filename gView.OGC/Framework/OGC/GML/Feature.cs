@@ -4,6 +4,7 @@ using System.Text;
 using gView.Framework.Data;
 using System.IO;
 using gView.Framework.Geometry;
+using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.GML
 {
@@ -12,7 +13,7 @@ namespace gView.Framework.OGC.GML
         #region Feature To GML
         public static void Feature2GML(IFeature feature, IFeatureClass fc, string fcID, StringBuilder sb, string srsName, IGeometricTransformer transformer, GmlVersion version)
         {
-            if (feature == null ||  fc == null) return;
+            if (feature == null || fc == null) return;
 
             sb.Append(@"
    <gml:featureMember>
@@ -49,17 +50,18 @@ namespace gView.Framework.OGC.GML
    </gml:featureMember>");
         }
 
-        public static void Features2GML(IFeatureCursor cursor, IFeatureClass fc, string fcID, StringBuilder sb, string srsName, IGeometricTransformer transformer, GmlVersion version)
+        async public static Task Features2GML(IFeatureCursor cursor, IFeatureClass fc, string fcID, StringBuilder sb, string srsName, IGeometricTransformer transformer, GmlVersion version)
         {
-            Features2GML(cursor, fc, fcID, sb, srsName, transformer, version, -1);
+            await Features2GML(cursor, fc, fcID, sb, srsName, transformer, version, -1);
         }
-        public static void Features2GML(IFeatureCursor cursor, IFeatureClass fc, string fcID, StringBuilder sb, string srsName, IGeometricTransformer transformer, GmlVersion version, int maxFeatures)
+
+        async public static Task Features2GML(IFeatureCursor cursor, IFeatureClass fc, string fcID, StringBuilder sb, string srsName, IGeometricTransformer transformer, GmlVersion version, int maxFeatures)
         {
             if (cursor == null || fc == null) return;
 
             int count = 0;
             IFeature feature = null;
-            while ((feature = cursor.NextFeature) != null)
+            while ((feature = await cursor.NextFeature()) != null)
             {
                 Feature2GML(feature, fc, fcID, sb, srsName, transformer, version);
                 count++;

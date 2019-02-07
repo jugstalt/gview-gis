@@ -6,6 +6,7 @@ using System.IO;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.Carto;
+using System.Threading.Tasks;
 
 namespace gView.Framework.XML
 {
@@ -72,10 +73,10 @@ namespace gView.Framework.XML
             }
         }
 
-        public bool Select(IQueryFilter filter, CombinationMethod methode)
+        async public Task<bool> Select(IQueryFilter filter, CombinationMethod methode)
         {
             if (this.FeatureClass == null) return false;
-            ISelectionSet selSet = this.FeatureClass.Select(filter);
+            ISelectionSet selSet = await this.FeatureClass.Select(filter);
 
             SelectionSet = selSet;
             FireSelectionChangedEvent();

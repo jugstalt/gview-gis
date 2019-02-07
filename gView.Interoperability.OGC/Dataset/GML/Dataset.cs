@@ -9,6 +9,7 @@ using gView.Framework.system;
 using gView.Framework.Carto;
 using gView.Framework.OGC.GML;
 using gView.Framework.FDB;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Dataset.GML
 {
@@ -94,9 +95,9 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         #region IFeatureDataset Member
 
-        public gView.Framework.Geometry.IEnvelope Envelope
+        public Task<IEnvelope> Envelope()
         {
-            get { return _envelope; }
+            return Task.FromResult(_envelope);
         }
 
         public gView.Framework.Geometry.ISpatialReference SpatialReference
@@ -227,12 +228,9 @@ namespace gView.Interoperability.OGC.Dataset.GML
             get { return _errMsg; }
         }
 
-        public List<IDatasetElement> Elements
+        public Task<List<IDatasetElement>> Elements()
         {
-            get 
-            {
-                return ListOperations<IDatasetElement>.Clone(_elements);
-            }
+            return Task.FromResult(ListOperations<IDatasetElement>.Clone(_elements));
         }
 
         public string Query_FieldPrefix
@@ -250,29 +248,27 @@ namespace gView.Interoperability.OGC.Dataset.GML
             get { return _database; }
         }
 
-        public IDatasetElement this[string title]
+        public Task<IDatasetElement> Element(string title)
         {
-            get
+            foreach (IDatasetElement element in _elements)
+                if (element.Title == title)
+                    return Task.FromResult(element);
+
+            try
             {
-                foreach (IDatasetElement element in _elements)
-                    if (element.Title == title) return element;
+                DirectoryInfo di = new DirectoryInfo(_connectionString);
+                if (!di.Exists) return null;
 
-                try
+                Dataset ds = new Dataset();
+                ds.ConnectionString = di + @"\" + title + ".gml";
+                if (ds.Open())
                 {
-                    DirectoryInfo di = new DirectoryInfo(_connectionString);
-                    if (!di.Exists) return null;
-
-                    Dataset ds = new Dataset();
-                    ds.ConnectionString = di + @"\" + title + ".gml";
-                    if (ds.Open())
-                    {
-                        return ds[title];
-                    }
+                    return ds.Element(title);
                 }
-                catch { }
-
-                return null;
             }
+            catch { }
+
+            return Task.FromResult<IDatasetElement>(null);
         }
 
         public void RefreshClasses()

@@ -10,14 +10,14 @@ namespace gView.Framework.Data
     public class TableClassBindingSource : IListSource, IList, IEnumerator
     {
         private ITableClass _class;
-        private ICursor cursor = null;
+        private ICursor _cursor = null;
         private int _count=0;
 
         public TableClassBindingSource(ITableClass Class)
         {
             _class = Class;
             if (_class == null) return;
-            cursor = Class.Search(new QueryFilter());
+            _cursor = Class.Search(new QueryFilter()).Result;
         }
 
         #region IListSource Member
@@ -141,10 +141,10 @@ namespace gView.Framework.Data
 
         public bool MoveNext()
         {
-            if (cursor is IFeatureCursor)
-                _current = ((IFeatureCursor)cursor).NextFeature;
-            else if (cursor is IRowCursor)
-                _current = ((IRowCursor)cursor).NextRow;
+            if (_cursor is IFeatureCursor)
+                _current = ((IFeatureCursor)_cursor).NextFeature().Result;
+            else if (_cursor is IRowCursor)
+                _current = ((IRowCursor)_cursor).NextRow().Result;
             else
                 _current = null;
 
@@ -156,8 +156,8 @@ namespace gView.Framework.Data
         public void Reset()
         {
             if (_class == null) return;
-            if (cursor != null) cursor.Dispose();
-            cursor = _class.Search(new QueryFilter());
+            if (_cursor != null) _cursor.Dispose();
+            _cursor = _class.Search(new QueryFilter()).Result;
             _count=0;
         }
 

@@ -7,6 +7,7 @@ using gView.Framework.Network.Algorthm;
 using gView.Framework.system;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
 {
@@ -30,7 +31,7 @@ namespace gView.Framework.Network.Tracers
             return input.Collect(NetworkTracerInputType.SourceNode).Count == 1;
         }
 
-        public NetworkTracerOutputCollection Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, gView.Framework.system.ICancelTracker cancelTraker)
+        async public Task<NetworkTracerOutputCollection> Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, gView.Framework.system.ICancelTracker cancelTraker)
         {
             if (network == null || !CanTrace(input))
                 return null;
@@ -96,11 +97,11 @@ namespace gView.Framework.Network.Tracers
 
                 RowIDFilter filter = new RowIDFilter(String.Empty);
                 filter.IDs.Add(graphEdge.Eid);
-                IFeatureCursor cursor = network.GetEdgeFeatures(filter);
+                IFeatureCursor cursor = await network.GetEdgeFeatures(filter);
                 if (cursor == null)
                     continue;
 
-                IFeature feature = cursor.NextFeature;
+                IFeature feature = await cursor.NextFeature();
                 if (feature == null)
                     continue;
 

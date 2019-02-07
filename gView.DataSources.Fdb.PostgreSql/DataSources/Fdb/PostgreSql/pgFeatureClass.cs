@@ -109,7 +109,7 @@ namespace gView.DataSources.Fdb.PostgreSql
 
             filter.AddField("FDB_SHAPE");
             filter.AddField("FDB_OID");
-            using (IFeatureCursor cursor = (IFeatureCursor)_fdb.Query(this, filter))
+            using (IFeatureCursor cursor = await _fdb.Query(this, filter))
             {
                 IFeature feat;
 

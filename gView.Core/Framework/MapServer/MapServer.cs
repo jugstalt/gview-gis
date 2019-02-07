@@ -4,6 +4,7 @@ using System.Text;
 using gView.Framework.Carto;
 using gView.Framework.system;
 using gView.Framework.IO;
+using System.Threading.Tasks;
 
 namespace gView.MapServer
 {
@@ -118,7 +119,7 @@ namespace gView.MapServer
     public interface IServiceRequestInterpreter
     {
         void OnCreate(IMapServer mapServer);
-        void Request(IServiceRequestContext context);
+        Task Request(IServiceRequestContext context);
 
         string IntentityName { get; }
 

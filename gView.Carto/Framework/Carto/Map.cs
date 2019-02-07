@@ -339,7 +339,7 @@ namespace gView.Framework.Carto
         {
             m_datasetNr = m_layerNr = 0;
         }
-        private IDatasetElement getNextLayer(string layername)
+        async private Task<IDatasetElement> getNextLayer(string layername)
         {
             while (this[m_datasetNr] != null)
             {
@@ -347,10 +347,10 @@ namespace gView.Framework.Carto
                 if (!(dataset is IFeatureDataset)) continue;
                 IFeatureDataset fDataset = (IFeatureDataset)dataset;
 
-                for (int i = m_layerNr; i < fDataset.Elements.Count; i++)
+                for (int i = m_layerNr; i < (await fDataset.Elements()).Count; i++)
                 {
                     m_layerNr++;
-                    IDatasetElement layer = (IDatasetElement)fDataset.Elements[i];
+                    IDatasetElement layer = (IDatasetElement)(await fDataset.Elements())[i];
                     string name = layer.Title;
 
                     if (layername == name) return layer;
@@ -681,36 +681,33 @@ namespace gView.Framework.Carto
             }
         }
 
-        public List<IDatasetElement> ActiveLayers
+        async public Task<List<IDatasetElement>> ActiveLayers()
         {
-            get
-            {
-                List<IDatasetElement> e = new List<IDatasetElement>();
+            List<IDatasetElement> e = new List<IDatasetElement>();
 
-                foreach (string activeLayerName in m_activeLayerNames)
+            foreach (string activeLayerName in m_activeLayerNames)
+            {
+                this.resetGetLayer();
+                IDatasetElement layer = await this.getNextLayer(activeLayerName);
+                while (layer != null)
                 {
-                    this.resetGetLayer();
-                    IDatasetElement layer = this.getNextLayer(activeLayerName);
-                    while (layer != null)
-                    {
-                        e.Add(layer);
-                        layer = this.getNextLayer(activeLayerName);
-                    }
+                    e.Add(layer);
+                    layer = await this.getNextLayer(activeLayerName);
                 }
-                return e;
             }
+            return e;
         }
 
-        public List<IDatasetElement> Elements(string aliasname)
+        async public Task<List<IDatasetElement>> Elements(string aliasname)
         {
             List<IDatasetElement> e = new List<IDatasetElement>();
 
             this.resetGetLayer();
-            IDatasetElement layer = this.getNextLayer(aliasname);
+            IDatasetElement layer = await this.getNextLayer(aliasname);
             while (layer != null)
             {
                 e.Add(layer);
-                layer = this.getNextLayer(aliasname);
+                layer = await this.getNextLayer(aliasname);
             }
             return e;
         }
@@ -945,7 +942,7 @@ namespace gView.Framework.Carto
                             {
                                 if (rLayer.Class is IParentRasterLayer)
                                 {
-                                    DrawRasterParentLayer((IParentRasterLayer)rLayer.Class, cancelTracker, rLayer);
+                                    await DrawRasterParentLayer((IParentRasterLayer)rLayer.Class, cancelTracker, rLayer);
                                     thread = null;
                                 }
                                 else
@@ -1347,7 +1344,7 @@ namespace gView.Framework.Carto
             Display.GeometricTransformer = geotransformer;
         }
 
-        virtual protected void DrawRasterParentLayer(IParentRasterLayer rLayer, ICancelTracker cancelTracker, IRasterLayer rootLayer)
+        async virtual protected Task DrawRasterParentLayer(IParentRasterLayer rLayer, ICancelTracker cancelTracker, IRasterLayer rootLayer)
         {
             if (rLayer is ILayer && ((ILayer)rLayer).Class is IRasterClass)
             {
@@ -1364,17 +1361,17 @@ namespace gView.Framework.Carto
                     ((IRasterCatalogLayer)rootLayer).FilterQuery.WhereClause : String.Empty);
             }
 
-            using (IRasterLayerCursor cursor = ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
+            using (IRasterLayerCursor cursor = await ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
             {
                 ILayer child;
 
-                while ((child = cursor.NextRasterLayer) != null)
+                while ((child = await cursor.NextRasterLayer()) != null)
                 //foreach (ILayer child in ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
                 {
                     if (!cancelTracker.Continue) break;
                     if (child.Class is IParentRasterLayer)
                     {
-                        DrawRasterParentLayer((IParentRasterLayer)child.Class, cancelTracker, rootLayer);
+                        await DrawRasterParentLayer((IParentRasterLayer)child.Class, cancelTracker, rootLayer);
                         continue;
                     }
                     if (!(child is IRasterLayer)) continue;
@@ -1481,7 +1478,7 @@ namespace gView.Framework.Carto
             {
                 if (fLayer.DatasetID < _datasets.Count)
                 {
-                    IDatasetElement element = _datasets[fLayer.DatasetID][fLayer.Title];
+                    IDatasetElement element = _datasets[fLayer.DatasetID].Element(fLayer.Title).Result;
                     if (element != null && element.Class is IFeatureClass)
                     {
                         fLayer = LayerFactory.Create(element.Class, fLayer) as FeatureLayer;
@@ -1505,7 +1502,7 @@ namespace gView.Framework.Carto
             {
                 if (rcLayer.DatasetID < _datasets.Count)
                 {
-                    IDatasetElement element = _datasets[rcLayer.DatasetID][rcLayer.Title];
+                    IDatasetElement element = _datasets[rcLayer.DatasetID].Element(rcLayer.Title).Result;
                     if (element != null && element.Class is IRasterCatalogClass)
                     {
                         rcLayer = LayerFactory.Create(element.Class, rcLayer) as RasterCatalogLayer;
@@ -1525,7 +1522,7 @@ namespace gView.Framework.Carto
             {
                 if (rLayer.DatasetID < _datasets.Count)
                 {
-                    IDatasetElement element = _datasets[rLayer.DatasetID][rLayer.Title];
+                    IDatasetElement element = _datasets[rLayer.DatasetID].Element(rLayer.Title).Result;
                     if (element != null && element.Class is IRasterClass)
                     {
                         rLayer.SetRasterClass(element.Class as IRasterClass);
@@ -1547,7 +1544,7 @@ namespace gView.Framework.Carto
             {
                 if (wLayer.DatasetID <= _datasets.Count)
                 {
-                    IDatasetElement element = _datasets[wLayer.DatasetID][wLayer.Title];
+                    IDatasetElement element = _datasets[wLayer.DatasetID].Element(wLayer.Title).Result;
                     if (element != null && element.Class is IWebServiceClass)
                     {
                         //wLayer = LayerFactory.Create(element.Class, wLayer) as WebServiceLayer;
@@ -2768,7 +2765,7 @@ namespace gView.Framework.Carto
                                     ((IPenWidth)symbol).PenWidth = df.PenWidth;
                             }
                         }
-                        Render(flayer);
+                        await Render(flayer);
                     }
                 }
                 catch { }
@@ -2818,7 +2815,7 @@ namespace gView.Framework.Carto
                     filter.WhereClause = layer.FilterQuery.WhereClause;
                     if (layer.FilterQuery is IBufferQueryFilter)
                     {
-                        ISpatialFilter sFilter = BufferQueryFilter.ConvertToSpatialFilter(layer.FilterQuery as IBufferQueryFilter);
+                        ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(layer.FilterQuery as IBufferQueryFilter);
                         if (sFilter == null)
                         {
                             return;

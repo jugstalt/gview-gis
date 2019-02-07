@@ -6,6 +6,7 @@ using System.Xml;
 using gView.Framework.OGC.WFS;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.WFS;
+using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.GML
 {
@@ -56,62 +57,61 @@ namespace gView.Framework.OGC.GML
 
         #region IFeatureCursor Member
 
-        public override IFeature NextFeature
+        public override Task<IFeature> NextFeature()
         {
-            get
+            while (true)
             {
-                while (true)
+                if (_features == null || _pos >= _features.Count)
+                    return Task.FromResult<IFeature>(null);
+
+                XmlNode featureNode = _features[_pos++];
+
+                Feature feature = new Feature();
+                if (featureNode.Attributes["fid"] != null)
                 {
-                    if (_features == null || _pos >= _features.Count) return null;
-                    XmlNode featureNode = _features[_pos++];
-
-                    Feature feature = new Feature();
-                    if (featureNode.Attributes["fid"] != null)
-                    {
-                        feature.OID = XML.Globals.IntegerFeatureID(featureNode.Attributes["fid"].Value);
-                    }
-                    foreach (XmlNode fieldNode in featureNode.SelectNodes("myns:*", _ns))
-                    {
-                        string fieldName = fieldNode.Name.Split(':')[1];
-
-                        if (fieldName == _fc.ShapeFieldName.Replace("#", ""))
-                        {
-                            feature.Shape = GeometryTranslator.GML2Geometry(fieldNode.InnerXml, _gmlVersion);
-                        }
-                        else
-                        {
-                            FieldValue fv = new FieldValue(fieldName, fieldNode.InnerText);
-                            feature.Fields.Add(fv);
-
-                            try
-                            {
-                                if (fieldName == _fc.IDFieldName)
-                                    feature.OID = Convert.ToInt32(fieldNode.InnerText);
-                            }
-                            catch { }
-                        }
-                    }
-
-                    if (feature.Shape == null)
-                    {
-                        foreach (XmlNode gmlNode in featureNode.SelectNodes("GML:*", _ns))
-                        {
-                            feature.Shape = GeometryTranslator.GML2Geometry(gmlNode.OuterXml, _gmlVersion);
-                            if (feature.Shape != null) break;
-                        }
-                    }
-
-                    if (feature.Shape != null &&
-                        _filter is ISpatialFilter &&
-                        _checkGeometryRelation)
-                    {
-                        if (!SpatialRelation.Check(_filter as ISpatialFilter, feature.Shape))
-                            continue;
-                    }
-
-                    Transform(feature);
-                    return feature;
+                    feature.OID = XML.Globals.IntegerFeatureID(featureNode.Attributes["fid"].Value);
                 }
+                foreach (XmlNode fieldNode in featureNode.SelectNodes("myns:*", _ns))
+                {
+                    string fieldName = fieldNode.Name.Split(':')[1];
+
+                    if (fieldName == _fc.ShapeFieldName.Replace("#", ""))
+                    {
+                        feature.Shape = GeometryTranslator.GML2Geometry(fieldNode.InnerXml, _gmlVersion);
+                    }
+                    else
+                    {
+                        FieldValue fv = new FieldValue(fieldName, fieldNode.InnerText);
+                        feature.Fields.Add(fv);
+
+                        try
+                        {
+                            if (fieldName == _fc.IDFieldName)
+                                feature.OID = Convert.ToInt32(fieldNode.InnerText);
+                        }
+                        catch { }
+                    }
+                }
+
+                if (feature.Shape == null)
+                {
+                    foreach (XmlNode gmlNode in featureNode.SelectNodes("GML:*", _ns))
+                    {
+                        feature.Shape = GeometryTranslator.GML2Geometry(gmlNode.OuterXml, _gmlVersion);
+                        if (feature.Shape != null) break;
+                    }
+                }
+
+                if (feature.Shape != null &&
+                    _filter is ISpatialFilter &&
+                    _checkGeometryRelation)
+                {
+                    if (!SpatialRelation.Check(_filter as ISpatialFilter, feature.Shape))
+                        continue;
+                }
+
+                Transform(feature);
+                return Task.FromResult<IFeature>(feature);
             }
         }
 
@@ -173,69 +173,68 @@ namespace gView.Framework.OGC.GML
 
         #region IFeatureCursor Member
 
-        public override IFeature NextFeature
+        public override Task<IFeature> NextFeature()
         {
-            get
+            while (true)
             {
-                while (true)
+                if (_reader == null)
+                    return Task.FromResult<IFeature>(null);
+
+                if (!_reader.ReadToFollowing(_fc.Name, _ns.LookupNamespace("myns")))
+                    return Task.FromResult<IFeature>(null);
+
+                string featureString = _reader.ReadOuterXml();
+
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(featureString);
+                XmlNode featureNode = doc.ChildNodes[0];
+
+                Feature feature = new Feature();
+                if (featureNode.Attributes["fid"] != null)
                 {
-                    if (_reader == null) return null;
-
-                    if (!_reader.ReadToFollowing(_fc.Name, _ns.LookupNamespace("myns")))
-                        return null;
-                    string featureString = _reader.ReadOuterXml();
-
-                    XmlDocument doc = new XmlDocument();
-                    doc.LoadXml(featureString);
-                    XmlNode featureNode = doc.ChildNodes[0];
-
-                    Feature feature = new Feature();
-                    if (featureNode.Attributes["fid"] != null)
-                    {
-                        feature.OID = XML.Globals.IntegerFeatureID(featureNode.Attributes["fid"].Value);
-                    }
-                    foreach (XmlNode fieldNode in featureNode.SelectNodes("myns:*", _ns))
-                    {
-                        string fieldName = fieldNode.Name.Split(':')[1];
-
-                        if (fieldName == _fc.ShapeFieldName.Replace("#", ""))
-                        {
-                            feature.Shape = GeometryTranslator.GML2Geometry(fieldNode.InnerXml, _gmlVersion);
-                        }
-                        else
-                        {
-                            FieldValue fv = new FieldValue(fieldName, fieldNode.InnerText);
-                            feature.Fields.Add(fv);
-
-                            try
-                            {
-                                if (fieldName == _fc.IDFieldName)
-                                    feature.OID = Convert.ToInt32(fieldNode.InnerText);
-                            }
-                            catch { }
-                        }
-                    }
-
-                    if (feature.Shape == null)
-                    {
-                        foreach (XmlNode gmlNode in featureNode.SelectNodes("GML:*", _ns))
-                        {
-                            feature.Shape = GeometryTranslator.GML2Geometry(gmlNode.OuterXml, _gmlVersion);
-                            if (feature.Shape != null) break;
-                        }
-                    }
-
-                    if (feature.Shape != null &&
-                        _filter is ISpatialFilter &&
-                        _checkGeometryRelation)
-                    {
-                        if (!SpatialRelation.Check(_filter as ISpatialFilter, feature.Shape))
-                            continue;
-                    }
-
-                    Transform(feature);
-                    return feature;
+                    feature.OID = XML.Globals.IntegerFeatureID(featureNode.Attributes["fid"].Value);
                 }
+                foreach (XmlNode fieldNode in featureNode.SelectNodes("myns:*", _ns))
+                {
+                    string fieldName = fieldNode.Name.Split(':')[1];
+
+                    if (fieldName == _fc.ShapeFieldName.Replace("#", ""))
+                    {
+                        feature.Shape = GeometryTranslator.GML2Geometry(fieldNode.InnerXml, _gmlVersion);
+                    }
+                    else
+                    {
+                        FieldValue fv = new FieldValue(fieldName, fieldNode.InnerText);
+                        feature.Fields.Add(fv);
+
+                        try
+                        {
+                            if (fieldName == _fc.IDFieldName)
+                                feature.OID = Convert.ToInt32(fieldNode.InnerText);
+                        }
+                        catch { }
+                    }
+                }
+
+                if (feature.Shape == null)
+                {
+                    foreach (XmlNode gmlNode in featureNode.SelectNodes("GML:*", _ns))
+                    {
+                        feature.Shape = GeometryTranslator.GML2Geometry(gmlNode.OuterXml, _gmlVersion);
+                        if (feature.Shape != null) break;
+                    }
+                }
+
+                if (feature.Shape != null &&
+                    _filter is ISpatialFilter &&
+                    _checkGeometryRelation)
+                {
+                    if (!SpatialRelation.Check(_filter as ISpatialFilter, feature.Shape))
+                        continue;
+                }
+
+                Transform(feature);
+                return Task.FromResult<IFeature>(feature);
             }
         }
 

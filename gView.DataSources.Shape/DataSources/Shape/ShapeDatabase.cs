@@ -5,6 +5,7 @@ using System.IO;
 using gView.Framework.FDB;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Shape
 {
@@ -22,9 +23,9 @@ namespace gView.DataSources.Shape
 
         #region IFeatureDatabase Member
 
-        public int CreateDataset(string name, ISpatialReference sRef)
+        public Task<int> CreateDataset(string name, ISpatialReference sRef)
         {
-            return Create(name) ? 0 : -1;
+            return Task.FromResult<int>(Create(name) ? 0 : -1);
         }
 
         public int CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFields fields)
@@ -77,19 +78,19 @@ namespace gView.DataSources.Shape
             }
         }
 
-        public bool DeleteDataset(string dsName)
+        public Task<bool> DeleteDataset(string dsName)
         {
             try
             {
                 DirectoryInfo di = new DirectoryInfo(dsName);
                 if (!di.Exists) di.Delete();
 
-                return true;
+                return Task.FromResult<bool>(true);
             }
             catch (Exception ex)
             {
                 _errMsg = ex.Message;
-                return false;
+                return Task.FromResult<bool>(false);
             }
         }
 
@@ -109,9 +110,9 @@ namespace gView.DataSources.Shape
             throw new Exception("The method or operation is not implemented.");
         }
 
-        public IFeatureCursor Query(IFeatureClass fc, IQueryFilter filter)
+        async public Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
         {
-            return fc.GetFeatures(filter);
+            return await fc.GetFeatures(filter);
         }
 
         #endregion
@@ -179,47 +180,50 @@ namespace gView.DataSources.Shape
 
         #region IFeatureUpdater Member
 
-        public bool Insert(IFeatureClass fClass, IFeature feature)
+        public Task<bool> Insert(IFeatureClass fClass, IFeature feature)
         {
-            if (fClass == null || feature == null) return false;
+            if (fClass == null || feature == null) return Task.FromResult<bool>(false);
 
             List<IFeature> features = new List<IFeature>();
             features.Add(feature);
             return Insert(fClass, features);
         }
 
-        public bool Insert(IFeatureClass fClass, List<IFeature> features)
+        public Task<bool> Insert(IFeatureClass fClass, List<IFeature> features)
         {
-            if (fClass == null || !(fClass.Dataset is ShapeDataset) || features == null) return false;
-            if (features.Count == 0) return true;
+            if (fClass == null || !(fClass.Dataset is ShapeDataset) || features == null)
+                return Task.FromResult<bool>(false);
+
+            if (features.Count == 0)
+                return Task.FromResult<bool>(true);
 
             SHPFile shpFile = new SHPFile(fClass.Dataset.ConnectionString + @"\" + fClass.Name + ".shp");
 
             foreach (IFeature feature in features)
             {
                 if (!shpFile.WriteShape(feature))
-                    return false;
+                    return Task.FromResult<bool>(false);
             }
 
-            return true;
+            return Task.FromResult<bool>(true);
         }
 
-        public bool Update(IFeatureClass fClass, IFeature feature)
+        public Task<bool> Update(IFeatureClass fClass, IFeature feature)
         {
             throw new Exception("The method or operation is not implemented.");
         }
 
-        public bool Update(IFeatureClass fClass, List<IFeature> features)
+        public Task<bool> Update(IFeatureClass fClass, List<IFeature> features)
         {
             throw new Exception("The method or operation is not implemented.");
         }
 
-        public bool Delete(IFeatureClass fClass, int oid)
+        public Task<bool> Delete(IFeatureClass fClass, int oid)
         {
             throw new Exception("The method or operation is not implemented.");
         }
 
-        public bool Delete(IFeatureClass fClass, string where)
+        public Task<bool> Delete(IFeatureClass fClass, string where)
         {
             throw new Exception("The method or operation is not implemented.");
         }

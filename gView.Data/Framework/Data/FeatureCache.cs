@@ -6,6 +6,7 @@ using System.Threading;
 using gView.Framework.system;
 using gView.Framework.Geometry;
 using gView.Framework.Carto;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data
 {
@@ -302,27 +303,25 @@ namespace gView.Framework.Data
                 _features = features;
                 _filter = filter;
             }
+
             #region IFeatureCursor Member
 
-            public IFeature NextFeature
+            public Task<IFeature> NextFeature()
             {
-                get 
+                while (true)
                 {
-                    while (true)
+                    if (_features == null || _features.Count <= _pos) return null;
+
+                    IFeature feature = _features[_pos++];
+                    if (feature == null) return null;
+
+                    if (_filter is ISpatialFilter)
                     {
-                        if (_features == null || _features.Count <= _pos) return null;
-
-                        IFeature feature = _features[_pos++];
-                        if (feature == null) return null;
-
-                        if (_filter is ISpatialFilter)
-                        {
-                            if (!gView.Framework.Geometry.SpatialRelation.Check(_filter as ISpatialFilter, feature.Shape))
-                                continue;
-                        }
-
-                        return feature;
+                        if (!gView.Framework.Geometry.SpatialRelation.Check(_filter as ISpatialFilter, feature.Shape))
+                            continue;
                     }
+
+                    return Task.FromResult<IFeature>(feature);
                 }
             }
 
@@ -346,7 +345,7 @@ namespace gView.Framework.Data
         private Guid _mapEnvelopeGUID = Guid.NewGuid();
         private Guid _getFeatureGUID = Guid.NewGuid();
 
-        private IFeatureCursor GetFeatures(Guid guid, IQueryFilter filter)
+        async private Task<IFeatureCursor> GetFeatures(Guid guid, IQueryFilter filter)
         {
             ICachedFeatureCollection collection = FeatureCache.GetUsableFeatureCollection(guid, filter);
             if (collection != null)
@@ -358,26 +357,27 @@ namespace gView.Framework.Data
                 FeatureCache.RemoveFeatureCollection(guid);
 
                 collection = FeatureCache.CreateCachedFeatureCollection(guid, filter);
-                return new CachingFeatureCursor(collection, this.FeatureCursor(filter));
+
+                return new CachingFeatureCursor(collection, await this.FeatureCursor(filter));
             }
         }
 
         #region FeatureClass Members
-        virtual public IFeatureCursor GetFeatures(IQueryFilter filter)
+        async virtual public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
             if (filter is ISpatialFilter &&
                 ((ISpatialFilter)filter).SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects)
             {
-                return GetFeatures(_mapEnvelopeGUID, filter);
+                return await GetFeatures(_mapEnvelopeGUID, filter);
             }
             else
             {
-                return GetFeatures(_getFeatureGUID, filter);
+                return await GetFeatures(_getFeatureGUID, filter);
             }
         }
-        virtual public ICursor Search(IQueryFilter filter)
+        async virtual public Task<ICursor> Search(IQueryFilter filter)
         {
-            return GetFeatures(_getFeatureGUID, filter);
+            return await GetFeatures(_getFeatureGUID, filter);
         }
         virtual public IFields Fields
         {
@@ -386,7 +386,7 @@ namespace gView.Framework.Data
                 return new Fields();
             }
         }
-        virtual public ISelectionSet Select(IQueryFilter filter)
+        async virtual public Task<ISelectionSet> Select(IQueryFilter filter)
         {
             FeatureCache.RemoveFeatureCollection(_selectionGUID);
             if (this.IDFieldName != String.Empty && this.FindField(this.IDFieldName) != null)
@@ -395,14 +395,14 @@ namespace gView.Framework.Data
 
                 filter.AddField(this.ShapeFieldName);
                 filter.AddField(this.IDFieldName);
-                using (IFeatureCursor cursor = this.GetFeatures(_selectionGUID, filter))
+                using (IFeatureCursor cursor = await this.GetFeatures(_selectionGUID, filter))
                 {
                     if (cursor != null)
                     {
                         IFeature feat;
 
                         IDSelectionSet selSet = new IDSelectionSet();
-                        while ((feat = cursor.NextFeature) != null)
+                        while ((feat = await cursor.NextFeature()) != null)
                         {
                             selSet.AddID(feat.OID);
                         }
@@ -413,12 +413,12 @@ namespace gView.Framework.Data
             else
             {
                 int count = 0;
-                using (IFeatureCursor cursor = this.GetFeatures(_selectionGUID, filter))
+                using (IFeatureCursor cursor = await this.GetFeatures(_selectionGUID, filter))
                 {
                     if (cursor == null) return null;
 
                     IFeature feature;
-                    while ((feature = cursor.NextFeature) != null)
+                    while ((feature = await cursor.NextFeature()) != null)
                         count++;
                 }
                 return new QueryFilteredSelectionSet(filter, count);
@@ -431,7 +431,7 @@ namespace gView.Framework.Data
         public abstract IField FindField(string fieldname);
         #endregion
 
-        protected abstract IFeatureCursor FeatureCursor(IQueryFilter filter);
+        protected abstract Task<IFeatureCursor> FeatureCursor(IQueryFilter filter);
 
         #region ISelectionCache Member
 
@@ -477,27 +477,25 @@ namespace gView.Framework.Data
 
         #region IFeatureCursor Member
 
-        public IFeature NextFeature
+        async public Task<IFeature> NextFeature()
         {
-            get
-            {
-                if (_cursor == null) return null;
+            if (_cursor == null) return null;
 
-                IFeature feature = _cursor.NextFeature;
-                if (_cfCollection != null)
+            IFeature feature = await _cursor.NextFeature();
+            if (_cfCollection != null)
+            {
+                if (feature != null)
                 {
-                    if (feature != null)
-                    {
-                        _cfCollection.AddFeature(feature);
-                    }
-                    else
-                    {
-                        FeatureCache.ReleaseCachedFeatureCollection(_cfCollection);
-                        _released = true;
-                    }
+                    _cfCollection.AddFeature(feature);
                 }
-                return feature;
+                else
+                {
+                    FeatureCache.ReleaseCachedFeatureCollection(_cfCollection);
+                    _released = true;
+                }
             }
+            return feature;
+
         }
 
         #endregion

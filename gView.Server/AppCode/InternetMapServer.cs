@@ -185,7 +185,7 @@ namespace gView.Server.AppCode
             }
         }
 
-        internal static IMap LoadMap(string name, IServiceRequestContext context)
+        async internal static Task<IMap> LoadMap(string name, IServiceRequestContext context)
         {
             try
             {
@@ -231,7 +231,7 @@ namespace gView.Server.AppCode
                             }
                             //map.AddDataset(dataset, 0);
 
-                            foreach (IDatasetElement element in dataset.Elements)
+                            foreach (IDatasetElement element in await dataset.Elements())
                             {
                                 if (element == null) continue;
                                 ILayer layer = LayerFactory.Create(element.Class, element as ILayer);

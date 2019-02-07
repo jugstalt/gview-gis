@@ -17,6 +17,7 @@ using gView.Framework.IO;
 using System.Reflection;
 using System.Xml.Schema;
 using System.Xml.Serialization;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC
 {
@@ -38,7 +39,7 @@ namespace gView.Interoperability.OGC
             _mapServer = mapServer;
         }
 
-        public void Request(IServiceRequestContext context)
+        async public Task Request(IServiceRequestContext context)
         {
             if (context == null || context.ServiceRequest == null)
                 return;
@@ -75,7 +76,7 @@ namespace gView.Interoperability.OGC
                     context.ServiceRequest.Response = WFS_DescribeFeatureType(context.ServiceRequest.Service, parameters, context);
                     break;
                 case WFSRequestType.GetFeature:
-                    context.ServiceRequest.Response = WFS_GetFeature(context.ServiceRequest.OnlineResource, context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.Response = await WFS_GetFeature(context.ServiceRequest.OnlineResource, context.ServiceRequest.Service, parameters, context);
                     break;
             }
         }
@@ -630,7 +631,7 @@ namespace gView.Interoperability.OGC
             }
         }
 
-        private string WFS_GetFeature(string OnlineResource, string service, WFSParameterDescriptor parameters, IServiceRequestContext context)
+        async private Task<string> WFS_GetFeature(string OnlineResource, string service, WFSParameterDescriptor parameters, IServiceRequestContext context)
         {
             if (_mapServer == null || parameters == null) return "";
             _mapServer.Log("Service:" + service, loggingMethod.request, "WFS GetFeature");
@@ -715,11 +716,11 @@ namespace gView.Interoperability.OGC
                         //    parameters.MaxFeatures = 10000;
 
                         filter.SetUserData("IServiceRequestContext", context);
-                        using (IFeatureCursor cursor = fc.GetFeatures(filter))
+                        using (IFeatureCursor cursor = await fc.GetFeatures(filter))
                         {
                             if (cursor == null) continue;
 
-                            FeatureTranslator.Features2GML(cursor, fc, fcid, sb, srsName, transformer, gmlVersion, parameters.MaxFeatures);
+                            await FeatureTranslator.Features2GML(cursor, fc, fcid, sb, srsName, transformer, gmlVersion, parameters.MaxFeatures);
                         }
 
                         if (transformer != null)

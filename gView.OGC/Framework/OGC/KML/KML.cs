@@ -6,6 +6,7 @@ using gView.Framework.Data;
 using gView.Framework.Geometry;
 using System.IO;
 using System.Xml.Serialization;
+using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.KML
 {
@@ -13,11 +14,11 @@ namespace gView.Framework.OGC.KML
     {
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
 
-        static public Stream ToKml(IFeatureCursor cursor)
+        static public Task<Stream> ToKml(IFeatureCursor cursor)
         {
             return ToKml(cursor, int.MaxValue);
         }
-        static public Stream ToKml(IFeatureCursor cursor, int maxFeatures)
+        async static public Task<Stream> ToKml(IFeatureCursor cursor, int maxFeatures)
         {
             KmlType kml = new KmlType();
 
@@ -27,7 +28,7 @@ namespace gView.Framework.OGC.KML
             int counter = 0;
             IFeature feature = null;
             List<PlacemarkType> placemarks = new List<PlacemarkType>();
-            while ((feature = cursor.NextFeature) != null)
+            while ((feature = await cursor.NextFeature()) != null)
             {
                 if (feature.Shape == null)
                     continue;

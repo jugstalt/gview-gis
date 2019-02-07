@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.GeoServices.Request
 {
@@ -42,30 +43,30 @@ namespace gView.Interoperability.GeoServices.Request
             _mapServer = mapServer;
         }
 
-        public void Request(IServiceRequestContext context)
+        async public Task Request(IServiceRequestContext context)
         {
             switch (context.ServiceRequest.Method.ToLower())
             {
                 case "export":
-                    ExportMapRequest(context);
+                    await ExportMapRequest(context);
                     break;
                 case "query":
-                    Query(context);
+                    await Query(context);
                     break;
                 case "legend":
                     Legend(context);
                     break;
                 case "featureserver_query":
-                    Query(context, true);
+                    await Query(context, true);
                     break;
                 case "featureserver_addfeatures":
-                    AddFeatures(context);
+                    await AddFeatures(context);
                     break;
                 case "featureserver_updatefeatures":
-                    UpdateFeatures(context);
+                    await UpdateFeatures(context);
                     break;
                 case "featureserver_deletefeatures":
-                    DeleteFeatures(context);
+                    await DeleteFeatures(context);
                     break;
                 default:
                     throw new NotImplementedException(context.ServiceRequest.Method + " is not support for geoservices rest");
@@ -74,7 +75,7 @@ namespace gView.Interoperability.GeoServices.Request
 
         #region Export
 
-        private void ExportMapRequest(IServiceRequestContext context)
+        async private Task ExportMapRequest(IServiceRequestContext context)
         {
             try
             {
@@ -122,7 +123,7 @@ namespace gView.Interoperability.GeoServices.Request
                     #endregion
 
                     serviceMap.BeforeRenderLayers += ServiceMap_BeforeRenderLayers;
-                    serviceMap.Render();
+                    await serviceMap.Render();
 
                     if (serviceMap.MapImage != null)
                     {
@@ -262,7 +263,7 @@ namespace gView.Interoperability.GeoServices.Request
 
         #region Query
 
-        private void Query(IServiceRequestContext context, bool isFeatureServer = false)
+        async private Task Query(IServiceRequestContext context, bool isFeatureServer = false)
         {
             try
             {
@@ -348,14 +349,14 @@ namespace gView.Interoperability.GeoServices.Request
 
                         #endregion
 
-                        var cursor = tableClass.Search(filter);
+                        var cursor = await tableClass.Search(filter);
 
                         bool firstFeature = true;
                         if (cursor is IFeatureCursor)
                         {
                             IFeature feature;
                             IFeatureCursor featureCursor = (IFeatureCursor)cursor;
-                            while ((feature = featureCursor.NextFeature) != null)
+                            while ((feature = await featureCursor.NextFeature()) != null)
                             {
                                 var jsonFeature = new JsonFeature();
                                 var attributesDict = (IDictionary<string, object>)jsonFeature.Attributes;
@@ -528,7 +529,7 @@ namespace gView.Interoperability.GeoServices.Request
 
         #region FeatureService
 
-        private void AddFeatures(IServiceRequestContext context)
+        async private Task AddFeatures(IServiceRequestContext context)
         {
             try
             {
@@ -553,7 +554,7 @@ namespace gView.Interoperability.GeoServices.Request
                     if (features.Where(f => f.OID > 0).Count() > 0)
                         throw new Exception("Can't insert features with existing ObjectId");
 
-                    if (!database.Insert(featureClass, features))
+                    if (!await database.Insert(featureClass, features))
                         throw new Exception(database.lastErrorMsg);
 
                     context.ServiceRequest.Succeeded = true;
@@ -591,7 +592,7 @@ namespace gView.Interoperability.GeoServices.Request
             }
         }
 
-        private void UpdateFeatures(IServiceRequestContext context)
+        async private Task UpdateFeatures(IServiceRequestContext context)
         {
             try
             {
@@ -616,7 +617,7 @@ namespace gView.Interoperability.GeoServices.Request
                     if (features.Where(f => f.OID <= 0).Count() > 0)
                         throw new Exception("Can't update features without existing ObjectId");
 
-                    if (!database.Update(featureClass, features))
+                    if (!await database.Update(featureClass, features))
                         throw new Exception(database.lastErrorMsg);
 
                     context.ServiceRequest.Succeeded = true;
@@ -654,7 +655,7 @@ namespace gView.Interoperability.GeoServices.Request
             }
         }
 
-        private void DeleteFeatures(IServiceRequestContext context)
+        async private Task DeleteFeatures(IServiceRequestContext context)
         {
             try
             {
@@ -674,7 +675,7 @@ namespace gView.Interoperability.GeoServices.Request
 
                     foreach (int objectId in editRequest.ObjectIds.Split(',').Select(s => int.Parse(s)))
                     {
-                        if (!database.Delete(featureClass, objectId))
+                        if (!await database.Delete(featureClass, objectId))
                             throw new Exception(database.lastErrorMsg);
                     }
 

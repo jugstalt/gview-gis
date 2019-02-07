@@ -21,6 +21,7 @@ using System.Reflection;
 using gView.Framework.Metadata;
 using gView.Framework.OGC.WMS_C_1_4_0;
 using System.Xml.Serialization;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC
 {
@@ -38,6 +39,7 @@ namespace gView.Interoperability.OGC
         {
             _useTOC = false;
         }
+
         #region IServiceRequestInterpreter Member
 
         public void OnCreate(IMapServer mapServer)
@@ -49,7 +51,7 @@ namespace gView.Interoperability.OGC
             //if (_arcXML != null) _arcXML.OnCreate(mapServer);
         }
 
-        public void Request(IServiceRequestContext context)
+        async public Task Request(IServiceRequestContext context)
         {
             if (context == null || context.ServiceRequest == null)
                 return;
@@ -73,21 +75,21 @@ namespace gView.Interoperability.OGC
                     context.ServiceRequest.Response = WMS_GetCapabilities(context.ServiceRequest.OnlineResource, context.ServiceRequest.Service, parameters, context);
                     break;
                 case WMSRequestType.GetMap:
-                    context.ServiceRequest.Response = WMS_GetMap(context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.Response = await WMS_GetMap(context.ServiceRequest.Service, parameters, context);
                     break;
                 case WMSRequestType.GetFeatureInfo:
-                    context.ServiceRequest.Response = WMS_FeatureInfo(context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.Response = await WMS_FeatureInfo(context.ServiceRequest.Service, parameters, context);
                     break;
                 case WMSRequestType.DescriptTiles:
                     context.ServiceRequest.Response = WMSC_DescriptTiles(context.ServiceRequest.Service, parameters, context);
                     break;
                 case WMSRequestType.GetTile:
-                    context.ServiceRequest.Response = WMSC_GetTile(context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.Response = await WMSC_GetTile(context.ServiceRequest.Service, parameters, context);
                     break;
 
-                case WMSRequestType.GenerateTiles:
-                    context.ServiceRequest.Response = WMS_GenerateTiles(context.ServiceRequest.Service, parameters, context);
-                    break;
+                //case WMSRequestType.GenerateTiles:
+                //    context.ServiceRequest.Response = await WMS_GenerateTiles(context.ServiceRequest.Service, parameters, context);
+                //    break;
             }
         }
 
@@ -452,7 +454,7 @@ namespace gView.Interoperability.OGC
             }
         }
 
-        virtual public string WMS_GetMap(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
+        async virtual public Task<string> WMS_GetMap(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
         {
             // Immer neue Requestklasse erzeugen, damit Request multithreadfähig
             // ist.
@@ -464,103 +466,103 @@ namespace gView.Interoperability.OGC
             WMS_GetMapRequest request = new WMS_GetMapRequest(_mapServer, service, parameters, _useTOC, context);
             //request.GetLayerByIDCallback = GetLayerByID;
 
-            return request.Request();
+            return await request.Request();
         }
 
         private static object thisLock = new object();
         private static Dictionary<string, object> lockers = new Dictionary<string, object>();
-        virtual public string WMS_GenerateTiles(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
-        {
-            if (String.IsNullOrEmpty(parameters.RequestKey))
-                return String.Empty;
+        //async virtual public Task<string> WMS_GenerateTiles(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
+        //{
+        //    if (String.IsNullOrEmpty(parameters.RequestKey))
+        //        return String.Empty;
 
-            _mapServer.Log("Service:" + service, loggingMethod.request, "WMS GenerateTiles");
+        //    _mapServer.Log("Service:" + service, loggingMethod.request, "WMS GenerateTiles");
 
-            lock (thisLock)
-            {
-                if (!lockers.ContainsKey(parameters.RequestKey))
-                    lockers.Add(parameters.RequestKey, new object());
-            }
+        //    lock (thisLock)
+        //    {
+        //        if (!lockers.ContainsKey(parameters.RequestKey))
+        //            lockers.Add(parameters.RequestKey, new object());
+        //    }
 
-            lock (lockers[parameters.RequestKey])
-            {
-                // todo: zZ nur PNG!!
-                string imagePath = context.MapServer.OutputPath + @"\wms_" + parameters.RequestKey + "_{0}_{1}_{2}" + ".png";
-                FileInfo fi = new FileInfo(String.Format(imagePath, parameters.ZoomLevel, parameters.TileRow, parameters.TileCol));
-                if (fi.Exists)
-                {
-                    //return context.MapServer.OutputUrl + "/" + fi.Name;
-                    return fi.FullName;
-                }
+        //    lock (lockers[parameters.RequestKey])
+        //    {
+        //        // todo: zZ nur PNG!!
+        //        string imagePath = context.MapServer.OutputPath + @"\wms_" + parameters.RequestKey + "_{0}_{1}_{2}" + ".png";
+        //        FileInfo fi = new FileInfo(String.Format(imagePath, parameters.ZoomLevel, parameters.TileRow, parameters.TileCol));
+        //        if (fi.Exists)
+        //        {
+        //            //return context.MapServer.OutputUrl + "/" + fi.Name;
+        //            return fi.FullName;
+        //        }
 
-                if (parameters.BBoxSRS > 0)
-                {
-                    ISpatialReference fromSrs = SpatialReference.FromID("epsg:" + parameters.BBoxSRS);
-                    ISpatialReference toSrs = SpatialReference.FromID("epsg:" + parameters.SRS);
+        //        if (parameters.BBoxSRS > 0)
+        //        {
+        //            ISpatialReference fromSrs = SpatialReference.FromID("epsg:" + parameters.BBoxSRS);
+        //            ISpatialReference toSrs = SpatialReference.FromID("epsg:" + parameters.SRS);
 
-                    parameters.BBOX = new Envelope((IPoint)GeometricTransformer.Transform2D(parameters.BBOX.LowerLeft, fromSrs, toSrs),
-                                                   (IPoint)GeometricTransformer.Transform2D(parameters.BBOX.UpperRight, fromSrs, toSrs));
-                }
+        //            parameters.BBOX = new Envelope((IPoint)GeometricTransformer.Transform2D(parameters.BBOX.LowerLeft, fromSrs, toSrs),
+        //                                           (IPoint)GeometricTransformer.Transform2D(parameters.BBOX.UpperRight, fromSrs, toSrs));
+        //        }
 
-                int n = (int)Math.Pow(2.0, parameters.ZoomLevel);
-                double x0 = -20037508.342789244, y0 = 20037508.342789244;
-                double w = 20037508.342789244 * 2 / n, h = w;
+        //        int n = (int)Math.Pow(2.0, parameters.ZoomLevel);
+        //        double x0 = -20037508.342789244, y0 = 20037508.342789244;
+        //        double w = 20037508.342789244 * 2 / n, h = w;
 
-                double c0_ = (parameters.BBOX.minx - x0) / w, c1_ = (parameters.BBOX.maxx - x0) / w;
-                double r0_ = (y0 - parameters.BBOX.miny) / h, r1_ = (y0 - parameters.BBOX.maxy) / h;
+        //        double c0_ = (parameters.BBOX.minx - x0) / w, c1_ = (parameters.BBOX.maxx - x0) / w;
+        //        double r0_ = (y0 - parameters.BBOX.miny) / h, r1_ = (y0 - parameters.BBOX.maxy) / h;
 
-                int c0__ = Math.Max((int)Math.Round(c0_), 0), c1__ = Math.Min((int)Math.Round(c1_), n - 1);
-                int r1__ = Math.Min((int)Math.Round(r0_), n - 1), r0__ = Math.Min((int)Math.Round(r1_), 0);
-                int c0 = Math.Min(c0__, c1__), c1 = Math.Max(c0__, c1__);
-                int r0 = Math.Min(r0__, r1__), r1 = Math.Max(r0__, r1__);
+        //        int c0__ = Math.Max((int)Math.Round(c0_), 0), c1__ = Math.Min((int)Math.Round(c1_), n - 1);
+        //        int r1__ = Math.Min((int)Math.Round(r0_), n - 1), r0__ = Math.Min((int)Math.Round(r1_), 0);
+        //        int c0 = Math.Min(c0__, c1__), c1 = Math.Max(c0__, c1__);
+        //        int r0 = Math.Min(r0__, r1__), r1 = Math.Max(r0__, r1__);
 
-                parameters.Width = (Math.Abs(c1 - c0) + 1) * 256;
-                parameters.Height = (Math.Abs(r1 - r0) + 1) * 256;
+        //        parameters.Width = (Math.Abs(c1 - c0) + 1) * 256;
+        //        parameters.Height = (Math.Abs(r1 - r0) + 1) * 256;
 
-                parameters.BBOX = new Envelope(x0 + c0 * w,
-                                               y0 - r0 * w,
-                                               x0 + (c1 + 1) * w,
-                                               y0 - (r1 + 1) * h);
-                // Immer neue Requestklasse erzeugen, damit Request multithreadfähig
-                // ist.
-                // Parameter wie Layer müssen erhalten bleiben, wenn ServicMap später
-                // BeforeRenderlayers aufruft...
-                WMS_GetMapRequest request = new WMS_GetMapRequest(_mapServer, service, parameters, _useTOC, context);
-                //request.GetLayerByIDCallback = GetLayerByID;
+        //        parameters.BBOX = new Envelope(x0 + c0 * w,
+        //                                       y0 - r0 * w,
+        //                                       x0 + (c1 + 1) * w,
+        //                                       y0 - (r1 + 1) * h);
+        //        // Immer neue Requestklasse erzeugen, damit Request multithreadfähig
+        //        // ist.
+        //        // Parameter wie Layer müssen erhalten bleiben, wenn ServicMap später
+        //        // BeforeRenderlayers aufruft...
+        //        WMS_GetMapRequest request = new WMS_GetMapRequest(_mapServer, service, parameters, _useTOC, context);
+        //        //request.GetLayerByIDCallback = GetLayerByID;
 
-                string wmsImagePath = request.Request();
-                if (!String.IsNullOrEmpty(wmsImagePath))
-                {
-                    using (Image image = Image.FromFile(wmsImagePath))
-                    {
-                        for (int r = r0; r <= r1; r++)
-                        {
-                            for (int c = c0; c <= c1; c++)
-                            {
-                                using (Bitmap bm = new Bitmap(256, 256))
-                                using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(bm))
-                                {
-                                    gr.DrawImage(image, new Rectangle(0, 0, 256, 256), new Rectangle((c - c0) * 256, (r - r0) * 256, 256, 256), GraphicsUnit.Pixel);
-                                    string outPath = String.Format(imagePath, parameters.ZoomLevel, r, c);
-                                    switch (fi.Extension.ToLower())
-                                    {
-                                        case ".png":
-                                            bm.Save(outPath, System.Drawing.Imaging.ImageFormat.Png);
-                                            break;
-                                        default:
-                                            bm.Save(outPath, System.Drawing.Imaging.ImageFormat.Jpeg);
-                                            break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+        //        string wmsImagePath = await request.Request();
+        //        if (!String.IsNullOrEmpty(wmsImagePath))
+        //        {
+        //            using (Image image = Image.FromFile(wmsImagePath))
+        //            {
+        //                for (int r = r0; r <= r1; r++)
+        //                {
+        //                    for (int c = c0; c <= c1; c++)
+        //                    {
+        //                        using (Bitmap bm = new Bitmap(256, 256))
+        //                        using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(bm))
+        //                        {
+        //                            gr.DrawImage(image, new Rectangle(0, 0, 256, 256), new Rectangle((c - c0) * 256, (r - r0) * 256, 256, 256), GraphicsUnit.Pixel);
+        //                            string outPath = String.Format(imagePath, parameters.ZoomLevel, r, c);
+        //                            switch (fi.Extension.ToLower())
+        //                            {
+        //                                case ".png":
+        //                                    bm.Save(outPath, System.Drawing.Imaging.ImageFormat.Png);
+        //                                    break;
+        //                                default:
+        //                                    bm.Save(outPath, System.Drawing.Imaging.ImageFormat.Jpeg);
+        //                                    break;
+        //                            }
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
 
-                lockers.Remove(parameters.RequestKey);
-                return String.Format(imagePath, parameters.ZoomLevel, parameters.TileRow, parameters.TileCol);
-            }
-        }
+        //        lockers.Remove(parameters.RequestKey);
+        //        return String.Format(imagePath, parameters.ZoomLevel, parameters.TileRow, parameters.TileCol);
+        //    }
+        //}
 
         private class WMS_GetMapRequest
         {
@@ -579,7 +581,7 @@ namespace gView.Interoperability.OGC
                 _context = context;
             }
 
-            public string Request()
+            async public Task<string> Request()
             {
                 if (_mapServer == null) return "";
 
@@ -615,7 +617,7 @@ namespace gView.Interoperability.OGC
                         map.Display.TransparentColor = System.Drawing.Color.White;
                     }
                     map.BeforeRenderLayers += new BeforeRenderLayersEvent(map_BeforeRenderLayers);
-                    map.Render();
+                    await map.Render();
 
                     if (map.MapImage != null)
                     {
@@ -721,7 +723,7 @@ namespace gView.Interoperability.OGC
             return context.ServiceRequest.Service;
         }
 
-        public string WMS_FeatureInfo(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
+        async public Task<string> WMS_FeatureInfo(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
         {
             if (parameters == null) return "";
 
@@ -792,10 +794,10 @@ namespace gView.Interoperability.OGC
                 {
                     if (layer is IFeatureLayer && ((IFeatureLayer)layer).FeatureClass != null)
                     {
-                        using (IFeatureCursor cursor = ((IFeatureLayer)layer).FeatureClass.Search(filter) as IFeatureCursor)
+                        using (IFeatureCursor cursor = await ((IFeatureLayer)layer).FeatureClass.Search(filter) as IFeatureCursor)
                         {
                             IFeature feature = null;
-                            while ((feature = cursor.NextFeature) != null)
+                            while ((feature = await cursor.NextFeature()) != null)
                             {
                                 features.Add(new FeatureType("c" + layer.SID, ((IFeatureLayer)layer).FeatureClass, feature));
                             }
@@ -885,7 +887,7 @@ namespace gView.Interoperability.OGC
             }
         }
 
-        public string WMSC_GetTile(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
+        async public Task<string> WMSC_GetTile(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
         {
             try
             {
@@ -957,7 +959,7 @@ namespace gView.Interoperability.OGC
                     double x = bounds.minx + W * parameters.TileCol;
 
                     map.Display.ZoomTo(new Envelope(x, y, x + W, y + H));
-                    map.Render();
+                    await map.Render();
 
                     bool maketrans = map.Display.MakeTransparent;
                     map.Display.MakeTransparent = true;

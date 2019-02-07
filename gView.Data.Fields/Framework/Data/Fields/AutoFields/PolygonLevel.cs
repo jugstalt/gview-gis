@@ -4,6 +4,7 @@ using System.Text;
 using gView.Framework.FDB;
 using gView.Framework.Data;
 using gView.Data.Fields.Fields.AutoFields;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Fields.AutoFields
 {
@@ -37,7 +38,7 @@ namespace gView.Framework.Data.Fields.AutoFields
             get { return FieldType.integer; }
         }
 
-        public bool OnInsert(IFeatureClass fc, IFeature feature)
+        async public Task<bool> OnInsert(IFeatureClass fc, IFeature feature)
         {
             if (fc == null || feature == null) return false;
 
@@ -49,12 +50,12 @@ namespace gView.Framework.Data.Fields.AutoFields
             filter.FilterSpatialReference = fc.SpatialReference;
             filter.AddField(this.name);
 
-            using (IFeatureCursor cursor = fc.Search(filter) as IFeatureCursor)
+            using (IFeatureCursor cursor = await fc.Search(filter) as IFeatureCursor)
             {
                 List<int> levels = new List<int>();
 
                 IFeature f;
-                while (((f = cursor.NextFeature) != null))
+                while (((f = await cursor.NextFeature()) != null))
                 {
                     if (f[this.name] == null || f[this.name] == DBNull.Value) continue;
                     int level = Convert.ToInt32(f[this.name]);
@@ -93,9 +94,9 @@ namespace gView.Framework.Data.Fields.AutoFields
             return true;
         }
 
-        public bool OnUpdate(IFeatureClass fc, IFeature feature)
+        public Task<bool> OnUpdate(IFeatureClass fc, IFeature feature)
         {
-            return true;
+            return Task.FromResult<bool>(true);
         }
 
         #endregion

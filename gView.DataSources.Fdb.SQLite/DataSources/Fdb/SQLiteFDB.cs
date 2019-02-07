@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using gView.DataSources.Fdb.Sqlite;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.SQLite
 {
@@ -155,7 +156,7 @@ namespace gView.DataSources.Fdb.SQLite
                     IDataset linkedDs = LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                     if (linkedDs == null)
                         continue;
-                    IDatasetElement linkedElement = linkedDs[(string)row["Name"]];
+                    IDatasetElement linkedElement = linkedDs.Element((string)row["Name"]).Result;
 
                     LinkedFeatureClass fc = new LinkedFeatureClass(dataset,
                         linkedElement != null && linkedElement.Class is IFeatureClass ? linkedElement.Class as IFeatureClass : null,
@@ -350,13 +351,13 @@ namespace gView.DataSources.Fdb.SQLite
 		}
         */
 
-        public override bool Insert(IFeatureClass fClass, IFeature feature)
+        public override Task<bool> Insert(IFeatureClass fClass, IFeature feature)
         {
             List<IFeature> features = new List<IFeature>();
             features.Add(feature);
             return Insert(fClass, features);
         }
-        public override bool Insert(IFeatureClass fClass, List<IFeature> features)
+        async public override Task<bool> Insert(IFeatureClass fClass, List<IFeature> features)
         {
             if (fClass == null || features == null) return false;
             if (features.Count == 0) return true;
@@ -379,7 +380,7 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 using (SqliteConnection connection = new SqliteConnection(_conn.ConnectionString))
                 {
-                    connection.Open();
+                    await connection.OpenAsync();
 
                     using(var command=new SqliteCommand())
                     using (var transaction = connection.BeginTransaction())
@@ -389,7 +390,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                         foreach (IFeature feature in features)
                         {
-                            if (!feature.BeforeInsert(fClass))
+                            if (!await feature.BeforeInsert(fClass))
                             {
                                 _errMsg = "Insert: Error in Feature.BeforeInsert (AutoFields,...)";
                                 return false;
@@ -472,7 +473,7 @@ namespace gView.DataSources.Fdb.SQLite
                             }
 
                             command.CommandText = "INSERT INTO " + FcTableName(fClass) + " (" + fields.ToString() + ") VALUES (" + parameters + ")";
-                            command.ExecuteNonQuery();
+                            await command.ExecuteNonQueryAsync();
                         }
 
                         //return SplitIndexNodes(fClass, connection, _nids);
@@ -569,13 +570,13 @@ namespace gView.DataSources.Fdb.SQLite
         }
         */
 
-        public override bool Update(IFeatureClass fClass, IFeature feature)
+        public override Task<bool> Update(IFeatureClass fClass, IFeature feature)
         {
             List<IFeature> features = new List<IFeature>();
             features.Add(feature);
             return Update(fClass, features);
         }
-        public override bool Update(IFeatureClass fClass, List<IFeature> features)
+        async public override Task<bool> Update(IFeatureClass fClass, List<IFeature> features)
         {
             if (fClass == null || features == null) return false;
             if (features.Count == 0) return true;
@@ -601,7 +602,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                 using (SqliteConnection connection = new SqliteConnection(_conn.ConnectionString))
                 {
-                    connection.Open();
+                    await connection.OpenAsync();
 
                     using (SqliteCommand command = connection.CreateCommand())
                     using (var transaction = connection.BeginTransaction())
@@ -610,7 +611,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                         foreach (IFeature feature in features)
                         {
-                            if (!feature.BeforeUpdate(fClass))
+                            if (!await feature.BeforeUpdate(fClass))
                             {
                                 _errMsg = "Insert: Error in Feature.BeforeInsert (AutoFields,...)";
                                 return false;
@@ -618,7 +619,7 @@ namespace gView.DataSources.Fdb.SQLite
                             if (!String.IsNullOrEmpty(replicationField))
                             {
                                 if (!Replication.WriteDifferencesToTable(fClass,
-                                    Replication.FeatureObjectGuid(fClass, feature, replicationField),
+                                    await Replication.FeatureObjectGuid(fClass, feature, replicationField),
                                     Replication.SqlStatement.UPDATE, replTrans, out _errMsg))
                                 {
                                     _errMsg = "Replication Error: " + _errMsg;
@@ -707,7 +708,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                             commandText.Append("UPDATE " + FcTableName(fClass) + " SET " + fields.ToString() + " WHERE FDB_OID=" + feature.OID);
                             command.CommandText = commandText.ToString();
-                            command.ExecuteNonQuery();
+                            await command.ExecuteNonQueryAsync();
                         }
 
                         //return SplitIndexNodes(fClass, connection, _nids);
@@ -727,11 +728,11 @@ namespace gView.DataSources.Fdb.SQLite
             return true;
         }
 
-        public override bool Delete(IFeatureClass fClass, int oid)
+        public override Task<bool> Delete(IFeatureClass fClass, int oid)
         {
             return Delete(fClass, "FDB_OID=" + oid.ToString());
         }
-        public override bool Delete(IFeatureClass fClass, string where)
+        async public override Task<bool> Delete(IFeatureClass fClass, string where)
         {
             if (fClass == null) return false;
 
@@ -739,7 +740,7 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 using (SqliteConnection connection = new SqliteConnection(_conn.ConnectionString))
                 {
-                    connection.Open();
+                    await connection.OpenAsync();
 
                     string sql = "DELETE FROM " + FcTableName(fClass) + ((where != String.Empty) ? " WHERE " + where : "");
                     using(SqliteCommand command = new SqliteCommand(sql, connection))
@@ -777,7 +778,7 @@ namespace gView.DataSources.Fdb.SQLite
                             }
                         }
 
-                        command.ExecuteNonQuery();
+                        await command.ExecuteNonQueryAsync();
                         transaction.Commit();
 
                         connection.Close();
@@ -880,7 +881,7 @@ namespace gView.DataSources.Fdb.SQLite
                 IDataset linkedDs = LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                 if (linkedDs == null)
                     return null;
-                IDatasetElement linkedElement = linkedDs[row["Name"]?.ToString()];
+                IDatasetElement linkedElement = linkedDs.Element(row["Name"]?.ToString()).Result;
 
                 LinkedFeatureClass fc = new LinkedFeatureClass(dataset,
                     linkedElement != null && linkedElement.Class is IFeatureClass ? linkedElement.Class as IFeatureClass : null,
@@ -940,7 +941,7 @@ namespace gView.DataSources.Fdb.SQLite
 
         #endregion
 
-        public override IFeatureCursor Query(IFeatureClass fc, IQueryFilter filter)
+        public override Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
         {
             if (_conn == null) return null;
 
@@ -1010,14 +1011,16 @@ namespace gView.DataSources.Fdb.SQLite
                     where = filter.WhereClause;
                 }
             }
-            return new SQLiteFDBFeatureCursor(_conn.ConnectionString, sql, where, filter.OrderBy, NIDs, sFilter, fc,
-                ((filter != null) ? filter.FeatureSpatialReference : null));
+            return
+                Task.FromResult<IFeatureCursor>(
+                new SQLiteFDBFeatureCursor(_conn.ConnectionString, sql, where, filter.OrderBy, NIDs, sFilter, fc,
+                ((filter != null) ? filter.FeatureSpatialReference : null)));
         }
 
-        public override IFeatureCursor QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef)
+        public override Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef)
         {
             string sql = "SELECT " + subFields + " FROM " + FcTableName(fc);
-            return new SQLiteFDBFeatureCursorIDs(_conn.ConnectionString, sql, IDs, fc, toSRef);
+            return Task.FromResult<IFeatureCursor>(new SQLiteFDBFeatureCursorIDs(_conn.ConnectionString, sql, IDs, fc, toSRef));
         }
 
         private string parseConnectionString(string connString)
@@ -1070,7 +1073,7 @@ namespace gView.DataSources.Fdb.SQLite
             dataset.ConnectionString = connString;
             dataset.Open();
 
-            IDatasetElement element = dataset[fcName];
+            IDatasetElement element = dataset.Element(fcName).Result;
             if (element != null && element.Class is IFeatureClass)
             {
                 return element.Class as IFeatureClass;
@@ -1840,67 +1843,64 @@ namespace gView.DataSources.Fdb.SQLite
                 this.Dispose();
             }
 
-            public override IFeature NextFeature
+            async public override Task<IFeature> NextFeature()
             {
-                get
+                try
                 {
-                    try
+                    if (_reader == null) return null;
+                    if (!_reader.Read())
                     {
-                        if (_reader == null) return null;
-                        if (!_reader.Read())
-                        {
-                            ExecuteReader();
-                            return NextFeature;
-                        }
+                        ExecuteReader();
+                        return await NextFeature();
+                    }
 
-                        Feature feature = new Feature();
-                        for (int i = 0; i < _reader.FieldCount; i++)
-                        {
-                            string name = _reader.GetName(i);
-                            object obj = _reader.GetValue(i);
+                    Feature feature = new Feature();
+                    for (int i = 0; i < _reader.FieldCount; i++)
+                    {
+                        string name = _reader.GetName(i);
+                        object obj = _reader.GetValue(i);
 
-                            if (/*_schemaTable.Rows[i][0].ToString()*/name == "FDB_SHAPE")
+                        if (/*_schemaTable.Rows[i][0].ToString()*/name == "FDB_SHAPE")
+                        {
+                            BinaryReader r = new BinaryReader(new MemoryStream());
+                            r.BaseStream.Write((byte[])obj, 0, ((byte[])obj).Length);
+                            r.BaseStream.Position = 0;
+
+                            IGeometry p = null;
+                            switch (_geomDef.GeometryType)
                             {
-                                BinaryReader r = new BinaryReader(new MemoryStream());
-                                r.BaseStream.Write((byte[])obj, 0, ((byte[])obj).Length);
-                                r.BaseStream.Position = 0;
-
-                                IGeometry p = null;
-                                switch (_geomDef.GeometryType)
-                                {
-                                    case geometryType.Point:
-                                        p = new gView.Framework.Geometry.Point();
-                                        break;
-                                    case geometryType.Polyline:
-                                        p = new gView.Framework.Geometry.Polyline();
-                                        break;
-                                    case geometryType.Polygon:
-                                        p = new gView.Framework.Geometry.Polygon();
-                                        break;
-                                }
-                                if (p != null)
-                                {
-                                    p.Deserialize(r, _geomDef);
-                                    r.Close();
-
-                                    feature.Shape = p;
-                                }
+                                case geometryType.Point:
+                                    p = new gView.Framework.Geometry.Point();
+                                    break;
+                                case geometryType.Polyline:
+                                    p = new gView.Framework.Geometry.Polyline();
+                                    break;
+                                case geometryType.Polygon:
+                                    p = new gView.Framework.Geometry.Polygon();
+                                    break;
                             }
-                            else
+                            if (p != null)
                             {
-                                FieldValue fv = new FieldValue(/*_schemaTable.Rows[i][0].ToString()*/name, obj);
-                                feature.Fields.Add(fv);
-                                if (fv.Name == "FDB_OID")
-                                    feature.OID = Convert.ToInt32(obj);
+                                p.Deserialize(r, _geomDef);
+                                r.Close();
+
+                                feature.Shape = p;
                             }
                         }
-                        return feature;
+                        else
+                        {
+                            FieldValue fv = new FieldValue(/*_schemaTable.Rows[i][0].ToString()*/name, obj);
+                            feature.Fields.Add(fv);
+                            if (fv.Name == "FDB_OID")
+                                feature.OID = Convert.ToInt32(obj);
+                        }
                     }
-                    catch
-                    {
-                        Dispose();
-                        return null;
-                    }
+                    return feature;
+                }
+                catch
+                {
+                    Dispose();
+                    return null;
                 }
             }
 
@@ -2059,104 +2059,101 @@ namespace gView.DataSources.Fdb.SQLite
                 this.Dispose();
             }
 
-            public override IFeature NextFeature
+            public override Task<IFeature> NextFeature()
             {
-                get
+                try
                 {
-                    try
+                    while (true)
                     {
-                        while (true)
+                        if (_reader == null) return null;
+                        if (!_reader.Read())
                         {
-                            if (_reader == null) return null;
-                            if (!_reader.Read())
-                            {
-                                ExecuteReader();
-                                //return NextFeature;
-                                continue;
-                            }
-
-                            bool nextFeature = false;
-                            Feature feature = new Feature();
-                            for (int i = 0; i < _reader.FieldCount; i++)
-                            {
-                                string name = _reader.GetName(i);
-                                object obj = null;
-                                try
-                                {
-                                    obj = _reader.GetValue(i);
-                                }
-                                catch { }
-
-                                if (/*_schemaTable.Rows[i][0].ToString()*/name == "FDB_SHAPE" && obj != DBNull.Value)
-                                {
-                                    BinaryReader r = new BinaryReader(new MemoryStream());
-                                    r.BaseStream.Write((byte[])obj, 0, ((byte[])obj).Length);
-                                    r.BaseStream.Position = 0;
-
-                                    IGeometry p = null;
-                                    switch (_geomDef.GeometryType)
-                                    {
-                                        case geometryType.Point:
-                                            p = new gView.Framework.Geometry.Point();
-                                            break;
-                                        case geometryType.Polyline:
-                                            p = new gView.Framework.Geometry.Polyline();
-                                            break;
-                                        case geometryType.Polygon:
-                                            p = new gView.Framework.Geometry.Polygon();
-                                            break;
-                                    }
-                                    if (p != null)
-                                    {
-                                        p.Deserialize(r, _geomDef);
-                                        r.Close();
-
-                                        /*
-                                        if(_queryEnvelope!=null) 
-                                        {
-                                            if(!_queryEnvelope.Intersects(p.Envelope)) 
-                                                return NextFeature;
-                                            if (_queryGeometry is IEnvelope)
-                                            {
-                                                if (!Algorithm.InBox(p, (IEnvelope)_queryGeometry))
-                                                    return NextFeature;
-                                            }
-                                        }
-                                        */
-                                        if (_spatialFilter != null)
-                                        {
-                                            if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialFilter, p))
-                                            {
-                                                //return NextFeature;
-                                                nextFeature = true;
-                                                break;
-                                            }
-                                        }
-                                        feature.Shape = p;
-                                    }
-                                }
-                                else
-                                {
-                                    FieldValue fv = new FieldValue(/*_schemaTable.Rows[i][0].ToString()*/name, obj);
-                                    feature.Fields.Add(fv);
-                                    if (fv.Name == "FDB_OID")
-                                        feature.OID = Convert.ToInt32(obj);
-                                }
-                            }
-
-                            if (nextFeature == true)
-                                continue;
-
-                            Transform(feature);
-                            return feature;
+                            ExecuteReader();
+                            //return NextFeature;
+                            continue;
                         }
+
+                        bool nextFeature = false;
+                        Feature feature = new Feature();
+                        for (int i = 0; i < _reader.FieldCount; i++)
+                        {
+                            string name = _reader.GetName(i);
+                            object obj = null;
+                            try
+                            {
+                                obj = _reader.GetValue(i);
+                            }
+                            catch { }
+
+                            if (/*_schemaTable.Rows[i][0].ToString()*/name == "FDB_SHAPE" && obj != DBNull.Value)
+                            {
+                                BinaryReader r = new BinaryReader(new MemoryStream());
+                                r.BaseStream.Write((byte[])obj, 0, ((byte[])obj).Length);
+                                r.BaseStream.Position = 0;
+
+                                IGeometry p = null;
+                                switch (_geomDef.GeometryType)
+                                {
+                                    case geometryType.Point:
+                                        p = new gView.Framework.Geometry.Point();
+                                        break;
+                                    case geometryType.Polyline:
+                                        p = new gView.Framework.Geometry.Polyline();
+                                        break;
+                                    case geometryType.Polygon:
+                                        p = new gView.Framework.Geometry.Polygon();
+                                        break;
+                                }
+                                if (p != null)
+                                {
+                                    p.Deserialize(r, _geomDef);
+                                    r.Close();
+
+                                    /*
+                                    if(_queryEnvelope!=null) 
+                                    {
+                                        if(!_queryEnvelope.Intersects(p.Envelope)) 
+                                            return NextFeature;
+                                        if (_queryGeometry is IEnvelope)
+                                        {
+                                            if (!Algorithm.InBox(p, (IEnvelope)_queryGeometry))
+                                                return NextFeature;
+                                        }
+                                    }
+                                    */
+                                    if (_spatialFilter != null)
+                                    {
+                                        if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialFilter, p))
+                                        {
+                                            //return NextFeature;
+                                            nextFeature = true;
+                                            break;
+                                        }
+                                    }
+                                    feature.Shape = p;
+                                }
+                            }
+                            else
+                            {
+                                FieldValue fv = new FieldValue(/*_schemaTable.Rows[i][0].ToString()*/name, obj);
+                                feature.Fields.Add(fv);
+                                if (fv.Name == "FDB_OID")
+                                    feature.OID = Convert.ToInt32(obj);
+                            }
+                        }
+
+                        if (nextFeature == true)
+                            continue;
+
+                        Transform(feature);
+                        return Task.FromResult<IFeature>(feature);
                     }
-                    catch (Exception ex)
-                    {
-                        Dispose();
-                        throw (ex);
-                        //return null;
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Dispose();
+                    throw (ex);
+                    //return null;
                 }
             }
 
@@ -2204,10 +2201,10 @@ namespace gView.DataSources.Fdb.SQLite
                 }
             }
 
-            public bool Select(IQueryFilter filter, gView.Framework.Data.CombinationMethod methode)
+            async public Task<bool> Select(IQueryFilter filter, gView.Framework.Data.CombinationMethod methode)
             {
                 if (!(this.Class is ITableClass)) return false;
-                ISelectionSet selSet = ((ITableClass)this.Class).Select(filter);
+                ISelectionSet selSet = await ((ITableClass)this.Class).Select(filter);
 
                 SelectionSet = selSet;
                 FireSelectionChangedEvent();

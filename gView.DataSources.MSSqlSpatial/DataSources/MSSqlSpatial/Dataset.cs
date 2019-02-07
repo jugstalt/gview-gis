@@ -376,87 +376,19 @@ namespace gView.DataSources.MSSqlSpatial
         }
 
         #region IDataset
-        public override List<IDatasetElement> Elements
+
+        async public override Task<List<IDatasetElement>> Elements()
         {
-            get
+            if (_layers == null || _layers.Count == 0)
             {
-                if (_layers == null || _layers.Count == 0)
-                {
-                    List<IDatasetElement> layers = new List<IDatasetElement>();
-                    DataTable tables = new DataTable(), views = new DataTable();
-                    try
-                    {
-                        using (DbConnection conn = this.ProviderFactory.CreateConnection())
-                        {
-                            conn.ConnectionString = _connectionString;
-                            conn.Open();
-
-                            DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
-                            adapter.SelectCommand = this.ProviderFactory.CreateCommand();
-                            adapter.SelectCommand.CommandText = @"select t.name as tabName, c.name as colName, types.name from sys.tables t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geometry'";
-                            adapter.SelectCommand.Connection = conn;
-                            adapter.Fill(tables);
-
-                            adapter.SelectCommand.CommandText = @"select t.name as tabName, c.name as colName, types.name from sys.views t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geometry'";
-                            adapter.Fill(views);
-
-                            conn.Close();
-                        }
-                        
-                    }
-                    catch (Exception ex)
-                    {
-                        _errMsg = ex.Message;
-                        return layers;
-                    }
-
-                    foreach (DataRow row in tables.Rows)
-                    {
-                        try
-                        {
-                            Featureclass fc = new Featureclass(this,
-                                row["tabName"].ToString(),
-                                IDFieldName(row["tabName"].ToString()),
-                                row["colName"].ToString(), false);
-
-                            if (fc.Fields.Count > 0)
-                                layers.Add(new DatasetElement(fc));
-                        }
-                        catch { }
-                    }
-                    foreach (DataRow row in views.Rows)
-                    {
-                        try
-                        {
-                            Featureclass fc = new Featureclass(this,
-                                row["tabName"].ToString(),
-                                IDFieldName(row["tabName"].ToString()),
-                                row["colName"].ToString(), true);
-
-                            if (fc.Fields.Count > 0)
-                                layers.Add(new DatasetElement(fc));
-                        }
-                        catch { }
-                    }
-
-                    _layers = layers;
-                }
-                return _layers;
-            }
-        }
-
-        public override IDatasetElement this[string title]
-        {
-            get
-            {
+                List<IDatasetElement> layers = new List<IDatasetElement>();
                 DataTable tables = new DataTable(), views = new DataTable();
-
                 try
                 {
                     using (DbConnection conn = this.ProviderFactory.CreateConnection())
                     {
                         conn.ConnectionString = _connectionString;
-                        conn.Open();
+                        await conn.OpenAsync();
 
                         DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
                         adapter.SelectCommand = this.ProviderFactory.CreateCommand();
@@ -469,35 +401,98 @@ namespace gView.DataSources.MSSqlSpatial
 
                         conn.Close();
                     }
+
                 }
                 catch (Exception ex)
                 {
                     _errMsg = ex.Message;
-                    return null;
+                    return layers;
                 }
 
                 foreach (DataRow row in tables.Rows)
                 {
-                    string tableName = row["tabName"].ToString();
-                    if (EqualsTableName(tableName, title, false).Result)
-                        return new DatasetElement(new Featureclass(this,
-                            tableName,
-                            IDFieldName(title),
-                            row["colName"].ToString(), false));
-                }
+                    try
+                    {
+                        IFeatureClass fc = await Featureclass.Create(this,
+                            row["tabName"].ToString(),
+                            IDFieldName(row["tabName"].ToString()),
+                            row["colName"].ToString(), false);
 
+                        if (fc.Fields.Count > 0)
+                            layers.Add(new DatasetElement(fc));
+                    }
+                    catch { }
+                }
                 foreach (DataRow row in views.Rows)
                 {
-                    string tableName = row["tabName"].ToString();
-                    if (EqualsTableName(tableName, title, true).Result)
-                        return new DatasetElement(new Featureclass(this,
-                            tableName,
-                            IDFieldName(title),
-                            row["colName"].ToString(), true));
+                    try
+                    {
+                        IFeatureClass fc = await Featureclass.Create(this,
+                            row["tabName"].ToString(),
+                            IDFieldName(row["tabName"].ToString()),
+                            row["colName"].ToString(), true);
+
+                        if (fc.Fields.Count > 0)
+                            layers.Add(new DatasetElement(fc));
+                    }
+                    catch { }
                 }
 
+                _layers = layers;
+            }
+            return _layers;
+        }
+
+        async public override Task<IDatasetElement> Element(string title)
+        {
+            DataTable tables = new DataTable(), views = new DataTable();
+
+            try
+            {
+                using (DbConnection conn = this.ProviderFactory.CreateConnection())
+                {
+                    conn.ConnectionString = _connectionString;
+                    await conn.OpenAsync();
+
+                    DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
+                    adapter.SelectCommand = this.ProviderFactory.CreateCommand();
+                    adapter.SelectCommand.CommandText = @"select t.name as tabName, c.name as colName, types.name from sys.tables t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geometry'";
+                    adapter.SelectCommand.Connection = conn;
+                    adapter.Fill(tables);
+
+                    adapter.SelectCommand.CommandText = @"select t.name as tabName, c.name as colName, types.name from sys.views t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geometry'";
+                    adapter.Fill(views);
+
+                    conn.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                _errMsg = ex.Message;
                 return null;
             }
+
+            foreach (DataRow row in tables.Rows)
+            {
+                string tableName = row["tabName"].ToString();
+                if (EqualsTableName(tableName, title, false).Result)
+                    return new DatasetElement(await Featureclass.Create(this,
+                        tableName,
+                        IDFieldName(title),
+                        row["colName"].ToString(), false));
+            }
+
+            foreach (DataRow row in views.Rows)
+            {
+                string tableName = row["tabName"].ToString();
+                if (EqualsTableName(tableName, title, true).Result)
+                    return new DatasetElement(await Featureclass.Create(this,
+                        tableName,
+                        IDFieldName(title),
+                        row["colName"].ToString(), true));
+            }
+
+            return null;
         }
         #endregion
 
@@ -905,74 +900,18 @@ namespace gView.DataSources.MSSqlSpatial
         }
 
         #region IDataset
-        public override List<IDatasetElement> Elements
+        async public override Task<List<IDatasetElement>> Elements()
         {
-            get
+            if (_layers == null || _layers.Count == 0)
             {
-                if (_layers == null || _layers.Count == 0)
-                {
-                    List<IDatasetElement> layers = new List<IDatasetElement>();
-                    DataTable tables = new DataTable(),views=new DataTable();
-                    try
-                    {
-                        using (DbConnection conn = this.ProviderFactory.CreateConnection())
-                        {
-                            conn.ConnectionString = _connectionString;
-                            conn.Open();
-
-                            DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
-                            adapter.SelectCommand = this.ProviderFactory.CreateCommand();
-                            adapter.SelectCommand.CommandText = @"select t.name as tabName, c.name as colName, types.name from sys.tables t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geography'";
-                            adapter.SelectCommand.Connection = conn;
-                            adapter.Fill(tables);
-
-                            adapter.SelectCommand.CommandText = @"select t.name as tabName, c.name as colName, types.name from sys.views t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geography'";
-                            adapter.Fill(views);
-
-                            conn.Close();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _errMsg = ex.Message;
-                        return layers;
-                    }
-
-                    foreach (DataRow row in tables.Rows)
-                    {
-                        Featureclass fc = new Featureclass(this,
-                            row["tabName"].ToString(),
-                            IDFieldName(row["tabName"].ToString()),
-                            row["colName"].ToString(), false);
-                        layers.Add(new DatasetElement(fc));
-                    }
-                    foreach (DataRow row in views.Rows)
-                    {
-                        Featureclass fc = new Featureclass(this,
-                            row["tabName"].ToString(),
-                            IDFieldName(row["tabName"].ToString()),
-                            row["colName"].ToString(), true);
-                        layers.Add(new DatasetElement(fc));
-                    }
-
-                    _layers = layers;
-                }
-                return _layers;
-            }
-        }
-
-        public override IDatasetElement this[string title]
-        {
-            get
-            {
-                DataTable tables = new DataTable(),views=new DataTable();
-
+                List<IDatasetElement> layers = new List<IDatasetElement>();
+                DataTable tables = new DataTable(), views = new DataTable();
                 try
                 {
                     using (DbConnection conn = this.ProviderFactory.CreateConnection())
                     {
                         conn.ConnectionString = _connectionString;
-                        conn.Open();
+                        await conn.OpenAsync();
 
                         DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
                         adapter.SelectCommand = this.ProviderFactory.CreateCommand();
@@ -989,31 +928,82 @@ namespace gView.DataSources.MSSqlSpatial
                 catch (Exception ex)
                 {
                     _errMsg = ex.Message;
-                    return null;
+                    return layers;
                 }
 
                 foreach (DataRow row in tables.Rows)
                 {
-                    string tableName = row["tabName"].ToString();
-                    if (EqualsTableName(tableName, title, false).Result)
-                        return new DatasetElement(new Featureclass(this,
-                            tableName,
-                            IDFieldName(title),
-                            row["colName"].ToString(), false));
+                    IFeatureClass fc = await Featureclass.Create(this,
+                        row["tabName"].ToString(),
+                        IDFieldName(row["tabName"].ToString()),
+                        row["colName"].ToString(), false);
+                    layers.Add(new DatasetElement(fc));
                 }
                 foreach (DataRow row in views.Rows)
                 {
-                    string tableName = row["tabName"].ToString();
-                    if (EqualsTableName(tableName, title, true).Result)
-                        return new DatasetElement(new Featureclass(this,
-                            tableName,
-                            IDFieldName(title),
-                            row["colName"].ToString(), true));
+                    IFeatureClass fc = await Featureclass.Create(this,
+                        row["tabName"].ToString(),
+                        IDFieldName(row["tabName"].ToString()),
+                        row["colName"].ToString(), true);
+                    layers.Add(new DatasetElement(fc));
                 }
 
+                _layers = layers;
+            }
+            return _layers;
+        }
+
+        async public override Task<IDatasetElement> Element(string title)
+        {
+            DataTable tables = new DataTable(), views = new DataTable();
+
+            try
+            {
+                using (DbConnection conn = this.ProviderFactory.CreateConnection())
+                {
+                    conn.ConnectionString = _connectionString;
+                    await conn.OpenAsync();
+
+                    DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
+                    adapter.SelectCommand = this.ProviderFactory.CreateCommand();
+                    adapter.SelectCommand.CommandText = @"select t.name as tabName, c.name as colName, types.name from sys.tables t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geography'";
+                    adapter.SelectCommand.Connection = conn;
+                    adapter.Fill(tables);
+
+                    adapter.SelectCommand.CommandText = @"select t.name as tabName, c.name as colName, types.name from sys.views t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geography'";
+                    adapter.Fill(views);
+
+                    conn.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                _errMsg = ex.Message;
                 return null;
             }
+
+            foreach (DataRow row in tables.Rows)
+            {
+                string tableName = row["tabName"].ToString();
+                if (EqualsTableName(tableName, title, false).Result)
+                    return new DatasetElement(await Featureclass.Create(this,
+                        tableName,
+                        IDFieldName(title),
+                        row["colName"].ToString(), false));
+            }
+            foreach (DataRow row in views.Rows)
+            {
+                string tableName = row["tabName"].ToString();
+                if (EqualsTableName(tableName, title, true).Result)
+                    return new DatasetElement(await Featureclass.Create(this,
+                        tableName,
+                        IDFieldName(title),
+                        row["colName"].ToString(), true));
+            }
+
+            return null;
         }
+
         #endregion
 
         #region IFeatureImportEvents Member
@@ -1058,35 +1048,44 @@ namespace gView.DataSources.MSSqlSpatial
 
     public class Featureclass : gView.Framework.OGC.DB.OgcSpatialFeatureclass
     {
-        public Featureclass(GeometryDataset dataset, string name, string idFieldName, string shapeFieldName, bool isView)
+        private Featureclass(GeometryDataset dataset, string name, string idFieldName, string shapeFieldName, bool isView)
         {
-            _name = dataset.TableNamePlusSchema(name, isView).Result;
-            _idfield = idFieldName;
-            _shapefield = shapeFieldName;
-            _geomType = geometryType.Unknown;
-
-            _dataset = dataset;
-            if (_dataset is GeographyDataset)
-                _sRef = gView.Framework.Geometry.SpatialReference.FromID("epsg:4326");
-
-            ReadSchema();
             
-            if (String.IsNullOrEmpty(_idfield) && _fields.Count > 0 && _dataset != null)
+        }
+
+        async static public Task<IFeatureClass> Create(GeometryDataset dataset, string name, string idFieldName, string shapeFieldName, bool isView)
+        {
+            var featureClass = new Featureclass(dataset, name, idFieldName, shapeFieldName, isView);
+
+            featureClass._name = dataset.TableNamePlusSchema(name, isView).Result;
+            featureClass._idfield = idFieldName;
+            featureClass._shapefield = shapeFieldName;
+            featureClass._geomType = geometryType.Unknown;
+
+            featureClass._dataset = dataset;
+            if (featureClass._dataset is GeographyDataset)
+                featureClass._sRef = gView.Framework.Geometry.SpatialReference.FromID("epsg:4326");
+
+            await featureClass.ReadSchema();
+
+            if (String.IsNullOrEmpty(featureClass._idfield) && featureClass._fields.Count > 0 && featureClass._dataset != null)
             {
-                Field field = _fields[0] as Field;
+                Field field = featureClass._fields[0] as Field;
                 if (field != null)
                 {
                     if ((field.type == FieldType.integer || field.type == FieldType.biginteger || field.type == FieldType.ID)
-                        && field.name.ToLower() == _dataset.OgcDictionary("gview_id").ToLower())
-                        _idfield = field.name;
+                        && field.name.ToLower() == featureClass._dataset.OgcDictionary("gview_id").ToLower())
+                        featureClass._idfield = field.name;
                     ((Field)field).type = FieldType.ID;
                 }
             }
 
             //base._geomType = geometryType.Polygon;
 
-            if (_sRef == null)
-                _sRef = gView.Framework.OGC.DB.OgcSpatialFeatureclass.TrySelectSpatialReference(dataset, this);
+            if (featureClass._sRef == null)
+                featureClass._sRef = await gView.Framework.OGC.DB.OgcSpatialFeatureclass.TrySelectSpatialReference(dataset, featureClass);
+
+            return featureClass;
         }
 
         public override ISpatialReference SpatialReference

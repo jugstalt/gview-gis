@@ -10,6 +10,7 @@ using System.IO;
 using gView.Framework.Xml;
 using System.Globalization;
 using gView.Framework.Carto.Rendering;
+using System.Threading.Tasks;
 
 namespace gView.Framework.XML
 {
@@ -1665,10 +1666,11 @@ namespace gView.Framework.XML
 
             return null;
         }
-        public static IGraphicElement GraphicElement(ISymbol symbol, IBufferQueryFilter filter)
+
+        async public static Task<IGraphicElement> GraphicElement(ISymbol symbol, IBufferQueryFilter filter)
         {
             if (symbol == null) return null;
-            ISpatialFilter sFilter = BufferQueryFilter.ConvertToSpatialFilter(filter);
+            ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(filter);
             if (sFilter == null || sFilter.Geometry == null) return null;
 
             return new AcetateGraphicElement(symbol, sFilter.Geometry);

@@ -8,6 +8,7 @@ using System.Data;
 using gView.Framework.system;
 using System.Reflection;
 using gView.Framework.Geometry;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Offline
 {
@@ -112,20 +113,20 @@ namespace gView.Framework.Offline
             return true;
         }
 
-        public bool AppendReplicationIDField(IFeatureDatabaseReplication db, IFeatureClass fc, string fieldName, out string errMsg)
+        async public Task<(bool success, string errMsg)> AppendReplicationIDField(IFeatureDatabaseReplication db, IFeatureClass fc, string fieldName)
         {
-            errMsg = String.Empty;
+            string errMsg = String.Empty;
 
             try
             {
                 int fc_id = db.GetFeatureClassID(fc.Name);
                 if (!CreateRelicationModel(db, out errMsg))
-                    return false;
+                    return (false, errMsg);
 
                 if (!db.CreateObjectGuidColumn(fc.Name, fieldName))
                 {
                     errMsg = db.lastErrorMsg;
-                    return false;
+                    return (false, errMsg);
                 }
 
                 try
@@ -139,10 +140,10 @@ namespace gView.Framework.Offline
                     if (db.IsFilebaseDatabase)
                     {
                         // First read all features
-                        using (IFeatureCursor cursor = fc.Search(filter) as IFeatureCursor)
+                        using (IFeatureCursor cursor = await fc.Search(filter) as IFeatureCursor)
                         {
                             IFeature feature;
-                            while ((feature = cursor.NextFeature) != null)
+                            while ((feature = await cursor.NextFeature()) != null)
                             {
                                 object guid = feature[fieldName];
                                 if (!(guid is System.Guid))
@@ -163,10 +164,10 @@ namespace gView.Framework.Offline
                             features2.Add(feature);
                             if (features2.Count >= 100)
                             {
-                                if (!db.Update(fc, features2))
+                                if (! await db.Update(fc, features2))
                                 {
                                     errMsg = db.lastErrorMsg;
-                                    return false;
+                                    return (false, errMsg);
                                 }
                                 features2.Clear();
 
@@ -176,10 +177,10 @@ namespace gView.Framework.Offline
                         }
                         if (features2.Count > 0)
                         {
-                            if (!db.Update(fc, features2))
+                            if (!await db.Update(fc, features2))
                             {
                                 errMsg = db.lastErrorMsg;
-                                return false;
+                                return (false, errMsg);
                             }
 
                             if (ReplicationGuidsAppended != null)
@@ -188,10 +189,10 @@ namespace gView.Framework.Offline
                     }
                     else
                     {
-                        using (IFeatureCursor cursor = fc.Search(filter) as IFeatureCursor)
+                        using (IFeatureCursor cursor = await fc.Search(filter) as IFeatureCursor)
                         {
                             IFeature feature;
-                            while ((feature = cursor.NextFeature) != null)
+                            while ((feature = await cursor.NextFeature()) != null)
                             {
                                 object guid = feature[fieldName];
                                 if (!(guid is System.Guid))
@@ -203,10 +204,10 @@ namespace gView.Framework.Offline
                                 }
                                 if (features.Count >= 100)
                                 {
-                                    if (!db.Update(fc, features))
+                                    if (!await db.Update(fc, features))
                                     {
                                         errMsg = db.lastErrorMsg;
-                                        return false;
+                                        return (false, errMsg);
                                     }
                                     features.Clear();
 
@@ -217,10 +218,10 @@ namespace gView.Framework.Offline
 
                             if (features.Count > 0)
                             {
-                                if (!db.Update(fc, features))
+                                if (!await db.Update(fc, features))
                                 {
                                     errMsg = db.lastErrorMsg;
-                                    return false;
+                                    return (false, errMsg);
                                 }
 
                                 if (ReplicationGuidsAppended != null)
@@ -239,15 +240,15 @@ namespace gView.Framework.Offline
                 if (!db.InsertRow("GV_CHECKOUT_OBJECT_GUID", row, null))
                 {
                     errMsg = db.lastErrorMsg;
-                    return false;
+                    return (false, errMsg);
                 }
             }
             catch (Exception ex)
             {
                 errMsg = ex.Message;
-                return false;
+                return (false, errMsg);
             }
-            return true;
+            return (true, errMsg);
         }
 
         public bool RemoveReplicationIDField(IFeatureClass fc)
@@ -967,7 +968,7 @@ namespace gView.Framework.Offline
                 return null;
             }
         }
-        public static Conflict FeatureClassConflict(IFeatureClass fc, Guid objectGuid)
+        async public static Task<Conflict> FeatureClassConflict(IFeatureClass fc, Guid objectGuid)
         {
             if (!FeatureClassHasRelicationID(fc)) return null;
 
@@ -996,7 +997,7 @@ namespace gView.Framework.Offline
                     DataRow row1 = tab.Rows[0];
                     Conflict conflict = new Conflict(
                         fc,
-                        FeatureByObjectGuid(fc, objectGuid),
+                        await FeatureByObjectGuid(fc, objectGuid),
                         objectGuid,
                         (SqlStatement)row1["PARENT_SQL_STATEMENT"],
                         (String)row1["PARENT_USER"],
@@ -1008,7 +1009,7 @@ namespace gView.Framework.Offline
                         SqlStatement cStatement = (SqlStatement)Convert.ToInt32(row["CONFLICT_SQL_STATEMENT"]);
 
                         IFeature feature = (cStatement != SqlStatement.DELETE) ?
-                            FeatureByObjectGuid(fc, Convert2Guid(row["CONFLICT_OBJECT_GUID"])) :
+                            await FeatureByObjectGuid(fc, Convert2Guid(row["CONFLICT_OBJECT_GUID"])) :
                             null;
 
                         ConflictFeature cFeature = new ConflictFeature(
@@ -1033,7 +1034,7 @@ namespace gView.Framework.Offline
                 return null;
             }
         }
-        public static IFeature FeatureByObjectGuid(IFeatureClass fc, Guid objectGuid)
+        async public static Task<IFeature> FeatureByObjectGuid(IFeatureClass fc, Guid objectGuid)
         {
             try
             {
@@ -1047,9 +1048,9 @@ namespace gView.Framework.Offline
                 filter.AddField("*");
                 filter.WhereClause = db.DbColName(repl_field_name) + "=" + db.GuidToSql(objectGuid);
 
-                using (IFeatureCursor cursor = (IFeatureCursor)fc.GetFeatures(filter))
+                using (IFeatureCursor cursor = await fc.GetFeatures(filter))
                 {
-                    return cursor.NextFeature;
+                    return await cursor.NextFeature();
                 }
             }
             catch
@@ -1203,7 +1204,7 @@ namespace gView.Framework.Offline
                     return null;
                 }
 
-                IDatasetElement element = parentDs[parendFcName];
+                IDatasetElement element = parentDs.Element(parendFcName).Result;
                 if (element == null || !(element.Class is IFeatureClass))
                 {
                     errMsg = "Can't determine parent featureclass '" + parendFcName + "'";
@@ -1242,7 +1243,7 @@ namespace gView.Framework.Offline
             if (!(feature[replicationFieldName] is Guid))
                 feature[replicationFieldName] = new Guid(feature[replicationFieldName].ToString());
         }
-        public static Guid FeatureObjectGuid(IFeatureClass fc, IFeature feature, string replicationFieldName)
+        async public static Task<Guid> FeatureObjectGuid(IFeatureClass fc, IFeature feature, string replicationFieldName)
         {
             IDatabaseNames dn = (fc!=null && fc.Dataset!=null) ? fc.Dataset.Database as IDatabaseNames : null;
 
@@ -1250,9 +1251,9 @@ namespace gView.Framework.Offline
             filter.AddField(replicationFieldName);
             filter.WhereClause = (dn != null ? dn.DbColName(fc.IDFieldName) : fc.IDFieldName) + "=" + feature.OID;
 
-            using (IFeatureCursor cursor = fc.GetFeatures(filter) as IFeatureCursor)
+            using (IFeatureCursor cursor = await fc.GetFeatures(filter) as IFeatureCursor)
             {
-                IFeature feat = cursor.NextFeature;
+                IFeature feat = await cursor.NextFeature();
                 return Convert2Guid(feat[replicationFieldName]);
             }
         }
@@ -1736,26 +1737,28 @@ namespace gView.Framework.Offline
         public event CheckIn_MessageEventHandler CheckIn_Message;
 
         public enum ProcessType { CheckinAndRelease = 0, Reconcile = 1 }
-        public bool Process(IFeatureClass parentFc, IFeatureClass childFc, ProcessType type, out string errMsg)
+        async public Task<(bool sucess, string errMsg)> Process(IFeatureClass parentFc, IFeatureClass childFc, ProcessType type)
         {
+            string errMsg;
+
             CheckinConst c = new CheckinConst();
             if (!c.Init(this, parentFc, childFc, true, out errMsg))
-                return false;
+                return (false, errMsg);
 
             try
             {
                 if (!CheckForLockedFeatureclassSessions(parentFc, c.checkout_guid, 60, out errMsg))
-                    return false;
+                    return (false, errMsg);
                 if (!CheckForLockedFeatureclassSessions(childFc, c.checkout_guid, 60, out errMsg))
-                    return false;
+                    return (false, errMsg);
 
                 LockReplicationSession(parentFc, c.checkout_guid, LockState.Hardlock);
                 LockReplicationSession(childFc, c.checkout_guid, LockState.Hardlock);
 
                 if (!CheckForLockedFeatureclassSessions(parentFc, c.checkout_guid, out errMsg))
-                    return false;
+                    return (false, errMsg);
                 if (!CheckForLockedFeatureclassSessions(childFc, c.checkout_guid, out errMsg))
-                    return false;
+                    return (false, errMsg);
 
                 IncReplicationState(parentFc, c.checkout_guid);
                 IncReplicationState(childFc, c.checkout_guid);
@@ -1765,9 +1768,9 @@ namespace gView.Framework.Offline
 
                 #region Thin Difference Tables
                 if (!ThinDifferencesTable(c.childDb, c.checkout_guid, c.childReplicationState, out errMsg))
-                    return false;
+                    return (false, errMsg);
                 if (!ThinDifferencesTable(c.parentDb, c.checkout_guid, c.parentReplactionState, out errMsg))
-                    return false;
+                    return (false, errMsg);
                 #endregion
 
                 #region WriteChildLocks
@@ -1904,10 +1907,12 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 LockReplicationSession(parentFc, c.checkout_guid, LockState.Softlock);
                 LockReplicationSession(childFc, c.checkout_guid, LockState.Softlock);
 
-                if (!CheckIn(parentFc, childFc, c, out errMsg))
+                var checkInResult = await CheckIn(parentFc, childFc, c);
+
+                if (!checkInResult.success)
                 {
-                    errMsg = "ERROR ON CHECKIN:\n" + errMsg;
-                    return false;
+                    errMsg = "ERROR ON CHECKIN:\n" + checkInResult.errMsg;
+                    return (false, errMsg);
                 }
 
                 switch (type)
@@ -1916,20 +1921,23 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                         if (!ReleaseVersion(parentFc, childFc, out errMsg))
                         {
                             errMsg = "ERROR ON RELEASE VERSION:\n" + errMsg;
-                            return false;
+                            return (false, errMsg);
                         }
                         break;
                     case ProcessType.Reconcile:
                         c.SwapParentChild();
-                        if (!Post(parentFc, childFc, c, out errMsg))
+
+                        var postResult = await Post(parentFc, childFc, c);
+
+                        if (!postResult.success)
                         {
-                            errMsg = "ERROR ON POST:\n" + errMsg;
-                            return false;
+                            errMsg = "ERROR ON POST:\n" + postResult.errMsg;
+                            return (false, errMsg);
                         }
                         if (!Replication.InsertCheckoutLocks(parentFc, childFc, out errMsg))
                         {
                             errMsg = "ERROR ON INSERT LOCKS: " + errMsg;
-                            return false;
+                            return (false, errMsg);
                         }
                         break;
                 }
@@ -1937,7 +1945,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             catch (Exception ex)
             {
                 errMsg = "Exception: " + ex.Message;
-                return false;
+                return (false, errMsg);
             }
             finally
             {
@@ -1947,7 +1955,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 LockReplicationSession(childFc, c.checkout_guid, LockState.Unlock);
                 LockReplicationSession(parentFc, c.checkout_guid, LockState.Unlock);
             }
-            return true;
+            return (true, errMsg);
         }
 
         private class CheckinConst
@@ -2148,17 +2156,17 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             }
         }
 
-        private bool CheckIn(IFeatureClass parentFc, IFeatureClass childFc, CheckinConst c, out string errMsg)
+        async private Task<(bool success, string errMsg)> CheckIn(IFeatureClass parentFc, IFeatureClass childFc, CheckinConst c)
         {
             if (CheckIn_BeginCheckIn != null)
                 CheckIn_BeginCheckIn(this);
-            return CheckIn(parentFc, childFc, out errMsg, true, c);
+            return await CheckIn(parentFc, childFc, true, c);
         }
-        private bool Post(IFeatureClass parentFc, IFeatureClass childFc, CheckinConst c, out string errMsg)
+        async private Task<(bool success, string errMsg)> Post(IFeatureClass parentFc, IFeatureClass childFc, CheckinConst c)
         {
             if (CheckIn_BeginPost != null)
                 CheckIn_BeginPost(this);
-            return CheckIn(childFc, parentFc, out errMsg, false, c);
+            return await CheckIn(childFc, parentFc, false, c);
         }
 
         public bool ReleaseVersion(IFeatureClass parentFc, IFeatureClass childFc, out string errMsg)
@@ -2294,14 +2302,14 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 return false;
             }
         }
-        private bool CheckIn(IFeatureClass parentFc, IFeatureClass childFc, out string errMsg, bool checkin, CheckinConst c)
+        async private Task<(bool success, string errMsg)> CheckIn(IFeatureClass parentFc, IFeatureClass childFc, bool checkin, CheckinConst c)
         {
-            errMsg = String.Empty;
-            if (parentFc == null || childFc == null || c == null) return false;
+            string errMsg = String.Empty;
+            if (parentFc == null || childFc == null || c == null) return (false, errMsg);
 
             if (!CheckForLockedFeatureclassSessions(parentFc, c.checkout_guid, out errMsg))
             {
-                return false;
+                return (false, errMsg);
             }
 
             ISpatialReference parentSRef = parentFc.SpatialReference;
@@ -2372,16 +2380,16 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             }
 
                             #region Insert
-                            child_feature = GetFeatureByObjectGuid(c.childDb, childFc, c.child_repl_id_fieldname, object_guid, parentSRef);
+                            child_feature = await GetFeatureByObjectGuid(c.childDb, childFc, c.child_repl_id_fieldname, object_guid, parentSRef);
                             if (child_feature == null)
                             {
                                 // dürte eigentlich nicht vorkommen
                                 continue;
                             }
-                            if (!c.parentDb.Insert(parentFc_lock, child_feature))
+                            if (!await c.parentDb.Insert(parentFc_lock, child_feature))
                             {
                                 errMsg = "Error on INSERT Feature:\n" + c.parentDb.lastErrorMsg;
-                                return false;
+                                return (false, errMsg);
                             }
                             if (CheckIn_FeatureInserted != null) CheckIn_FeatureInserted(this, ++count_inserted);
                             break;
@@ -2394,7 +2402,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             }
 
                             #region Update
-                            child_feature = GetFeatureByObjectGuid(c.childDb, childFc, c.child_repl_id_fieldname, object_guid, parentSRef);
+                            child_feature = await GetFeatureByObjectGuid(c.childDb, childFc, c.child_repl_id_fieldname, object_guid, parentSRef);
                             if (child_feature == null)
                             {
                                 // dürte eigentlich nicht vorkommen
@@ -2408,10 +2416,10 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                 if (c.conflictHandling == ConflictHandling.NONE)
                                 {
                                     child_feature[c.child_repl_id_fieldname] = null;
-                                    if (!c.parentDb.Insert(parentFc_diff, child_feature))
+                                    if (!await c.parentDb.Insert(parentFc_diff, child_feature))
                                     {
                                         errMsg = "Error on INSERT Feature:\n" + c.parentDb.lastErrorMsg;
-                                        return false;
+                                        return (false, errMsg);
                                     }
                                     if (CheckIn_FeatureInserted != null) CheckIn_FeatureInserted(this, ++count_inserted);
                                     break;
@@ -2421,10 +2429,10 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                     child_feature[c.child_repl_id_fieldname] = null;
                                     if (c.parentDb is IFeatureDatabaseCloudReplication)
                                         AllocateNewObjectGuid(child_feature, c.child_repl_id_fieldname);
-                                    if (!c.parentDb.Insert(parentFc_diff, child_feature))
+                                    if (!await c.parentDb.Insert(parentFc_diff, child_feature))
                                     {
                                         errMsg = "Error on INSERT Feature:\n" + c.parentDb.lastErrorMsg;
-                                        return false;
+                                        return (false, errMsg);
                                     }
                                     if (CheckIn_FeatureInserted != null) CheckIn_FeatureInserted(this, ++count_inserted);
 
@@ -2458,7 +2466,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             }
                             #endregion
 
-                            parent_feature = GetFeatureByObjectGuid(c.parentDb, parentFc, c.parent_repl_id_fieldname, object_guid, parentSRef);
+                            parent_feature = await GetFeatureByObjectGuid(c.parentDb, parentFc, c.parent_repl_id_fieldname, object_guid, parentSRef);
                             if (parent_feature == null)
                             {
                                 // dürfe nicht sein, außer Feature wurde gelöscht
@@ -2472,20 +2480,20 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                     // kann allerdings auch beim Post vorkommen, wenn Feature in Parent verändert
                                     // und in der Child Verions gelöscht wurde
                                     // Dann: INSERT
-                                    if (!c.parentDb.Insert(parentFc_lock, child_feature))
+                                    if (!await c.parentDb.Insert(parentFc_lock, child_feature))
                                     {
                                         errMsg = "Error on INSERT Feature:\n" + c.parentDb.lastErrorMsg;
-                                        return false;
+                                        return (false, errMsg);
                                     }
                                     if (CheckIn_FeatureInserted != null) CheckIn_FeatureInserted(this, ++count_inserted);
                                     break;
                                 }
                             }
                             Feature.CopyFrom(parent_feature, child_feature);
-                            if (!c.parentDb.Update(parentFc_lock, parent_feature))
+                            if (!await c.parentDb.Update(parentFc_lock, parent_feature))
                             {
                                 errMsg = "Error on UPDATE Feature:\n" + c.parentDb.lastErrorMsg;
-                                return false;
+                                return (false, errMsg);
                             }
                             if (CheckIn_FeatureUpdated != null) CheckIn_FeatureUpdated(this, ++count_updated);
                             break;
@@ -2545,7 +2553,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             }
                             #endregion
 
-                            parent_feature = GetFeatureByObjectGuid(c.parentDb, parentFc, c.parent_repl_id_fieldname, object_guid, parentSRef);
+                            parent_feature = await GetFeatureByObjectGuid(c.parentDb, parentFc, c.parent_repl_id_fieldname, object_guid, parentSRef);
                             if (parent_feature == null)
                             {
                                 // dürfe nicht sein, außer Feature wurde gelöscht
@@ -2553,10 +2561,10 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                 //throw new Exception("inkonsistent data!");
                                 break;
                             }
-                            if (!c.parentDb.Delete(parentFc_lock, parent_feature.OID))
+                            if (!await c.parentDb.Delete(parentFc_lock, parent_feature.OID))
                             {
                                 errMsg = "Error on DELETE Feature:\n" + c.parentDb.lastErrorMsg;
-                                return false;
+                                return (false, errMsg);
                             }
                             if (CheckIn_FeatureDeleted != null) CheckIn_FeatureDeleted(this, ++count_deleted);
                             break;
@@ -2569,29 +2577,29 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 }
                 #endregion
 
-                return true;
+                return (true, errMsg);
             }
             catch (Exception ex)
             {
                 errMsg = ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace;
-                return false;
+                return (false, errMsg);
             }
             finally
             {
 
             }
         }
-        private IFeature GetFeatureByObjectGuid(IFeatureDatabaseReplication db, IFeatureClass fc, string replicGuidFieldName, Guid guid, ISpatialReference destSRef)
+        async private Task<IFeature> GetFeatureByObjectGuid(IFeatureDatabaseReplication db, IFeatureClass fc, string replicGuidFieldName, Guid guid, ISpatialReference destSRef)
         {
             QueryFilter filter = new QueryFilter();
             filter.AddField("*");
             filter.WhereClause = (db != null ? db.DbColName(replicGuidFieldName) : replicGuidFieldName) + "=" + db.GuidToSql(guid);
             filter.FeatureSpatialReference = destSRef;
 
-            using (IFeatureCursor cursor = (IFeatureCursor)fc.GetFeatures(filter))
+            using (IFeatureCursor cursor = await fc.GetFeatures(filter))
             {
                 if (cursor == null) return null;
-                return cursor.NextFeature;
+                return await cursor.NextFeature();
             }
         }
         private DataRow DifferenceTableRow(DataTable tab, Guid checkout_guid, Guid object_guid)
@@ -3218,23 +3226,23 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     return false;
                 }
             }
-            public bool SolveConflict(out string errMsg)
+            async public Task<(bool success, string errMsg)> SolveConflict()
             {
-                errMsg = String.Empty;
+                string errMsg = String.Empty;
                 if (!RemoveConflict(out errMsg))
-                    return false;
+                    return (false, errMsg);
 
                 IFeatureDatabaseReplication db = Replication.FeatureClassDb(FeatureClass);
-                if (db == null) return false;
+                if (db == null) return (false, errMsg);
 
                 IFeature sFeature = this.SolvedFeature;
                 if (sFeature == null)
                 {
                     // Feature ist zu löschen
-                    if (Feature != null && db.Delete(FeatureClass, Feature.OID) == false)
+                    if (Feature != null && await db.Delete(FeatureClass, Feature.OID) == false)
                     {
                         errMsg = "SolveConflict -> " + db.lastErrorMsg;
-                        return false;
+                        return (false, errMsg);
                     }
                 }
                 else if (sFeature.OID == -1)
@@ -3245,34 +3253,34 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     if (String.IsNullOrEmpty(repl_field_name))
                     {
                         errMsg = "SolveConflict -> can't get replication field name";
-                        return false;
+                        return (false, errMsg);
                     }
                     Replication.AllocateNewObjectGuid(sFeature, repl_field_name);
                     sFeature[repl_field_name] = this.ParentObjectGuid;
-                    if (!db.Insert(FeatureClass, sFeature))
+                    if (!await db.Insert(FeatureClass, sFeature))
                     {
                         errMsg = "SolveConflict -> " + db.lastErrorMsg;
-                        return false;
+                        return (false, errMsg);
                     }
                 }
                 else
                 {
-                    if (!db.Update(FeatureClass, sFeature))
+                    if (!await db.Update(FeatureClass, sFeature))
                     {
                         errMsg = "SolveConflict -> " + db.lastErrorMsg;
-                        return false;
+                        return (false, errMsg);
                     }
                 }
                 foreach (ConflictFeature cFeature in ConflictFeatures)
                 {
                     if (cFeature == null || cFeature.Feature == null) continue;
-                    if (!db.Delete(FeatureClass, cFeature.Feature.OID))
+                    if (!await db.Delete(FeatureClass, cFeature.Feature.OID))
                     {
                         errMsg = "SolveConflict -> " + db.lastErrorMsg;
-                        return false;
+                        return (false, errMsg);
                     }
                 }
-                return true;
+                return (true, errMsg);
             }
         }
         public class ConflictFeature
@@ -3357,23 +3365,23 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 get { return _fc.CountFeatures; }
             }
 
-            public IFeatureCursor GetFeatures(IQueryFilter filter)
+            async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
             {
-                return _fc.GetFeatures(filter);
+                return await _fc.GetFeatures(filter);
             }
 
             #endregion
 
             #region ITableClass Member
 
-            public ICursor Search(IQueryFilter filter)
+            async public Task<ICursor> Search(IQueryFilter filter)
             {
-                return _fc.Search(filter);
+                return await _fc.Search(filter);
             }
 
-            public ISelectionSet Select(IQueryFilter filter)
+            async public Task<ISelectionSet> Select(IQueryFilter filter)
             {
-                return _fc.Select(filter);
+                return await _fc.Select(filter);
             }
 
             public IFields Fields

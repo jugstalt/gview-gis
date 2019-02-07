@@ -7,6 +7,7 @@ using gView.Framework.system;
 using gView.Framework.UI;
 using System.Collections;
 using gView.Framework.Network;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Build
 {
@@ -264,28 +265,25 @@ namespace gView.Framework.Network.Build
 
             #region IFeatureCursor Member
 
-            public IFeature NextFeature
+            public Task<IFeature> NextFeature()
             {
-                get
-                {
-                    if (_nodes == null || _pos >= _nodes.Count)
-                        return null;
+                if (_nodes == null || _pos >= _nodes.Count)
+                    return Task.FromResult<IFeature>(null);
 
-                    NetworkNode node = _nodes[_pos++];
+                NetworkNode node = _nodes[_pos++];
 
-                    Feature feature = new Feature();
-                    feature.Shape = node.Point;
-                    //feature.Fields.Add(new FieldValue("NID", node.Id));
-                    //feature.Fields.Add(new FieldValue("G1", node.FirstGraphRow));
-                    //feature.Fields.Add(new FieldValue("G2", node.LastGraphRow));
-                    feature.Fields.Add(new FieldValue("SWITCH", node.SwitchAble));
-                    feature.Fields.Add(new FieldValue("STATE", node.SwitchState));
-                    feature.Fields.Add(new FieldValue("FCID", node.FeatureclassId));
-                    feature.Fields.Add(new FieldValue("OID", node.FeatureId));
-                    feature.Fields.Add(new FieldValue("NODETYPE", node.Type));
+                Feature feature = new Feature();
+                feature.Shape = node.Point;
+                //feature.Fields.Add(new FieldValue("NID", node.Id));
+                //feature.Fields.Add(new FieldValue("G1", node.FirstGraphRow));
+                //feature.Fields.Add(new FieldValue("G2", node.LastGraphRow));
+                feature.Fields.Add(new FieldValue("SWITCH", node.SwitchAble));
+                feature.Fields.Add(new FieldValue("STATE", node.SwitchState));
+                feature.Fields.Add(new FieldValue("FCID", node.FeatureclassId));
+                feature.Fields.Add(new FieldValue("OID", node.FeatureId));
+                feature.Fields.Add(new FieldValue("NODETYPE", node.Type));
 
-                    return feature;
-                }
+                return Task.FromResult<IFeature>(feature);
             }
 
             #endregion
@@ -325,28 +323,26 @@ namespace gView.Framework.Network.Build
             }
             #region IFeatureCursor Member
 
-            public IFeature NextFeature
+            public Task<IFeature> NextFeature()
             {
-                get
-                {
-                    if (_edges == null || _pos >= _edges.Count)
-                        return null;
+                if (_edges == null || _pos >= _edges.Count)
+                    return Task.FromResult<IFeature>(null);
 
-                    NetworkEdge edge = _edges[_pos++];
+                NetworkEdge edge = _edges[_pos++];
 
-                    Feature feature = new Feature();
-                    feature.Shape = new Polyline();
-                    ((Polyline)feature.Shape).AddPath(edge.Path);
-                    feature.Fields.Add(new FieldValue("EID", edge.Id));
-                    feature.Fields.Add(new FieldValue("N1", edge.FromNodeIndex));
-                    feature.Fields.Add(new FieldValue("N2", edge.ToNodeIndex));
-                    //feature.Fields.Add(new FieldValue("Length", edge.Length));
-                    //feature.Fields.Add(new FieldValue("GeoLength", edge.GeoLength));
-                    feature.Fields.Add(new FieldValue("FCID", edge.FeatureclassId));
-                    feature.Fields.Add(new FieldValue("OID", edge.FeatureId));
-                    feature.Fields.Add(new FieldValue("ISCOMPLEX", edge.IsComplex));
-                    return feature;
-                }
+                Feature feature = new Feature();
+                feature.Shape = new Polyline();
+                ((Polyline)feature.Shape).AddPath(edge.Path);
+                feature.Fields.Add(new FieldValue("EID", edge.Id));
+                feature.Fields.Add(new FieldValue("N1", edge.FromNodeIndex));
+                feature.Fields.Add(new FieldValue("N2", edge.ToNodeIndex));
+                //feature.Fields.Add(new FieldValue("Length", edge.Length));
+                //feature.Fields.Add(new FieldValue("GeoLength", edge.GeoLength));
+                feature.Fields.Add(new FieldValue("FCID", edge.FeatureclassId));
+                feature.Fields.Add(new FieldValue("OID", edge.FeatureId));
+                feature.Fields.Add(new FieldValue("ISCOMPLEX", edge.IsComplex));
+
+                return Task.FromResult<IFeature>(feature);
             }
 
             #endregion
@@ -386,23 +382,21 @@ namespace gView.Framework.Network.Build
             }
             #region IFeatureCursor Member
 
-            public IFeature NextFeature
+            public Task<IFeature> NextFeature()
             {
-                get
-                {
-                    if (_graphEdges == null || _pos >= _graphEdges.Count)
-                        return null;
+                if (_graphEdges == null || _pos >= _graphEdges.Count)
+                    return Task.FromResult<IFeature>(null);
 
-                    NetworkGraphEdge edge = _graphEdges[_pos++];
+                NetworkGraphEdge edge = _graphEdges[_pos++];
 
-                    Feature feature = new Feature();
-                    feature.Fields.Add(new FieldValue("EID", edge.EdgeIndex));
-                    feature.Fields.Add(new FieldValue("N1", edge.FromNodeIndex));
-                    feature.Fields.Add(new FieldValue("N2", edge.ToNodeIndex));
-                    feature.Fields.Add(new FieldValue("LENGTH", edge.Length));
-                    feature.Fields.Add(new FieldValue("GEOLENGTH", edge.GeoLength));
-                    return feature;
-                }
+                Feature feature = new Feature();
+                feature.Fields.Add(new FieldValue("EID", edge.EdgeIndex));
+                feature.Fields.Add(new FieldValue("N1", edge.FromNodeIndex));
+                feature.Fields.Add(new FieldValue("N2", edge.ToNodeIndex));
+                feature.Fields.Add(new FieldValue("LENGTH", edge.Length));
+                feature.Fields.Add(new FieldValue("GEOLENGTH", edge.GeoLength));
+
+                return Task.FromResult<IFeature>(feature);
             }
 
             #endregion

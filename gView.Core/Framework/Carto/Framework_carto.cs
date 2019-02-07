@@ -64,12 +64,10 @@ namespace gView.Framework.Carto
         IEnumerable<IDataset> Datasets { get; } 
         string Name { get; set; }
 
-        List<IDatasetElement> Elements(string aliasname);
+        Task<List<IDatasetElement>> Elements(string aliasname);
         List<IDatasetElement> MapElements { get; }
-        List<IDatasetElement> ActiveLayers
-        {
-            get;
-        }
+        Task<List<IDatasetElement>> ActiveLayers();
+
         IDatasetElement DatasetElementByClass(IClass cls);
 
         string ActiveLayerNames

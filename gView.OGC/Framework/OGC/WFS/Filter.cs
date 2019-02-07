@@ -8,6 +8,7 @@ using System.Xml;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.GML;
 using gView.Framework.IO;
+using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.WFS
 {
@@ -42,7 +43,7 @@ namespace gView.Framework.OGC.WFS
             if (filter_cabs == null)  // Default erstellen
                 filter_cabs = new Filter_Capabilities();
 
-            string ogcFilter = Filter.ToWFS(fc, filter, filter_cabs, version);
+            string ogcFilter = Filter.ToWFS(fc, filter, filter_cabs, version).Result;
             GenerateFromString(ogcFilter, fc);
         }
 
@@ -682,13 +683,13 @@ namespace gView.Framework.OGC.WFS
         #endregion
 
         #region Static Members
-        static public string ToWFS(IFeatureClass fc, IQueryFilter filter, Filter_Capabilities filterCaps, GmlVersion version)
+        async static public Task<string> ToWFS(IFeatureClass fc, IQueryFilter filter, Filter_Capabilities filterCaps, GmlVersion version)
         {
             if (filterCaps == null) return String.Empty;
 
             if (filter is IBufferQueryFilter)
             {
-                filter = BufferQueryFilter.ConvertToSpatialFilter((IBufferQueryFilter)filter);
+                filter = await BufferQueryFilter.ConvertToSpatialFilter((IBufferQueryFilter)filter);
             }
             MemoryStream ms = new MemoryStream();
             StreamWriter sw = new StreamWriter(ms, Encoding.UTF8);

@@ -32,7 +32,7 @@ namespace gView.Framework.FDB
 		//int OpenDataset(string name);
         //int OpenFeatureClass(int DatasetID,string name);
 
-        int CreateDataset(string name, ISpatialReference sRef);
+        Task<int> CreateDataset(string name, ISpatialReference sRef);
 		int CreateFeatureClass(
 			string dsname,
 			string fcname,
@@ -41,7 +41,7 @@ namespace gView.Framework.FDB
 
         IFeatureDataset this[string name] { get; }
 
-        bool DeleteDataset(string dsName);
+        Task<bool> DeleteDataset(string dsName);
         bool DeleteFeatureClass(string fcName);
 
         bool RenameDataset(string name, string newName);
@@ -53,7 +53,7 @@ namespace gView.Framework.FDB
 	}
     public interface IFeatureDatabase2 : IFeatureDatabase
     {
-        int CreateDataset(string name, ISpatialReference sRef, ISpatialIndexDef sIndexDef);
+        Task<int> CreateDataset(string name, ISpatialReference sRef, ISpatialIndexDef sIndexDef);
     }
     public interface IFeatureDatabase3 : IFeatureDatabase2
     {
@@ -72,7 +72,7 @@ namespace gView.Framework.FDB
 
     public interface IImageDB
     {
-        int CreateImageDataset(string name, ISpatialReference sRef, ISpatialIndexDef sIndexDef, string imageSpace, IFields fields);
+        Task<int> CreateImageDataset(string name, ISpatialReference sRef, ISpatialIndexDef sIndexDef, string imageSpace, IFields fields);
         bool IsImageDataset(string dsname, out string imageSpace);
     }
 
@@ -83,14 +83,14 @@ namespace gView.Framework.FDB
 
 	public interface IFeatureUpdater : IErrorMessage
 	{
-		bool Insert(IFeatureClass fClass,IFeature feature);
-        bool Insert(IFeatureClass fClass, List<IFeature> features);
+		Task<bool> Insert(IFeatureClass fClass,IFeature feature);
+        Task<bool> Insert(IFeatureClass fClass, List<IFeature> features);
 
-        bool Update(IFeatureClass fClass, IFeature feature);
-        bool Update(IFeatureClass fClass, List<IFeature> features);
+        Task<bool> Update(IFeatureClass fClass, IFeature feature);
+        Task<bool> Update(IFeatureClass fClass, List<IFeature> features);
 
-        bool Delete(IFeatureClass fClass, int oid);
-        bool Delete(IFeatureClass fClass, string where);
+        Task<bool> Delete(IFeatureClass fClass, int oid);
+        Task<bool> Delete(IFeatureClass fClass, string where);
 
         int SuggestedInsertFeatureCountPerTransaction { get; }
 	}
@@ -300,8 +300,8 @@ namespace gView.Framework.FDB
         string AutoFieldPrimayName { get; }
         FieldType AutoFieldType { get; }
 
-        bool OnInsert(IFeatureClass fc, IFeature feature);
-        bool OnUpdate(IFeatureClass fc, IFeature feature);
+        Task<bool> OnInsert(IFeatureClass fc, IFeature feature);
+        Task<bool> OnUpdate(IFeatureClass fc, IFeature feature);
     }
 
     public interface IFDBDatabase : IFeatureDatabase3
@@ -310,6 +310,6 @@ namespace gView.Framework.FDB
         ISpatialIndexDef SpatialIndexDef(string dsName);
         bool ShrinkSpatialIndex(string fcName, List<long> NIDs);
         bool SetFeatureclassExtent(string fcName, IEnvelope envelope);
-        bool CalculateExtent(string fcName);
+        Task<bool> CalculateExtent(string fcName);
     }
 }

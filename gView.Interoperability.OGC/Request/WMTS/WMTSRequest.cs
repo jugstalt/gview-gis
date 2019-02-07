@@ -13,6 +13,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Request.WMTS
 {
@@ -69,7 +70,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
             _mapServer = mapServer;
         }
 
-        public void Request(IServiceRequestContext context)
+        async public Task Request(IServiceRequestContext context)
         {
             using (var serviceMap = context.CreateServiceMapInstance())
             {
@@ -126,7 +127,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     {
                         if (cacheFormat == "compact")
                         {
-                            imageData = GetCompactTile(context, metadata, epsg, scale, row, col, format, (args[1].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft));
+                            imageData = await GetCompactTile(context, metadata, epsg, scale, row, col, format, (args[1].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft));
                         }
                         else
                         {
@@ -202,7 +203,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
             return null;
         }
 
-        private byte[] GetCompactTile(IServiceRequestContext context, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation)
+        async private Task<byte[]> GetCompactTile(IServiceRequestContext context, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation)
         {
             if (!metadata.EPSGCodes.Contains(epsg))
                 throw new ArgumentException("Wrong epsg argument");
@@ -277,7 +278,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     double x = origin.X + W * col;
 
                     map.Display.ZoomTo(new Envelope(x, y, x + W, y + H));
-                    map.Render();
+                    await map.Render();
 
                     bool maketrans = map.Display.MakeTransparent;
                     map.Display.MakeTransparent = true;

@@ -34,7 +34,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         public gView.Framework.Geometry.IEnvelope Envelope
         {
-            get { return _dataset.Envelope; }
+            get { return _dataset.Envelope().Result; }
         }
 
         public int CountFeatures

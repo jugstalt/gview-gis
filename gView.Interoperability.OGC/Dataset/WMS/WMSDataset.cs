@@ -7,6 +7,7 @@ using gView.Framework.Geometry;
 using gView.Framework.Web;
 using System.Xml;
 using gView.Interoperability.OGC.Dataset.WFS;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Dataset.WMS
 {
@@ -51,9 +52,9 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
         #region IFeatureDataset Member
 
-        public gView.Framework.Geometry.IEnvelope Envelope
+        public Task<IEnvelope> Envelope()
         {
-            get { return _envelope; }
+            return Task.FromResult(_envelope);
         }
 
         public gView.Framework.Geometry.ISpatialReference SpatialReference
@@ -154,22 +155,21 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             get { return null; }
         }
 
-        public List<IDatasetElement> Elements
+        public Task<List<IDatasetElement>> Elements()
         {
-            get
+            List<IDatasetElement> elements = new List<IDatasetElement>();
+
+            if (_class != null)
             {
-                List<IDatasetElement> elements = new List<IDatasetElement>();
-                if (_class != null)
-                {
-                    elements.Add(new DatasetElement(_class));
-                }
-                if (_class == null && _wfsDataset != null)
-                {
-                    foreach (IDatasetElement element in _wfsDataset.Elements)
-                        elements.Add(element);
-                }
-                return elements;
+                elements.Add(new DatasetElement(_class));
             }
+            if (_class == null && _wfsDataset != null)
+            {
+                foreach (IDatasetElement element in _wfsDataset.Elements)
+                    elements.Add(element);
+            }
+
+            return Task.FromResult(elements);
         }
 
         public string Query_FieldPrefix
@@ -187,22 +187,22 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             get { return null; }
         }
 
-        public IDatasetElement this[string title]
+        public Task<IDatasetElement> Element(string title)
         {
-            get
-            {
-                if (_class != null && (
-                    title == _class.Name || title.ToLower() == ConnectionString.ToLower())) return new DatasetElement(_class);
+            if (_class != null && (
+                title == _class.Name || title.ToLower() == ConnectionString.ToLower()))
+                return Task.FromResult<IDatasetElement>(new DatasetElement(_class));
 
-                if (_wfsDataset != null)
+            if (_wfsDataset != null)
+            {
+                foreach (IDatasetElement element in _wfsDataset.Elements)
                 {
-                    foreach (IDatasetElement element in _wfsDataset.Elements)
-                    {
-                        if (element.Title == title) return element;
-                    }
+                    if (element.Title == title)
+                        return Task.FromResult(element);
                 }
-                return null;
             }
+
+            return Task.FromResult<IDatasetElement>(null);
         }
 
         public void RefreshClasses()

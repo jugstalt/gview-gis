@@ -10,6 +10,7 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.SQLite
 {
@@ -41,11 +42,11 @@ namespace gView.DataSources.Fdb.SQLite
 
             _name = _aliasname = name;
 
-            IDatasetElement element = _dataset[_name + "_Nodes"];
+            IDatasetElement element = _dataset.Element(_name + "_Nodes").Result;
             if (element != null)
                 _nodeFc = element.Class as IFeatureClass;
 
-            element = _dataset[_name + "_ComplexEdges"];
+            element = _dataset.Element(_name + "_ComplexEdges").Result;
             if (element != null && element.Class is IFeatureClass)
                 _edgeFcs.Add(-1, (IFeatureClass)element.Class);
 
@@ -66,7 +67,7 @@ namespace gView.DataSources.Fdb.SQLite
                 {
                     foreach (DataRow row in tab.Rows)
                     {
-                        element = _dataset[row["name"].ToString()];
+                        element = _dataset.Element(row["name"].ToString()).Result;
                         if (element != null && element.Class is IFeatureClass)
                             _edgeFcs.Add(Convert.ToInt32(row["id"]), element.Class as IFeatureClass);
                     }
@@ -152,7 +153,7 @@ namespace gView.DataSources.Fdb.SQLite
             }
         }
 
-        public IFeatureCursor GetFeatures(IQueryFilter filter)
+        public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
             List<IFeatureClass> edgeFcs = new List<IFeatureClass>();
             if (_edgeFcs != null)
@@ -161,21 +162,21 @@ namespace gView.DataSources.Fdb.SQLite
                     edgeFcs.Add(fc);
             }
 
-            return new NetworkFeatureCursor(_fdb, _name, edgeFcs, _nodeFc, filter);
+            return Task.FromResult<IFeatureCursor>(new NetworkFeatureCursor(_fdb, _name, edgeFcs, _nodeFc, filter));
         }
 
         #endregion
 
         #region ITableClass Member
 
-        public ICursor Search(IQueryFilter filter)
+        async public Task<ICursor> Search(IQueryFilter filter)
         {
-            return GetFeatures(filter);
+            return await GetFeatures(filter);
         }
 
-        public ISelectionSet Select(IQueryFilter filter)
+        public Task<ISelectionSet> Select(IQueryFilter filter)
         {
-            return null;
+            return Task.FromResult<ISelectionSet>(null);
         }
 
         public IFields Fields
@@ -275,52 +276,49 @@ namespace gView.DataSources.Fdb.SQLite
 
             #region IFeatureCursor Member
 
-            public IFeature NextFeature
+            async public Task<IFeature> NextFeature()
             {
-                get
+                if (_edgeCursor == null && _edgeFcs != null && _edgeFcIndex < _edgeFcs.Count)
                 {
-                    if (_edgeCursor == null && _edgeFcs != null && _edgeFcIndex < _edgeFcs.Count)
+                    IFeatureClass fc = _edgeFcs[_edgeFcIndex++];
+                    _fcid = _fdb.FeatureClassID(_fdb.DatasetID(fc.Dataset.DatasetName), fc.Name);
+                    if (_fcid < 0)
+                        return await NextFeature();
+                    if (fc.Name == _networkName + "_ComplexEdges")
+                        _fcid = -1;
+
+                    IQueryFilter f = (IQueryFilter)_filter.Clone();
+                    if (f.SubFields != "*")
                     {
-                        IFeatureClass fc = _edgeFcs[_edgeFcIndex++];
-                        _fcid = _fdb.FeatureClassID(_fdb.DatasetID(fc.Dataset.DatasetName), fc.Name);
-                        if (_fcid < 0)
-                            return NextFeature;
-                        if (fc.Name == _networkName + "_ComplexEdges")
-                            _fcid = -1;
-
-                        IQueryFilter f = (IQueryFilter)_filter.Clone();
-                        if (f.SubFields != "*")
-                        {
-                            f.AddField(fc.IDFieldName);
-                            f.AddField(fc.ShapeFieldName);
-                        }
-
-                        _edgeCursor = fc.GetFeatures(f);
-                        if (_edgeCursor == null)
-                            return NextFeature;
+                        f.AddField(fc.IDFieldName);
+                        f.AddField(fc.ShapeFieldName);
                     }
-                    if (_edgeCursor != null)
-                    {
-                        IFeature feature = _edgeCursor.NextFeature;
-                        if (feature != null)
-                        {
-                            feature.Fields.Add(new FieldValue("NETWORK#FCID", _fcid));
-                            return feature;
-                        }
 
-                        _edgeCursor.Dispose();
-                        _edgeCursor = null;
-                        return NextFeature;
-                    }
-                    if (_nodeCursor == null && _nodeFc != null)
-                    {
-                        _nodeCursor = _nodeFc.GetFeatures(_filter);
-                    }
-                    if (_nodeCursor != null)
-                        return _nodeCursor.NextFeature;
-
-                    return null;
+                    _edgeCursor = await fc.GetFeatures(f);
+                    if (_edgeCursor == null)
+                        return await NextFeature();
                 }
+                if (_edgeCursor != null)
+                {
+                    IFeature feature = await _edgeCursor.NextFeature();
+                    if (feature != null)
+                    {
+                        feature.Fields.Add(new FieldValue("NETWORK#FCID", _fcid));
+                        return feature;
+                    }
+
+                    _edgeCursor.Dispose();
+                    _edgeCursor = null;
+                    return await NextFeature();
+                }
+                if (_nodeCursor == null && _nodeFc != null)
+                {
+                    _nodeCursor = await _nodeFc.GetFeatures(_filter);
+                }
+                if (_nodeCursor != null)
+                    return await _nodeCursor.NextFeature();
+
+                return null;
             }
 
             #endregion
@@ -416,7 +414,7 @@ namespace gView.DataSources.Fdb.SQLite
                 return NetworkNodeType.Unknown;
             }
 
-            public Features QueryNodeEdgeFeatures(int n1)
+            async public Task<Features> QueryNodeEdgeFeatures(int n1)
             {
                 Features features = new Features();
 
@@ -426,7 +424,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                 foreach (GraphTableRow row in rows)
                 {
-                    IFeature feature = _nfc.GetEdgeFeature(row.EID);
+                    IFeature feature = await _nfc.GetEdgeFeature(row.EID);
                     if (feature != null)
                     {
                         feature.Fields.Add(new FieldValue("NETWORK#EID", row.EID));
@@ -437,11 +435,11 @@ namespace gView.DataSources.Fdb.SQLite
                 return features;
             }
 
-            public Features QueryNodeFeatures(int n1)
+            async public Task<Features> QueryNodeFeatures(int n1)
             {
                 Features features = new Features();
 
-                IFeature feature = _nfc.GetNodeFeature(n1);
+                IFeature feature = await _nfc.GetNodeFeature(n1);
                 if (feature != null)
                     features.Add(feature);
 
@@ -459,14 +457,14 @@ namespace gView.DataSources.Fdb.SQLite
             return new SQLiteFDBGraphTableAdapter(_fdb, this);
         }
 
-        public IFeatureCursor GetNodeFeatures(IQueryFilter filter)
+        async public Task<IFeatureCursor> GetNodeFeatures(IQueryFilter filter)
         {
             if (_nodeFc != null)
-                return _nodeFc.GetFeatures(filter);
+                return await _nodeFc.GetFeatures(filter);
             return null;
         }
 
-        public IFeatureCursor GetEdgeFeatures(IQueryFilter filter)
+        public Task<IFeatureCursor> GetEdgeFeatures(IQueryFilter filter)
         {
             if (_edgeFcs.Count == 0)
                 return null;
@@ -479,7 +477,7 @@ namespace gView.DataSources.Fdb.SQLite
                     foreach (IFeatureClass fc in _edgeFcs.Values)
                         edgeFcs.Add(fc);
                 }
-                return new NetworkFeatureCursor(_fdb, _name, edgeFcs, null, filter);
+                return Task.FromResult<IFeatureCursor>( new NetworkFeatureCursor(_fdb, _name, edgeFcs, null, filter));
             }
 
             if (filter is RowIDFilter)
@@ -542,13 +540,13 @@ namespace gView.DataSources.Fdb.SQLite
                     ceFilter.WhereClause = complexEdgeFilter.RowIDWhereClause;
                     rfilters[-1] = ceFilter;
                 }
-                return new CursorCollection<int>(_edgeFcs, rfilters, additionalFields);
+                return Task.FromResult<IFeatureCursor>(new CursorCollection<int>(_edgeFcs, rfilters, additionalFields));
             }
 
             return null;
         }
 
-        public IFeature GetNodeFeature(int nid)
+        async public Task<IFeature> GetNodeFeature(int nid)
         {
             QueryFilter filter = new QueryFilter();
             filter.WhereClause = _fdb.DbColName("FDB_OID") + "=" + nid;
@@ -556,26 +554,26 @@ namespace gView.DataSources.Fdb.SQLite
 
             try
             {
-                using (IFeatureCursor cursor = GetNodeFeatures(filter))
+                using (IFeatureCursor cursor = await GetNodeFeatures(filter))
                 {
                     if (cursor == null)
                         return null;
-                    return cursor.NextFeature;
+                    return await cursor.NextFeature();
                 }
             }
             catch { return null; }
         }
 
-        public IFeature GetEdgeFeature(int eid)
+        async public Task<IFeature> GetEdgeFeature(int eid)
         {
             RowIDFilter filter = new RowIDFilter(String.Empty);
             filter.IDs.Add(eid);
             filter.AddField("*");
 
             IFeature feature = null;
-            using (IFeatureCursor cursor = GetEdgeFeatures(filter))
+            using (IFeatureCursor cursor = await GetEdgeFeatures(filter))
             {
-                feature = cursor.NextFeature;
+                feature = await cursor.NextFeature();
             }
 
             if (feature != null && feature.FindField("FCID") != null && feature.FindField("OID") != null &&
@@ -590,9 +588,9 @@ namespace gView.DataSources.Fdb.SQLite
                         filter.IDs.Add(Convert.ToInt32(feature["OID"]));
                         filter.AddField("*");
                         IFeatureClass fc = _edgeFcs[Convert.ToInt32(feature["FCID"])];
-                        using (IFeatureCursor c = fc.GetFeatures(filter))
+                        using (IFeatureCursor c = await fc.GetFeatures(filter))
                         {
-                            return c.NextFeature;
+                            return await c.NextFeature();
                         }
                     }
                 }
@@ -602,7 +600,7 @@ namespace gView.DataSources.Fdb.SQLite
             return feature;
         }
 
-        public IFeature GetNodeFeatureAttributes(int nodeId, string[] attributes)
+        async public Task<IFeature> GetNodeFeatureAttributes(int nodeId, string[] attributes)
         {
             try
             {
@@ -612,13 +610,13 @@ namespace gView.DataSources.Fdb.SQLite
                 filter.AddField("OID");
 
                 IFeature feature;
-                using (IFeatureCursor cursor = GetNodeFeatures(filter))
-                    feature = cursor.NextFeature;
+                using (IFeatureCursor cursor = await GetNodeFeatures(filter))
+                    feature = await cursor.NextFeature();
                 if (feature == null)
                     return null;
 
                 string fcName = _fdb.GetFeatureClassName(Convert.ToInt32(feature["FCID"]));
-                IDatasetElement element = _dataset[fcName];
+                IDatasetElement element = await _dataset.Element(fcName);
                 if (element == null)
                     return null;
                 IFeatureClass fc = element.Class as IFeatureClass;
@@ -650,8 +648,8 @@ namespace gView.DataSources.Fdb.SQLite
                     }
                 }
 
-                using (IFeatureCursor cursor = fc.GetFeatures(filter))
-                    feature = cursor.NextFeature;
+                using (IFeatureCursor cursor = await fc.GetFeatures(filter))
+                    feature = await cursor.NextFeature();
 
                 if (feature != null)
                     feature.Fields.Add(new FieldValue("_classname", fc.Name));
@@ -664,12 +662,12 @@ namespace gView.DataSources.Fdb.SQLite
             }
         }
 
-        public IFeature GetEdgeFeatureAttributes(int edgeId, string[] attributes)
+        async public Task<IFeature> GetEdgeFeatureAttributes(int edgeId, string[] attributes)
         {
             //RowIDFilter filter = new RowIDFilter(String.Empty);
             //filter.IDs.Add(edgeId);
 
-            return GetEdgeFeature(edgeId);
+            return await GetEdgeFeature(edgeId);
         }
 
         public int MaxNodeId
@@ -724,7 +722,7 @@ namespace gView.DataSources.Fdb.SQLite
             }
         }
 
-        public IGraphEdge GetGraphEdge(IPoint point, double tolerance)
+        async public Task<IGraphEdge> GetGraphEdge(IPoint point, double tolerance)
         {
             if (point == null)
                 return null;
@@ -734,13 +732,13 @@ namespace gView.DataSources.Fdb.SQLite
             filter.AddField("FDB_SHAPE");
             filter.AddField("FDB_OID");
 
-            using (IFeatureCursor cursor = GetEdgeFeatures(filter))
+            using (IFeatureCursor cursor = await GetEdgeFeatures(filter))
             {
                 IFeature feature, selected = null;
                 double selectedDist = double.MaxValue;
                 int selectedFcId = int.MinValue;
                 IPoint snappedPoint = null;
-                while ((feature = cursor.NextFeature) != null)
+                while ((feature = await cursor.NextFeature()) != null)
                 {
                     if (!(feature.Shape is IPolyline) ||
                           feature.FindField("NETWORK#FCID") == null)
@@ -758,18 +756,20 @@ namespace gView.DataSources.Fdb.SQLite
                         if (fcid != -1)
                         {
                             #region Do complex Edge exists
+
                             IFeatureClass complexEdgeFc = _edgeFcs[-1];
                             if (complexEdgeFc != null)
                             {
                                 QueryFilter complexEdgeFilter = new QueryFilter();
                                 complexEdgeFilter.WhereClause = "FCID=" + fcid + " AND OID=" + feature.OID;
                                 complexEdgeFilter.AddField("FDB_OID");
-                                using (IFeatureCursor complexEdgeCursor = complexEdgeFc.GetFeatures(complexEdgeFilter))
+                                using (IFeatureCursor complexEdgeCursor = await complexEdgeFc.GetFeatures(complexEdgeFilter))
                                 {
-                                    if (complexEdgeCursor.NextFeature != null)
+                                    if (await complexEdgeCursor.NextFeature() != null)
                                         continue;
                                 }
                             }
+
                             #endregion
                         }
                         selected = feature;

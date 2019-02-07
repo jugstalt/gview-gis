@@ -10,6 +10,7 @@ using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.Framework.IO;
 using gView.Framework.UI;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Shape
 {
@@ -108,13 +109,11 @@ namespace gView.DataSources.Shape
 			}
 		}
 
-		public gView.Framework.Geometry.IEnvelope Envelope
-		{
-			get
-			{
-				return new gView.Framework.Geometry.Envelope(_minX,_minY,_maxX,_maxY);
-			}
-		}
+        public Task<IEnvelope> Envelope()
+        {
+
+            return Task.FromResult<IEnvelope>(new Envelope(_minX, _minY, _maxX, _maxY));
+        }
 
 		public bool renderLayer(gView.Framework.Carto.IDisplay display, ILayer layer)
 		{
@@ -270,13 +269,11 @@ namespace gView.DataSources.Shape
 			}
 		}
 
-		public List<IDatasetElement> Elements
-		{
-			get
-			{
-				return _elements;
-			}
-		}
+        public Task<List<IDatasetElement>> Elements()
+        {
+            return Task.FromResult(_elements);
+        }
+		
 
 		public string DatasetGroupName
 		{
@@ -302,73 +299,71 @@ namespace gView.DataSources.Shape
             }
         }
 
-        public IDatasetElement this[string title]
+        public Task<IDatasetElement> Element(string title)
         {
-            get
+            foreach (IDatasetElement element in _elements)
             {
-                foreach (IDatasetElement element in _elements)
+                if (element == null) continue;
+                if (element.Title == title)
+                    return Task.FromResult(element);
+            }
+            try
+            {
+                if (title.ToLower().EndsWith(".shp"))
                 {
-                    if (element == null) continue;
-                    if (element.Title == title) return element;
+                    title = title.Substring(0, title.Length - 4);
                 }
-                try
+                DirectoryInfo di = new DirectoryInfo(_connectionString);
+                FileInfo[] fi = di.GetFiles(title + ".shp");
+                if (fi.Length == 0)
                 {
-                    if (title.ToLower().EndsWith(".shp"))
-                    {
-                        title = title.Substring(0, title.Length - 4);
-                    }
-                    DirectoryInfo di = new DirectoryInfo(_connectionString);
-                    FileInfo[] fi = di.GetFiles(title + ".shp");
-                    if (fi.Length == 0)
-                    {
-                        _errMsg = "Can't find shapefile...";
-                        return null;
-                    }
-                    SHPFile shpFile = new SHPFile(fi[0].FullName);
+                    _errMsg = "Can't find shapefile...";
+                    return Task.FromResult<IDatasetElement>(null);
+                }
+                SHPFile shpFile = new SHPFile(fi[0].FullName);
 
-                    FileInfo idx = new FileInfo(shpFile.IDX_Filename);
-                    if (!idx.Exists ||
-                        idx.LastWriteTime < shpFile.LastWriteTime)
+                FileInfo idx = new FileInfo(shpFile.IDX_Filename);
+                if (!idx.Exists ||
+                    idx.LastWriteTime < shpFile.LastWriteTime)
+                {
+                    DualTree tree = new DualTree(500);
+
+                    CreateSpatialIndexTree creator = new CreateSpatialIndexTree(shpFile, tree, (IEnvelope)(new Envelope(shpFile.Header.Xmin, shpFile.Header.Ymin, shpFile.Header.Xmax, shpFile.Header.Ymax)));
+
+                    if (_useGUI)
                     {
-                        DualTree tree = new DualTree(500);
-
-                        CreateSpatialIndexTree creator = new CreateSpatialIndexTree(shpFile, tree, (IEnvelope)(new Envelope(shpFile.Header.Xmin, shpFile.Header.Ymin, shpFile.Header.Xmax, shpFile.Header.Ymax)));
-
-                        if (_useGUI)
+                        IProgressDialog progress = ProgressDialog.CreateProgressDialogInstance();
+                        if (progress != null && progress.UserInteractive)
                         {
-                            IProgressDialog progress = ProgressDialog.CreateProgressDialogInstance();
-                            if (progress != null && progress.UserInteractive)
-                            {
-                                Thread thread = new Thread(new ThreadStart(creator.Create));
+                            Thread thread = new Thread(new ThreadStart(creator.Create));
 
-                                progress.Text = "Create Spatial Index...";
-                                progress.ShowProgressDialog(tree, null, thread);
-                            }
-                            else
-                                creator.Create();
+                            progress.Text = "Create Spatial Index...";
+                            progress.ShowProgressDialog(tree, null, thread);
                         }
                         else
-                        {
                             creator.Create();
-                        }
                     }
-
-                    gView.Framework.FDB.IIndexTree iTree = null;
-                    if (shpFile.IDX_Exists)
+                    else
                     {
-                        iTree = new IDXIndexTree(shpFile.IDX_Filename);
+                        creator.Create();
                     }
+                }
 
-                    ShapeDatasetElement element = new ShapeDatasetElement(shpFile, this, iTree);
-                    _elements.Add(element);
-                    return element;
-                }
-                catch (Exception ex)
+                gView.Framework.FDB.IIndexTree iTree = null;
+                if (shpFile.IDX_Exists)
                 {
-                    _errMsg = ex.Message;
+                    iTree = new IDXIndexTree(shpFile.IDX_Filename);
                 }
-                return null;
+
+                ShapeDatasetElement element = new ShapeDatasetElement(shpFile, this, iTree);
+                _elements.Add(element);
+                return Task.FromResult<IDatasetElement>(element);
             }
+            catch (Exception ex)
+            {
+                _errMsg = ex.Message;
+            }
+            return null;
         }
 
         public void RefreshClasses()

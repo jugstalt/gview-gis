@@ -5,6 +5,7 @@ using System.Text;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using System.Data.Common;
+using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.DB
 {
@@ -18,15 +19,23 @@ namespace gView.Framework.OGC.DB
         private string _shapeField = "", _idField = "";
         OgcSpatialFeatureclass _fc = null;
 
-        public OgcSpatialFeatureCursor(OgcSpatialFeatureclass fc, IQueryFilter filter)
+        private OgcSpatialFeatureCursor(OgcSpatialFeatureclass fc, IQueryFilter filter)
             : base((fc != null) ? fc.SpatialReference : null,
                    (filter != null) ? filter.FeatureSpatialReference : null)
         {
-            if (fc == null || fc.Dataset == null) return;
+           
+        }
 
-            _idField = fc.IDFieldName;
+        async static public Task<IFeatureCursor> Create(OgcSpatialFeatureclass fc, IQueryFilter filter)
+        {
+            var featureCursor = new OgcSpatialFeatureCursor(fc, filter);
+
+            if (fc == null || fc.Dataset == null)
+                return featureCursor;
+
+            featureCursor._idField = fc.IDFieldName;
             if (filter is ISpatialFilter)
-                _spatialfilter = (ISpatialFilter)filter;
+                featureCursor._spatialfilter = (ISpatialFilter)filter;
 
             try
             {
@@ -46,99 +55,99 @@ namespace gView.Framework.OGC.DB
                        ((ISpatialFilter)filter).Geometry != null)
                         ((ISpatialFilter)filter).Geometry = ((ISpatialFilter)filter).Geometry.Envelope;
 
-                    _spatialfilter = (ISpatialFilter)filter;
+                    featureCursor._spatialfilter = (ISpatialFilter)filter;
                 }
                 DbCommand command = ((OgcSpatialDataset)fc.Dataset).SelectCommand(
-                    fc, filter, out _shapeField);
-                if (command == null) return;
+                    fc, filter, out featureCursor._shapeField);
+                if (command == null)
+                    return featureCursor;
 
-                _conn = ((OgcSpatialDataset)fc.Dataset).ProviderFactory.CreateConnection();
-                _conn.ConnectionString = fc.Dataset.ConnectionString;
+                featureCursor._conn = ((OgcSpatialDataset)fc.Dataset).ProviderFactory.CreateConnection();
+                featureCursor._conn.ConnectionString = fc.Dataset.ConnectionString;
 
-                command.Connection = _conn;
+                command.Connection = featureCursor._conn;
 
-                if (_conn.State != ConnectionState.Closed)
+                if (featureCursor._conn.State != ConnectionState.Closed)
                 {
                     try
                     {
-                        _conn.Close();
+                        featureCursor._conn.Close();
                     }
                     catch { }
                 }
-                _conn.Open();
+                await featureCursor._conn.OpenAsync();
                 //command.Prepare();
 
-                _reader = command.ExecuteReader();
+                featureCursor._reader = await command.ExecuteReaderAsync();
             }
             catch (Exception ex)
             {
-                if (_fc != null)
-                    _fc.LastException = ex;
+                if (featureCursor._fc != null)
+                    featureCursor._fc.LastException = ex;
 
-                if (_conn != null && _conn.State != ConnectionState.Closed)
+                if (featureCursor._conn != null && featureCursor._conn.State != ConnectionState.Closed)
                 {
-                    _conn.Close();
-                    _conn = null;
+                    featureCursor._conn.Close();
+                    featureCursor._conn = null;
                 }
             }
+
+            return featureCursor;
         }
 
         #region IFeatureCursor Member
 
-        public override IFeature NextFeature
+        async public override Task<IFeature> NextFeature()
         {
-            get
+            while (true)
             {
-
-                while (true)
+                try
                 {
-                    try
+                    if (_reader == null || !await _reader.ReadAsync())
+                        return null;
+
+                    Feature feature = new Feature();
+                    for (int i = 0; i < _reader.FieldCount; i++)
                     {
-                        if (_reader == null || !_reader.Read()) return null;
+                        string fieldname = _reader.GetName(i);
+                        object obj = _reader.GetValue(i);
 
-                        Feature feature = new Feature();
-                        for (int i = 0; i < _reader.FieldCount; i++)
+                        if (fieldname == _shapeField)
                         {
-                            string fieldname = _reader.GetName(i);
-                            object obj = _reader.GetValue(i);
+                            feature.Shape = gView.Framework.OGC.OGC.WKBToGeometry((byte[])obj);
 
-                            if (fieldname == _shapeField)
+                            if (_spatialfilter != null &&
+                                _spatialfilter.SpatialRelation != spatialRelation.SpatialRelationMapEnvelopeIntersects)
                             {
-                                feature.Shape = gView.Framework.OGC.OGC.WKBToGeometry((byte[])obj);
-
-                                if (_spatialfilter != null &&
-                                    _spatialfilter.SpatialRelation != spatialRelation.SpatialRelationMapEnvelopeIntersects)
+                                if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialfilter, feature.Shape))
                                 {
-                                    if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialfilter, feature.Shape))
-                                    {
-                                        feature = null;
-                                        break;
-                                    }
+                                    feature = null;
+                                    break;
                                 }
                             }
-                            else if (fieldname == _idField)
-                            {
-                                feature.Fields.Add(new FieldValue(fieldname, obj));
-                                feature.OID = Convert.ToInt32(obj);
-                            }
-                            else
-                            {
-                                feature.Fields.Add(new FieldValue(fieldname, obj));
-                            }
                         }
-
-                        if (feature == null) continue;
-
-                        Transform(feature);
-                        return feature;
+                        else if (fieldname == _idField)
+                        {
+                            feature.Fields.Add(new FieldValue(fieldname, obj));
+                            feature.OID = Convert.ToInt32(obj);
+                        }
+                        else
+                        {
+                            feature.Fields.Add(new FieldValue(fieldname, obj));
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        if (_fc != null)
-                            _fc.LastException = ex;
-                        //string errMsg = ex.Message;
-                        //return null;
-                    }
+
+                    if (feature == null) continue;
+
+                    Transform(feature);
+                    return feature;
+                }
+                catch (Exception ex)
+                {
+                    if (_fc != null)
+                        _fc.LastException = ex;
+                    //string errMsg = ex.Message;
+                    //return null;
                 }
             }
         }

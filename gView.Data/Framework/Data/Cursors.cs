@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data
 {
@@ -13,17 +14,15 @@ namespace gView.Framework.Data
         {
             _rows = rows;
         }
+
         #region IRowCursor Member
 
-        public IRow NextRow
+        public Task<IRow> NextRow()
         {
-            get
-            {
-                if (_rows == null || _pos >= _rows.Count)
-                    return null;
+            if (_rows == null || _pos >= _rows.Count)
+                return null;
 
-                return _rows[_pos++];
-            }
+            return Task.FromResult<IRow>(_rows[_pos++]);
         }
 
         #endregion
@@ -50,15 +49,12 @@ namespace gView.Framework.Data
 
         #region IFeatureCursor Member
 
-        public IFeature NextFeature
+        public Task<IFeature> NextFeature()
         {
-            get
-            {
-                if (_features == null || _pos >= _features.Count)
-                    return null;
+            if (_features == null || _pos >= _features.Count)
+                return null;
 
-                return _features[_pos++];
-            }
+            return Task.FromResult<IFeature>( _features[_pos++]);
         }
 
         #endregion
@@ -85,15 +81,12 @@ namespace gView.Framework.Data
 
         #region IRasterLayerCursor Member
 
-        public IRasterLayer NextRasterLayer
+        public Task<IRasterLayer> NextRasterLayer()
         {
-            get
-            {
-                if (_layers == null || _pos >= _layers.Count)
-                    return null;
+            if (_layers == null || _pos >= _layers.Count)
+                return null;
 
-                return _layers[_pos++];
-            }
+            return Task.FromResult<IRasterLayer>(_layers[_pos++]);
         }
 
         #endregion
@@ -135,57 +128,54 @@ namespace gView.Framework.Data
 
         #region IFeatureCursor Member
 
-        public IFeature NextFeature
+        async public Task<IFeature> NextFeature()
         {
-            get
+            try
             {
-                try
+                if (_cursor == null)
                 {
+                    if (index >= _keys.Count)
+                        return null;
+
+                    T key = _keys[index++];
+                    _cursor = await _fcs[key].GetFeatures(_filters[key]);
                     if (_cursor == null)
-                    {
-                        if (index >= _keys.Count)
-                            return null;
+                        return await NextFeature();
+                }
 
-                        T key = _keys[index++];
-                        _cursor = _fcs[key].GetFeatures(_filters[key]);
-                        if (_cursor == null)
-                            return NextFeature;
-                    }
+                IFeature feature = await _cursor.NextFeature();
+                if (feature == null)
+                {
+                    _cursor.Dispose();
+                    _cursor = null;
+                    return await NextFeature();
+                }
 
-                    IFeature feature = _cursor.NextFeature;
-                    if (feature == null)
-                    {
-                        _cursor.Dispose();
-                        _cursor = null;
-                        return NextFeature;
-                    }
+                if (_fcs.ContainsKey(_keys[index - 1]))
+                {
+                    var fc = _fcs[_keys[index - 1]];
+                    if (fc != null)
+                        feature.Fields.Add(new FieldValue("_classname", fc.Name));
+                }
 
-                    if (_fcs.ContainsKey(_keys[index-1]))
+                if (_additionalFields != null)
+                {
+                    var fcDictionary = _additionalFields[_keys[index - 1]];
+                    if (fcDictionary != null && fcDictionary.ContainsKey(feature.OID) && fcDictionary[feature.OID] != null)
                     {
-                        var fc = _fcs[_keys[index-1]];
-                        if (fc != null)
-                            feature.Fields.Add(new FieldValue("_classname", fc.Name));
-                    }
-
-                    if (_additionalFields != null)
-                    {
-                        var fcDictionary = _additionalFields[_keys[index-1]];
-                        if (fcDictionary != null && fcDictionary.ContainsKey(feature.OID) && fcDictionary[feature.OID] != null)
+                        var fields = fcDictionary[feature.OID];
+                        foreach (var fieldValue in fields)
                         {
-                            var fields = fcDictionary[feature.OID];
-                            foreach (var fieldValue in fields)
-                            {
-                                feature.Fields.Add(fieldValue);
-                            }
+                            feature.Fields.Add(fieldValue);
                         }
                     }
+                }
 
-                    return feature;
-                }
-                catch
-                {
-                    return null;
-                }
+                return feature;
+            }
+            catch
+            {
+                return null;
             }
         }
 

@@ -8,6 +8,7 @@ using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Framework.FDB;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data
 {
@@ -492,11 +493,11 @@ namespace gView.Framework.Data
             // Nicht möglich
         }
 
-        public static object QueryScalar(IFeatureClass fc, FunctionFilter filter, string fieldName)
+        async public static Task<object> QueryScalar(IFeatureClass fc, FunctionFilter filter, string fieldName)
         {
             if (fc == null || filter == null) return null;
 
-            using (IFeatureCursor cursor = fc.Search(filter) as IFeatureCursor)
+            using (IFeatureCursor cursor = await fc.Search(filter) as IFeatureCursor)
             {
                 if (cursor is IFeatureCursorSkills && ((IFeatureCursorSkills)cursor).KnowsFunctions == false)
                 {
@@ -519,7 +520,7 @@ namespace gView.Framework.Data
                     IFeature feature = null;
                     string subField = filter.SubFields.Split(' ')[0];
                     bool hasFeature=false;
-                    while ((feature = cursor.NextFeature) != null)
+                    while ((feature = await cursor.NextFeature()) != null)
                     {
                         hasFeature = true;
                         double val = Convert.ToDouble(feature[subField]);
@@ -546,7 +547,7 @@ namespace gView.Framework.Data
                 {
                     if (cursor == null) return null;
 
-                    IFeature feature = cursor.NextFeature;
+                    IFeature feature = await cursor.NextFeature();
                     if (feature == null) return null;
 
                     return feature[fieldName];
@@ -852,7 +853,7 @@ namespace gView.Framework.Data
             BufferQueryFilter filter = new BufferQueryFilter(this);
             return filter;
         }
-        public static ISpatialFilter ConvertToSpatialFilter(IBufferQueryFilter bufferQuery)
+        async public static Task<ISpatialFilter> ConvertToSpatialFilter(IBufferQueryFilter bufferQuery)
         {
             try
             {
@@ -883,10 +884,10 @@ namespace gView.Framework.Data
                 //        bufferQuery.RootFeatureClass.SpatialReference);
 
                 IPolygon buffer = null;
-                using (IFeatureCursor cursor = (IFeatureCursor)bufferQuery.RootFeatureClass.Search(rootFilter))
+                using (IFeatureCursor cursor = (IFeatureCursor)await bufferQuery.RootFeatureClass.Search(rootFilter))
                 {
                     IFeature feature;
-                    while ((feature = cursor.NextFeature) != null)
+                    while ((feature = await cursor.NextFeature()) != null)
                     {
                         if (feature.Shape == null) continue;
 
@@ -963,22 +964,22 @@ namespace gView.Framework.Data
             _table.Dispose(); _table = null;
         }
 
-        public int FillAtLeast(List<int> IDs)
+        public Task<int> FillAtLeast(List<int> IDs)
         {
-            return 0;
+            return Task.FromResult<int>(0);
         }
 
-        public int Fill()
+        public Task<int> Fill()
         {
             return Fill(-1);
         }
 
-        public int Fill(int next_N_Rows)
+        async public Task<int> Fill(int next_N_Rows)
         {
             if (_cursor == null) return 0;
             int counter = 0;
 
-            IRow feat = _cursor.NextRow;
+            IRow feat = await _cursor.NextRow();
             while (feat != null)
             {
                 if (_table.Columns.Count > 0)
@@ -1001,7 +1002,7 @@ namespace gView.Framework.Data
                     _hasMore = true;
                     return counter;
                 }
-                feat = _cursor.NextRow;
+                feat = await _cursor.NextRow();
             }
             _hasMore = false;
             return counter;
@@ -1110,15 +1111,15 @@ namespace gView.Framework.Data
 
         // Lebt nur noch, weil es im FromDataTableOld vorkommt
         // Bitte nicht mehr verwenden...
-        public int FillAtLeast(List<int> IDs)
+        public Task<int> FillAtLeast(List<int> IDs)
         {
             return Fill(IDs, null);
         }
-        public int Fill(List<int> IDs)
+        public Task<int> Fill(List<int> IDs)
         {
             return Fill(IDs, null);
         }
-        public int Fill(List<int> IDs, ICancelTracker cancelTracker)
+        async public Task<int> Fill(List<int> IDs, ICancelTracker cancelTracker)
         {
             int counter = 0;
             if (_tableClass is IFeatureClass)
@@ -1130,32 +1131,32 @@ namespace gView.Framework.Data
                 RowIDFilter filter = new RowIDFilter(fc.IDFieldName);
                 filter.IDs = IDs;
                 filter.SubFields = "*";
-                _cursor = fc.GetFeatures(filter);
+                _cursor = await fc.GetFeatures(filter);
                 if (_cursor == null) return 0;
 
-                return Fill(cancelTracker);
+                return await Fill(cancelTracker);
             }
             return counter;
         }
 
-        public int Fill()
+        public Task<int> Fill()
         {
             return Fill(-1, null);
         }
-        public int Fill(ICancelTracker cancelTracker)
+        public Task<int> Fill(ICancelTracker cancelTracker)
         {
             return Fill(-1, cancelTracker);
         }
-        public int Fill(int next_N_Rows)
+        public Task<int> Fill(int next_N_Rows)
         {
             return Fill(next_N_Rows, null);
         }
-        public int Fill(int next_N_Rows, ICancelTracker cancelTracker)
+        async public Task<int> Fill(int next_N_Rows, ICancelTracker cancelTracker)
         {
             if (_cursor == null) return 0;
             int counter = 0;
 
-            IFeature feat = _cursor.NextFeature;
+            IFeature feat = await _cursor.NextFeature();
             while (feat != null)
             {
                 if (_table.Columns.Count > 0)
@@ -1194,7 +1195,7 @@ namespace gView.Framework.Data
                     _hasMore = true;
                     return counter;
                 }
-                feat = (_cursor != null) ? _cursor.NextFeature : null;
+                feat = (_cursor != null) ? await _cursor.NextFeature() : null;
             }
             _hasMore = false;
             return counter;
@@ -1663,12 +1664,12 @@ namespace gView.Framework.Data
 
             try
             {
-                using (IFeatureCursor cursor = (IFeatureCursor)fClass.GetFeatures(filter))
+                using (IFeatureCursor cursor = fClass.GetFeatures(filter).Result)
                 {
                     if (cursor == null) return;
 
                     IFeature feature;
-                    while ((feature = cursor.NextFeature) != null)
+                    while ((feature = cursor.NextFeature().Result) != null)
                         _count++;
                 }
             }

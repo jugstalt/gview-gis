@@ -9,7 +9,7 @@ namespace gView.Server.AppCode
 {
     internal class QueuedThread<T> : IDisposable
     {
-        internal delegate void QueuedThreadTarget(T parameter);
+        internal delegate Task QueuedThreadTarget(T parameter);
         internal delegate void QueueThreadFinished(QueuedThread<T> sender);
 
         internal QueueThreadFinished _callback = null;
@@ -29,7 +29,7 @@ namespace gView.Server.AppCode
         {
             try
             {
-                _target?.Invoke(_parameter);
+                _target?.Invoke(_parameter).Wait();
             }
             catch (Exception ex)
             {

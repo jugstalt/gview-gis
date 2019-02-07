@@ -12,12 +12,9 @@ namespace gView.Carto.Framework.Carto
     //[gView.Framework.system.RegisterPlugIn("B9D72B66-B716-4375-A01D-9386AC6235B8")]
     public class UnknownDataset : IDataset
     {
-        public IDatasetElement this[string title]
+        public Task<IDatasetElement> Element(string title)
         {
-            get
-            {
-                return null;
-            }
+            return Task.FromResult<IDatasetElement>(null);
         }
 
         public string ConnectionString
@@ -56,12 +53,9 @@ namespace gView.Carto.Framework.Carto
             }
         }
 
-        public List<IDatasetElement> Elements
+        public Task<List<IDatasetElement>> Elements()
         {
-            get
-            {
-                return new List<IDatasetElement>();
-            }
+                return Task.FromResult(new List<IDatasetElement>());
         }
 
         public string lastErrorMsg

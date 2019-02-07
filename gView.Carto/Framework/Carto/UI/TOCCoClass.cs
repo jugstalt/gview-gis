@@ -1473,7 +1473,7 @@ namespace gView.Framework.Carto.UI
                 webThemeId = (string)stream.Load("ID", "");
                 webClassName = (string)stream.Load("ClassName", "");
 
-                IDatasetElement wElement = dataset[webClassName];
+                IDatasetElement wElement = dataset.Element(webClassName).Result;
                 if (wElement == null || !(wElement.Class is IWebServiceClass)) return;
 
                 IWebServiceClass wc = wElement.Class as IWebServiceClass;

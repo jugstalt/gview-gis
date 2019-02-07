@@ -6,6 +6,7 @@ using gView.Framework.system;
 using gView.Framework.Db;
 using System.Data;
 using gView.Framework.Carto;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data
 {
@@ -84,16 +85,16 @@ namespace gView.Framework.Data
             get { return _fc.CountFeatures; }
         }
 
-        public IFeatureCursor GetFeatures(IQueryFilter filter)
+        async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
             if (filter == null)
                 return null;
 
             if (filter is IBufferQueryFilter)
             {
-                ISpatialFilter sFilter = BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
+                ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
                 if (sFilter == null) return null;
-                return GetFeatures(sFilter);
+                return await GetFeatures(sFilter);
             }
 
             #region IDistrictFilter ?
@@ -111,19 +112,20 @@ namespace gView.Framework.Data
                             join.Init(String.Empty);
                             filter = new DistinctFilter(fn[1]);
                             filter.OrderBy = fn[1];
-                            return new FeatureCursorWrapper(join.PerformQuery(filter));
+                            return new FeatureCursorWrapper(await join.PerformQuery(filter));
                         }
                     }
                     return null;
                 }
                 else
                 {
-                    return _fc.GetFeatures(filter);
+                    return await _fc.GetFeatures(filter);
                 }
             }
             #endregion
 
             #region IFunctionFilter ?
+
             if (filter is IFunctionFilter)
             {
                 if (filter.SubFields.Contains(":"))
@@ -137,16 +139,17 @@ namespace gView.Framework.Data
                         {
                             join.Init(String.Empty);
                             filter = new FunctionFilter(((IFunctionFilter)filter).Function, fn[1], ((IFunctionFilter)filter).Alias);
-                            return new FeatureCursorWrapper(join.PerformQuery(filter));
+                            return new FeatureCursorWrapper(await join.PerformQuery(filter));
                         }
                     }
                     return null;
                 }
                 else
                 {
-                    return _fc.GetFeatures(filter);
+                    return await _fc.GetFeatures(filter);
                 }
             }
+
             #endregion
 
             bool hasInnerJoin = false;
@@ -162,7 +165,7 @@ namespace gView.Framework.Data
                 }
             }
             if ((!filter.SubFields.Contains(":") && !filter.SubFields.Contains("*") && hasInnerJoin == false && !filter.WhereClause.Contains(":")) || _joins == null || _joins.Count == 0)
-                return _fc.GetFeatures(filter);
+                return await _fc.GetFeatures(filter);
 
             Dictionary<string, UniqueList<string>> fieldNames = new Dictionary<string, UniqueList<string>>();
             fieldNames.Add(String.Empty, new UniqueList<string>());
@@ -247,9 +250,9 @@ namespace gView.Framework.Data
                 {
                     where = filter.WhereClause;
                     filter.WhereClause = String.Empty;
-                    IFeatureCursor cursor = new FeatureCursor(_fc.GetFeatures(filter), (FeatureLayerJoins)_joins.Clone(), fieldNames);
+                    IFeatureCursor cursor = new FeatureCursor(await _fc.GetFeatures(filter), (FeatureLayerJoins)_joins.Clone(), fieldNames);
 
-                    DataTable tab = gView.Framework.Data.FeatureCursor.ToDataTable(cursor);
+                    DataTable tab = await gView.Framework.Data.FeatureCursor.ToDataTable(cursor);
                     DataRow[] rows = null;
                     try
                     {
@@ -268,7 +271,7 @@ namespace gView.Framework.Data
 
             try
             {
-                return new FeatureCursor(_fc.GetFeatures(filter), (FeatureLayerJoins)_joins.Clone(), fieldNames);
+                return new FeatureCursor(await _fc.GetFeatures(filter), (FeatureLayerJoins)_joins.Clone(), fieldNames);
             }
             catch
             {
@@ -280,22 +283,22 @@ namespace gView.Framework.Data
 
         #region ITableClass Member
 
-        public ICursor Search(IQueryFilter filter)
+        async public Task<ICursor> Search(IQueryFilter filter)
         {
-            return GetFeatures(filter);
+            return await GetFeatures(filter);
         }
 
-        public ISelectionSet Select(IQueryFilter filter)
+        async public Task<ISelectionSet> Select(IQueryFilter filter)
         {
             filter.SubFields = this.IDFieldName;
 
-            IFeatureCursor cursor = this.GetFeatures(filter);
+            IFeatureCursor cursor = await this.GetFeatures(filter);
             if (cursor == null)
                 return null;
             IFeature feat;
 
             IDSelectionSet selSet = new IDSelectionSet();
-            while ((feat = cursor.NextFeature) != null)
+            while ((feat = await cursor.NextFeature()) != null)
             {
                 selSet.AddID((int)((uint)feat.OID));
             }
@@ -404,12 +407,12 @@ namespace gView.Framework.Data
                 }
             }
 
-            private void Collect()
+            async private Task Collect()
             {
                 _features.Clear();
                 while (true)
                 {
-                    IFeature feature = _cursor.NextFeature;
+                    IFeature feature = await _cursor.NextFeature();
                     if (feature != null)
                     {
                         _features.Add(feature);
@@ -419,7 +422,7 @@ namespace gView.Framework.Data
                 }
             }
 
-            private void Join()
+            async private Task Join()
             {
                 if (_fieldNames == null || _joins == null)
                     return;
@@ -445,7 +448,7 @@ namespace gView.Framework.Data
                         if (!vals.Contains(joinVal.ToString()))
                             vals.Add(joinVal.ToString());
                     }
-                    join.PerformCacheQuery(vals.ToArray());
+                    await join.PerformCacheQuery(vals.ToArray());
                 }
 
                 #endregion
@@ -467,7 +470,7 @@ namespace gView.Framework.Data
                             if (joinVal == null)
                                 continue;
 
-                            IRow row = join.GetJoinedRow(joinVal.ToString());
+                            IRow row = await join.GetJoinedRow(joinVal.ToString());
                             if (row == null)
                             {
                                 if (join.JoinType == joinType.LeftInnerJoin)
@@ -503,26 +506,23 @@ namespace gView.Framework.Data
 
             #region IFeatureCursor Member
 
-            public IFeature NextFeature
+            async public Task<IFeature> NextFeature()
             {
-                get
+                if (_pos >= _features.Count)
                 {
-                    if (_pos >= _features.Count)
-                    {
-                        _pos = 0;
+                    _pos = 0;
 
-                        Collect();
-                        if (_features.Count == 0)
-                            return null;
-                        Join();
-                        if (_features.Count == 0)
-                            return NextFeature;
-                    }
-
-                    IFeature feature = _features[_pos++];
-
-                    return feature;
+                    await Collect();
+                    if (_features.Count == 0)
+                        return null;
+                    await Join();
+                    if (_features.Count == 0)
+                        return await NextFeature();
                 }
+
+                IFeature feature = _features[_pos++];
+
+                return feature;
             }
 
             #endregion
@@ -554,25 +554,23 @@ namespace gView.Framework.Data
 
             #region IFeatureCursor Member
 
-            public IFeature NextFeature
+            async public Task<IFeature> NextFeature()
             {
-                get
-                {
-                    if (_cursor is IFeatureCursor)
-                    {
-                        return ((IFeatureCursor)_cursor).NextFeature;
-                    }
-                    if (_cursor is IRowCursor)
-                    {
-                        IRow row = ((IRowCursor)_cursor).NextRow;
-                        if (row == null)
-                            return null;
 
-                        Feature feature = new Feature(row);
-                        return feature;
-                    }
-                    return null;
+                if (_cursor is IFeatureCursor)
+                {
+                    return await ((IFeatureCursor)_cursor).NextFeature();
                 }
+                if (_cursor is IRowCursor)
+                {
+                    IRow row = await ((IRowCursor)_cursor).NextRow();
+                    if (row == null)
+                        return null;
+
+                    Feature feature = new Feature(row);
+                    return feature;
+                }
+                return null;
             }
 
             #endregion

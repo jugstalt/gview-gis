@@ -4,6 +4,7 @@ using System.Text;
 using gView.Framework.Data;
 using gView.Framework.system;
 using gView.Framework.IO;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Network
 {
@@ -46,8 +47,8 @@ namespace gView.Framework.Network
         int GetNodeFcid(int nid);
         NetworkNodeType GetNodeType(int nid);
 
-        Features QueryNodeEdgeFeatures(int n1);
-        Features QueryNodeFeatures(int n1);
+        Task<Features> QueryNodeEdgeFeatures(int n1);
+        Task<Features> QueryNodeFeatures(int n1);
     }
 
     public enum GraphWeightDataType

@@ -7,6 +7,7 @@ using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Framework.IO;
 using OSGeo;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.GDAL
 {
@@ -88,24 +89,21 @@ namespace gView.DataSources.GDAL
 
         #region IRasterDataset Member
 
-        public gView.Framework.Geometry.IEnvelope Envelope
+        public Task<IEnvelope> Envelope()
         {
-            get
+            IEnvelope env = null;
+            foreach (IDatasetElement element in _layers)
             {
-                IEnvelope env = null;
-                foreach (IDatasetElement element in _layers)
+                if (element.Class is IRasterClass &&
+                    ((IRasterClass)element.Class).Polygon != null)
                 {
-                    if (element.Class is IRasterClass &&
-                        ((IRasterClass)element.Class).Polygon != null)
-                    {
-                        if (env == null)
-                            env = ((IRasterClass)element.Class).Polygon.Envelope;
-                        else
-                            env.Union(((IRasterClass)element.Class).Polygon.Envelope);
-                    }
+                    if (env == null)
+                        env = ((IRasterClass)element.Class).Polygon.Envelope;
+                    else
+                        env.Union(((IRasterClass)element.Class).Polygon.Envelope);
                 }
-                return env;
             }
+            return Task.FromResult<IEnvelope>(env);
         }
 
         public gView.Framework.Geometry.ISpatialReference SpatialReference
@@ -182,12 +180,9 @@ namespace gView.DataSources.GDAL
             get { return _errMsg; }
         }
 
-        public List<IDatasetElement> Elements
+        public Task<List<IDatasetElement>> Elements()
         {
-            get
-            {
-                return ListOperations<IDatasetElement>.Clone(_layers);
-            }
+            return Task.FromResult(ListOperations<IDatasetElement>.Clone(_layers));
         }
 
         public string Query_FieldPrefix
@@ -205,16 +200,14 @@ namespace gView.DataSources.GDAL
             get { return null; }
         }
 
-        public IDatasetElement this[string title]
+        public Task<IDatasetElement> Element(string title)
         {
-            get
+            foreach (IDatasetElement element in _layers)
             {
-                foreach (IDatasetElement element in _layers)
-                {
-                    if (element.Title == title) return element;
-                }
-                return null;
+                if (element.Title == title)
+                    return Task.FromResult(element);
             }
+            return Task.FromResult((IDatasetElement)null);
         }
 
         public void RefreshClasses()

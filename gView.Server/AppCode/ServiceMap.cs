@@ -474,7 +474,7 @@ namespace gView.Server.AppCode
                         {
                             if (rLayer.Class is IParentRasterLayer)
                             {
-                                DrawRasterParentLayer((IParentRasterLayer)rLayer.Class, cancelTracker, rLayer);
+                                await DrawRasterParentLayer((IParentRasterLayer)rLayer.Class, cancelTracker, rLayer);
                             }
                             else
                             {
@@ -502,7 +502,7 @@ namespace gView.Server.AppCode
 
                         if (!fLayer.Visible) continue;
                         RenderLabelThread rlt = new RenderLabelThread(this, fLayer, cancelTracker);
-                        rlt.Render();
+                        await rlt.Render();
                     }
                 }
 
@@ -553,7 +553,7 @@ namespace gView.Server.AppCode
             return true;
         }
 
-        override protected void DrawRasterParentLayer(IParentRasterLayer rLayer, ICancelTracker cancelTracker, IRasterLayer rootLayer)
+        async override protected Task DrawRasterParentLayer(IParentRasterLayer rLayer, ICancelTracker cancelTracker, IRasterLayer rootLayer)
         {
             if (rLayer is ILayer && ((ILayer)rLayer).Class is IRasterClass)
             {
@@ -570,17 +570,17 @@ namespace gView.Server.AppCode
                     ((IRasterCatalogLayer)rootLayer).FilterQuery.WhereClause : String.Empty);
             }
 
-            using (IRasterLayerCursor cursor = ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
+            using (IRasterLayerCursor cursor = await ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
             {
                 ILayer child;
 
-                while ((child = cursor.NextRasterLayer) != null)
+                while ((child = await cursor.NextRasterLayer()) != null)
                 //foreach (ILayer child in ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
                 {
                     if (!cancelTracker.Continue) break;
                     if (child.Class is IParentRasterLayer)
                     {
-                        DrawRasterParentLayer((IParentRasterLayer)child.Class, cancelTracker, rootLayer);
+                        await DrawRasterParentLayer((IParentRasterLayer)child.Class, cancelTracker, rootLayer);
                         continue;
                     }
                     if (!(child is IRasterLayer)) continue;

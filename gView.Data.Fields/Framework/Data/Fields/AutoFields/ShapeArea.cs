@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using gView.Framework.Data;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
@@ -38,16 +39,16 @@ namespace gView.Framework.Data.Fields.AutoFields
             get { return FieldType.Double; }
         }
 
-        public bool OnInsert(IFeatureClass fc, IFeature feature)
+        public Task<bool> OnInsert(IFeatureClass fc, IFeature feature)
         {
-            return Calc(feature);
+            return Task.FromResult<bool>(Calc(feature));
         }
 
-        public bool OnUpdate(IFeatureClass fc, IFeature feature)
+        public Task<bool> OnUpdate(IFeatureClass fc, IFeature feature)
         {
-            if (feature.Shape == null) return true;
+            if (feature.Shape == null) return Task.FromResult<bool>(true);
 
-            return Calc(feature);
+            return Task.FromResult<bool>(Calc(feature));
         }
 
         #endregion

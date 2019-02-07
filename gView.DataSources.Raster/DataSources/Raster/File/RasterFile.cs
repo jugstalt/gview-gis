@@ -14,11 +14,12 @@ using gView.Framework.system;
 using gView.Framework.Carto;
 using gView.MapServer;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Raster.File
 {
     [gView.Framework.system.RegisterPlugIn("D4812641-3F53-48eb-A66C-FC0203980C79")]
-    public class RasterFileDataset : DatasetMetadata, gView.Framework.Data.IRasterFileDataset, gView.Framework.IO.IPersistable
+    public class RasterFileDataset : DatasetMetadata, IRasterFileDataset, gView.Framework.IO.IPersistable
     {
         private List<IDatasetElement> _layers = new List<IDatasetElement>();
         private string _directory = "";
@@ -92,17 +93,14 @@ namespace gView.DataSources.Raster.File
             get { return null; }
         }
 
-        public List<IDatasetElement> Elements
+        public Task<List<IDatasetElement>> Elements()
         {
-            get
+            List<IDatasetElement> ret = new List<IDatasetElement>();
+            foreach (gView.Framework.Data.IRasterLayer layer in _layers)
             {
-                List<IDatasetElement> ret = new List<IDatasetElement>();
-                foreach (gView.Framework.Data.IRasterLayer layer in _layers)
-                {
-                    ret.Add(layer);
-                }
-                return ret;
+                ret.Add(layer);
             }
+            return Task.FromResult(ret);
         }
 
         public string Query_FieldPrefix
@@ -120,30 +118,29 @@ namespace gView.DataSources.Raster.File
             get { return null; }
         }
 
-        public IDatasetElement this[string title]
+        public Task<IDatasetElement> Element(string title)
         {
-            get
+            foreach (IDatasetElement element in _layers)
             {
-                foreach (IDatasetElement element in _layers)
-                {
-                    if (element == null) continue;
-                    if (element.Title == title) return element;
-                }
+                if (element == null) continue;
+                if (element.Title == title)
+                    return Task.FromResult(element);
+            }
 
-                try
+            try
+            {
+                if (_directory != "")
                 {
-                    if (_directory != "")
+                    FileInfo fi = new FileInfo(_directory + @"\" + title);
+                    if (fi.Exists)
                     {
-                        FileInfo fi = new FileInfo(_directory + @"\" + title);
-                        if (fi.Exists)
-                        {
-                            return AddRasterFile(fi.FullName);
-                        }
+                        return Task.FromResult<IDatasetElement>(AddRasterFile(fi.FullName));
                     }
                 }
-                catch { }
-                return null;
             }
+            catch { }
+
+            return Task.FromResult<IDatasetElement>(null);
         }
 
         public void RefreshClasses()
@@ -228,23 +225,20 @@ namespace gView.DataSources.Raster.File
 
         #region IRasterDataset Members
 
-        public IEnvelope Envelope
+        public Task<IEnvelope> Envelope()
         {
-            get
+            Envelope env = null;
+
+            foreach (gView.Framework.Data.IRasterLayer layer in _layers)
             {
-                Envelope env = null;
+                if (layer.RasterClass == null || layer.RasterClass.Polygon == null) continue;
 
-                foreach (gView.Framework.Data.IRasterLayer layer in _layers)
-                {
-                    if (layer.RasterClass==null || layer.RasterClass.Polygon == null) continue;
-
-                    if (env == null)
-                        env = new Envelope(layer.RasterClass.Polygon.Envelope);
-                    else
-                        env.Union(layer.RasterClass.Polygon.Envelope);
-                }
-                return env;
+                if (env == null)
+                    env = new Envelope(layer.RasterClass.Polygon.Envelope);
+                else
+                    env.Union(layer.RasterClass.Polygon.Envelope);
             }
+            return Task.FromResult((IEnvelope)env);
         }
 
         public ISpatialReference SpatialReference

@@ -5,6 +5,7 @@ using gView.Framework.Network;
 using gView.Framework.UI;
 using gView.Framework.system;
 using gView.Framework.Network.Algorthm;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
 {
@@ -27,7 +28,7 @@ namespace gView.Framework.Network.Tracers
                    input.Collect(NetworkTracerInputType.SinkNode).Count == 1;
         }
 
-        public NetworkTracerOutputCollection Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, ICancelTracker cancelTraker)
+        async public Task<NetworkTracerOutputCollection> Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, ICancelTracker cancelTraker)
         {
             if (network == null || !CanTrace(input))
                 return null;
@@ -62,7 +63,7 @@ namespace gView.Framework.Network.Tracers
             output.Add(pathOutput);
 
             if (input.Collect(NetworkTracerInputType.AppendNodeFlags).Count > 0)
-                Helper.AppendNodeFlags(network, gt, Helper.NodeIds(nodes), output);
+                await Helper.AppendNodeFlags(network, gt, Helper.NodeIds(nodes), output);
 
             return output;
         }
