@@ -773,14 +773,14 @@ namespace gView.DataSources.Fdb.MSSql
                 if (selectedFcId == -1)
                 {
                     #region Complex Edge
-                    object eidObj = _fdb._conn.QuerySingleField("SELECT EID FROM " + _fdb.TableName("FC_" + _name + "_ComplexEdges") + " WHERE FDB_OID=" + selected.OID, "EID");
+                    object eidObj = _fdb._conn.QuerySingleField("SELECT EID FROM " + _fdb.TableName("FC_" + _name + "_ComplexEdges") + " WHERE FDB_OID=" + selected.OID, "EID").Result;
                     if (eidObj != null)
                         eid = (int)eidObj;
                     #endregion
                 }
                 else
                 {
-                    object eidObj = _fdb._conn.QuerySingleField("SELECT EID FROM " + _fdb.TableName(_name + "_EdgeIndex") + " WHERE FCID=" + selectedFcId + " AND OID=" + selected.OID, "EID");
+                    object eidObj = _fdb._conn.QuerySingleField("SELECT EID FROM " + _fdb.TableName(_name + "_EdgeIndex") + " WHERE FCID=" + selectedFcId + " AND OID=" + selected.OID, "EID").Result;
                     if (eidObj != null)
                         eid = (int)eidObj;
                 }

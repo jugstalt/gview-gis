@@ -124,7 +124,7 @@ namespace gView.Framework.Data.Fields.FieldDomains
                         connection.ConnectionString2 = _connString;
 
                         DataSet ds = new DataSet();
-                        if (!connection.SQLQuery(ref ds, _sql, "QUERY"))
+                        if (!connection.SQLQuery(ds, _sql, "QUERY").Result)
                         {
                             return null;
                         } 

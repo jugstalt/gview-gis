@@ -101,7 +101,7 @@ namespace gView.DataSources.Fdb.SQLite
             if (dsID == -1) return null;
 
             DataSet ds = new DataSet();
-            if (!_conn.SQLQuery(ref ds, "SELECT * FROM FDB_FeatureClasses WHERE DatasetID=" + dsID, "FC"))
+            if (!_conn.SQLQuery(ds, "SELECT * FROM FDB_FeatureClasses WHERE DatasetID=" + dsID, "FC").Result)
             {
                 _errMsg = _conn.errorMessage;
                 return null;
@@ -757,7 +757,7 @@ namespace gView.DataSources.Fdb.SQLite
                         }
                         if (!String.IsNullOrEmpty(replicationField))
                         {
-                            DataTable tab = _conn.Select(replicationField, FcTableName(fClass), ((where != String.Empty) ? where : ""));
+                            DataTable tab = await _conn.Select(replicationField, FcTableName(fClass), ((where != String.Empty) ? where : ""));
                             if (tab == null)
                             {
                                 _errMsg = "Replication Error: " + _conn.errorMessage;
@@ -857,7 +857,7 @@ namespace gView.DataSources.Fdb.SQLite
                 }
             }
 
-            DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + dataset._dsID + " AND " + DbColName("Name") + "='" + elementName + "'");
+            DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + dataset._dsID + " AND " + DbColName("Name") + "='" + elementName + "'").Result;
             if (tab == null || tab.Rows == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -896,7 +896,7 @@ namespace gView.DataSources.Fdb.SQLite
                 string[] viewNames = row["Name"].ToString().Split('@');
                 if (viewNames.Length != 2)
                     return null;
-                DataTable tab2 = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + dataset._dsID + " AND " + DbColName("Name") + "='" + viewNames[0] + "'");
+                DataTable tab2 = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + dataset._dsID + " AND " + DbColName("Name") + "='" + viewNames[0] + "'").Result;
                 if (tab2 == null || tab2.Rows.Count != 1)
                     return null;
                 fcRow = tab2.Rows[0];
@@ -936,7 +936,7 @@ namespace gView.DataSources.Fdb.SQLite
         internal DataTable Select(string fields, string from, string where)
         {
             if (_conn == null) return null;
-            return _conn.Select(fields, from, where);
+            return _conn.Select(fields, from, where).Result;
         }
 
         #endregion
@@ -1051,11 +1051,11 @@ namespace gView.DataSources.Fdb.SQLite
 
             int fcID = this.GetFeatureClassID(fcName);
 
-            DataTable featureclasses = _conn.Select(DbColName("DatasetID"), TableName("FDB_FeatureClasses"), DbColName("ID") + "=" + fcID);
+            DataTable featureclasses = _conn.Select(DbColName("DatasetID"), TableName("FDB_FeatureClasses"), DbColName("ID") + "=" + fcID).Result;
             if (featureclasses == null || featureclasses.Rows.Count != 1)
                 return null;
 
-            DataTable datasets = _conn.Select(DbColName("Name"), TableName("FDB_Datasets"), DbColName("ID") + "=" + featureclasses.Rows[0]["DatasetID"].ToString());
+            DataTable datasets = _conn.Select(DbColName("Name"), TableName("FDB_Datasets"), DbColName("ID") + "=" + featureclasses.Rows[0]["DatasetID"].ToString()).Result;
             if (datasets == null || datasets.Rows.Count != 1)
                 return null;
 
@@ -1730,7 +1730,7 @@ namespace gView.DataSources.Fdb.SQLite
             try
             {
                 int siVersion = 1;
-                object siVersionObject = _conn.QuerySingleField("SELECT " + DbColName("SIVersion") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcName + "'", ColumnName("SIVersion"));
+                object siVersionObject = _conn.QuerySingleField("SELECT " + DbColName("SIVersion") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcName + "'", ColumnName("SIVersion")).Result;
                 if (siVersionObject != System.DBNull.Value && siVersionObject != null)
                 {
                     siVersion = Convert.ToInt32(siVersionObject) + 1;

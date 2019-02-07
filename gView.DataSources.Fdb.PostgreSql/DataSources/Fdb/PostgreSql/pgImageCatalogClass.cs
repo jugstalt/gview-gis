@@ -854,7 +854,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             if (_fdb == null) return;
             try
             {
-                DataTable tab = _fdb._conn.Select("IMAGE,X,Y,dx1,dx2,dy1,dy2", _dsname + "_IMAGE_DATA", "ID=" + _ID);
+                DataTable tab = _fdb._conn.Select("IMAGE,X,Y,dx1,dx2,dy1,dy2", _dsname + "_IMAGE_DATA", "ID=" + _ID).Result;
                 if (tab == null) return;
                 if (tab.Rows.Count != 1) return;
                 DataRow row = tab.Rows[0];

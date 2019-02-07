@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace gView.Framework.Db
@@ -21,23 +22,23 @@ namespace gView.Framework.Db
         string errorMessage { get; }
         Exception lastException { get; }
 
-        bool SQLQuery(ref DataSet ds, string sql, string table, bool writeable);
+        Task<bool> SQLQuery(DataSet ds, string sql, string table, bool writeable);
         bool Update(DataTable table);
         bool UpdateData(ref DataSet ds, string table);
         void ReleaseUpdateAdapter();
 
-        DataTable Select(string fields, string from);
-        DataTable Select(string fields, string from, string where);
-        DataTable Select(string fields, string from, string where, string orderBy);
-        DataTable Select(string fields, string from, string where, string orderBy, bool writeable);
-        bool SQLQuery(ref DataSet ds, string sql, string table);
-        bool SQLQuery(ref DataSet ds, string sql, string table, DataRow refRow);
-        bool SQLQuery(string sql, ref XmlNode feature);
-        bool SQLQuery(string sql, ref XmlNode feature, bool one2n);
+        Task<DataTable> Select(string fields, string from);
+        Task<DataTable> Select(string fields, string from, string where);
+        Task<DataTable> Select(string fields, string from, string where, string orderBy);
+        Task<DataTable> Select(string fields, string from, string where, string orderBy, bool writeable);
+        Task<bool> SQLQuery(DataSet ds, string sql, string table);
+        Task<bool> SQLQuery(DataSet ds, string sql, string table, DataRow refRow);
+        Task<bool> SQLQuery(string sql, XmlNode feature);
+        Task<bool> SQLQuery(string sql, XmlNode feature, bool one2n);
 
         DbDataReader DataReader(string sql, out DbConnection connection);
 
-        object QuerySingleField(string sql, string FieldName);
+        Task<object> QuerySingleField(string sql, string FieldName);
 
         //bool insertInto(string tab, string[] fields, string[] values);
         bool createIndex(string name, string table, string field, bool unique);
@@ -54,7 +55,7 @@ namespace gView.Framework.Db
         bool GetSchema(string name);
         DataTable GetSchema2(string name);
 
-        bool createTable(DataTable tab, bool data);
+        Task<bool> createTable(DataTable tab, bool data);
 
         dataType getFieldType(string fieldname);
         int getFieldSize(string fieldname);

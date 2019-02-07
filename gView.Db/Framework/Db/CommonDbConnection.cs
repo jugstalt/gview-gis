@@ -6,6 +6,7 @@ using System.Xml;
 using System.Text;
 using System.Collections.Generic;
 using Oracle.ManagedDataAccess.Client;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Db
 {
@@ -161,9 +162,9 @@ namespace gView.Framework.Db
         public string errorMessage { get { return m_errMsg; } }
         public Exception lastException { get { return _lastException; } }
 
-        public bool SQLQuery(ref DataSet ds, string sql, string table, bool writeable)
+        async public Task<bool> SQLQuery(DataSet ds, string sql, string table, bool writeable)
         {
-            if (!writeable) return SQLQuery(ref ds, sql, table);
+            if (!writeable) return await SQLQuery(ds, sql, table);
 
             if (_updateAdapter != null)
             {
@@ -263,32 +264,32 @@ namespace gView.Framework.Db
 
         public DbDataAdapter UpdateAdapter { get { return _updateAdapter; } }
 
-        public DataTable Select(string fields, string from)
+        public Task<DataTable> Select(string fields, string from)
         {
             return Select(fields, from, "", "", false);
         }
-        public DataTable Select(string fields, string from, string where)
+        public Task<DataTable> Select(string fields, string from, string where)
         {
             return Select(fields, from, where, "", false);
         }
-        public DataTable Select(string fields, string from, string where, string orderBy)
+        public Task<DataTable> Select(string fields, string from, string where, string orderBy)
         {
             return Select(fields, from, where, orderBy, false);
         }
-        public DataTable Select(string fields, string from, string where, string orderBy, bool writeable)
+        async public Task<DataTable> Select(string fields, string from, string where, string orderBy, bool writeable)
         {
             DataSet ds = new DataSet();
             string sql = "SELECT " + ((fields == "") ? "*" : fields)
                                + " FROM " + from
                                + ((where == "") ? "" : " WHERE " + where)
                                + ((orderBy == "") ? "" : " ORDER BY " + orderBy);
-            if (!SQLQuery(ref ds, sql, "TAB1", writeable))
+            if (!await SQLQuery(ds, sql, "TAB1", writeable))
             {
                 return null;
             }
             return ds.Tables[0];
         }
-        public bool SQLQuery(ref DataSet ds, string sql, string table)
+        async public Task<bool> SQLQuery(DataSet ds, string sql, string table)
         {
             DbDataAdapter adapter = null;
             try
@@ -324,7 +325,7 @@ namespace gView.Framework.Db
             }
             return true;
         }
-        public bool SQLQuery(ref DataSet ds, string sql, string table, DataRow refRow)
+        async public Task<bool> SQLQuery(DataSet ds, string sql, string table, DataRow refRow)
         {
             string field = getFieldPlacehoder(sql);
             while (field != "")
@@ -337,13 +338,13 @@ namespace gView.Framework.Db
                 sql = sql.Replace("[" + field + "]", refRow[field].ToString());
                 field = getFieldPlacehoder(sql);
             }
-            return SQLQuery(ref ds, sql, table);
+            return await SQLQuery(ds, sql, table);
         }
-        public bool SQLQuery(string sql, ref XmlNode feature)
+        async public Task<bool> SQLQuery(string sql, XmlNode feature)
         {
-            return SQLQuery(sql, ref feature, true);
+            return await SQLQuery(sql, feature, true);
         }
-        public bool SQLQuery(string sql, ref XmlNode feature, bool one2n)
+        async public Task<bool> SQLQuery(string sql, XmlNode feature, bool one2n)
         {
             string field = getFieldPlacehoder(sql);
             while (field != "")
@@ -355,7 +356,7 @@ namespace gView.Framework.Db
             }
 
             DataSet ds = new DataSet();
-            if (!SQLQuery(ref ds, sql, "JOIN")) return false;
+            if (!await SQLQuery(ds, sql, "JOIN")) return false;
             if (ds.Tables["JOIN"].Rows.Count == 0) return false;
             DataRow row = ds.Tables["JOIN"].Rows[0];
 
@@ -448,12 +449,12 @@ namespace gView.Framework.Db
             }
         }
 
-        public object QuerySingleField(string sql, string FieldName)
+        async public Task<object> QuerySingleField(string sql, string FieldName)
         {
             try
             {
                 DataSet ds = new DataSet();
-                if (SQLQuery(ref ds, sql, "FIELD"))
+                if (await SQLQuery(ds, sql, "FIELD"))
                 {
                     if (ds.Tables["FIELD"].Rows.Count > 0)
                     {
@@ -1038,7 +1039,7 @@ namespace gView.Framework.Db
             return schema;
         }
 
-        public bool createTable(DataTable tab, bool data)
+        async public Task<bool> createTable(DataTable tab, bool data)
         {
             try
             {
@@ -1069,7 +1070,7 @@ namespace gView.Framework.Db
                     {
                         DataSet ds = new DataSet();
                         string[] fields_ = fields.Split(';');
-                        if (this.SQLQuery(ref ds, "SELECT * FROM " + tab.TableName, tab.TableName, true))
+                        if (await this.SQLQuery(ds, "SELECT * FROM " + tab.TableName, tab.TableName, true))
                         {
                             foreach (DataRow row in tab.Rows)
                             {

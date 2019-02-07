@@ -785,14 +785,14 @@ namespace gView.DataSources.Fdb.SQLite
                 if (selectedFcId == -1)
                 {
                     #region Complex Edge
-                    object eidObj = _fdb._conn.QuerySingleField("SELECT eid FROM " + _fdb.TableName("FC_" + _name + "_ComplexEdges") + " WHERE " + _fdb.DbColName("FDB_OID") + "=" + selected.OID, "eid");
+                    object eidObj = _fdb._conn.QuerySingleField("SELECT eid FROM " + _fdb.TableName("FC_" + _name + "_ComplexEdges") + " WHERE " + _fdb.DbColName("FDB_OID") + "=" + selected.OID, "eid").Result;
                     if (eidObj != null)
                         eid = Convert.ToInt32(eidObj);
                     #endregion
                 }
                 else
                 {
-                    object eidObj = _fdb._conn.QuerySingleField("SELECT eid FROM " + _fdb.TableName(_name + "_EdgeIndex") + " WHERE FCID=" + selectedFcId + " AND OID=" + selected.OID, "eid");
+                    object eidObj = _fdb._conn.QuerySingleField("SELECT eid FROM " + _fdb.TableName(_name + "_EdgeIndex") + " WHERE FCID=" + selectedFcId + " AND OID=" + selected.OID, "eid").Result;
                     if (eidObj != null)
                         eid = Convert.ToInt32(eidObj);
                 }

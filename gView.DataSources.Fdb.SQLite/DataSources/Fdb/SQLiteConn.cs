@@ -6,6 +6,7 @@ using Microsoft.Data.Sqlite;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.Sqlite
 {
@@ -86,9 +87,9 @@ namespace gView.DataSources.Fdb.Sqlite
             get { return _lastException; }
         }
 
-        public bool SQLQuery(ref System.Data.DataSet ds, string sql, string table, bool writeable)
+        async public Task<bool> SQLQuery(System.Data.DataSet ds, string sql, string table, bool writeable)
         {
-            if (!writeable) return SQLQuery(ref ds, sql, table);
+            if (!writeable) return await SQLQuery(ds, sql, table);
 
             throw new NotImplementedException();
             //if(m_updateAdapter!=null) m_updateAdapter.Dispose();
@@ -150,47 +151,47 @@ namespace gView.DataSources.Fdb.Sqlite
             //}
         }
 
-        public DataTable Select(string fields, string from)
+        public Task<DataTable> Select(string fields, string from)
         {
             return Select(fields, from, "", "", false);
         }
-        public DataTable Select(string fields, string from, string where)
+        public Task<DataTable> Select(string fields, string from, string where)
         {
             return Select(fields, from, where, "", false);
         }
-        public DataTable Select(string fields, string from, string where, string orderBy)
+        public Task<DataTable> Select(string fields, string from, string where, string orderBy)
         {
             return Select(fields, from, where, orderBy, false);
         }
-        public DataTable Select(string fields, string from, string where, string orderBy, bool writeable)
+        async public Task<DataTable> Select(string fields, string from, string where, string orderBy, bool writeable)
         {
             DataSet ds = new DataSet();
             string sql = "SELECT " + ((fields == "") ? "*" : fields)
                                + " FROM " + from
                                + ((where == "") ? "" : " WHERE " + where)
                                + ((orderBy == "") ? "" : " ORDER BY " + orderBy);
-            if (!SQLQuery(ref ds, sql, "TAB1", writeable))
+            if (!await SQLQuery(ds, sql, "TAB1", writeable))
             {
                 return null;
             }
             return ds.Tables[0];
         }
 
-        public bool SQLQuery(ref DataSet ds, string sql, string table)
+        async public Task<bool> SQLQuery(DataSet ds, string sql, string table)
         {
             try
             {
                 using (var connection = new SqliteConnection(_connectionString))
                 {
                     var command = new SqliteCommand(sql, connection);
-                    connection.Open();
+                    await connection.OpenAsync();
 
-                    using(var reader=command.ExecuteReader())
+                    using(var reader=await command.ExecuteReaderAsync())
                     {
                         DataTable tab = new DataTable(table);
                         ds.Tables.Add(tab);
 
-                        while (reader.Read())
+                        while (await reader.ReadAsync())
                         {
                             int fieldCount = reader.FieldCount;
 
@@ -224,7 +225,7 @@ namespace gView.DataSources.Fdb.Sqlite
             }
             return true;
         }
-        public bool SQLQuery(ref DataSet ds, string sql, string table, DataRow refRow)
+        async public Task<bool> SQLQuery(DataSet ds, string sql, string table, DataRow refRow)
         {
             string field = getFieldPlacehoder(sql);
             while (field != "")
@@ -237,13 +238,13 @@ namespace gView.DataSources.Fdb.Sqlite
                 sql = sql.Replace("[" + field + "]", refRow[field].ToString());
                 field = getFieldPlacehoder(sql);
             }
-            return SQLQuery(ref ds, sql, table);
+            return await SQLQuery(ds, sql, table);
         }
-        public bool SQLQuery(string sql, ref XmlNode feature)
+        async public Task<bool> SQLQuery(string sql, XmlNode feature)
         {
-            return SQLQuery(sql, ref feature, true);
+            return await SQLQuery(sql, feature, true);
         }
-        public bool SQLQuery(string sql, ref XmlNode feature, bool one2n)
+        async public Task<bool> SQLQuery(string sql, XmlNode feature, bool one2n)
         {
             string field = getFieldPlacehoder(sql);
             while (field != "")
@@ -255,7 +256,7 @@ namespace gView.DataSources.Fdb.Sqlite
             }
 
             DataSet ds = new DataSet();
-            if (!SQLQuery(ref ds, sql, "JOIN")) return false;
+            if (!await SQLQuery(ds, sql, "JOIN")) return false;
             if (ds.Tables["JOIN"].Rows.Count == 0) return false;
             DataRow row = ds.Tables["JOIN"].Rows[0];
 
@@ -310,12 +311,12 @@ namespace gView.DataSources.Fdb.Sqlite
             throw new NotImplementedException();
         }
 
-        public object QuerySingleField(string sql, string FieldName)
+        async public Task<object> QuerySingleField(string sql, string FieldName)
         {
             try
             {
                 DataSet ds = new DataSet();
-                if (SQLQuery(ref ds, sql, "FIELD"))
+                if (await SQLQuery(ds, sql, "FIELD"))
                 {
                     if (ds.Tables["FIELD"].Rows.Count > 0)
                     {
@@ -548,7 +549,7 @@ namespace gView.DataSources.Fdb.Sqlite
             return schema;
         }
 
-        public bool createTable(System.Data.DataTable tab, bool data)
+        async public Task<bool> createTable(System.Data.DataTable tab, bool data)
         {
             try
             {
@@ -579,7 +580,7 @@ namespace gView.DataSources.Fdb.Sqlite
                     {
                         DataSet ds = new DataSet();
                         string[] fields_ = fields.Split(';');
-                        if (this.SQLQuery(ref ds, "SELECT * FROM " + tab.TableName, tab.TableName, true))
+                        if (await this.SQLQuery(ds, "SELECT * FROM " + tab.TableName, tab.TableName, true))
                         {
                             foreach (DataRow row in tab.Rows)
                             {

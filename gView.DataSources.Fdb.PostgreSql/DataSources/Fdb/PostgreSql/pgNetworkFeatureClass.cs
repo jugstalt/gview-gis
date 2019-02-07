@@ -783,14 +783,14 @@ namespace gView.DataSources.Fdb.PostgreSql
                 if (selectedFcId == -1)
                 {
                     #region Complex Edge
-                    object eidObj = _fdb._conn.QuerySingleField("SELECT eid FROM " + _fdb.TableName("FC_" + _name + "_ComplexEdges") + " WHERE " + _fdb.DbColName("FDB_OID") + "=" + selected.OID, "eid");
+                    object eidObj = _fdb._conn.QuerySingleField("SELECT eid FROM " + _fdb.TableName("FC_" + _name + "_ComplexEdges") + " WHERE " + _fdb.DbColName("FDB_OID") + "=" + selected.OID, "eid").Result;
                     if (eidObj != null)
                         eid = (int)eidObj;
                     #endregion
                 }
                 else
                 {
-                    object eidObj = _fdb._conn.QuerySingleField("SELECT eid FROM " + _fdb.TableName(_name + "_EdgeIndex") + " WHERE fcid=" + selectedFcId + " AND oid=" + selected.OID, "eid");
+                    object eidObj = _fdb._conn.QuerySingleField("SELECT eid FROM " + _fdb.TableName(_name + "_EdgeIndex") + " WHERE fcid=" + selectedFcId + " AND oid=" + selected.OID, "eid").Result;
                     if (eidObj != null)
                         eid = (int)eidObj;
                 }

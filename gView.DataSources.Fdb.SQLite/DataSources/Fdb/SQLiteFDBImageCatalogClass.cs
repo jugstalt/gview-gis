@@ -752,8 +752,8 @@ namespace gView.DataSources.Fdb.SQLite
 
         public Task<IRasterLayer> NextRasterLayer()
         {
-            if (_cursor == null || _layer == null) return
-                    Task.FromResult<IRasterLayer>(null);
+            if (_cursor == null || _layer == null)
+                  return Task.FromResult<IRasterLayer>(null);
 
             try
             {

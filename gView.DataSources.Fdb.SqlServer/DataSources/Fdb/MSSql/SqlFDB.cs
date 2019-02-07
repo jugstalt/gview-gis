@@ -196,7 +196,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                 SetVersion();
 
-                DataTable tab = _conn.Select("*", "sys.Assemblies", "name='MSSqlSpatialEngine'");
+                DataTable tab = _conn.Select("*", "sys.Assemblies", "name='MSSqlSpatialEngine'").Result;
                 if (tab != null)
                 {
                     _seVersion = (tab.Rows.Count == 0) ? 0 : 1;
@@ -250,7 +250,7 @@ namespace gView.DataSources.Fdb.MSSql
                 int sRefID = CreateSpatialReference(sRef);
 
                 DataSet ds = new DataSet();
-                if (!_conn.SQLQuery(ref ds, "SELECT * FROM FDB_Datasets WHERE Name='" + name + "'", "DS", true))
+                if (!_conn.SQLQuery(ds, "SELECT * FROM FDB_Datasets WHERE Name='" + name + "'", "DS", true).Result)
                 {
                     _errMsg = _conn.errorMessage;
                     return -1;
@@ -328,7 +328,7 @@ namespace gView.DataSources.Fdb.MSSql
 
             if (((IFDBDataset)fc.Dataset).SpatialIndexDef is MSSpatialIndex)
             {
-                return new SqlFDBFeatureCursor2008(_conn.ConnectionString, fc, filter, ((MSSpatialIndex)((IFDBDataset)fc.Dataset).SpatialIndexDef).GeometryType);
+                return await SqlFDBFeatureCursor2008.Create(_conn.ConnectionString, fc, filter, ((MSSpatialIndex)((IFDBDataset)fc.Dataset).SpatialIndexDef).GeometryType);
             }
 
             //if (_seVersion != 0)
@@ -414,7 +414,7 @@ namespace gView.DataSources.Fdb.MSSql
                     }
                 }
 
-                return new SqlFDBFeatureCursor(_conn.ConnectionString, sql, where, orederBy, filter.NoLock, NIDs, sFilter, fc,
+                return await SqlFDBFeatureCursor.Create(_conn.ConnectionString, sql, where, orederBy, filter.NoLock, NIDs, sFilter, fc,
                     (filter != null) ? filter.FeatureSpatialReference : null);
             }
         }
@@ -449,7 +449,7 @@ namespace gView.DataSources.Fdb.MSSql
                 }
             }
 
-            DataTable tab = _conn.Select("*", "FDB_FeatureClasses", "DatasetID=" + sqlDataset._dsID + " AND Name='" + elementName + "'");
+            DataTable tab = _conn.Select("*", "FDB_FeatureClasses", "DatasetID=" + sqlDataset._dsID + " AND Name='" + elementName + "'").Result;
             if (tab == null || tab.Rows == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -488,7 +488,7 @@ namespace gView.DataSources.Fdb.MSSql
                 string[] viewNames = row["Name"].ToString().Split('@');
                 if (viewNames.Length != 2)
                     return null;
-                DataTable tab2 = _conn.Select("*", "FDB_FeatureClasses", "DatasetID=" + sqlDataset._dsID + " AND Name='" + viewNames[0] + "'");
+                DataTable tab2 = _conn.Select("*", "FDB_FeatureClasses", "DatasetID=" + sqlDataset._dsID + " AND Name='" + viewNames[0] + "'").Result;
                 if (tab2 == null || tab2.Rows.Count !=1)
                     return null;
                 fcRow = tab2.Rows[0];
@@ -528,7 +528,7 @@ namespace gView.DataSources.Fdb.MSSql
         internal DataTable Select(string fields, string from, string where)
         {
             if (_conn == null) return null;
-            return _conn.Select(fields, from, where);
+            return _conn.Select(fields, from, where).Result;
         }
 
         public override string ConnectionString
@@ -549,7 +549,7 @@ namespace gView.DataSources.Fdb.MSSql
             if (dsID == -1) return null;
 
             DataSet ds = new DataSet();
-            if (!_conn.SQLQuery(ref ds, "SELECT * FROM FDB_FeatureClasses WHERE DatasetID=" + dsID, "FC"))
+            if (!_conn.SQLQuery(ds, "SELECT * FROM FDB_FeatureClasses WHERE DatasetID=" + dsID, "FC").Result)
             {
                 _errMsg = _conn.errorMessage;
                 return null;
@@ -1052,7 +1052,7 @@ namespace gView.DataSources.Fdb.MSSql
             {
                 string where = "FDB_OID IN (" + ids + ")";
 
-                DataTable source = _conn.Select("*", FcTableName(FCName), where, "FDB_OID");
+                DataTable source = _conn.Select("*", FcTableName(FCName), where, "FDB_OID").Result;
                 if (source == null)
                 {
                     _errMsg = _conn.errorMessage;
@@ -1649,7 +1649,7 @@ namespace gView.DataSources.Fdb.MSSql
                     }
                     if (!String.IsNullOrEmpty(replicationField))
                     {
-                        DataTable tab = _conn.Select(replicationField, FcTableName(fClass), ((where != String.Empty) ? where : ""));
+                        DataTable tab = _conn.Select(replicationField, FcTableName(fClass), ((where != String.Empty) ? where : "")).Result;
                         if (tab == null)
                         {
                             _errMsg = "Replication Error: " + _conn.errorMessage;
@@ -2172,7 +2172,7 @@ namespace gView.DataSources.Fdb.MSSql
             try
             {
                 string sql = "IF EXISTS (SELECT 1 FROM sysobjects WHERE xtype='u' AND name='" + tableName + "') SELECT 1 as TAB_EXISTS ELSE SELECT 0 as TAB_EXISTS";
-                int exists = (int)_conn.QuerySingleField(sql, "TAB_EXISTS");
+                int exists = (int)_conn.QuerySingleField(sql, "TAB_EXISTS").Result;
 
                 return exists != 0;
             }
@@ -2188,7 +2188,7 @@ namespace gView.DataSources.Fdb.MSSql
 
             try
             {
-                DataTable tab = _conn.Select("name", "sysobjects", "xtype='u'");
+                DataTable tab = _conn.Select("name", "sysobjects", "xtype='u'").Result;
                 if (tab != null)
                 {
                     List<string> tables = new List<string>();
@@ -2209,7 +2209,7 @@ namespace gView.DataSources.Fdb.MSSql
 
             try
             {
-                DataTable tab = _conn.Select("name", "sysobjects", "xtype='v'");
+                DataTable tab = _conn.Select("name", "sysobjects", "xtype='v'").Result;
                 if (tab != null)
                 {
                     List<string> views = new List<string>();
@@ -2723,15 +2723,15 @@ namespace gView.DataSources.Fdb.MSSql
             this.Dispose();
         }
 
-        public override Task<IFeature> NextFeature()
+        async public override Task<IFeature> NextFeature()
         {
             try
             {
                 if (_reader == null) return null;
-                if (!_reader.Read())
+                if (!await _reader.ReadAsync())
                 {
                     ExecuteReader();
-                    return NextFeature();
+                    return await NextFeature();
                 }
 
                 Feature feature = new Feature();
@@ -2776,12 +2776,12 @@ namespace gView.DataSources.Fdb.MSSql
                 }
 
                 Transform(feature);
-                return Task.FromResult<IFeature>(feature);
+                return feature;
             }
             catch
             {
                 Dispose();
-                return Task.FromResult<IFeature>(null);
+                return null;
             }
         }
 
@@ -2804,16 +2804,23 @@ namespace gView.DataSources.Fdb.MSSql
         //Envelope _queryEnvelope;
         ISpatialFilter _spatialFilter;
 
-        public SqlFDBFeatureCursor(string connString, string sql, string where, string orderBy, bool nolock, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef) :
+        private SqlFDBFeatureCursor(IGeometryDef geomDef, ISpatialReference toSRef) :
             base((geomDef != null) ? geomDef.SpatialReference : null,
                 /*(filter!=null) ? filter.FeatureSpatialReference : null*/
                  toSRef)
         {
+            
+        }
+
+        async public static Task<IFeatureCursor> Create(string connString, string sql, string where, string orderBy, bool nolock, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef)
+        {
+            var cursor = new SqlFDBFeatureCursor(geomDef, toSRef);
+
             try
             {
-                _connection = new SqlConnection(connString);
-                _command = new SqlCommand(_sql = sql, _connection);
-                _connection.Open();
+                cursor._connection = new SqlConnection(connString);
+                cursor._command = new SqlCommand(cursor._sql = sql, cursor._connection);
+                await cursor._connection.OpenAsync();
 
                 // Schema auslesen...
                 //SqlDataReader schema=_command.ExecuteReader(CommandBehavior.SchemaOnly);
@@ -2821,16 +2828,17 @@ namespace gView.DataSources.Fdb.MSSql
                 //schema.Close();
                 //_command.Dispose();
 
-                _geomDef = geomDef;
-                _where = where;
-                _orderBy = orderBy;
-                _nolock = nolock;
+                cursor._geomDef = geomDef;
+                cursor._where = where;
+                cursor._orderBy = orderBy;
+                cursor._nolock = nolock;
                 if (nids != null)
                 {
-                    /*if (nids.Count > 0)*/ _nids = nids;
+                    /*if (nids.Count > 0)*/
+                    cursor._nids = nids;
                 }
 
-                _spatialFilter = filter;
+                cursor._spatialFilter = filter;
                 //_queryGeometry = queryGeometry;
                 //if(_queryGeometry!=null) 
                 //{
@@ -2838,16 +2846,18 @@ namespace gView.DataSources.Fdb.MSSql
                 //    if(queryGeometry.Envelope!=null) _queryEnvelope=new Envelope(_queryGeometry.Envelope);
                 //}
 
-                ExecuteReader();
+                await cursor.ExecuteReaderAsync();
             }
             catch (Exception ex)
             {
-                Dispose();
+                cursor.Dispose();
                 throw (ex);
             }
+
+            return cursor;
         }
 
-        private bool ExecuteReader()
+        async private Task<bool> ExecuteReaderAsync()
         {
             if (_reader != null)
             {
@@ -2930,7 +2940,7 @@ namespace gView.DataSources.Fdb.MSSql
             if (parameter != null) parameter.Value = pVal;
             if (parameter2 != null) parameter2.Value = p2Val;
 
-            _reader = _command.ExecuteReader(CommandBehavior.Default);
+            _reader = await _command.ExecuteReaderAsync(CommandBehavior.Default);
 
             return true;
         }
@@ -3024,7 +3034,7 @@ namespace gView.DataSources.Fdb.MSSql
             this.Dispose();
         }
 
-        public override Task<IFeature> NextFeature()
+        async public override Task<IFeature> NextFeature()
         {
             try
             {
@@ -3033,12 +3043,12 @@ namespace gView.DataSources.Fdb.MSSql
                     if (_reader == null)
                     {
                         this.Dispose();
-                        return Task.FromResult<IFeature>(null);
+                        return null;
                     }
-                    if (!_reader.Read())
+                    if (!await _reader.ReadAsync())
                     {
-                        this.ExecuteReader();
-                        return this.NextFeature();
+                        await this.ExecuteReaderAsync();
+                        return await this.NextFeature();
                     }
 
                     Feature feature = new Feature();
@@ -3103,7 +3113,7 @@ namespace gView.DataSources.Fdb.MSSql
                     if (feature == null) continue;
 
                     Transform(feature);
-                    return Task.FromResult<IFeature>(feature);
+                    return feature;
                 }
             }
             catch (Exception ex)
@@ -3315,10 +3325,17 @@ namespace gView.DataSources.Fdb.MSSql
         private SqlDataReader _reader;
         private SqlCommand _command;
 
-        public SqlFDBFeatureCursor2008(string connectionString, IFeatureClass fc, IQueryFilter filter, GeometryFieldType geometryType)
+        private SqlFDBFeatureCursor2008(IFeatureClass fc, IQueryFilter filter)
             : base((fc != null) ? fc.SpatialReference : null,
             (filter != null) ? filter.FeatureSpatialReference : null)
         {
+            
+        }
+
+        async public static Task<IFeatureCursor> Create(string connectionString, IFeatureClass fc, IQueryFilter filter, GeometryFieldType geometryType)
+        {
+            var cursor = new SqlFDBFeatureCursor2008(fc, filter);
+
             StringBuilder where = new StringBuilder();
 
             if (filter.SubFields == "*")
@@ -3385,31 +3402,32 @@ namespace gView.DataSources.Fdb.MSSql
 
             string tabName = ((fc is SqlFDBFeatureClass) ? ((SqlFDBFeatureClass)fc).DbTableName : "FC_" + fc.Name);
 
-            _command = new SqlCommand();
-            _command.CommandText = "SELECT " + fieldNames + " FROM " + tabName;
+            cursor._command = new SqlCommand();
+            cursor._command.CommandText = "SELECT " + fieldNames + " FROM " + tabName;
             if (!String.IsNullOrEmpty(where.ToString()))
             {
-                _command.CommandText += " WHERE " + where.ToString() + ((filterWhereClause != "") ? " AND (" + filterWhereClause + ")" : "");
+                cursor._command.CommandText += " WHERE " + where.ToString() + ((filterWhereClause != "") ? " AND (" + filterWhereClause + ")" : "");
             }
             else if (!String.IsNullOrEmpty(filterWhereClause))
             {
-                _command.CommandText += " WHERE " + filterWhereClause;
+                cursor._command.CommandText += " WHERE " + filterWhereClause;
             }
 
             try
             {
-                _connection = new SqlConnection(connectionString);
-                _connection.Open();
-                _command.Connection = _connection;
+                cursor._connection = new SqlConnection(connectionString);
+                await cursor._connection.OpenAsync();
+                cursor._command.Connection = cursor._connection;
 
-                _reader = _command.ExecuteReader();
+                cursor._reader = await cursor._command.ExecuteReaderAsync();
             }
             catch (Exception ex)
             {
                 string msg = ex.Message;
-                _reader = null;
+                cursor._reader = null;
             }
 
+            return cursor;
         }
 
         #region IFeatureCursor Member

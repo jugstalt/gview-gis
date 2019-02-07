@@ -179,7 +179,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 }
             }
 
-            DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + pgDataset._dsID + " AND " + DbColName("Name") + "='" + elementName + "'");
+            DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + pgDataset._dsID + " AND " + DbColName("Name") + "='" + elementName + "'").Result;
             if (tab == null || tab.Rows == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -218,7 +218,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 string[] viewNames = row["Name"].ToString().Split('@');
                 if (viewNames.Length != 2)
                     return null;
-                DataTable tab2 = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + pgDataset._dsID + " AND " + DbColName("Name") + "='" + viewNames[0] + "'");
+                DataTable tab2 = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + pgDataset._dsID + " AND " + DbColName("Name") + "='" + viewNames[0] + "'").Result;
                 if (tab2 == null || tab2.Rows.Count != 1)
                     return null;
                 fcRow = tab2.Rows[0];
@@ -287,7 +287,7 @@ namespace gView.DataSources.Fdb.PostgreSql
         internal DataTable Select(string fields, string from, string where)
         {
             if (_conn == null) return null;
-            return _conn.Select(fields, from, where);
+            return _conn.Select(fields, from, where).Result;
         }
         #endregion
 
@@ -424,7 +424,7 @@ AND pg_catalog.pg_table_is_visible(c.oid)
 FROM pg_catalog.pg_class c
 WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
-                int exists = Convert.ToInt32(_conn.QuerySingleField(sql, "colcount"));
+                int exists = Convert.ToInt32(_conn.QuerySingleField(sql, "colcount").Result);
 
                 return exists > 0;
             }
@@ -440,7 +440,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
             try
             {
-                DataTable tab = _conn.Select("relname", "pg_catalog.pg_class", "relkind='r'");
+                DataTable tab = _conn.Select("relname", "pg_catalog.pg_class", "relkind='r'").Result;
                 if (tab != null)
                 {
                     List<string> tables = new List<string>();
@@ -469,7 +469,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
             try
             {
-                DataTable tab = _conn.Select("relname", "pg_catalog.pg_class", "relkind='v'");
+                DataTable tab = _conn.Select("relname", "pg_catalog.pg_class", "relkind='v'").Result;
                 if (tab != null)
                 {
                     List<string> views = new List<string>();
@@ -496,7 +496,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             try
             {
                 string sql = "SELECT has_table_privilege('" + tableName + "', 'select') as p";
-                return Convert.ToBoolean(_conn.QuerySingleField(sql, "p"));
+                return Convert.ToBoolean(_conn.QuerySingleField(sql, "p").Result);
             }
             catch
             {
@@ -637,7 +637,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 }
             }
 
-            return new pgFeatureCursor(_conn.ConnectionString, sql, DataProvider.ToDbWhereClause("npgsql", where), orederBy, filter.NoLock, NIDs, sFilter, fc,
+            return await pgFeatureCursor.Create(_conn.ConnectionString, sql, DataProvider.ToDbWhereClause("npgsql", where), orederBy, filter.NoLock, NIDs, sFilter, fc,
                 (filter != null) ? filter.FeatureSpatialReference : null);
 
         }
@@ -658,7 +658,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             if (dsID == -1) return null;
 
             DataSet ds = new DataSet();
-            if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("DatasetID") + "=" + dsID, "FC"))
+            if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("DatasetID") + "=" + dsID, "FC").Result)
             {
                 _errMsg = _conn.errorMessage;
                 return null;
@@ -1101,7 +1101,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                         }
                         if (!String.IsNullOrEmpty(replicationField))
                         {
-                            DataTable tab = _conn.Select(DbColName(replicationField), FcTableName(fClass), ((where != String.Empty) ? where : ""));
+                            DataTable tab = _conn.Select(DbColName(replicationField), FcTableName(fClass), ((where != String.Empty) ? where : "")).Result;
                             if (tab == null)
                             {
                                 _errMsg = "Replication Error: " + _conn.errorMessage;
@@ -1650,41 +1650,51 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             List<long> _nids;
             ISpatialFilter _spatialFilter;
 
-            public pgFeatureCursor(string connString, string sql, string where, string orderBy, bool nolock, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef) :
+            public pgFeatureCursor(IGeometryDef geomDef, ISpatialReference toSRef) :
                 base((geomDef != null) ? geomDef.SpatialReference : null,
                      toSRef)
             {
+                
+            }
+
+            async static public Task<IFeatureCursor> Create(string connString, string sql, string where, string orderBy, bool nolock, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef)
+            {
+                var cursor = new pgFeatureCursor(geomDef, toSRef);
+
                 try
                 {
-                    _factory = pgFDB._dbProviderFactory;
-                    _connection = _factory.CreateConnection();
-                    _connection.ConnectionString = connString;
-                    _command = _factory.CreateCommand();
-                    _command.CommandText = _sql = sql;
-                    _command.Connection = _connection;
-                    _connection.Open();
+                    cursor._factory = pgFDB._dbProviderFactory;
+                    cursor._connection = cursor._factory.CreateConnection();
+                    cursor._connection.ConnectionString = connString;
+                    cursor._command = cursor._factory.CreateCommand();
+                    cursor._command.CommandText = cursor._sql = sql;
+                    cursor._command.Connection = cursor._connection;
+                    await cursor._connection.OpenAsync();
 
-                    _geomDef = geomDef;
-                    _where = where;
-                    _orderBy = orderBy;
-                    _nolock = nolock;
+                    cursor._geomDef = geomDef;
+                    cursor._where = where;
+                    cursor._orderBy = orderBy;
+                    cursor._nolock = nolock;
                     if (nids != null)
                     {
-                        /*if (nids.Count > 0)*/ _nids = nids;
+                        /*if (nids.Count > 0)*/
+                        cursor._nids = nids;
                     }
 
-                    _spatialFilter = filter;
+                    cursor._spatialFilter = filter;
 
-                    ExecuteReader();
+                    await cursor.ExecuteReaderAsync();
                 }
                 catch (Exception ex)
                 {
-                    Dispose();
+                    cursor.Dispose();
                     throw (ex);
                 }
+
+                return cursor;
             }
 
-            private bool ExecuteReader()
+            async private Task<bool> ExecuteReaderAsync()
             {
                 if (_reader != null)
                 {
@@ -1756,7 +1766,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                 if (String.IsNullOrEmpty(_command.CommandText))
                     _command.CommandText = GetCommandText(null, where);
-                _reader = _command.ExecuteReader(CommandBehavior.Default);
+                _reader = await _command.ExecuteReaderAsync(CommandBehavior.Default);
 
                 return true;
             }
@@ -1834,7 +1844,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                         }
                         if (!await _reader.ReadAsync())
                         {
-                            this.ExecuteReader();
+                            await this.ExecuteReaderAsync();
                             return await this.NextFeature();
                         }
 

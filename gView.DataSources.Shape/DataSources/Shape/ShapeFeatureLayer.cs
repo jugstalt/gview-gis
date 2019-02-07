@@ -656,7 +656,7 @@ namespace gView.DataSources.Shape
                 while (true)
                 {
                     if (_shape >= _file.Entities)
-                        Task.FromResult<IFeature>(null);
+                      return Task.FromResult<IFeature>(null);
 
                     if (_queryShape)
                     {
@@ -725,7 +725,7 @@ namespace gView.DataSources.Shape
                 while (true)
                 {
                     if (_shape >= _IDs.Count)
-                        Task.FromResult<IFeature>(null);
+                      return Task.FromResult<IFeature>(null);
 
                     if (_queryShape)
                     {

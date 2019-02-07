@@ -82,7 +82,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 _errMsg = "";
 
                 DataSet ds = new DataSet();
-                if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + name + "' AND " + DbColName("DatasetID") + "=" + DatasetID, "FC", false))
+                if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + name + "' AND " + DbColName("DatasetID") + "=" + DatasetID, "FC", false).Result)
                 {
                     _errMsg = _conn.errorMessage;
                     return -1;
@@ -111,7 +111,7 @@ namespace gView.DataSources.Fdb.MSAccess
             try
             {
                 DataSet ds = new DataSet();
-                if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("Name") + "='" + name + "'", "DS"))
+                if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("Name") + "='" + name + "'", "DS").Result)
                 {
                     _errMsg = _conn.errorMessage;
                     return -1;
@@ -139,7 +139,7 @@ namespace gView.DataSources.Fdb.MSAccess
             try
             {
                 DataSet ds = new DataSet();
-                if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("ID") + "=" + DatasetID, "DS"))
+                if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("ID") + "=" + DatasetID, "DS").Result)
                 {
                     _errMsg = _conn.errorMessage;
                     return String.Empty;
@@ -168,7 +168,7 @@ namespace gView.DataSources.Fdb.MSAccess
             try
             {
                 DataSet ds = new DataSet();
-                if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcName + "'", "FC"))
+                if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcName + "'", "FC").Result)
                 {
                     _errMsg = _conn.errorMessage;
                     return -1;
@@ -299,7 +299,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 int sRefID = CreateSpatialReference(sRef);
 
                 DataSet ds = new DataSet();
-                if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("Name") + "='" + name + "'", "DS", true))
+                if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("Name") + "='" + name + "'", "DS", true).Result)
                 {
                     _errMsg = _conn.errorMessage;
                     return -1;
@@ -330,7 +330,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 if (sIndexDef != null && FdbVersion >= new Version(1, 2, 0))
                 {
                     ds = new DataSet();
-                    if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_DatasetGeometryType") + " WHERE " + DbColName("DatasetID") + "=" + dsID, "DSGT", true))
+                    if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_DatasetGeometryType") + " WHERE " + DbColName("DatasetID") + "=" + dsID, "DSGT", true).Result)
                     {
                         await DeleteDataset(name);
                         _errMsg = _conn.errorMessage;
@@ -412,7 +412,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 try
                 {
                     DataSet ds = new DataSet();
-                    if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_Datasets"), "DS"))
+                    if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_Datasets"), "DS").Result)
                     {
                         _errMsg = _conn.errorMessage;
                         return null;
@@ -485,7 +485,7 @@ namespace gView.DataSources.Fdb.MSAccess
             try
             {
                 DataSet ds = new DataSet();
-                if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcname + "'", "FC", !tempFC))
+                if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcname + "'", "FC", !tempFC).Result)
                 {
                     _errMsg = _conn.errorMessage;
                     return -1;
@@ -658,7 +658,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 }
 
                 ds = new DataSet();
-                if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_FeatureClassFields") + " WHERE " + DbColName("FClassID") + "=" + FC_ID, "FCF", true))
+                if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_FeatureClassFields") + " WHERE " + DbColName("FClassID") + "=" + FC_ID, "FCF", true).Result)
                 {
                     _errMsg = _conn.errorMessage;
                     return -1;
@@ -738,7 +738,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
 
             DataSet ds = new DataSet();
-            if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + spatialViewName + "'", "FC", true))
+            if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + spatialViewName + "'", "FC", true).Result)
             {
                 _errMsg = _conn.errorMessage;
                 return -1;
@@ -798,7 +798,7 @@ namespace gView.DataSources.Fdb.MSAccess
             linkedConnectionString = Crypto.Encrypt(linkedConnectionString, "gView.Linked.Dataset");
 
             DataSet ds = new DataSet();
-            if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_LinkedConnections") + " WHERE " + DbColName("Plugin") + "=" + GuidToSql(linkedDsGuid) + " AND "+DbColName("Connection")+"='" + linkedConnectionString + "'", "Linked", true))
+            if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_LinkedConnections") + " WHERE " + DbColName("Plugin") + "=" + GuidToSql(linkedDsGuid) + " AND "+DbColName("Connection")+"='" + linkedConnectionString + "'", "Linked", true).Result)
             {
                 _errMsg = _conn.errorMessage;
                 return -1;
@@ -818,7 +818,7 @@ namespace gView.DataSources.Fdb.MSAccess
                     return -1;
                 }
 
-                _conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_LinkedConnections") + " WHERE " + DbColName("Plugin") + "=" + GuidToSql(linkedDsGuid) + " AND " + DbColName("Connection") + "='" + linkedConnectionString + "'", "Linked2");
+                _conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_LinkedConnections") + " WHERE " + DbColName("Plugin") + "=" + GuidToSql(linkedDsGuid) + " AND " + DbColName("Connection") + "='" + linkedConnectionString + "'", "Linked2").Wait();
                 linkedId = Convert.ToInt32(ds.Tables["Linked2"].Rows[0]["ID"]);
             }
             else
@@ -826,7 +826,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 linkedId = Convert.ToInt32(ds.Tables["Linked"].Rows[0]["ID"]);
             }
 
-            if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + linkedFc.Name + "'", "FC", true))
+            if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + linkedFc.Name + "'", "FC", true).Result)
             {
                 _errMsg = _conn.errorMessage;
                 return -1;
@@ -896,7 +896,7 @@ namespace gView.DataSources.Fdb.MSAccess
                     return false;
                 }
             }
-            DataTable FCs = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + fcName + "'", "", deleteFeatureClassesRow);
+            DataTable FCs = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + fcName + "'", "", deleteFeatureClassesRow).Result;
             if (FCs == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -929,7 +929,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 {
                     _conn.ExecuteNoneQuery("DELETE FROM " + TableName("FDB_Networks") + " WHERE ID=" + fcID.ToString());
                     _conn.ExecuteNoneQuery("DELETE FROM " + TableName("FDB_NetworkClasses") + " WHERE NetworkId=" + fcID.ToString());
-                    DataTable tab = _conn.Select(DbColName("WeightGuid"), TableName("FDB_NetworkWeights"), DbColName("NetworkId") + "=" + fcID.ToString());
+                    DataTable tab = _conn.Select(DbColName("WeightGuid"), TableName("FDB_NetworkWeights"), DbColName("NetworkId") + "=" + fcID.ToString()).Result;
                     if (tab != null)
                     {
                         foreach (DataRow row in tab.Rows)
@@ -994,7 +994,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 catch { }
             }
 
-            DataTable FCs = _conn.Select(DbColName("Name"), TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + dsID);
+            DataTable FCs = await _conn.Select(DbColName("Name"), TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + dsID);
             if (FCs == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -1262,7 +1262,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 return false;
             }
 
-            DataTable tab = _conn.Select(DbColName("ID") + "," + DbColName("Name"), TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + newFCName + "'", "", false);
+            DataTable tab = _conn.Select(DbColName("ID") + "," + DbColName("Name"), TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + newFCName + "'", "", false).Result;
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -1274,7 +1274,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 return false;
             }
 
-            tab = _conn.Select(DbColName("ID") + "," + DbColName("Name") + "," + DbColName("GeometryType"), TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'", "", true);
+            tab = _conn.Select(DbColName("ID") + "," + DbColName("Name") + "," + DbColName("GeometryType"), TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'", "", true).Result;
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -1318,7 +1318,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 _conn.RenameTable(FCName + "_Edges", newFCName + "_Edges");
                 _conn.RenameTable(FCName + "_EdgeIndex", newFCName + "_EdgeIndex");
 
-                DataTable tab2 = _conn.Select("WeightGuid", "FDB_NetworkWeights", "NetworkId=" + fcId.ToString());
+                DataTable tab2 = _conn.Select("WeightGuid", "FDB_NetworkWeights", "NetworkId=" + fcId.ToString()).Result;
                 if (tab2 != null)
                 {
                     foreach (DataRow row in tab2.Rows)
@@ -1340,7 +1340,7 @@ namespace gView.DataSources.Fdb.MSAccess
         {
             if (_conn == null) return false;
 
-            DataTable tab = _conn.Select(DbColName("ID") + "," + DbColName("Name"), TableName("FDB_Datasets"), DbColName("Name") + "='" + newDSName + "'", "", false);
+            DataTable tab = _conn.Select(DbColName("ID") + "," + DbColName("Name"), TableName("FDB_Datasets"), DbColName("Name") + "='" + newDSName + "'", "", false).Result;
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -1367,7 +1367,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 }
             }
 
-            tab = _conn.Select(DbColName("ID") + "," + DbColName("Name"), TableName("FDB_Datasets"), DbColName("Name") + "='" + DSName + "'", "", true);
+            tab = _conn.Select(DbColName("ID") + "," + DbColName("Name"), TableName("FDB_Datasets"), DbColName("Name") + "='" + DSName + "'", "", true).Result;
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -1481,7 +1481,7 @@ namespace gView.DataSources.Fdb.MSAccess
             if (_conn == null) return 0;
             try
             {
-                int count = Convert.ToInt32(_conn.QuerySingleField("SELECT COUNT(" + DbColName("FDB_OID") + ") AS " + ColumnName("COUNT_FEATURES") + " FROM " + FcTableName(fcname), ColumnName("COUNT_FEATURES")));
+                int count = Convert.ToInt32(_conn.QuerySingleField("SELECT COUNT(" + DbColName("FDB_OID") + ") AS " + ColumnName("COUNT_FEATURES") + " FROM " + FcTableName(fcname), ColumnName("COUNT_FEATURES")).Result);
                 return count;
             }
             catch (Exception ex)
@@ -1521,7 +1521,7 @@ namespace gView.DataSources.Fdb.MSAccess
         {
             if (FdbVersion >= new Version(1, 2, 0))
             {
-                DataTable tab = _conn.Select("*", TableName("FDB_DatasetGeometryType"), DbColName("DatasetID") + "=" + dsID);
+                DataTable tab = _conn.Select("*", TableName("FDB_DatasetGeometryType"), DbColName("DatasetID") + "=" + dsID).Result;
                 if (tab != null && tab.Rows.Count == 1)
                 {
                     DataRow row = tab.Rows[0];
@@ -1566,7 +1566,7 @@ namespace gView.DataSources.Fdb.MSAccess
             fcName = OriginFcName(fcName);
             try
             {
-                DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + fcName + "'");
+                DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + fcName + "'").Result;
 
                 if (tab != null && tab.Rows.Count == 1)
                 {
@@ -1615,7 +1615,7 @@ namespace gView.DataSources.Fdb.MSAccess
             if (_conn == null || Bounds == null) return false;
 
             FCName = OriginFcName(FCName);
-            DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'", "", true);
+            DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'", "", true).Result;
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -1699,7 +1699,7 @@ namespace gView.DataSources.Fdb.MSAccess
             string name_nodes = FcsiTableName(FCName);
 
             DataSet ds = new DataSet();
-            if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + name_nodes + " WHERE NID=-1", "NODES", true))
+            if (!_conn.SQLQuery(ds, "SELECT * FROM " + name_nodes + " WHERE NID=-1", "NODES", true).Result)
             {
                 _errMsg = _conn.errorMessage;
                 return false;
@@ -1727,7 +1727,7 @@ namespace gView.DataSources.Fdb.MSAccess
             if (_conn == null) return String.Empty;
 
             FCName = OriginFcName(FCName);
-            DataTable tab = _conn.Select(DbColName("SI"), TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'", "");
+            DataTable tab = _conn.Select(DbColName("SI"), TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'", "").Result;
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -1746,7 +1746,7 @@ namespace gView.DataSources.Fdb.MSAccess
             if (_conn == null) return null;
 
             FCName = OriginFcName(FCName);
-            DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'", "");
+            DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'", "").Result;
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -1767,7 +1767,7 @@ namespace gView.DataSources.Fdb.MSAccess
             {
                 BinarySearchTree tree = new BinarySearchTree(Bounds, (double)tab.Rows[0]["SIRATIO"]);
 
-                tab = _conn.Select("*", FcsiTableName(FCName), "", "PID");
+                tab = _conn.Select("*", FcsiTableName(FCName), "", "PID").Result;
                 if (tab == null)
                 {
                     _errMsg = _conn.errorMessage;
@@ -1789,7 +1789,7 @@ namespace gView.DataSources.Fdb.MSAccess
             else if (tab.Rows[0]["SI"].ToString() == "BinaryTree2")
             {
                 //System.Windows.Forms.MessageBox.Show("Before Distinct");
-                DataTable distinct = _conn.Select("DISTINCT " + DbColName("NID"), FcsiTableName(FCName), "", DbColName("NID"));
+                DataTable distinct = _conn.Select("DISTINCT " + DbColName("NID"), FcsiTableName(FCName), "", DbColName("NID")).Result;
                 if (distinct == null) return null;
                 //System.Windows.Forms.MessageBox.Show("After Distinct");
 
@@ -1883,7 +1883,7 @@ namespace gView.DataSources.Fdb.MSAccess
             FCName = OriginFcName(FCName);
             if (String.IsNullOrEmpty(FCName))
             {
-                DataTable tab = _conn.Select(DbColName("Name") + "," + DbColName("SIVersion"), TableName("FDB_FeatureClasses"));
+                DataTable tab = _conn.Select(DbColName("Name") + "," + DbColName("SIVersion"), TableName("FDB_FeatureClasses")).Result;
                 if (tab == null) return;
 
                 foreach (DataRow row in tab.Rows)
@@ -1903,7 +1903,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 if (tree == null) return;
 
                 int siVersion = 0;
-                object siVersionObject = _conn.QuerySingleField("SELECT " + DbColName("SIVersion") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + FCName + "'", ColumnName("SIVersion"));
+                object siVersionObject = _conn.QuerySingleField("SELECT " + DbColName("SIVersion") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + FCName + "'", ColumnName("SIVersion")).Result;
                 if (siVersionObject != System.DBNull.Value && siVersionObject != null)
                 {
                     siVersion = Convert.ToInt32(siVersionObject);
@@ -1923,7 +1923,7 @@ namespace gView.DataSources.Fdb.MSAccess
             try
             {
                 int siVersion = 1;
-                object siVersionObject = _conn.QuerySingleField("SELECT " + DbColName("SIVersion") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcName + "'", ColumnName("SIVersion"));
+                object siVersionObject = _conn.QuerySingleField("SELECT " + DbColName("SIVersion") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcName + "'", ColumnName("SIVersion")).Result;
                 if (siVersionObject != System.DBNull.Value && siVersionObject != null)
                 {
                     siVersion = Convert.ToInt32(siVersionObject) + 1;
@@ -1961,7 +1961,7 @@ namespace gView.DataSources.Fdb.MSAccess
             if (_conn == null) return null;
 
             FCName = OriginFcName(FCName);
-            DataTable oids = _conn.Select(DbColName("FDB_OID"), FcTableName(FCName), DbColName("FDB_NID") + "=" + NID, DbColName("FDB_OID"));
+            DataTable oids = _conn.Select(DbColName("FDB_OID"), FcTableName(FCName), DbColName("FDB_NID") + "=" + NID, DbColName("FDB_OID")).Result;
             if (oids == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -2024,7 +2024,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
             try
             {
-                DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'");
+                DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'").Result;
                 if (tab == null)
                 {
                     _errMsg = _conn.errorMessage;
@@ -2061,7 +2061,7 @@ namespace gView.DataSources.Fdb.MSAccess
             FCName = OriginFcName(FCName);
             try
             {
-                DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'", "", true);
+                DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'", "", true).Result;
                 if (tab == null)
                 {
                     _errMsg = _conn.errorMessage;
@@ -2104,7 +2104,7 @@ namespace gView.DataSources.Fdb.MSAccess
             //DropTable("FCSI_" + fcName);
             //if (!InitSpatialIndex2(fcName)) return false;
 
-            DataTable distinct = _conn.Select("DISTINCT " + DbColName("FDB_NID"), FcTableName(fcName));
+            DataTable distinct = _conn.Select("DISTINCT " + DbColName("FDB_NID"), FcTableName(fcName)).Result;
             if (distinct == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -2126,7 +2126,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
             NIDs.Sort();
 
-            DataTable si = _conn.Select("*", FcsiTableName(fcName), "", "", true);
+            DataTable si = _conn.Select("*", FcsiTableName(fcName), "", "", true).Result;
             if (si == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -2157,7 +2157,7 @@ namespace gView.DataSources.Fdb.MSAccess
             if (_conn == null) return null;
             try
             {
-                DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + fcName + "'", "");
+                DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + fcName + "'", "").Result;
                 if (tab == null)
                 {
                     _errMsg = _conn.errorMessage;
@@ -2198,7 +2198,7 @@ namespace gView.DataSources.Fdb.MSAccess
                     _errMsg = "Can't find featureclass '" + fcName + "'!";
                     return false;
                 }
-                DataTable featureclasses = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("ID") + "=" + fcID, "", true);
+                DataTable featureclasses = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("ID") + "=" + fcID, "", true).Result;
                 if (featureclasses == null)
                 {
                     _errMsg = _conn.errorMessage;
@@ -2517,10 +2517,10 @@ namespace gView.DataSources.Fdb.MSAccess
         {
             imageSpace = String.Empty;
             if (_conn == null) return false;
-            object field = _conn.QuerySingleField("SELECT " + DbColName("ImageDataset") + " FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("Name") + "='" + dsname + "'", ColumnName("ImageDataset"));
+            object field = _conn.QuerySingleField("SELECT " + DbColName("ImageDataset") + " FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("Name") + "='" + dsname + "'", ColumnName("ImageDataset")).Result;
             if (field is bool)
             {
-                imageSpace = (string)_conn.QuerySingleField("SELECT " + DbColName("ImageSpace") + " FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("Name") + "='" + dsname + "'", ColumnName("ImageSpace"));
+                imageSpace = (string)_conn.QuerySingleField("SELECT " + DbColName("ImageSpace") + " FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("Name") + "='" + dsname + "'", ColumnName("ImageSpace")).Result;
                 if (imageSpace == null) imageSpace = String.Empty;
                 return (bool)field;
             }
@@ -2601,7 +2601,7 @@ namespace gView.DataSources.Fdb.MSAccess
         {
             try
             {
-                DataTable tab = _conn.Select("*", TableName("FDB_LinkedConnections"), DbColName("ID") + "=" + linkedDsId);
+                DataTable tab = _conn.Select("*", TableName("FDB_LinkedConnections"), DbColName("ID") + "=" + linkedDsId).Result;
                 if (tab != null && tab.Rows.Count == 1)
                 {
                     Guid pluginId = new Guid(tab.Rows[0]["Plugin"].ToString());
@@ -2671,7 +2671,7 @@ namespace gView.DataSources.Fdb.MSAccess
             string datumParm = (sRef.Datum != null) ? sRef.Datum.Parameter : "";
 
             string where = DbColName("Name") + "='" + name + "' AND " + DbColName("Description") + "='" + desc + "' AND " + DbColName("Params") + " LIKE '" + parm + "' AND " + DbColName("DatumName") + "='" + datumName + "' AND " + DbColName("DatumParam") + "='" + datumParm + "'";
-            DataTable tab = _conn.Select("*", TableName("FDB_SpatialReference"), where, "", true);
+            DataTable tab = _conn.Select("*", TableName("FDB_SpatialReference"), where, "", true).Result;
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -2695,7 +2695,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 return -1;
             }
 
-            tab = _conn.Select("*", TableName("FDB_SpatialReference"), where, "");
+            tab = _conn.Select("*", TableName("FDB_SpatialReference"), where, "").Result;
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -2713,7 +2713,7 @@ namespace gView.DataSources.Fdb.MSAccess
         {
             if (_conn == null) return false;
 
-            DataTable tab = _conn.Select("*", TableName("FDB_Datasets"), DbColName("Name") + "='" + dsname + "'", "", true);
+            DataTable tab = _conn.Select("*", TableName("FDB_Datasets"), DbColName("Name") + "='" + dsname + "'", "", true).Result;
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -2805,7 +2805,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
 
             DataSet ds = new DataSet();
-            if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcName + "'", "FCS", true))
+            if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcName + "'", "FCS", true).Result)
             {
                 _errMsg = _conn.errorMessage;
                 return false;
@@ -2839,7 +2839,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
 
             DataSet ds = new DataSet();
-            if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + FCName + "'", "FCS"))
+            if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + FCName + "'", "FCS").Result)
             {
                 _errMsg = _conn.errorMessage;
                 return null;
@@ -2970,7 +2970,7 @@ namespace gView.DataSources.Fdb.MSAccess
             if (_conn == null) return new GeometryDef(geometryType.Unknown, null, false); ;
             string sql = "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + FCName + "'";
 
-            DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'");
+            DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'").Result;
             if (tab == null || tab.Rows.Count == 0) return new GeometryDef(geometryType.Unknown, null, false);
 
             DataRow row = tab.Rows[0];
@@ -2997,7 +2997,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 if (_conn == null) return null;
 
                 DataSet ds = new DataSet();
-                if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + DbColName("FDB_Datasets"), "DS"))
+                if (!_conn.SQLQuery(ds, "SELECT * FROM " + DbColName("FDB_Datasets"), "DS").Result)
                 {
                     _errMsg = _conn.errorMessage;
                     return null;
@@ -3027,11 +3027,11 @@ namespace gView.DataSources.Fdb.MSAccess
 
             int fcID = this.GetFeatureClassID(fcName);
 
-            DataTable featureclasses = _conn.Select(DbColName("DatasetID"), TableName("FDB_FeatureClasses"), DbColName("ID") + "=" + fcID);
+            DataTable featureclasses = _conn.Select(DbColName("DatasetID"), TableName("FDB_FeatureClasses"), DbColName("ID") + "=" + fcID).Result;
             if (featureclasses == null || featureclasses.Rows.Count != 1)
                 return null;
 
-            DataTable datasets = _conn.Select(DbColName("Name"), TableName("FDB_Datasets"), DbColName("ID") + "=" + featureclasses.Rows[0]["DatasetID"].ToString());
+            DataTable datasets = _conn.Select(DbColName("Name"), TableName("FDB_Datasets"), DbColName("ID") + "=" + featureclasses.Rows[0]["DatasetID"].ToString()).Result;
             if (datasets == null || datasets.Rows.Count != 1)
                 return null;
 
@@ -3042,11 +3042,11 @@ namespace gView.DataSources.Fdb.MSAccess
         {
             if (_conn == null) return null;
 
-            DataTable featureclasses = _conn.Select(DbColName("DatasetID") + "," + DbColName("Name"), TableName("FDB_FeatureClasses"), DbColName("ID") + "=" + fcId);
+            DataTable featureclasses = _conn.Select(DbColName("DatasetID") + "," + DbColName("Name"), TableName("FDB_FeatureClasses"), DbColName("ID") + "=" + fcId).Result;
             if (featureclasses == null || featureclasses.Rows.Count != 1)
                 return null;
 
-            DataTable datasets = _conn.Select(DbColName("Name"), TableName("FDB_Datasets"), DbColName("ID") + "=" + featureclasses.Rows[0]["DatasetID"].ToString());
+            DataTable datasets = _conn.Select(DbColName("Name"), TableName("FDB_Datasets"), DbColName("ID") + "=" + featureclasses.Rows[0]["DatasetID"].ToString()).Result;
             if (datasets == null || datasets.Rows.Count != 1)
                 return null;
 
@@ -3056,7 +3056,7 @@ namespace gView.DataSources.Fdb.MSAccess
         protected int DatasetIDFromFeatureClassName(string fcName)
         {
             if (_conn == null) return -1;
-            object obj = _conn.QuerySingleField("SELECT " + DbColName("DatasetID") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcName + "'", ColumnName("DatasetID"));
+            object obj = _conn.QuerySingleField("SELECT " + DbColName("DatasetID") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcName + "'", ColumnName("DatasetID")).Result;
             if (obj == null) return -1;
             try
             {
@@ -3073,7 +3073,7 @@ namespace gView.DataSources.Fdb.MSAccess
             int dsID = DatasetIDFromFeatureClassName(fcName);
             if (dsID == -1) return "";
 
-            object obj = _conn.QuerySingleField("SELECT " + DbColName("Name") + " FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("ID") + "=" + dsID, ColumnName("Name"));
+            object obj = _conn.QuerySingleField("SELECT " + DbColName("Name") + " FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("ID") + "=" + dsID, ColumnName("Name")).Result;
             if (obj == null) return "";
             try
             {
@@ -3092,7 +3092,7 @@ namespace gView.DataSources.Fdb.MSAccess
             if (fcID == -1) return null;
 
             DataSet ds = new DataSet();
-            if (!_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_FeatureClassFields") + " WHERE " + DbColName("FClassID") + "=" + fcID, "FIELDS"))
+            if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_FeatureClassFields") + " WHERE " + DbColName("FClassID") + "=" + fcID, "FIELDS").Result)
             {
                 _errMsg = _conn.errorMessage;
                 return null;
@@ -3249,7 +3249,7 @@ namespace gView.DataSources.Fdb.MSAccess
             string sql = "SELECT " + subfields + " FROM " + FcTableName(fcname) + " WHERE " + DbColName("FDB_OID") + "=-1";
 
             DataSet ds = new DataSet();
-            if (!_conn.SQLQuery(ref ds, sql, fcname))
+            if (!_conn.SQLQuery(ds, sql, fcname).Result)
             {
                 return null;
             }
@@ -3281,11 +3281,11 @@ namespace gView.DataSources.Fdb.MSAccess
         public ISpatialReference SpatialReference(int dsID)
         {
             if (_conn == null) return null;
-            object sID = _conn.QuerySingleField("SELECT " + DbColName("SpatialReferenceID") + " FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("ID") + "=" + dsID, ColumnName("SpatialReferenceID"));
+            object sID = _conn.QuerySingleField("SELECT " + DbColName("SpatialReferenceID") + " FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("ID") + "=" + dsID, ColumnName("SpatialReferenceID")).Result;
             if (sID == null) return null;
 
             DataSet ds = new DataSet();
-            if (_conn.SQLQuery(ref ds, "SELECT * FROM " + TableName("FDB_SpatialReference") + " WHERE " + DbColName("ID") + "=" + sID.ToString(), "SREF"))
+            if (_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_SpatialReference") + " WHERE " + DbColName("ID") + "=" + sID.ToString(), "SREF").Result)
             {
                 if (ds.Tables[0].Rows.Count > 0)
                 {
@@ -3333,7 +3333,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
             foreach (SpatialIndexNode node in nodes)
             {
-                DataTable tab = _conn.Select(DbColName("FDB_OID") + "," + DbColName("FDB_SHAPE"), FcTableName(fc), DbColName("FDB_NID") + "=" + node.NID, "", true);
+                DataTable tab = _conn.Select(DbColName("FDB_OID") + "," + DbColName("FDB_SHAPE"), FcTableName(fc), DbColName("FDB_NID") + "=" + node.NID, "", true).Result;
                 if (tab == null)
                 {
                     _errMsg = _conn.errorMessage;
@@ -3425,7 +3425,7 @@ namespace gView.DataSources.Fdb.MSAccess
             {
                 if (_conn == null) return;
 
-                DataTable tab = _conn.Select("*", TableName("FDB_ReleaseInfo"));
+                DataTable tab = _conn.Select("*", TableName("FDB_ReleaseInfo")).Result;
                 if (tab != null && tab.Rows.Count == 1)
                 {
                     _version = new Version(Convert.ToInt32(tab.Rows[0]["Major"]), Convert.ToInt32(tab.Rows[0]["Minor"]), Convert.ToInt32(tab.Rows[0]["Bugfix"]));
@@ -3531,7 +3531,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
                 if (newField != null)   // ALTER COLUMN
                 {
-                    DataTable tab = _conn.Select("*", TableName("FDB_FeatureClassFields"), "(" + DbColName("FClassID") + "=" + fcid + ") AND (" + DbColName("FieldName") + " LIKE '" + oldField.name + "')", "", true);
+                    DataTable tab = _conn.Select("*", TableName("FDB_FeatureClassFields"), "(" + DbColName("FClassID") + "=" + fcid + ") AND (" + DbColName("FieldName") + " LIKE '" + oldField.name + "')", "", true).Result;
                     if (tab == null)
                     {
                         _errMsg = _conn.errorMessage;
@@ -3567,7 +3567,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 }
             }
             // ADD COLUMN
-            DataTable tab2 = _conn.Select("*", TableName("FDB_FeatureClassFields"), DbColName("FClassID") + "=-1", "", true);
+            DataTable tab2 = _conn.Select("*", TableName("FDB_FeatureClassFields"), DbColName("FClassID") + "=-1", "", true).Result;
             if (tab2 == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -3659,7 +3659,7 @@ namespace gView.DataSources.Fdb.MSAccess
         internal DataTable Select(string fields, string from, string where)
         {
             if (_conn == null) return null;
-            return _conn.Select(fields, from, where);
+            return _conn.Select(fields, from, where).Result;
         }
 
         #region IAltertable
@@ -3809,7 +3809,7 @@ namespace gView.DataSources.Fdb.MSAccess
             try
             {
                 string sql = "SELECT " + DbColName("ID") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcName + "'";
-                return Convert.ToInt32(_conn.QuerySingleField(sql, ColumnName("ID")));
+                return Convert.ToInt32(_conn.QuerySingleField(sql, ColumnName("ID")).Result);
             }
             catch
             {
@@ -3823,7 +3823,7 @@ namespace gView.DataSources.Fdb.MSAccess
             try
             {
                 string sql = "SELECT " + DbColName("Name") + " from " + TableName("FDB_FeatureClasses") + " where " + DbColName("ID") + "=" + fcID;
-                return (string)_conn.QuerySingleField(sql, ColumnName("Name"));
+                return (string)_conn.QuerySingleField(sql, ColumnName("Name")).Result;
             }
             catch
             {
@@ -3930,7 +3930,7 @@ namespace gView.DataSources.Fdb.MSAccess
             if (fcId < 0)
                 return null;
 
-            DataTable tab = _conn.Select("*", TableName("FDB_NetworkWeights"), DbColName("NetworkId") + "=" + fcId);
+            DataTable tab = _conn.Select("*", TableName("FDB_NetworkWeights"), DbColName("NetworkId") + "=" + fcId).Result;
             if (tab == null || tab.Rows.Count == 0)
                 return null;
 
@@ -3955,7 +3955,7 @@ namespace gView.DataSources.Fdb.MSAccess
             if (networkFc == null || networkFc.Dataset == null || !(networkFc is INetworkFeatureClass))
                 return ret;
 
-            DataTable tab = _conn.Select(DbColName("FCID"), TableName("FDB_NetworkClasses"), DbColName("NetworkId") + "=" + FeatureClassID(DatasetID(networkFc.Dataset.DatasetName), networkName));
+            DataTable tab = _conn.Select(DbColName("FCID"), TableName("FDB_NetworkClasses"), DbColName("NetworkId") + "=" + FeatureClassID(DatasetID(networkFc.Dataset.DatasetName), networkName)).Result;
             if (tab == null)
                 return ret;
 
@@ -3963,7 +3963,7 @@ namespace gView.DataSources.Fdb.MSAccess
             {
                 try
                 {
-                    string fcname = _conn.QuerySingleField("SELECT " + DbColName("Name") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE ID=" + row["FCID"].ToString(), ColumnName("Name")).ToString();
+                    string fcname = _conn.QuerySingleField("SELECT " + DbColName("Name") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE ID=" + row["FCID"].ToString(), ColumnName("Name")).Result?.ToString();
                     IFeatureClass fc = GetFeatureclass(fcname);
                     if (fc != null)
                         ret.Add(fc);
