@@ -189,7 +189,7 @@ namespace gView.Server.Controllers
 
         #region MapServer
 
-        public IActionResult ExportMap(string folder, string id)
+        async public Task<IActionResult> ExportMap(string folder, string id)
         {
             try
             {
@@ -234,7 +234,9 @@ namespace gView.Server.Controllers
                     interpreter,
                     serviceRequest);
 
-                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+                //InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+
+                await interpreter.Request(context);
 
                 #endregion
 
@@ -256,7 +258,7 @@ namespace gView.Server.Controllers
             }
         }
 
-        public IActionResult Query(string folder, string id, int layerId)
+        async public Task<IActionResult> Query(string folder, string id, int layerId)
         {
             try
             {
@@ -302,7 +304,9 @@ namespace gView.Server.Controllers
                     interpreter,
                     serviceRequest);
 
-                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+                //InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+
+                await interpreter.Request(context);
 
                 #endregion
 

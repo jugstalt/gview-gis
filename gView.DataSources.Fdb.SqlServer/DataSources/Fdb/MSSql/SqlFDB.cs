@@ -418,11 +418,11 @@ namespace gView.DataSources.Fdb.MSSql
                     (filter != null) ? filter.FeatureSpatialReference : null);
             }
         }
-        override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef)
+        async override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef)
         {
             string tabName = ((fc is SqlFDBFeatureClass) ? ((SqlFDBFeatureClass)fc).DbTableName : "FC_" + fc.Name);
             string sql = "SELECT " + subFields + " FROM " + tabName;
-            return Task.FromResult<IFeatureCursor>(new SqlFDBFeatureCursorIDs(_conn.ConnectionString, sql, IDs, this.GetGeometryDef(fc.Name), toSRef));
+            return await SqlFDBFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, this.GetGeometryDef(fc.Name), toSRef);
         }
         #endregion
 
@@ -2613,31 +2613,33 @@ namespace gView.DataSources.Fdb.MSSql
         int _id_pos = 0;
         string _sql;
 
-        public SqlFDBFeatureCursorIDs(string connString, string sql, List<int> IDs, IGeometryDef geomDef, ISpatialReference toSRef)
+        private SqlFDBFeatureCursorIDs(IGeometryDef geomDef, ISpatialReference toSRef)
             : base((geomDef != null) ? geomDef.SpatialReference : null, toSRef)
         {
+
+        }
+
+        async static public Task<IFeatureCursor> Create(string connString, string sql, List<int> IDs, IGeometryDef geomDef, ISpatialReference toSRef)
+        {
+            var cursor = new SqlFDBFeatureCursorIDs(geomDef, toSRef);
+
             try
             {
-                _connection = new SqlConnection(connString);
-                _command = new SqlCommand(_sql = sql, _connection);
-                _connection.Open();
+                cursor._connection = new SqlConnection(connString);
+                cursor._command = new SqlCommand(cursor._sql = sql, cursor._connection);
+                await cursor._connection.OpenAsync();
 
-                // Schema auslesen...
-                //SqlDataReader schema = _command.ExecuteReader(CommandBehavior.SchemaOnly);
-                //_schemaTable = schema.GetSchemaTable();
-                //schema.Close();
-                //_command.Dispose();
+                cursor._geomDef = geomDef;
+                cursor._IDs = IDs;
 
-                _geomDef = geomDef;
-                _IDs = IDs;
-
-                ExecuteReader();
-                //_reader=command.ExecuteReader(CommandBehavior.SequentialAccess);
+                await cursor.ExecuteReaderAsync();
             }
             catch (Exception ex)
             {
-                Dispose();
+                cursor.Dispose();
             }
+
+            return cursor;
         }
 
         public override void Dispose()
@@ -2681,7 +2683,7 @@ namespace gView.DataSources.Fdb.MSSql
             }
         }
 
-        private bool ExecuteReader()
+        async private Task<bool> ExecuteReaderAsync()
         {
             if (_reader != null)
             {
@@ -2706,7 +2708,7 @@ namespace gView.DataSources.Fdb.MSSql
             string where = " WHERE [FDB_OID] IN (" + sb.ToString() + ")";
 
             _command = new SqlCommand(_sql + where, _connection);
-            _reader = _command.ExecuteReader(CommandBehavior.SequentialAccess);
+            _reader = await _command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
             return true;
         }
@@ -2730,7 +2732,7 @@ namespace gView.DataSources.Fdb.MSSql
                 if (_reader == null) return null;
                 if (!await _reader.ReadAsync())
                 {
-                    ExecuteReader();
+                    await ExecuteReaderAsync();
                     return await NextFeature();
                 }
 
@@ -2822,12 +2824,6 @@ namespace gView.DataSources.Fdb.MSSql
                 cursor._command = new SqlCommand(cursor._sql = sql, cursor._connection);
                 await cursor._connection.OpenAsync();
 
-                // Schema auslesen...
-                //SqlDataReader schema=_command.ExecuteReader(CommandBehavior.SchemaOnly);
-                //_schemaTable=schema.GetSchemaTable();
-                //schema.Close();
-                //_command.Dispose();
-
                 cursor._geomDef = geomDef;
                 cursor._where = where;
                 cursor._orderBy = orderBy;
@@ -2839,12 +2835,6 @@ namespace gView.DataSources.Fdb.MSSql
                 }
 
                 cursor._spatialFilter = filter;
-                //_queryGeometry = queryGeometry;
-                //if(_queryGeometry!=null) 
-                //{
-                //    _queryGeometry=queryGeometry;
-                //    if(queryGeometry.Envelope!=null) _queryEnvelope=new Envelope(_queryGeometry.Envelope);
-                //}
 
                 await cursor.ExecuteReaderAsync();
             }
@@ -2944,37 +2934,6 @@ namespace gView.DataSources.Fdb.MSSql
 
             return true;
         }
-
-        /*
-        public SqlFDBFeatureCursor(string connString,string sql,geometryType type) 
-        {
-            try 
-            {
-                //if(connection==null) return;
-                //if(connection.State==ConnectionState.Closed)
-                //	connection.Open();
-
-                //_connection=connection;
-
-                _connection=new SqlConnection(connString);
-                _command=new SqlCommand(sql,_connection);
-                _connection.Open();
-				
-                // Schema auslesen...
-                SqlDataReader schema=_command.ExecuteReader(CommandBehavior.SchemaOnly);
-                _schemaTable=schema.GetSchemaTable();
-                schema.Close();
-
-                _type=type;
-
-                _reader=_command.ExecuteReader(CommandBehavior.SequentialAccess);
-            } 
-            catch(Exception ex) 
-            {
-                Dispose();
-            }
-        }
-        */
 
         public override void Dispose()
         {
@@ -3126,197 +3085,6 @@ namespace gView.DataSources.Fdb.MSSql
 
         #endregion
     }
-
-    /*
-    internal class SqlFDBFeatureCursor2 : FeatureCursor
-    {
-        SqlConnection _connection;
-        SqlDataReader _reader;
-        SqlCommand _command;
-        ISpatialFilter _spatialFilter = null;
-        IGeometryDef _geomDef;
-
-        public SqlFDBFeatureCursor2(string connectionString, string dbSchema, string table, IQueryFilter filter, IGeometryDef geomDef) :
-            base((geomDef != null) ? geomDef.SpatialReference : null,
-                 (filter != null) ? filter.FeatureSpatialReference : null)
-        {
-            if (filter == null) return;
-            _geomDef = geomDef;
-
-            string fcTableName = (String.IsNullOrEmpty(dbSchema) ? "FC_" + table : dbSchema + ".FC_" + table);
-            _command = new SqlCommand();
-            if (filter is ISpatialFilter)
-            {
-                filter.fieldPrefix = "t.[";
-                filter.fieldPostfix = "]";
-
-                //_command.CommandText = "select " + filter.SubFields.Replace(" ", ",") + " from " +
-                //                        "CollectNIDs('" + table + "',@QGEOM) as q " +
-                //                        "inner join FCSIN_" + table + " as i on q.NID=i.FDB_NID inner join FC_" + table + " as t on i.FDB_OID=t.[FDB_OID]";
-
-                _command.CommandText = "select " + filter.SubFields.Replace(" ", ",") + " from " +
-                                        "CollectNIDs('" + table + "',@QGEOM) as q " +
-                                        "inner join " + fcTableName + " as t on q.NID=t.[FDB_NID]";
-
-                //_command.CommandText = "select " + filter.SubFields.Replace(" ", ",") + " from " +
-                //                       "FC_" + table + " as t " +
-                //                       "inner join CollectNIDs('" + table + "',@QGEOM) as q on q.NID=t.[FDB_NID]";
-
-                //_command.CommandText = "select * from " +
-                //                       "CollectNIDs('" + table + "',@QGEOM)";
-
-                SqlBytes bytes = GeometrySerialization.GeometryToSqlBytes(((ISpatialFilter)filter).Geometry);
-                SqlParameter gparam = new SqlParameter("@QGEOM", SqlDbType.Binary, (int)bytes.Length);
-                gparam.Value = bytes;
-                _command.Parameters.Add(gparam);
-
-                if (((ISpatialFilter)filter).SpatialRelation != spatialRelation.SpatialRelationMapEnvelopeIntersects) _spatialFilter = filter as ISpatialFilter;
-            }
-            else
-            {
-                filter.fieldPrefix = "[";
-                filter.fieldPostfix = "]";
-
-                _command.CommandText = "select " + filter.SubFieldsAndAlias + " from " + fcTableName;
-            }
-            if (filter.WhereClause != "") _command.CommandText += " where " + filter.WhereClause;
-
-            try
-            {
-                _connection = new SqlConnection(connectionString);
-                _command.Connection = _connection;
-                _connection.Open();
-
-                //DataSet ds = new DataSet();
-                //SqlDataAdapter adapter = new SqlDataAdapter(_command);
-                //adapter.Fill(ds);
-
-                _reader = _command.ExecuteReader(CommandBehavior.SequentialAccess);
-            }
-            catch (Exception ex)
-            {
-                string msg = ex.Message;
-                _reader = null;
-            }
-        }
-
-        #region IFeatureCursor Member
-
-        public override IFeature NextFeature
-        {
-            get
-            {
-                while (true)
-                {
-                    if (_reader == null || !_reader.Read())
-                    {
-                        this.Dispose();
-                        return null;
-                    }
-                    //return null;
-
-                    Feature feature = new Feature();
-                    for (int i = 0; i < _reader.FieldCount; i++)
-                    {
-                        string name = _reader.GetName(i);
-                        object obj = _reader.GetValue(i);
-                        if (name == "FDB_SHAPE" && obj != DBNull.Value)
-                        {
-                            BinaryReader r = new BinaryReader(new MemoryStream());
-                            r.BaseStream.Write((byte[])obj, 0, ((byte[])obj).Length);
-                            r.BaseStream.Position = 0;
-
-                            IGeometry p = null;
-                            switch (_geomDef.GeometryType)
-                            {
-                                case geometryType.Point:
-                                    p = new gView.Framework.Geometry.Point();
-                                    break;
-                                case geometryType.Polyline:
-                                    p = new gView.Framework.Geometry.Polyline();
-                                    break;
-                                case geometryType.Polygon:
-                                    p = new gView.Framework.Geometry.Polygon();
-                                    break;
-                            }
-                            if (p != null)
-                            {
-                                p.Deserialize(r, _geomDef);
-                                r.Close();
-
-                                if (_spatialFilter != null)
-                                {
-                                    if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialFilter, p))
-                                    {
-                                        feature = null;
-                                        break;
-                                    }
-                                }
-                                feature.Shape = p;
-                            }
-                        }
-                        else
-                        {
-                            FieldValue fv = new FieldValue(name, obj);
-                            feature.Fields.Add(fv);
-                            if (fv.Name == "FDB_OID")
-                                feature.OID = Convert.ToInt32(obj);
-                        }
-                    }
-                    if (feature == null) continue;
-
-                    Transform(feature);
-                    return feature;
-                }
-            }
-        }
-
-        #endregion
-
-        #region IDisposable Member
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            if (_connection != null && _command != null)
-            {
-                if (_connection.State == ConnectionState.Open)
-                {
-                    if (_reader != null)
-                    {
-                        try
-                        {
-                            while (_reader.Read())
-                            {
-                                _command.Cancel();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-
-                        }
-                    }
-                    _command.Dispose();
-                    _command = null;
-                }
-            }
-
-            if (_reader != null)
-            {
-                _reader.Close();
-                _reader = null;
-            }
-            if (_connection != null)
-            {
-                if (_connection.State == ConnectionState.Open) _connection.Close();
-                _connection.Dispose();
-                _connection = null;
-            }
-        }
-
-        #endregion
-    }
-    */
 
     internal class SqlFDBFeatureCursor2008 : FeatureCursor
     {

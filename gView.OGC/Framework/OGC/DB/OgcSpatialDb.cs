@@ -888,7 +888,7 @@ namespace gView.Framework.OGC.DB
             return "{0}";
         }
 
-        virtual public IEnvelope FeatureClassEnvelope(IFeatureClass fc)
+        virtual public Task<IEnvelope> FeatureClassEnvelope(IFeatureClass fc)
         {
             if (fc == null) return null;
 
@@ -926,7 +926,7 @@ namespace gView.Framework.OGC.DB
                 }
             }
 
-            return envelope;
+            return Task.FromResult(envelope);
         }
 
         protected object ExecuteFunction(string function)

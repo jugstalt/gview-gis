@@ -10,23 +10,37 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 {
     public class SdeFeatureClass : gView.Framework.OGC.DB.OgcSpatialFeatureclass
     {
-        public SdeFeatureClass(SdeDataset dataset, string name)
+        private SdeFeatureClass()
         {
+            
+        }
+
+        async static public Task<IFeatureClass> Create(SdeDataset dataset, string name)
+        {
+            var featureClass = new SdeFeatureClass();
+
             if (dataset.RepoProvider == null)
                 throw new Exception("FeatureClass: Repository not initialized");
 
-            _name = name;
-            
-            _geomType = dataset.RepoProvider.FeatureClassGeometryType(this);
-            _fields = dataset.RepoProvider.FeatureClassFields(this);
+            featureClass._name = name;
 
-            _idfield = _fields.ToEnumerable().Where(f => f.type == FieldType.ID).FirstOrDefault()?.name;
-            _shapefield = _fields.ToEnumerable().Where(f => f.type == FieldType.Shape).FirstOrDefault()?.name;
+            featureClass._geomType = await dataset.RepoProvider.FeatureClassGeometryType(featureClass);
+            featureClass._fields = await dataset.RepoProvider.FeatureClassFields(featureClass);
 
-            _dataset = dataset;
+            featureClass._idfield = featureClass._fields.ToEnumerable()
+                .Where(f => f.type == FieldType.ID)
+                .FirstOrDefault()?.name;
 
-            if (_sRef == null && dataset.RepoProvider.FeatureClassSpatialReference(this)>0)
-                _sRef = gView.Framework.Geometry.SpatialReference.FromID("epsg:" + dataset.RepoProvider.FeatureClassSpatialReference(this));
+            featureClass._shapefield = featureClass._fields.ToEnumerable()
+                .Where(f => f.type == FieldType.Shape)
+                .FirstOrDefault()?.name;
+
+            featureClass._dataset = dataset;
+
+            if (featureClass._sRef == null && await dataset.RepoProvider.FeatureClassSpatialReference(featureClass) > 0)
+                featureClass._sRef = gView.Framework.Geometry.SpatialReference.FromID("epsg:" + dataset.RepoProvider.FeatureClassSpatialReference(featureClass));
+
+            return featureClass;
         }
 
         public override ISpatialReference SpatialReference

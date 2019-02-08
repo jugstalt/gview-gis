@@ -14,16 +14,16 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
     {
         private string _connectionString;
 
-        public void Init(string connectionString)
+        async public Task<bool> Init(string connectionString)
         {
             _connectionString = connectionString;
-            Refresh();
+            return await Refresh();
         }
 
-        private void Refresh()
+        async private Task<bool> Refresh()
         {
             if (SdeLayers.Count != 0)  // DoTo: Refresh if older than 1 min...
-                return;
+                return true;
 
             SdeLayers.Clear();
             SdeSpatialReferences.Clear();
@@ -35,46 +35,48 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
             using (DbConnection connection = providerFactory.CreateConnection())
             {
                 connection.ConnectionString = _connectionString;
-                connection.Open();
+                await connection.OpenAsync();
 
                 var command = providerFactory.CreateCommand();
                 command.Connection = connection;
 
                 command.CommandText = "select * from sde.sde_layers";
-                using (var reader = command.ExecuteReader())
+                using (var reader = await command.ExecuteReaderAsync())
                 {
-                    while(reader.Read())
+                    while(await reader.ReadAsync())
                     {
                         SdeLayers.Add(new SdeLayer(reader));
                     }
                 }
 
                 command.CommandText = "select * from sde.sde_spatial_references";
-                using (var reader = command.ExecuteReader())
+                using (var reader = await command.ExecuteReaderAsync())
                 {
-                    while (reader.Read())
+                    while (await reader.ReadAsync())
                     {
                         SdeSpatialReferences.Add(new SdeSpatialReference(reader));
                     }
                 }
 
                 command.CommandText = "select * from sde.sde_column_registry";
-                using (var reader = command.ExecuteReader())
+                using (var reader = await command.ExecuteReaderAsync())
                 {
-                    while (reader.Read())
+                    while (await reader.ReadAsync())
                     {
                         SdeColumns.Add(new SdeColumn(reader));
                     }
                 }
 
                 command.CommandText = "select * from sde.sde_geometry_columns";
-                using (var reader = command.ExecuteReader())
+                using (var reader = await command.ExecuteReaderAsync())
                 {
-                    while (reader.Read())
+                    while (await reader.ReadAsync())
                     {
                         SdeGeometryColumns.Add(new SdeGeometryColumn(reader));
                     }
                 }
+
+                return true;
             }
         }
 
@@ -87,9 +89,9 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
 
         #region IRepoProvider 
 
-        public IEnvelope FeatureClassEnveolpe(IFeatureClass fc)
+        async public Task<IEnvelope> FeatureClassEnveolpe(IFeatureClass fc)
         {
-            this.Refresh();
+            await this.Refresh();
 
             var fcName = fc.Name.ToLower();
             var sdeLayer = SdeLayers.Where(l => (l.Owner + "." + l.TableName).ToLower() == fcName).FirstOrDefault();
@@ -100,9 +102,9 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
             return new Envelope(sdeLayer.MinX, sdeLayer.MinY, sdeLayer.MaxX, sdeLayer.MaxY);
         }
 
-        public int FeatureClassSpatialReference(IFeatureClass fc)
+        async public Task<int> FeatureClassSpatialReference(IFeatureClass fc)
         {
-            this.Refresh();
+            await this.Refresh();
 
             var fcName = fc.Name.ToLower();
             var sdeLayer = SdeLayers.Where(l => (l.Owner + "." + l.TableName).ToLower() == fcName).FirstOrDefault();
@@ -117,9 +119,9 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
             return spatialRef.AuthSrid.Value;
         }
 
-        public Fields FeatureClassFields(IFeatureClass fc)
+        async public Task<Fields> FeatureClassFields(IFeatureClass fc)
         {
-            this.Refresh();
+            await this.Refresh();
 
             var fields = new Fields();
 
@@ -133,9 +135,9 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
             return fields;
         }
 
-        public geometryType FeatureClassGeometryType(IFeatureClass fc)
+        async public Task<geometryType> FeatureClassGeometryType(IFeatureClass fc)
         {
-            this.Refresh();
+            await this.Refresh();
 
             var fields = new Fields();
 

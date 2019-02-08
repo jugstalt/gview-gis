@@ -406,10 +406,11 @@ namespace gView.Framework.Db
             return true;
         }
 
-        public DbDataReader DataReader(string sql, out DbConnection connection)
+        async public Task<(DbDataReader reader, DbConnection connection)> DataReaderAsync(string sql)
         {
             DbDataReader reader = null;
-            connection = null;
+            DbConnection connection = null;
+
             try
             {
                 switch (_dbtype)
@@ -417,13 +418,13 @@ namespace gView.Framework.Db
                     case DBType.sql:
                         connection = new SqlConnection(_connectionString);
                         SqlCommand sqlCommand = new SqlCommand(sql, (SqlConnection)connection);
-                        connection.Open();
-                        return sqlCommand.ExecuteReader();
+                        await connection.OpenAsync();
+                        return (await sqlCommand.ExecuteReaderAsync(), connection);
                     case DBType.oracle:
                         connection = new OracleConnection(_connectionString);
                         OracleCommand oracleCommand = new OracleCommand(sql, (OracleConnection)connection);
-                        connection.Open();
-                        return oracleCommand.ExecuteReader();
+                        await connection.OpenAsync();
+                        return (await oracleCommand.ExecuteReaderAsync(), connection);
                     case DBType.npgsql:
                         DbProviderFactory dbfactory = DataProvider.PostgresProvider;
                         connection = dbfactory.CreateConnection();
@@ -431,11 +432,11 @@ namespace gView.Framework.Db
                         DbCommand dbcommand = dbfactory.CreateCommand();
                         dbcommand.CommandText = sql;
                         dbcommand.Connection = connection;
-                        connection.Open();
-                        return dbcommand.ExecuteReader();
+                        await connection.OpenAsync();
+                        return (await dbcommand.ExecuteReaderAsync(),connection);
                 }
 
-                return null;
+                return (null, null);
             }
             catch (Exception e)
             {
@@ -445,7 +446,7 @@ namespace gView.Framework.Db
                 connection = null;
                 m_errMsg = "QUERY (" + sql + "): " + e.Message;
                 _lastException = e;
-                return null;
+                return (null, null);
             }
         }
 

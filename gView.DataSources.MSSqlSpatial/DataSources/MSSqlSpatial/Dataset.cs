@@ -161,7 +161,7 @@ namespace gView.DataSources.MSSqlSpatial
             //return "geometry::STGeomFromText('" + geometryString + "',0)";
         }
 
-        public override IEnvelope FeatureClassEnvelope(IFeatureClass fc)
+        async public override Task<IEnvelope> FeatureClassEnvelope(IFeatureClass fc)
         {
             IEnvelope env = null;
             try
@@ -173,11 +173,11 @@ namespace gView.DataSources.MSSqlSpatial
                         connection.ConnectionString = _connectionString;
                         DbCommand command = connection.CreateCommand();
                         command.CommandText = "select top(1000) " + ToDbName(fc.ShapeFieldName) + ".MakeValid().STEnvelope().STAsBinary() as envelope from " + ToDbName(fc.Name) + " where " + ToDbName(fc.ShapeFieldName) + " is not null";
-                        connection.Open();
+                        await connection.OpenAsync();
 
-                        using (DbDataReader reader = command.ExecuteReader())
+                        using (DbDataReader reader = await command.ExecuteReaderAsync())
                         {
-                            while (reader.Read())
+                            while (await reader.ReadAsync())
                             {
                                 byte[] envelope = (byte[])reader["envelope"];
                                 IGeometry geometry = gView.Framework.OGC.OGC.WKBToGeometry(envelope);
@@ -785,9 +785,9 @@ namespace gView.DataSources.MSSqlSpatial
             //return geometryString;
         }
 
-        public override IEnvelope FeatureClassEnvelope(IFeatureClass fc)
+        public override Task<IEnvelope> FeatureClassEnvelope(IFeatureClass fc)
         {
-            return new Envelope(-180, -90, 180, 90);
+            return Task.FromResult<IEnvelope>(new Envelope(-180, -90, 180, 90));
         }
 
         public override DbCommand SelectCommand(gView.Framework.OGC.DB.OgcSpatialFeatureclass fc, IQueryFilter filter, out string shapeFieldName)

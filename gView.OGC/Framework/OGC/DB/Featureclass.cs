@@ -251,7 +251,7 @@ namespace gView.Framework.OGC.DB
             {
                 if (_envelope == null)
                 {
-                    _envelope = _dataset.FeatureClassEnvelope(this);
+                    _envelope = _dataset.FeatureClassEnvelope(this).Result;
                 }
                 return _envelope;
             }

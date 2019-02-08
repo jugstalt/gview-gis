@@ -36,7 +36,7 @@ namespace gView.Framework.Db
         Task<bool> SQLQuery(string sql, XmlNode feature);
         Task<bool> SQLQuery(string sql, XmlNode feature, bool one2n);
 
-        DbDataReader DataReader(string sql, out DbConnection connection);
+        Task<(DbDataReader reader, DbConnection connection)> DataReaderAsync(string sql);
 
         Task<object> QuerySingleField(string sql, string FieldName);
 

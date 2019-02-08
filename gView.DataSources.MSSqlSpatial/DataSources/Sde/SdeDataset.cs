@@ -52,7 +52,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
         public override bool Open()
         {
             var repo = new RepoProvider();
-            repo.Init(_connectionString);
+            repo.Init(_connectionString).Wait();
             RepoProvider = repo;
 
             return base.Open();
@@ -286,15 +286,15 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             return command;
         }
 
-        public override IEnvelope FeatureClassEnvelope(IFeatureClass fc)
+        async public override Task<IEnvelope> FeatureClassEnvelope(IFeatureClass fc)
         {
             if (RepoProvider == null)
                 throw new Exception("Repository not initialized");
 
-            return RepoProvider.FeatureClassEnveolpe(fc);
+            return await RepoProvider.FeatureClassEnveolpe(fc);
         }
 
-        public override Task<List<IDatasetElement>> Elements()
+        async public override Task<List<IDatasetElement>> Elements()
         {
             if (RepoProvider == null)
                 throw new Exception("Repository not initialized");
@@ -306,15 +306,15 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 foreach (var sdeLayer in RepoProvider.Layers)
                 {
                     layers.Add(new DatasetElement(
-                        new SdeFeatureClass(this, sdeLayer.Owner + "." + sdeLayer.TableName)));
+                       await SdeFeatureClass.Create(this, sdeLayer.Owner + "." + sdeLayer.TableName)));
                 }
 
                 _layers = layers;
             }
-            return Task.FromResult(_layers);
+            return _layers;
         }
 
-        public override Task<IDatasetElement> Element(string title)
+        async public override Task<IDatasetElement> Element(string title)
         {
             if (RepoProvider == null)
                 throw new Exception("Repository not initialized");
@@ -324,10 +324,10 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
             if (sdeLayer != null)
             {
-                return Task.FromResult<IDatasetElement>(new DatasetElement(new SdeFeatureClass(this, sdeLayer.Owner + "." + sdeLayer.TableName)));
+                return new DatasetElement(await SdeFeatureClass.Create(this, sdeLayer.Owner + "." + sdeLayer.TableName));
             }
 
-            return Task.FromResult<IDatasetElement>(null);
+            return null;
         }
     }
 }

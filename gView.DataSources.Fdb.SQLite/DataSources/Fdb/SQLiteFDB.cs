@@ -941,7 +941,7 @@ namespace gView.DataSources.Fdb.SQLite
 
         #endregion
 
-        public override Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
+        async public override Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
         {
             if (_conn == null) return null;
 
@@ -1012,15 +1012,14 @@ namespace gView.DataSources.Fdb.SQLite
                 }
             }
             return
-                Task.FromResult<IFeatureCursor>(
-                new SQLiteFDBFeatureCursor(_conn.ConnectionString, sql, where, filter.OrderBy, NIDs, sFilter, fc,
-                ((filter != null) ? filter.FeatureSpatialReference : null)));
+                await SQLiteFDBFeatureCursor.Create(_conn.ConnectionString, sql, where, filter.OrderBy, NIDs, sFilter, fc,
+                ((filter != null) ? filter.FeatureSpatialReference : null));
         }
 
-        public override Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef)
+        async public override Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef)
         {
             string sql = "SELECT " + subFields + " FROM " + FcTableName(fc);
-            return Task.FromResult<IFeatureCursor>(new SQLiteFDBFeatureCursorIDs(_conn.ConnectionString, sql, IDs, fc, toSRef));
+            return await SQLiteFDBFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, fc, toSRef);
         }
 
         private string parseConnectionString(string connString)
@@ -1757,30 +1756,33 @@ namespace gView.DataSources.Fdb.SQLite
             int _id_pos = 0;
             string _sql;
 
-            public SQLiteFDBFeatureCursorIDs(string connString, string sql, List<int> IDs, IGeometryDef geomDef, ISpatialReference toSRef) :
+            private SQLiteFDBFeatureCursorIDs(IGeometryDef geomDef, ISpatialReference toSRef) :
                 base((geomDef != null) ? geomDef.SpatialReference : null, toSRef)
             {
+                
+            }
+
+            async static public Task<IFeatureCursor> Create(string connString, string sql, List<int> IDs, IGeometryDef geomDef, ISpatialReference toSRef)
+            {
+                var cursor = new SQLiteFDBFeatureCursorIDs(geomDef, toSRef);
+
                 try
                 {
-                    _connection = new SqliteConnection(connString);
-                    SqliteCommand command = new SqliteCommand(_sql = sql, _connection);
-                    _connection.Open();
-                    _geomDef = geomDef;
+                    cursor._connection = new SqliteConnection(connString);
+                    cursor._sql = sql;
+                    cursor._connection.Open();
+                    cursor._geomDef = geomDef;
 
-                    // Schema auslesen...
-                    //OleDbDataReader schema=command.ExecuteReader(CommandBehavior.SchemaOnly);
-                    //_schemaTable=schema.GetSchemaTable();
-                    //schema.Close();
+                    cursor._IDs = IDs;
 
-                    _IDs = IDs;
-
-                    ExecuteReader();
-                    //_reader=command.ExecuteReader(CommandBehavior.SequentialAccess);
+                    await cursor.ExecuteReaderAsync();
                 }
-                catch (Exception ex)
+                catch (Exception /*ex*/)
                 {
-                    Dispose();
+                    cursor.Dispose();
                 }
+
+                return cursor;
             }
 
             public override void Dispose()
@@ -1801,7 +1803,7 @@ namespace gView.DataSources.Fdb.SQLite
                 }
             }
 
-            private bool ExecuteReader()
+            async private Task<bool> ExecuteReaderAsync()
             {
                 if (_reader != null)
                 {
@@ -1826,17 +1828,16 @@ namespace gView.DataSources.Fdb.SQLite
                 string where = " WHERE [FDB_OID] IN (" + sb.ToString() + ")";
 
                 SqliteCommand command = new SqliteCommand(_sql + where, _connection);
-                _reader = command.ExecuteReader(CommandBehavior.SequentialAccess);
+                _reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
                 return true;
             }
 
             #region IFeatureCursor Member
 
-            int _pos;
             public void Reset()
             {
-                _pos = 0;
+
             }
             public void Release()
             {
@@ -1847,10 +1848,12 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 try
                 {
-                    if (_reader == null) return null;
-                    if (!_reader.Read())
+                    if (_reader == null)
+                        return null;
+
+                    if (!await _reader.ReadAsync())
                     {
-                        ExecuteReader();
+                        await ExecuteReaderAsync();
                         return await NextFeature();
                     }
 
@@ -1921,36 +1924,44 @@ namespace gView.DataSources.Fdb.SQLite
             ISpatialFilter _spatialFilter = null;
             IGeometryDef _geomDef;
 
-            public SQLiteFDBFeatureCursor(string connString, string sql, string where, string orderby, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef) :
-                base((geomDef != null) ? geomDef.SpatialReference : null,
-                    /*(filter!=null) ? filter.FeatureSpatialReference : null*/
-                           toSRef)
+            private SQLiteFDBFeatureCursor(IGeometryDef geomDef, ISpatialReference toSRef) :
+                base((geomDef != null) ? geomDef.SpatialReference : null, toSRef)
             {
+                
+            }
+
+            async static public Task<IFeatureCursor> Create(string connString, string sql, string where, string orderby, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef)
+            {
+                var cursor = new SQLiteFDBFeatureCursor(geomDef, toSRef);
+
                 //try 
                 {
-                    _connection = new SqliteConnection(connString);
-                    SqliteCommand command = new SqliteCommand(_sql = sql, _connection);
-                    _connection.Open();
-                    _geomDef = geomDef;
+                    cursor._connection = new SqliteConnection(connString);
+                    cursor._sql = sql;
+                    await cursor._connection.OpenAsync();
+                    cursor._geomDef = geomDef;
 
 
-                    _where = where;
-                    _orderby = orderby;
+                    cursor._where = where;
+                    cursor._orderby = orderby;
 
                     if (nids != null)
                     {
-                        /*if (nids.Count > 0)*/ _nids = nids;
+                        /*if (nids.Count > 0)*/
+                        cursor._nids = nids;
                     }
 
-                    _spatialFilter = filter;
+                    cursor._spatialFilter = filter;
 
-                    ExecuteReader();
+                    await cursor.ExecuteReaderAsync();
                 }
                 //catch(Exception ex) 
                 {
                     //Dispose();
                     //throw(ex);
                 }
+
+                return cursor;
             }
 
             public override void Dispose()
@@ -1973,7 +1984,7 @@ namespace gView.DataSources.Fdb.SQLite
                 }
             }
 
-            private bool ExecuteReader()
+            async private Task<bool> ExecuteReaderAsync()
             {
                 if(_readerCommand!=null)
                 {
@@ -2041,17 +2052,16 @@ namespace gView.DataSources.Fdb.SQLite
                 if (parameter != null) parameter.Value = pVal;
                 if (parameter2 != null) parameter2.Value = p2Val;
 
-                _reader = _readerCommand.ExecuteReader(CommandBehavior.SequentialAccess);
+                _reader = await _readerCommand.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
                 return true;
             }
 
             #region IFeatureCursor Member
 
-            int _pos;
             public void Reset()
             {
-                _pos = 0;
+
             }
             public void Release()
 
@@ -2059,16 +2069,18 @@ namespace gView.DataSources.Fdb.SQLite
                 this.Dispose();
             }
 
-            public override Task<IFeature> NextFeature()
+            async public override Task<IFeature> NextFeature()
             {
                 try
                 {
                     while (true)
                     {
-                        if (_reader == null) return null;
-                        if (!_reader.Read())
+                        if (_reader == null)
+                            return null;
+
+                        if (!await _reader.ReadAsync())
                         {
-                            ExecuteReader();
+                            await ExecuteReaderAsync();
                             //return NextFeature;
                             continue;
                         }
@@ -2146,7 +2158,7 @@ namespace gView.DataSources.Fdb.SQLite
                             continue;
 
                         Transform(feature);
-                        return Task.FromResult<IFeature>(feature);
+                        return feature;
                     }
                 }
                 catch (Exception ex)

@@ -642,11 +642,11 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
         }
 
-        override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef)
+        async override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef)
         {
             string tabName = ((fc is pgFeatureClass) ? ((pgFeatureClass)fc).DbTableName : "fc_" + fc.Name);
             string sql = "SELECT " + subFields + " FROM " + tabName;
-            return Task.FromResult<IFeatureCursor>(new pgFeatureCursorIDs(_conn.ConnectionString, sql, IDs, this.GetGeometryDef(fc.Name), toSRef));
+            return await pgFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, this.GetGeometryDef(fc.Name), toSRef);
         }
 
         override public List<IDatasetElement> DatasetLayers(IDataset dataset)
@@ -1939,25 +1939,34 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             private int _id_pos = 0;
             private string _sql;
 
-            public pgFeatureCursorIDs(string connString, string sql, List<int> IDs, IGeometryDef geomDef, ISpatialReference toSRef)
+            private pgFeatureCursorIDs(IGeometryDef geomDef, ISpatialReference toSRef)
                 : base((geomDef != null) ? geomDef.SpatialReference : null, toSRef)
             {
+                
+            }
+
+            async public static Task<IFeatureCursor> Create(string connString, string sql, List<int> IDs, IGeometryDef geomDef, ISpatialReference toSRef)
+            {
+                var cursor = new pgFeatureCursorIDs(geomDef, toSRef);
+
                 try
                 {
-                    _connection = _factory.CreateConnection();
-                    _connection.ConnectionString = connString;
-                    _connection.Open();
+                    cursor._connection = cursor._factory.CreateConnection();
+                    cursor._connection.ConnectionString = connString;
+                    await cursor._connection.OpenAsync();
 
-                    _sql = sql;
-                    _geomDef = geomDef;
-                    _IDs = IDs;
+                    cursor._sql = sql;
+                    cursor._geomDef = geomDef;
+                    cursor._IDs = IDs;
 
-                    ExecuteReader();
+                    await cursor.ExecuteReaderAsync();
                 }
-                catch (Exception ex)
+                catch (Exception /*ex*/)
                 {
-                    Dispose();
+                    cursor.Dispose();
                 }
+
+                return cursor;
             }
 
             public override void Dispose()
@@ -2005,7 +2014,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 }
             }
 
-            private bool ExecuteReader()
+            async private Task<bool> ExecuteReaderAsync()
             {
                 if (_reader != null)
                 {
@@ -2033,7 +2042,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 _command.CommandText = _sql + where;
                 _command.Connection = _connection;
 
-                _reader = _command.ExecuteReader(CommandBehavior.Default);
+                _reader = await _command.ExecuteReaderAsync(CommandBehavior.Default);
 
                 return true;
             }
@@ -2057,7 +2066,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     if (_reader == null) return null;
                     if (!await _reader.ReadAsync())
                     {
-                        ExecuteReader();
+                        await ExecuteReaderAsync();
                         return await NextFeature();
                     }
 

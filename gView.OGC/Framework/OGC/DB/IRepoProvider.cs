@@ -10,12 +10,12 @@ namespace gView.OGC.Framework.OGC.DB
 {
     public interface IRepoProvider
     {
-        IEnvelope FeatureClassEnveolpe(IFeatureClass fc);
+        Task<IEnvelope> FeatureClassEnveolpe(IFeatureClass fc);
 
-        int FeatureClassSpatialReference(IFeatureClass fc);
+        Task<int> FeatureClassSpatialReference(IFeatureClass fc);
 
-        Fields FeatureClassFields(IFeatureClass fc);
+        Task<Fields> FeatureClassFields(IFeatureClass fc);
 
-        geometryType FeatureClassGeometryType(IFeatureClass fc);
+        Task<geometryType> FeatureClassGeometryType(IFeatureClass fc);
     }
 }

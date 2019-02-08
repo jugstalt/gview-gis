@@ -306,7 +306,7 @@ namespace gView.DataSources.Fdb.Sqlite
             return true;
         }
 
-        public System.Data.Common.DbDataReader DataReader(string sql, out System.Data.Common.DbConnection connection)
+        public Task<(System.Data.Common.DbDataReader reader, System.Data.Common.DbConnection connection)> DataReaderAsync(string sql)
         {
             throw new NotImplementedException();
         }

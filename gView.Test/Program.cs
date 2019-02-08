@@ -1,5 +1,10 @@
 ﻿using gView.Framework.Geometry;
+using Newtonsoft.Json;
 using System;
+using System.Net;
+using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace gView.Test
 {
@@ -8,9 +13,17 @@ namespace gView.Test
         static void Main(string[] args)
         {
 
-            TestProj4();
+            try
+            {
+                //TestProj4();
+                TestPerformance();
 
-            Console.ReadLine();
+                //Console.ReadLine();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception: " + ex);
+            }
         }
 
         static void TestProj4()
@@ -20,7 +33,7 @@ namespace gView.Test
             var sRef31255 = SpatialReference.FromID("epsg:31255");
             var sRef31256 = SpatialReference.FromID("epsg:31256");
             var sRef3857 = SpatialReference.FromID("epsg:3857");
-            var sRef23032= new SpatialReference("test", "", "+proj=utm +zone=32 +ellps=intl +towgs84=-87,-98,-121,0,0,0,0 +units=m +no_defs ", null);
+            var sRef23032 = new SpatialReference("test", "", "+proj=utm +zone=32 +ellps=intl +towgs84=-87,-98,-121,0,0,0,0 +units=m +no_defs ", null);
 
             using (var transformer = new GeometricTransformer())
             {
@@ -76,5 +89,112 @@ namespace gView.Test
                 //Console.WriteLine(point.X.ToString() + "    " + point.Y.ToString());
             }
         }
+
+        static void TestPerformance()
+        {
+            int[] bbox = new int[] { -115309, 231374, -114905, 231530 };
+
+            List<Task> tasks = new List<Task>();
+
+            var startTime = DateTime.UtcNow;
+
+            for (int i = 0; i < 100; i++)
+            {
+                string service = "gview5/geoservices/rest/services/default/KATASTER_BEV";
+                //string service = "arcgis/rest/services/GRAZG81_SDET/estag_dkm_sdet_grazg81";
+
+                string url = String.Empty;
+
+                #region Image Request
+
+                bbox = bbox.Select(x => x + i).ToArray();
+
+                url = "http://server/" + service + "/MapServer/export?" +
+                "size=800,800&dpi=96&imageSR=&bboxSR=&format=png&layerDefs=&layers=&transparent=true&time=&layerTimeOptions=&dynamicLayers=&mapScale=0&rotation=0&datumTransformations=&mapRangeValues=&layerRangeValues=&layerParameterValues=&historicMoment=0&f=pjson&";
+                //"bboxSR=&layers=&layerDefs=&size=800%2C800&imageSR=&format=png&transparent=true&dpi=&time=&layerTimeOptions=&dynamicLayers=&gdbVersion=&mapScale=&rotation=&f=pjson&";
+
+                url += "bbox=" + String.Join(",", bbox);
+
+                #endregion
+
+                #region Query
+
+                //url = "https://gis2.esn.at/arcgis/rest/services/GRAZG81_SDET/estag_dkm_sdet_grazg81/MapServer/13/query?where=OBJECTID%3C100&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&resultOffset=&resultRecordCount=&f=pjson";
+                //url = "https://gis2.esn.at/gview5/geoservices/rest/services/default/KATASTER_BEV/MapServer/306/query?text=&geometry=&geometryType=&inSR=&relationParam=&where=OBJECTID%3C100&objectIds=&time=0&distance=0&units=&outFields=*&returnGeometry=true&maxAllowableOffset=0&geometryPrecision=0&outSR=&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&orderByFields=&outStatistics=&groupByFieldsForStatistics=&returnZ=false&returnM=false&returnDistinctValues=false&returnTrueCurves=false&resultOffset=0&resultRecordCount=0&datumTransformation=&rangeValues=&quantizationParameters=&parameterValues=&historicMoment=0&layerId=306&f=pjson";
+                
+                #endregion
+
+                var task = ExportMapAsync(url);
+                tasks.Add(task);
+                //task.Wait();
+            }
+
+            Task.WaitAll(tasks.ToArray());
+
+            double ms = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            Console.WriteLine("====================================================");
+            Console.WriteLine("Total: " + ms + " ms");
+        }
+
+        async static Task<double> ExportMapAsync(string url)
+        {
+            try
+            {
+                Console.WriteLine(url);
+
+                var startTime = DateTime.UtcNow;
+
+                using (var client = new WebClient())
+                {
+                    client.Proxy = null;
+                    client.UseDefaultCredentials = true;
+                    var response = await client.DownloadStringTaskAsync(new Uri(url));
+
+                    var exportResponse = JsonConvert.DeserializeObject<ExportResponse>(response);
+                    Console.WriteLine(exportResponse.href);
+                }
+
+                var ms = (DateTime.UtcNow - startTime).TotalMilliseconds;
+                Console.WriteLine(ms);
+
+                return ms;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Task Exception: " + ex);
+            }
+            return 0;
+        }
+
+        static double ExportMap(string url)
+        {
+            Console.WriteLine(url);
+
+            var startTime = DateTime.UtcNow;
+
+            using (var client = new WebClient())
+            {
+                client.Proxy = null;
+                client.UseDefaultCredentials = true;
+                var response = client.DownloadString(new Uri(url));
+
+                var exportResponse= JsonConvert.DeserializeObject<ExportResponse>(response);
+                Console.WriteLine(exportResponse.href);
+            }
+
+            var ms = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            Console.WriteLine(ms);
+
+            return ms;
+        }
+
+        #region Classes
+
+        private class ExportResponse
+        {
+            public string href { get; set; }
+        }
+
+        #endregion
     }
 }
