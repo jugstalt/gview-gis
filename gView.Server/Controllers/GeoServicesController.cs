@@ -236,7 +236,8 @@ namespace gView.Server.Controllers
 
                 //InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
 
-                await interpreter.Request(context);
+                //await interpreter.Request(context);
+                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 

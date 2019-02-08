@@ -22,6 +22,7 @@ namespace gView.Server.AppCode
     {
         static public ServerMapDocument MapDocument = new ServerMapDocument();
         static public ThreadQueue<IServiceRequestContext> ThreadQueue = null;
+        static public TaskQueue<IServiceRequestContext> TaskQueue = null;
         static internal string ServicesPath = String.Empty;
         static internal string OutputPath = String.Empty;
         static internal string OutputUrl = String.Empty;
@@ -65,6 +66,7 @@ namespace gView.Server.AppCode
             }
 
             ThreadQueue = new ThreadQueue<IServiceRequestContext>(Globals.MaxThreads, Globals.QueueLength);
+            TaskQueue = new TaskQueue<IServiceRequestContext>();
         }
 
         internal static void LoadConfigAsync()

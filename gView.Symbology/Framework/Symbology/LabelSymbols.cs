@@ -976,7 +976,7 @@ namespace gView.Framework.Symbology
                             }
                             else
                             {
-                                yOffset += subFont.Size * .4f;
+                                yOffset += (subFont.Size / .9f) * .4f;
                             }
                         }
 

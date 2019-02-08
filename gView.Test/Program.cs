@@ -92,15 +92,17 @@ namespace gView.Test
 
         static void TestPerformance()
         {
-            int[] bbox = new int[] { -115309, 231374, -114905, 231530 };
+            //int[] bbox = new int[] { -115309, 231374, -114905, 231530 };
+            int[] bbox = new int[] { -219217, 23153, -10996, 231374 };
 
             List<Task> tasks = new List<Task>();
 
             var startTime = DateTime.UtcNow;
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 300; i++)
             {
-                string service = "gview5/geoservices/rest/services/default/KATASTER_BEV";
+                string service = "geoservices/rest/services/default/UEBERSICHTSKARTE";
+                //string service = "gview5/geoservices/rest/services/default/KATASTER_BEV";
                 //string service = "arcgis/rest/services/GRAZG81_SDET/estag_dkm_sdet_grazg81";
 
                 string url = String.Empty;
@@ -109,7 +111,7 @@ namespace gView.Test
 
                 bbox = bbox.Select(x => x + i).ToArray();
 
-                url = "http://server/" + service + "/MapServer/export?" +
+                url = "http://localhost:8889/" + service + "/MapServer/export?" +
                 "size=800,800&dpi=96&imageSR=&bboxSR=&format=png&layerDefs=&layers=&transparent=true&time=&layerTimeOptions=&dynamicLayers=&mapScale=0&rotation=0&datumTransformations=&mapRangeValues=&layerRangeValues=&layerParameterValues=&historicMoment=0&f=pjson&";
                 //"bboxSR=&layers=&layerDefs=&size=800%2C800&imageSR=&format=png&transparent=true&dpi=&time=&layerTimeOptions=&dynamicLayers=&gdbVersion=&mapScale=&rotation=&f=pjson&";
 
@@ -127,6 +129,8 @@ namespace gView.Test
                 var task = ExportMapAsync(url);
                 tasks.Add(task);
                 //task.Wait();
+
+                Task.Delay(30).Wait();
             }
 
             Task.WaitAll(tasks.ToArray());
