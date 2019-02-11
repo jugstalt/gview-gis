@@ -76,7 +76,6 @@ namespace gView.Framework.OGC.DB
                     catch { }
                 }
                 await featureCursor._conn.OpenAsync();
-                //command.Prepare();
 
                 featureCursor._reader = await command.ExecuteReaderAsync();
             }

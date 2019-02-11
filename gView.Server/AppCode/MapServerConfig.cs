@@ -17,5 +17,21 @@ namespace gView.Server.AppCode
         public string OutputUrl { get; set; }
         [JsonProperty("onlineresource-url")]
         public string OnlineResourceUrl { get; set; }
+
+        [JsonProperty("task-queue")]
+        public TaskQueueConfig TaskQueue {get;set;}
+
+        #region Classes
+
+        public class TaskQueueConfig
+        {
+            [JsonProperty("max-parallel-tasks")]
+            public int MaxParallelTasks { get; set; }
+
+            [JsonProperty("max-queue-length")]
+            public int MaxQueueLength { get; set; }
+        }
+
+        #endregion
     }
 }

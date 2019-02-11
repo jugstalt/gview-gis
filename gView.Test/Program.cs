@@ -92,17 +92,18 @@ namespace gView.Test
 
         static void TestPerformance()
         {
-            //int[] bbox = new int[] { -115309, 231374, -114905, 231530 };
-            int[] bbox = new int[] { -219217, 23153, -10996, 231374 };
+            int[] bbox = new int[] { -115309, 231374, -114905, 231530 };
+            //int[] bbox = new int[] { -219217, 23153, -10996, 231374 };
 
-            List<Task> tasks = new List<Task>();
+            List<Task<double>> tasks = new List<Task<double>>();
 
             var startTime = DateTime.UtcNow;
 
-            for (int i = 0; i < 300; i++)
+            for (int i = 0; i < 100; i++)
             {
-                string service = "geoservices/rest/services/default/UEBERSICHTSKARTE";
-                //string service = "gview5/geoservices/rest/services/default/KATASTER_BEV";
+                string server = "server.domain";
+                //string service = "geoservices/rest/services/default/UEBERSICHTSKARTE";
+                string service = "gview5/geoservices/rest/services/default/KATASTER_BEV";
                 //string service = "arcgis/rest/services/GRAZG81_SDET/estag_dkm_sdet_grazg81";
 
                 string url = String.Empty;
@@ -111,7 +112,7 @@ namespace gView.Test
 
                 bbox = bbox.Select(x => x + i).ToArray();
 
-                url = "http://localhost:8889/" + service + "/MapServer/export?" +
+                url = "http://"+server+"/" + service + "/MapServer/export?" +
                 "size=800,800&dpi=96&imageSR=&bboxSR=&format=png&layerDefs=&layers=&transparent=true&time=&layerTimeOptions=&dynamicLayers=&mapScale=0&rotation=0&datumTransformations=&mapRangeValues=&layerRangeValues=&layerParameterValues=&historicMoment=0&f=pjson&";
                 //"bboxSR=&layers=&layerDefs=&size=800%2C800&imageSR=&format=png&transparent=true&dpi=&time=&layerTimeOptions=&dynamicLayers=&gdbVersion=&mapScale=&rotation=&f=pjson&";
 
@@ -121,21 +122,26 @@ namespace gView.Test
 
                 #region Query
 
-                //url = "https://gis2.esn.at/arcgis/rest/services/GRAZG81_SDET/estag_dkm_sdet_grazg81/MapServer/13/query?where=OBJECTID%3C100&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&resultOffset=&resultRecordCount=&f=pjson";
-                //url = "https://gis2.esn.at/gview5/geoservices/rest/services/default/KATASTER_BEV/MapServer/306/query?text=&geometry=&geometryType=&inSR=&relationParam=&where=OBJECTID%3C100&objectIds=&time=0&distance=0&units=&outFields=*&returnGeometry=true&maxAllowableOffset=0&geometryPrecision=0&outSR=&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&orderByFields=&outStatistics=&groupByFieldsForStatistics=&returnZ=false&returnM=false&returnDistinctValues=false&returnTrueCurves=false&resultOffset=0&resultRecordCount=0&datumTransformation=&rangeValues=&quantizationParameters=&parameterValues=&historicMoment=0&layerId=306&f=pjson";
+                //url = "https://"+server+"/arcgis/rest/services/GRAZG81_SDET/estag_dkm_sdet_grazg81/MapServer/13/query?where=OBJECTID<"+(i)+"&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&resultOffset=&resultRecordCount=&f=json";
+                //url = "https://"+server+"/gview5/geoservices/rest/services/default/KATASTER_BEV/MapServer/306/query?text=&geometry=&geometryType=&inSR=&relationParam=&where=OBJECTID<"+(i)+"&objectIds=&time=0&distance=0&units=&outFields=*&returnGeometry=true&maxAllowableOffset=0&geometryPrecision=0&outSR=&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&orderByFields=&outStatistics=&groupByFieldsForStatistics=&returnZ=false&returnM=false&returnDistinctValues=false&returnTrueCurves=false&resultOffset=0&resultRecordCount=0&datumTransformation=&rangeValues=&quantizationParameters=&parameterValues=&historicMoment=0&layerId=306&f=json";
                 
                 #endregion
 
                 var task = ExportMapAsync(url);
+                
                 tasks.Add(task);
                 //task.Wait();
 
-                Task.Delay(30).Wait();
+                //Task.Delay(30).Wait();
             }
 
             Task.WaitAll(tasks.ToArray());
 
             double ms = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            Console.WriteLine("----------------------------------------------------");
+            Console.WriteLine("Min: " + tasks.Select(t => t.Result).Min() + " ms");
+            Console.WriteLine("Max: " + tasks.Select(t => t.Result).Max() + " ms");
+            Console.WriteLine("Avg: " + tasks.Select(t => t.Result).Average() + " ms");
             Console.WriteLine("====================================================");
             Console.WriteLine("Total: " + ms + " ms");
         }
@@ -154,6 +160,7 @@ namespace gView.Test
                     client.UseDefaultCredentials = true;
                     var response = await client.DownloadStringTaskAsync(new Uri(url));
 
+                    //Console.WriteLine(response.Substring(0, Math.Min(80, response.Length)));
                     var exportResponse = JsonConvert.DeserializeObject<ExportResponse>(response);
                     Console.WriteLine(exportResponse.href);
                 }
@@ -181,9 +188,9 @@ namespace gView.Test
                 client.Proxy = null;
                 client.UseDefaultCredentials = true;
                 var response = client.DownloadString(new Uri(url));
-
-                var exportResponse= JsonConvert.DeserializeObject<ExportResponse>(response);
-                Console.WriteLine(exportResponse.href);
+                
+                //var exportResponse= JsonConvert.DeserializeObject<ExportResponse>(response);
+                //Console.WriteLine(exportResponse.href);
             }
 
             var ms = (DateTime.UtcNow - startTime).TotalMilliseconds;

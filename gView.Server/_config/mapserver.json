@@ -3,5 +3,10 @@
   "services-folder_": "C:\\Development_OpenSource\\GeoDaten\\MXL\\8050",
   "output-path": "C:\\ArcIMS\\Output",
   "output-url": "http://localhost/output",
-  "onlineresource-url": "http://localhost:8889"
+  "onlineresource-url": "http://localhost:8889",
+
+  "task-queue": {
+    "max-parallel-tasks": 5,
+    "max-queue-length": 1000
+  }
 }

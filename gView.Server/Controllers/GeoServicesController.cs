@@ -307,7 +307,8 @@ namespace gView.Server.Controllers
 
                 //InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
 
-                await interpreter.Request(context);
+                //await interpreter.Request(context);
+                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
@@ -319,7 +320,8 @@ namespace gView.Server.Controllers
                     }
                     else
                     {
-                        return Result(JsonConvert.DeserializeObject<JsonFeatureResponse>(serviceRequest.Response));
+                        var featureResponse = JsonConvert.DeserializeObject<JsonFeatureResponse>(serviceRequest.Response);
+                        return Result(featureResponse);
                     }
                 }
                 else

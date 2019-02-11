@@ -9,10 +9,15 @@ namespace gView.Server.AppCode
     {
         public delegate Task QueuedTask(T parameter);
 
-        private static long ProcessId = 0;
-        private static long ProcessedTasks = 0;
-        private static int MaxParalellTasks = 50;
+        private long ProcessId = 0;
+        private long ProcessedTasks = 0;
+        private int MaxParallelTasks = 50;
         private object locker = new object();
+
+        public TaskQueue(int maxParallelTask, int maxQueueLength)
+        {
+            this.MaxParallelTasks = maxParallelTask;
+        }
 
         private long NextProcessId()
         {
@@ -34,7 +39,7 @@ namespace gView.Server.AppCode
         {
             lock(locker)
             {
-                return currentProcessId - ProcessedTasks <= MaxParalellTasks;
+                return currentProcessId - ProcessedTasks <= MaxParallelTasks;
             }
         }
 

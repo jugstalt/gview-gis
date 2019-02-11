@@ -42,6 +42,12 @@ namespace gView.Server.AppCode
             OutputUrl = mapServerConfig.OutputUrl;
             OnlineResource = mapServerConfig.OnlineResourceUrl;
 
+            if(mapServerConfig.TaskQueue!=null)
+            {
+                Globals.MaxThreads = Math.Max(1, mapServerConfig.TaskQueue.MaxParallelTasks);
+                Globals.QueueLength = Math.Max(10, mapServerConfig.TaskQueue.MaxQueueLength);
+            }
+
             Instance = new MapServerInstance(port);
 
             ServicesPath = mapServerConfig.ServiceFolder;
@@ -66,7 +72,7 @@ namespace gView.Server.AppCode
             }
 
             ThreadQueue = new ThreadQueue<IServiceRequestContext>(Globals.MaxThreads, Globals.QueueLength);
-            TaskQueue = new TaskQueue<IServiceRequestContext>();
+            TaskQueue = new TaskQueue<IServiceRequestContext>(Globals.MaxThreads, Globals.QueueLength);
         }
 
         internal static void LoadConfigAsync()
