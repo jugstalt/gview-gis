@@ -8,9 +8,8 @@
         @foreach(var mapService in Model.Services)
         {
             <li>
-                @Html.ActionLink(mapService.Name, "Service", "Home", new { id = mapService.Name })
+                @Html.ActionLink((String.IsNullOrWhiteSpace(mapService.Folder) ? "" : mapService.Folder + "/") + mapService.Name, "Service", "Home", new { id = (String.IsNullOrWhiteSpace(mapService.Folder) ? "" : mapService.Folder+"@")+mapService.Name })
             </li>
         }
     </ul>
-
 </div>

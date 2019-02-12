@@ -20,7 +20,7 @@ namespace gView.Server.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        public IActionResult OgcRequest(string id, string service="")
+        async public Task<IActionResult> OgcRequest(string id, string service="")
         {
             try
             {
@@ -64,7 +64,7 @@ namespace gView.Server.Controllers
                 while (requestString.StartsWith("?"))
                     requestString = requestString.Substring(1);
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, requestString);
+                ServiceRequest serviceRequest = new ServiceRequest(id.ServiceName(), id.FolderName(), requestString);
                 serviceRequest.OnlineResource = InternetMapServer.OnlineResource + "/ogc/" + id;
 
                 #endregion
@@ -82,7 +82,7 @@ namespace gView.Server.Controllers
                    interpreter,
                    serviceRequest);
 
-                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 return Result(serviceRequest.Response, "text/xml");
             }

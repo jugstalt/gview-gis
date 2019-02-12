@@ -20,13 +20,13 @@ namespace gView.Server.Controllers
         }
 
         [HttpGet]
-        public IActionResult EsriMap(string cmd, string ServiceName)
+        public Task<IActionResult> EsriMap(string cmd, string ServiceName)
         {
             return EsriMap(cmd, ServiceName, String.Empty);
         }
 
         [HttpPost]
-        public IActionResult EsriMap(string cmd, string ServiceName, string content)
+        async public Task<IActionResult> EsriMap(string cmd, string ServiceName, string content)
         {
             if (cmd == "ping")
             {
@@ -58,7 +58,7 @@ namespace gView.Server.Controllers
                 content = Encoding.UTF8.GetString(ms.ToArray());
             }
 
-            ServiceRequest serviceRequest = new ServiceRequest(ServiceName, content);
+            ServiceRequest serviceRequest = new ServiceRequest(ServiceName.ServiceName(), ServiceName.FolderName(), content);
             serviceRequest.OnlineResource = InternetMapServer.OnlineResource;
 
             #endregion
@@ -78,7 +78,7 @@ namespace gView.Server.Controllers
                 interpreter,
                 serviceRequest);
 
-            InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+            await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
 
             #endregion
 

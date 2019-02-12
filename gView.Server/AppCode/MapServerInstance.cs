@@ -32,7 +32,7 @@ namespace gView.Server.AppCode
             _log_errors = Globals.log_errors;
         }
 
-        private IServiceMap Map(string name, IServiceRequestContext context)
+        private IServiceMap Map(string name, string folder, IServiceRequestContext context)
         {
             try
             {
@@ -51,11 +51,14 @@ namespace gView.Server.AppCode
                 {
                     string alias = name;
 
-                    IMapService ms = FindMapService(name);
+                    IMapService ms = FindMapService(name, folder);
                     if (ms is MapServiceAlias)
                     {
                         name = ((MapServiceAlias)ms).ServiceName;
                     }
+
+                    if (!String.IsNullOrWhiteSpace(folder))
+                        name = folder + "/" + name;
 
                     return FindServiceMap(name, alias, context).Result;
                 }
@@ -85,19 +88,16 @@ namespace gView.Server.AppCode
             }
         }
 
-        public IServiceMap this[string name]
+        public IServiceMap GetService(string name, string folder)
         {
-            get
-            {
-                return this.Map(name, null);
-            }
+            return this.Map(name, folder, null);
         }
         public IServiceMap this[IMapService service]
         {
             get
             {
                 if (service == null) return null;
-                return this[service.Name];
+                return GetService(service.Name, service.Folder);
             }
         }
         public IServiceMap this[IServiceRequestContext context]
@@ -107,7 +107,7 @@ namespace gView.Server.AppCode
                 try
                 {
                     if (context == null || context.ServiceRequest == null) return null;
-                    IServiceMap map = this.Map(context.ServiceRequest.Service, context);
+                    IServiceMap map = this.Map(context.ServiceRequest.Service, context.ServiceRequest.Folder, context);
                     if (map is ServiceMap)
                         ((ServiceMap)map).SetRequestContext(context);
 
@@ -179,7 +179,7 @@ namespace gView.Server.AppCode
         {
             get
             {
-                return Globals.outputUrl;
+                return Globals.OutputUrl;
             }
         }
 
@@ -187,7 +187,7 @@ namespace gView.Server.AppCode
         {
             get
             {
-                return Globals.outputPath;
+                return Globals.OutputPath;
             }
         }
 
@@ -195,7 +195,7 @@ namespace gView.Server.AppCode
         {
             get
             {
-                return Globals.tileCachePath;
+                return Globals.TileCachePath;
             }
         }
 
@@ -219,7 +219,7 @@ namespace gView.Server.AppCode
 
         async private Task<IServiceMap> FindServiceMap(string name, string alias, IServiceRequestContext context)
         {
-            Map map = await FindMap(alias, context);
+            Map map = await FindMap(name, context);
             if (map != null)
             {
                 IEnumerable<IMapApplicationModule> modules = null;
@@ -240,7 +240,7 @@ namespace gView.Server.AppCode
                 StringBuilder sb = new StringBuilder();
                 foreach (string n in names)
                 {
-                    IMapService ms = FindMapService(n);
+                    IMapService ms = FindMapService(n.ServiceName(), n.FolderName());
                     if (ms == null) return null;
 
                     if (sb.Length > 0) sb.Append(",");
@@ -320,7 +320,10 @@ namespace gView.Server.AppCode
                         }
                     }
 
-                    if (!found) InternetMapServer.mapServices.Add(new MapService(name, MapServiceType.GDI));
+                    if (!found)
+                    {
+                        InternetMapServer.mapServices.Add(new MapService(name, String.Empty, MapServiceType.GDI));
+                    }
 
                     return new ServiceMap(newMap, this, null);
                 }
@@ -329,12 +332,13 @@ namespace gView.Server.AppCode
             return null;
         }
 
-        private IMapService FindMapService(string name)
+        private IMapService FindMapService(string name, string folder)
         {
             foreach (IMapService ms in InternetMapServer.mapServices)
             {
                 if (ms == null) continue;
-                if (ms.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase)) return ms;
+                if (ms.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) &&
+                    ms.Folder.Equals(folder, StringComparison.CurrentCultureIgnoreCase)) return ms;
             }
             return null;
         }

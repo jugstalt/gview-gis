@@ -29,7 +29,7 @@ namespace gView.Server.Controllers
     public class GeoServicesRestController : Controller
     {
         private const double Version = 10.61;
-        private const string DefaultFolder = "default";
+        //private const string DefaultFolder = "default";
 
         public int JsonExportResponse { get; private set; }
 
@@ -43,8 +43,18 @@ namespace gView.Server.Controllers
             return Result(new JsonServices()
             {
                 CurrentVersion = Version,
-                Folders = new string[] { DefaultFolder },
-                Services = new AgsServices[0]
+                Folders = InternetMapServer.mapServices
+                    .Where(s => !String.IsNullOrWhiteSpace(s.Folder))
+                    .Select(s => s.Folder).Distinct()
+                    .ToArray(),
+                Services = InternetMapServer.mapServices
+                    .Where(s => String.IsNullOrWhiteSpace(s.Folder))
+                    .Select(s => new AgsServices()
+                    {
+                        Name = s.Name,
+                        Type = "MapServer"
+                    })
+                    .ToArray()
             });
         }
 
@@ -52,23 +62,20 @@ namespace gView.Server.Controllers
         {
             try
             {
-                if (id != DefaultFolder)
-                    throw new Exception("Unknown folder: " + id);
-
-                List<AgsServices> agsServices = new List<AgsServices>();
-                foreach (var service in InternetMapServer.mapServices)
-                {
-                    agsServices.Add(new AgsServices()
-                    {
-                        Name = DefaultFolder + "/" + service.Name,
-                        Type = "MapServer"
-                    });
-                }
+                //if (id != DefaultFolder)
+                //    throw new Exception("Unknown folder: " + id);
 
                 return Result(new JsonServices()
                 {
                     CurrentVersion = 10.61,
-                    Services = agsServices.ToArray(),
+                    Services = InternetMapServer.mapServices
+                        .Where(s=>s.Folder==id)
+                        .Select(s => new AgsServices()
+                        {
+                            Name = s.Name,
+                            Type = "MapServer"
+                        })
+                    .ToArray(),
                     Folders = new string[0]
                 });
             }
@@ -85,10 +92,10 @@ namespace gView.Server.Controllers
         {
             try
             {
-                if (folder != DefaultFolder)
-                    throw new Exception("Unknown folder: " + folder);
+                //if (folder != DefaultFolder)
+                //    throw new Exception("Unknown folder: " + folder);
 
-                var map = InternetMapServer.Instance[id];
+                var map = InternetMapServer.Instance.GetService(id, folder);
                 if (map == null)
                     throw new Exception("Unknown service: " + id);
 
@@ -140,10 +147,10 @@ namespace gView.Server.Controllers
         {
             try
             {
-                if (folder != DefaultFolder)
-                    throw new Exception("Unknown folder: " + folder);
+                //if (folder != DefaultFolder)
+                //    throw new Exception("Unknown folder: " + folder);
 
-                var map = InternetMapServer.Instance[id];
+                var map = InternetMapServer.Instance.GetService(id, folder);
                 if (map == null)
                     throw new Exception("Unknown service: " + id);
 
@@ -168,10 +175,10 @@ namespace gView.Server.Controllers
         {
             try
             {
-                if (folder != DefaultFolder)
-                    throw new Exception("Unknown folder: " + folder);
+                //if (folder != DefaultFolder)
+                //    throw new Exception("Unknown folder: " + folder);
 
-                var map = InternetMapServer.Instance[id];
+                var map = InternetMapServer.Instance.GetService(id, folder);
                 if (map == null)
                     throw new Exception("Unknown service: " + id);
 
@@ -193,8 +200,8 @@ namespace gView.Server.Controllers
         {
             try
             {
-                if (folder != DefaultFolder)
-                    throw new Exception("Unknown folder: " + folder);
+                //if (folder != DefaultFolder)
+                //    throw new Exception("Unknown folder: " + folder);
 
                 var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
 
@@ -211,7 +218,7 @@ namespace gView.Server.Controllers
                     return FormResult(exportMap);
                 }
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(exportMap))
+                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(exportMap))
                 {
                     OnlineResource = InternetMapServer.OnlineResource,
                     Method = "export"
@@ -263,8 +270,8 @@ namespace gView.Server.Controllers
         {
             try
             {
-                if (folder != DefaultFolder)
-                    throw new Exception("Unknown folder: " + folder);
+                //if (folder != DefaultFolder)
+                //    throw new Exception("Unknown folder: " + folder);
 
                 var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
 
@@ -282,7 +289,7 @@ namespace gView.Server.Controllers
                     return FormResult(queryLayer);
                 }
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(queryLayer))
+                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(queryLayer))
                 {
                     OnlineResource = InternetMapServer.OnlineResource,
                     Method = "query"
@@ -338,18 +345,18 @@ namespace gView.Server.Controllers
             }
         }
 
-        public IActionResult Legend(string folder, string id)
+        async public Task<IActionResult> Legend(string folder, string id)
         {
             try
             {
-                if (folder != DefaultFolder)
-                    throw new Exception("Unknown folder: " + folder);
+                //if (folder != DefaultFolder)
+                //    throw new Exception("Unknown folder: " + folder);
 
                 var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, String.Empty)
+                ServiceRequest serviceRequest = new ServiceRequest(id, folder, String.Empty)
                 {
                     OnlineResource = InternetMapServer.OnlineResource,
                     Method = "legend"
@@ -372,7 +379,7 @@ namespace gView.Server.Controllers
                     interpreter,
                     serviceRequest);
 
-                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
@@ -391,12 +398,12 @@ namespace gView.Server.Controllers
 
         #region FeatureServer
 
-        public IActionResult FeatureServerQuery(string folder, string id, int layerId)
+        async public Task<IActionResult> FeatureServerQuery(string folder, string id, int layerId)
         {
             try
             {
-                if (folder != DefaultFolder)
-                    throw new Exception("Unknown folder: " + folder);
+                //if (folder != DefaultFolder)
+                //    throw new Exception("Unknown folder: " + folder);
 
                 var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
 
@@ -408,7 +415,7 @@ namespace gView.Server.Controllers
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
                 queryLayer.LayerId = layerId;
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(queryLayer))
+                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(queryLayer))
                 {
                     OnlineResource = InternetMapServer.OnlineResource,
                     Method = "featureserver_query"
@@ -431,7 +438,7 @@ namespace gView.Server.Controllers
                     interpreter,
                     serviceRequest);
 
-                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
@@ -453,12 +460,12 @@ namespace gView.Server.Controllers
             }
         }
 
-        public IActionResult FeatureServerAddFeatures(string folder, string id, int layerId)
+        async public Task<IActionResult> FeatureServerAddFeatures(string folder, string id, int layerId)
         {
             try
             {
-                if (folder != DefaultFolder)
-                    throw new Exception("Unknown folder: " + folder);
+                //if (folder != DefaultFolder)
+                //    throw new Exception("Unknown folder: " + folder);
 
                 var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
 
@@ -470,7 +477,7 @@ namespace gView.Server.Controllers
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
                 editRequest.LayerId = layerId;
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(editRequest))
+                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
                 {
                     OnlineResource = InternetMapServer.OnlineResource,
                     Method = "featureserver_addfeatures"
@@ -493,7 +500,7 @@ namespace gView.Server.Controllers
                     interpreter,
                     serviceRequest);
 
-                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
@@ -519,12 +526,12 @@ namespace gView.Server.Controllers
             }
         }
 
-        public IActionResult FeatureServerUpdateFeatures(string folder, string id, int layerId)
+        async public Task<IActionResult> FeatureServerUpdateFeatures(string folder, string id, int layerId)
         {
             try
             {
-                if (folder != DefaultFolder)
-                    throw new Exception("Unknown folder: " + folder);
+                //if (folder != DefaultFolder)
+                //    throw new Exception("Unknown folder: " + folder);
 
                 var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
 
@@ -536,7 +543,7 @@ namespace gView.Server.Controllers
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
                 editRequest.LayerId = layerId;
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(editRequest))
+                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
                 {
                     OnlineResource = InternetMapServer.OnlineResource,
                     Method = "featureserver_updatefeatures"
@@ -559,7 +566,7 @@ namespace gView.Server.Controllers
                     interpreter,
                     serviceRequest);
 
-                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
@@ -585,12 +592,12 @@ namespace gView.Server.Controllers
             }
         }
 
-        public IActionResult FeatureServerDeleteFeatures(string folder, string id, int layerId)
+        async public Task<IActionResult> FeatureServerDeleteFeatures(string folder, string id, int layerId)
         {
             try
             {
-                if (folder != DefaultFolder)
-                    throw new Exception("Unknown folder: " + folder);
+                //if (folder != DefaultFolder)
+                //    throw new Exception("Unknown folder: " + folder);
 
                 var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
 
@@ -602,7 +609,7 @@ namespace gView.Server.Controllers
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
                 editRequest.LayerId = layerId;
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, JsonConvert.SerializeObject(editRequest))
+                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
                 {
                     OnlineResource = InternetMapServer.OnlineResource,
                     Method = "featureserver_deletefeatures"
@@ -625,7 +632,7 @@ namespace gView.Server.Controllers
                     interpreter,
                     serviceRequest);
 
-                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
@@ -655,10 +662,10 @@ namespace gView.Server.Controllers
         {
             try
             {
-                if (folder != DefaultFolder)
-                    throw new Exception("Unknown folder: " + folder);
+                //if (folder != DefaultFolder)
+                //    throw new Exception("Unknown folder: " + folder);
 
-                var map = InternetMapServer.Instance[id];
+                var map = InternetMapServer.Instance.GetService(id, folder);
                 if (map == null)
                     throw new Exception("Unknown service: " + id);
 
@@ -847,7 +854,7 @@ namespace gView.Server.Controllers
 
             foreach(var serviceMethodAttribute in obj.GetType().GetCustomAttributes<ServiceMethodAttribute>())
             {
-                sb.Append("<a href='" + this.Request.Path + "/" + serviceMethodAttribute.Method + "'>" + serviceMethodAttribute.Name + "</a><br/>");
+                sb.Append("<a href='" + InternetMapServer.OnlineResource + this.Request.Path + "/" + serviceMethodAttribute.Method + "'>" + serviceMethodAttribute.Name + "</a><br/>");
             }
 
             sb.Append("</div>");
@@ -894,14 +901,14 @@ namespace gView.Server.Controllers
                 sb.Append("<div class='property-name" + (newLine ? " array" : "") + "'>" + spacesValue + propertyInfo.Name + ":&nbsp;</div>");
                 sb.Append("<div class='property-value'>");
 
-                if(propertyInfo.PropertyType.IsArray)
+                if (propertyInfo.PropertyType.IsArray)
                 {
                     var array = (Array)propertyInfo.GetValue(obj);
                     if (array == null)
                     {
                         sb.Append("null");
                     }
-                    else if(array.Length==0)
+                    else if (array.Length == 0)
                     {
                         sb.Append("[]");
                     }
@@ -909,15 +916,26 @@ namespace gView.Server.Controllers
                     {
                         for (int i = 0; i < array.Length; i++)
                         {
-                            
+
                             var val = array.GetValue(i);
-                            if(val==null)
+                            if (val == null)
                             {
                                 sb.Append("null");
                             }
                             else if (val.GetType().IsValueType || val.GetType() == typeof(string))
                             {
+                                if(i==0)
+                                {
+                                    sb.Append("[");
+                                } else
+                                {
+                                    sb.Append(", ");
+                                }
                                 sb.Append(HtmlYamlValue(linkAttribute, val));
+                                if (i == array.Length - 1)
+                                {
+                                    sb.Append("]");
+                                }
                             }
                             else
                             {
@@ -926,7 +944,7 @@ namespace gView.Server.Controllers
                         }
                     }
                 }
-                else if(propertyInfo.PropertyType.IsValueType || propertyInfo.PropertyType == typeof(string))
+                else if (propertyInfo.PropertyType.IsValueType || propertyInfo.PropertyType == typeof(string))
                 {
                     sb.Append(HtmlYamlValue(linkAttribute, propertyInfo.GetValue(obj)));
                 }

@@ -9,7 +9,7 @@ namespace gView.Server.AppCode
     {
         private static int _maxThreads = 2, _queueLength = 100;
 
-        public static string outputPath
+        public static string OutputPath
         {
             get
             {
@@ -17,14 +17,14 @@ namespace gView.Server.AppCode
             }
         }
 
-        public static string tileCachePath
+        public static string TileCachePath
         {
             get
             {
                 return InternetMapServer.TileCachePath;
             }
         }
-        public static string outputUrl
+        public static string OutputUrl
         {
             get
             {

@@ -35,7 +35,7 @@ namespace gView.Interoperability.GeoServices.Request
 
         public InterpreterCapabilities Capabilities =>
             new InterpreterCapabilities(new InterpreterCapabilities.Capability[]{
-                    new InterpreterCapabilities.SimpleCapability("GeoServices REST ",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/default/{service}/MapServer","1.0")
+                    new InterpreterCapabilities.SimpleCapability("GeoServices REST ",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder/service}/MapServer","1.0")
             });
 
         public void OnCreate(IMapServer mapServer)
@@ -129,7 +129,10 @@ namespace gView.Interoperability.GeoServices.Request
                     {
 
 
-                        string fileName = serviceMap.Name.Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + "." + iFormat.ToString().ToLower();
+                        string fileName = serviceMap.Name
+                            .Replace("/", "_")
+                            .Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + "." + iFormat.ToString().ToLower();
+
                         string path = (_mapServer.OutputPath + @"/" + fileName).ToPlattformPath();
                         serviceMap.SaveImage(path, iFormat);
 

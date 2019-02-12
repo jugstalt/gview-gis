@@ -24,12 +24,11 @@ namespace gView.Server.Controllers
 
         public IActionResult Service(string id)
         {
- 
             return View(new HomeServiceModel()
             {
-                Server = InternetMapServer.AppRootUrl(this.Request), 
-                OnlineResource= Request.Scheme + "://" + Request.Host+"/ogc?",
-                ServiceMap = InternetMapServer.Instance[id],
+                Server = InternetMapServer.AppRootUrl(this.Request),
+                OnlineResource = Request.Scheme + "://" + Request.Host + "/ogc?",
+                MapService = InternetMapServer.mapServices.Where(s => s.Name == id.ServiceName() && s.Folder == id.FolderName()).FirstOrDefault(),
                 Interpreters = InternetMapServer.Interpreters.Select(i => new PlugInManager().CreateInstance<IServiceRequestInterpreter>(i))
             });
         }

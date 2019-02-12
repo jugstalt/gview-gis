@@ -21,7 +21,7 @@ namespace gView.Server.AppCode
     class InternetMapServer
     {
         static public ServerMapDocument MapDocument = new ServerMapDocument();
-        static public ThreadQueue<IServiceRequestContext> ThreadQueue = null;
+        //static public ThreadQueue<IServiceRequestContext> ThreadQueue = null;
         static public TaskQueue<IServiceRequestContext> TaskQueue = null;
         static internal string ServicesPath = String.Empty;
         static internal string OutputPath = String.Empty;
@@ -51,18 +51,11 @@ namespace gView.Server.AppCode
             Instance = new MapServerInstance(port);
 
             ServicesPath = mapServerConfig.ServiceFolder;
-            foreach (var mapFileInfo in new DirectoryInfo(ServicesPath.ToPlattformPath()).GetFiles("*.mxl"))
+
+            AddServices(String.Empty);
+            foreach(var folder in new DirectoryInfo(ServicesPath.ToPlattformPath()).GetDirectories())
             {
-                try
-                {
-                    MapService service = new MapService(mapFileInfo.FullName, MapServiceType.MXL);
-                    mapServices.Add(service);
-                    Console.WriteLine("service " + service.Name + " added");
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log(loggingMethod.error, "LoadConfig - " + mapFileInfo.Name + ": " + ex.Message);
-                }
+                AddServices(folder.Name);
             }
 
             var pluginMananger = new PlugInManager();
@@ -71,127 +64,144 @@ namespace gView.Server.AppCode
                 Interpreters.Add(interpreterType);
             }
 
-            ThreadQueue = new ThreadQueue<IServiceRequestContext>(Globals.MaxThreads, Globals.QueueLength);
+            //ThreadQueue = new ThreadQueue<IServiceRequestContext>(Globals.MaxThreads, Globals.QueueLength);
             TaskQueue = new TaskQueue<IServiceRequestContext>(Globals.MaxThreads, Globals.QueueLength);
         }
 
-        internal static void LoadConfigAsync()
+        private static void AddServices(string folder)
         {
-            Thread thread = new Thread(new ThreadStart(LoadConfig));
-            thread.Start();
-        }
-        internal static void LoadConfig()
-        {
-            try
+            foreach (var mapFileInfo in new DirectoryInfo((ServicesPath+"/"+folder).ToPlattformPath()).GetFiles("*.mxl"))
             {
-                if (MapDocument == null) return;
-
-                DirectoryInfo di = new DirectoryInfo(ServicesPath);
-                if (!di.Exists) di.Create();
-
-                acl = new Acl(new FileInfo(ServicesPath + @"\acl.xml"));
-
-                foreach (FileInfo fi in di.GetFiles("*.mxl"))
-                {
-                    try
-                    {
-                        if (mapServices.Count < Instance.MaxServices)
-                        {
-                            MapService service = new MapService(fi.FullName, MapServiceType.MXL);
-                            mapServices.Add(service);
-                            Console.WriteLine("service " + service.Name + " added");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Log(loggingMethod.error, "LoadConfig - " + fi.Name + ": " + ex.Message);
-                    }
-                }
-                foreach (FileInfo fi in di.GetFiles("*.svc"))
-                {
-                    try
-                    {
-                        if (mapServices.Count < Instance.MaxServices)
-                        {
-                            MapService service = new MapService(fi.FullName, MapServiceType.SVC);
-                            mapServices.Add(service);
-                            Console.WriteLine("service " + service.Name + " added");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Log(loggingMethod.error, "LoadConfig - " + fi.Name + ": " + ex.Message);
-                    }
-                }
-
                 try
                 {
-                    // Config Datei laden...
-                    FileInfo fi = new FileInfo(ServicesPath + @"\config.xml");
-                    if (fi.Exists)
-                    {
-                        XmlDocument doc = new XmlDocument();
-                        doc.Load(fi.FullName);
-
-                        #region onstart - alias
-                        foreach (XmlNode serviceNode in doc.SelectNodes("MapServer/onstart/alias/services/service[@alias]"))
-                        {
-                            string serviceName = serviceNode.InnerText;
-                            MapService ms = new MapServiceAlias(
-                                serviceNode.Attributes["alias"].Value,
-                                serviceName.Contains(",") ? MapServiceType.GDI : MapServiceType.SVC,
-                                serviceName);
-                            mapServices.Add(ms);
-                        }
-                        #endregion
-
-                        #region onstart - load
-
-                        foreach (XmlNode serviceNode in doc.SelectNodes("MapServer/onstart/load/services/service"))
-                        {
-                            ServiceRequest serviceRequest = new ServiceRequest(
-                                serviceNode.InnerText, String.Empty);
-
-                            ServiceRequestContext context = new ServiceRequestContext(
-                                Instance,
-                                null,
-                                serviceRequest);
-
-                            IServiceMap sm = Instance[context];
-
-                            /*
-                            // Initalisierung...?!
-                            sm.Display.iWidth = sm.Display.iHeight = 50;
-                            IEnvelope env = null;
-                            foreach (IDatasetElement dsElement in sm.MapElements)
-                            {
-                                if (dsElement != null && dsElement.Class is IFeatureClass)
-                                {
-                                    if (env == null)
-                                        env = new Envelope(((IFeatureClass)dsElement.Class).Envelope);
-                                    else
-                                        env.Union(((IFeatureClass)dsElement.Class).Envelope);
-                                }
-                            }
-                            sm.Display.ZoomTo(env);
-                            sm.Render();
-                             * */
-                        }
-                        #endregion
-
-                        Console.WriteLine("config.xml loaded...");
-                    }
+                    MapService service = new MapService(mapFileInfo.FullName, folder, MapServiceType.MXL);
+                    mapServices.Add(service);
+                    Console.WriteLine("service " + service.Name + " added");
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(loggingMethod.error, "LoadConfig - config.xml: " + ex.Message);
+                    Logger.Log(loggingMethod.error, "LoadConfig - " + mapFileInfo.Name + ": " + ex.Message);
                 }
             }
-            catch (Exception ex)
-            {
-                Logger.Log(loggingMethod.error, "LoadConfig: " + ex.Message);
-            }
         }
+
+        //internal static void LoadConfigAsync()
+        //{
+        //    Thread thread = new Thread(new ThreadStart(LoadConfig));
+        //    thread.Start();
+        //}
+        //internal static void LoadConfig()
+        //{
+        //    try
+        //    {
+        //        if (MapDocument == null) return;
+
+        //        DirectoryInfo di = new DirectoryInfo(ServicesPath);
+        //        if (!di.Exists) di.Create();
+
+        //        acl = new Acl(new FileInfo(ServicesPath + @"\acl.xml"));
+
+        //        foreach (FileInfo fi in di.GetFiles("*.mxl"))
+        //        {
+        //            try
+        //            {
+        //                if (mapServices.Count < Instance.MaxServices)
+        //                {
+        //                    MapService service = new MapService(fi.FullName, MapServiceType.MXL);
+        //                    mapServices.Add(service);
+        //                    Console.WriteLine("service " + service.Name + " added");
+        //                }
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                Logger.Log(loggingMethod.error, "LoadConfig - " + fi.Name + ": " + ex.Message);
+        //            }
+        //        }
+        //        foreach (FileInfo fi in di.GetFiles("*.svc"))
+        //        {
+        //            try
+        //            {
+        //                if (mapServices.Count < Instance.MaxServices)
+        //                {
+        //                    MapService service = new MapService(fi.FullName, MapServiceType.SVC);
+        //                    mapServices.Add(service);
+        //                    Console.WriteLine("service " + service.Name + " added");
+        //                }
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                Logger.Log(loggingMethod.error, "LoadConfig - " + fi.Name + ": " + ex.Message);
+        //            }
+        //        }
+
+        //        try
+        //        {
+        //            // Config Datei laden...
+        //            //FileInfo fi = new FileInfo(ServicesPath + @"\config.xml");
+        //            //if (fi.Exists)
+        //            //{
+        //            //    XmlDocument doc = new XmlDocument();
+        //            //    doc.Load(fi.FullName);
+
+        //            //    #region onstart - alias
+        //            //    foreach (XmlNode serviceNode in doc.SelectNodes("MapServer/onstart/alias/services/service[@alias]"))
+        //            //    {
+        //            //        string serviceName = serviceNode.InnerText;
+        //            //        MapService ms = new MapServiceAlias(
+        //            //            serviceNode.Attributes["alias"].Value,
+        //            //            serviceName.Contains(",") ? MapServiceType.GDI : MapServiceType.SVC,
+        //            //            serviceName);
+        //            //        mapServices.Add(ms);
+        //            //    }
+        //            //    #endregion
+
+        //            //    #region onstart - load
+
+        //            //    foreach (XmlNode serviceNode in doc.SelectNodes("MapServer/onstart/load/services/service"))
+        //            //    {
+        //            //        ServiceRequest serviceRequest = new ServiceRequest(
+        //            //            serviceNode.InnerText, String.Empty);
+
+        //            //        ServiceRequestContext context = new ServiceRequestContext(
+        //            //            Instance,
+        //            //            null,
+        //            //            serviceRequest);
+
+        //            //        IServiceMap sm = Instance[context];
+
+        //            //        /*
+        //            //        // Initalisierung...?!
+        //            //        sm.Display.iWidth = sm.Display.iHeight = 50;
+        //            //        IEnvelope env = null;
+        //            //        foreach (IDatasetElement dsElement in sm.MapElements)
+        //            //        {
+        //            //            if (dsElement != null && dsElement.Class is IFeatureClass)
+        //            //            {
+        //            //                if (env == null)
+        //            //                    env = new Envelope(((IFeatureClass)dsElement.Class).Envelope);
+        //            //                else
+        //            //                    env.Union(((IFeatureClass)dsElement.Class).Envelope);
+        //            //            }
+        //            //        }
+        //            //        sm.Display.ZoomTo(env);
+        //            //        sm.Render();
+        //            //         * */
+        //            //    }
+        //            //    #endregion
+
+        //            //    Console.WriteLine("config.xml loaded...");
+        //            //}
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            Logger.Log(loggingMethod.error, "LoadConfig - config.xml: " + ex.Message);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Logger.Log(loggingMethod.error, "LoadConfig: " + ex.Message);
+        //    }
+        //}
 
         async internal static Task<IMap> LoadMap(string name, IServiceRequestContext context)
         {
@@ -200,7 +210,7 @@ namespace gView.Server.AppCode
                 DirectoryInfo di = new DirectoryInfo(ServicesPath);
                 if (!di.Exists) di.Create();
 
-                FileInfo fi = new FileInfo(ServicesPath + @"\" + name + ".mxl");
+                FileInfo fi = new FileInfo(ServicesPath + @"/" + name + ".mxl");
                 if (fi.Exists)
                 {
                     ServerMapDocument doc = new ServerMapDocument();
@@ -209,6 +219,11 @@ namespace gView.Server.AppCode
                     if (doc.Maps.Count == 1)
                     {
                         ApplyMetadata(doc.Maps[0] as Map);
+                        if(name.Contains("/")) // Folder?
+                        {
+                            doc.Maps[0].Name = name.Split('/')[0] + "/" + doc.Maps[0].Name;
+                        }
+
                         if (!MapDocument.AddMap(doc.Maps[0]))
                             return null;
 
@@ -216,7 +231,7 @@ namespace gView.Server.AppCode
                     }
                     return null;
                 }
-                fi = new FileInfo(ServicesPath + @"\" + name + ".svc");
+                fi = new FileInfo(ServicesPath + @"/" + name + ".svc");
                 if (fi.Exists)
                 {
                     XmlStream stream = new XmlStream("");
@@ -652,7 +667,17 @@ namespace gView.Server.AppCode
                 if (service.Name == mapName)
                     return;
             }
-            InternetMapServer.mapServices.Add(new MapService(mapName, type));
+            string folder = String.Empty;
+            if(mapName.Contains("/"))
+            {
+                if(mapName.Split('/').Length>2)
+                {
+                    throw new Exception("Invalid map name: " + mapName);
+                }
+                folder = mapName.Split('/')[0];
+                mapName = mapName.Split('/')[1];
+            }
+            InternetMapServer.mapServices.Add(new MapService(mapName.Trim(), folder.Trim(), type));
         }
 
         #endregion

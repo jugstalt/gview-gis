@@ -62,28 +62,63 @@ namespace gView.Server
                     defaults: new { controller = "GeoServicesRest", Action = "ExportMap" }
                 );
                 routes.MapRoute(
+                    name: "geoservices_rest_exportmap",
+                    template: "geoservices/rest/services/{id}/mapserver/export",
+                    defaults: new { controller = "GeoServicesRest", Action = "ExportMap" }
+                );
+
+                routes.MapRoute(
                     name: "geoservices_rest_query",
                     template: "geoservices/rest/services/{folder}/{id}/mapserver/{layerId}/query",
                     defaults: new { controller = "GeoServicesRest", Action = "Query" }
                 );
+                routes.MapRoute(
+                    name: "geoservices_rest_query",
+                    template: "geoservices/rest/services/{id}/mapserver/{layerId}/query",
+                    defaults: new { controller = "GeoServicesRest", Action = "Query" }
+                );
+
                 routes.MapRoute(
                     name: "geoservices_rest_servicelayers",
                     template: "geoservices/rest/services/{folder}/{id}/mapserver/layers",
                     defaults: new { controller = "GeoServicesRest", Action = "ServiceLayers" }
                 );
                 routes.MapRoute(
+                    name: "geoservices_rest_servicelayers",
+                    template: "geoservices/rest/services/{id}/mapserver/layers",
+                    defaults: new { controller = "GeoServicesRest", Action = "ServiceLayers" }
+                );
+
+                routes.MapRoute(
                     name: "geoservices_rest_servicelegend",
                     template: "geoservices/rest/services/{folder}/{id}/mapserver/legend",
                     defaults: new { controller = "GeoServicesRest", Action = "Legend" }
                 );
                 routes.MapRoute(
+                    name: "geoservices_rest_servicelegend",
+                    template: "geoservices/rest/services/{id}/mapserver/legend",
+                    defaults: new { controller = "GeoServicesRest", Action = "Legend" }
+                );
+
+                routes.MapRoute(
                    name: "geoservices_rest_servicelayer",
                    template: "geoservices/rest/services/{folder}/{id}/mapserver/{layerId}",
                    defaults: new { controller = "GeoServicesRest", Action = "ServiceLayer" }
-               );
+                );
+                routes.MapRoute(
+                   name: "geoservices_rest_servicelayer",
+                   template: "geoservices/rest/services/{id}/mapserver/{layerId}",
+                   defaults: new { controller = "GeoServicesRest", Action = "ServiceLayer" }
+                );
+
                 routes.MapRoute(
                     name: "geoservices_rest_service",
                     template: "geoservices/rest/services/{folder}/{id}/mapserver",
+                    defaults: new { controller = "GeoServicesRest", Action = "Service" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_service",
+                    template: "geoservices/rest/services/{id}/mapserver",
                     defaults: new { controller = "GeoServicesRest", Action = "Service" }
                 );
                 routes.MapRoute(

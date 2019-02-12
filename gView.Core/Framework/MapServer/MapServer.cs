@@ -11,7 +11,7 @@ namespace gView.MapServer
     public interface IMapServer
     {
         List<IMapService> Maps { get; }
-        IServiceMap this[string name] { get; }
+        IServiceMap GetService(string name, string folder);
         IServiceMap this[IMapService service] { get; }
         IServiceMap this[IServiceRequestContext context] { get; }
 
@@ -30,23 +30,26 @@ namespace gView.MapServer
     public interface IMapService
     {
         string Name { get; }
+        string Folder { get; }
         MapServiceType Type { get; }
         //IServiceMap Map { get; }
     }
 
     public class ServiceRequest
     {
-        public string Service = "";
-        public string Request = "";
+        public string Service { get; private set; }
+        public string Folder { get; private set; }
+        public string Request { get; private set; }
         public string Response = "";
         public string OnlineResource = "";
         public IIdentity Identity = null;
         public bool Succeeded = true;
         public string Method = "";
 
-        public ServiceRequest(string service, string request)
+        public ServiceRequest(string service, string folder, string request)
         {
             Service = service;
+            Folder = folder;
             Request = request;
         }
     }

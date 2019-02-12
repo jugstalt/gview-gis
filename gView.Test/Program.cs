@@ -101,9 +101,9 @@ namespace gView.Test
 
             for (int i = 0; i < 100; i++)
             {
-                string server = "server.domain";
+                string server = "gis2.esn.at";
                 //string service = "geoservices/rest/services/default/UEBERSICHTSKARTE";
-                string service = "gview5/geoservices/rest/services/default/KATASTER_BEV";
+                string service = "gview5/geoservices/rest/services/KATASTER_BEV";
                 //string service = "arcgis/rest/services/GRAZG81_SDET/estag_dkm_sdet_grazg81";
 
                 string url = String.Empty;
@@ -122,8 +122,8 @@ namespace gView.Test
 
                 #region Query
 
-                //url = "https://"+server+"/arcgis/rest/services/GRAZG81_SDET/estag_dkm_sdet_grazg81/MapServer/13/query?where=OBJECTID<"+(i)+"&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&resultOffset=&resultRecordCount=&f=json";
-                //url = "https://"+server+"/gview5/geoservices/rest/services/default/KATASTER_BEV/MapServer/306/query?text=&geometry=&geometryType=&inSR=&relationParam=&where=OBJECTID<"+(i)+"&objectIds=&time=0&distance=0&units=&outFields=*&returnGeometry=true&maxAllowableOffset=0&geometryPrecision=0&outSR=&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&orderByFields=&outStatistics=&groupByFieldsForStatistics=&returnZ=false&returnM=false&returnDistinctValues=false&returnTrueCurves=false&resultOffset=0&resultRecordCount=0&datumTransformation=&rangeValues=&quantizationParameters=&parameterValues=&historicMoment=0&layerId=306&f=json";
+                //url = "https://"+server+"/arcgis/rest/services/GRAZG81_SDET/estag_dkm_sdet_grazg81/MapServer/13/query?where=OBJECTID="+(i)+"&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&resultOffset=&resultRecordCount=&f=json";
+                //url = "https://"+server+"/gview5/geoservices/rest/services/KATASTER_BEV/MapServer/306/query?text=&geometry=&geometryType=&inSR=&relationParam=&where=OBJECTID="+(i)+"&objectIds=&time=0&distance=0&units=&outFields=*&returnGeometry=true&maxAllowableOffset=0&geometryPrecision=0&outSR=&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&orderByFields=&outStatistics=&groupByFieldsForStatistics=&returnZ=false&returnM=false&returnDistinctValues=false&returnTrueCurves=false&resultOffset=0&resultRecordCount=0&datumTransformation=&rangeValues=&quantizationParameters=&parameterValues=&historicMoment=0&layerId=306&f=json";
                 
                 #endregion
 

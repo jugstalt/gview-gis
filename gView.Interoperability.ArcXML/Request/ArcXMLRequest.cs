@@ -143,8 +143,8 @@ namespace gView.Interoperability.ArcXML
             get
             {
                 return new InterpreterCapabilities(new InterpreterCapabilities.Capability[]{
-                    new InterpreterCapabilities.SimpleCapability("Emulating ServletEngine: Post ArcXML Capabilites ",InterpreterCapabilities.Method.Post,"{server}/servlet/com.esri.esrimap.Esrimap?cmd=capabilities&ServiceName={service}","1.1"),
-                    new InterpreterCapabilities.SimpleCapability("Emulating ServletEngine: Post ArcXML Request ",InterpreterCapabilities.Method.Post,"{server}/servlet/com.esri.esrimap.Esrimap?ServiceName={service}","1.1"),
+                    new InterpreterCapabilities.SimpleCapability("Emulating ServletEngine: Post ArcXML Capabilites ",InterpreterCapabilities.Method.Post,"{server}/servlet/com.esri.esrimap.Esrimap?cmd=capabilities&ServiceName={folder/service}","1.1"),
+                    new InterpreterCapabilities.SimpleCapability("Emulating ServletEngine: Post ArcXML Request ",InterpreterCapabilities.Method.Post,"{server}/servlet/com.esri.esrimap.Esrimap?ServiceName={folder/service}","1.1"),
                     new InterpreterCapabilities.LinkCapability("Emulating ServletEngine: IMS Ping",InterpreterCapabilities.Method.Get,"{server}/servlet/com.esri.esrimap.Esrimap?cmd=ping","1.1"),
                     new InterpreterCapabilities.LinkCapability("Emulating ServletEngine: IMS GetVersion",InterpreterCapabilities.Method.Get,"{server}/servlet/com.esri.esrimap.Esrimap?cmd=getversion","1.1")
                 }

@@ -58,7 +58,7 @@ namespace gView.Server.Controllers
             }
         }
 
-        public IActionResult MapRequest(string guid, string id)
+        async public Task<IActionResult> MapRequest(string guid, string id)
         {
             try
             {
@@ -94,7 +94,7 @@ namespace gView.Server.Controllers
                 if (input.StartsWith("?"))
                     input = input.Substring(1);
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, input);
+                ServiceRequest serviceRequest = new ServiceRequest(id.ServiceName(), id.FolderName(), input);
                 serviceRequest.OnlineResource = InternetMapServer.OnlineResource + "/MapRequest/" + guid + "/" + id;
 
                 #endregion
@@ -117,7 +117,7 @@ namespace gView.Server.Controllers
                     interpreter,
                     serviceRequest);
 
-                InternetMapServer.ThreadQueue.AddQueuedThreadSync(interpreter.Request, context);
+                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
