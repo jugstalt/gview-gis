@@ -18,10 +18,19 @@ namespace gView.Server.AppCode
         [JsonProperty("onlineresource-url")]
         public string OnlineResourceUrl { get; set; }
 
+        [JsonProperty("security")]
+        public SecurityConfig Security { get; set; }
+
         [JsonProperty("task-queue")]
         public TaskQueueConfig TaskQueue {get;set;}
 
         #region Classes
+
+        public class SecurityConfig
+        {
+            [JsonProperty("master-password")]
+            public string MasterPassword { get; set; }
+        }
 
         public class TaskQueueConfig
         {

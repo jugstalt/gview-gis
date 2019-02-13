@@ -8,6 +8,7 @@ using gView.MapServer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,7 +23,7 @@ namespace gView.Server.AppCode
         private Dictionary<string, object> _lockers = new Dictionary<string, object>();
         //private int _maxGDIServers = int.MaxValue;
         private int _maxServices = int.MaxValue;
-
+            
         public MapServerInstance(int port)
         {
             _doc = InternetMapServer.MapDocument;

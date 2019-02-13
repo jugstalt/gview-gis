@@ -86,3 +86,45 @@ ul {
     .html-body form table td.input * {
         min-width:100%;
     }
+
+
+/******Manage **********/
+.gview5-login-panel {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    width: 400px;
+    max-width: 100%;
+    background-color: white;
+    padding: 15px;
+    box-shadow: 4px 4px 9px rgba(0, 0, 0, .4) !important;
+}
+
+    .gview5-login-panel .title * {
+        display: inline-block;
+        margin: 0px;
+    }
+
+    .gview5-login-panel .title img {
+        margin-right: 5px;
+    }
+
+@media(max-width:640px) {
+    .gview5-login-main {
+        overflow: auto;
+        background-image: none;
+        background-color: white;
+    }
+
+    .gview5-login-panel {
+        left: 0px;
+        right: 0px;
+        top: 0px;
+        height: 120%;
+        -webkit-transform: none;
+        transform: none;
+        width: auto;
+    }
+}

@@ -1,9 +1,13 @@
 {
-  "services-folder": "C:\\ProgramData\\gView\\mapServer\\Services\\8001",
-  "services-folder_": "C:\\Development_OpenSource\\GeoDaten\\MXL\\8050",
+  "services-folder_": "C:\\ProgramData\\gView\\mapServer\\Services\\8001",
+  "services-folder": "C:\\Development_OpenSource\\GeoDaten\\MXL\\8050",
   "output-path": "C:\\ArcIMS\\Output",
   "output-url": "http://localhost/output",
   "onlineresource-url": "http://localhost:8889",
+
+  "security": {
+    "master-password": "abcdefghijklmnopqrstuvwxyz0123456789"
+  },
 
   "task-queue": {
     "max-parallel-tasks": 5,

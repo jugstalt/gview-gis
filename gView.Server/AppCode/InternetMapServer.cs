@@ -41,6 +41,7 @@ namespace gView.Server.AppCode
             OutputPath = mapServerConfig.OuputPath.ToPlattformPath();
             OutputUrl = mapServerConfig.OutputUrl;
             OnlineResource = mapServerConfig.OnlineResourceUrl;
+            Globals.MasterPassword = mapServerConfig.Security.MasterPassword;
 
             if(mapServerConfig.TaskQueue!=null)
             {

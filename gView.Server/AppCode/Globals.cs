@@ -71,5 +71,7 @@ namespace gView.Server.AppCode
                 return false;
             }
         }
+
+        internal static string MasterPassword { get; set; }
     }
 }
