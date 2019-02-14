@@ -36,12 +36,14 @@ namespace gView.Server.AppCode
 
         static public void Init(string rootPath, int port = 80)
         {
+            Globals.AppRootPath = rootPath;
+           
             var mapServerConfig = JsonConvert.DeserializeObject<MapServerConfig>(File.ReadAllText(rootPath + "/_config/mapserver.json"));
-
+            Globals.MasterPassword = mapServerConfig.Security.MasterPassword;
             OutputPath = mapServerConfig.OuputPath.ToPlattformPath();
             OutputUrl = mapServerConfig.OutputUrl;
             OnlineResource = mapServerConfig.OnlineResourceUrl;
-            Globals.MasterPassword = mapServerConfig.Security.MasterPassword;
+            
 
             if(mapServerConfig.TaskQueue!=null)
             {
@@ -51,7 +53,20 @@ namespace gView.Server.AppCode
 
             Instance = new MapServerInstance(port);
 
-            ServicesPath = mapServerConfig.ServiceFolder;
+            ServicesPath = mapServerConfig.ServiceFolder + "/services";
+            Globals.LoginManagerRootPath = mapServerConfig.ServiceFolder + "/_login";
+            foreach (string createDirectroy in new string[] {
+                ServicesPath,
+                Globals.LoginManagerRootPath,
+                Globals.LoginManagerRootPath+"/manage",
+                Globals.LoginManagerRootPath+"/token"
+            })
+            {
+                if (!new DirectoryInfo(createDirectroy).Exists)
+                {
+                    new DirectoryInfo(createDirectroy).Create();
+                }
+            }
 
             AddServices(String.Empty);
             foreach(var folder in new DirectoryInfo(ServicesPath.ToPlattformPath()).GetDirectories())

@@ -23,6 +23,12 @@
             </tr>
         </table>
     </div>
+    @if (!String.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+    <div class="error-message">
+        @Model.ErrorMessage
+    </div>
+    }
     <form action="/Manage/Login" method="post" class="form-horizontal">
         @*<h4>Use a local account to log in.</h4>*@
         <div asp-validation-summary="All" class="text-danger"></div>

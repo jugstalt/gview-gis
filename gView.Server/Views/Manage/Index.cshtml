@@ -1,0 +1,41 @@
+﻿@model gView.Interoperability.GeoServices.Rest.Json.JsonServices
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="gview5-manage-body">
+    <div class="header">
+
+    </div>
+    <ul class="folders">
+        <li class="folder" onclick="window.gview.manage.folderServices()">
+            (root)
+        </li>
+        @if (Model.Folders != null)
+        {
+            foreach (var folder in Model.Folders)
+            {
+                <li class="folder" onclick="window.gview.manage.folderServices('@folder')">
+                    @folder
+                </li>
+            }
+        }
+    </ul>
+    
+    <ul class="services">
+
+    </ul>
+</div>
+
+@section Scripts {
+    <script src="~/js/manage.js"></script>
+
+
+    <script type="text/javascript">
+        (function () {
+            window.gview.manage.folderServices();
+        })();
+    </script>
+}
+

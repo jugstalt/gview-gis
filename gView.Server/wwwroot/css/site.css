@@ -111,6 +111,72 @@ ul {
         margin-right: 5px;
     }
 
+    .gview5-login-panel .error-message {
+        padding: 10px;
+        background: #ffaaaa;
+        border: 1px solid #ff0000;
+        border-radius: 8px;
+        color: #ff0000;
+    }
+
+.gview5-manage-body {
+    position: absolute;
+    left: 50%;
+    top: 30px;
+    -webkit-transform: translate(-50%, 0%);
+    transform: translate(-50%, 0%);
+    width:80%;
+    height:80%;
+    background-color: white;
+    padding: 15px;
+    box-shadow: 4px 4px 9px rgba(0, 0, 0, .4) !important;
+}
+    .gview5-manage-body .header {
+        position:absolute;
+        left:0px;
+        top:0px;
+        right:0px;
+        height:50px;
+        background:#0080d5;
+        color:0px;
+    }
+    .gview5-manage-body .folders {
+        position:absolute;
+        top:50px;
+        left:0px;
+        bottom:0px;
+        width: 200px;
+        list-style: none;
+        padding:0px;
+    }
+        .gview5-manage-body .folders .folder {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+        }
+        .gview5-manage-body .folders .folder:hover {
+            background:#eee;
+        }
+
+    .gview5-manage-body .services {
+        position: absolute;
+        top: 50px;
+        left: 200px;
+        bottom: 0px;
+        width: 200px;
+        list-style: none;
+        padding: 0px;
+    }
+        .gview5-manage-body .services .service {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+        }
+
+            .gview5-manage-body .services .service:hover {
+                background: #eee;
+            }
+
 @media(max-width:640px) {
     .gview5-login-main {
         overflow: auto;
@@ -126,5 +192,15 @@ ul {
         -webkit-transform: none;
         transform: none;
         width: auto;
+    }
+
+    .gview5-manage-body {
+        width: auto;
+        height: auto;
+        left: 0px;
+        right: 0px;
+        bottom: 0px;
+        -webkit-transform: translate(0px);
+        transform: translate(0px);
     }
 }

@@ -28,7 +28,7 @@ namespace gView.Server.Controllers
 {
     public class GeoServicesRestController : Controller
     {
-        private const double Version = 10.61;
+        public const double Version = 10.61;
         //private const string DefaultFolder = "default";
 
         public int JsonExportResponse { get; private set; }

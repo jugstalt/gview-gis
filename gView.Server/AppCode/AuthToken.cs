@@ -40,7 +40,7 @@ namespace gView.Server.AppCode
 
         static public AuthToken FromString(string token)
         {
-            string authToken = Crypto.Encrypt(token, Globals.MasterPassword);
+            string authToken = Crypto.Decrypt(token, Globals.MasterPassword);
             return new AuthToken()
             {
                 Username = authToken.Split(',')[0],

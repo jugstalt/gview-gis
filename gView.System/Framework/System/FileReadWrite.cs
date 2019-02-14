@@ -628,6 +628,13 @@ namespace gView.Framework.system
 
         }
 
+
+        public static string Hash64(string password)
+        {
+            byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+            passwordBytes = SHA256.Create().ComputeHash(passwordBytes);
+            return Convert.ToBase64String(passwordBytes);
+        }
         // 
 
         // Testing function 
