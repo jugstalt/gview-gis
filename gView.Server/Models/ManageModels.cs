@@ -17,4 +17,16 @@ namespace gView.Server.Models
 
         public string ErrorMessage { get; set; }
     }
+
+    public class CreateTokenUserModel
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
+
+    public class ChangeTokenUserPasswordModel
+    {
+        public string Username { get; set; }
+        public string NewPassword { get; set; }
+    }
 }

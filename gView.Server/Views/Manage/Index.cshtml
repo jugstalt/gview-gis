@@ -1,31 +1,29 @@
-﻿@model gView.Interoperability.GeoServices.Rest.Json.JsonServices
-
-@{
+﻿@{
     ViewData["Title"] = "Index";
 }
 
-<div class="gview5-manage-body">
-    <div class="header">
-
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a asp-area="" asp-controller="Manage" asp-action="Index" class="navbar-brand">gView.Server</a>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="" onclick="window.gview.manage.pageServices(); return false;">Services</a></li>
+                <li><a href="" onclick="window.gview.manage.pageSecurity(); return false;">Security</a></li>
+            </ul>
+        </div>
     </div>
-    <ul class="folders">
-        <li class="folder" onclick="window.gview.manage.folderServices()">
-            (root)
-        </li>
-        @if (Model.Folders != null)
-        {
-            foreach (var folder in Model.Folders)
-            {
-                <li class="folder" onclick="window.gview.manage.folderServices('@folder')">
-                    @folder
-                </li>
-            }
-        }
-    </ul>
-    
-    <ul class="services">
+</nav>
 
-    </ul>
+<div class="gview5-manage-body">
+    
 </div>
 
 @section Scripts {
@@ -34,7 +32,7 @@
 
     <script type="text/javascript">
         (function () {
-            window.gview.manage.folderServices();
+            window.gview.manage.pageServices();
         })();
     </script>
 }

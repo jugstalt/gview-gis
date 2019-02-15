@@ -89,6 +89,11 @@ ul {
 
 
 /******Manage **********/
+
+*:focus {
+    outline: none;
+}
+
 .gview5-login-panel {
     position: absolute;
     left: 50%;
@@ -121,46 +126,43 @@ ul {
 
 .gview5-manage-body {
     position: absolute;
-    left: 50%;
-    top: 30px;
-    -webkit-transform: translate(-50%, 0%);
-    transform: translate(-50%, 0%);
-    width:80%;
-    height:80%;
+    left: 0px;
+    top: 52px;
+    right:0px;
+    bottom:0px;
+    overflow:auto;
     background-color: white;
     padding: 15px;
-    box-shadow: 4px 4px 9px rgba(0, 0, 0, .4) !important;
 }
-    .gview5-manage-body .header {
+    .gview5-manage-body .folders, 
+    .gview5-manage-body .users {
         position:absolute;
-        left:0px;
         top:0px;
-        right:0px;
-        height:50px;
-        background:#0080d5;
-        color:0px;
-    }
-    .gview5-manage-body .folders {
-        position:absolute;
-        top:50px;
         left:0px;
         bottom:0px;
         width: 200px;
         list-style: none;
         padding:0px;
     }
-        .gview5-manage-body .folders .folder {
+        .gview5-manage-body .folders .folder,
+        .gview5-manage-body .users .user {
             padding: 8px;
             border-bottom: 1px solid #ddd;
             cursor: pointer;
         }
-        .gview5-manage-body .folders .folder:hover {
+        .gview5-manage-body .folders .folder.selected,
+        .gview5-manage-body .users .user.selected {
+            background:#0094ff;
+            color:white;
+        }
+        .gview5-manage-body .folders .folder:hover,
+        .gview5-manage-body .users .user:hover {
             background:#eee;
         }
 
     .gview5-manage-body .services {
         position: absolute;
-        top: 50px;
+        top: 0px;
         left: 200px;
         bottom: 0px;
         width: 200px;
@@ -176,6 +178,51 @@ ul {
             .gview5-manage-body .services .service:hover {
                 background: #eee;
             }
+
+    .gview5-manage-body .user-properties {
+        position:absolute;
+        left:200px;
+        top:0px;
+        right:0px;
+        border:0px;
+        padding-left:15px;
+    }
+
+    .gview-manage-body .form {
+
+    }
+
+    .gview5-manage-body .form .form-error{
+        width:100%;
+        background:#ffcccc;
+        border:1px solid red;
+        padding:10px;
+        border-radius:5px;
+    }
+
+    .gview5-manage-body .form .form-input .label {
+        position:relative;
+        top:14px;
+        left:5px;
+        background:#fff;
+        color:#0094ff;
+        text-align:left;
+    }
+    .gview5-manage-body .form .form-input input {
+        min-width:250px;
+        margin:5px 0px;
+        border:2px solid #0094ff;
+        border-radius:5px;
+        padding:10px 5px 5px 5px;
+    }
+
+    .gview5-manage-body button {
+        background:#0094ff;
+        color:#fff;
+        border:1px solid #0026ff;
+        border-radius:4px;
+        padding:8px;
+    }
 
 @media(max-width:640px) {
     .gview5-login-main {

@@ -56,5 +56,38 @@ namespace gView.Server.AppCode
         }
 
         #endregion
+
+        #region Token Logins
+
+        public void CreateTokenLogin(string username, string password)
+        {
+            var di = new DirectoryInfo(LoginRootPath + "/token");
+            var fi = new FileInfo(di.FullName + "/" + username + ".lgn");
+            if (fi.Exists)
+                throw new Exception("User '" + username + "' already exists");
+
+            var hashedPassword = Crypto.Hash64(Crypto.Encrypt(password, Globals.MasterPassword));
+            File.WriteAllText(fi.FullName, hashedPassword);
+        }
+
+        public void ChangeTokenUserPassword(string username, string newPassword)
+        {
+            var di = new DirectoryInfo(LoginRootPath + "/token");
+            var fi = new FileInfo(di.FullName + "/" + username + ".lgn");
+            if (!fi.Exists)
+                throw new Exception("User '" + username + "' do not exists");
+
+            var hashedPassword = Crypto.Hash64(Crypto.Encrypt(newPassword, Globals.MasterPassword));
+            File.WriteAllText(fi.FullName, hashedPassword);
+        }
+ 
+        public IEnumerable<string> GetTokenUsernames()
+        {
+           
+            var di = new DirectoryInfo(LoginRootPath + "/token");
+            return di.GetFiles("*.lgn").Select(f => f.Name.Substring(0, f.Name.Length - f.Extension.Length));
+        }
+
+        #endregion
     }
 }
