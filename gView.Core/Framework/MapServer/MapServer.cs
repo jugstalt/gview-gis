@@ -33,7 +33,29 @@ namespace gView.MapServer
         string Folder { get; }
         MapServiceType Type { get; }
         //IServiceMap Map { get; }
+
+        Task<IMapServiceSettings> GetSettingsAsync();
+        Task SaveSettingsAsync();
     }
+
+    public enum MapServiceStatus
+    {
+        Running=0,
+        Stopped=1
+    }
+    public interface IMapServiceSettings
+    {
+        MapServiceStatus Status { get; set; }
+
+        IMapServiceAccess[] AccessRules { get; set; }
+    }
+
+    public interface IMapServiceAccess
+    {
+        string Username { get; set; }
+        string[] ServiceTypes { get; set; }
+    }
+    
 
     public class ServiceRequest
     {

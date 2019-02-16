@@ -165,7 +165,7 @@ ul {
         top: 0px;
         left: 200px;
         bottom: 0px;
-        width: 200px;
+        right:0px;
         list-style: none;
         padding: 0px;
     }

@@ -74,17 +74,17 @@ namespace gView.Server.Controllers
                 if (authToken.IsAnonymous)
                     throw new Exception("Not authorized");
 
-                model.Username = model.Username?.Trim() ?? String.Empty;
-                model.Password = model.Password?.Trim() ?? String.Empty;
+                model.NewUsername = model.NewUsername?.Trim() ?? String.Empty;
+                model.NewPassword = model.NewPassword?.Trim() ?? String.Empty;
 
-                if (model.Username.Length < 5)
+                if (model.NewUsername.Length < 5)
                     throw new Exception("Username: min length 5 chars!");
 
-                if (model.Password.Length < 8)
+                if (model.NewPassword.Length < 8)
                     throw new Exception("Password: min length 8 chars");
 
                 var loginManager = new LoginManager(Globals.LoginManagerRootPath);
-                loginManager.CreateTokenLogin(model.Username, model.Password);
+                loginManager.CreateTokenLogin(model.NewUsername, model.NewPassword);
 
                 return Json(new { success = true });
             }

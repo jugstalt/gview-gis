@@ -48,6 +48,10 @@ window.gview.manage = function () {
     var createServiceListItem = function ($services, service) {
         var $service = $("<li></li>").addClass('service').appendTo($services);
         $("<h4>" + service.name + "</h4>").appendTo($service);
+        $("<div>")
+            .addClass('clickable-icon settings')
+            .appendTo($service);
+        return $service;
     };
 
     var folderServices = function (folder) {
@@ -99,7 +103,7 @@ window.gview.manage = function () {
         var $formInput = $("<div>").addClass('form-input').appendTo($form);
         $("<div>").addClass('label').html(label || name).appendTo($formInput);
         $("<br/>").appendTo($formInput);
-        $("<input name='" + name + "' type='" + (type || 'text') + "' />").addClass('form-value').appendTo($formInput);
+        $("<input name='" + name + "' type='" + (type || 'text') + "' autocomplete='off' />").addClass('form-value').appendTo($formInput);
     };
     var appendFormHidden = function ($form, name, val) {
         $("<input type='hidden' name='" + name + "' />")
@@ -113,8 +117,8 @@ window.gview.manage = function () {
 
         var $form = $("<div>").addClass('form').appendTo($page);
         if (user === '') {
-            appendFormInput($form, 'Username');
-            appendFormInput($form, 'Password', 'password');
+            appendFormInput($form, 'NewUsername');
+            appendFormInput($form, 'NewPassword', 'password');
 
             $("<button>Create</button>")
                 .appendTo($form)
