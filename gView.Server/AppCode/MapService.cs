@@ -15,6 +15,7 @@ namespace gView.Server.AppCode
                        _name = String.Empty;
         private MapServiceType _type = MapServiceType.MXL;
         private MapServiceSettings _settings = null;
+        private DateTime? _lastServiceRefresh = null;
 
         public MapService() { }
         public MapService(string filename, string folder, MapServiceType type)
@@ -25,7 +26,7 @@ namespace gView.Server.AppCode
                 _filename = filename;
                 FileInfo fi = new FileInfo(filename);
                 _name = fi.Name.Substring(0, fi.Name.Length - fi.Extension.Length);
-                _folder = folder;
+                _folder = folder ?? String.Empty;
             }
             catch { }
         }
@@ -45,6 +46,14 @@ namespace gView.Server.AppCode
 
         public string Folder { get { return _folder; } }
 
+        public string Fullname
+        {
+            get
+            {
+                return (String.IsNullOrEmpty(_folder) ? "" : _folder + "/") + _name;
+            }
+        }
+
         async public Task<IMapServiceSettings> GetSettingsAsync()
         {
             await ReloadServiceSettings();
@@ -63,6 +72,20 @@ namespace gView.Server.AppCode
                 await File.WriteAllTextAsync(fi.FullName, JsonConvert.SerializeObject(_settings));
             }
         }
+
+        async public Task<bool> RefreshRequired()
+        {
+            await ReloadServiceSettings();
+            if (_settings.Status == MapServiceStatus.Running)
+                return _lastServiceRefresh.HasValue == false || _settings.RefreshService > _lastServiceRefresh;
+
+            return false;
+        }
+        public void ServiceRefreshed()
+        {
+            _lastServiceRefresh = DateTime.UtcNow;
+        }
+        public DateTime? RunningSinceUtc { get { return _lastServiceRefresh; } }
 
         #endregion
 
@@ -113,6 +136,7 @@ namespace gView.Server.AppCode
 
             _lastReload = DateTime.UtcNow;
         }
+
     }
 
     class MapServiceSettings : IMapServiceSettings
@@ -120,6 +144,7 @@ namespace gView.Server.AppCode
         public MapServiceSettings()
         {
             this.Status = MapServiceStatus.Running;
+            this.RefreshServiceTicks = 0;
         }
 
         [JsonProperty("status")]
@@ -127,6 +152,16 @@ namespace gView.Server.AppCode
 
         [JsonProperty("accessrules")]
         public IMapServiceAccess[] AccessRules { get; set; }
+
+        [JsonIgnore]
+        public DateTime RefreshService { get; set; }
+
+        [JsonProperty("refreshticks")]
+        public long RefreshServiceTicks
+        {
+            get { return RefreshService.Ticks; }
+            set { RefreshService = new DateTime(value, DateTimeKind.Utc); }
+        }
 
         #region Classes
 

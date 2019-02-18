@@ -26,18 +26,19 @@ namespace gView.Server.AppCode
             
         public MapServerInstance(int port)
         {
-            _doc = InternetMapServer.MapDocument;
-
             _log_requests = Globals.log_requests;
             _log_request_details = Globals.log_request_details;
             _log_errors = Globals.log_errors;
         }
 
-        private IServiceMap Map(string name, string folder, IServiceRequestContext context)
+        async private Task<IServiceMap> Map(string name, string folder, IServiceRequestContext context)
         {
             try
             {
-                if (_doc == null) return null;
+                if (InternetMapServer.MapDocument == null)
+                    throw new MapServerException("Fatal error: map(server) document missing");
+
+                folder = folder ?? String.Empty;
 
                 object locker = null;
                 lock (_lockThis)
@@ -47,15 +48,22 @@ namespace gView.Server.AppCode
                     locker = _lockers[name];
                 }
 
-                //lock (_lockThis)
+                IMapService mapService = FindMapService(name, folder);
+                if (mapService == null || (await mapService.GetSettingsAsync()).Status != MapServiceStatus.Running)
+                    throw new MapServerException("unknown service: " + name);
+
+                if (await mapService.RefreshRequired())
+                {
+                    InternetMapServer.MapDocument.RemoveMap(mapService.Fullname);
+                }
+
                 lock (locker)
                 {
                     string alias = name;
 
-                    IMapService ms = FindMapService(name, folder);
-                    if (ms is MapServiceAlias)
+                    if (mapService is MapServiceAlias)
                     {
-                        name = ((MapServiceAlias)ms).ServiceName;
+                        name = ((MapServiceAlias)mapService).ServiceName;
                     }
 
                     if (!String.IsNullOrWhiteSpace(folder))
@@ -64,10 +72,14 @@ namespace gView.Server.AppCode
                     return FindServiceMap(name, alias, context).Result;
                 }
             }
+            catch(MapServerException mse)
+            {
+                throw mse;
+            }
             catch (Exception ex)
             {
                 Log("MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace);
-                return null;
+                throw new MapServerException("unknown error");
             }
         }
 
@@ -81,44 +93,48 @@ namespace gView.Server.AppCode
                 {
                     return ListOperations<IMapService>.Clone(InternetMapServer.mapServices);
                 }
-                catch (Exception ex)
+                catch (MapServerException mse)
                 {
-                    Log("MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace);
-                    return new List<IMapService>();
-                }
-            }
-        }
-
-        public IServiceMap GetService(string name, string folder)
-        {
-            return this.Map(name, folder, null);
-        }
-        public IServiceMap this[IMapService service]
-        {
-            get
-            {
-                if (service == null) return null;
-                return GetService(service.Name, service.Folder);
-            }
-        }
-        public IServiceMap this[IServiceRequestContext context]
-        {
-            get
-            {
-                try
-                {
-                    if (context == null || context.ServiceRequest == null) return null;
-                    IServiceMap map = this.Map(context.ServiceRequest.Service, context.ServiceRequest.Folder, context);
-                    if (map is ServiceMap)
-                        ((ServiceMap)map).SetRequestContext(context);
-
-                    return map;
+                    throw mse;
                 }
                 catch (Exception ex)
                 {
                     Log("MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace);
+                    //return new List<IMapService>();
+                    throw new MapServerException("unknown error");
+                }
+            }
+        }
+
+        async public Task<IServiceMap> GetServiceMap(string name, string folder)
+        {
+            return await this.Map(name, folder, null);
+        }
+        async public Task<IServiceMap> GetServiceMap(IMapService service)
+        {
+                if (service == null)
                     return null;
-                }
+                return await GetServiceMap(service.Name, service.Folder);
+        }
+        async public Task<IServiceMap> GetServiceMap(IServiceRequestContext context)
+        {
+            try
+            {
+                if (context == null || context.ServiceRequest == null) return null;
+                IServiceMap map = await this.Map(context.ServiceRequest.Service, context.ServiceRequest.Folder, context);
+                if (map is ServiceMap)
+                    ((ServiceMap)map).SetRequestContext(context);
+
+                return map;
+            }
+            catch(MapServerException mse)
+            {
+                throw mse;
+            }
+            catch (Exception ex)
+            {
+                Log("MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace);
+                throw new MapServerException("unknown error");
             }
         }
 
@@ -339,7 +355,7 @@ namespace gView.Server.AppCode
             {
                 if (ms == null) continue;
                 if (ms.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) &&
-                    ms.Folder.Equals(folder, StringComparison.CurrentCultureIgnoreCase)) return ms;
+                    ms.Folder.Equals(folder ?? String.Empty, StringComparison.CurrentCultureIgnoreCase)) return ms;
             }
             return null;
         }

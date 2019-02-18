@@ -17,7 +17,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
     public class WMSDataset : DatasetMetadata, IFeatureDataset, IPersistable, IRequestDependentDataset
     {
         internal string _connection = "", _connectionString;
-        private IEnvelope _envelope;
+        private IEnvelope _envelope = null;
         private string _errMsg = "";
         private WMSClass _class = null;
         private WFSDataset _wfsDataset = null;

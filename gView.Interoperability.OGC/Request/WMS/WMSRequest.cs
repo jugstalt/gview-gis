@@ -72,7 +72,7 @@ namespace gView.Interoperability.OGC
             switch (parameters.Request)
             {
                 case WMSRequestType.GetCapabilities:
-                    context.ServiceRequest.Response = WMS_GetCapabilities(context.ServiceRequest.OnlineResource, context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.Response = await WMS_GetCapabilities(context.ServiceRequest.OnlineResource, context.ServiceRequest.Service, parameters, context);
                     break;
                 case WMSRequestType.GetMap:
                     context.ServiceRequest.Response = await WMS_GetMap(context.ServiceRequest.Service, parameters, context);
@@ -81,7 +81,7 @@ namespace gView.Interoperability.OGC
                     context.ServiceRequest.Response = await WMS_FeatureInfo(context.ServiceRequest.Service, parameters, context);
                     break;
                 case WMSRequestType.DescriptTiles:
-                    context.ServiceRequest.Response = WMSC_DescriptTiles(context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.Response = await WMSC_DescriptTiles(context.ServiceRequest.Service, parameters, context);
                     break;
                 case WMSRequestType.GetTile:
                     context.ServiceRequest.Response = await WMSC_GetTile(context.ServiceRequest.Service, parameters, context);
@@ -116,7 +116,7 @@ namespace gView.Interoperability.OGC
 
         #endregion
 
-        private string WMS_GetCapabilities(string OnlineResource, string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
+        async private Task<string> WMS_GetCapabilities(string OnlineResource, string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
         {
             try
             {
@@ -126,7 +126,7 @@ namespace gView.Interoperability.OGC
                 //if (parameters != null)
                 //    _mapServer.Log(loggingMethod.request_detail, "WMS: " + Concat(parameters, "&"));
 
-                using (IServiceMap map = context.CreateServiceMapInstance())// _mapServer[context];
+                using (IServiceMap map = await context.CreateServiceMapInstance())// _mapServer[context];
                 {
                     if (map == null) return "";
 
@@ -585,7 +585,7 @@ namespace gView.Interoperability.OGC
             {
                 if (_mapServer == null) return "";
 
-                using (IServiceMap map = _context.CreateServiceMapInstance()) //_mapServer[_context]
+                using (IServiceMap map = await _context.CreateServiceMapInstance()) //_mapServer[_context]
                 {
                     if (map == null) return "";
 
@@ -729,7 +729,7 @@ namespace gView.Interoperability.OGC
 
             if (_mapServer == null) return "";
 
-            using (IServiceMap map = context.CreateServiceMapInstance()) // _mapServer[context];
+            using (IServiceMap map = await context.CreateServiceMapInstance()) // _mapServer[context];
             {
                 if (map == null || map.TOC == null) return "";
 
@@ -811,11 +811,11 @@ namespace gView.Interoperability.OGC
             }
         }
 
-        public string WMSC_DescriptTiles(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
+        async public Task<string> WMSC_DescriptTiles(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
         {
             try
             {
-                using (var serviceMap = context.CreateServiceMapInstance())
+                using (var serviceMap = await context.CreateServiceMapInstance())
                 {
                     TileServiceMetadata metadata = serviceMap.MetadataProvider(_tilemetaprovider) as TileServiceMetadata;
                     if (metadata == null || metadata.Use == false)
@@ -892,7 +892,7 @@ namespace gView.Interoperability.OGC
             try
             {
                 _mapServer.Log("GetTile", loggingMethod.request_detail, String.Empty);
-                using (IServiceMap map = context.CreateServiceMapInstance())
+                using (IServiceMap map = await context.CreateServiceMapInstance())
                 {
                     TileServiceMetadata metadata = map.MetadataProvider(_tilemetaprovider) as TileServiceMetadata;
                     if (metadata == null || metadata.Use == false)

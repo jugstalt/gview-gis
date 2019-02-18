@@ -4,7 +4,11 @@
 window.gview.manage = function () {
     var rootUrl = '';
 
-    var ajax = function (options) {
+    //
+    //  Get/Post
+    //
+
+    var get = function (options) {
         $.ajax({
             url: rootUrl + options.url,
             type: options.type || 'get',
@@ -15,7 +19,7 @@ window.gview.manage = function () {
                 alert("Error: " + errorThrown + "(" + textStatus + ")");
             }
         });
-    }
+    };
 
     var postForm = function ($form, options) {
         var data = {};
@@ -39,25 +43,113 @@ window.gview.manage = function () {
                     onSuccess(result);
             }
         };
-        ajax(options);
+        get(options);
+    };
+
+    //
+    // UI Elements
+    //
+
+    var modalDialog = function (options) {
+        var $blocker = $("<div>").addClass('gview5-modal-blocker')
+            .appendTo($('body'))
+            .click(function (e) {
+                $(this).find('.button-close').trigger('click');
+            });
+
+        var $modal = $("<div>").addClass('modal-dialog')
+            .appendTo($blocker)
+            .click(function (e) {
+                e.stopPropagation();
+            });
+
+        if (options.title) {
+            $("<div>" + options.title + "</div>").addClass('modal-title').appendTo($modal);
+        }
+        var $body = $("<div>").addClass('modal-body').appendTo($modal);
+        var $footer = $("<div>").addClass('modal-footer').appendTo($modal);
+
+        $("<button>Close</button>")
+            .addClass('button-close')
+            .appendTo($footer)
+            .click(function (e) {
+                e.stopPropagation();
+                if (options.onClose)
+                    options.onClose($body);
+                $(this).closest('.gview5-modal-blocker').remove();
+            });
+        if (options.onOk) {
+            $("<button>OK</button>")
+                .addClass('button-ok')
+                .appendTo($footer)
+                .click(function (e) {
+                    e.stopPropagation();
+                    if (options.onOk)
+                        options.onOk($body);
+                    $(this).closest('.gview5-modal-blocker').remove();
+                });
+        }
+
+        if (options.onLoad)
+            options.onLoad($body);
     };
 
     //
     // Page Services
     //
     var createServiceListItem = function ($services, service) {
-        var $service = $("<li></li>").addClass('service').appendTo($services);
-        $("<h4>" + service.name + "</h4>").appendTo($service);
+        var $service = $services.children(".service[data-service='" + (service.folder ? service.folder + "/" : "") + service.name + "']");
+        if ($service.length === 0) {
+            $service = $("<li></li>")
+                .attr('data-service', (service.folder ? service.folder + '/' : '') + service.name)
+                .addClass('service')
+                .appendTo($services);
+        }
+        $service.removeClass().addClass('service '+service.status).empty();
+       
+        var $toolbar = $("<div>").addClass('toolbar').appendTo($service);
+
         $("<div>")
-            .addClass('clickable-icon settings')
-            .appendTo($service);
+            .addClass('icon clickable settings')
+            .appendTo($toolbar);
+        $("<div>")
+            .addClass('icon clickable security' + (service.hasSecurity === true ? '1' : '0'))
+            .appendTo($toolbar)
+            .click(function () {
+                modalDialog({
+                    title: service.name + " (Security)",
+                    onLoad: function ($body) {
+
+                    },
+                    onOk: function ($body) {
+
+                    }
+                });
+            });
+        $("<div>")
+            .addClass('icon clickable start ' + (service.status === 'running' ? 'gray' : ''))
+            .appendTo($toolbar)
+            .click(function () { setServiceStatus($(this).closest('.service'), 'running'); });
+        $("<div>")
+            .addClass('icon clickable stop ' + (service.status === 'stopped' ? 'gray' : ''))
+            .appendTo($toolbar)
+            .click(function () { setServiceStatus($(this).closest('.service'), 'stopped'); });
+        $("<div>")
+            .addClass('icon clickable refresh')
+            .appendTo($toolbar)
+            .click(function () { setServiceStatus($(this).closest('.service'), 'refresh'); });
+
+        $("<h4>" + service.name + "</h4>").appendTo($service);
+        if (service.runningSince) {
+            $("<div>Running since: " + service.runningSince + "</div>").appendTo($service);
+        }
         return $service;
     };
 
     var folderServices = function (folder) {
         var $services = $(".services").empty();
-        ajax({
-            url: '/geoservices/rest/services' + (folder ? '/' + folder : '') + '?f=pjson',
+        get({
+            url: '/manage/services?folder=' + folder,
             success: function (result) {
                 $.each(result.services, function (i, service) {
                     createServiceListItem($services, service);
@@ -69,16 +161,17 @@ window.gview.manage = function () {
     var pageServices = function () {
         var $body = $('.gview5-manage-body').empty().addClass('loading');
 
-        ajax({ 
-            url: '/geoservices/rest/services?f=pjson',
+        get({ 
+            url: '/manage/folders',
             success: function (result) {
-                console.log(result);
                 $body.removeClass('loading');
 
                 var $folders = $("<ul>").addClass('folders').appendTo($body);
                 $("<li>").addClass('folder selected').html('(root)').attr('data-folder','').appendTo($folders);
                 $.each(result.folders, function (i, folder) {
-                    $("<li>").addClass('folder').html(folder).attr('data-folder', folder).appendTo($folders);
+                    if (folder) {
+                        $("<li>").addClass('folder').html(folder).attr('data-folder', folder).appendTo($folders);
+                    }
                 });
                 $folders.children('.folder')
                     .click(function () {
@@ -89,11 +182,22 @@ window.gview.manage = function () {
                     });
 
                 var $services = $("<ul>").addClass('services').appendTo($body);
-                $.each(result.services, function (i, service) {
-                    createServiceListItem($services, service);
-                });
+                folderServices('');
+                //$.each(result.services, function (i, service) {
+                //    createServiceListItem($services, service);
+                //});
             }
-        })
+        });
+    };
+
+    var setServiceStatus = function ($service, status) {
+        get({
+            url: '/manage/setservicestatus?service=' + $service.attr('data-service') + "&status="+status,
+            type: 'post',
+            success(result) {
+                createServiceListItem($service.closest('.services'), result.service);
+            }
+        });
     };
 
     //
@@ -151,7 +255,7 @@ window.gview.manage = function () {
     var pageSecurity = function () {
         var $body = $('.gview5-manage-body').empty().addClass('loading');
 
-        ajax({
+        get({
             url: '/manage/tokenusers',
             success: function (result) {
                 var $users = $("<ul>").addClass('users').appendTo($body);

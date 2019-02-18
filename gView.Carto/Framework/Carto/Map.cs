@@ -3013,7 +3013,7 @@ namespace gView.Framework.Carto
 
     public sealed class RenderRasterLayerThread
     {
-        protected Map _map;
+        private Map _map;
         private IRasterLayer _layer;
         private ICancelTracker _cancelTracker;
         private InterpolationMethod _interpolMethod = InterpolationMethod.Fast;

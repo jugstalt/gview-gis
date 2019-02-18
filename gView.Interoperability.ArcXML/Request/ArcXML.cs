@@ -1226,10 +1226,10 @@ namespace gView.Interoperability.ArcXML
             xw.WriteEndElement(); // TOC
         }
 
-        public string GET_SERVICE_INFO(IServiceRequestContext context, bool fields, bool envelope, bool renderers, bool toc, bool gv_meta, bool useTOC)
+        async public Task<string> GET_SERVICE_INFO(IServiceRequestContext context, bool fields, bool envelope, bool renderers, bool toc, bool gv_meta, bool useTOC)
         {
             if (context == null) return String.Empty;
-            using (IServiceMap map = context.CreateServiceMapInstance())
+            using (IServiceMap map = await context.CreateServiceMapInstance())
             {
 
                 if (map == null) return "";

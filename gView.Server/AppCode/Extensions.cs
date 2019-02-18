@@ -11,6 +11,8 @@ namespace gView.Server.AppCode
         {
             if (id.Contains("@"))
                 return id.Split('@')[1].Trim();
+            else if(id.Contains("/"))
+                return id.Split('/')[1].Trim();
 
             return id;
         }
@@ -19,6 +21,8 @@ namespace gView.Server.AppCode
         {
             if (id.Contains("@"))
                 return id.Split('@')[0].Trim();
+            else if(id.Contains("/"))
+                return id.Split('/')[0].Trim();
 
             return String.Empty;
         }

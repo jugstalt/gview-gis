@@ -315,7 +315,7 @@ namespace gView.Framework.UI
         event MapScaleChangedEvent MapScaleChanged;
         event AfterSetFocusMapEvent AfterSetFocusMap;
 
-        List<IMap> Maps { get; }
+        IEnumerable<IMap> Maps { get; }
         IMap FocusMap { get; set; }
 
         bool AddMap(IMap map);

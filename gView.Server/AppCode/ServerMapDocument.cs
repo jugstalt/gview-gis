@@ -5,6 +5,7 @@ using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.UI;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace gView.Server.AppCode
 {
     public class ServerMapDocument : IMapDocument, IMapDocumentModules, IPersistable
     {
-        private List<IMap> _maps = new List<IMap>();
+        private ConcurrentBag<IMap> _maps = new ConcurrentBag<IMap>();
         // ToDo: ThreadSafe
         private Dictionary<IMap, ModulesPersists> _mapModules = new Dictionary<IMap, ModulesPersists>();
         private ITableRelations _tableRelations;
@@ -33,9 +34,9 @@ namespace gView.Server.AppCode
         public event MapScaleChangedEvent MapScaleChanged;
         public event AfterSetFocusMapEvent AfterSetFocusMap;
 
-        public List<IMap> Maps
+        public IEnumerable<IMap> Maps
         {
-            get { return _maps; }
+            get { return _maps.ToArray(); }
         }
 
         public IMap FocusMap
@@ -64,8 +65,18 @@ namespace gView.Server.AppCode
         {
             if (map == null || !_maps.Contains(map)) return false;
 
-            _maps.Remove(map);
+            _maps = new ConcurrentBag<IMap>(_maps.Except(new[] { map }));
+
             if (MapDeleted != null) MapDeleted(map);
+            return true;
+        }
+
+        public bool RemoveMap(string mapName)
+        {
+            var map = this[mapName];
+            if (map != null)
+                return RemoveMap(map);
+
             return true;
         }
 
@@ -117,7 +128,7 @@ namespace gView.Server.AppCode
             {
                 while (_maps.Count > 0)
                 {
-                    this.RemoveMap((IMap)_maps[0]);
+                    this.RemoveMap((IMap)_maps.First());
                 }
 
                 stream.Load("MapDocument", null, this);
@@ -140,7 +151,7 @@ namespace gView.Server.AppCode
         {
             while (_maps.Count > 0)
             {
-                this.RemoveMap((IMap)_maps[0]);
+                this.RemoveMap((IMap)_maps.First());
             }
 
             IMap map;

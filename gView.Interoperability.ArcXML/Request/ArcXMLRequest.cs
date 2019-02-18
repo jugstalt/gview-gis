@@ -78,7 +78,7 @@ namespace gView.Interoperability.ArcXML
 #if(DEBUG)
                         Logger.LogDebug("Start ArcXML GET_SERVICE_INFO Request");
 #endif
-                        PerformGetServiceInfoRequest(context, rType);
+                        await PerformGetServiceInfoRequest(context, rType);
 #if(DEBUG)
                         Logger.LogDebug("ArcXML GET_SERVICE_INFO Request Finished");
 #endif
@@ -154,7 +154,7 @@ namespace gView.Interoperability.ArcXML
 
         #endregion
 
-        private void PerformGetServiceInfoRequest(IServiceRequestContext context, XmlNode rType)
+        async private Task PerformGetServiceInfoRequest(IServiceRequestContext context, XmlNode rType)
         {
             if (context == null || context.ServiceRequest == null)
             {
@@ -172,7 +172,7 @@ namespace gView.Interoperability.ArcXML
             bool renderers = NodeAttributeBool(rType, "renderer", true);
             bool gv_meta = NodeAttributeBool(rType, "gv_meta", false);
             bool toc = false; //NodeAttributeBool(rType, "toc");
-            serviceRequest.Response = response.GET_SERVICE_INFO(context, fields, envelope, renderers, toc, gv_meta, _useTOC);
+            serviceRequest.Response = await response.GET_SERVICE_INFO(context, fields, envelope, renderers, toc, gv_meta, _useTOC);
 
             _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
         }
@@ -244,7 +244,7 @@ namespace gView.Interoperability.ArcXML
             getImage.layerDefs = properties.SelectSingleNode("LAYERLIST");
             getImage.LAYERS = rType.SelectNodes("//LAYER");
 
-            using (IServiceMap map = context.CreateServiceMapInstance())  // _mapServer[context];
+            using (IServiceMap map = await context.CreateServiceMapInstance())  // _mapServer[context];
             {
                 if (map == null || map.Display == null)
                 {
@@ -330,7 +330,7 @@ namespace gView.Interoperability.ArcXML
                     return;
                 }
                 string id = layer.Attributes["id"].Value;
-                using (IServiceMap map2 = context.CreateServiceMapInstance()) //  _mapServer[context];
+                using (IServiceMap map2 = await context.CreateServiceMapInstance()) //  _mapServer[context];
                 {
                     if (map2 == null)
                     {
@@ -615,7 +615,7 @@ namespace gView.Interoperability.ArcXML
                 serviceRequest.Response = CreateException("missing layerid attribute");
                 return;
             }
-            using (IServiceMap map3 = context.CreateServiceMapInstance()) // _mapServer[context];
+            using (IServiceMap map3 = await context.CreateServiceMapInstance()) // _mapServer[context];
             {
                 if (map3 == null)
                 {
@@ -925,7 +925,7 @@ namespace gView.Interoperability.ArcXML
                 }
 
                 string id = layer.Attributes["id"].Value;
-                using (IServiceMap map2 = context.CreateServiceMapInstance()) // _mapServer[context];
+                using (IServiceMap map2 = await context.CreateServiceMapInstance()) // _mapServer[context];
                 {
                     if (map2 == null)
                     {

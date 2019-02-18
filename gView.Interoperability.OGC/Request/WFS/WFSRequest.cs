@@ -70,10 +70,10 @@ namespace gView.Interoperability.OGC
             switch (parameters.Request)
             {
                 case WFSRequestType.GetCapabilities:
-                    context.ServiceRequest.Response = WFS_GetCapabilities(context.ServiceRequest.OnlineResource, context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.Response = await WFS_GetCapabilities(context.ServiceRequest.OnlineResource, context.ServiceRequest.Service, parameters, context);
                     break;
                 case WFSRequestType.DescribeFeatureType:
-                    context.ServiceRequest.Response = WFS_DescribeFeatureType(context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.Response = await WFS_DescribeFeatureType(context.ServiceRequest.Service, parameters, context);
                     break;
                 case WFSRequestType.GetFeature:
                     context.ServiceRequest.Response = await WFS_GetFeature(context.ServiceRequest.OnlineResource, context.ServiceRequest.Service, parameters, context);
@@ -106,7 +106,7 @@ namespace gView.Interoperability.OGC
 
         #endregion
 
-        private string WFS_GetCapabilities(string OnlineResource, string service, WFSParameterDescriptor parameters, IServiceRequestContext context)
+        async private Task<string> WFS_GetCapabilities(string OnlineResource, string service, WFSParameterDescriptor parameters, IServiceRequestContext context)
         {
             try
             {
@@ -116,7 +116,7 @@ namespace gView.Interoperability.OGC
                 //if (parameters != null)
                 //    _mapServer.Log(loggingMethod.request_detail, "WMS: " + Concat(parameters, "&"));
 
-                using (IServiceMap map = context.CreateServiceMapInstance()) // _mapServer[context];
+                using (IServiceMap map = await context.CreateServiceMapInstance()) // _mapServer[context];
                 {
                     if (map == null) return "";
 
@@ -524,9 +524,9 @@ namespace gView.Interoperability.OGC
             }
         }
 
-        private string WFS_DescribeFeatureType(string service, WFSParameterDescriptor parameters, IServiceRequestContext context)
+        async private Task<string> WFS_DescribeFeatureType(string service, WFSParameterDescriptor parameters, IServiceRequestContext context)
         {
-            using (IServiceMap map = context.CreateServiceMapInstance()) // _mapServer[context];
+            using (IServiceMap map = await context.CreateServiceMapInstance()) // _mapServer[context];
             {
                 if (map == null) return "";
                 if (_mapServer == null || parameters == null) return "";
@@ -636,7 +636,7 @@ namespace gView.Interoperability.OGC
             if (_mapServer == null || parameters == null) return "";
             _mapServer.Log("Service:" + service, loggingMethod.request, "WFS GetFeature");
 
-            using (IServiceMap map = context.CreateServiceMapInstance()) // _mapServer[context];
+            using (IServiceMap map = await context.CreateServiceMapInstance()) // _mapServer[context];
             {
                 if (map == null) return "";
 

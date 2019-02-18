@@ -48,7 +48,9 @@ namespace gView.Server.Controllers
                     .Select(s => s.Folder).Distinct()
                     .ToArray(),
                 Services = InternetMapServer.mapServices
-                    .Where(s => String.IsNullOrWhiteSpace(s.Folder))
+                    .Where(s => {
+                        return String.IsNullOrWhiteSpace(s.Folder) && (s.GetSettingsAsync().Result).Status == MapServiceStatus.Running;
+                    })
                     .Select(s => new AgsServices()
                     {
                         Name = s.Name,
@@ -69,7 +71,7 @@ namespace gView.Server.Controllers
                 {
                     CurrentVersion = 10.61,
                     Services = InternetMapServer.mapServices
-                        .Where(s=>s.Folder==id)
+                        .Where(s => s.Folder == id && s.GetSettingsAsync().Result.Status == MapServiceStatus.Running)
                         .Select(s => new AgsServices()
                         {
                             Name = s.Name,
@@ -88,14 +90,11 @@ namespace gView.Server.Controllers
             }
         }
 
-        public IActionResult Service(string folder, string id)
+        async public Task<IActionResult> Service(string id, string folder="")
         {
             try
             {
-                //if (folder != DefaultFolder)
-                //    throw new Exception("Unknown folder: " + folder);
-
-                var map = InternetMapServer.Instance.GetService(id, folder);
+                var map = await InternetMapServer.Instance.GetServiceMap(id, folder);
                 if (map == null)
                     throw new Exception("Unknown service: " + id);
 
@@ -143,14 +142,11 @@ namespace gView.Server.Controllers
             }
         }
 
-        public IActionResult ServiceLayers(string folder, string id)
+        async public Task<IActionResult> ServiceLayers(string id, string folder = "")
         {
             try
             {
-                //if (folder != DefaultFolder)
-                //    throw new Exception("Unknown folder: " + folder);
-
-                var map = InternetMapServer.Instance.GetService(id, folder);
+                var map = await InternetMapServer.Instance.GetServiceMap(id, folder);
                 if (map == null)
                     throw new Exception("Unknown service: " + id);
 
@@ -171,14 +167,11 @@ namespace gView.Server.Controllers
             }
         }
 
-        public IActionResult ServiceLayer(string folder, string id, int layerId)
+        async public Task<IActionResult> ServiceLayer(string id, int layerId, string folder = "")
         {
             try
             {
-                //if (folder != DefaultFolder)
-                //    throw new Exception("Unknown folder: " + folder);
-
-                var map = InternetMapServer.Instance.GetService(id, folder);
+                var map = await InternetMapServer.Instance.GetServiceMap(id, folder);
                 if (map == null)
                     throw new Exception("Unknown service: " + id);
 
@@ -196,13 +189,10 @@ namespace gView.Server.Controllers
 
         #region MapServer
 
-        async public Task<IActionResult> ExportMap(string folder, string id)
+        async public Task<IActionResult> ExportMap(string id, string folder = "")
         {
             try
             {
-                //if (folder != DefaultFolder)
-                //    throw new Exception("Unknown folder: " + folder);
-
                 var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
@@ -266,7 +256,7 @@ namespace gView.Server.Controllers
             }
         }
 
-        async public Task<IActionResult> Query(string folder, string id, int layerId)
+        async public Task<IActionResult> Query(string id, int layerId, string folder = "")
         {
             try
             {
@@ -345,7 +335,7 @@ namespace gView.Server.Controllers
             }
         }
 
-        async public Task<IActionResult> Legend(string folder, string id)
+        async public Task<IActionResult> Legend(string id, string folder = "")
         {
             try
             {
@@ -398,7 +388,7 @@ namespace gView.Server.Controllers
 
         #region FeatureServer
 
-        async public Task<IActionResult> FeatureServerQuery(string folder, string id, int layerId)
+        async public Task<IActionResult> FeatureServerQuery(string id, int layerId, string folder = "")
         {
             try
             {
@@ -460,7 +450,7 @@ namespace gView.Server.Controllers
             }
         }
 
-        async public Task<IActionResult> FeatureServerAddFeatures(string folder, string id, int layerId)
+        async public Task<IActionResult> FeatureServerAddFeatures(string id, int layerId, string folder = "")
         {
             try
             {
@@ -526,7 +516,7 @@ namespace gView.Server.Controllers
             }
         }
 
-        async public Task<IActionResult> FeatureServerUpdateFeatures(string folder, string id, int layerId)
+        async public Task<IActionResult> FeatureServerUpdateFeatures(string id, int layerId, string folder = "")
         {
             try
             {
@@ -592,7 +582,7 @@ namespace gView.Server.Controllers
             }
         }
 
-        async public Task<IActionResult> FeatureServerDeleteFeatures(string folder, string id, int layerId)
+        async public Task<IActionResult> FeatureServerDeleteFeatures(string id, int layerId, string folder = "")
         {
             try
             {
@@ -658,14 +648,14 @@ namespace gView.Server.Controllers
             }
         }
 
-        public IActionResult FeatureServiceLayer(string folder, string id, int layerId)
+        async public Task<IActionResult> FeatureServiceLayer(string id, int layerId, string folder = "")
         {
             try
             {
                 //if (folder != DefaultFolder)
                 //    throw new Exception("Unknown folder: " + folder);
 
-                var map = InternetMapServer.Instance.GetService(id, folder);
+                var map = await InternetMapServer.Instance.GetServiceMap(id, folder);
                 if (map == null)
                     throw new Exception("Unknown service: " + id);
 

@@ -171,12 +171,21 @@ ul {
     }
         .gview5-manage-body .services .service {
             padding: 8px;
-            border-bottom: 1px solid #ddd;
+            border: 1px solid #ddd;
             cursor: pointer;
+            margin: 0px 3px 3px 3px;
+            border-radius: 4px;
         }
 
             .gview5-manage-body .services .service:hover {
                 background: #eee;
+            }
+
+            .gview5-manage-body .services .service.stopped {
+                background-color:#ffffcc;
+            }
+            .gview5-manage-body .services .service.running {
+                background-color: #ccffcc;
             }
 
     .gview5-manage-body .user-properties {
@@ -211,7 +220,7 @@ ul {
     .gview5-manage-body .form .form-input input {
         min-width:250px;
         margin:5px 0px;
-        border:2px solid #0094ff;
+        border:1px solid #0094ff;
         border-radius:5px;
         padding:10px 5px 5px 5px;
     }
@@ -223,6 +232,75 @@ ul {
         border-radius:4px;
         padding:8px;
     }
+
+.gview5-modal-blocker {
+    position: fixed;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    bottom: 0px;
+    background-color: rgba(0,0,0,0.3);
+    z-index:99999;
+}
+
+    .gview5-modal-blocker .modal-dialog {
+        position: absolute;
+        top: 10%;
+        left: 20%;
+        right: 20%;
+        bottom: 20%;
+        background: #fff;
+        box-shadow: 4px 4px 9px rgba(0, 0, 0, .4) !important;
+        margin:0px;
+    }
+
+        .gview5-modal-blocker .modal-dialog .modal-title {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            right: 0px;
+            height: 40px;
+            font-size: 22px;
+            padding: 6px;
+        }
+
+        .gview5-modal-blocker .modal-dialog .modal-body {
+            position: absolute;
+            top: 40px;
+            left: 0px;
+            right: 0px;
+            bottom: 40px;
+            font-size: 22px;
+            padding: 6px;
+            box-shadow: none;
+        }
+
+        .gview5-modal-blocker .modal-dialog .modal-footer {
+            position: absolute;
+            bottom: 0px;
+            left: 0px;
+            right: 0px;
+            height: 40px;
+            padding: 6px;
+        }
+
+        .gview5-modal-blocker .modal-dialog .modal-footer button {
+            min-width:100px;
+            border-radius:5px;
+            min-height:28px;
+            background-color:#fff;
+            color:#808080;
+            border:1px solid #808080;
+            margin-left:5px;
+        }
+            .gview5-modal-blocker .modal-dialog .modal-footer button:hover {
+                background-color:#808080;
+                color:#fff;
+            }
+            .gview5-modal-blocker .modal-dialog .modal-footer button.button-ok {
+                background-color:#0094ff;
+                color:#fff;
+            }
 
 @media(max-width:640px) {
     .gview5-login-main {
@@ -250,4 +328,76 @@ ul {
         -webkit-transform: translate(0px);
         transform: translate(0px);
     }
+
+    .gview5-modal-blocker .modal-dialog {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        right: 0px;
+        bottom: 0px;
+    }
 }
+
+.gview5-manage-body .service .toolbar {
+    float:right;
+    background-color:#fff;
+    height:40px;
+}
+
+.gview5-manage-body .service .toolbar .icon {
+    display:inline-block;
+    width:36px;
+    height:36px;
+    background-repeat:no-repeat;
+    background-position:center;
+    margin:2px;
+    border:1px solid #efefef;
+}
+
+.icon.clickable {
+    cursor:pointer;
+}
+.icon.clickable:hover {
+    background-color:#0094ff;
+}
+
+.icon.settings {
+    background-image: url('../images/icons/settings-b-26.png');
+}
+    .icon.settings.gray {
+        background-image: url('../images/icons/settings-g-26.png');
+    }
+.icon.security1 {
+    background-image: url('../images/icons/security1-b-26.png');
+}
+    .icon.security1.gray {
+        background-image: url('../images/icons/security1-g-26.png');
+    }
+.icon.security0 {
+    background-image: url('../images/icons/security0-b-26.png');
+}
+
+    .icon.security0.gray {
+        background-image: url('../images/icons/security0-g-26.png');
+    }
+.icon.start {
+    background-image: url('../images/icons/start-b-26.png');
+}
+    .icon.start.gray {
+        background-image: url('../images/icons/start-g-26.png');
+    }
+.icon.stop {
+    background-image: url('../images/icons/stop-b-26.png');
+}
+
+    .icon.stop.gray {
+        background-image: url('../images/icons/stop-g-26.png');
+    }
+.icon.refresh {
+    background-image: url('../images/icons/refresh-b-26.png');
+}
+
+    .icon.refresh.gray {
+        background-image: url('../images/icons/refresh-g-26.png');
+    }
+

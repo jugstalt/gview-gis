@@ -11,9 +11,9 @@ namespace gView.MapServer
     public interface IMapServer
     {
         List<IMapService> Maps { get; }
-        IServiceMap GetService(string name, string folder);
-        IServiceMap this[IMapService service] { get; }
-        IServiceMap this[IServiceRequestContext context] { get; }
+        Task<IServiceMap> GetServiceMap(string name, string folder);
+        Task<IServiceMap> GetServiceMap(IMapService service);
+        Task<IServiceMap> GetServiceMap(IServiceRequestContext context);
 
         bool LoggingEnabled(loggingMethod methode);
         void Log(string header, loggingMethod methode, string msg);
@@ -34,6 +34,12 @@ namespace gView.MapServer
         MapServiceType Type { get; }
         //IServiceMap Map { get; }
 
+        string Fullname { get; }
+
+        Task<bool> RefreshRequired();
+        void ServiceRefreshed();
+        DateTime? RunningSinceUtc { get; }
+
         Task<IMapServiceSettings> GetSettingsAsync();
         Task SaveSettingsAsync();
     }
@@ -48,6 +54,8 @@ namespace gView.MapServer
         MapServiceStatus Status { get; set; }
 
         IMapServiceAccess[] AccessRules { get; set; }
+
+        DateTime RefreshService { get; set; }
     }
 
     public interface IMapServiceAccess
@@ -156,7 +164,7 @@ namespace gView.MapServer
         IMapServer MapServer { get; }
         IServiceRequestInterpreter ServiceRequestInterpreter { get; }
         ServiceRequest ServiceRequest { get; }
-        IServiceMap CreateServiceMapInstance();
+        Task<IServiceMap> CreateServiceMapInstance();
     }
 
     public class ServiceRequestContext : IServiceRequestContext
@@ -188,9 +196,9 @@ namespace gView.MapServer
         {
             get { return _request; }
         }
-        public IServiceMap CreateServiceMapInstance()
+        async public Task<IServiceMap> CreateServiceMapInstance()
         {
-            return (_mapServer != null) ? _mapServer[this] : null;
+            return (_mapServer != null) ? await _mapServer.GetServiceMap(this) : null;
         }
 
         #endregion

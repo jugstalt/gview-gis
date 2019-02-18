@@ -673,7 +673,7 @@ namespace gView.Server.AppCode
             get { return _request; }
         }
 
-        IServiceMap IServiceRequestContext.CreateServiceMapInstance()
+        Task<IServiceMap> IServiceRequestContext.CreateServiceMapInstance()
         {
             throw new NotImplementedException();
             //return this;

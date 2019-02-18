@@ -72,7 +72,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
         async public Task Request(IServiceRequestContext context)
         {
-            using (var serviceMap = context.CreateServiceMapInstance())
+            using (var serviceMap = await context.CreateServiceMapInstance())
             {
                 if (context == null || context.ServiceRequest == null || serviceMap == null)
                     return;
@@ -241,7 +241,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
             if (new FileInfo(bundleFilename).Exists)
             {
-                return GetCompactTileBytes(context, path, row, col, format);
+                return await GetCompactTileBytes(context, path, row, col, format);
             }
 
 
@@ -250,7 +250,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
             {
                 #region On The Fly
 
-                using (IServiceMap map = context.CreateServiceMapInstance())
+                using (IServiceMap map = await context.CreateServiceMapInstance())
                 {
                     ISpatialReference sRef = SpatialReference.FromID("epsg:" + epsg);
 
@@ -296,7 +296,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
             return null;
         }
 
-        private byte[] GetCompactTileBytes(IServiceRequestContext context, string path, int row, int col, string format)
+        async private Task<byte[]> GetCompactTileBytes(IServiceRequestContext context, string path, int row, int col, string format)
         {
             string compactTileName = CompactTileName(row, col);
 
@@ -333,7 +333,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
             }
             catch (Exception ex)
             {
-                using (var serviceMap = context.CreateServiceMapInstance())
+                using (var serviceMap = await context.CreateServiceMapInstance())
                 {
                     TileServiceMetadata metadata = serviceMap.MetadataProvider(_metaprovider) as TileServiceMetadata;
                     using (System.Drawing.Bitmap bm = new Bitmap(metadata.TileWidth, metadata.TileHeight))

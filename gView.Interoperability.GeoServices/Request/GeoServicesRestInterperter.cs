@@ -54,7 +54,7 @@ namespace gView.Interoperability.GeoServices.Request
                     await Query(context);
                     break;
                 case "legend":
-                    Legend(context);
+                    await Legend(context);
                     break;
                 case "featureserver_query":
                     await Query(context, true);
@@ -80,7 +80,7 @@ namespace gView.Interoperability.GeoServices.Request
             try
             {
                 _exportMap = JsonConvert.DeserializeObject<JsonExportMap>(context.ServiceRequest.Request);
-                using (var serviceMap = context.CreateServiceMapInstance())
+                using (var serviceMap = await context.CreateServiceMapInstance())
                 {
                     #region Display
 
@@ -278,7 +278,7 @@ namespace gView.Interoperability.GeoServices.Request
                 EsriGeometryType esriGeometryType = EsriGeometryType.esriGeometryAny;
                 JsonSpatialReference featureSref = null;
 
-                using (var serviceMap = context.CreateServiceMapInstance())
+                using (var serviceMap = await context.CreateServiceMapInstance())
                 {
                     string filterQuery;
 
@@ -452,13 +452,13 @@ namespace gView.Interoperability.GeoServices.Request
 
         #region Legend
 
-        private void Legend(IServiceRequestContext context)
+        async private Task Legend(IServiceRequestContext context)
         {
             try
             {
                 var legendLayers = new List<Rest.Json.Legend.Layer>();
 
-                using (var serviceMap = context.CreateServiceMapInstance())
+                using (var serviceMap = await context.CreateServiceMapInstance())
                 {
                     foreach (var layer in serviceMap.MapElements)
                     {
@@ -540,7 +540,7 @@ namespace gView.Interoperability.GeoServices.Request
             {
                 var editRequest = JsonConvert.DeserializeObject<JsonFeatureServerEditRequest>(context.ServiceRequest.Request);
 
-                using (var serviceMap = context.CreateServiceMapInstance())
+                using (var serviceMap = await context.CreateServiceMapInstance())
                 {
                     CheckEditableStatement(serviceMap, editRequest, EditStatements.INSERT);
 
@@ -603,7 +603,7 @@ namespace gView.Interoperability.GeoServices.Request
             {
                 var editRequest = JsonConvert.DeserializeObject<JsonFeatureServerEditRequest>(context.ServiceRequest.Request);
 
-                using (var serviceMap = context.CreateServiceMapInstance())
+                using (var serviceMap = await context.CreateServiceMapInstance())
                 {
                     CheckEditableStatement(serviceMap, editRequest, EditStatements.UPDATE);
 
@@ -666,7 +666,7 @@ namespace gView.Interoperability.GeoServices.Request
             {
                 var editRequest = JsonConvert.DeserializeObject<JsonFeatureServerEditRequest>(context.ServiceRequest.Request);
 
-                using (var serviceMap = context.CreateServiceMapInstance())
+                using (var serviceMap = await context.CreateServiceMapInstance())
                 {
                     CheckEditableStatement(serviceMap, editRequest, EditStatements.DELETE);
 
