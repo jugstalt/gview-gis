@@ -94,6 +94,9 @@ namespace gView.Framework.Carto
             get;
             set;
         }
+
+        IEnumerable<string> ErrorMessages { get; }
+        bool HasErrorMessages { get; }
     }
 
     /*

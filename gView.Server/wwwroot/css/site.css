@@ -187,6 +187,9 @@ ul {
             .gview5-manage-body .services .service.running {
                 background-color: #ccffcc;
             }
+            .gview5-manage-body .services .service.has-errors {
+                background-color: #ffcccc;
+            }
 
     .gview5-manage-body .user-properties {
         position:absolute;
@@ -270,7 +273,6 @@ ul {
             left: 0px;
             right: 0px;
             bottom: 40px;
-            font-size: 22px;
             padding: 6px;
             box-shadow: none;
         }
@@ -400,4 +402,24 @@ ul {
     .icon.refresh.gray {
         background-image: url('../images/icons/refresh-g-26.png');
     }
+.icon.log {
+    background-image: url('../images/icons/log-b-26.png');
+}
 
+    .icon.log.gray {
+        background-image: url('../images/icons/log-g-26.png');
+    }
+
+.error-logs {
+    overflow:auto;
+}
+
+.error-logs ul {
+    padding:0px;
+}
+
+.error-logs li {
+    padding:2px;
+    white-space:nowrap;
+    border-bottom:1px solid #ddd;
+}

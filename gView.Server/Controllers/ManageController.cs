@@ -129,6 +129,20 @@ namespace gView.Server.Controllers
             });
         }
 
+        public IActionResult ErrorLogs(string service, string last="0")
+        {
+            return SecureApiCall(() =>
+            {
+                var errorsResult = Logger.ErrorLogs(service, Framework.system.loggingMethod.error, long.Parse(last));
+
+                return Json(new
+                {
+                    errors = errorsResult.errors,
+                    ticks = errorsResult.ticks > 0 ? errorsResult.ticks.ToString() : null
+                });
+            });
+        }
+
         #endregion
 
         #region Security
@@ -241,9 +255,10 @@ namespace gView.Server.Controllers
                 folder = mapService.Folder,
                 status = (settings?.Status ?? MapServer.MapServiceStatus.Running).ToString().ToLower(),
                 hasSecurity = settings?.AccessRules != null && settings.AccessRules.Length > 0,
-                runningSince = settings?.Status == MapServiceStatus.Running && mapService.RunningSinceUtc.HasValue ? 
-                    mapService.RunningSinceUtc.Value.ToShortDateString() + " " + mapService.RunningSinceUtc.Value.ToLongTimeString() + " (UTC)" : 
-                    String.Empty
+                runningSince = settings?.Status == MapServiceStatus.Running && mapService.RunningSinceUtc.HasValue ?
+                    mapService.RunningSinceUtc.Value.ToShortDateString() + " " + mapService.RunningSinceUtc.Value.ToLongTimeString() + " (UTC)" :
+                    String.Empty,
+                hasErrors = Logger.LogFileExists(mapService.Fullname, Framework.system.loggingMethod.error)
             };
         }
 

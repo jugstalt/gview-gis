@@ -841,15 +841,16 @@ namespace gView.DataSources.Raster.File
                 if (display is IServiceMap && ((IServiceMap)display).MapServer != null)
                 {
                     IMapServer mapServer = ((IServiceMap)display).MapServer;
-                    mapServer.Log(
-                    "RenderRasterLayerThread", loggingMethod.error,
+                    mapServer.LogAsync(
+                        ((IServiceMap)display).Name,
+                        "RenderRasterLayerThread", loggingMethod.error,
                         ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace + "\n" +
                         "filename=" + _filename + "\n" +
                         "x=" + x.ToString() + "\n" +
                         "y=" + y.ToString() + "\n" +
                         "iWidth=" + iWidth.ToString() + "\n" +
                         "iHeight=" + iHeight.ToString() + "\n" +
-                        "mag=" + mag.ToString() + "\n");        
+                        "mag=" + mag.ToString() + "\n").Wait();        
                 }
                 else
                 {
@@ -965,7 +966,8 @@ namespace gView.DataSources.Raster.File
                 if (display is IServiceMap && ((IServiceMap)display).MapServer != null)
                 {
                     IMapServer mapServer = ((IServiceMap)display).MapServer;
-                    mapServer.Log(
+                    mapServer.LogAsync(
+                    ((IServiceMap)display).Name,
                     "RenderRasterLayerThread", loggingMethod.error,
                         ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace + "\n" +
                         "filename=" + _filename + "\n" +
@@ -973,7 +975,7 @@ namespace gView.DataSources.Raster.File
                         "y=" + y.ToString() + "\n" +
                         "iWidth=" + iWidth.ToString() + "\n" +
                         "iHeight=" + iHeight.ToString() + "\n" +
-                        "mag=" + mag.ToString() + "\n");
+                        "mag=" + mag.ToString() + "\n").Wait();
                 }
                 else
                 {

@@ -36,6 +36,8 @@ namespace gView.Server.AppCode
 
         public static string LoginManagerRootPath { get; set; }
 
+        public static string LoggingRootPath { get; set; }
+
         public static int MaxThreads
         {
             get { return _maxThreads; }

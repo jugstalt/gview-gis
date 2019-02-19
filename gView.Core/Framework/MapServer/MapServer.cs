@@ -16,7 +16,8 @@ namespace gView.MapServer
         Task<IServiceMap> GetServiceMap(IServiceRequestContext context);
 
         bool LoggingEnabled(loggingMethod methode);
-        void Log(string header, loggingMethod methode, string msg);
+        Task LogAsync(string mapName, string header, loggingMethod methode, string msg);
+        Task LogAsync(IServiceRequestContext context, string header, loggingMethod methode, string msg);
 
         string OutputUrl { get; }
         string OutputPath { get; }

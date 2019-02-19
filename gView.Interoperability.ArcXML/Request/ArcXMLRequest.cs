@@ -53,18 +53,18 @@ namespace gView.Interoperability.ArcXML
 
             try
             {
-                _mapServer.Log("Service:" + service, loggingMethod.request_detail, request);
+                await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request_detail, request);
 
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(request);
 
                 if (service == "catalog" && doc.SelectSingleNode("//GETCLIENTSERVICES") != null)
                 {
-                    _mapServer.Log("Service:" + service, loggingMethod.request, "AXL REQUEST: GETCLIENTSERVICES");
+                    await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request, "AXL REQUEST: GETCLIENTSERVICES");
                     AXL response = new AXL("ARCXML", "1.1");
 
                     context.ServiceRequest.Response = response.GETCLIENTSERVICES(_mapServer, context.ServiceRequest.Identity);
-                    _mapServer.Log("Service:" + service, loggingMethod.request_detail, context.ServiceRequest.Response);
+                    await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request_detail, context.ServiceRequest.Response);
 
                     return;
                 }
@@ -121,7 +121,7 @@ namespace gView.Interoperability.ArcXML
             }
             catch (Exception ex)
             {
-                _mapServer.Log("Service:" + service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
+                await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
                 context.ServiceRequest.Response = CreateException(ex.Message);
                 return;
             }
@@ -158,12 +158,12 @@ namespace gView.Interoperability.ArcXML
         {
             if (context == null || context.ServiceRequest == null)
             {
-                _mapServer.Log("PerformGetServiceInfoRequest", loggingMethod.error, "no context or servicerequest");
+                await _mapServer.LogAsync(context, "PerformGetServiceInfoRequest", loggingMethod.error, "no context or servicerequest");
                 return;
             }
 
             ServiceRequest serviceRequest = context.ServiceRequest;
-            _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.request, "ArcXML Request: GET_SERVICE_INFO");
+            await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request, "ArcXML Request: GET_SERVICE_INFO");
 
             AXL response = new AXL("ARCXML", "1.1");
 
@@ -174,18 +174,18 @@ namespace gView.Interoperability.ArcXML
             bool toc = false; //NodeAttributeBool(rType, "toc");
             serviceRequest.Response = await response.GET_SERVICE_INFO(context, fields, envelope, renderers, toc, gv_meta, _useTOC);
 
-            _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
+            await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
         }
         async private Task PerformGetImageRequest(IServiceRequestContext context, XmlNode rType)
         {
             if (context == null || context.ServiceRequest == null)
             {
-                _mapServer.Log("PerformGetImageRequest", loggingMethod.error, "no context or servicerequest");
+                await _mapServer.LogAsync(context, "PerformGetImageRequest", loggingMethod.error, "no context or servicerequest");
                 return;
             }
 
             ServiceRequest serviceRequest = context.ServiceRequest;
-            _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.request, "ArcXML Request: GET_IMAGE");
+            await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request, "ArcXML Request: GET_IMAGE");
 
             float dpi = 96f;
             double displayRotation = 0.0;
@@ -304,18 +304,18 @@ namespace gView.Interoperability.ArcXML
                 }
                 //map.Release();
             }
-            _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
+            await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
         }
         async private Task PerformGetFeatureRequest(IServiceRequestContext context, XmlNode rType)
         {
             if (context == null || context.ServiceRequest == null)
             {
-                _mapServer.Log("PerformGetFeatureRequest", loggingMethod.error, "no context or servicerequest");
+                await _mapServer.LogAsync(context, "PerformGetFeatureRequest", loggingMethod.error, "no context or servicerequest");
                 return;
             }
 
             ServiceRequest serviceRequest = context.ServiceRequest;
-            _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.request, "ArcXML Request: GET_FEATURES");
+            await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request, "ArcXML Request: GET_FEATURES");
 
             try
             {
@@ -591,12 +591,12 @@ namespace gView.Interoperability.ArcXML
                     serviceRequest.Response = await getFeatures.Request();
                 }
                 
-                _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
+                await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
                 return;
             }
             catch (Exception ex)
             {
-                _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
+                await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
                 serviceRequest.Response = CreateException(ex.Message);
                 return;
             }
@@ -605,7 +605,7 @@ namespace gView.Interoperability.ArcXML
         {
             if (context == null || context.ServiceRequest == null)
             {
-                _mapServer.Log("PerformGetRasterInfoRequest", loggingMethod.error, "no context or servicerequest");
+                await _mapServer.LogAsync(context, "PerformGetRasterInfoRequest", loggingMethod.error, "no context or servicerequest");
                 return;
             }
 
@@ -749,7 +749,7 @@ namespace gView.Interoperability.ArcXML
 
                 serviceRequest.Response = await raster_request.Request();
             }
-            _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
+            await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
         }
 
         #region Network Methods
@@ -758,12 +758,12 @@ namespace gView.Interoperability.ArcXML
         {
             if (context == null || context.ServiceRequest == null)
             {
-                _mapServer.Log("PerformGetFeatureRequest", loggingMethod.error, "no context or servicerequest");
+                await _mapServer.LogAsync(context, "PerformGetFeatureRequest", loggingMethod.error, "no context or servicerequest");
                 return;
             }
 
             ServiceRequest serviceRequest = context.ServiceRequest;
-            _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.request, "ArcXML Request: gv_CAN_TRACE_NETWORK");
+            await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request, "ArcXML Request: gv_CAN_TRACE_NETWORK");
 
             try
             {
@@ -801,7 +801,7 @@ namespace gView.Interoperability.ArcXML
             }
             catch (Exception ex)
             {
-                _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
+                await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
                 serviceRequest.Response = CreateException(ex.Message);
                 return;
             }
@@ -811,12 +811,12 @@ namespace gView.Interoperability.ArcXML
         {
             if (context == null || context.ServiceRequest == null)
             {
-                _mapServer.Log("PerformGetFeatureRequest", loggingMethod.error, "no context or servicerequest");
+                await _mapServer.LogAsync(context, "PerformGetFeatureRequest", loggingMethod.error, "no context or servicerequest");
                 return;
             }
 
             ServiceRequest serviceRequest = context.ServiceRequest;
-            _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.request, "ArcXML Request: gv_CAN_TRACE_NETWORK");
+            await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request, "ArcXML Request: gv_CAN_TRACE_NETWORK");
 
             try
             {
@@ -895,7 +895,7 @@ namespace gView.Interoperability.ArcXML
             }
             catch (Exception ex)
             {
-                _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
+                await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
                 serviceRequest.Response = CreateException(ex.Message);
                 return;
             }
@@ -1054,7 +1054,7 @@ namespace gView.Interoperability.ArcXML
             }
             catch (Exception ex)
             {
-                _mapServer.Log("Service:" + serviceRequest.Service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
+                await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
                 serviceRequest.Response = CreateException(ex.Message);
                 return (null, netFc, tracer);
             }

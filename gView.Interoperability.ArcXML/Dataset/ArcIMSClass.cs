@@ -525,7 +525,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             sb.Append("\n");
             sb.Append(axl);
 
-            context.MapServer.Log("gView.Interoperability.ArcXML", loggingMethod.request_detail_pro, sb.ToString());
+            context.MapServer.LogAsync(context, "gView.Interoperability.ArcXML", loggingMethod.request_detail_pro, sb.ToString()).Wait();
         }
         public static void Log(IServiceRequestContext context, string header, string server, string service, StringBuilder axl)
         {
@@ -552,10 +552,10 @@ namespace gView.Interoperability.ArcXML.Dataset
                 }
             }
 
-            context.MapServer.Log(server + "-" + service + ": " + header, loggingMethod.error,
+            context.MapServer.LogAsync(context, server + "-" + service + ": " + header, loggingMethod.error,
                 msg.ToString() +
                 ex.Source + "\n" +
-                ex.StackTrace + "\n");
+                ex.StackTrace + "\n").Wait();
         }
     }
 

@@ -13,6 +13,7 @@ using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Framework.Carto.UI;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace gView.Framework.Carto
 {
@@ -49,6 +50,7 @@ namespace gView.Framework.Carto
         public List<ILayer> _layers = new List<ILayer>();
         public bool _debug = true;
         private Envelope _lastRenderExtent = null;
+        private ConcurrentBag<string> _errorMessages = new ConcurrentBag<string>();
 
         private IntegerSequence _layerIDSequece = new IntegerSequence();
         public object imageLocker = new object();
@@ -1026,14 +1028,16 @@ namespace gView.Framework.Carto
                             System.Drawing.Bitmap clonedBitmap = _image.Clone(new System.Drawing.Rectangle(0, 0, _image.Width, _image.Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                             clonedBitmap.MakeTransparent(_backgroundColor);
                             m_imageMerger.Add(new GeorefBitmap(clonedBitmap), 999);
+
                             if (!m_imageMerger.Merge(_image, this.Display) &&
                                 (this is IServiceMap) &&
                                 ((IServiceMap)this).MapServer != null)
                             {
-                                ((IServiceMap)this).MapServer.Log(
+                                ((IServiceMap)this).MapServer.LogAsync(
+                                    this.Name,
                                     "Image Merger:",
                                     loggingMethod.error,
-                                    m_imageMerger.LastErrorMessage);
+                                    m_imageMerger.LastErrorMessage).Wait();
                             }
                             m_imageMerger.Clear();
                         }
@@ -1461,6 +1465,10 @@ namespace gView.Framework.Carto
                 {
                     dataset.Open();
                 }
+                if(!String.IsNullOrWhiteSpace(dataset.lastErrorMsg))
+                {
+                    _errorMessages.Add(dataset.lastErrorMsg);
+                }
                 _datasets.Add(dataset);
             }
 
@@ -1476,6 +1484,7 @@ namespace gView.Framework.Carto
             FeatureLayer fLayer;
             while ((fLayer = (FeatureLayer)stream.Load("IFeatureLayer", null, new FeatureLayer())) != null)
             {
+                string errorMessage = String.Empty;
                 if (fLayer.DatasetID < _datasets.Count)
                 {
                     IDatasetElement element = _datasets[fLayer.DatasetID].Element(fLayer.Title).Result;
@@ -1484,6 +1493,7 @@ namespace gView.Framework.Carto
                         fLayer = LayerFactory.Create(element.Class, fLayer) as FeatureLayer;
                         //fLayer.SetFeatureClass(element.Class as IFeatureClass);
                     }
+                    errorMessage = _datasets[fLayer.DatasetID].lastErrorMsg;
                 }
                 else
                 {
@@ -1491,6 +1501,11 @@ namespace gView.Framework.Carto
                 }
                 while (LayerIDExists(fLayer.ID))
                     fLayer.ID = _layerIDSequece.Number;
+
+                if(fLayer.Class==null)
+                {
+                    _errorMessages.Add("Invalid layer: " + fLayer.Title + "\n" + errorMessage);
+                }
 
                 _layers.Add(fLayer);
 
@@ -1500,6 +1515,7 @@ namespace gView.Framework.Carto
             RasterCatalogLayer rcLayer;
             while ((rcLayer = (RasterCatalogLayer)stream.Load("IRasterCatalogLayer", null, new RasterCatalogLayer())) != null)
             {
+                string errorMessage = String.Empty;
                 if (rcLayer.DatasetID < _datasets.Count)
                 {
                     IDatasetElement element = _datasets[rcLayer.DatasetID].Element(rcLayer.Title).Result;
@@ -1507,11 +1523,17 @@ namespace gView.Framework.Carto
                     {
                         rcLayer = LayerFactory.Create(element.Class, rcLayer) as RasterCatalogLayer;
                     }
+                    errorMessage = _datasets[fLayer.DatasetID].lastErrorMsg;
                 }
                 else
                 {
                 }
                 SetNewLayerID(rcLayer);
+
+                if (fLayer.Class == null)
+                {
+                    _errorMessages.Add("Invalid layer: " + fLayer.Title + "\n" + errorMessage);
+                }
 
                 _layers.Add(rcLayer);
                 if (LayerAdded != null) LayerAdded(this, fLayer);
@@ -1520,6 +1542,7 @@ namespace gView.Framework.Carto
             RasterLayer rLayer;
             while ((rLayer = (RasterLayer)stream.Load("IRasterLayer", null, new RasterLayer())) != null)
             {
+                string errorMessage = String.Empty;
                 if (rLayer.DatasetID < _datasets.Count)
                 {
                     IDatasetElement element = _datasets[rLayer.DatasetID].Element(rLayer.Title).Result;
@@ -1527,12 +1550,18 @@ namespace gView.Framework.Carto
                     {
                         rLayer.SetRasterClass(element.Class as IRasterClass);
                     }
+                    errorMessage = _datasets[fLayer.DatasetID].lastErrorMsg;
                 }
                 else
                 {
                 }
                 while (LayerIDExists(rLayer.ID))
                     rLayer.ID = _layerIDSequece.Number;
+
+                if (fLayer.Class == null)
+                {
+                    _errorMessages.Add("Invalid layer: " + fLayer.Title + "\n" + errorMessage);
+                }
 
                 _layers.Add(rLayer);
 
@@ -1542,6 +1571,7 @@ namespace gView.Framework.Carto
             WebServiceLayer wLayer;
             while ((wLayer = (WebServiceLayer)stream.Load("IWebServiceLayer", null, new WebServiceLayer())) != null)
             {
+                string errorMessage = String.Empty;
                 if (wLayer.DatasetID <= _datasets.Count)
                 {
                     IDatasetElement element = _datasets[wLayer.DatasetID].Element(wLayer.Title).Result;
@@ -1550,6 +1580,7 @@ namespace gView.Framework.Carto
                         //wLayer = LayerFactory.Create(element.Class, wLayer) as WebServiceLayer;
                         wLayer.SetWebServiceClass(element.Class as IWebServiceClass);
                     }
+                    errorMessage = _datasets[fLayer.DatasetID].lastErrorMsg;
                 }
                 else
                 {
@@ -1557,7 +1588,13 @@ namespace gView.Framework.Carto
                 while (LayerIDExists(wLayer.ID))
                     wLayer.ID = _layerIDSequece.Number;
 
+                if (fLayer.Class == null)
+                {
+                    _errorMessages.Add("Invalid layer: " + fLayer.Title + "\n" + errorMessage);
+                }
+
                 _layers.Add(wLayer);
+
                 if (wLayer.WebServiceClass != null && wLayer.WebServiceClass.Themes != null)
                 {
                     foreach (IWebServiceTheme theme in wLayer.WebServiceClass.Themes)
@@ -1881,6 +1918,13 @@ namespace gView.Framework.Carto
                 }
             }
         }
+
+        public IEnumerable<string> ErrorMessages
+        {
+            get { return _errorMessages.ToArray(); }
+        }
+
+        public bool HasErrorMessages { get { return _errorMessages!=null && _errorMessages.Count > 0; } }
 
         #endregion
     }
@@ -2909,7 +2953,8 @@ namespace gView.Framework.Carto
             {
                 if (_map is IServiceMap && ((IServiceMap)_map).MapServer != null)
                 {
-                    ((IServiceMap)_map).MapServer.Log(
+                    await ((IServiceMap)_map).MapServer.LogAsync(
+                        ((IServiceMap)_map).Name,
                         "RenderFeatureLayerThread: " + ((layer != null) ? layer.Title : String.Empty),
                         loggingMethod.error,
                         ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
@@ -3000,7 +3045,8 @@ namespace gView.Framework.Carto
             {
                 if (_map is IServiceMap && ((IServiceMap)_map).MapServer != null)
                 {
-                    ((IServiceMap)_map).MapServer.Log(
+                    await ((IServiceMap)_map).MapServer.LogAsync(
+                        ((IServiceMap)_map).Name,
                         "RenderLabelThread:" + ((_layer != null) ? _layer.Title : String.Empty),
                         loggingMethod.error,
                         ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
@@ -3165,10 +3211,11 @@ namespace gView.Framework.Carto
                     {
                         if (_map is IServiceMap && ((IServiceMap)_map).MapServer != null)
                         {
-                            ((IServiceMap)_map).MapServer.Log(
+                            ((IServiceMap)_map).MapServer.LogAsync(
+                                ((IServiceMap)_map).Name,
                                 "RenderRasterLayerThread: " + ((_layer != null) ? _layer.Title : String.Empty),
                                 loggingMethod.error,
-                                ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
+                                ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace).Wait();
                         }
                         if (_map != null)
                             if (_map != null) _map.AddException(new Exception("RenderRasterLayerThread: " + ((_layer != null) ? _layer.Title : String.Empty) + "\n" + ex.Message, ex));
@@ -3209,9 +3256,10 @@ namespace gView.Framework.Carto
             {
                 if (_map is IServiceMap && ((IServiceMap)_map).MapServer != null)
                 {
-                    ((IServiceMap)_map).MapServer.Log(
+                    ((IServiceMap)_map).MapServer.LogAsync(
+                        ((IServiceMap)_map).Name,
                         "RenderRasterLayerThread:" + ((_layer != null) ? _layer.Title : String.Empty), loggingMethod.error,
-                        ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
+                        ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace).Wait();
                 }
                 if (_map != null)
                     if (_map != null) _map.AddException(new Exception("RenderRasterLayerThread: " + ((_layer != null) ? _layer.Title : String.Empty) + "\n" + ex.Message, ex));

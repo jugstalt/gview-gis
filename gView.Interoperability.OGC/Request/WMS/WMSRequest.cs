@@ -64,8 +64,8 @@ namespace gView.Interoperability.OGC
             WMSParameterDescriptor parameters = new WMSParameterDescriptor();
             if (!parameters.ParseParameters(context.ServiceRequest.Request.Split('&')))
             {
-                _mapServer.Log("Invalid WMS Parameters", loggingMethod.error, context.ServiceRequest.Request);
-                return;
+                //_mapServer.Log(context, "Invalid WMS Parameters", loggingMethod.error, context.ServiceRequest.Request);
+                throw new Exception("Invalid WMS Parameters");
             }
 
             //ServiceRequestContext context = new ServiceRequestContext(_mapServer, this, request);
@@ -121,7 +121,7 @@ namespace gView.Interoperability.OGC
             try
             {
                 if (_mapServer == null || parameters == null) return "";
-                _mapServer.Log("Service:" + service, loggingMethod.request, "WMS GetCapabilities");
+                await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request, "WMS GetCapabilities");
 
                 //if (parameters != null)
                 //    _mapServer.Log(loggingMethod.request_detail, "WMS: " + Concat(parameters, "&"));
@@ -449,8 +449,8 @@ namespace gView.Interoperability.OGC
             }
             catch (Exception ex)
             {
-                _mapServer.Log("Service:" + service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
-                return "";
+                await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
+                return String.Empty;
             }
         }
 
@@ -461,7 +461,7 @@ namespace gView.Interoperability.OGC
             // Parameter wie Layer müssen erhalten bleiben, wenn ServicMap später
             // BeforeRenderlayers aufruft...
 
-            _mapServer.Log("Service:" + service, loggingMethod.request, "WMS GetMap");
+            await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request, "WMS GetMap");
 
             WMS_GetMapRequest request = new WMS_GetMapRequest(_mapServer, service, parameters, _useTOC, context);
             //request.GetLayerByIDCallback = GetLayerByID;
@@ -874,7 +874,7 @@ namespace gView.Interoperability.OGC
                     XsdSchemaSerializer<WMS_DescribeTilesResponse> serializer = new XsdSchemaSerializer<WMS_DescribeTilesResponse>();
                     string xml = serializer.Serialize(wms_descripeTiles);
 
-                    _mapServer.Log("DescipeTiles:" + serviceMap.Name, loggingMethod.request_detail, xml);
+                    await _mapServer.LogAsync(context, "DescipeTiles:" + serviceMap.Name, loggingMethod.request_detail, xml);
 
                     byte[] bytes = Encoding.UTF8.GetBytes(xml);
                     return Convert.ToBase64String(bytes);
@@ -891,7 +891,7 @@ namespace gView.Interoperability.OGC
         {
             try
             {
-                _mapServer.Log("GetTile", loggingMethod.request_detail, String.Empty);
+                await _mapServer.LogAsync(context, "GetTile", loggingMethod.request_detail, String.Empty);
                 using (IServiceMap map = await context.CreateServiceMapInstance())
                 {
                     TileServiceMetadata metadata = map.MetadataProvider(_tilemetaprovider) as TileServiceMetadata;
@@ -974,14 +974,14 @@ namespace gView.Interoperability.OGC
                     }
                     map.Display.MakeTransparent = maketrans;
 
-                    _mapServer.Log("CreateTile:", loggingMethod.request_detail, fi.FullName);
+                    await _mapServer.LogAsync(context, "CreateTile:", loggingMethod.request_detail, fi.FullName);
 
                     return fi.FullName;
                 }
             }
             catch (Exception ex)
             {
-                _mapServer.Log("GetTile", loggingMethod.error, ex.Message);
+                await _mapServer.LogAsync(context, "GetTile", loggingMethod.error, ex.Message);
                 return "<Exception>" + ex.Message + "</Exception>";
             }
         }
@@ -1296,8 +1296,6 @@ namespace gView.Interoperability.OGC
             }
 
             sb.Append(@"</wfs:FeatureCollection>");
-            string ret = sb.ToString().Trim();
-            _mapServer.Log(String.Empty, loggingMethod.request_detail, ret);
         }
 
         private void GetFeatureResponseText(List<FeatureType> features, StringBuilder sb)

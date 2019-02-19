@@ -79,10 +79,11 @@ namespace gView.Server.AppCode
                 {
                     if (this.MapServer != null)
                     {
-                        this.MapServer.Log(
+                        this.MapServer.LogAsync(
+                            this.Name,
                             "RenderRasterLayerThread", loggingMethod.error,
                             "Image.MakeTransparent\nPath='" + path + "'\nFormat=" + format.ToString() + "\n" +
-                            ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
+                            ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace).Wait();
                     }
                 }
                 _image.Save(path, format);
@@ -94,10 +95,11 @@ namespace gView.Server.AppCode
             {
                 if (this.MapServer != null)
                 {
-                    this.MapServer.Log(
+                    this.MapServer.LogAsync(
+                        this.Name,
                         "RenderRasterLayerThread", loggingMethod.error,
                         "Image.Save\nPath='" + path + "'\nFormat=" + format.ToString() + "\n" +
-                        ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
+                        ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace).Wait();
                 }
                 return false;
             }
@@ -121,10 +123,11 @@ namespace gView.Server.AppCode
                 {
                     if (this.MapServer != null)
                     {
-                        this.MapServer.Log(
+                        this.MapServer.LogAsync(
+                            this.Name,
                             "RenderRasterLayerThread", loggingMethod.error,
                             "Image.MakeTransparent\n'\nFormat=" + format.ToString() + "\n" +
-                            ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
+                            ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace).Wait();
                     }
                 }
                 _image.Save(ms, format);
@@ -136,10 +139,11 @@ namespace gView.Server.AppCode
             {
                 if (this.MapServer != null)
                 {
-                    this.MapServer.Log(
+                    this.MapServer.LogAsync(
+                        this.Name,
                         "RenderRasterLayerThread", loggingMethod.error,
                         "Image.Save\n'\nFormat=" + format.ToString() + "\n" +
-                        ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
+                        ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace).Wait();
                 }
                 return false;
             }

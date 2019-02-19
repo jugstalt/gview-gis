@@ -105,13 +105,53 @@ window.gview.manage = function () {
                 .addClass('service')
                 .appendTo($services);
         }
-        $service.removeClass().addClass('service '+service.status).empty();
+        $service.removeClass().addClass('service ' + service.status).empty();
+        if (service.hasErrors)
+            $service.addClass('has-errors');
        
         var $toolbar = $("<div>").addClass('toolbar').appendTo($service);
 
         $("<div>")
             .addClass('icon clickable settings')
             .appendTo($toolbar);
+        $("<div>")
+            .addClass('icon clickable log')
+            .appendTo($toolbar)
+            .click(function () {
+                var serviceName = $(this).closest('.service').attr('data-service');
+
+                var renderErrorLogs = function ($target, result) {
+                    $target.empty();
+                    var $ul = $("<ul>").appendTo($target);
+                    $.each(result.errors, function (i, e) {
+                        $("<li>").appendTo($ul).html(e.replace(/(?:\r\n|\r|\n)/g, '<br>'));
+                    });
+                    if (result.ticks) {
+                        $("<button>older...</button>").appendTo($target)
+                            .click(function () {
+                                get({
+                                    url: '/manage/errorlogs?service=' + serviceName + "&last=" + result.ticks,
+                                    success: function (result) {
+                                        renderErrorLogs($target, result);
+                                    }
+                                });
+                            });
+                    }
+                };
+
+                modalDialog({
+                    title: service.name + " (Error Logs)",
+                    onLoad: function ($body) {
+                        $body.addClass('error-logs');
+                        get({
+                            url: '/manage/errorlogs?service=' + serviceName,
+                            success: function (result) {
+                                renderErrorLogs($body, result);
+                            }
+                        });
+                    }
+                });
+            });
         $("<div>")
             .addClass('icon clickable security' + (service.hasSecurity === true ? '1' : '0'))
             .appendTo($toolbar)

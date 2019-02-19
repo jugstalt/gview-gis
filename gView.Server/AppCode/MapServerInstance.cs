@@ -78,7 +78,7 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Log("MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace);
+                await LogAsync(ToMapName(name, folder), "MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace);
                 throw new MapServerException("unknown error");
             }
         }
@@ -99,7 +99,7 @@ namespace gView.Server.AppCode
                 }
                 catch (Exception ex)
                 {
-                    Log("MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace);
+                    LogAsync(String.Empty, "MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace).Wait();
                     //return new List<IMapService>();
                     throw new MapServerException("unknown error");
                 }
@@ -133,7 +133,7 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Log("MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace);
+                await LogAsync(ToMapName(context?.ServiceRequest?.Service, context?.ServiceRequest?.Folder), "MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace);
                 throw new MapServerException("unknown error");
             }
         }
@@ -153,43 +153,42 @@ namespace gView.Server.AppCode
 
             return false;
         }
-        public void Log(string header, loggingMethod method, string msg)
+        async public Task LogAsync(string mapName, string header, loggingMethod method, string msg)
         {
+            if (!LoggingEnabled(method))
+                return;
+
             switch (method)
             {
                 case loggingMethod.error:
-                    if (_log_errors)
-                    {
-                        if (!String.IsNullOrEmpty(header))
-                            msg = header + "\n" + msg;
-                        Logger.Log(method,  msg);
-                    }
+                    if (!String.IsNullOrEmpty(header))
+                        msg = header + "\n" + msg;
+                    await Logger.LogAsync(mapName, method, msg);
                     break;
                 case loggingMethod.request:
-                    if (_log_requests)
-                    {
-                        if (!String.IsNullOrEmpty(header))
-                            msg = header + " - " + msg;
-                        Logger.Log(method,  msg);
-                    }
+                    if (!String.IsNullOrEmpty(header))
+                        msg = header + " - " + msg;
+                    await Logger.LogAsync(mapName, method, msg);
                     break;
                 case loggingMethod.request_detail:
-                    if (_log_request_details)
-                    {
-                        if (!String.IsNullOrEmpty(header))
-                            msg = header + "\n" + msg;
-                        Logger.Log(method,  msg);
-                    }
+                    if (!String.IsNullOrEmpty(header))
+                        msg = header + "\n" + msg;
+                    await Logger.LogAsync(mapName, method, msg);
                     break;
                 case loggingMethod.request_detail_pro:
-                    if (_log_request_details)
-                    {
-                        if (!String.IsNullOrEmpty(header))
-                            header = header.Replace(".", "_");
-                        Logger.Log(method, msg);
-                    }
+                    if (!String.IsNullOrEmpty(header))
+                        header = header.Replace(".", "_");
+                    await Logger.LogAsync(mapName, method, msg);
                     break;
             }
+        }
+
+        async public Task LogAsync(IServiceRequestContext context, string header, loggingMethod method, string msg)
+        {
+            if (!LoggingEnabled(method))
+                return;
+
+            await LogAsync(ToMapName(context?.ServiceRequest?.Service, context?.ServiceRequest?.Folder), header, method, msg);
         }
 
         public string OutputUrl
@@ -385,6 +384,17 @@ namespace gView.Server.AppCode
         internal int MaxServices
         {
             get { return _maxServices; }
+        }
+
+        private string ToMapName(string name, string folder)
+        {
+            if (String.IsNullOrWhiteSpace(name))
+                return String.Empty;
+
+            if (!String.IsNullOrWhiteSpace(folder))
+                name = folder + "/" + name;
+
+            return name;
         }
     }
 }

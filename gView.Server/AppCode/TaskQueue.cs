@@ -1,4 +1,5 @@
-﻿using System;
+﻿using gView.MapServer;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -62,9 +63,13 @@ namespace gView.Server.AppCode
 
                 return true;
             }
-            catch (Exception /*ex*/)
+            catch (Exception ex)
             {
-                
+                await Logger.LogAsync(
+                    parameter as IServiceRequestContext,
+                    Framework.system.loggingMethod.error,
+                    "Thread Error: " + ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
+
                 return false;
             }
             finally

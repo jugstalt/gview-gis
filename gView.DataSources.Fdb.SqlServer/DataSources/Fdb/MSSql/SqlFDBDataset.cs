@@ -257,7 +257,11 @@ namespace gView.DataSources.Fdb.MSSql
             if (_fdb == null) return false;
 
             _dsID = _fdb.DatasetID(_dsname);
-            if (_dsID < 0) return false;
+            if (_dsID < 0)
+            {
+                _errMsg = _fdb.lastErrorMsg ?? _fdb.lastException?.Message;
+                return false;
+            }
 
             _sRef = this.SpatialReference;
             _state = DatasetState.opened;

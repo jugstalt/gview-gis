@@ -55,11 +55,14 @@ namespace gView.Server.AppCode
 
             ServicesPath = mapServerConfig.ServiceFolder + "/services";
             Globals.LoginManagerRootPath = mapServerConfig.ServiceFolder + "/_login";
+            Globals.LoggingRootPath = mapServerConfig.ServiceFolder + "/log";
+
             foreach (string createDirectroy in new string[] {
                 ServicesPath,
                 Globals.LoginManagerRootPath,
                 Globals.LoginManagerRootPath+"/manage",
-                Globals.LoginManagerRootPath+"/token"
+                Globals.LoginManagerRootPath+"/token",
+                Globals.LoggingRootPath
             })
             {
                 if (!new DirectoryInfo(createDirectroy).Exists)
@@ -88,15 +91,18 @@ namespace gView.Server.AppCode
         {
             foreach (var mapFileInfo in new DirectoryInfo((ServicesPath+"/"+folder).ToPlattformPath()).GetFiles("*.mxl"))
             {
+                string mapName = String.Empty;
                 try
                 {
                     MapService service = new MapService(mapFileInfo.FullName, folder, MapServiceType.MXL);
+                    mapName = service.Fullname;
+
                     mapServices.Add(service);
                     Console.WriteLine("service " + service.Name + " added");
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(loggingMethod.error, "LoadConfig - " + mapFileInfo.Name + ": " + ex.Message);
+                    Logger.LogAsync(mapName, loggingMethod.error, "LoadConfig - " + mapFileInfo.Name + ": " + ex.Message).Wait();
                 }
             }
         }
@@ -130,6 +136,13 @@ namespace gView.Server.AppCode
                         if(mapService!=null)
                         {
                             mapService.ServiceRefreshed();
+                        }
+                        if(map.HasErrorMessages)
+                        {
+                            foreach(var errorMessage in map.ErrorMessages)
+                            {
+                                await Logger.LogAsync(map.Name, loggingMethod.error, errorMessage);
+                            }
                         }
 
                         return map;
@@ -198,7 +211,7 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Logger.Log(loggingMethod.error, "LoadConfig: " + ex.Message);
+                await Logger.LogAsync(context, loggingMethod.error, "LoadConfig: " + ex.Message);
             }
 
             return null;
@@ -241,7 +254,7 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Logger.Log(loggingMethod.error, "LoadConfig: " + ex.Message);
+                Logger.LogAsync(map.Name, loggingMethod.error, "LoadConfig: " + ex.Message).Wait();
             }
         }
         static public void SaveConfig(IMap map)
@@ -264,7 +277,7 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Logger.Log(loggingMethod.error, "LoadConfig: " + ex.Message);
+                Logger.LogAsync(map?.Name, loggingMethod.error, "LoadConfig: " + ex.Message).Wait();
             }
         }
 
@@ -289,7 +302,7 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Logger.Log(loggingMethod.error, "LoadConfig: " + ex.Message);
+                Logger.LogAsync(name, loggingMethod.error, "LoadConfig: " + ex.Message).Wait();
             }
         }
 
@@ -311,7 +324,7 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Logger.Log(loggingMethod.error, "LoadConfig: " + ex.Message);
+                Logger.LogAsync(mapName, loggingMethod.error, "LoadConfig: " + ex.Message).Wait();
                 return false;
             }
         }
@@ -329,7 +342,7 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Logger.Log(loggingMethod.error, "LoadConfig: " + ex.Message);
+                Logger.LogAsync(map?.Name, loggingMethod.error, "LoadConfig: " + ex.Message).Wait();
             }
         }
         static internal void mapDocument_MapDeleted(IMap map)
@@ -340,7 +353,7 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Logger.Log(loggingMethod.error, "LoadConfig: " + ex.Message);
+                Logger.LogAsync(map?.Name, loggingMethod.error, "LoadConfig: " + ex.Message).Wait();
             }
         }
 

@@ -111,7 +111,7 @@ namespace gView.Interoperability.OGC
             try
             {
                 if (_mapServer == null || parameters == null) return "";
-                _mapServer.Log("Service:" + service, loggingMethod.request, "WFS GetCapabilities");
+                await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request, "WFS GetCapabilities");
 
                 //if (parameters != null)
                 //    _mapServer.Log(loggingMethod.request_detail, "WMS: " + Concat(parameters, "&"));
@@ -518,7 +518,7 @@ namespace gView.Interoperability.OGC
             }
             catch (Exception ex)
             {
-                _mapServer.Log("Service:" + service, loggingMethod.error,
+                await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.error,
                     gView.Framework.IO.ExceptionConverter.ToString(ex));
                 return "";
             }
@@ -530,7 +530,7 @@ namespace gView.Interoperability.OGC
             {
                 if (map == null) return "";
                 if (_mapServer == null || parameters == null) return "";
-                _mapServer.Log("Service:" + service, loggingMethod.request, "WFS DescribeFeatureType");
+                await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request, "WFS DescribeFeatureType");
 
                 try
                 {
@@ -604,7 +604,7 @@ namespace gView.Interoperability.OGC
                 }
                 catch (Exception ex)
                 {
-                    _mapServer.Log("Service:" + service, loggingMethod.error,
+                    await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.error,
                         gView.Framework.IO.ExceptionConverter.ToString(ex));
                     return "";
                 }
@@ -626,7 +626,7 @@ namespace gView.Interoperability.OGC
 
                 //string ret = Encoding.UTF8.GetString(bytes);
                 string ret = schema.Write();
-                _mapServer.Log("Service:" + service, loggingMethod.request_detail, ret);
+                await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request_detail, ret);
                 return ret.Trim();
             }
         }
@@ -634,7 +634,7 @@ namespace gView.Interoperability.OGC
         async private Task<string> WFS_GetFeature(string OnlineResource, string service, WFSParameterDescriptor parameters, IServiceRequestContext context)
         {
             if (_mapServer == null || parameters == null) return "";
-            _mapServer.Log("Service:" + service, loggingMethod.request, "WFS GetFeature");
+            await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request, "WFS GetFeature");
 
             using (IServiceMap map = await context.CreateServiceMapInstance()) // _mapServer[context];
             {
@@ -730,7 +730,7 @@ namespace gView.Interoperability.OGC
                 sb.Append(@"</wfs:FeatureCollection>");
                 string ret = sb.ToString().Trim();
 
-                _mapServer.Log("Service:" + service, loggingMethod.request_detail, ret);
+                await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request_detail, ret);
 
                 return ret;
             }
