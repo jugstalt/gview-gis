@@ -129,7 +129,7 @@ namespace gView.Server.Controllers
             });
         }
 
-        public IActionResult ErrorLogs(string service, string last="0")
+        public IActionResult ServiceErrorLogs(string service, string last="0")
         {
             return SecureApiCall(() =>
             {
@@ -139,6 +139,50 @@ namespace gView.Server.Controllers
                 {
                     errors = errorsResult.errors,
                     ticks = errorsResult.ticks > 0 ? errorsResult.ticks.ToString() : null
+                });
+            });
+        }
+
+        [HttpGet]
+        async public Task<IActionResult> ServiceSecurity(string service)
+        {
+            return await SecureApiCall(async () =>
+            {
+                service = service?.ToLower() ?? String.Empty;
+
+                var mapService = InternetMapServer.mapServices.Where(s => s.Fullname?.ToLower() == service).FirstOrDefault();
+                if (mapService == null)
+                    throw new MapServerException("Unknown service: " + service);
+
+                var settings = await mapService.GetSettingsAsync();
+
+                List<string> allTypes = new List<string>(Enum.GetNames(typeof(AccessTypes)));
+                allTypes.Add("_all");
+
+                var accessRules = settings.AccessRules;
+                //if (accessRules == null || accessRules.Length == 0)
+                //{
+                //    accessRules =
+                //       new MapServiceSettings.MapServiceAccess[]{
+                //           new MapServiceSettings.MapServiceAccess()
+                //            {
+                //                Username = "_Everyone",
+                //                ServiceTypes = allTypes.ToArray()
+                //            }
+                //       };
+                //}
+
+                foreach (var interpreterType in InternetMapServer.Interpreters)
+                {
+                    allTypes.Add("_" + ((IServiceRequestInterpreter)Activator.CreateInstance(interpreterType)).IntentityName);
+                }
+
+                var loginManager = new LoginManager(Globals.LoginManagerRootPath);
+                return Json(new
+                {
+                    allTypes = allTypes.ToArray(),
+                    accessRules = accessRules,
+                    allUsers= loginManager.GetTokenUsernames()
                 });
             });
         }

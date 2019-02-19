@@ -423,3 +423,28 @@ ul {
     white-space:nowrap;
     border-bottom:1px solid #ddd;
 }
+
+.service-security {
+    overflow:auto;
+}
+
+    .service-security table {
+        width: 100%;
+        border-left:1px solid #ddd;
+        border-top:1px solid #ddd;
+    }
+
+    .service-security table tr {
+        height:30px;
+        border-bottom:1px solid #ddd;
+    }
+
+        .service-security table th,
+        .service-security table td {
+            border-right:1px solid #ddd;
+        }
+
+        .service-security table th.rule,
+        .service-security table td.rule {
+            text-align: center;
+        }

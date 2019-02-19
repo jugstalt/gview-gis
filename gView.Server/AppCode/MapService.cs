@@ -139,7 +139,7 @@ namespace gView.Server.AppCode
 
     }
 
-    class MapServiceSettings : IMapServiceSettings
+    public class MapServiceSettings : IMapServiceSettings
     {
         public MapServiceSettings()
         {

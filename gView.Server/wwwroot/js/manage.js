@@ -130,7 +130,7 @@ window.gview.manage = function () {
                         $("<button>older...</button>").appendTo($target)
                             .click(function () {
                                 get({
-                                    url: '/manage/errorlogs?service=' + serviceName + "&last=" + result.ticks,
+                                    url: '/manage/serviceerrorlogs?service=' + serviceName + "&last=" + result.ticks,
                                     success: function (result) {
                                         renderErrorLogs($target, result);
                                     }
@@ -144,7 +144,7 @@ window.gview.manage = function () {
                     onLoad: function ($body) {
                         $body.addClass('error-logs');
                         get({
-                            url: '/manage/errorlogs?service=' + serviceName,
+                            url: '/manage/serviceerrorlogs?service=' + serviceName,
                             success: function (result) {
                                 renderErrorLogs($body, result);
                             }
@@ -156,10 +156,84 @@ window.gview.manage = function () {
             .addClass('icon clickable security' + (service.hasSecurity === true ? '1' : '0'))
             .appendTo($toolbar)
             .click(function () {
+                var serviceName = $(this).closest('.service').attr('data-service');
+
+                var renderSecurityTableRow = function ($row, allTypes, rule) {
+                    $("<td>").addClass('username').attr('data-username', rule.username).html(rule.username).appendTo($row);
+
+                    var allInterpreters = false;
+                    $.each(allTypes, function (i, type) {
+                        $cell = $("<td>").addClass('rule').appendTo($row);
+                        var hasRule = $.inArray(type, rule.servicetypes) >= 0;
+                        var $chkbox = $("<input type='checkbox' name='" + rule.username + "_" + type + "' />").prop('checked', hasRule).appendTo($cell);
+
+                        if (type.indexOf('_') === 0) {
+                            if (type === '_all') {
+                                allInterpreters = hasRule;
+                                $chkbox.click(function () {
+                                    var val = $(this).prop('checked');
+                                    $(this).closest('tr').find('input.interpreter').css('display', val === true ? 'none' : '');
+                                });
+                            } else {
+                                $chkbox.addClass('interpreter').css('display', allInterpreters === true ? 'none' : '');
+                            }
+                        }
+                    });
+                };
+                var renderSecurityTable = function($target, result) {
+                    $target.empty();
+
+                    var $tab = $("<table>").appendTo($target);
+                    var $row = $("<tr>").appendTo($tab);
+                    var $cell = $("<th>").html('User').appendTo($row);
+
+                    $.each(result.allTypes, function (i, type) {
+                        var title = type;
+                        if (title.indexOf("_") === 0)
+                            title = "#" + title.substr(1).toUpperCase();
+                        $("<th>").addClass('rule').html(title).appendTo($row);
+                    });
+
+                    $.each(result.accessRules, function (i, rule) {
+                        $row = $("<tr>").appendTo($tab);
+                        renderSecurityTableRow($row, result.allTypes, rule);
+                    });
+
+                    $row = $("<tr>").appendTo($tab);
+                    $cell = $("<td>").appendTo($row);
+
+                    var $selectUser = $("<select>").appendTo($cell);
+                    $("<option value=''></options>").appendTo($selectUser);
+                    $("<option value='_everyone'>_everyone</option>").appendTo($selectUser);
+                    $.each(result.allUsers, function (i, user) {
+                        $("<option value='" + user + "'>").html(user).appendTo($selectUser);
+                    });
+                    $selectUser.click(function () {
+                        val = $(this).val();
+                        if (val && $(this).closest('table').find(".username[data-username='" + val + "']").length === 0) {
+                            $row = $("<tr>").insertBefore($(this).closest('tr'));
+
+                            var servicetypes = [];
+                            $.each(result.allTypes, function (i, t) {
+                                if (!t.indexOf("_") == 0 || t == '_all')
+                                    servicetypes.push(t);
+                            });
+                            renderSecurityTableRow($row, result.allTypes, { username: val, servicetypes: servicetypes });
+                        }
+                        $(this).val('');
+                    });
+                };
+
                 modalDialog({
                     title: service.name + " (Security)",
                     onLoad: function ($body) {
-
+                        $body.addClass('service-security');
+                        get({
+                            url: '/manage/servicesecurity?service=' + serviceName,
+                            success: function (result) {
+                                renderSecurityTable($body, result);
+                            }
+                        });
                     },
                     onOk: function ($body) {
 

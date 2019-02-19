@@ -59,6 +59,14 @@ namespace gView.MapServer
         DateTime RefreshService { get; set; }
     }
 
+    [Flags]
+    public enum AccessTypes
+    {
+        Map = 1,
+        Query = 2,
+        Edit = 4
+    }
+
     public interface IMapServiceAccess
     {
         string Username { get; set; }
