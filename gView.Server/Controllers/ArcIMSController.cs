@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace gView.Server.Controllers
 {
-    public class ArcIMSController : Controller
+    public class ArcIMSController : BaseController
     {
         public IActionResult Index()
         {
@@ -28,6 +28,12 @@ namespace gView.Server.Controllers
         [HttpPost]
         async public Task<IActionResult> EsriMap(string cmd, string ServiceName, string content)
         {
+            #region Security
+
+            Identity identity = Identity.FromFormattedString(base.GetAuthToken().Username);
+
+            #endregion
+
             if (cmd == "ping")
             {
                 return Result("gView MapServer Instance v" + gView.Framework.system.SystemVariables.gViewVersion.ToString(), "text/plain");
@@ -58,22 +64,17 @@ namespace gView.Server.Controllers
                 content = Encoding.UTF8.GetString(ms.ToArray());
             }
 
-            ServiceRequest serviceRequest = new ServiceRequest(ServiceName.ServiceName(), ServiceName.FolderName(), content);
-            serviceRequest.OnlineResource = InternetMapServer.OnlineResource;
-
-            #endregion
-
-            #region Security
-
-            Identity identity = Identity.FromFormattedString(String.Empty);
-            identity.HashedPassword = String.Empty;
-            serviceRequest.Identity = identity;
+            ServiceRequest serviceRequest = new ServiceRequest(ServiceName.ServiceName(), ServiceName.FolderName(), content)
+            {
+                Identity = identity,
+                OnlineResource = InternetMapServer.OnlineResource
+            };
 
             #endregion
 
             #region Queue & Wait
 
-            IServiceRequestContext context = new ServiceRequestContext(
+            IServiceRequestContext context = await ServiceRequestContext.TryCreate(
                 InternetMapServer.Instance,
                 interpreter,
                 serviceRequest);

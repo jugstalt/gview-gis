@@ -48,7 +48,7 @@ namespace gView.Server.AppCode
                     locker = _lockers[name];
                 }
 
-                IMapService mapService = FindMapService(name, folder);
+                IMapService mapService = GetMapService(name, folder);
                 if (mapService == null || (await mapService.GetSettingsAsync()).Status != MapServiceStatus.Running)
                     throw new MapServerException("unknown service: " + name);
 
@@ -106,17 +106,17 @@ namespace gView.Server.AppCode
             }
         }
 
-        async public Task<IServiceMap> GetServiceMap(string name, string folder)
+        async public Task<IServiceMap> GetServiceMapAsync(string name, string folder)
         {
             return await this.Map(name, folder, null);
         }
-        async public Task<IServiceMap> GetServiceMap(IMapService service)
+        async public Task<IServiceMap> GetServiceMapAsync(IMapService service)
         {
                 if (service == null)
                     return null;
-                return await GetServiceMap(service.Name, service.Folder);
+                return await GetServiceMapAsync(service.Name, service.Folder);
         }
-        async public Task<IServiceMap> GetServiceMap(IServiceRequestContext context)
+        async public Task<IServiceMap> GetServiceMapAsync(IServiceRequestContext context)
         {
             try
             {
@@ -223,15 +223,15 @@ namespace gView.Server.AppCode
 
         #endregion
 
-        private bool ServiceExists(string name)
-        {
-            foreach (IMapService service in InternetMapServer.mapServices)
-            {
-                if (service == null) continue;
-                if (service.Name == name) return true;
-            }
-            return false;
-        }
+        //private bool ServiceExists(string name)
+        //{
+        //    foreach (IMapService service in InternetMapServer.mapServices)
+        //    {
+        //        if (service == null) continue;
+        //        if (service.Name == name) return true;
+        //    }
+        //    return false;
+        //}
 
         async private Task<IServiceMap> FindServiceMap(string name, string alias, IServiceRequestContext context)
         {
@@ -256,7 +256,7 @@ namespace gView.Server.AppCode
                 StringBuilder sb = new StringBuilder();
                 foreach (string n in names)
                 {
-                    IMapService ms = FindMapService(n.ServiceName(), n.FolderName());
+                    IMapService ms = GetMapService(n.ServiceName(), n.FolderName());
                     if (ms == null) return null;
 
                     if (sb.Length > 0) sb.Append(",");
@@ -348,7 +348,7 @@ namespace gView.Server.AppCode
             return null;
         }
 
-        private IMapService FindMapService(string name, string folder)
+        public IMapService GetMapService(string name, string folder)
         {
             foreach (IMapService ms in InternetMapServer.mapServices)
             {

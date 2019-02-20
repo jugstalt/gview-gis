@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace gView.Server.Controllers
 {
-    public class OgcController : Controller
+    public class OgcController : BaseController
     {
         public IActionResult Index()
         {
@@ -24,6 +24,12 @@ namespace gView.Server.Controllers
         {
             try
             {
+                #region Security
+
+                Identity identity = Identity.FromFormattedString(base.GetAuthToken().Username);
+
+                #endregion
+
                 IServiceRequestInterpreter interpreter = null;
                 
                 switch(service.ToLower().Split(',')[0])
@@ -64,20 +70,15 @@ namespace gView.Server.Controllers
                 while (requestString.StartsWith("?"))
                     requestString = requestString.Substring(1);
 
-                ServiceRequest serviceRequest = new ServiceRequest(id.ServiceName(), id.FolderName(), requestString);
-                serviceRequest.OnlineResource = InternetMapServer.OnlineResource + "/ogc/" + id;
+                ServiceRequest serviceRequest = new ServiceRequest(id.ServiceName(), id.FolderName(), requestString)
+                {
+                    OnlineResource = InternetMapServer.OnlineResource + "/ogc/" + id,
+                    Identity = identity
+                };
 
                 #endregion
 
-                #region Security
-
-                Identity identity = Identity.FromFormattedString(String.Empty);
-                identity.HashedPassword = String.Empty;
-                serviceRequest.Identity = identity;
-
-                #endregion
-
-                IServiceRequestContext context = new ServiceRequestContext(
+                IServiceRequestContext context = await ServiceRequestContext.TryCreate(
                    InternetMapServer.Instance,
                    interpreter,
                    serviceRequest);

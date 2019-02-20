@@ -154,6 +154,11 @@ namespace gView.Interoperability.OGC.Request.WMTS
             return;
         }
 
+        public AccessTypes RequiredAccessTypes(IServiceRequestContext context)
+        {
+            return AccessTypes.Map;
+        }
+
         private string MapName(IServiceRequestContext context)
         {
             return context.ServiceRequest.Service;

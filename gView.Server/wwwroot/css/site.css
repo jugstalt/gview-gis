@@ -255,6 +255,7 @@ ul {
         background: #fff;
         box-shadow: 4px 4px 9px rgba(0, 0, 0, .4) !important;
         margin:0px;
+        width:auto;
     }
 
         .gview5-modal-blocker .modal-dialog .modal-title {
@@ -315,10 +316,9 @@ ul {
         left: 0px;
         right: 0px;
         top: 0px;
-        height: 120%;
+        height: 100%;
         -webkit-transform: none;
         transform: none;
-        width: auto;
     }
 
     .gview5-manage-body {
@@ -337,6 +337,7 @@ ul {
         left: 0px;
         right: 0px;
         bottom: 0px;
+        width:auto;
     }
 }
 
@@ -442,9 +443,16 @@ ul {
         .service-security table th,
         .service-security table td {
             border-right:1px solid #ddd;
+            padding:5px;
         }
 
-        .service-security table th.rule,
-        .service-security table td.rule {
-            text-align: center;
-        }
+            .service-security table th.rule,
+            .service-security table td.rule {
+                text-align: center;
+            }
+
+            .service-security table td.remove {
+                text-align:center;
+                color:red;
+                cursor:pointer;
+            }

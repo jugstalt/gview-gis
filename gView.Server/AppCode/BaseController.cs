@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using gView.Framework.system;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,36 +11,55 @@ namespace gView.Server.AppCode
 {
     public class BaseController : Controller
     {
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            this.ActionStartTime = DateTime.UtcNow;
+
+            base.OnActionExecuting(context);
+        }
+
+        protected DateTime? ActionStartTime = null;
+
         #region Security
 
         const string AuthCookieName = "gview5-auth-token";
 
         protected AuthToken GetAuthToken()
         {
-            #region From Token
+            AuthToken authToken = null;
 
-            string token = this.Request.Query["token"];
-            if(!String.IsNullOrEmpty(token))
+            try
             {
-                return AuthToken.FromString(token);
+                #region From Token
+
+                string token = this.Request.Query["token"];
+                if (!String.IsNullOrEmpty(token))
+                {
+                    return authToken = AuthToken.FromString(token);
+                }
+
+                #endregion
+
+                #region From Cookie
+
+                string cookie = this.Request.Cookies[AuthCookieName];
+                if (!String.IsNullOrWhiteSpace(cookie))
+                {
+                    return authToken = AuthToken.FromString(cookie);
+                }
+
+                #endregion
+
+                return authToken = new AuthToken()
+                {
+                    Username = String.Empty
+                };
             }
-
-            #endregion
-
-            #region From Cookie
-
-            string cookie = this.Request.Cookies[AuthCookieName];
-            if(!String.IsNullOrWhiteSpace(cookie))
+            finally
             {
-                return AuthToken.FromString(cookie);
+                if (authToken.IsExpired)
+                    throw new InvalidTokenException();
             }
-
-            #endregion
-
-            return new AuthToken()
-            {
-                Username = String.Empty
-            };
         }
 
         protected void SetAuthCookie(AuthToken authToken)

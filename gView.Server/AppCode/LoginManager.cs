@@ -88,6 +88,12 @@ namespace gView.Server.AppCode
             return di.GetFiles("*.lgn").Select(f => f.Name.Substring(0, f.Name.Length - f.Extension.Length));
         }
 
+        public AuthToken GetAuthToken(string username, string password, int expireMinutes=30)
+        {
+            var di = new DirectoryInfo(LoginRootPath + "/token");
+            return AuthToken(di.FullName, username, password, expireMinutes);
+        }
+
         #endregion
     }
 }

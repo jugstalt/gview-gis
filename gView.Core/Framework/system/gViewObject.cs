@@ -200,7 +200,7 @@ namespace gView.Framework.system
     {
         string UserName { get; }
         List<string> UserRoles { get; }
-        string HashedPassword { get; }
+        //string HashedPassword { get; }
     }
 
     public interface IUserData

@@ -133,6 +133,37 @@ namespace gView.Interoperability.ArcXML
             }
         }
 
+        public AccessTypes RequiredAccessTypes(IServiceRequestContext context)
+        {
+            var accessTypes = AccessTypes.None;
+
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(context.ServiceRequest.Request);
+
+            if (context.ServiceRequest.Service == "catalog" && doc.SelectSingleNode("//GETCLIENTSERVICES") != null)
+            {
+                return AccessTypes.None;
+            }
+
+            XmlNode rNode = doc.SelectSingleNode("//REQUEST");
+            XmlNode rType = rNode.FirstChild;
+
+            switch (rType.Name)
+            {
+                case "GET_IMAGE":
+                    accessTypes |= AccessTypes.Map;
+                    break;
+                case "GET_FEATURES":
+                case "GET_RASTER_INFO":
+                case "gv_CAN_TRACE_NETWORK":
+                case "gv_TRACE_NETWORK":
+                    accessTypes |= AccessTypes.Query;
+                    break;
+            }
+
+            return accessTypes;
+        }
+
         virtual public string IntentityName
         {
             get { return "axl"; }
@@ -147,7 +178,7 @@ namespace gView.Interoperability.ArcXML
                     new InterpreterCapabilities.SimpleCapability("Emulating ServletEngine: Post ArcXML Request ",InterpreterCapabilities.Method.Post,"{server}/servlet/com.esri.esrimap.Esrimap?ServiceName={folder/service}","1.1"),
                     new InterpreterCapabilities.LinkCapability("Emulating ServletEngine: IMS Ping",InterpreterCapabilities.Method.Get,"{server}/servlet/com.esri.esrimap.Esrimap?cmd=ping","1.1"),
                     new InterpreterCapabilities.LinkCapability("Emulating ServletEngine: IMS GetVersion",InterpreterCapabilities.Method.Get,"{server}/servlet/com.esri.esrimap.Esrimap?cmd=getversion","1.1")
-                }
+                    }
                 );
             }
         }

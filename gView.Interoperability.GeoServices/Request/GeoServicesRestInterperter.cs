@@ -73,6 +73,34 @@ namespace gView.Interoperability.GeoServices.Request
             }
         }
 
+        public AccessTypes RequiredAccessTypes(IServiceRequestContext context)
+        {
+            var accessTypes = AccessTypes.None;
+
+            switch (context.ServiceRequest.Method.ToLower())
+            {
+                case "export":
+                    accessTypes |= AccessTypes.Map;
+                    break;
+                case "query":
+                    accessTypes |= AccessTypes.Query;
+                    break;
+                case "legend":
+                    accessTypes |= AccessTypes.Map;
+                    break;
+                case "featureserver_query":
+                    accessTypes |= AccessTypes.Query;
+                    break;
+                case "featureserver_addfeatures":
+                case "featureserver_updatefeatures":
+                case "featureserver_deletefeatures":
+                    accessTypes |= AccessTypes.Edit;
+                    break;
+            }
+
+            return accessTypes;
+        }
+
         #region Export
 
         async private Task ExportMapRequest(IServiceRequestContext context)
@@ -127,8 +155,6 @@ namespace gView.Interoperability.GeoServices.Request
 
                     if (serviceMap.MapImage != null)
                     {
-
-
                         string fileName = serviceMap.Name
                             .Replace("/", "_")
                             .Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + "." + iFormat.ToString().ToLower();

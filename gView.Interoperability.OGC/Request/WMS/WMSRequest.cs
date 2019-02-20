@@ -61,12 +61,7 @@ namespace gView.Interoperability.OGC
                 return;
             }
 
-            WMSParameterDescriptor parameters = new WMSParameterDescriptor();
-            if (!parameters.ParseParameters(context.ServiceRequest.Request.Split('&')))
-            {
-                //_mapServer.Log(context, "Invalid WMS Parameters", loggingMethod.error, context.ServiceRequest.Request);
-                throw new Exception("Invalid WMS Parameters");
-            }
+            WMSParameterDescriptor parameters = ParseParameters(context);
 
             //ServiceRequestContext context = new ServiceRequestContext(_mapServer, this, request);
             switch (parameters.Request)
@@ -93,6 +88,26 @@ namespace gView.Interoperability.OGC
             }
         }
 
+        public AccessTypes RequiredAccessTypes(IServiceRequestContext context)
+        {
+            var accessTypes = AccessTypes.None;
+
+            WMSParameterDescriptor parameters = ParseParameters(context);
+
+            switch (parameters.Request)
+            {
+                case WMSRequestType.GetMap:
+                case WMSRequestType.GetTile:
+                    accessTypes |= AccessTypes.Map;
+                    break;
+                case WMSRequestType.GetFeatureInfo:
+                    accessTypes |= AccessTypes.Query;
+                    break;
+            }
+
+            return accessTypes;
+        }
+
         virtual public string IntentityName
         {
             get { return "wms"; }
@@ -112,6 +127,17 @@ namespace gView.Interoperability.OGC
                 }
                 );
             }
+        }
+
+        private WMSParameterDescriptor ParseParameters(IServiceRequestContext context)
+        {
+            WMSParameterDescriptor parameters = new WMSParameterDescriptor();
+            if (!parameters.ParseParameters(context?.ServiceRequest?.Request?.Split('&')))
+            {
+                throw new Exception("Invalid WMS Parameters");
+            }
+
+            return parameters;
         }
 
         #endregion

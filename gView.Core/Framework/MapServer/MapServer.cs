@@ -11,9 +11,11 @@ namespace gView.MapServer
     public interface IMapServer
     {
         List<IMapService> Maps { get; }
-        Task<IServiceMap> GetServiceMap(string name, string folder);
-        Task<IServiceMap> GetServiceMap(IMapService service);
-        Task<IServiceMap> GetServiceMap(IServiceRequestContext context);
+        Task<IServiceMap> GetServiceMapAsync(string name, string folder);
+        Task<IServiceMap> GetServiceMapAsync(IMapService service);
+        Task<IServiceMap> GetServiceMapAsync(IServiceRequestContext context);
+
+        IMapService GetMapService(string name, string folder);
 
         bool LoggingEnabled(loggingMethod methode);
         Task LogAsync(string mapName, string header, loggingMethod methode, string msg);
@@ -43,6 +45,9 @@ namespace gView.MapServer
 
         Task<IMapServiceSettings> GetSettingsAsync();
         Task SaveSettingsAsync();
+
+        Task CheckAccess(IServiceRequestContext context);
+        Task<bool> HasAnyAccess(IIdentity identity);
     }
 
     public enum MapServiceStatus
@@ -62,6 +67,7 @@ namespace gView.MapServer
     [Flags]
     public enum AccessTypes
     {
+        None = 0,
         Map = 1,
         Query = 2,
         Edit = 4
@@ -70,7 +76,12 @@ namespace gView.MapServer
     public interface IMapServiceAccess
     {
         string Username { get; set; }
-        string[] ServiceTypes { get; set; }
+        string[] ServiceTypes { get; }
+
+        void AddServiceType(string serviceType);
+        void RemoveServiceType(string serviceType);
+
+        bool IsAllowed(string serviceType);
     }
     
 
@@ -162,6 +173,7 @@ namespace gView.MapServer
     {
         void OnCreate(IMapServer mapServer);
         Task Request(IServiceRequestContext context);
+        AccessTypes RequiredAccessTypes(IServiceRequestContext context);
 
         string IntentityName { get; }
 
@@ -182,11 +194,29 @@ namespace gView.MapServer
         private IServiceRequestInterpreter _interpreter = null;
         private ServiceRequest _request = null;
 
-        public ServiceRequestContext(IMapServer mapServer, IServiceRequestInterpreter interpreter, ServiceRequest request)
+        private ServiceRequestContext(IMapServer mapServer, IServiceRequestInterpreter interpreter, ServiceRequest request)
         {
             _mapServer = mapServer;
             _interpreter = interpreter;
             _request = request;
+
+            
+        }
+
+        async static public Task<IServiceRequestContext> TryCreate(IMapServer mapServer, IServiceRequestInterpreter interpreter, ServiceRequest request, bool checkSecurity = true)
+        {
+            var context = new ServiceRequestContext(mapServer, interpreter, request);
+
+            if (checkSecurity == true)
+            {
+                var mapService = mapServer?.GetMapService(request?.Service, request?.Folder);
+                if (mapService == null)
+                    throw new Exception("Unknown service");
+
+                await mapService.CheckAccess(context);
+            }
+
+            return context;
         }
 
         #region IServiceRequestContext Member
@@ -207,7 +237,7 @@ namespace gView.MapServer
         }
         async public Task<IServiceMap> CreateServiceMapInstance()
         {
-            return (_mapServer != null) ? await _mapServer.GetServiceMap(this) : null;
+            return (_mapServer != null) ? await _mapServer.GetServiceMapAsync(this) : null;
         }
 
         #endregion

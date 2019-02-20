@@ -94,8 +94,6 @@ namespace gView.Framework.OGC.WMS
         }
         private void ParseParameters(Parameters Request)
         {
-
-
             //check for exception format
             if (Request["EXCEPTIONS"] != null)
             {

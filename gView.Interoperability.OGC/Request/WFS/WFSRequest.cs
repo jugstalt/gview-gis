@@ -81,6 +81,13 @@ namespace gView.Interoperability.OGC
             }
         }
 
+        public AccessTypes RequiredAccessTypes(IServiceRequestContext context)
+        {
+            var accessTypes = AccessTypes.Query;
+
+            return accessTypes;
+        }
+
         virtual public string IntentityName
         {
             get { return "wfs"; }

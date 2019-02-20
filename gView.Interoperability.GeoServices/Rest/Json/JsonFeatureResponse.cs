@@ -7,7 +7,7 @@ using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
-    public class JsonFeatureResponse
+    public class JsonFeatureResponse : JsonStopWatch
     {
         [JsonProperty("displayFieldName")]
         public string DisplayFieldName { get; set; }

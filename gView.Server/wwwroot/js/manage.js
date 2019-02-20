@@ -23,9 +23,14 @@ window.gview.manage = function () {
 
     var postForm = function ($form, options) {
         var data = {};
-        $form.find('.form-value').each(function (i, input) {
-            data[$(input).attr('name')] = $(input).val();
-        });
+
+        if ($form.find('.form-value').length === 0) {
+            data["_emtpyform"] = true;   // One properterty needed!!!!
+        } else {
+            $form.find('.form-value').each(function (i, input) {
+                data[$(input).attr('name')] = $(input).attr('type') === 'checkbox' ? $(input).prop('checked') : $(input).val();
+            });
+        }
 
         options.type = 'post';
         options.data = data;
@@ -159,13 +164,17 @@ window.gview.manage = function () {
                 var serviceName = $(this).closest('.service').attr('data-service');
 
                 var renderSecurityTableRow = function ($row, allTypes, rule) {
+                    $("<td>✖</td>").addClass('remove').appendTo($row)
+                        .click(function () {
+                            $(this).closest('tr').remove();
+                        });
                     $("<td>").addClass('username').attr('data-username', rule.username).html(rule.username).appendTo($row);
 
                     var allInterpreters = false;
                     $.each(allTypes, function (i, type) {
                         $cell = $("<td>").addClass('rule').appendTo($row);
-                        var hasRule = $.inArray(type, rule.servicetypes) >= 0;
-                        var $chkbox = $("<input type='checkbox' name='" + rule.username + "_" + type + "' />").prop('checked', hasRule).appendTo($cell);
+                        var hasRule = $.inArray(type.toLowerCase(), rule.servicetypes) >= 0;
+                        var $chkbox = $("<input type='checkbox' name='" + rule.username + "~" + type + "' />").addClass('form-value').prop('checked', hasRule).appendTo($cell);
 
                         if (type.indexOf('_') === 0) {
                             if (type === '_all') {
@@ -185,7 +194,9 @@ window.gview.manage = function () {
 
                     var $tab = $("<table>").appendTo($target);
                     var $row = $("<tr>").appendTo($tab);
-                    var $cell = $("<th>").html('User').appendTo($row);
+
+                    var $cell = $("<th>").appendTo($row);  // remove (X)
+                    $("<th>").html('User').appendTo($row);
 
                     $.each(result.allTypes, function (i, type) {
                         var title = type;
@@ -200,6 +211,7 @@ window.gview.manage = function () {
                     });
 
                     $row = $("<tr>").appendTo($tab);
+                    $("<td>").appendTo($row);  // remove (X)
                     $cell = $("<td>").appendTo($row);
 
                     var $selectUser = $("<select>").appendTo($cell);
@@ -215,8 +227,8 @@ window.gview.manage = function () {
 
                             var servicetypes = [];
                             $.each(result.allTypes, function (i, t) {
-                                if (!t.indexOf("_") == 0 || t == '_all')
-                                    servicetypes.push(t);
+                                if (t.indexOf("_") !== 0 || t === '_all')
+                                    servicetypes.push(t.toLowerCase());
                             });
                             renderSecurityTableRow($row, result.allTypes, { username: val, servicetypes: servicetypes });
                         }
@@ -236,7 +248,13 @@ window.gview.manage = function () {
                         });
                     },
                     onOk: function ($body) {
-
+                        postForm($body, {
+                            url: '/manage/servicesecurity?service=' + serviceName,
+                            success: function (result) {
+                                console.log(result);
+                                createServiceListItem($('.gview5-manage-body').find('.services'), result.service);
+                            }
+                        });
                     }
                 });
             });

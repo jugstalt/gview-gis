@@ -159,6 +159,11 @@ namespace gView.Server
                   defaults: new { controller = "GeoServicesRest", Action = "FeatureServiceLayer" }
                 );
 
+                routes.MapRoute(
+                 name: "geoservices_restgeneratetoken",
+                 template: "geoservices/tokens/generateToken",
+                 defaults: new { controller = "GeoServicesRest", Action = "GenerateToken" }
+               );
 
                 // Ogc
                 routes.MapRoute(

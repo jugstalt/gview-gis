@@ -11,7 +11,7 @@ namespace gView.Server.AppCode
     {
         public AuthToken()
         {
-
+            
         }
 
         public AuthToken(string username, DateTimeOffset expires)
@@ -25,7 +25,7 @@ namespace gView.Server.AppCode
         public long Expire { get; set; }
 
         public bool IsAnonymous => String.IsNullOrWhiteSpace(this.Username);
-        public bool IsExpired => DateTime.UtcNow.Ticks > Expire;
+        public bool IsExpired => !IsAnonymous && DateTime.UtcNow.Ticks > Expire;
 
         #region Overrides
 

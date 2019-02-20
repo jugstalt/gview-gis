@@ -71,21 +71,22 @@ namespace gView.Interoperability.ArcXML.Dataset
             string user = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "user");
             string pwd = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "pwd");
             IServiceRequestContext context = display.Map as IServiceRequestContext;
-            if ((user == "#" || user == "$") &&
-                context != null && context.ServiceRequest != null && context.ServiceRequest.Identity != null)
-            {
-                string roles = String.Empty;
-                if (user == "#" && context.ServiceRequest.Identity.UserRoles != null)
-                {
-                    foreach (string role in context.ServiceRequest.Identity.UserRoles)
-                    {
-                        if (String.IsNullOrEmpty(role)) continue;
-                        roles += "|" + role;
-                    }
-                }
-                user = context.ServiceRequest.Identity.UserName + roles;
-                pwd = context.ServiceRequest.Identity.HashedPassword;
-            }
+
+            //if ((user == "#" || user == "$") &&
+            //    context != null && context.ServiceRequest != null && context.ServiceRequest.Identity != null)
+            //{
+            //    string roles = String.Empty;
+            //    if (user == "#" && context.ServiceRequest.Identity.UserRoles != null)
+            //    {
+            //        foreach (string role in context.ServiceRequest.Identity.UserRoles)
+            //        {
+            //            if (String.IsNullOrEmpty(role)) continue;
+            //            roles += "|" + role;
+            //        }
+            //    }
+            //    user = context.ServiceRequest.Identity.UserName + roles;
+            //    pwd = context.ServiceRequest.Identity.HashedPassword;
+            //}
 
             dotNETConnector connector = new dotNETConnector();
             if (!String.IsNullOrEmpty(user) || !String.IsNullOrEmpty(pwd))
@@ -304,21 +305,22 @@ namespace gView.Interoperability.ArcXML.Dataset
             string user = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "user");
             string pwd = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "pwd");
             IServiceRequestContext context = display.Map as IServiceRequestContext;
-            if ((user == "#" || user == "$") &&
-                context != null && context.ServiceRequest != null && context.ServiceRequest.Identity != null)
-            {
-                string roles = String.Empty;
-                if (user == "#" && context.ServiceRequest.Identity.UserRoles != null)
-                {
-                    foreach (string role in context.ServiceRequest.Identity.UserRoles)
-                    {
-                        if (String.IsNullOrEmpty(role)) continue;
-                        roles += "|" + role;
-                    }
-                }
-                user = context.ServiceRequest.Identity.UserName + roles;
-                pwd = context.ServiceRequest.Identity.HashedPassword;
-            }
+
+            //if ((user == "#" || user == "$") &&
+            //    context != null && context.ServiceRequest != null && context.ServiceRequest.Identity != null)
+            //{
+            //    string roles = String.Empty;
+            //    if (user == "#" && context.ServiceRequest.Identity.UserRoles != null)
+            //    {
+            //        foreach (string role in context.ServiceRequest.Identity.UserRoles)
+            //        {
+            //            if (String.IsNullOrEmpty(role)) continue;
+            //            roles += "|" + role;
+            //        }
+            //    }
+            //    user = context.ServiceRequest.Identity.UserName + roles;
+            //    pwd = context.ServiceRequest.Identity.HashedPassword;
+            //}
 
             dotNETConnector connector = new dotNETConnector();
             if (!String.IsNullOrEmpty(user) || !String.IsNullOrEmpty(pwd))

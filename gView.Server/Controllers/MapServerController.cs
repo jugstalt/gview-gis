@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace gView.Server.Controllers
 {
-    public class MapServerController : Controller
+    public class MapServerController : BaseController
     {
         public IActionResult Index()
         {
@@ -67,6 +67,12 @@ namespace gView.Server.Controllers
                     return NotModified();
                 }
 
+                #region Security
+
+                Identity identity = Identity.FromFormattedString(base.GetAuthToken().Username);
+
+                #endregion
+
                 //DateTime td = DateTime.Now;
                 //Console.WriteLine("Start Map Request " + td.ToLongTimeString() + "." + td.Millisecond + " (" + name + ")");
                 //System.Threading.Thread.Sleep(10000);
@@ -94,25 +100,20 @@ namespace gView.Server.Controllers
                 if (input.StartsWith("?"))
                     input = input.Substring(1);
 
-                ServiceRequest serviceRequest = new ServiceRequest(id.ServiceName(), id.FolderName(), input);
-                serviceRequest.OnlineResource = InternetMapServer.OnlineResource + "/MapRequest/" + guid + "/" + id;
+                ServiceRequest serviceRequest = new ServiceRequest(id.ServiceName(), id.FolderName(), input)
+                {
+                    OnlineResource = InternetMapServer.OnlineResource + "/MapRequest/" + guid + "/" + id,
+                    Identity = identity
+                };
 
                 #endregion
 
                 IServiceRequestInterpreter interpreter =
                     InternetMapServer.GetInterpreter(new Guid(guid));
 
-                #region Security
-
-                Identity identity = Identity.FromFormattedString(String.Empty);
-                identity.HashedPassword = String.Empty;
-                serviceRequest.Identity = identity;
-
-                #endregion
-
                 #region Queue & Wait
 
-                IServiceRequestContext context = new ServiceRequestContext(
+                IServiceRequestContext context = await ServiceRequestContext.TryCreate(
                     InternetMapServer.Instance,
                     interpreter,
                     serviceRequest);

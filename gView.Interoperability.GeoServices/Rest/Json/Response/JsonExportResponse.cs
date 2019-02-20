@@ -6,7 +6,7 @@ using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Response
 {
-    public class JsonExportResponse
+    public class JsonExportResponse : JsonStopWatch
     {
         [JsonProperty("href", NullValueHandling = NullValueHandling.Ignore)]
         public string Href { get; set; }

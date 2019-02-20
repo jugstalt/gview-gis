@@ -17,7 +17,7 @@ namespace gView.Framework.system
         }
         public Identity(string username, List<string> roles)
         {
-            _name = username;
+            _name = String.IsNullOrWhiteSpace(username) ? AnonyomousUsername : username;
             _roles = (roles != null) ? roles : new List<string>();
         }
 
@@ -49,11 +49,11 @@ namespace gView.Framework.system
             return sb.ToString();
         }
 
-        public string HashedPassword
-        {
-            get { return _hashedPassword; }
-            set { _hashedPassword = value; }
-        }
+        //public string HashedPassword
+        //{
+        //    get { return _hashedPassword; }
+        //    set { _hashedPassword = value; }
+        //}
 
         public static Identity FromFormattedString(string str)
         {
@@ -67,6 +67,8 @@ namespace gView.Framework.system
 
             return new Identity(name, roles);
         }
+
+        public const string AnonyomousUsername = "_anonymous";
 
         #region Helper
         static private string encodeString(string str)
