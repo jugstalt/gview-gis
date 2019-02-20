@@ -216,7 +216,7 @@ window.gview.manage = function () {
 
                     var $selectUser = $("<select>").appendTo($cell);
                     $("<option value=''></options>").appendTo($selectUser);
-                    $("<option value='_everyone'>_everyone</option>").appendTo($selectUser);
+                    $("<option value='" + result.anonymousUsername + "'>" + result.anonymousUsername + "</option>").appendTo($selectUser);
                     $.each(result.allUsers, function (i, user) {
                         $("<option value='" + user + "'>").html(user).appendTo($selectUser);
                     });

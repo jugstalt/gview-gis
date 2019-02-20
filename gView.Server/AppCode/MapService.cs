@@ -141,43 +141,45 @@ namespace gView.Server.AppCode
 
         async public Task CheckAccess(IServiceRequestContext context)
         {
-            try
+            if (context == null)
+                throw new ArgumentNullException("context");
+
+            await ReloadServiceSettings();
+
+            if (_settings.Status != MapServiceStatus.Running)
+                throw new Exception("Service not running: " + this.Fullname);
+
+            if (_settings.AccessRules == null)
+                return;
+
+            string userName = context.ServiceRequest?.Identity?.UserName;
+
+            var accessRule = _settings
+                .AccessRules
+                .Where(r => r.Username.Equals(userName, StringComparison.InvariantCultureIgnoreCase))
+                .FirstOrDefault();
+
+            // if user not found, use rules for anonymous
+            if (accessRule == null)
+                accessRule = _settings
+                .AccessRules
+                .Where(r => r.Username.Equals(Identity.AnonyomousUsername, StringComparison.InvariantCultureIgnoreCase))
+                .FirstOrDefault();
+
+            if (accessRule == null || accessRule.ServiceTypes == null)
+                throw new TokenRequiredException("forbidden (user:" + userName + ")");
+
+            if (!accessRule.ServiceTypes.Contains("_all") && !accessRule.ServiceTypes.Contains("_" + context.ServiceRequestInterpreter.IntentityName.ToLower()))
+                throw new NotAuthorizedException(context.ServiceRequestInterpreter.IntentityName + " interface forbidden (user: " + userName + ")");
+
+            var accessTypes = context.ServiceRequestInterpreter.RequiredAccessTypes(context);
+            foreach (AccessTypes accessType in Enum.GetValues(typeof(AccessTypes)))
             {
-                if (context == null)
-                    throw new ArgumentNullException("context");
-
-                await ReloadServiceSettings();
-
-                if (_settings.Status != MapServiceStatus.Running)
-                    throw new Exception("Service not running: " + this.Fullname);
-
-                if (_settings.AccessRules == null)
-                    return;
-
-                var accessRule = _settings.AccessRules.Where(r => r.Username.Equals(context.ServiceRequest?.Identity?.UserName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
-
-                if (accessRule == null || accessRule.ServiceTypes == null)
-                    throw new NotAuthorizedException("forbidden");
-
-                if (!accessRule.ServiceTypes.Contains("_all") && !accessRule.ServiceTypes.Contains("_" + context.ServiceRequestInterpreter.IntentityName.ToLower()))
-                    throw new NotAuthorizedException(context.ServiceRequestInterpreter.IntentityName + " interface forbidden");
-
-                var accessTypes = context.ServiceRequestInterpreter.RequiredAccessTypes(context);
-                foreach (AccessTypes accessType in Enum.GetValues(typeof(AccessTypes)))
+                if (accessType != AccessTypes.None && accessTypes.HasFlag(accessType))
                 {
-                    if (accessType != AccessTypes.None && accessType.HasFlag(accessType))
-                    {
-                        if (!accessRule.ServiceTypes.Contains(accessType.ToString().ToLower()))
-                            throw new NotAuthorizedException("Forbidden: " + accessType.ToString() + " access required");
-                    }
+                    if (!accessRule.ServiceTypes.Contains(accessType.ToString().ToLower()))
+                        throw new NotAuthorizedException("Forbidden: " + accessType.ToString() + " access required (user: " + userName + ")");
                 }
-            }
-            catch (NotAuthorizedException nae)
-            {
-                if (Identity.AnonyomousUsername.Equals(context?.ServiceRequest?.Identity?.UserName))
-                    throw nae;
-
-                throw new TokenRequiredException(nae.Message);
             }
         }
 

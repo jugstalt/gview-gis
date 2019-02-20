@@ -1054,6 +1054,20 @@ namespace gView.Server.Controllers
                     error = new JsonError.Error() { code = 403, message = nae.Message }
                 });
             }
+            catch(TokenRequiredException tre)
+            {
+                return Result(new JsonError()
+                {
+                    error = new JsonError.Error() { code = 499, message = tre.Message }
+                });
+            }
+            catch(InvalidTokenException ite)
+            {
+                return Result(new JsonError()
+                {
+                    error = new JsonError.Error() { code = 498, message = ite.Message }
+                });
+            }
             catch (MapServerException mse)
             {
                 return Result(new JsonError()

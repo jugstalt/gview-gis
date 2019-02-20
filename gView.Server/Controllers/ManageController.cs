@@ -172,7 +172,8 @@ namespace gView.Server.Controllers
                 {
                     allTypes = allTypes.ToArray(),
                     accessRules = accessRules,
-                    allUsers= loginManager.GetTokenUsernames()
+                    allUsers = loginManager.GetTokenUsernames(),
+                    anonymousUsername = Identity.AnonyomousUsername
                 });
             });
         }
