@@ -80,5 +80,26 @@ namespace gView.Server.AppCode
         }
 
         #endregion
+
+        async virtual protected Task<IActionResult> SecureMethodHandler(Func<Identity, Task<IActionResult>> func, Func<Exception, IActionResult> onException = null)
+        {
+            try
+            {
+                var identity = new Identity(this.GetAuthToken().Username);
+
+                return await func(identity);
+            }
+            catch (Exception ex)
+            {
+                if (onException != null)
+                {
+                    return onException(ex);
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
+        }
     }
 }

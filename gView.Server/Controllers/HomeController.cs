@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using gView.Server.Models;
 using gView.Server.AppCode;
-using System.Linq;
 using gView.Framework.system;
 using gView.MapServer;
 
@@ -16,21 +15,7 @@ namespace gView.Server.Controllers
     {
         public IActionResult Index()
         {
-            return View(new HomeIndexModel()
-            {
-                Services = InternetMapServer.Instance.Maps
-            });
-        }
-
-        public IActionResult Service(string id)
-        {
-            return View(new HomeServiceModel()
-            {
-                Server = InternetMapServer.AppRootUrl(this.Request),
-                OnlineResource = Request.Scheme + "://" + Request.Host + "/ogc?",
-                MapService = InternetMapServer.mapServices.Where(s => s.Name == id.ServiceName() && s.Folder == id.FolderName()).FirstOrDefault(),
-                Interpreters = InternetMapServer.Interpreters.Select(i => new PlugInManager().CreateInstance<IServiceRequestInterpreter>(i))
-            });
+            return View();
         }
 
         public IActionResult About()

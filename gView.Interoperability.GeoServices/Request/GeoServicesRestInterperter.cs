@@ -35,7 +35,8 @@ namespace gView.Interoperability.GeoServices.Request
 
         public InterpreterCapabilities Capabilities =>
             new InterpreterCapabilities(new InterpreterCapabilities.Capability[]{
-                    new InterpreterCapabilities.SimpleCapability("GeoServices REST ",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder/service}/MapServer","1.0")
+                    new InterpreterCapabilities.SimpleCapability("REST Catalog",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder}","1.0"),
+                    new InterpreterCapabilities.SimpleCapability("REST Service ",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder/service}/MapServer","1.0")
             });
 
         public void OnCreate(IMapServer mapServer)
@@ -564,7 +565,7 @@ namespace gView.Interoperability.GeoServices.Request
         {
             try
             {
-                var editRequest = JsonConvert.DeserializeObject<JsonFeatureServerEditRequest>(context.ServiceRequest.Request);
+                var editRequest = JsonConvert.DeserializeObject<JsonFeatureServerUpdateRequest>(context.ServiceRequest.Request);
 
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
@@ -627,7 +628,7 @@ namespace gView.Interoperability.GeoServices.Request
         {
             try
             {
-                var editRequest = JsonConvert.DeserializeObject<JsonFeatureServerEditRequest>(context.ServiceRequest.Request);
+                var editRequest = JsonConvert.DeserializeObject<JsonFeatureServerUpdateRequest>(context.ServiceRequest.Request);
 
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
@@ -690,7 +691,7 @@ namespace gView.Interoperability.GeoServices.Request
         {
             try
             {
-                var editRequest = JsonConvert.DeserializeObject<JsonFeatureServerEditRequest>(context.ServiceRequest.Request);
+                var editRequest = JsonConvert.DeserializeObject<JsonFeatureServerDeleteRequest>(context.ServiceRequest.Request);
 
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
@@ -771,7 +772,7 @@ namespace gView.Interoperability.GeoServices.Request
             return featureClass;
         }
 
-        private List<IFeature> GetFeatures(IFeatureClass featureClass, JsonFeatureServerEditRequest editRequest)
+        private List<IFeature> GetFeatures(IFeatureClass featureClass, JsonFeatureServerUpdateRequest editRequest)
         {
             List<IFeature> features = new List<IFeature>();
             foreach (var jsonFeature in editRequest.Features)
@@ -786,7 +787,7 @@ namespace gView.Interoperability.GeoServices.Request
         {
             var editModule = serviceMap.GetModule<gView.Plugins.Modules.EditorModule>();
             if (editModule == null)
-                throw new Exception("Not editor module available for service");
+                throw new Exception("No editor module available for service");
 
             var editLayer = editModule.GetEditLayer(editRequest.LayerId);
             if (editLayer == null)
@@ -910,7 +911,7 @@ namespace gView.Interoperability.GeoServices.Request
             sref = sref.Trim();
             if (sref.StartsWith("{") && sref.EndsWith("}"))
             {
-                var spatialReference = JsonConvert.DeserializeObject<Rest.Json.JsonService.SpatialReference>(sref);
+                var spatialReference = JsonConvert.DeserializeObject<Rest.Json.JsonMapService.SpatialReference>(sref);
 
                 return SpatialReference.FromID("epsg:" + spatialReference.Wkid) ??
                        SpatialReference.FromID("epsg:" + spatialReference.LatestWkid);

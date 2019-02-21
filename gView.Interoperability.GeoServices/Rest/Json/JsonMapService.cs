@@ -8,9 +8,9 @@ using System.Text;
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     [ServiceMethod("ExportMap", "export")]
-    public class JsonService
+    public class JsonMapService
     {
-        public JsonService()
+        public JsonMapService()
         {
             this.Layers = new Layer[0];
             this.Tables = new Table[0];
@@ -105,19 +105,14 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
         #region Classes
 
-        public class Layer
+        public class Layer : JsonIdName
         {
             public Layer()
             {
                 this.ParentLayerId = -1;
             }
 
-            [JsonProperty(PropertyName = "id")]
-            [HtmlLinkAttribute("{url}/{0}")]
-            public int Id { get; set; }
-
-            [JsonProperty(PropertyName = "name")]
-            public string Name { get; set; }
+            
 
             [JsonProperty(PropertyName = "parentLayerId")]
             public int ParentLayerId { get; set; }

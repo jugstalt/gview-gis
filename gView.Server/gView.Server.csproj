@@ -58,4 +58,8 @@
     <ProjectReference Include="..\gView.XML\gView.XML.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Views\GeoServices\" />
+  </ItemGroup>
+
 </Project>

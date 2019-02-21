@@ -20,6 +20,7 @@ namespace gView.Server.Controllers
             if (authToken.IsAnonymous)
                 return RedirectToAction("Login");
 
+            ViewData["mainMenuItems"] = "mainMenuItemsPartial";
             return View();
         }
 
@@ -64,20 +65,28 @@ namespace gView.Server.Controllers
                 return Json(new
                 {
                     success = true,
-                    folders = InternetMapServer.mapServices.OrderBy(s => s.Folder).Select(s => s.Folder).Distinct()
+                    folders = InternetMapServer.mapServices
+                                    .Where(s => s.Type == MapServiceType.Folder)
+                                    .Select(s => s.Name)
+                                    .OrderBy(s => s)
+                                    .Distinct()
                 });
             });
         }
 
         public IActionResult Services(string folder)
         {
+            folder = folder ?? String.Empty;
+            InternetMapServer.ReloadServices(folder, true);
+
             return SecureApiCall(() =>
             {
                 return Json(new
                 {
                     success = true,
                     services = InternetMapServer.mapServices
-                        .Where(s => s.Folder?.ToLower() == folder?.ToLower() || (String.IsNullOrEmpty(folder) && String.IsNullOrEmpty(s.Folder)))
+                        .Where(s => s.Type != MapServiceType.Folder &&
+                                    s.Folder == folder)
                         .Select(async s => MapService2Json(s, await s.GetSettingsAsync()))
                         .Select(t => t.Result)
                         .ToArray()

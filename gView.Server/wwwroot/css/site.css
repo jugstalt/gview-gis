@@ -88,8 +88,43 @@ ul {
     }
 
 
-/******Manage **********/
+/****** Browse **********/
 
+table.service-capabilities {
+    width: 100%;
+    border-top: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+}
+
+    table.service-capabilities td,
+    table.service-capabilities th {
+        width: 100%;
+        border-bottom: 1px solid #ddd;
+        border-right: 1px solid #ddd;
+        padding:4px;
+    }
+
+    table.service-capabilities tr.interpreter {
+        background-color:#0094ff;
+        color:#fff;
+    }
+    table.service-capabilities tr.interpreter td.interpreter-name {
+        font-weight:bold;
+    }
+
+ul.browseservices{
+    padding:0px;
+}
+
+    ul.browseservices li {
+        padding: 4px;
+        cursor:pointer;
+    }
+        ul.browseservices li:hover {
+            background-color:#eee;
+        }
+
+/****** Manage **********/
 *:focus {
     outline: none;
 }
@@ -125,12 +160,12 @@ ul {
     }
 
 .gview5-manage-body {
-    position: absolute;
-    left: 0px;
+    position: relative;
+    /*left: 0px;
     top: 52px;
     right:0px;
     bottom:0px;
-    overflow:auto;
+    overflow:auto;*/
     background-color: white;
     padding: 15px;
 }
@@ -189,6 +224,9 @@ ul {
             }
             .gview5-manage-body .services .service.has-errors {
                 background-color: #ffcccc;
+            }
+            .gview5-manage-body .services .service.stopped.has-errors {
+                background-color: #ffeecc;
             }
 
     .gview5-manage-body .user-properties {

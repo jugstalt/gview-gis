@@ -1,0 +1,8 @@
+﻿@{ var menuItems = (Dictionary<string,string>)ViewData["menuItems"]; }
+
+@foreach(var key in menuItems.Keys)
+{
+    <li>
+        <a href="@menuItems[key]">@(key)/</a>
+    </li>
+}

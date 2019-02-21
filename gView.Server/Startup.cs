@@ -117,7 +117,7 @@ namespace gView.Server
                     defaults: new { controller = "GeoServicesRest", Action = "Service" }
                 );
                 routes.MapRoute(
-                    name: "geoservices_rest_service",
+                    name: "geoservices_rest_service2",
                     template: "geoservices/rest/services/{id}/mapserver",
                     defaults: new { controller = "GeoServicesRest", Action = "Service" }
                 );
@@ -132,10 +132,15 @@ namespace gView.Server
                     defaults: new { controller = "GeoServicesRest", Action = "Services" }
                 );
 
-                
+
                 routes.MapRoute(
                     name: "geoservices_rest_featureserver_query",
                     template: "geoservices/rest/services/{folder}/{id}/featureserver/{layerId}/query",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerQuery" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_featureserver_query2",
+                    template: "geoservices/rest/services/{id}/featureserver/{layerId}/query",
                     defaults: new { controller = "GeoServicesRest", Action = "FeatureServerQuery" }
                 );
                 routes.MapRoute(
@@ -144,8 +149,18 @@ namespace gView.Server
                     defaults: new { controller = "GeoServicesRest", Action = "FeatureServerAddFeatures" }
                 );
                 routes.MapRoute(
+                    name: "geoservices_rest_featureserver_addfeatures2",
+                    template: "geoservices/rest/services/{id}/featureserver/{layerId}/addfeatures",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerAddFeatures" }
+                );
+                routes.MapRoute(
                     name: "geoservices_rest_featureserver_updatefeatures",
                     template: "geoservices/rest/services/{folder}/{id}/featureserver/{layerId}/updatefeatures",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerUpdateFeatures" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_featureserver_updatefeatures2",
+                    template: "geoservices/rest/services/{id}/featureserver/{layerId}/updatefeatures",
                     defaults: new { controller = "GeoServicesRest", Action = "FeatureServerUpdateFeatures" }
                 );
                 routes.MapRoute(
@@ -154,9 +169,29 @@ namespace gView.Server
                     defaults: new { controller = "GeoServicesRest", Action = "FeatureServerDeleteFeatures" }
                 );
                 routes.MapRoute(
-                  name: "geoservices_rest_featureservicelayer",
+                    name: "geoservices_rest_featureserver_deletefeatures2",
+                    template: "geoservices/rest/services/{id}/featureserver/{layerId}/deletefeatures",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerDeleteFeatures" }
+                );
+                routes.MapRoute(
+                  name: "geoservices_rest_featureserverlayer",
                   template: "geoservices/rest/services/{folder}/{id}/featureserver/{layerId}",
-                  defaults: new { controller = "GeoServicesRest", Action = "FeatureServiceLayer" }
+                  defaults: new { controller = "GeoServicesRest", Action = "FeatureServerLayer" }
+                );
+                routes.MapRoute(
+                  name: "geoservices_rest_featureserverlayer2",
+                  template: "geoservices/rest/services/{id}/featureserver/{layerId}",
+                  defaults: new { controller = "GeoServicesRest", Action = "FeatureServerLayer" }
+                );
+                routes.MapRoute(
+                   name: "geoservices_rest_featureserver",
+                   template: "geoservices/rest/services/{folder}/{id}/featureserver",
+                   defaults: new { controller = "GeoServicesRest", Action = "FeatureServerService" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_featureserver2",
+                    template: "geoservices/rest/services/{id}/featureserver",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerService" }
                 );
 
                 routes.MapRoute(

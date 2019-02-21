@@ -116,9 +116,10 @@ window.gview.manage = function () {
        
         var $toolbar = $("<div>").addClass('toolbar').appendTo($service);
 
-        $("<div>")
-            .addClass('icon clickable settings')
-            .appendTo($toolbar);
+        // ToDo: Edit Metadata???
+        //$("<div>")
+        //    .addClass('icon clickable settings')
+        //    .appendTo($toolbar);
         $("<div>")
             .addClass('icon clickable log')
             .appendTo($toolbar)

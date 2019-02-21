@@ -25,9 +25,17 @@ namespace gView.Server.AppCode
             try
             {
                 _filename = filename;
-                FileInfo fi = new FileInfo(filename);
-                _name = fi.Name.Substring(0, fi.Name.Length - fi.Extension.Length);
-                _folder = folder ?? String.Empty;
+                if (type == MapServiceType.Folder)
+                {
+                    DirectoryInfo di = new DirectoryInfo(_filename);
+                    _name = di.Name.ToLower();
+                }
+                else
+                {
+                    FileInfo fi = new FileInfo(filename);
+                    _name = fi.Name.Substring(0, fi.Name.Length - fi.Extension.Length);
+                }
+                _folder = (folder ?? String.Empty).ToLower();
             }
             catch { }
         }
@@ -198,6 +206,36 @@ namespace gView.Server.AppCode
                 return true;
 
             return false;
+        }
+
+        async public Task<AccessTypes> GetAccessTypes(IIdentity identity)
+        {
+            await ReloadServiceSettings();
+
+            var accessTypes = AccessTypes.None;
+            if (_settings.AccessRules == null || _settings.AccessRules.Length == 0)  // no rules -> service is open for everone
+            {
+                foreach (AccessTypes accessType in Enum.GetValues(typeof(AccessTypes)))
+                    accessTypes |= accessType;
+
+                return accessTypes;
+            }
+
+            var accessRule = _settings.AccessRules.Where(r => r.Username.Equals(identity.UserName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+            if (accessRule == null)
+                accessRule = _settings.AccessRules.Where(r => r.Username.Equals(Identity.AnonyomousUsername, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+
+            if (accessRule == null && accessRule.ServiceTypes == null && accessRule.ServiceTypes.Length == 0)
+                return AccessTypes.None;
+
+            foreach (var serviceType in accessRule.ServiceTypes.Where(s => !s.StartsWith("_")))
+            {
+                if(Enum.TryParse<AccessTypes>(serviceType, true, out AccessTypes accessType))
+                {
+                    accessTypes |= accessType;
+                }
+            }
+            return accessTypes;
         }
     }
 

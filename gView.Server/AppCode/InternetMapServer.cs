@@ -72,10 +72,7 @@ namespace gView.Server.AppCode
             }
 
             AddServices(String.Empty);
-            foreach(var folder in new DirectoryInfo(ServicesPath.ToPlattformPath()).GetDirectories())
-            {
-                AddServices(folder.Name);
-            }
+            
 
             var pluginMananger = new PlugInManager();
             foreach (Type interpreterType in pluginMananger.GetPlugins(typeof(IServiceRequestInterpreter)))
@@ -89,20 +86,92 @@ namespace gView.Server.AppCode
 
         private static void AddServices(string folder)
         {
-            foreach (var mapFileInfo in new DirectoryInfo((ServicesPath+"/"+folder).ToPlattformPath()).GetFiles("*.mxl"))
+
+            foreach (var mapFileInfo in new DirectoryInfo((ServicesPath + "/" + folder).ToPlattformPath()).GetFiles("*.mxl"))
             {
                 string mapName = String.Empty;
                 try
                 {
-                    MapService service = new MapService(mapFileInfo.FullName, folder, MapServiceType.MXL);
-                    mapName = service.Fullname;
-
-                    mapServices.Add(service);
-                    Console.WriteLine("service " + service.Name + " added");
+                    if (TryAddService(mapFileInfo, folder) == null)
+                        throw new Exception("unable to load servive: " + mapFileInfo.FullName);
                 }
                 catch (Exception ex)
                 {
                     Logger.LogAsync(mapName, loggingMethod.error, "LoadConfig - " + mapFileInfo.Name + ": " + ex.Message).Wait();
+                }
+            }
+
+            #region Add Folders on same level
+
+            foreach (var folderDirectory in new DirectoryInfo((ServicesPath + "/" + folder).ToPlattformPath()).GetDirectories())
+            {
+                MapService folderService = new MapService(folderDirectory.FullName, folder, MapServiceType.Folder);
+                if (mapServices.Where(s => s.Fullname == folderService.Fullname && s.Type == folderService.Type).Count() == 0)
+                {
+                    mapServices.Add(folderService);
+                    Console.WriteLine("folder " + folderService.Name + " added");
+                }
+            }
+
+            #endregion
+        }
+
+        private static object _tryAddServiceLocker = new object();
+        private static IMapService TryAddService(FileInfo mapFileInfo, string folder)
+        {
+            lock (_tryAddServiceLocker)
+            {
+                if (!mapFileInfo.Exists)
+                    return null;
+
+                MapService mapService = new MapService(mapFileInfo.FullName, folder, MapServiceType.MXL);
+
+                if(!String.IsNullOrWhiteSpace(folder))
+                {
+                    #region Add Service Parent Folders
+
+                    string folderName=String.Empty, parentFolder=String.Empty;
+                    foreach(var subFolder in folder.Split('/'))
+                    {
+                        folderName += (folderName.Length > 0 ? "/" : "") + subFolder;
+                        DirectoryInfo folderDirectory = new DirectoryInfo((ServicesPath + "/" + folder).ToPlattformPath());
+                        MapService folderService = new MapService(folderDirectory.FullName, parentFolder, MapServiceType.Folder);
+
+                        if (mapServices.Where(s => s.Fullname == folderService.Fullname && s.Type == folderService.Type).Count() == 0)
+                        {
+                            mapServices.Add(folderService);
+                            Console.WriteLine("folder " + folderService.Name + " added");
+                        }
+
+                        parentFolder = folderName;
+                    }
+
+                    #endregion
+                }
+
+                if (mapServices.Where(s => s.Fullname == mapService.Fullname && s.Type == mapService.Type).Count() == 0)
+                {
+                    mapServices.Add(mapService);
+                    Console.WriteLine("service " + mapService.Name + " added");
+                }
+
+                return mapService;
+            }
+        }
+        public static IMapService TryAddService(string name, string folder)
+        {
+            var mapFileInfo = new FileInfo(ServicesPath + (String.IsNullOrWhiteSpace(folder) ? "" : "/" + folder) + "/" + name + ".mxl");
+            return TryAddService(mapFileInfo, folder);
+        }
+
+        private static object _reloadServicesLocker = new object();
+        public static void ReloadServices(string folder, bool forceRefresh = false)
+        {
+            lock (_reloadServicesLocker)
+            {
+                if (forceRefresh == true || InternetMapServer.mapServices.Where(s => s.Type != MapServiceType.Folder && s.Folder == folder).Count() == 0)
+                {
+                    InternetMapServer.AddServices(folder);
                 }
             }
         }

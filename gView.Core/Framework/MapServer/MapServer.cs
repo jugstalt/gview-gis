@@ -29,7 +29,7 @@ namespace gView.MapServer
         bool CheckAccess(IIdentity identity, string service);
     }
 
-    public enum MapServiceType { MXL, SVC, GDI }
+    public enum MapServiceType { MXL, SVC, GDI, Folder }
     public interface IMapService
     {
         string Name { get; }
@@ -48,6 +48,7 @@ namespace gView.MapServer
 
         Task CheckAccess(IServiceRequestContext context);
         Task<bool> HasAnyAccess(IIdentity identity);
+        Task<AccessTypes> GetAccessTypes(IIdentity identity);
     }
 
     public enum MapServiceStatus

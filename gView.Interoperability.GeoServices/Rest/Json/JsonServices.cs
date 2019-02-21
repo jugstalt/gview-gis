@@ -16,14 +16,14 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         public string[] Folders { get; set; }
 
         [JsonProperty(PropertyName = "services")]
-        public AgsServices[] Services { get; set; }
+        public AgsService[] Services { get; set; }
 
         #region Classes
 
-        public class AgsServices
+        public class AgsService
         {
             [JsonProperty(PropertyName = "name")]
-            [HtmlLink("{url}/{0}/MapServer")]
+            [HtmlLink("{url}/{0}/{Type}")]
             public string Name { get; set; }
 
             [JsonProperty(PropertyName = "type")]

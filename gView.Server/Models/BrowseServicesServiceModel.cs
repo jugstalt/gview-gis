@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace gView.Server.Models
 {
-    public class HomeServiceModel
+    public class BrowseServicesServiceModel
     {
         public string Server { get; set; }
         public string OnlineResource { get; set; }

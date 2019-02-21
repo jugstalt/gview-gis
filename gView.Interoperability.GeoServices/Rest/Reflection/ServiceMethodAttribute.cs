@@ -4,6 +4,7 @@ using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Reflection
 {
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class ServiceMethodAttribute : Attribute
     {
         public ServiceMethodAttribute(string name, string method)

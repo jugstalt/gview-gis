@@ -1,0 +1,40 @@
+﻿@model BrowseServicesIndexModel
+@{
+    ViewData["Title"] = "Browse";
+}
+
+<h1>Browse @(Model.Folder)/</h1>
+<div>
+    <ul class="browseservices">
+        @if (!String.IsNullOrWhiteSpace(Model.Folder))
+        {
+        <li>
+            @Html.ActionLink("..", "Index", "BrowseServices", new { folder = "" })
+        </li>
+        }
+        @foreach (var mapService in Model.Services)
+        {
+            <li>
+                @Html.ActionLink(mapService.Name, "ServiceCapabilities", "BrowseServices", new { id = (String.IsNullOrWhiteSpace(mapService.Folder) ? "" : mapService.Folder + "@") + mapService.Name })
+            </li>
+        }
+        @foreach (var folder in Model.Folders)
+        {
+            <li>
+                @Html.ActionLink(folder + "/", "Index", "BrowseServices", new { folder = folder })
+            </li>
+        }
+    </ul>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        (function () {
+            $('ul.browseservices li').click(function (e) {
+                e.stopPropagation();
+                $(this).children('a').first()[0].click();
+            });
+        })();
+    </script>
+}
+

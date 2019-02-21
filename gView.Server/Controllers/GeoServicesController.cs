@@ -38,48 +38,35 @@ namespace gView.Server.Controllers
             return RedirectToAction("Services");
         }
 
-        async public Task<IActionResult> Services()
+        public Task<IActionResult> Services()
         {
-            return await SecureMethodHandler((identity) =>
-            {
-                return Task.FromResult(Result(new JsonServices()
-                {
-                    CurrentVersion = Version,
-                    Folders = InternetMapServer.mapServices
-                        .Where(s => !String.IsNullOrWhiteSpace(s.Folder))
-                        .Select(s => s.Folder).Distinct()
-                        .ToArray(),
-                    Services = InternetMapServer.mapServices
-                        .Where(s =>
-                        {
-                            return String.IsNullOrWhiteSpace(s.Folder) && (s.GetSettingsAsync().Result).Status == MapServiceStatus.Running;
-                        })
-                        .Select(s => new AgsServices()
-                        {
-                            Name = s.Name,
-                            Type = "MapServer"
-                        })
-                        .ToArray()
-                }));
-            });
+            return Folder(String.Empty);   
         }
 
         async public Task<IActionResult> Folder(string id)
         {
             return await SecureMethodHandler((identity) =>
             {
+                InternetMapServer.ReloadServices(id, true);
+
                 return Task.FromResult(Result(new JsonServices()
                 {
-                    CurrentVersion = 10.61,
+                    CurrentVersion = Version,
+                    Folders = InternetMapServer.mapServices
+                        .Where(s => s.Type == MapServiceType.Folder && s.Folder == id)
+                        .Select(s => s.Name).Distinct()
+                        .ToArray(),
                     Services = InternetMapServer.mapServices
-                        .Where(s => s.Folder == id && s.GetSettingsAsync().Result.Status == MapServiceStatus.Running && s.HasAnyAccess(identity).Result)
-                        .Select(s => new AgsServices()
+                        .Where(s =>
                         {
-                            Name = s.Name,
-                            Type = "MapServer"
+                            return
+                                s.Type != MapServiceType.Folder &&
+                                s.Folder == id &&
+                                (s.GetSettingsAsync().Result).Status == MapServiceStatus.Running &&
+                                s.HasAnyAccess(identity).Result;
                         })
-                    .ToArray(),
-                    Folders = new string[0]
+                        .SelectMany((s) => AgsServices(identity, s).Result)
+                        .ToArray()
                 }));
             });
         }
@@ -93,7 +80,7 @@ namespace gView.Server.Controllers
                     throw new Exception("Unknown service: " + id);
 
                 gView.Framework.Geometry.Envelope fullExtent = null;
-                return Result(new JsonService()
+                return Result(new JsonMapService()
                 {
                     CurrentVersion = 10.61,
                     Layers = map.MapElements.Select(e =>
@@ -108,7 +95,7 @@ namespace gView.Server.Controllers
                                 fullExtent.Union(((IFeatureClass)e.Class).Envelope);
                         }
 
-                        return new JsonService.Layer()
+                        return new JsonMapService.Layer()
                         {
                             Id = e.ID,
                             Name = tocElement != null ? tocElement.Name : e.Title,
@@ -117,13 +104,13 @@ namespace gView.Server.Controllers
                             MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale > 1 ? tocElement.Layers[0].MaximumScale : 0, 0) : 0,
                         };
                     }).ToArray(),
-                    FullExtent = new JsonService.Extent()
+                    FullExtent = new JsonMapService.Extent()
                     {
                         XMin = fullExtent != null ? fullExtent.minx : 0D,
                         YMin = fullExtent != null ? fullExtent.miny : 0D,
                         XMax = fullExtent != null ? fullExtent.maxx : 0D,
                         YMax = fullExtent != null ? fullExtent.maxy : 0D,
-                        SpatialReference = new JsonService.SpatialReference(0)
+                        SpatialReference = new JsonMapService.SpatialReference(0)
                     }
                 });
             });
@@ -140,7 +127,7 @@ namespace gView.Server.Controllers
                 var jsonLayers = new JsonLayers();
                 jsonLayers.Layers = map.MapElements
                     .Where(e => map.TOC.GetTOCElement(e as ILayer) != null)  // Just show layer in Toc
-                    .Select(e => Layer(map, e.ID))
+                    .Select(e => JsonLayer(map, e.ID))
                     .ToArray();
 
                 return Result(jsonLayers);
@@ -156,7 +143,7 @@ namespace gView.Server.Controllers
                     throw new Exception("Unknown service: " + id);
 
                 var jsonLayers = new JsonLayers();
-                return Result(Layer(map, layerId));
+                return Result(JsonLayer(map, layerId));
             });
         }
 
@@ -312,6 +299,48 @@ namespace gView.Server.Controllers
 
         #region FeatureServer
 
+        async public Task<IActionResult> FeatureServerService(string id, string folder="")
+        {
+            return await SecureMethodHandler(async (identity) =>
+            {
+                var map = await InternetMapServer.Instance.GetServiceMapAsync(id, folder);
+                if (map == null)
+                    throw new Exception("Unknown service: " + id);
+
+                gView.Framework.Geometry.Envelope fullExtent = null;
+                return Result(new JsonFeatureService()
+                {
+                    CurrentVersion = 10.61,
+                    Layers = map.MapElements.Select(e =>
+                    {
+                        var tocElement = map.TOC.GetTOCElement(e as ILayer);
+
+                        if (e.Class is IFeatureClass && ((IFeatureClass)e.Class).Envelope != null)
+                        {
+                            if (fullExtent == null)
+                                fullExtent = new Framework.Geometry.Envelope(((IFeatureClass)e.Class).Envelope);
+                            else
+                                fullExtent.Union(((IFeatureClass)e.Class).Envelope);
+                        }
+
+                        return new JsonIdName()
+                        {
+                            Id = e.ID,
+                            Name = tocElement != null ? tocElement.Name : e.Title
+                        };
+                    }).ToArray(),
+                    FullExtent = new JsonMapService.Extent()
+                    {
+                        XMin = fullExtent != null ? fullExtent.minx : 0D,
+                        YMin = fullExtent != null ? fullExtent.miny : 0D,
+                        XMax = fullExtent != null ? fullExtent.maxx : 0D,
+                        YMax = fullExtent != null ? fullExtent.maxy : 0D,
+                        SpatialReference = new JsonMapService.SpatialReference(0)
+                    }
+                });
+            });
+        }
+
         async public Task<IActionResult> FeatureServerQuery(string id, int layerId, string folder = "")
         {
             return await SecureMethodHandler(async (identity) =>
@@ -325,6 +354,12 @@ namespace gView.Server.Controllers
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Form :
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
                 queryLayer.LayerId = layerId;
+
+                string format = ResultFormat();
+                if (String.IsNullOrWhiteSpace(format))
+                {
+                    return FormResult(queryLayer);
+                }
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(queryLayer))
                 {
@@ -365,11 +400,17 @@ namespace gView.Server.Controllers
 
                 #region Request
 
-                JsonFeatureServerEditRequest editRequest = Deserialize<JsonFeatureServerEditRequest>(
+                JsonFeatureServerUpdateRequest editRequest = Deserialize<JsonFeatureServerUpdateRequest>(
                     Request.HasFormContentType ?
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Form :
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
                 editRequest.LayerId = layerId;
+
+                string format = ResultFormat();
+                if (String.IsNullOrWhiteSpace(format))
+                {
+                    return FormResult(editRequest);
+                }
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
                 {
@@ -421,11 +462,17 @@ namespace gView.Server.Controllers
 
                 #region Request
 
-                JsonFeatureServerEditRequest editRequest = Deserialize<JsonFeatureServerEditRequest>(
+                JsonFeatureServerUpdateRequest editRequest = Deserialize<JsonFeatureServerUpdateRequest>(
                     Request.HasFormContentType ?
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Form :
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
                 editRequest.LayerId = layerId;
+
+                string format = ResultFormat();
+                if (String.IsNullOrWhiteSpace(format))
+                {
+                    return FormResult(editRequest);
+                }
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
                 {
@@ -477,11 +524,17 @@ namespace gView.Server.Controllers
 
                 #region Request
 
-                JsonFeatureServerEditRequest editRequest = Deserialize<JsonFeatureServerEditRequest>(
+                JsonFeatureServerDeleteRequest editRequest = Deserialize<JsonFeatureServerDeleteRequest>(
                     Request.HasFormContentType ?
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Form :
                     (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
                 editRequest.LayerId = layerId;
+
+                string format = ResultFormat();
+                if (String.IsNullOrWhiteSpace(format))
+                {
+                    return FormResult(editRequest);
+                }
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
                 {
@@ -525,7 +578,7 @@ namespace gView.Server.Controllers
             });
         }
 
-        async public Task<IActionResult> FeatureServiceLayer(string id, int layerId, string folder = "")
+        async public Task<IActionResult> FeatureServerLayer(string id, int layerId, string folder = "")
         {
             return await SecureMethodHandler(async (identity) =>
             {
@@ -534,7 +587,7 @@ namespace gView.Server.Controllers
                     throw new Exception("Unknown service: " + id);
 
                 var jsonLayers = new JsonLayers();
-                return Result(Layer(map, layerId));
+                return Result(JsonFeatureServerLayer(map, layerId));
             });
         }
 
@@ -592,7 +645,7 @@ namespace gView.Server.Controllers
 
         #region Json
 
-        private JsonLayer Layer(IServiceMap map, int layerId)
+        private JsonLayer JsonLayer(IServiceMap map, int layerId, JsonLayer result = null)
         {
             var datasetElement = map.MapElements.Where(e => e.ID == layerId).FirstOrDefault();
             if (datasetElement == null)
@@ -601,7 +654,7 @@ namespace gView.Server.Controllers
             var tocElement = map.TOC.GetTOCElement(datasetElement as ILayer);
 
             JsonLayerLink parentLayer = null;
-            if(datasetElement is ILayer && ((ILayer)datasetElement).GroupLayer!=null)
+            if (datasetElement is ILayer && ((ILayer)datasetElement).GroupLayer != null)
             {
                 parentLayer = new JsonLayerLink()
                 {
@@ -610,7 +663,7 @@ namespace gView.Server.Controllers
                 };
             }
 
-            if (datasetElement is GroupLayer && datasetElement.Class==null)  // GroupLayer
+            if (datasetElement is GroupLayer && datasetElement.Class == null)  // GroupLayer
             {
                 var groupLayer = (GroupLayer)datasetElement;
                 string type = "Group Layer";
@@ -673,7 +726,7 @@ namespace gView.Server.Controllers
                     type = "Raster Layer";
 
                 JsonDrawingInfo drawingInfo = null;
-                if(datasetElement is IFeatureLayer)
+                if (datasetElement is IFeatureLayer)
                 {
                     var featureLayer = (IFeatureLayer)datasetElement;
 
@@ -683,22 +736,28 @@ namespace gView.Server.Controllers
                     };
                 }
 
-                return new JsonLayer()
-                {
-                    CurrentVersion = Version,
-                    Id = datasetElement.ID,
-                    Name = tocElement != null ? tocElement.Name : datasetElement.Title,
-                    DefaultVisibility = tocElement != null ? tocElement.LayerVisible : true,
-                    MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale > 1 ? tocElement.Layers[0].MinimumScale : 0, 0) : 0,
-                    MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale > 1 ? tocElement.Layers[0].MaximumScale : 0, 0) : 0,
-                    Fields = fields,
-                    Extent = extent,
-                    Type = type,
-                    ParentLayer = parentLayer,
-                    DrawingInfo = drawingInfo,
-                    GeometryType = datasetElement.Class is IFeatureClass ? JsonLayer.ToGeometryType(((IFeatureClass)datasetElement.Class).GeometryType).ToString() : EsriGeometryType.esriGeometryNull.ToString()
-                };
+                result = result ?? new JsonLayer();
+
+                result.CurrentVersion = Version;
+                result.Id = datasetElement.ID;
+                result.Name = tocElement != null ? tocElement.Name : datasetElement.Title;
+                result.DefaultVisibility = tocElement != null ? tocElement.LayerVisible : true;
+                result.MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale > 1 ? tocElement.Layers[0].MinimumScale : 0, 0) : 0;
+                result.MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale > 1 ? tocElement.Layers[0].MaximumScale : 0, 0) : 0;
+                result.Fields = fields;
+                result.Extent = extent;
+                result.Type = type;
+                result.ParentLayer = parentLayer;
+                result.DrawingInfo = drawingInfo;
+                result.GeometryType = datasetElement.Class is IFeatureClass ? Interoperability.GeoServices.Rest.Json.JsonLayer.ToGeometryType(((IFeatureClass)datasetElement.Class).GeometryType).ToString() : EsriGeometryType.esriGeometryNull.ToString();
+
+                return result;
             }
+        }
+
+        private JsonLayer JsonFeatureServerLayer(IServiceMap map, int layerId)
+        {
+            return JsonLayer(map, layerId, new JsonFeatureServerLayer());
         }
 
         #endregion
@@ -720,6 +779,7 @@ namespace gView.Server.Controllers
 
             #region ToHtml
 
+            AddNavigation();
             ViewData["htmlbody"] = ToHtml(obj);
             return View("_htmlbody");
 
@@ -728,8 +788,32 @@ namespace gView.Server.Controllers
 
         public IActionResult FormResult(object obj)
         {
+            AddNavigation();
             ViewData["htmlBody"] = ToHtmlForm(obj);
             return View("_htmlbody");
+        }
+
+        private void AddNavigation()
+        {
+            var requestPath = this.Request.Path.ToString();
+            while (requestPath.StartsWith("/"))
+                requestPath = requestPath.Substring(1);
+
+            string path = "";
+            Dictionary<string, string> menuItems = new Dictionary<string, string>();
+            bool usePath = false;
+            foreach(string p in requestPath.Split('/'))
+            {
+                path += "/" + p;
+                if (usePath)
+                    menuItems.Add(p, path);
+
+                if (p.ToLower() == "rest")
+                    usePath = true;
+            }
+
+            ViewData["mainMenuItems"] = "_mainMenuGeoServicesPartial";
+            ViewData["menuItems"] = menuItems;
         }
 
         private string ResultFormat()
@@ -746,13 +830,36 @@ namespace gView.Server.Controllers
             return String.Empty;
         }
 
+        async private Task<IEnumerable<string>> ServiceTypes(IIdentity identity, IMapService mapService)
+        {
+            var accessTypes = await mapService.GetAccessTypes(identity);
+
+            List<string> serviceTypes = new List<string>(2);
+            if (accessTypes.HasFlag(AccessTypes.Map))
+                serviceTypes.Add("MapServer");
+            if (accessTypes.HasFlag(AccessTypes.Edit) /* || accessTypes.HasFlag(AccessTypes.Query)*/)
+                serviceTypes.Add("FeatureServer");
+
+            return serviceTypes;
+        }
+
+        async private Task<IEnumerable<AgsService>> AgsServices(Identity identity, IMapService mapService)
+        {
+            return (await ServiceTypes(identity, mapService))
+                        .Select(s => new AgsService()
+                        {
+                            Name = mapService.Name,
+                            Type = s
+                        });
+        }
+
         #region Html
 
         private string ToHtml(object obj)
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("<div class='html-body'>");
+            sb.Append("<div class='html-body container'>");
 
             sb.Append("<h3>" + obj.GetType().ToString() + " (YAML):</h3>");
 
@@ -760,7 +867,7 @@ namespace gView.Server.Controllers
             sb.Append(ToYamlHtml(obj));
             sb.Append("</div>");
 
-            foreach(var serviceMethodAttribute in obj.GetType().GetCustomAttributes<ServiceMethodAttribute>())
+            foreach(var serviceMethodAttribute in obj.GetType().GetCustomAttributes<ServiceMethodAttribute>(false))
             {
                 sb.Append("<a href='" + InternetMapServer.OnlineResource + this.Request.Path + "/" + serviceMethodAttribute.Method + "'>" + serviceMethodAttribute.Name + "</a><br/>");
             }
@@ -839,7 +946,7 @@ namespace gView.Server.Controllers
                                 {
                                     sb.Append(", ");
                                 }
-                                sb.Append(HtmlYamlValue(linkAttribute, val));
+                                sb.Append(HtmlYamlValue(linkAttribute, val, obj));
                                 if (i == array.Length - 1)
                                 {
                                     sb.Append("]");
@@ -854,7 +961,7 @@ namespace gView.Server.Controllers
                 }
                 else if (propertyInfo.PropertyType.IsValueType || propertyInfo.PropertyType == typeof(string))
                 {
-                    sb.Append(HtmlYamlValue(linkAttribute, propertyInfo.GetValue(obj)));
+                    sb.Append(HtmlYamlValue(linkAttribute, propertyInfo.GetValue(obj), obj));
                 }
                 else
                 {
@@ -882,7 +989,7 @@ namespace gView.Server.Controllers
             return sb.ToString();
         }
 
-        private string HtmlYamlValue(HtmlLinkAttribute htmlLink, object val)
+        private string HtmlYamlValue(HtmlLinkAttribute htmlLink, object val, object instance)
         {
             string valString = val?.ToString() ?? String.Empty;
 
@@ -897,6 +1004,19 @@ namespace gView.Server.Controllers
             
 
             string link = htmlLink.LinkTemplate.Replace("{url}", InternetMapServer.AppRootUrl(this.Request) + "/" + Request.Path).Replace("{0}", valString);
+
+            if (instance != null && link.Contains("{") && link.Contains("}"))  // Replace instance properties
+            {
+                foreach (var propertyInfo in instance.GetType().GetProperties())
+                {
+                    var placeHolder = "{" + propertyInfo.Name + "}";
+                    if (link.Contains(placeHolder)) {
+                        object propertyValue = propertyInfo.GetValue(instance);
+                        link = link.Replace(placeHolder, propertyValue != null ? propertyValue.ToString() : "");
+                    }
+                }
+            }
+
             return "<a href='" + link + "'>" + valString + "</a>";
         }
 
@@ -907,7 +1027,7 @@ namespace gView.Server.Controllers
 
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("<div class='html-body'>");
+            sb.Append("<div class='html-body container'>");
 
             sb.Append("<form>");
 
@@ -919,20 +1039,44 @@ namespace gView.Server.Controllers
                 if (jsonPropertyAttribute == null)
                     continue;
 
+                var inputAttribute = propertyInfo.GetCustomAttribute<FormInputAttribute>();
+                if (inputAttribute != null && inputAttribute.InputType == FormInputAttribute.InputTypes.Ignore)
+                    continue;
+
+                var inputType = inputAttribute?.InputType ?? FormInputAttribute.InputTypes.Text;
+
                 if (propertyInfo.GetMethod.IsPublic && propertyInfo.SetMethod.IsPublic)
                 {
                     sb.Append("<tr>");
                     sb.Append("<td>");
-                    sb.Append("<span>" + propertyInfo.Name + ":</span>");
+                    if (inputType != FormInputAttribute.InputTypes.Hidden)
+                    {
+                        sb.Append("<span>" + propertyInfo.Name + ":</span>");
+                    }
                     sb.Append("</td><td class='input'>");
 
                     if (propertyInfo.PropertyType.Equals(typeof(bool)))
                     {
-                        sb.Append("<select name='" + jsonPropertyAttribute.PropertyName + "'><option value='true'>True</option><option value='false'>False</option></select>");
+                        sb.Append("<select name='" + jsonPropertyAttribute.PropertyName + "' style='min-width:auto;'><option value='false'>False</option><option value='true'>True</option></select>");
                     }
                     else
                     {
-                        sb.Append("<input name='" + jsonPropertyAttribute.PropertyName + "' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");
+                        
+                        switch (inputType)
+                        {
+                            case FormInputAttribute.InputTypes.TextBox:
+                                sb.Append("<textarea rows='3' name='" + jsonPropertyAttribute.PropertyName + "'>" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "</textarea>");
+                                break;
+                            case FormInputAttribute.InputTypes.TextBox10:
+                                sb.Append("<textarea rows='10' name='" + jsonPropertyAttribute.PropertyName + "'>" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "</textarea>");
+                                break;
+                            case FormInputAttribute.InputTypes.Hidden:
+                                sb.Append("<input type='hidden' name='" + jsonPropertyAttribute.PropertyName + "' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");
+                                break;
+                            default:
+                                sb.Append("<input name='" + jsonPropertyAttribute.PropertyName + "' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");
+                                break;
+                        }
                     }
                     sb.Append("</td>");
                     sb.Append("</tr>");
@@ -1039,56 +1183,62 @@ namespace gView.Server.Controllers
             return instance;
         }
 
-        async private Task<IActionResult> SecureMethodHandler(Func<Identity, Task<IActionResult>> func, Func<Exception, IActionResult> onException=null)
+        async override protected Task<IActionResult> SecureMethodHandler(Func<Identity, Task<IActionResult>> func, Func<Exception, IActionResult> onException=null)
         {
-            try
+            if(onException==null)
             {
-                var identity = new Identity(base.GetAuthToken().Username);
-
-                return await func(identity);
-            }
-            catch (NotAuthorizedException nae)  
-            {
-                return Result(new JsonError()
+                onException = (e) =>
                 {
-                    error = new JsonError.Error() { code = 403, message = nae.Message }
-                });
-            }
-            catch(TokenRequiredException tre)
-            {
-                return Result(new JsonError()
-                {
-                    error = new JsonError.Error() { code = 499, message = tre.Message }
-                });
-            }
-            catch(InvalidTokenException ite)
-            {
-                return Result(new JsonError()
-                {
-                    error = new JsonError.Error() { code = 498, message = ite.Message }
-                });
-            }
-            catch (MapServerException mse)
-            {
-                return Result(new JsonError()
-                {
-                    error = new JsonError.Error() { code = 999, message = mse.Message}
-                });
-            }
-            catch (Exception ex)
-            {
-                if (onException != null)
-                {
-                    return onException(ex);
-                }
-                else
-                {
-                    return Result(new JsonError()
+                    try
                     {
-                        error = new JsonError.Error() { code = 999, message = "unknown error" }
-                    });
-                }
+                        throw e;
+                    }
+                    catch (NotAuthorizedException nae)
+                    {
+                        return Result(new JsonError()
+                        {
+                            error = new JsonError.Error() { code = 403, message = nae.Message }
+                        });
+                    }
+                    catch (TokenRequiredException tre)
+                    {
+                        return Result(new JsonError()
+                        {
+                            error = new JsonError.Error() { code = 499, message = tre.Message }
+                        });
+                    }
+                    catch (InvalidTokenException ite)
+                    {
+                        return Result(new JsonError()
+                        {
+                            error = new JsonError.Error() { code = 498, message = ite.Message }
+                        });
+                    }
+                    catch (MapServerException mse)
+                    {
+                        return Result(new JsonError()
+                        {
+                            error = new JsonError.Error() { code = 999, message = mse.Message }
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        if (onException != null)
+                        {
+                            return onException(ex);
+                        }
+                        else
+                        {
+                            return Result(new JsonError()
+                            {
+                                error = new JsonError.Error() { code = 999, message = "unknown error" }
+                            });
+                        }
+                    }
+                };
             }
+
+            return await base.SecureMethodHandler(func, onException: onException);
         }
 
         #endregion

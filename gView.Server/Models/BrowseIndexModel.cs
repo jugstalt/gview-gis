@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace gView.Server.Models
 {
-    public class HomeIndexModel
+    public class BrowseServicesIndexModel
     {
+        public string Folder { get; set; }
+        public string[] Folders { get; set; }
         public IEnumerable<IMapService> Services { get; set; }
     }
 }
