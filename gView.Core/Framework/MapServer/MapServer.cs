@@ -5,12 +5,13 @@ using gView.Framework.Carto;
 using gView.Framework.system;
 using gView.Framework.IO;
 using System.Threading.Tasks;
+using gView.Core.Framework.Exceptions;
 
 namespace gView.MapServer
 {
     public interface IMapServer
     {
-        List<IMapService> Maps { get; }
+        IEnumerable<IMapService> Maps(IIdentity identity);
         Task<IServiceMap> GetServiceMapAsync(string name, string folder);
         Task<IServiceMap> GetServiceMapAsync(IMapService service);
         Task<IServiceMap> GetServiceMapAsync(IServiceRequestContext context);
@@ -26,7 +27,7 @@ namespace gView.MapServer
 
         string TileCachePath { get; }
 
-        bool CheckAccess(IIdentity identity, string service);
+        //bool CheckAccess(IIdentity identity, string service);
     }
 
     public enum MapServiceType { MXL, SVC, GDI, Folder }
@@ -47,6 +48,7 @@ namespace gView.MapServer
         Task SaveSettingsAsync();
 
         Task CheckAccess(IServiceRequestContext context);
+        Task CheckAccess(IIdentity identity, IServiceRequestInterpreter interpreter);
         Task<bool> HasAnyAccess(IIdentity identity);
         Task<AccessTypes> GetAccessTypes(IIdentity identity);
     }
@@ -176,7 +178,8 @@ namespace gView.MapServer
         Task Request(IServiceRequestContext context);
         AccessTypes RequiredAccessTypes(IServiceRequestContext context);
 
-        string IntentityName { get; }
+        string IdentityName { get; }
+        string IdentityLongName { get; }
 
         InterpreterCapabilities Capabilities { get; }
     }
@@ -212,7 +215,7 @@ namespace gView.MapServer
             {
                 var mapService = mapServer?.GetMapService(request?.Service, request?.Folder);
                 if (mapService == null)
-                    throw new Exception("Unknown service");
+                    throw new MapServerException("Unknown service");
 
                 await mapService.CheckAccess(context);
             }

@@ -41,7 +41,7 @@ ul {
 }
 
 .html-body {
-    padding:10px;
+    padding:3px;
 }
 
 .code-block {
@@ -49,6 +49,7 @@ ul {
     background-color: #ddd;
     border: solid 1px #ccc;
     border-radius: 4px;
+    overflow:auto;
 }
 
 .yaml-code {
@@ -93,14 +94,14 @@ ul {
 table.service-capabilities {
     width: 100%;
     border-top: 1px solid #ddd;
-    border-left: 1px solid #ddd;
+    /*border-left: 1px solid #ddd;*/
 }
 
     table.service-capabilities td,
     table.service-capabilities th {
         width: 100%;
         border-bottom: 1px solid #ddd;
-        border-right: 1px solid #ddd;
+        /*border-right: 1px solid #ddd;*/
         padding:4px;
     }
 
@@ -111,6 +112,13 @@ table.service-capabilities {
     table.service-capabilities tr.interpreter td.interpreter-name {
         font-weight:bold;
     }
+
+    table.service-capabilities tr.interpreter-capabilities {
+        cursor: pointer;
+    }
+        table.service-capabilities tr.interpreter-capabilities:hover {
+            background-color: #eee;
+        }
 
 ul.browseservices{
     padding:0px;
@@ -239,7 +247,7 @@ ul.browseservices{
     }
 
     .gview-manage-body .form {
-
+        display:block;
     }
 
     .gview5-manage-body .form .form-error{

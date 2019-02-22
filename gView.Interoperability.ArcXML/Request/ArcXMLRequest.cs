@@ -164,10 +164,8 @@ namespace gView.Interoperability.ArcXML
             return accessTypes;
         }
 
-        virtual public string IntentityName
-        {
-            get { return "axl"; }
-        }
+        public string IdentityName => "axl";
+        public string IdentityLongName => "ESRI ArcXML (obsolete)";
 
         public InterpreterCapabilities Capabilities
         {

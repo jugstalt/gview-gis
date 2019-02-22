@@ -108,10 +108,9 @@ namespace gView.Interoperability.OGC
             return accessTypes;
         }
 
-        virtual public string IntentityName
-        {
-            get { return "wms"; }
-        }
+        public string IdentityName=> "wms";
+        public string IdentityLongName => "OGC Web Map Service";
+        
 
         public InterpreterCapabilities Capabilities
         {

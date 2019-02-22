@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,12 +8,17 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonError
     {
-        public Error error { get; set; }
-        public class Error
+        [JsonProperty("error")]
+        public ErrorDef Error { get; set; }
+
+        public class ErrorDef
         {
-            public int code { get; set; }
-            public string message { get; set; }
-            public object details { get; set; }
+            [JsonProperty("code")]
+            public int Code { get; set; }
+            [JsonProperty("message")]
+            public string Message { get; set; }
+            [JsonProperty("details")]
+            public object Details { get; set; }
         }
     }
 }

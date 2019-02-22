@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using gView.Core.Framework.Exceptions;
 using gView.Framework.system;
 using gView.Interoperability.GeoServices.Rest.Json;
 using gView.MapServer;
@@ -173,7 +174,7 @@ namespace gView.Server.Controllers
 
                 foreach (var interpreterType in InternetMapServer.Interpreters)
                 {
-                    allTypes.Add("_" + ((IServiceRequestInterpreter)Activator.CreateInstance(interpreterType)).IntentityName.ToLower());
+                    allTypes.Add("_" + ((IServiceRequestInterpreter)Activator.CreateInstance(interpreterType)).IdentityName.ToLower());
                 }
 
                 var loginManager = new LoginManager(Globals.LoginManagerRootPath);
@@ -233,7 +234,7 @@ namespace gView.Server.Controllers
                             }
                             else if (rule.StartsWith("_") && InternetMapServer.Interpreters
                                             .Select(t => new Framework.system.PlugInManager().CreateInstance<IServiceRequestInterpreter>(t))
-                                            .Where(i => "_" + i.IntentityName.ToLower() == rule.ToLower())
+                                            .Where(i => "_" + i.IdentityName.ToLower() == rule.ToLower())
                                             .Count() == 1)  // Interpreter
                             {
                                 serviceType = rule.ToLower();

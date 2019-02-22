@@ -57,13 +57,8 @@ namespace gView.Interoperability.OGC.Request.WMTS
             }
         }
 
-        public string IntentityName
-        {
-            get
-            {
-                return "wmts";
-            }
-        }
+        public string IdentityName => "wmts";
+        public string IdentityLongName => "OGC Web Map Tile Service";
 
         public void OnCreate(IMapServer mapServer)
         {

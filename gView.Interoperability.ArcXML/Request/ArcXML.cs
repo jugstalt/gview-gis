@@ -1119,10 +1119,8 @@ namespace gView.Interoperability.ArcXML
             xWriter.WriteStartElement("RESPONSE");
             xWriter.WriteStartElement("SERVICES");
 
-            foreach (IMapService map in server.Maps)
+            foreach (IMapService map in server.Maps(identity))
             {
-                if (!server.CheckAccess(identity, map.Name)) continue;
-
                 xWriter.WriteStartElement("SERVICE");
                 xWriter.WriteAttributeString("access", "PUBLIC");
                 xWriter.WriteAttributeString("ACCESS", "PUBLIC");

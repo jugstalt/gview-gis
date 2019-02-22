@@ -188,7 +188,7 @@ namespace gView.Interoperability.ArcXML.Dataset
         {
             if (server == null || map == null) return false;
 
-            foreach (IMapService service in server.Maps)
+            foreach (IMapService service in server.Maps(null))
             {
                 if (service == null) continue;
                 if (service.Name == map.Name && service.Type == MapServiceType.SVC)

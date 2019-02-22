@@ -31,7 +31,7 @@ namespace gView.Server.Controllers
                 {
                     StringBuilder sb = new StringBuilder();
                     sb.Append("<RESPONSE><SERVICES>");
-                    foreach (var service in InternetMapServer.Instance.Maps)
+                    foreach (var service in InternetMapServer.Instance.Maps(null))
                     {
                         sb.Append("<SERVICE ");
                         sb.Append("NAME='" + service.Name + "' ");

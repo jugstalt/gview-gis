@@ -1,4 +1,5 @@
-﻿using gView.Framework.Carto;
+﻿using gView.Core.Framework.Exceptions;
+using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
@@ -85,24 +86,24 @@ namespace gView.Server.AppCode
 
         #region IMapServer Member
 
-        public List<IMapService> Maps
+        public IEnumerable<IMapService> Maps(IIdentity identity)
         {
-            get
+            try
             {
-                try
-                {
-                    return ListOperations<IMapService>.Clone(InternetMapServer.mapServices);
-                }
-                catch (MapServerException mse)
-                {
-                    throw mse;
-                }
-                catch (Exception ex)
-                {
-                    LogAsync(String.Empty, "MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace).Wait();
-                    //return new List<IMapService>();
-                    throw new MapServerException("unknown error");
-                }
+                if (identity == null)
+                    InternetMapServer.mapServices.ToArray();
+
+                return InternetMapServer.mapServices.Where(s => s.HasAnyAccess(identity).Result);
+            }
+            catch (MapServerException mse)
+            {
+                throw mse;
+            }
+            catch (Exception ex)
+            {
+                LogAsync(String.Empty, "MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace).Wait();
+                //return new List<IMapService>();
+                throw new MapServerException("unknown error");
             }
         }
 
@@ -215,11 +216,11 @@ namespace gView.Server.AppCode
             }
         }
 
-        public bool CheckAccess(IIdentity identity, string service)
-        {
-            if (InternetMapServer.acl == null) return true;
-            return InternetMapServer.acl.HasAccess(identity, null, service);
-        }
+        //public bool CheckAccess(IIdentity identity, string service)
+        //{
+        //    if (InternetMapServer.acl == null) return true;
+        //    return InternetMapServer.acl.HasAccess(identity, null, service);
+        //}
 
         #endregion
 
@@ -356,7 +357,8 @@ namespace gView.Server.AppCode
                 if (ms.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) &&
                     ms.Folder.Equals(folder ?? String.Empty, StringComparison.CurrentCultureIgnoreCase)) return ms;
             }
-            return null;
+
+            return InternetMapServer.TryAddService(name, folder);
         }
 
         async private Task<Map> FindMap(string name, IServiceRequestContext context)

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -18,7 +19,7 @@ using System.Xml;
 
 namespace gView.Server.AppCode
 {
-    class InternetMapServer
+    public class InternetMapServer
     {
         static public ServerMapDocument MapDocument = new ServerMapDocument();
         //static public ThreadQueue<IServiceRequestContext> ThreadQueue = null;
@@ -30,7 +31,7 @@ namespace gView.Server.AppCode
         static internal string OnlineResource = String.Empty;
         static internal List<Type> Interpreters = new List<Type>();
         static internal License myLicense = null;
-        static internal List<IMapService> mapServices = new List<IMapService>();
+        static internal ConcurrentBag<IMapService> mapServices = new ConcurrentBag<IMapService>();
         static internal MapServerInstance Instance = null;
         static internal Acl acl = null;
 
@@ -125,13 +126,18 @@ namespace gView.Server.AppCode
                     return null;
 
                 MapService mapService = new MapService(mapFileInfo.FullName, folder, MapServiceType.MXL);
+                if (mapServices.Where(s => s.Fullname == mapService.Fullname && s.Type == mapService.Type).Count() > 0)
+                {
+                    // allready exists
+                    return mapServices.Where(s => s.Fullname == mapService.Fullname && s.Type == mapService.Type).FirstOrDefault();
+                }
 
-                if(!String.IsNullOrWhiteSpace(folder))
+                if (!String.IsNullOrWhiteSpace(folder))
                 {
                     #region Add Service Parent Folders
 
-                    string folderName=String.Empty, parentFolder=String.Empty;
-                    foreach(var subFolder in folder.Split('/'))
+                    string folderName = String.Empty, parentFolder = String.Empty;
+                    foreach (var subFolder in folder.Split('/'))
                     {
                         folderName += (folderName.Length > 0 ? "/" : "") + subFolder;
                         DirectoryInfo folderDirectory = new DirectoryInfo((ServicesPath + "/" + folder).ToPlattformPath());
@@ -149,11 +155,8 @@ namespace gView.Server.AppCode
                     #endregion
                 }
 
-                if (mapServices.Where(s => s.Fullname == mapService.Fullname && s.Type == mapService.Type).Count() == 0)
-                {
-                    mapServices.Add(mapService);
-                    Console.WriteLine("service " + mapService.Name + " added");
-                }
+                mapServices.Add(mapService);
+                Console.WriteLine("service " + mapService.Name + " added");
 
                 return mapService;
             }
@@ -458,12 +461,12 @@ namespace gView.Server.AppCode
             if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, "admin_addmap"))
                 return false;
 
-            if (InternetMapServer.Instance.Maps.Count >= InternetMapServer.Instance.MaxServices)
+            if (InternetMapServer.Instance.Maps(null).Count() >= InternetMapServer.Instance.MaxServices)
             {
                 // Überprüfen, ob schon eine Service mit gleiche Namen gibt...
                 // wenn ja, ist es nur einem Refresh eines bestehenden Services
                 bool found = false;
-                foreach (IMapService map in InternetMapServer.Instance.Maps)
+                foreach (IMapService map in InternetMapServer.Instance.Maps(null))
                 {
                     if (map.Name == mapName)
                     {
@@ -536,16 +539,16 @@ namespace gView.Server.AppCode
 
             bool found = false;
 
-            foreach (IMapService service in ListOperations<IMapService>.Clone(InternetMapServer.mapServices))
+            foreach (IMapService service in InternetMapServer.mapServices.ToArray())
             {
                 if (service.Name == mapName)
                 {
-                    InternetMapServer.mapServices.Remove(service);
+                    InternetMapServer.mapServices = new ConcurrentBag<IMapService>(InternetMapServer.mapServices.Except(new[] { service }));
                     found = true;
                 }
             }
 
-            foreach (IMapService m in ListOperations<IMapService>.Clone(InternetMapServer.Instance.Maps))
+            foreach (IMapService m in ListOperations<IMapService>.Clone(InternetMapServer.Instance.Maps(null).ToList()))
             {
                 if (m.Name == mapName)
                 {

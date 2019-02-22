@@ -4,6 +4,10 @@
 window.gview.manage = function () {
     var rootUrl = '';
 
+    var setRootUrl = function (url) {
+        rootUrl = url;
+    }
+
     //
     //  Get/Post
     //
@@ -361,7 +365,7 @@ window.gview.manage = function () {
                 .appendTo($form)
                 .click(function () {
                     postForm($form, {
-                        url: 'manage/createtokenuser',
+                        url: '/manage/createtokenuser',
                         success: function () {
                             pageSecurity();
                         }
@@ -376,7 +380,7 @@ window.gview.manage = function () {
                 .appendTo($form)
                 .click(function () {
                     postForm($form, {
-                        url: 'manage/changetokenuserpassword',
+                        url: '/manage/changetokenuserpassword',
                         success: function () {
                             pageSecurity();
                         }
@@ -419,6 +423,7 @@ window.gview.manage = function () {
 
     return {
         pageServices: pageServices,
-        pageSecurity: pageSecurity
+        pageSecurity: pageSecurity,
+        setRootUrl: setRootUrl
     };
 }();

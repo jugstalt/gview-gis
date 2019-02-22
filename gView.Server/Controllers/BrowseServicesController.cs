@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using gView.Core.Framework.Exceptions;
 using gView.Framework.system;
 using gView.MapServer;
 using gView.Server.AppCode;
@@ -43,15 +44,38 @@ namespace gView.Server.Controllers
             });
         }
 
-        public IActionResult ServiceCapabilities(string id)
+        async public Task<IActionResult> ServiceCapabilities(string id)
         {
-            return View(new BrowseServicesServiceModel()
+            return await SecureMethodHandler(async (identity) =>
             {
-                Server = InternetMapServer.AppRootUrl(this.Request),
-                OnlineResource = Request.Scheme + "://" + Request.Host + "/ogc?",
-                MapService = InternetMapServer.mapServices.Where(s => s.Name == id.ServiceName() && s.Folder == id.FolderName()).FirstOrDefault(),
-                Interpreters = InternetMapServer.Interpreters.Select(i => new PlugInManager().CreateInstance<IServiceRequestInterpreter>(i))
+                var mapService = InternetMapServer.Instance.GetMapService(id.ServiceName(), id.FolderName());
+                if (mapService == null)
+                    throw new Exception("Unknown service: " + id);
+
+                if (!await mapService.HasAnyAccess(identity))
+                    throw new NotAuthorizedException();
+
+                List<IServiceRequestInterpreter> interpreters = new List<IServiceRequestInterpreter>();
+                foreach(var interpreterType in InternetMapServer.Interpreters)
+                {
+                    try
+                    {
+                        var interpreter = new PlugInManager().CreateInstance<IServiceRequestInterpreter>(interpreterType);
+                        await mapService.CheckAccess(identity, interpreter);
+                        interpreters.Add(interpreter);
+                    }
+                    catch { }
+                }
+
+                return View(new BrowseServicesServiceModel()
+                {
+                    Server = InternetMapServer.AppRootUrl(this.Request),
+                    OnlineResource = Request.Scheme + "://" + Request.Host + "/ogc?",
+                    MapService = InternetMapServer.mapServices.Where(s => s.Name == id.ServiceName() && s.Folder == id.FolderName()).FirstOrDefault(),
+                    Interpreters = interpreters
+                });
             });
+            
         }
 
         #region Helper

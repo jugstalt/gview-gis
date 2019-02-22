@@ -31,12 +31,13 @@ namespace gView.Interoperability.GeoServices.Request
 
         #region IServiceRequestInterpreter
 
-        public string IntentityName => "geoservices";
+        public string IdentityName => "geoservices";
+        public string IdentityLongName => "OGC/ESRI GeoServices (REST)";
 
         public InterpreterCapabilities Capabilities =>
             new InterpreterCapabilities(new InterpreterCapabilities.Capability[]{
-                    new InterpreterCapabilities.SimpleCapability("REST Catalog",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder}","1.0"),
-                    new InterpreterCapabilities.SimpleCapability("REST Service ",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder/service}/MapServer","1.0")
+                    new InterpreterCapabilities.SimpleCapability("Catalog (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder}","1.0"),
+                    new InterpreterCapabilities.SimpleCapability("Service (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder/service}/MapServer","1.0")
             });
 
         public void OnCreate(IMapServer mapServer)
@@ -186,10 +187,10 @@ namespace gView.Interoperability.GeoServices.Request
                         context.ServiceRequest.Succeeded = false;
                         context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
                         {
-                            error = new JsonError.Error()
+                            Error = new JsonError.ErrorDef()
                             {
-                                code = -1,
-                                message = "No image data"
+                                Code = -1,
+                                Message = "No image data"
                             }
                         });
                     }
@@ -200,10 +201,10 @@ namespace gView.Interoperability.GeoServices.Request
                 context.ServiceRequest.Succeeded = false;
                 context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
                 {
-                    error = new JsonError.Error()
+                    Error = new JsonError.ErrorDef()
                     {
-                        code = -1,
-                        message = ex.Message
+                        Code = -1,
+                        Message = ex.Message
                     }
                 });
             }
@@ -466,10 +467,10 @@ namespace gView.Interoperability.GeoServices.Request
                 context.ServiceRequest.Succeeded = false;
                 context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
                 {
-                    error = new JsonError.Error()
+                    Error = new JsonError.ErrorDef()
                     {
-                        code = -1,
-                        message = ex.Message
+                        Code = -1,
+                        Message = ex.Message
                     }
                 });
             }
@@ -548,10 +549,10 @@ namespace gView.Interoperability.GeoServices.Request
                 context.ServiceRequest.Succeeded = false;
                 context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
                 {
-                    error = new JsonError.Error()
+                    Error = new JsonError.ErrorDef()
                     {
-                        code = -1,
-                        message = ex.Message
+                        Code = -1,
+                        Message = ex.Message
                     }
                 });
             }

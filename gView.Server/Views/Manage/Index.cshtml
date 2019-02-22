@@ -34,6 +34,7 @@
 
     <script type="text/javascript">
         (function () {
+            window.gview.manage.setRootUrl('@(gView.Server.AppCode.InternetMapServer.AppRootUrl(this.Context.Request))')
             window.gview.manage.pageServices();
         })();
     </script>

@@ -1,4 +1,5 @@
-﻿using gView.Framework.system;
+﻿using gView.Core.Framework.Exceptions;
+using gView.Framework.system;
 using gView.MapServer;
 using Newtonsoft.Json;
 using System;
@@ -177,8 +178,8 @@ namespace gView.Server.AppCode
             if (accessRule == null || accessRule.ServiceTypes == null)
                 throw new TokenRequiredException("forbidden (user:" + userName + ")");
 
-            if (!accessRule.ServiceTypes.Contains("_all") && !accessRule.ServiceTypes.Contains("_" + context.ServiceRequestInterpreter.IntentityName.ToLower()))
-                throw new NotAuthorizedException(context.ServiceRequestInterpreter.IntentityName + " interface forbidden (user: " + userName + ")");
+            if (!accessRule.ServiceTypes.Contains("_all") && !accessRule.ServiceTypes.Contains("_" + context.ServiceRequestInterpreter.IdentityName.ToLower()))
+                throw new NotAuthorizedException(context.ServiceRequestInterpreter.IdentityName + " interface forbidden (user: " + userName + ")");
 
             var accessTypes = context.ServiceRequestInterpreter.RequiredAccessTypes(context);
             foreach (AccessTypes accessType in Enum.GetValues(typeof(AccessTypes)))
@@ -189,6 +190,42 @@ namespace gView.Server.AppCode
                         throw new NotAuthorizedException("Forbidden: " + accessType.ToString() + " access required (user: " + userName + ")");
                 }
             }
+        }
+
+        async public Task CheckAccess(IIdentity identity, IServiceRequestInterpreter interpreter)
+        {
+            if (identity == null)
+                throw new ArgumentNullException("identity");
+            if (interpreter == null)
+                throw new ArgumentNullException("interpreter");
+
+            await ReloadServiceSettings();
+
+            if (_settings.Status != MapServiceStatus.Running)
+                throw new Exception("Service not running: " + this.Fullname);
+
+            if (_settings.AccessRules == null)  // Open Server
+                return;
+
+            string userName = identity.UserName;
+
+            var accessRule = _settings
+                .AccessRules
+                .Where(r => r.Username.Equals(userName, StringComparison.InvariantCultureIgnoreCase))
+                .FirstOrDefault();
+
+            // if user not found, use rules for anonymous
+            if (accessRule == null)
+                accessRule = _settings
+                .AccessRules
+                .Where(r => r.Username.Equals(Identity.AnonyomousUsername, StringComparison.InvariantCultureIgnoreCase))
+                .FirstOrDefault();
+
+            if (accessRule == null || accessRule.ServiceTypes == null)
+                throw new TokenRequiredException("forbidden (user:" + userName + ")");
+
+            if (!accessRule.ServiceTypes.Contains("_all") && !accessRule.ServiceTypes.Contains("_" + interpreter.IdentityName.ToLower()))
+                throw new NotAuthorizedException(interpreter.IdentityName + " interface forbidden (user: " + userName + ")");
         }
 
         async public Task<bool> HasAnyAccess(IIdentity identity)

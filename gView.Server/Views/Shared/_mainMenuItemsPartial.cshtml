@@ -1,4 +1,8 @@
 ﻿<li><a asp-area="" asp-controller="BrowseServices" asp-action="Index">Browse Services</a></li>
+<li><a href="@(gView.Server.AppCode.InternetMapServer.AppRootUrl(this.Context.Request))/geoservices/rest/services">GeoServices (REST)</a></li>
 <li><a asp-area="" asp-controller="Manage" asp-action="Index">Manage</a></li>
+
+<!--
 <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
 <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
+-->

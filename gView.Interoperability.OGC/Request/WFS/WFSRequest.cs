@@ -88,10 +88,8 @@ namespace gView.Interoperability.OGC
             return accessTypes;
         }
 
-        virtual public string IntentityName
-        {
-            get { return "wfs"; }
-        }
+        public string IdentityName => "wfs";
+        public string IdentityLongName => "OGC Web Feature Service";
 
         public InterpreterCapabilities Capabilities
         {

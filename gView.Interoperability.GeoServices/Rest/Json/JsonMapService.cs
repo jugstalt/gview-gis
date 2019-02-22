@@ -8,6 +8,8 @@ using System.Text;
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     [ServiceMethod("ExportMap", "export")]
+    [ServiceMethod("All Layers", "layers")]
+    [ServiceMethod("Legend", "legend")]
     public class JsonMapService
     {
         public JsonMapService()
