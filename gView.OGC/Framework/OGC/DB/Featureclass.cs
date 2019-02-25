@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.DB
 {
-    public class OgcSpatialFeatureclass : IFeatureClass
+    public class OgcSpatialFeatureclass : IFeatureClass2
     {
         protected string _name, _shapefield, _idfield;
         protected geometryType _geomType;
@@ -354,6 +354,26 @@ namespace gView.Framework.OGC.DB
         public string IDFieldName
         {
             get { return _idfield; }
+        }
+
+        #endregion
+
+        #region ITableClass2
+
+        async public Task<int> ExecuteCount(IQueryFilter filter)
+        {
+            using (DbConnection connection = _dataset.ProviderFactory.CreateConnection())
+            {
+                connection.ConnectionString = _dataset.ConnectionString;
+                await connection.OpenAsync();
+
+                DbCommand command = _dataset.SelectCommand(this, filter, out string shapeFieldname, "count", this.IDFieldName);
+                command.Connection = connection;
+
+                object result = await command.ExecuteScalarAsync();
+
+                return Convert.ToInt32(result);
+            }
         }
 
         #endregion

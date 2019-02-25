@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Security.Cryptography;
+using System.Linq;
 
 namespace gView.Framework.system
 {
@@ -57,6 +58,12 @@ namespace gView.Framework.system
 
     public class Crypto
     {
+        public enum ResultType
+        {
+            Base64,
+            Hex
+        }
+
         //// Key for TripleDES encryption
         //public static byte[] _key = { 21, 10, 64, 10, 100, 40, 200, 4,
         //            21, 54, 65, 246, 5, 62, 1, 54,
@@ -209,59 +216,27 @@ namespace gView.Framework.system
         // Encrypt a string into a string using a password 
 
         //    Uses Encrypt(byte[], byte[], byte[]) 
-        public static string Encrypt(string clearText, string Password)
+        public static string Encrypt(string clearText, string Password, ResultType resultType = ResultType.Base64)
         {
             if (String.IsNullOrEmpty(clearText))
                 return String.Empty;
 
-            // First we need to turn the input string into a byte array. 
 
             byte[] clearBytes = global::System.Text.Encoding.Unicode.GetBytes(clearText);
-
-
-
-            // Then, we need to turn the password into Key and IV 
-
-            // We are using salt to make it harder to guess our key using a dictionary attack - 
-
-            // trying to guess a password by enumerating all possible words. 
 
             PasswordDeriveBytes pdb = new PasswordDeriveBytes(Password,
 
                         new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4e, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
 
-
-
-            // Now get the key/IV and do the encryption using the function that accepts byte arrays. 
-
-            // Using PasswordDeriveBytes object we are first getting 32 bytes for the Key 
-
-            // (the default Rijndael key length is 256bit = 32bytes) and then 16 bytes for the IV. 
-
-            // IV should always be the block size, which is by default 16 bytes (128 bit) for Rijndael. 
-
-            // If you are using DES/TripleDES/RC2 the block size is 8 bytes and so should be the IV size. 
-
-            // You can also read KeySize/BlockSize properties off the algorithm to find out the sizes. 
-
             byte[] encryptedData = Encrypt(clearBytes, pdb.GetBytes(32), pdb.GetBytes(16));
 
-
-
-            // Now we need to turn the resulting byte array into a string. 
-
-            // A common mistake would be to use an Encoding class for that. It does not work 
-
-            // because not all byte values can be represented by characters. 
-
-            // We are going to be using Base64 encoding that is designed exactly for what we are 
-
-            // trying to do. 
-
-            return Convert.ToBase64String(encryptedData);
-
-
-
+            switch (resultType)
+            {
+                case ResultType.Hex:
+                    return "0x" + string.Concat(encryptedData.Select(b => b.ToString("X2")));
+                default: // base64
+                    return Convert.ToBase64String(encryptedData);
+            }
         }
 
         // Encrypt bytes into bytes using a password 
@@ -467,52 +442,25 @@ namespace gView.Framework.system
 
             // We presume that Base64 encoding was used 
 
-            byte[] cipherBytes = Convert.FromBase64String(cipherText);
+            byte[] cipherBytes = null;
+            if (IsHexString(cipherText))
+            {
+                cipherBytes = StringToByteArray(cipherText);
+            }
+            else
+            {
+                cipherBytes = Convert.FromBase64String(cipherText);
+            }
 
-
-
-            // Then, we need to turn the password into Key and IV 
-
-            // We are using salt to make it harder to guess our key using a dictionary attack - 
-
-            // trying to guess a password by enumerating all possible words. 
 
             PasswordDeriveBytes pdb = new PasswordDeriveBytes(Password,
 
                         new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4e, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
 
 
-
-            // Now get the key/IV and do the decryption using the function that accepts byte arrays. 
-
-            // Using PasswordDeriveBytes object we are first getting 32 bytes for the Key 
-
-            // (the default Rijndael key length is 256bit = 32bytes) and then 16 bytes for the IV. 
-
-            // IV should always be the block size, which is by default 16 bytes (128 bit) for Rijndael. 
-
-            // If you are using DES/TripleDES/RC2 the block size is 8 bytes and so should be the IV size. 
-
-            // You can also read KeySize/BlockSize properties off the algorithm to find out the sizes. 
-
             byte[] decryptedData = Decrypt(cipherBytes, pdb.GetBytes(32), pdb.GetBytes(16));
 
-
-
-            // Now we need to turn the resulting byte array into a string. 
-
-            // A common mistake would be to use an Encoding class for that. It does not work 
-
-            // because not all byte values can be represented by characters. 
-
-            // We are going to be using Base64 encoding that is designed exactly for what we are 
-
-            // trying to do. 
-
             return global::System.Text.Encoding.Unicode.GetString(decryptedData);
-
-
-
         }
 
         // Decrypt bytes into bytes using a password 
@@ -676,5 +624,39 @@ namespace gView.Framework.system
         //    Console.WriteLine("Done.");
 
         //} 
+
+        #region Helper
+
+        static private byte[] StringToByteArray(String hex)
+        {
+            if (hex.StartsWith("0x"))
+                hex = hex.Substring(2, hex.Length - 2);
+
+            int NumberChars = hex.Length;
+            byte[] bytes = new byte[NumberChars / 2];
+            for (int i = 0; i < NumberChars; i += 2)
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            return bytes;
+        }
+
+        static private bool IsHexString(string hex)
+        {
+            if (hex.StartsWith("0x"))
+                hex = hex.Substring(2, hex.Length - 2);
+
+            bool isHex;
+            foreach (var c in hex)
+            {
+                isHex = ((c >= '0' && c <= '9') ||
+                         (c >= 'a' && c <= 'f') ||
+                         (c >= 'A' && c <= 'F'));
+
+                if (!isHex)
+                    return false;
+            }
+            return true;
+        }
+
+        #endregion
     }
 }

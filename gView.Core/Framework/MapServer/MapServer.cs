@@ -27,7 +27,7 @@ namespace gView.MapServer
 
         string TileCachePath { get; }
 
-        //bool CheckAccess(IIdentity identity, string service);
+        int FeatureQueryLimit { get; }
     }
 
     public enum MapServiceType { MXL, SVC, GDI, Folder }

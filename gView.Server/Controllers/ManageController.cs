@@ -18,7 +18,7 @@ namespace gView.Server.Controllers
         public IActionResult Index()
         {
             var authToken = base.GetAuthToken();
-            if (authToken.IsAnonymous)
+            if (!authToken.IsManageUser)
                 return RedirectToAction("Login");
 
             ViewData["mainMenuItems"] = "mainMenuItemsPartial";
@@ -330,7 +330,7 @@ namespace gView.Server.Controllers
             try
             {
                 var authToken = base.GetAuthToken();
-                if (authToken.IsAnonymous)
+                if (!authToken.IsManageUser)
                     throw new Exception("Not allowed");
 
                 return func.Invoke();
@@ -354,7 +354,7 @@ namespace gView.Server.Controllers
             try
             {
                 var authToken = base.GetAuthToken();
-                if (authToken.IsAnonymous)
+                if (!authToken.IsManageUser)
                     throw new Exception("Not allowed");
 
                 return await func.Invoke();

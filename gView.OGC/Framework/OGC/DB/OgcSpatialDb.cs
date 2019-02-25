@@ -943,7 +943,7 @@ namespace gView.Framework.OGC.DB
             }
         }
 
-        virtual public DbCommand SelectCommand(OgcSpatialFeatureclass fc, IQueryFilter filter, out string shapeFieldName)
+        virtual public DbCommand SelectCommand(OgcSpatialFeatureclass fc, IQueryFilter filter, out string shapeFieldName, string functionName = "", string functionField = "", string functionAlias = "")
         {
             shapeFieldName = String.Empty;
 
@@ -978,6 +978,13 @@ namespace gView.Framework.OGC.DB
                 }
                 filter.AddField(fc.ShapeFieldName);
             }
+
+            if (!String.IsNullOrWhiteSpace(functionName) && !String.IsNullOrWhiteSpace(functionField))
+            {
+                filter.SubFields = "";
+                filter.AddField(functionName + "(" + filter.fieldPrefix + functionField + filter.fieldPostfix + ")");
+            }
+
             string filterWhereClause = (filter is IRowIDFilter) ? ((IRowIDFilter)filter).RowIDWhereClause : filter.WhereClause;
 
             if (where != "" && filterWhereClause != "") where += " AND ";
@@ -998,8 +1005,18 @@ namespace gView.Framework.OGC.DB
                 }
             }
 
+            string limit = String.Empty, orderBy=String.Empty;
+
+            if (!String.IsNullOrWhiteSpace(filter.OrderBy))
+                orderBy = "order by " + filter.OrderBy;
+
+            if (filter.Limit > 0)
+                limit = " limit " + filter.Limit;
+            if (filter.BeginRecord > 1)  // Default in QueryFilter is one!!!
+                limit += " offset " + Math.Max(0, filter.BeginRecord - 1);
+
             DbCommand command = ((OgcSpatialDataset)fc.Dataset).ProviderFactory.CreateCommand();
-            command.CommandText = "SELECT " + fieldNames + " FROM " + DbTableName(fc.Name) + ((where != "") ? " WHERE " + where : "");
+            command.CommandText = ("SELECT " + fieldNames + " FROM " + DbTableName(fc.Name) + ((where != "") ? " WHERE " + where : "") + limit).Trim();
 
             return command;
         }

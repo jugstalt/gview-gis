@@ -27,6 +27,7 @@ namespace gView.Server.Controllers
                     Folders = InternetMapServer.mapServices
                         .Where(s => s.Type == MapServiceType.Folder && s.Folder == folder)
                         .Select(s => s.Name).Distinct()
+                        .OrderBy(s=>s)
                         .ToArray(),
                     Services = InternetMapServer.mapServices
                         .Where(s =>

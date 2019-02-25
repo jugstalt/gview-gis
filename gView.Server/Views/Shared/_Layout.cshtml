@@ -18,23 +18,34 @@
 </head>
 <body>
     <nav class="navbar navbar-inverse navbar-fixed-top">
-            <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">gView Server</a>
-                </div>
-                <div class="navbar-collapse collapse">
-                    <ul class="nav navbar-nav">
-                        <partial name="@(ViewData["mainMenuItems"] ?? "_mainMenuItemsPartial")" />
-                    </ul>
-                </div>
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">gView Server</a>
             </div>
-        </nav>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <partial name="@(ViewData["mainMenuItems"] ?? "_mainMenuItemsPartial")" />
+                </ul>
+            </div>
+            <div class="login-button">
+                @{ var username = gView.Server.AppCode.BaseController.LoginUsername(this.Context.Request); }
+                @if (String.IsNullOrWhiteSpace(username))
+                {
+                <a asp-area="" asp-controller="Token" asp-action="Login">Login</a>
+                }
+                else
+                {
+                <a asp-area="" asp-controller="Token" asp-action="Logout">Logout: @(username)</a>
+                }
+            </div>
+        </div>
+    </nav>
 
     <partial name="_CookieConsentPartial" />
 

@@ -300,6 +300,7 @@ namespace gView.Interoperability.GeoServices.Request
             {
                 var query = JsonConvert.DeserializeObject<JsonQueryLayer>(context.ServiceRequest.Request);
 
+                int featureCount = 0;
                 List<JsonFeature> jsonFeatures = new List<JsonFeature>();
                 List<JsonFeatureResponse.Field> jsonFields = new List<JsonFeatureResponse.Field>();
                 string objectIdFieldName = String.Empty;
@@ -325,6 +326,7 @@ namespace gView.Interoperability.GeoServices.Request
                         }
 
                         QueryFilter filter;
+                    
                         if (!String.IsNullOrWhiteSpace(query.Geometry))
                         {
                             filter = new SpatialFilter();
@@ -336,15 +338,24 @@ namespace gView.Interoperability.GeoServices.Request
                         {
                             filter = new QueryFilter();
                         }
+                        filter.WhereClause = query.Where;
+
                         if (query.ReturnCountOnly == true)
                         {
-                            filter.SubFields = !String.IsNullOrWhiteSpace(tableClass.IDFieldName) ? tableClass.IDFieldName : "*";
+                            if (tableClass is ITableClass2 && !String.IsNullOrWhiteSpace(tableClass.IDFieldName))
+                            {
+                                featureCount += await ((ITableClass2)tableClass).ExecuteCount(filter);
+                                continue;
+                            }
+                            else
+                            {
+                                filter.SubFields = !String.IsNullOrWhiteSpace(tableClass.IDFieldName) ? tableClass.IDFieldName : "*";
+                            }
                         }
                         else
                         {
                             filter.SubFields = query.OutFields;
                         }
-                        filter.WhereClause = query.Where;
 
                         if (!String.IsNullOrWhiteSpace(query.OutSRef))
                         {
@@ -378,6 +389,13 @@ namespace gView.Interoperability.GeoServices.Request
                             filter.FeatureSpatialReference = SRef(query.OutSRef);
                         }
 
+                        filter.Limit = query.ResultRecordCount > 0 ?
+                            Math.Min(query.ResultRecordCount, _mapServer.FeatureQueryLimit) :
+                            _mapServer.FeatureQueryLimit;
+                        filter.BeginRecord = query.ResultOffset + 1;  // Start is 1 by IQueryFilter definition
+
+                        filter.OrderBy = query.OrderByFields;
+
                         #endregion
 
                         using (var cursor = await tableClass.Search(filter))
@@ -390,6 +408,7 @@ namespace gView.Interoperability.GeoServices.Request
                                 IFeatureCursor featureCursor = (IFeatureCursor)cursor;
                                 while ((feature = await featureCursor.NextFeature()) != null)
                                 {
+                                    featureCount++;
                                     var jsonFeature = new JsonFeature();
                                     var attributesDict = (IDictionary<string, object>)jsonFeature.Attributes;
 
@@ -448,7 +467,7 @@ namespace gView.Interoperability.GeoServices.Request
                 {
                     context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonFeatureCountResponse()
                     {
-                        Count = jsonFeatures.Count()
+                        Count = featureCount  //jsonFeatures.Count()
                     });
                 }
                 else

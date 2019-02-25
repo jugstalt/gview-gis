@@ -267,6 +267,11 @@ namespace gView.Framework.Data
         string IDFieldName { get; }
     }
 
+    public interface ITableClass2 : ITableClass
+    {
+        Task<int> ExecuteCount(IQueryFilter filter);
+    }
+
     public interface IFeatureClass : ITableClass, IGeometryDef
     {
         string ShapeFieldName { get; }
@@ -277,6 +282,11 @@ namespace gView.Framework.Data
         //IFeature GetFeature(int id, getFeatureQueryType type);
         //IFeatureCursor GetFeatures(List<int> ids, getFeatureQueryType type);
         Task<IFeatureCursor> GetFeatures(IQueryFilter filter);
+    }
+
+    public interface IFeatureClass2 : IFeatureClass, ITableClass2
+    {
+
     }
 
     public delegate void BeforeQueryEventHandler(ITableClass sender, ref IQueryFilter filter);

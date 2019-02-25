@@ -31,6 +31,8 @@ namespace gView.Framework.Data
             m_featureCount = 0;
             m_hasmore = m_nolock = false;
 
+            this.Limit = 0;
+
             this.IgnoreUndefinedFields = false;
         }
         public QueryFilter(IQueryFilter filter)
@@ -56,6 +58,8 @@ namespace gView.Framework.Data
             this._featureSRef = (filter.FeatureSpatialReference != null) ? filter.FeatureSpatialReference.Clone() as ISpatialReference : null;
             this.ContextLayerDefaultSpatialReference = filter.ContextLayerDefaultSpatialReference != null ?
                 filter.ContextLayerDefaultSpatialReference.Clone() as ISpatialReference : null;
+
+            this.Limit = filter.Limit;
 
             this.IgnoreUndefinedFields = filter.IgnoreUndefinedFields;
 
@@ -102,6 +106,9 @@ namespace gView.Framework.Data
             get { return m_beginrecord; }
             set { m_beginrecord = value; }
         }
+
+        public int Limit { get; set; }
+
         public virtual void AddField(string fieldname, bool caseSensitive=true)
         {
             if (String.IsNullOrEmpty(fieldname)) return;
@@ -503,6 +510,7 @@ namespace gView.Framework.Data
                 {
                     double ret = 0D;
                     #region Init 
+
                     switch (filter._function.ToLower())
                     {
                         case "min":
@@ -515,6 +523,7 @@ namespace gView.Framework.Data
                             ret=0D;
                             break;
                     }
+                    
                     #endregion
 
                     IFeature feature = null;

@@ -222,6 +222,8 @@ namespace gView.Server.AppCode
         //    return InternetMapServer.acl.HasAccess(identity, null, service);
         //}
 
+        public int FeatureQueryLimit => 1000;
+
         #endregion
 
         //private bool ServiceExists(string name)

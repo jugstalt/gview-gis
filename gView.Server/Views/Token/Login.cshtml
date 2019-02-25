@@ -1,12 +1,12 @@
 ﻿
 @{
-    ViewData["Title"] = "Login (Manager)";
+    ViewData["Title"] = "Login (Token)";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 @removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.FormTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
 
-@model gView.Server.Models.ManageLoginModel;
+@model gView.Server.Models.TokenLoginModel;
 
 <div class="gview5-login-panel">
     <div class="title">
@@ -29,7 +29,7 @@
         @Model.ErrorMessage
     </div>
     }
-    <form action="@(gView.Server.AppCode.InternetMapServer.AppRootUrl(this.Context.Request))/Manage/Login" method="post" class="form-horizontal">
+    <form action="@(gView.Server.AppCode.InternetMapServer.AppRootUrl(this.Context.Request))/Token/Login" method="post" class="form-horizontal">
         @*<h4>Use a local account to log in.</h4>*@
         <div asp-validation-summary="All" class="text-danger"></div>
         <div class="attribute">

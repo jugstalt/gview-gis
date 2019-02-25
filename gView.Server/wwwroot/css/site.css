@@ -89,6 +89,20 @@ ul {
     }
 
 
+/****** Menu *********/
+
+.login-button{
+    position:absolute;
+    right:20px;
+    top:16px;
+}
+
+@media(max-width:768px) {
+    .login-button {
+        right: 70px;
+    }
+}
+
 /****** Browse **********/
 
 table.service-capabilities {

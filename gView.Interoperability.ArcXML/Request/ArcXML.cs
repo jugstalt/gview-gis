@@ -79,6 +79,9 @@ namespace gView.Interoperability.ArcXML
                         ((ArcIMSDataset)((IBufferQueryFilter)filter).RootFeatureClass.Dataset)._properties;
                 }
 
+                filter.Limit = featurelimit;
+                filter.BeginRecord = Math.Max(0, beginrecord - 1);
+
                 if (Class is IFeatureClass)
                 {
                     cursor = await Class.Search(filter) as IFeatureCursor;

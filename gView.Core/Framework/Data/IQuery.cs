@@ -22,6 +22,7 @@ namespace gView.Framework.Data
 		string OrderBy { set; get; }
         bool NoLock { set; get; }
 		int BeginRecord { get ; set ;}
+        int Limit { get; set; }
 		int LastQueryFeatureCount { get ; }
 		bool HasMore { get ; }
 

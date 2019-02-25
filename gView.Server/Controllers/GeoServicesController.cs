@@ -55,7 +55,9 @@ namespace gView.Server.Controllers
                     CurrentVersion = Version,
                     Folders = InternetMapServer.mapServices
                         .Where(s => s.Type == MapServiceType.Folder && s.Folder == id)
-                        .Select(s => s.Name).Distinct()
+                        .Select(s => s.Name)
+                        .Distinct()
+                        .OrderBy(s=>s)
                         .ToArray(),
                     Services = InternetMapServer.mapServices
                         .Where(s =>
@@ -1145,6 +1147,9 @@ namespace gView.Server.Controllers
                                 break;
                             case FormInputAttribute.InputTypes.Hidden:
                                 sb.Append("<input type='hidden' name='" + jsonPropertyAttribute.PropertyName + "' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");
+                                break;
+                            case FormInputAttribute.InputTypes.Password:
+                                sb.Append("<input name='" + jsonPropertyAttribute.PropertyName + "' type='password' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");
                                 break;
                             default:
                                 sb.Append("<input name='" + jsonPropertyAttribute.PropertyName + "' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");

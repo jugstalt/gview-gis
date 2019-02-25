@@ -27,13 +27,43 @@ namespace gView.Server.AppCode
 
         protected AuthToken GetAuthToken()
         {
+            return LoginAuthToken(this.Request);
+        }
+
+        protected void SetAuthCookie(AuthToken authToken)
+        {
+            var cookieOptions = new CookieOptions()
+            {
+                Expires = null,
+                Secure = true,
+                HttpOnly = true
+            };
+
+            this.Response.Cookies.Append(AuthCookieName, authToken.ToString(), cookieOptions);
+        }
+
+        protected void RemoveAuthCookie()
+        {
+            this.Response.Cookies.Delete(AuthCookieName);
+        }
+
+        static public AuthToken LoginAuthToken(HttpRequest request)
+        {
             AuthToken authToken = null;
 
             try
             {
                 #region From Token
 
-                string token = this.Request.Query["token"];
+                string token = request.Query["token"];
+                if(String.IsNullOrWhiteSpace(token) && request.HasFormContentType)
+                {
+                    try
+                    {
+                        token = request.Form["token"];
+                    }
+                    catch { }
+                }
                 if (!String.IsNullOrEmpty(token))
                 {
                     return authToken = AuthToken.FromString(token);
@@ -43,7 +73,7 @@ namespace gView.Server.AppCode
 
                 #region From Cookie
 
-                string cookie = this.Request.Cookies[AuthCookieName];
+                string cookie = request.Cookies[AuthCookieName];
                 if (!String.IsNullOrWhiteSpace(cookie))
                 {
                     return authToken = AuthToken.FromString(cookie);
@@ -63,21 +93,16 @@ namespace gView.Server.AppCode
             }
         }
 
-        protected void SetAuthCookie(AuthToken authToken)
+        static public string LoginUsername(HttpRequest request)
         {
-            var cookieOptions = new CookieOptions()
+            try
             {
-                Expires = null,
-                Secure = true,
-                HttpOnly = true
-            };
-
-            this.Response.Cookies.Append(AuthCookieName, authToken.ToString(), cookieOptions);
-        }
-
-        protected void RemoveAuthCookie()
-        {
-            this.Response.Cookies.Delete(AuthCookieName);
+                return LoginAuthToken(request).Username;
+            }
+            catch (Exception)
+            {
+                return String.Empty;
+            }
         }
 
         #endregion

@@ -202,7 +202,7 @@ namespace gView.DataSources.MSSqlSpatial
             return env;
         }
 
-        public override DbCommand SelectCommand(gView.Framework.OGC.DB.OgcSpatialFeatureclass fc, IQueryFilter filter, out string shapeFieldName)
+        public override DbCommand SelectCommand(gView.Framework.OGC.DB.OgcSpatialFeatureclass fc, IQueryFilter filter, out string shapeFieldName, string functionName="", string functionField="", string functionAlias="")
         {
             shapeFieldName = String.Empty;
 
@@ -242,8 +242,7 @@ namespace gView.DataSources.MSSqlSpatial
                 }
                 catch { }
 
-                if (sFilter.SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects ||
-                    sFilter.Geometry is IEnvelope)
+                if (sFilter.SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects /*|| sFilter.Geometry is IEnvelope*/)
                 {
                     IEnvelope env = sFilter.Geometry.Envelope;
 
@@ -287,6 +286,13 @@ namespace gView.DataSources.MSSqlSpatial
                 }
                 filter.AddField(fc.ShapeFieldName);
             }
+
+            if (!String.IsNullOrWhiteSpace(functionName) && !String.IsNullOrWhiteSpace(functionField))
+            {
+                filter.SubFields = "";
+                filter.AddField(functionName + "(" + filter.fieldPrefix + functionField + filter.fieldPostfix + ")");
+            }
+
             string filterWhereClause = (filter is IRowIDFilter) ? ((IRowIDFilter)filter).RowIDWhereClause : filter.WhereClause;
 
             StringBuilder fieldNames = new StringBuilder();
@@ -304,7 +310,31 @@ namespace gView.DataSources.MSSqlSpatial
                 }
             }
 
-            command.CommandText = "SELECT " + fieldNames + " FROM " + fc.Name;
+            string limit = String.Empty, top = String.Empty, orderBy = String.Empty;
+            if (!String.IsNullOrWhiteSpace(filter.OrderBy))
+            {
+                orderBy = " order by " + filter.OrderBy;
+            }
+
+            if (filter.Limit > 0)
+            {
+                if (String.IsNullOrEmpty(fc.IDFieldName) && String.IsNullOrWhiteSpace(orderBy))
+                {
+                    top = "top(" + filter.Limit + ") ";
+                }
+                else
+                {
+                    if (String.IsNullOrWhiteSpace(orderBy))
+                    {
+                        orderBy = " order by " + filter.fieldPrefix + fc.IDFieldName + filter.fieldPostfix;
+                    }
+
+                    limit = " offset " + Math.Max(0, filter.BeginRecord - 1) + " rows fetch next " + filter.Limit + " rows only";
+                }
+            }
+
+            command.CommandText = "SELECT " + limit + fieldNames + " FROM " + fc.Name;
+
             if (!String.IsNullOrEmpty(where))
             {
                 command.CommandText += " WHERE " + where + ((filterWhereClause != "") ? " AND " + filterWhereClause : "");
@@ -313,8 +343,7 @@ namespace gView.DataSources.MSSqlSpatial
             {
                 command.CommandText += " WHERE " + filterWhereClause;
             }
-
-            //command.CommandText = "SELECT " + fieldNames + " FROM " + table + ((filterWhereClause != "") ? " WHERE " + filterWhereClause : "");
+            command.CommandText += orderBy + limit;
 
             return command;
         }
@@ -790,7 +819,7 @@ namespace gView.DataSources.MSSqlSpatial
             return Task.FromResult<IEnvelope>(new Envelope(-180, -90, 180, 90));
         }
 
-        public override DbCommand SelectCommand(gView.Framework.OGC.DB.OgcSpatialFeatureclass fc, IQueryFilter filter, out string shapeFieldName)
+        public override DbCommand SelectCommand(gView.Framework.OGC.DB.OgcSpatialFeatureclass fc, IQueryFilter filter, out string shapeFieldName, string functionName = "", string functionField = "", string functionAlias = "")
         {
             shapeFieldName = String.Empty;
 
@@ -821,8 +850,7 @@ namespace gView.DataSources.MSSqlSpatial
                 ISpatialFilter sFilter = filter as ISpatialFilter;
 
 
-                if (sFilter.SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects ||
-                    sFilter.Geometry is IEnvelope)
+                if (sFilter.SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects /*|| sFilter.Geometry is IEnvelope*/)
                 {
                     IEnvelope env = sFilter.Geometry.Envelope;
 
@@ -867,6 +895,12 @@ namespace gView.DataSources.MSSqlSpatial
                 filter.AddField(fc.ShapeFieldName);
             }
 
+            if (!String.IsNullOrWhiteSpace(functionName) && !String.IsNullOrWhiteSpace(functionField))
+            {
+                filter.SubFields = "";
+                filter.AddField(functionName + "(" + filter.fieldPrefix + functionField + filter.fieldPostfix + ")");
+            }
+
             string filterWhereClause = (filter is IRowIDFilter) ? ((IRowIDFilter)filter).RowIDWhereClause : filter.WhereClause;
 
             StringBuilder fieldNames = new StringBuilder();
@@ -884,7 +918,31 @@ namespace gView.DataSources.MSSqlSpatial
                 }
             }
 
-            command.CommandText = "SELECT " + fieldNames + " FROM " + fc.Name;
+            string limit = String.Empty, top = String.Empty, orderBy = String.Empty;
+            if (!String.IsNullOrWhiteSpace(filter.OrderBy))
+            {
+                orderBy = " order by " + filter.OrderBy;
+            }
+
+            if (filter.Limit > 0)
+            {
+                if (String.IsNullOrEmpty(fc.IDFieldName) && String.IsNullOrWhiteSpace(orderBy))
+                {
+                    top = "top(" + filter.Limit + ") ";
+                }
+                else
+                {
+                    if (String.IsNullOrWhiteSpace(orderBy))
+                    {
+                        orderBy = " order by " + filter.fieldPrefix + fc.IDFieldName + filter.fieldPostfix;
+                    }
+
+                    limit = " offset " + Math.Max(0, filter.BeginRecord - 1) + " rows fetch next " + filter.Limit + " rows only";
+                }
+            }
+
+            command.CommandText = "SELECT " + limit + fieldNames + " FROM " + fc.Name;
+
             if (!String.IsNullOrEmpty(where))
             {
                 command.CommandText += " WHERE " + where + ((filterWhereClause != "") ? " AND " + filterWhereClause : "");
@@ -894,7 +952,7 @@ namespace gView.DataSources.MSSqlSpatial
                 command.CommandText += " WHERE " + filterWhereClause;
             }
 
-            //command.CommandText = "SELECT " + fieldNames + " FROM " + table + ((filterWhereClause != "") ? " WHERE " + filterWhereClause : "");
+            command.CommandText += orderBy + limit;
 
             return command;
         }

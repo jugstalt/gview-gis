@@ -14,24 +14,28 @@ namespace gView.Server.AppCode
             
         }
 
-        public AuthToken(string username, DateTimeOffset expires)
+        public AuthToken(string username, AuthTypes authType, DateTimeOffset expires)
         {
             this.Username = username;
+            this.AuthType = authType;
             this.Expire = (DateTime.UtcNow.AddTicks(expires.Ticks)).Ticks;
         }
 
         public string Username { get; set; }
         public string PasswordHash { get; set; }
         public long Expire { get; set; }
+        public AuthTypes AuthType { get; set; }
 
         public bool IsAnonymous => String.IsNullOrWhiteSpace(this.Username);
+        public bool IsManageUser => this.IsAnonymous == false && this.AuthType == AuthTypes.Manage;
+        public bool IsTokenUser => this.IsAnonymous == false && this.AuthType == AuthTypes.Tokenuser;
         public bool IsExpired => !IsAnonymous && DateTime.UtcNow.Ticks > Expire;
 
         #region Overrides
 
         public override string ToString()
         {
-            return Crypto.Encrypt(this.Username + "," + Expire.ToString(), Globals.MasterPassword);
+            return Crypto.Encrypt(this.Username + "," + (int)this.AuthType + "," + Expire.ToString(), Globals.MasterPassword, resultType: Crypto.ResultType.Hex);
         }
 
         #endregion
@@ -41,11 +45,25 @@ namespace gView.Server.AppCode
         static public AuthToken FromString(string token)
         {
             string authToken = Crypto.Decrypt(token, Globals.MasterPassword);
+
+            var at = authToken.Split(',');
             return new AuthToken()
             {
-                Username = authToken.Split(',')[0],
-                Expire = long.Parse(authToken.Split(',')[1])
+                Username = at[0],
+                AuthType = (AuthTypes)int.Parse(at[1]),
+                Expire = long.Parse(at[2])
             };
+        }
+
+        #endregion
+
+        #region Classes / Enums
+
+        public enum AuthTypes
+        {
+            Unknown = 0,
+            Tokenuser = 1,
+            Manage = 2
         }
 
         #endregion

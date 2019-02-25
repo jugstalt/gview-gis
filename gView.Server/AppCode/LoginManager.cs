@@ -25,7 +25,7 @@ namespace gView.Server.AppCode
             File.WriteAllText(path + "/" + username + ".lgn", hashedPassword);
         }
 
-        private AuthToken AuthToken(string path, string username, string password, int expireMiniutes=30)
+        private AuthToken AuthToken(string path, string username, string password, AuthToken.AuthTypes authType, int expireMiniutes=30)
         {
             var fi = new FileInfo(path + "/" + username + ".lgn");
             if(fi.Exists)
@@ -33,7 +33,7 @@ namespace gView.Server.AppCode
                 var hashedPassword = Crypto.Hash64(Crypto.Encrypt(password, Globals.MasterPassword));
                 if(hashedPassword==File.ReadAllText(fi.FullName))
                 {
-                    return new AuthToken(username, new DateTimeOffset(DateTime.UtcNow.Ticks, new TimeSpan(0, 30, 0)));
+                    return new AuthToken(username, authType, new DateTimeOffset(DateTime.UtcNow.Ticks, new TimeSpan(0, 30, 0)));
                 }
             }
 
@@ -52,7 +52,7 @@ namespace gView.Server.AppCode
                 CreateLogin(di.FullName, username, password);
             }
 
-            return AuthToken(di.FullName, username, password, exipreMinutes);
+            return AuthToken(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Manage, exipreMinutes);
         }
 
         #endregion
@@ -91,7 +91,7 @@ namespace gView.Server.AppCode
         public AuthToken GetAuthToken(string username, string password, int expireMinutes=30)
         {
             var di = new DirectoryInfo(LoginRootPath + "/token");
-            return AuthToken(di.FullName, username, password, expireMinutes);
+            return AuthToken(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Tokenuser, expireMinutes);
         }
 
         #endregion

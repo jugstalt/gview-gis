@@ -165,7 +165,7 @@ namespace gView.Interoperability.ArcXML
         }
 
         public string IdentityName => "axl";
-        public string IdentityLongName => "ESRI ArcXML (obsolete)";
+        public string IdentityLongName => "ESRI ArcXML (deprecated)";
 
         public InterpreterCapabilities Capabilities
         {
@@ -541,8 +541,8 @@ namespace gView.Interoperability.ArcXML
 
                         if (rType.Attributes["beginrecord"] != null)
                             filter.beginrecord = Convert.ToInt32(rType.Attributes["beginrecord"].Value);
-                        if (rType.Attributes["featurelimit"] != null)
-                            filter.featurelimit = Convert.ToInt32(rType.Attributes["featurelimit"].Value);
+                        if (rType.Attributes["featurelimit"] != null && Convert.ToInt32(rType.Attributes["featurelimit"].Value) > 0)
+                            filter.featurelimit = Math.Min(Convert.ToInt32(rType.Attributes["featurelimit"].Value), _mapServer.FeatureQueryLimit);
                         if (rType.Attributes["envelope"] != null)
                             filter.envelope = Convert.ToBoolean(rType.Attributes["envelope"].Value);
                         if (rType.Attributes["geometry"] != null)
