@@ -78,6 +78,6 @@ namespace gView.Server.AppCode
             }
         }
 
-        internal static string MasterPassword { get; set; }
+        //internal static string MasterPassword { get; set; }
     }
 }

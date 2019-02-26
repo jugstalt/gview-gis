@@ -1,7 +1,9 @@
-﻿using gView.Framework.system;
+﻿using gView.Framework.Security;
+using gView.Framework.system;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -35,7 +37,8 @@ namespace gView.Server.AppCode
 
         public override string ToString()
         {
-            return Crypto.Encrypt(this.Username + "," + (int)this.AuthType + "," + Expire.ToString(), Globals.MasterPassword, resultType: Crypto.ResultType.Hex);
+            //return Crypto.Encrypt(this.Username + "," + (int)this.AuthType + "," + Expire.ToString(), Globals.MasterPassword, resultType: Crypto.ResultType.Hex);
+            return SecureCrypto.EncryptToken(LoginManager.GetCertificate(), Guid.NewGuid().ToString("N") + "|" + this.Username + "|" + (int)this.AuthType + "|" + Expire.ToString(), resultType: SecureCrypto.ResultType.Base62);
         }
 
         #endregion
@@ -44,14 +47,14 @@ namespace gView.Server.AppCode
 
         static public AuthToken FromString(string token)
         {
-            string authToken = Crypto.Decrypt(token, Globals.MasterPassword);
+            string authToken = SecureCrypto.DecryptToken(LoginManager.GetCertificate(), token); //Crypto.Decrypt(token, Globals.MasterPassword);
 
-            var at = authToken.Split(',');
+            var at = authToken.Split('|');
             return new AuthToken()
             {
-                Username = at[0],
-                AuthType = (AuthTypes)int.Parse(at[1]),
-                Expire = long.Parse(at[2])
+                Username = at[1],
+                AuthType = (AuthTypes)int.Parse(at[2]),
+                Expire = long.Parse(at[3])
             };
         }
 

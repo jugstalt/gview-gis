@@ -17,12 +17,19 @@ namespace gView.Server.Controllers
     {
         public IActionResult Index()
         {
-            var authToken = base.GetAuthToken();
-            if (!authToken.IsManageUser)
-                return RedirectToAction("Login");
+            try
+            {
+                var authToken = base.GetAuthToken();
+                if (!authToken.IsManageUser)
+                    return RedirectToAction("Login");
 
-            ViewData["mainMenuItems"] = "mainMenuItemsPartial";
-            return View();
+                ViewData["mainMenuItems"] = "mainMenuItemsPartial";
+                return View();
+            }
+            catch (Exception)
+            {
+                return RedirectToAction("Login");
+            }
         }
 
         #region Login

@@ -88,7 +88,7 @@ namespace gView.Server.AppCode
             }
             finally
             {
-                if (authToken.IsExpired)
+                if (authToken==null || authToken.IsExpired)
                     throw new InvalidTokenException();
             }
         }

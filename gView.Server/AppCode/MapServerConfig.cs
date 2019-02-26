@@ -28,8 +28,7 @@ namespace gView.Server.AppCode
 
         public class SecurityConfig
         {
-            [JsonProperty("master-password")]
-            public string MasterPassword { get; set; }
+            
         }
 
         public class TaskQueueConfig

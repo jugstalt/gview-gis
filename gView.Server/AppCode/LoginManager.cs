@@ -1,14 +1,27 @@
-﻿using gView.Framework.system;
+﻿using gView.Framework.Security;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace gView.Server.AppCode
 {
     public class LoginManager
     {
+        static X509Certificate2 _cert = null;
+
+        public static X509Certificate2 GetCertificate(string name = "crypto0")
+        {
+            if (_cert == null)
+                new LoginManager(Globals.LoginManagerRootPath).ReloadCert(name);
+
+            return _cert;
+        }
+
         public LoginManager(string path)
         {
             this.LoginRootPath = path;
@@ -20,7 +33,7 @@ namespace gView.Server.AppCode
 
         private void CreateLogin(string path, string username, string password)
         {
-            var hashedPassword = Crypto.Hash64(Crypto.Encrypt(password, Globals.MasterPassword));
+            var hashedPassword = SecureCrypto.Hash64(password, username);
 
             File.WriteAllText(path + "/" + username + ".lgn", hashedPassword);
         }
@@ -30,8 +43,7 @@ namespace gView.Server.AppCode
             var fi = new FileInfo(path + "/" + username + ".lgn");
             if(fi.Exists)
             {
-                var hashedPassword = Crypto.Hash64(Crypto.Encrypt(password, Globals.MasterPassword));
-                if(hashedPassword==File.ReadAllText(fi.FullName))
+                if (SecureCrypto.VerifyPassword(password, File.ReadAllText(fi.FullName), username))
                 {
                     return new AuthToken(username, authType, new DateTimeOffset(DateTime.UtcNow.Ticks, new TimeSpan(0, 30, 0)));
                 }
@@ -50,6 +62,7 @@ namespace gView.Server.AppCode
             if(createIfFirst && di.GetFiles().Count()==0)
             {
                 CreateLogin(di.FullName, username, password);
+                CreateCert("crypto0");
             }
 
             return AuthToken(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Manage, exipreMinutes);
@@ -66,7 +79,7 @@ namespace gView.Server.AppCode
             if (fi.Exists)
                 throw new Exception("User '" + username + "' already exists");
 
-            var hashedPassword = Crypto.Hash64(Crypto.Encrypt(password, Globals.MasterPassword));
+            var hashedPassword = SecureCrypto.Hash64(password, username);
             File.WriteAllText(fi.FullName, hashedPassword);
         }
 
@@ -77,7 +90,7 @@ namespace gView.Server.AppCode
             if (!fi.Exists)
                 throw new Exception("User '" + username + "' do not exists");
 
-            var hashedPassword = Crypto.Hash64(Crypto.Encrypt(newPassword, Globals.MasterPassword));
+            var hashedPassword = SecureCrypto.Hash64(newPassword, username);
             File.WriteAllText(fi.FullName, hashedPassword);
         }
  
@@ -92,6 +105,38 @@ namespace gView.Server.AppCode
         {
             var di = new DirectoryInfo(LoginRootPath + "/token");
             return AuthToken(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Tokenuser, expireMinutes);
+        }
+
+        #endregion
+
+        #region Certificate
+
+        private void CreateCert(string name)
+        {
+            var ecdsa = RSA.Create(); // generate asymmetric key pair
+            var req = new CertificateRequest("cn=gview", ecdsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            var cert = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(5));
+
+            // Create PFX (PKCS #12) with private key
+            File.WriteAllBytes(this.LoginRootPath + "/" + name + ".pfx", cert.Export(X509ContentType.Pfx, "P@55w0rd"));
+
+            // Create Base 64 encoded CER (public key only)
+            //File.WriteAllText(path + "/" + name + ".cer",
+            //    "-----BEGIN CERTIFICATE-----\r\n"
+            //    + Convert.ToBase64String(cert.Export(X509ContentType.Cert), Base64FormattingOptions.InsertLineBreaks)
+            //    + "\r\n-----END CERTIFICATE-----");
+        }
+
+        private void ReloadCert(string name)
+        {
+            FileInfo fi = new FileInfo(this.LoginRootPath + "/" + name + ".pfx");
+            if (!fi.Exists)
+                CreateCert(name);
+
+            _cert = new X509Certificate2(fi.FullName, "P@55w0rd");
+            var privateKey = _cert.GetRSAPrivateKey();
+            var pubkey = _cert.GetPublicKey();
+
         }
 
         #endregion

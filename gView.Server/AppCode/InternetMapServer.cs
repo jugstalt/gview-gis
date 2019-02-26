@@ -40,7 +40,6 @@ namespace gView.Server.AppCode
             Globals.AppRootPath = rootPath;
            
             var mapServerConfig = JsonConvert.DeserializeObject<MapServerConfig>(File.ReadAllText(rootPath + "/_config/mapserver.json"));
-            Globals.MasterPassword = mapServerConfig.Security.MasterPassword;
             OutputPath = mapServerConfig.OuputPath.ToPlattformPath();
             OutputUrl = mapServerConfig.OutputUrl;
             OnlineResource = mapServerConfig.OnlineResourceUrl;
