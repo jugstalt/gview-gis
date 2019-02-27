@@ -4,4 +4,12 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="zxcvbn-core" Version="2.1.44" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
+  </ItemGroup>
+
 </Project>

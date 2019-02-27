@@ -297,12 +297,6 @@ namespace gView.Server.Controllers
                 model.NewUsername = model.NewUsername?.Trim() ?? String.Empty;
                 model.NewPassword = model.NewPassword?.Trim() ?? String.Empty;
 
-                if (model.NewUsername.Length < 5)
-                    throw new Exception("Username: min length 5 chars!");
-
-                if (model.NewPassword.Length < 8)
-                    throw new Exception("Password: min length 8 chars");
-
                 var loginManager = new LoginManager(Globals.LoginManagerRootPath);
                 loginManager.CreateTokenLogin(model.NewUsername, model.NewPassword);
 
@@ -317,9 +311,6 @@ namespace gView.Server.Controllers
             {
                 model.Username = model.Username?.Trim() ?? String.Empty;
                 model.NewPassword = model.NewPassword?.Trim() ?? String.Empty;
-
-                if (model.NewPassword.Length < 8)
-                    throw new Exception("Password: min length 8 chars");
 
                 var loginManager = new LoginManager(Globals.LoginManagerRootPath);
                 loginManager.ChangeTokenUserPassword(model.Username, model.NewPassword);
@@ -344,11 +335,11 @@ namespace gView.Server.Controllers
             }
             catch (NotAuthorizedException)
             {
-                return Json(new { success = true, error = "not authorized" });
+                return Json(new { success = false, error = "not authorized" });
             }
             catch(MapServerException mse)
             {
-                return Json(new { success = true, error = mse.Message });
+                return Json(new { success = false, error = mse.Message });
             }
             catch (Exception)
             {
@@ -368,11 +359,11 @@ namespace gView.Server.Controllers
             }
             catch (NotAuthorizedException)
             {
-                return Json(new { success = true, error = "not authorized" });
+                return Json(new { success = false, error = "not authorized" });
             }
             catch (MapServerException mse)
             {
-                return Json(new { success = true, error = mse.Message });
+                return Json(new { success = false, error = mse.Message });
             }
             catch (Exception)
             {

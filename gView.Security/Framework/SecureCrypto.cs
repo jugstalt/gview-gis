@@ -54,7 +54,7 @@ namespace gView.Framework.Security
 
         private const int _saltSize = 4; //, _iterations = 1000;
 
-        static private byte[] AES_Encrypt(byte[] bytesToBeEncrypted, byte[] passwordBytes, int keySize = 128, bool useRandomSalt = true)
+        static private byte[] AES_Encrypt(byte[] bytesToBeEncrypted, byte[] passwordBytes, int keySize = 128, bool useRandomSalt = true, byte[] salt=null, byte[] g1=null)
         {
             byte[] encryptedBytes = null;
 
@@ -77,22 +77,12 @@ namespace gView.Framework.Security
                     AES.KeySize = keySize;
                     AES.BlockSize = 128;
 
-                    /*
-                    // Set your salt here, change it to meet your flavor:
-                    // The salt bytes must be at least 8 bytes.
-                    byte[] saltBytes = new byte[] { 176, 223, 23, 125, 64, 98, 177, 214 };
-                      
-                    var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, _iterations);
-                    AES.Key = key.GetBytes(AES.KeySize / 8);
-                    AES.IV = key.GetBytes(AES.BlockSize / 8);
-                     * */
-
                     // Faster (store 4 bytes to generating IV...)
                     byte[] ivInitialBytes = GetRandomBytes();
                     ms.Write(ivInitialBytes, 0, _saltSize);
 
                     AES.Key = GetBytes(passwordBytes, AES.KeySize / 8);
-                    AES.IV = GetHashedBytes(ivInitialBytes, AES.BlockSize / 8);
+                    AES.IV = GetHashedBytes(ivInitialBytes, AES.BlockSize / 8, salt: salt, g1: g1);
 
                     AES.Mode = CipherMode.CBC;
 
@@ -108,7 +98,7 @@ namespace gView.Framework.Security
             return encryptedBytes;
         }
 
-        static private byte[] AES_Decrypt(byte[] bytesToBeDecrypted, byte[] passwordBytes, int keySize = 128, bool useRandomSalt = true)
+        static private byte[] AES_Decrypt(byte[] bytesToBeDecrypted, byte[] passwordBytes, int keySize = 128, bool useRandomSalt = true, byte[] salt = null, byte[] g1 = null)
         {
             byte[] decryptedBytes = null;
 
@@ -119,22 +109,12 @@ namespace gView.Framework.Security
                     AES.KeySize = keySize;
                     AES.BlockSize = 128;
 
-                    /*
-                    // Set your salt here, change it to meet your flavor:
-                    // The salt bytes must be at least 8 bytes.
-                    byte[] saltBytes = new byte[] { 176, 223, 23, 125, 64, 98, 177, 214 };
-                     *
-                    var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, _iterations);
-                    AES.Key = key.GetBytes(AES.KeySize / 8);
-                    AES.IV = key.GetBytes(AES.BlockSize / 8);
-                    */
-
                     // Faster get bytes for IV from 
                     var ivInitialBytes = new byte[_saltSize];
                     Buffer.BlockCopy(bytesToBeDecrypted, 0, ivInitialBytes, 0, _saltSize);
 
                     AES.Key = GetBytes(passwordBytes, AES.KeySize / 8);
-                    AES.IV = GetHashedBytes(ivInitialBytes, AES.BlockSize / 8);
+                    AES.IV = GetHashedBytes(ivInitialBytes, AES.BlockSize / 8, salt: salt, g1: g1);
 
                     AES.Mode = CipherMode.CBC;
 
@@ -173,24 +153,23 @@ namespace gView.Framework.Security
         }
 
         private static byte[] _g1 = new Guid("956F94BF45B44609B243A0B744DFFBE3").ToByteArray();
-        static public byte[] GetHashedBytes(byte[] initialBytes, int size)
+        static private byte[] GetHashedBytes(byte[] initialBytes, int size, byte[] salt, byte[] g1)
         {
             var hash = SHA256.Create().ComputeHash(initialBytes);
 
             var ret = new byte[size];
             Buffer.BlockCopy(hash, 0, ret, 0, Math.Min(hash.Length, ret.Length));
 
-            byte[] saltBytes = new byte[] { 167, 123, 23, 12, 64, 198, 177, 114 };
-            var key = new Rfc2898DeriveBytes(hash, _g1, 10); // 10 is enough for this...
+            byte[] saltBytes = salt ?? new byte[] { 167, 123, 23, 12, 64, 198, 177, 114 };
+            var key = new Rfc2898DeriveBytes(hash, g1 ?? _g1, 10); // 10 is enough for this...
             ret = key.GetBytes(size);
 
             return ret;
         }
 
-        public static string EncryptToken(X509Certificate2 cert, string text, ResultType resultType = ResultType.Base64)
+        public static string EncryptToken(X509CertificateWrapper cert, string text, ResultType resultType = ResultType.Base64)
         {
-
-            var data = AES_Encrypt(Encoding.UTF8.GetBytes(text), cert.GetPublicKey(), useRandomSalt: true);
+            var data = AES_Encrypt(Encoding.UTF8.GetBytes(text), cert.AESPassword, useRandomSalt: true, salt: cert.AESSalt, g1: cert.AESG1);
 
             switch (resultType)
             {
@@ -203,8 +182,9 @@ namespace gView.Framework.Security
             }
         }
 
-        public static string DecryptToken(X509Certificate2 cert, string cipherText)
-        {
+
+        public static string DecryptToken(X509CertificateWrapper cert, string cipherText)
+        { 
             byte[] cipherBytes = null;
             if (IsHexString(cipherText))
             {
@@ -215,7 +195,7 @@ namespace gView.Framework.Security
                 cipherBytes = Convert.FromBase64String(cipherText);
             }
 
-            var data = AES_Decrypt(cipherBytes, cert.GetPublicKey(), useRandomSalt: true);
+            var data = AES_Decrypt(cipherBytes, cert.AESPassword, useRandomSalt: true, salt: cert.AESSalt, g1: cert.AESG1);
             return Encoding.UTF8.GetString(data);
         }
 

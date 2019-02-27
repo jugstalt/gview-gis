@@ -7,14 +7,15 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using gView.Security.Framework;
 
 namespace gView.Server.AppCode
 {
     public class LoginManager
     {
-        static X509Certificate2 _cert = null;
+        static X509CertificateWrapper _cert = null;
 
-        public static X509Certificate2 GetCertificate(string name = "crypto0")
+        public static X509CertificateWrapper GetCertificate(string name = "crypto0")
         {
             if (_cert == null)
                 new LoginManager(Globals.LoginManagerRootPath).ReloadCert(name);
@@ -33,6 +34,9 @@ namespace gView.Server.AppCode
 
         private void CreateLogin(string path, string username, string password)
         {
+            username.ValidateUsername();
+            password.ValidatePassword();
+
             var hashedPassword = SecureCrypto.Hash64(password, username);
 
             File.WriteAllText(path + "/" + username + ".lgn", hashedPassword);
@@ -79,12 +83,13 @@ namespace gView.Server.AppCode
             if (fi.Exists)
                 throw new Exception("User '" + username + "' already exists");
 
-            var hashedPassword = SecureCrypto.Hash64(password, username);
-            File.WriteAllText(fi.FullName, hashedPassword);
+            CreateLogin(di.FullName, username, password);
         }
 
         public void ChangeTokenUserPassword(string username, string newPassword)
         {
+            newPassword.ValidatePassword();
+
             var di = new DirectoryInfo(LoginRootPath + "/token");
             var fi = new FileInfo(di.FullName + "/" + username + ".lgn");
             if (!fi.Exists)
@@ -133,10 +138,7 @@ namespace gView.Server.AppCode
             if (!fi.Exists)
                 CreateCert(name);
 
-            _cert = new X509Certificate2(fi.FullName, "P@55w0rd");
-            var privateKey = _cert.GetRSAPrivateKey();
-            var pubkey = _cert.GetPublicKey();
-
+            _cert = new X509CertificateWrapper(new X509Certificate2(fi.FullName, "P@55w0rd"));
         }
 
         #endregion

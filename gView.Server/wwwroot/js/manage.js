@@ -41,13 +41,13 @@ window.gview.manage = function () {
 
         var onSuccess = options.success;
         options.success = function (result) {
+            $form.find('.form-error').remove();
+
             if (!result.success) {
                 $("<div>").addClass('form-error')
                     .html(result.error)
                     .prependTo($form);
             } else {
-                $form.find('.form-error').remove();
-
                 if (onSuccess)
                     onSuccess(result);
             }
