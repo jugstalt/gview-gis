@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using gView.Security.Framework;
+using gView.Core.Framework.Exceptions;
 
 namespace gView.Server.AppCode
 {
@@ -116,14 +117,16 @@ namespace gView.Server.AppCode
 
         #region Certificate
 
+        private const string CertPassword = "gView-cert-P@55w0rd";
+
         private void CreateCert(string name)
         {
             var ecdsa = RSA.Create(); // generate asymmetric key pair
             var req = new CertificateRequest("cn=gview", ecdsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-            var cert = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(5));
+            var cert = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(100));
 
             // Create PFX (PKCS #12) with private key
-            File.WriteAllBytes(this.LoginRootPath + "/" + name + ".pfx", cert.Export(X509ContentType.Pfx, "P@55w0rd"));
+            File.WriteAllBytes(this.LoginRootPath + "/" + name + ".pfx", cert.Export(X509ContentType.Pfx, CertPassword));
 
             // Create Base 64 encoded CER (public key only)
             //File.WriteAllText(path + "/" + name + ".cer",
@@ -132,13 +135,24 @@ namespace gView.Server.AppCode
             //    + "\r\n-----END CERTIFICATE-----");
         }
 
-        private void ReloadCert(string name)
+        private void ReloadCert(string name, bool throwException = false)
         {
-            FileInfo fi = new FileInfo(this.LoginRootPath + "/" + name + ".pfx");
-            if (!fi.Exists)
-                CreateCert(name);
+            try
+            {
+                FileInfo fi = new FileInfo(this.LoginRootPath + "/" + name + ".pfx");
+                if (!fi.Exists)
+                    CreateCert(name);
 
-            _cert = new X509CertificateWrapper(new X509Certificate2(fi.FullName, "P@55w0rd"));
+                _cert = new X509CertificateWrapper(new X509Certificate2(fi.FullName, CertPassword));
+            }
+            catch (CryptographicException cx)
+            {
+                if (throwException == true)
+                    throw new MapServerException("gView internal Certificate: " + cx.Message);
+
+                CreateCert(name);
+                ReloadCert(name, true);
+            }
         }
 
         #endregion
