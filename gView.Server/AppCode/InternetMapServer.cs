@@ -194,11 +194,12 @@ namespace gView.Server.AppCode
                     if (doc.Maps.Count() == 1)
                     {
                         var map = doc.Maps.First();
-                        ApplyMetadata(map as Map);
                         if(name.Contains("/")) // Folder?
                         {
                             map.Name = name.Split('/')[0] + "/" + map.Name;
                         }
+
+                        ApplyMetadata(map as Map);
 
                         if (!MapDocument.AddMap(map))
                             return null;
@@ -452,6 +453,13 @@ namespace gView.Server.AppCode
 
         static public bool AddMap(string mapName, string MapXML, string usr, string pwd)
         {
+            string folder = mapName.FolderName();
+            if(!String.IsNullOrWhiteSpace(folder))
+            {
+                if (!Directory.Exists((InternetMapServer.ServicesPath + "/" + folder).ToPlattformPath()))
+                    throw new UnauthorizedAccessException("Folder not exists");
+            }
+
             if (String.IsNullOrEmpty(MapXML))
             {
                 return ReloadMap(mapName, usr, pwd);

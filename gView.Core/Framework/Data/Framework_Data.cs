@@ -168,7 +168,7 @@ namespace gView.Framework.Data
         }
     }
 
-    public interface IDataset : IDisposable, gView.Framework.IO.IMetadata
+    public interface IDataset : IDisposable, gView.Framework.IO.IMetadata, IErrorMessage
     {
         string ConnectionString
         {
@@ -193,11 +193,6 @@ namespace gView.Framework.Data
         DatasetState State { get; }
 
         bool Open();
-
-        string lastErrorMsg
-        {
-            get;
-        }
 
         Task<List<IDatasetElement>> Elements();
         Task<IDatasetElement> Element(string title);

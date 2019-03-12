@@ -189,12 +189,13 @@ namespace gView.DataSources.Fdb.PostgreSql
             return true;
         }
 
-        public string lastErrorMsg
+        public string LastErrorMessage
         {
             get
             {
                 return _errMsg;
             }
+            set { _errMsg = value; }
         }
 
         public Task<List<IDatasetElement>> Elements()

@@ -64,6 +64,14 @@ namespace gView.Framework.system
         bool Paused { get; }
 	}
 
+    public interface IErrorMessage
+    {
+        string LastErrorMessage
+        {
+            get; set;
+        }
+    }
+
     public class ListOperations<T>
     {
         static public List<T> Clone(List<T> l)
@@ -142,11 +150,6 @@ namespace gView.Framework.system
     public interface IClone4
     {
         object Clone(Type type);
-    }
-
-    public interface IErrorMessage
-    {
-        string lastErrorMsg { get; }
     }
 
     public enum loggingMethod { request, request_detail, error, request_detail_pro }

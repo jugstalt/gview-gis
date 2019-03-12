@@ -77,9 +77,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
             }
         }
 
-        public string lastErrorMsg
+        public string LastErrorMessage
         {
             get { return _errMsg; }
+            set { _errMsg = value; }
         }
 
         public Exception lastException { get { return null; } }

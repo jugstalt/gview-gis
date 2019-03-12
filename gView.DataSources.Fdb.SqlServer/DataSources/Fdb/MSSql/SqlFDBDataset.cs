@@ -259,7 +259,7 @@ namespace gView.DataSources.Fdb.MSSql
             _dsID = _fdb.DatasetID(_dsname);
             if (_dsID < 0)
             {
-                _errMsg = _fdb.lastErrorMsg ?? _fdb.lastException?.Message;
+                _errMsg = _fdb.LastErrorMessage ?? _fdb.lastException?.Message;
                 return false;
             }
 
@@ -270,12 +270,13 @@ namespace gView.DataSources.Fdb.MSSql
             return true;
         }
 
-        public string lastErrorMsg
+        public string LastErrorMessage
         {
             get
             {
                 return _errMsg;
             }
+            set { _errMsg = value; }
         }
 
         public string DatasetGroupName

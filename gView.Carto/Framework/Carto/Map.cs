@@ -14,6 +14,7 @@ using gView.Framework.UI;
 using gView.Framework.Carto.UI;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Linq;
 
 namespace gView.Framework.Carto
 {
@@ -1425,6 +1426,66 @@ namespace gView.Framework.Carto
             }
         }
 
+        public void Compress()
+        {
+            #region remove unused dataset
+
+            var datasetIds = _layers.Where(l => l.Class != null).Select(l => l.DatasetID).Distinct().OrderBy(id => id).ToArray();
+
+            for (var datasetId = 0; datasetId < datasetIds.Max(); datasetId++)
+            {
+                if (!datasetIds.Contains(datasetId))
+                {
+                    _datasets.RemoveAt(datasetId);
+                    foreach (var datasetElement in _layers.Where(l => l.DatasetID > datasetId))
+                    {
+                        datasetElement.DatasetID -= 1;
+                    }
+                    Compress();
+                    return;
+                }
+            }
+
+            #endregion
+
+            #region remove double datasets
+
+            for (int datasetId = 0; datasetId < _datasets.Count() - 1; datasetId++)
+            {
+                var dataset = _datasets[datasetId];
+
+                for (int candidateId = datasetId + 1; candidateId < _datasets.Count(); candidateId++)
+                {
+                    var candidate = _datasets[candidateId];
+
+                    if (dataset.GetType().ToString() == candidate.GetType().ToString() && dataset.ConnectionString == candidate.ConnectionString)
+                    {
+                        foreach (var datasetElement in _layers.Where(l => l.DatasetID == candidateId))
+                        {
+                            datasetElement.DatasetID = datasetId;
+                        }
+
+                        _datasets.RemoveAt(candidateId);
+                        foreach (var datasetElement in _layers.Where(l => l.DatasetID > candidateId))
+                        {
+                            datasetElement.DatasetID -= 1;
+                        }
+
+                        Compress();
+                    }
+                }
+            }
+
+            #endregion
+
+            foreach (var removeLayer in _toc.Layers.Where(l => l.Class == null).ToArray())
+            {
+                _toc.RemoveLayer(removeLayer);
+            }
+
+            _layers = _layers.Where(l => l.Class != null).ToList();
+        }
+
         public void Load(IPersistStream stream)
         {
             m_name = (string)stream.Load("name", "");
@@ -1465,10 +1526,11 @@ namespace gView.Framework.Carto
                 {
                     dataset.Open();
                 }
-                if(!String.IsNullOrWhiteSpace(dataset.lastErrorMsg))
+                if(!String.IsNullOrWhiteSpace(dataset.LastErrorMessage))
                 {
-                    _errorMessages.Add(dataset.lastErrorMsg);
+                    _errorMessages.Add(dataset.LastErrorMessage);
                 }
+
                 _datasets.Add(dataset);
             }
 
@@ -1493,7 +1555,7 @@ namespace gView.Framework.Carto
                         fLayer = LayerFactory.Create(element.Class, fLayer) as FeatureLayer;
                         //fLayer.SetFeatureClass(element.Class as IFeatureClass);
                     }
-                    errorMessage = _datasets[fLayer.DatasetID].lastErrorMsg;
+                    errorMessage = _datasets[fLayer.DatasetID].LastErrorMessage;
                 }
                 else
                 {
@@ -1523,20 +1585,20 @@ namespace gView.Framework.Carto
                     {
                         rcLayer = LayerFactory.Create(element.Class, rcLayer) as RasterCatalogLayer;
                     }
-                    errorMessage = _datasets[fLayer.DatasetID].lastErrorMsg;
+                    errorMessage = _datasets[rcLayer.DatasetID].LastErrorMessage;
                 }
                 else
                 {
                 }
                 SetNewLayerID(rcLayer);
 
-                if (fLayer.Class == null)
+                if (rcLayer.Class == null)
                 {
-                    _errorMessages.Add("Invalid layer: " + fLayer.Title + "\n" + errorMessage);
+                    _errorMessages.Add("Invalid layer: " + rcLayer.Title + "\n" + errorMessage);
                 }
 
                 _layers.Add(rcLayer);
-                if (LayerAdded != null) LayerAdded(this, fLayer);
+                if (LayerAdded != null) LayerAdded(this, rcLayer);
             }
 
             RasterLayer rLayer;
@@ -1550,7 +1612,7 @@ namespace gView.Framework.Carto
                     {
                         rLayer.SetRasterClass(element.Class as IRasterClass);
                     }
-                    errorMessage = _datasets[fLayer.DatasetID].lastErrorMsg;
+                    errorMessage = _datasets[rLayer.DatasetID].LastErrorMessage;
                 }
                 else
                 {
@@ -1558,9 +1620,9 @@ namespace gView.Framework.Carto
                 while (LayerIDExists(rLayer.ID))
                     rLayer.ID = _layerIDSequece.Number;
 
-                if (fLayer.Class == null)
+                if (rLayer.Class == null)
                 {
-                    _errorMessages.Add("Invalid layer: " + fLayer.Title + "\n" + errorMessage);
+                    _errorMessages.Add("Invalid layer: " + rLayer.Title + "\n" + errorMessage);
                 }
 
                 _layers.Add(rLayer);
@@ -1580,7 +1642,7 @@ namespace gView.Framework.Carto
                         //wLayer = LayerFactory.Create(element.Class, wLayer) as WebServiceLayer;
                         wLayer.SetWebServiceClass(element.Class as IWebServiceClass);
                     }
-                    errorMessage = _datasets[fLayer.DatasetID].lastErrorMsg;
+                    errorMessage = _datasets[fLayer.DatasetID].LastErrorMessage;
                 }
                 else
                 {
@@ -1590,7 +1652,7 @@ namespace gView.Framework.Carto
 
                 if (fLayer.Class == null)
                 {
-                    _errorMessages.Add("Invalid layer: " + fLayer.Title + "\n" + errorMessage);
+                    _errorMessages.Add("Invalid layer: " + wLayer.Title + "\n" + errorMessage);
                 }
 
                 _layers.Add(wLayer);

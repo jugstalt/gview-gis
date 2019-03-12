@@ -294,11 +294,15 @@ namespace gView.DataSources.Fdb.MSAccess
             return true;
         }
 
-        public string lastErrorMsg
+        public string LastErrorMessage
         {
             get
             {
                 return _errMsg;
+            }
+            set
+            {
+                _errMsg = value;
             }
         }
 

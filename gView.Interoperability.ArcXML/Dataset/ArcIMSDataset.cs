@@ -114,9 +114,10 @@ namespace gView.Interoperability.ArcXML.Dataset
             return Open(null);
         }
 
-        public string lastErrorMsg
+        public string LastErrorMessage
         {
             get { return _errMsg; }
+            set { _errMsg = value; }
         }
 
         public int order

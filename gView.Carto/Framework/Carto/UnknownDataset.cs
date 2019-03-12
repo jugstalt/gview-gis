@@ -58,12 +58,9 @@ namespace gView.Carto.Framework.Carto
                 return Task.FromResult(new List<IDatasetElement>());
         }
 
-        public string lastErrorMsg
+        public string LastErrorMessage
         {
-            get
-            {
-                return String.Empty;
-            }
+            get; set;
         }
 
         public string ProviderName

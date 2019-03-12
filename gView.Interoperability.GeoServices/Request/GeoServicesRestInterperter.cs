@@ -607,7 +607,7 @@ namespace gView.Interoperability.GeoServices.Request
                         throw new Exception("Can't insert features with existing ObjectId");
 
                     if (!await database.Insert(featureClass, features))
-                        throw new Exception(database.lastErrorMsg);
+                        throw new Exception(database.LastErrorMessage);
 
                     context.ServiceRequest.Succeeded = true;
                     context.ServiceRequest.Response = JsonConvert.SerializeObject(
@@ -670,7 +670,7 @@ namespace gView.Interoperability.GeoServices.Request
                         throw new Exception("Can't update features without existing ObjectId");
 
                     if (!await database.Update(featureClass, features))
-                        throw new Exception(database.lastErrorMsg);
+                        throw new Exception(database.LastErrorMessage);
 
                     context.ServiceRequest.Succeeded = true;
                     context.ServiceRequest.Response = JsonConvert.SerializeObject(
@@ -728,7 +728,7 @@ namespace gView.Interoperability.GeoServices.Request
                     foreach (int objectId in editRequest.ObjectIds.Split(',').Select(s => int.Parse(s)))
                     {
                         if (!await database.Delete(featureClass, objectId))
-                            throw new Exception(database.lastErrorMsg);
+                            throw new Exception(database.LastErrorMessage);
                     }
 
                     context.ServiceRequest.Succeeded = true;

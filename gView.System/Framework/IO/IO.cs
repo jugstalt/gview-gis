@@ -371,7 +371,12 @@ namespace gView.Framework.IO
             {
                 PlugInManager compManager = new PlugInManager();
                 T comp = (T)compManager.CreateInstance(new Guid(xmlnode.Attributes["GUID"].Value));
-                if (comp == null) return unknownPlugin;
+                if (comp == null)
+                {
+                    if (unknownPlugin is IErrorMessage)
+                        ((IErrorMessage)unknownPlugin).LastErrorMessage = "Unknown plugin type: "+ xmlnode.Attributes["GUID"].Value;
+                    return unknownPlugin;
+                }
 
                 if (comp is IPersistable)
                 {

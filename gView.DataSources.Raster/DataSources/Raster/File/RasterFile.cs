@@ -71,9 +71,10 @@ namespace gView.DataSources.Raster.File
             return false;
         }
 
-        public string lastErrorMsg
+        public string LastErrorMessage
         {
             get { return ""; }
+            set { }
         }
 
         public int order

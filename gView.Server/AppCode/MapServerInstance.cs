@@ -91,7 +91,7 @@ namespace gView.Server.AppCode
             try
             {
                 if (identity == null)
-                    InternetMapServer.mapServices.ToArray();
+                    return InternetMapServer.mapServices.ToArray();
 
                 return InternetMapServer.mapServices.Where(s => s.HasAnyAccess(identity).Result);
             }

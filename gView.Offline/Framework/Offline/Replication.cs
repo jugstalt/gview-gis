@@ -38,7 +38,7 @@ namespace gView.Framework.Offline
             fields.Add(new Field("PARENT_SESSION_GUID", FieldType.guid));
             if (!db.CreateIfNotExists("GV_CHECKOUT_OBJECT_GUID", fields))
             {
-                errMsg = db.lastErrorMsg;
+                errMsg = db.LastErrorMessage;
                 return false;
             }
 
@@ -61,7 +61,7 @@ namespace gView.Framework.Offline
             fields.Add(new Field("REPLICATION_STATE", FieldType.integer));
             if (!db.CreateIfNotExists("GV_CHECKOUT_SESSIONS", fields))
             {
-                errMsg = db.lastErrorMsg;
+                errMsg = db.LastErrorMessage;
                 return false;
             }
 
@@ -76,7 +76,7 @@ namespace gView.Framework.Offline
             fields.Add(new Field("TRANSACTION_ID", FieldType.guid));
             if (!db.CreateIfNotExists("GV_CHECKOUT_DIFFERENCE", fields))
             {
-                errMsg = db.lastErrorMsg;
+                errMsg = db.LastErrorMessage;
                 return false;
             }
 
@@ -94,7 +94,7 @@ namespace gView.Framework.Offline
             fields.Add(new Field("CONFLICT_SQL_STATEMENT", FieldType.integer));
             if (!db.CreateIfNotExists("GV_CHECKOUT_CONFLICTS", fields))
             {
-                errMsg = db.lastErrorMsg;
+                errMsg = db.LastErrorMessage;
                 return false;
             }
 
@@ -107,7 +107,7 @@ namespace gView.Framework.Offline
             fields.Add(new Field("REPLICATION_STATE", FieldType.integer));
             if (!db.CreateIfNotExists("GV_CHECKOUT_LOCKS", fields))
             {
-                errMsg = db.lastErrorMsg;
+                errMsg = db.LastErrorMessage;
                 return false;
             }
             return true;
@@ -125,7 +125,7 @@ namespace gView.Framework.Offline
 
                 if (!db.CreateObjectGuidColumn(fc.Name, fieldName))
                 {
-                    errMsg = db.lastErrorMsg;
+                    errMsg = db.LastErrorMessage;
                     return (false, errMsg);
                 }
 
@@ -166,7 +166,7 @@ namespace gView.Framework.Offline
                             {
                                 if (! await db.Update(fc, features2))
                                 {
-                                    errMsg = db.lastErrorMsg;
+                                    errMsg = db.LastErrorMessage;
                                     return (false, errMsg);
                                 }
                                 features2.Clear();
@@ -179,7 +179,7 @@ namespace gView.Framework.Offline
                         {
                             if (!await db.Update(fc, features2))
                             {
-                                errMsg = db.lastErrorMsg;
+                                errMsg = db.LastErrorMessage;
                                 return (false, errMsg);
                             }
 
@@ -206,7 +206,7 @@ namespace gView.Framework.Offline
                                 {
                                     if (!await db.Update(fc, features))
                                     {
-                                        errMsg = db.lastErrorMsg;
+                                        errMsg = db.LastErrorMessage;
                                         return (false, errMsg);
                                     }
                                     features.Clear();
@@ -220,7 +220,7 @@ namespace gView.Framework.Offline
                             {
                                 if (!await db.Update(fc, features))
                                 {
-                                    errMsg = db.lastErrorMsg;
+                                    errMsg = db.LastErrorMessage;
                                     return (false, errMsg);
                                 }
 
@@ -239,7 +239,7 @@ namespace gView.Framework.Offline
                 row.Fields.Add(new FieldValue("OBJECT_GUID_FIELDNAME", fieldName));
                 if (!db.InsertRow("GV_CHECKOUT_OBJECT_GUID", row, null))
                 {
-                    errMsg = db.lastErrorMsg;
+                    errMsg = db.LastErrorMessage;
                     return (false, errMsg);
                 }
             }
@@ -336,7 +336,7 @@ namespace gView.Framework.Offline
             row.Fields.Add(new FieldValue("PARENT_SESSION_GUID", guid));
             if (!destDB.UpdateRow("GV_CHECKOUT_OBJECT_GUID", row, "ID", null))
             {
-                errMsg = destDB.lastErrorMsg;
+                errMsg = destDB.LastErrorMessage;
                 return false;
             }
 
@@ -356,7 +356,7 @@ namespace gView.Framework.Offline
 
             if (!sourceDB.InsertRow("GV_CHECKOUT_SESSIONS", row, null))
             {
-                errMsg = sourceDB.lastErrorMsg;
+                errMsg = sourceDB.LastErrorMessage;
                 return false;
             }
 
@@ -376,7 +376,7 @@ namespace gView.Framework.Offline
 
             if (!destDB.InsertRow("GV_CHECKOUT_SESSIONS", row, null))
             {
-                errMsg = destDB.lastErrorMsg;
+                errMsg = destDB.LastErrorMessage;
                 return false;
             }
             return true;
@@ -404,7 +404,7 @@ namespace gView.Framework.Offline
             row.Fields.Add(new FieldValue("PARENT_SESSION_GUID", DBNull.Value));
             if (!db.InsertRow("GV_CHECKOUT_OBJECT_GUID", row, null))
             {
-                errMsg = db.lastErrorMsg;
+                errMsg = db.LastErrorMessage;
                 return false;
             }
 
@@ -1163,7 +1163,7 @@ namespace gView.Framework.Offline
                 parentDs.ConnectionString = connectionString;
                 if (!parentDs.Open())
                 {
-                    errMsg = parentDs.lastErrorMsg;
+                    errMsg = parentDs.LastErrorMessage;
                     return null;
                 }
                 if (!(parentDs.Database is IFeatureDatabaseReplication))
@@ -1371,7 +1371,7 @@ namespace gView.Framework.Offline
 
                         if (!db.InsertRow("GV_CHECKOUT_DIFFERENCE", row, replTrans))
                         {
-                            errMsg = db.lastErrorMsg;
+                            errMsg = db.LastErrorMessage;
                             return false;
                         }
                     }
@@ -2388,7 +2388,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             }
                             if (!await c.parentDb.Insert(parentFc_lock, child_feature))
                             {
-                                errMsg = "Error on INSERT Feature:\n" + c.parentDb.lastErrorMsg;
+                                errMsg = "Error on INSERT Feature:\n" + c.parentDb.LastErrorMessage;
                                 return (false, errMsg);
                             }
                             if (CheckIn_FeatureInserted != null) CheckIn_FeatureInserted(this, ++count_inserted);
@@ -2418,7 +2418,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                     child_feature[c.child_repl_id_fieldname] = null;
                                     if (!await c.parentDb.Insert(parentFc_diff, child_feature))
                                     {
-                                        errMsg = "Error on INSERT Feature:\n" + c.parentDb.lastErrorMsg;
+                                        errMsg = "Error on INSERT Feature:\n" + c.parentDb.LastErrorMessage;
                                         return (false, errMsg);
                                     }
                                     if (CheckIn_FeatureInserted != null) CheckIn_FeatureInserted(this, ++count_inserted);
@@ -2431,7 +2431,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                         AllocateNewObjectGuid(child_feature, c.child_repl_id_fieldname);
                                     if (!await c.parentDb.Insert(parentFc_diff, child_feature))
                                     {
-                                        errMsg = "Error on INSERT Feature:\n" + c.parentDb.lastErrorMsg;
+                                        errMsg = "Error on INSERT Feature:\n" + c.parentDb.LastErrorMessage;
                                         return (false, errMsg);
                                     }
                                     if (CheckIn_FeatureInserted != null) CheckIn_FeatureInserted(this, ++count_inserted);
@@ -2482,7 +2482,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                     // Dann: INSERT
                                     if (!await c.parentDb.Insert(parentFc_lock, child_feature))
                                     {
-                                        errMsg = "Error on INSERT Feature:\n" + c.parentDb.lastErrorMsg;
+                                        errMsg = "Error on INSERT Feature:\n" + c.parentDb.LastErrorMessage;
                                         return (false, errMsg);
                                     }
                                     if (CheckIn_FeatureInserted != null) CheckIn_FeatureInserted(this, ++count_inserted);
@@ -2492,7 +2492,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             Feature.CopyFrom(parent_feature, child_feature);
                             if (!await c.parentDb.Update(parentFc_lock, parent_feature))
                             {
-                                errMsg = "Error on UPDATE Feature:\n" + c.parentDb.lastErrorMsg;
+                                errMsg = "Error on UPDATE Feature:\n" + c.parentDb.LastErrorMessage;
                                 return (false, errMsg);
                             }
                             if (CheckIn_FeatureUpdated != null) CheckIn_FeatureUpdated(this, ++count_updated);
@@ -2563,7 +2563,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             }
                             if (!await c.parentDb.Delete(parentFc_lock, parent_feature.OID))
                             {
-                                errMsg = "Error on DELETE Feature:\n" + c.parentDb.lastErrorMsg;
+                                errMsg = "Error on DELETE Feature:\n" + c.parentDb.LastErrorMessage;
                                 return (false, errMsg);
                             }
                             if (CheckIn_FeatureDeleted != null) CheckIn_FeatureDeleted(this, ++count_deleted);
@@ -3241,7 +3241,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     // Feature ist zu löschen
                     if (Feature != null && await db.Delete(FeatureClass, Feature.OID) == false)
                     {
-                        errMsg = "SolveConflict -> " + db.lastErrorMsg;
+                        errMsg = "SolveConflict -> " + db.LastErrorMessage;
                         return (false, errMsg);
                     }
                 }
@@ -3259,7 +3259,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     sFeature[repl_field_name] = this.ParentObjectGuid;
                     if (!await db.Insert(FeatureClass, sFeature))
                     {
-                        errMsg = "SolveConflict -> " + db.lastErrorMsg;
+                        errMsg = "SolveConflict -> " + db.LastErrorMessage;
                         return (false, errMsg);
                     }
                 }
@@ -3267,7 +3267,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 {
                     if (!await db.Update(FeatureClass, sFeature))
                     {
-                        errMsg = "SolveConflict -> " + db.lastErrorMsg;
+                        errMsg = "SolveConflict -> " + db.LastErrorMessage;
                         return (false, errMsg);
                     }
                 }
@@ -3276,7 +3276,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     if (cFeature == null || cFeature.Feature == null) continue;
                     if (!await db.Delete(FeatureClass, cFeature.Feature.OID))
                     {
-                        errMsg = "SolveConflict -> " + db.lastErrorMsg;
+                        errMsg = "SolveConflict -> " + db.LastErrorMessage;
                         return (false, errMsg);
                     }
                 }

@@ -227,16 +227,26 @@ namespace gView.Server
                 );
                 routes.MapRoute(
                     name: "mapserver-maprequest",
+                    template: "MapRequest/{guid}/{folder}/{id}",
+                    defaults: new { controller = "MapServer", Action = "MapRequest" }
+                );
+                routes.MapRoute(
+                    name: "mapserver-maprequest2",
                     template: "MapRequest/{guid}/{id}",
                     defaults: new { controller = "MapServer", Action = "MapRequest" }
                 );
                 routes.MapRoute(
                     name: "mapserver-addmap",
+                    template: "AddMap/{folder}/{name}",
+                    defaults: new { controller = "MapServer", Action = "AddMap" }
+                );
+                routes.MapRoute(
+                    name: "mapserver-addmap2",
                     template: "AddMap/{name}",
                     defaults: new { controller = "MapServer", Action = "AddMap" }
                 );
                 routes.MapRoute(
-                    name: "mapserver-remotemap",
+                    name: "mapserver-removemap",
                     template: "RemoveMap/{name}",
                     defaults: new { controller = "MapServer", Action = "RemoveMap" }
                 );

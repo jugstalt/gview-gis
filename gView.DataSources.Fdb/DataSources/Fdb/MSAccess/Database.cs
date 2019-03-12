@@ -277,7 +277,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 LinkedDatasetCacheInstance.Dispose();
         }
 
-        public string lastErrorMsg { get { return _errMsg; } }
+        public string LastErrorMessage { get { return _errMsg; }  set { _errMsg = value; } }
         public Exception lastException { get { return (_conn != null ? _conn.lastException : null); } }
 
         virtual public Task<int> CreateDataset(string name, ISpatialReference sRef)

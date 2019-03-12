@@ -97,6 +97,8 @@ namespace gView.Framework.Carto
 
         IEnumerable<string> ErrorMessages { get; }
         bool HasErrorMessages { get; }
+
+        void Compress();
     }
 
     /*

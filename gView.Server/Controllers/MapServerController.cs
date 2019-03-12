@@ -33,11 +33,26 @@ namespace gView.Server.Controllers
                     sb.Append("<RESPONSE><SERVICES>");
                     foreach (var service in InternetMapServer.Instance.Maps(null))
                     {
-                        sb.Append("<SERVICE ");
-                        sb.Append("NAME='" + service.Name + "' ");
-                        sb.Append("name='" + service.Name + "' ");
-                        sb.Append("type='" + service.Type.ToString() + "' ");
-                        sb.Append("/>");
+                        if (service.Type == MapServiceType.Folder)  // if accessable for current user... => ToDo!!!
+                        {
+                            InternetMapServer.ReloadServices(service.Name);
+                            foreach (var folderService in InternetMapServer.mapServices.Where(s => s.Folder == service.Name))
+                            {
+                                sb.Append("<SERVICE ");
+                                sb.Append("NAME='" + folderService.Fullname + "' ");
+                                sb.Append("name='" + folderService.Fullname + "' ");
+                                sb.Append("type='" + folderService.Type.ToString() + "' ");
+                                sb.Append("/>");
+                            }
+                        }
+                        else if (service.Type == MapServiceType.MXL)
+                        {
+                            sb.Append("<SERVICE ");
+                            sb.Append("NAME='" + service.Name + "' ");
+                            sb.Append("name='" + service.Name + "' ");
+                            sb.Append("type='" + service.Type.ToString() + "' ");
+                            sb.Append("/>");
+                        }
                     }
                     sb.Append("</SERVICES></RESPONSE>");
 
@@ -58,7 +73,7 @@ namespace gView.Server.Controllers
             }
         }
 
-        async public Task<IActionResult> MapRequest(string guid, string id)
+        async public Task<IActionResult> MapRequest(string guid, string id, string folder)
         {
             try
             {
@@ -72,6 +87,9 @@ namespace gView.Server.Controllers
                 Identity identity = Identity.FromFormattedString(base.GetAuthToken().Username);
 
                 #endregion
+
+                if (!String.IsNullOrWhiteSpace(folder))
+                    id = folder + "/" + id;
 
                 //DateTime td = DateTime.Now;
                 //Console.WriteLine("Start Map Request " + td.ToLongTimeString() + "." + td.Millisecond + " (" + name + ")");
@@ -135,7 +153,7 @@ namespace gView.Server.Controllers
         #region Manage
 
         [HttpPost]
-        public IActionResult AddMap(string name)
+        public IActionResult AddMap(string name, string folder)
         {
             try
             {
@@ -144,6 +162,8 @@ namespace gView.Server.Controllers
 
                 string user=String.Empty, pwd=String.Empty;
                 //var request = Request(out user, out pwd);
+
+                name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
                 bool ret = InternetMapServer.AddMap(name, input, user, pwd);
 

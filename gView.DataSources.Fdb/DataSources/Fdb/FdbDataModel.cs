@@ -45,7 +45,7 @@ namespace gView.DataSources.Fdb
                     fields.Add(new Field("Connection", FieldType.String, 4000));
 
                     if (!fdb.CreateIfNotExists("FDB_LinkedConnections", fields))
-                        throw new Exception("Can't create 'FDB_LinkedConnections':" + fdb.lastErrorMsg);
+                        throw new Exception("Can't create 'FDB_LinkedConnections':" + fdb.LastErrorMessage);
                     #endregion
                 }
 

@@ -93,9 +93,10 @@ namespace gView.DataSources.OGR
             }
         }
 
-        public string lastErrorMsg
+        public string LastErrorMessage
         {
             get { return _lastErrMsg; }
+            set { _lastErrMsg = value; }
         }
 
         public int order
