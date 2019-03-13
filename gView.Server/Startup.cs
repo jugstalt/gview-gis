@@ -206,6 +206,17 @@ namespace gView.Server
                     template: "ogc/{id}",
                     defaults: new { controller = "Ogc", Action = "OgcRequest" }
                 );
+                routes.MapRoute(
+                    name: "ogc_tiles",
+                    template: "tilewmts/{folder}/{name}/{cachetype}/{origin}/{epsg}/{style}/{level}/{row}/{col}",
+                    defaults: new { controller = "Ogc", Action = "TileWmts" }
+                );
+                routes.MapRoute(
+                    name: "ogc_tiles2",
+                    template: "tilewmts/{name}/{cachetype}/{origin}/{epsg}/{style}/{level}/{row}/{col}",
+                    defaults: new { controller = "Ogc", Action = "TileWmts" }
+                );
+
 
                 // ArcIMS
                 routes.MapRoute(
@@ -227,12 +238,12 @@ namespace gView.Server
                 );
                 routes.MapRoute(
                     name: "mapserver-maprequest",
-                    template: "MapRequest/{guid}/{folder}/{id}",
+                    template: "MapRequest/{guid}/{folder}/{name}",
                     defaults: new { controller = "MapServer", Action = "MapRequest" }
                 );
                 routes.MapRoute(
                     name: "mapserver-maprequest2",
-                    template: "MapRequest/{guid}/{id}",
+                    template: "MapRequest/{guid}/{name}",
                     defaults: new { controller = "MapServer", Action = "MapRequest" }
                 );
                 routes.MapRoute(
@@ -246,17 +257,32 @@ namespace gView.Server
                     defaults: new { controller = "MapServer", Action = "AddMap" }
                 );
                 routes.MapRoute(
+                    name: "mapserver-removemap2",
+                    template: "RemoveMap/{folder}/{name}",
+                    defaults: new { controller = "MapServer", Action = "RemoveMap" }
+                );
+                routes.MapRoute(
                     name: "mapserver-removemap",
                     template: "RemoveMap/{name}",
                     defaults: new { controller = "MapServer", Action = "RemoveMap" }
                 );
                 routes.MapRoute(
                     name: "mapserver-getmetadata",
+                    template: "GetMetadata/{folder}/{name}",
+                    defaults: new { controller = "MapServer", Action = "GetMetadata" }
+                );
+                routes.MapRoute(
+                    name: "mapserver-getmetadata2",
                     template: "GetMetadata/{name}",
                     defaults: new { controller = "MapServer", Action = "GetMetadata" }
                 );
                 routes.MapRoute(
                     name: "mapserver-setmetadata",
+                    template: "SetMetadata/{folder}/{name}",
+                    defaults: new { controller = "MapServer", Action = "SetMetadata" }
+                );
+                routes.MapRoute(
+                    name: "mapserver-setmetadata2",
                     template: "SetMetadata/{name}",
                     defaults: new { controller = "MapServer", Action = "SetMetadata" }
                 );

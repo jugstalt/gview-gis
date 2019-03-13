@@ -291,7 +291,7 @@ namespace gView.Interoperability.ArcXML
             map.ScaleSymbolFactor = symbolScaleFactor;
             await map.Render();
 
-            string title = map.Name.Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + _imageExtension;
+            string title = map.Name.Replace(",", "_").Replace("/","_") + "_" + System.Guid.NewGuid().ToString("N") + _imageExtension;
             if (map.SaveImage(mapServer.OutputPath + @"\" + title, _imageFormat))
             {
                 ret = response.IMAGE(mapServer.OutputPath, mapServer.OutputUrl, title, map.Display.Envelope);

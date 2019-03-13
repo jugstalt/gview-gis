@@ -1,4 +1,5 @@
-﻿using gView.Framework.Carto;
+﻿using gView.Core.Framework.Exceptions;
+using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.IO;
 using gView.Framework.system;
@@ -13,6 +14,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -43,7 +45,7 @@ namespace gView.Server.AppCode
             OutputPath = mapServerConfig.OuputPath.ToPlattformPath();
             OutputUrl = mapServerConfig.OutputUrl;
             OnlineResource = mapServerConfig.OnlineResourceUrl;
-            
+            TileCachePath = mapServerConfig.TileCacheRoot;
 
             if(mapServerConfig.TaskQueue!=null)
             {
@@ -194,7 +196,9 @@ namespace gView.Server.AppCode
                     if (doc.Maps.Count() == 1)
                     {
                         var map = doc.Maps.First();
-                        if(name.Contains("/")) // Folder?
+                        if (map.Name != name &&
+                            name.Contains("/") &&
+                            !map.Name.StartsWith(name.FolderName()+"/")) // Folder?
                         {
                             map.Name = name.Split('/')[0] + "/" + map.Name;
                         }
@@ -457,7 +461,7 @@ namespace gView.Server.AppCode
             if(!String.IsNullOrWhiteSpace(folder))
             {
                 if (!Directory.Exists((InternetMapServer.ServicesPath + "/" + folder).ToPlattformPath()))
-                    throw new UnauthorizedAccessException("Folder not exists");
+                    throw new MapServerException("Folder not exists");
             }
 
             if (String.IsNullOrEmpty(MapXML))
@@ -518,6 +522,33 @@ namespace gView.Server.AppCode
                 Map map = new Map();
                 map.Load(xmlStream);
                 map.Name = mapName;
+
+                StringBuilder errors = new StringBuilder();
+                foreach(var dataset in map.Datasets)
+                {
+                    if (!String.IsNullOrWhiteSpace(dataset.LastErrorMessage))
+                    {
+                        errors.Append("Dataset " + dataset.GetType().ToString()+Environment.NewLine);
+                        errors.Append(dataset.LastErrorMessage + Environment.NewLine + Environment.NewLine);
+                    }
+                }
+    
+                if(map.HasErrorMessages)
+                {
+                    errors.Append("Map Errors:" + Environment.NewLine);
+                    foreach(var errorMessage in map.ErrorMessages)
+                    {
+                        errors.Append(errorMessage + Environment.NewLine);
+                    }
+                }
+                if(map.LastException!=null)
+                {
+                    errors.Append("Map Exception:" + Environment.NewLine);
+                    errors.Append(map.LastException.Message?.ToString());
+                }
+
+                if (errors.Length > 0)
+                    throw new MapServerException(errors.ToString());
 
                 XmlStream pluginStream = new XmlStream("Moduls");
                 using (StringReader sr = new StringReader(MapXML))

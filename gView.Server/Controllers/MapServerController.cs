@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using gView.Core.Framework.Exceptions;
 using gView.Framework.system;
 using gView.MapServer;
 using gView.Server.AppCode;
@@ -45,7 +46,7 @@ namespace gView.Server.Controllers
                                 sb.Append("/>");
                             }
                         }
-                        else if (service.Type == MapServiceType.MXL)
+                        else if (service.Type == MapServiceType.MXL && String.IsNullOrWhiteSpace(service.Folder))
                         {
                             sb.Append("<SERVICE ");
                             sb.Append("NAME='" + service.Name + "' ");
@@ -73,7 +74,7 @@ namespace gView.Server.Controllers
             }
         }
 
-        async public Task<IActionResult> MapRequest(string guid, string id, string folder)
+        async public Task<IActionResult> MapRequest(string guid, string name, string folder)
         {
             try
             {
@@ -89,7 +90,7 @@ namespace gView.Server.Controllers
                 #endregion
 
                 if (!String.IsNullOrWhiteSpace(folder))
-                    id = folder + "/" + id;
+                    name = folder + "/" + name;
 
                 //DateTime td = DateTime.Now;
                 //Console.WriteLine("Start Map Request " + td.ToLongTimeString() + "." + td.Millisecond + " (" + name + ")");
@@ -118,9 +119,9 @@ namespace gView.Server.Controllers
                 if (input.StartsWith("?"))
                     input = input.Substring(1);
 
-                ServiceRequest serviceRequest = new ServiceRequest(id.ServiceName(), id.FolderName(), input)
+                ServiceRequest serviceRequest = new ServiceRequest(name.ServiceName(), name.FolderName(), input)
                 {
-                    OnlineResource = InternetMapServer.OnlineResource + "/MapRequest/" + guid + "/" + id,
+                    OnlineResource = InternetMapServer.OnlineResource + "/MapRequest/" + guid + "/" + name,
                     Identity = identity
                 };
 
@@ -143,6 +144,10 @@ namespace gView.Server.Controllers
                 string ret = serviceRequest.Response;
 
                 return Result(ret, "text/xml");
+            }
+            catch (MapServerException mse)
+            {
+                return WriteError(mse.Message);
             }
             catch (UnauthorizedAccessException)
             {
@@ -169,6 +174,10 @@ namespace gView.Server.Controllers
 
                 return Result(ret.ToString(), "text/plain");
             }
+            catch(MapServerException mse)
+            {
+                return WriteError(mse.Message);
+            }
             catch (UnauthorizedAccessException)
             {
                 return WriteUnauthorized();
@@ -176,16 +185,22 @@ namespace gView.Server.Controllers
         }
 
         [HttpPost]
-        public IActionResult RemoveMap(string name)
+        public IActionResult RemoveMap(string name, string folder)
         {
             try
             {
                 string user=String.Empty, pwd=String.Empty;
                 // var request = Request(out user, out pwd);
 
+                name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
+
                 bool ret = InternetMapServer.RemoveMap(name, user, pwd);
 
                 return Result(ret.ToString(), "text/plain");
+            }
+            catch (MapServerException mse)
+            {
+                return WriteError(mse.Message);
             }
             catch (UnauthorizedAccessException)
             {
@@ -193,16 +208,22 @@ namespace gView.Server.Controllers
             }
         }
 
-        public IActionResult GetMetadata(string name)
+        public IActionResult GetMetadata(string name, string folder)
         {
             try
             {
                 string user = String.Empty, pwd = String.Empty;
                 // var request = Request(out user, out pwd);
 
+                name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
+
                 string ret = InternetMapServer.GetMetadata(name, user, pwd);
 
                 return Result(ret, "text/xml");
+            }
+            catch (MapServerException mse)
+            {
+                return WriteError(mse.Message);
             }
             catch (UnauthorizedAccessException)
             {
@@ -211,11 +232,13 @@ namespace gView.Server.Controllers
         }
 
         [HttpPost]
-        public IActionResult SetMetadata(string name)
+        public IActionResult SetMetadata(string name, string folder)
         {
             try
             {
                 string input = GetBody();
+
+                name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
                 string user = String.Empty, pwd = String.Empty;
                 // var request = Request(out user, out pwd);
@@ -223,6 +246,10 @@ namespace gView.Server.Controllers
                 bool ret = InternetMapServer.SetMetadata(name, input, user, pwd);
 
                 return Result(ret.ToString(), "text/plain");
+            }
+            catch (MapServerException mse)
+            {
+                return WriteError(mse.Message);
             }
             catch (UnauthorizedAccessException)
             {

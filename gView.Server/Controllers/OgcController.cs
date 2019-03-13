@@ -94,6 +94,75 @@ namespace gView.Server.Controllers
             }
         }
 
+
+        // https://localhost:44331/tilewmts/tor_tiles/compact/ul/31256/default/8/14099/16266.jpg
+        async public Task<IActionResult> TileWmts(string name, string cachetype, string origin, string epsg, string style, string level, string row, string col, string folder="")
+        {
+            //if (IfMatch())
+            //{
+            //    OutgoingWebResponseContext context = WebOperationContext.Current.OutgoingResponse;
+            //    context.StatusCode = HttpStatusCode.NotModified;
+            //    return null;
+            //}
+
+            #region Security
+
+            Identity identity = Identity.FromFormattedString(base.GetAuthToken().Username);
+
+            #endregion
+
+            var interpreter = InternetMapServer.GetInterpreter(typeof(WMTSRequest));
+
+            #region Request
+
+            string requestString = cachetype + "/" + origin + "/" + epsg + "/" + style + "/~" + level + "/" + row + "/" + col;
+
+            ServiceRequest serviceRequest = new ServiceRequest(name, folder, requestString)
+            {
+                OnlineResource = InternetMapServer.OnlineResource + "/ogc/" + name,
+                Identity = identity
+            };
+
+            #endregion
+
+            IServiceRequestContext context = await ServiceRequestContext.TryCreate(
+                   InternetMapServer.Instance,
+                   interpreter,
+                   serviceRequest);
+
+            await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
+
+            string ret = serviceRequest.Response;
+            string contentType = col.Contains(".") ? "image/" + col.Split('.')[1] : "image/png";
+
+            if (ret.StartsWith("image:"))
+            {
+                //OutgoingWebResponseContext context = WebOperationContext.Current.OutgoingResponse;
+                //context.ContentType = "image/png";
+
+                ret = ret.Substring(6, ret.Length - 6);
+                return Result(ret, contentType);
+            }
+            if (ret.StartsWith("{"))
+            {
+                try
+                {
+                    var mapServerResponse = gView.Framework.system.MapServerResponse.FromString(ret);
+
+                    //OutgoingWebResponseContext context = WebOperationContext.Current.OutgoingResponse;
+                    //context.ContentType = mapServerResponse.ContentType;
+
+                    //if (mapServerResponse.Expires != null)
+                    //    AppendEtag((DateTime)mapServerResponse.Expires);
+
+                    return Result(mapServerResponse.Data, contentType);
+                }
+                catch { }
+            }
+
+            return null;
+        }
+
         #region Helper
 
         private IActionResult Result(string response, string contentType)

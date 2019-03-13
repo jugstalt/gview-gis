@@ -18,6 +18,9 @@ namespace gView.Server.AppCode
         [JsonProperty("onlineresource-url")]
         public string OnlineResourceUrl { get; set; }
 
+        [JsonProperty("tilecache-root")]
+        public string TileCacheRoot { get; set; }
+
         [JsonProperty("security")]
         public SecurityConfig Security { get; set; }
 

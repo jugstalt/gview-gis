@@ -131,7 +131,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
                         if (style != "default")
                         {
-                            throw new NotImplementedException("Not in .Net Standoard...");
+                            throw new NotImplementedException("Not in .Net Standard...");
                             //ImageProcessingFilters filter;
                             //if (Enum.TryParse<ImageProcessingFilters>(style, true, out filter))
                             //    imageData = ImageProcessing.ApplyFilter(imageData, filter, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);

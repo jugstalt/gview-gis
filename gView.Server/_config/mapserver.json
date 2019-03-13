@@ -4,6 +4,7 @@
   "output-path": "C:\\ArcIMS\\Output",
   "output-url": "http://localhost/output",
   "onlineresource-url": "http://localhost:8889",
+  "tilecache-root": "\\\\server\\E$\\sys\\data\\cache\\gview",
 
   "security": {
     "master-password": "abcdefghijklmnopqrstuvwxyz0123456789"
