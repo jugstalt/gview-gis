@@ -126,15 +126,15 @@ namespace gView.Interoperability.OGC.Request.WMTS
                         }
                         else
                         {
-                            imageData = GetTile(context, metadata, epsg, scale, row, col, format, (args[1].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft));
+                            imageData = await GetTile(context, metadata, epsg, scale, row, col, format, (args[1].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft));
                         }
 
                         if (style != "default")
                         {
-                            throw new NotImplementedException("Not in .Net Standard...");
-                            //ImageProcessingFilters filter;
-                            //if (Enum.TryParse<ImageProcessingFilters>(style, true, out filter))
-                            //    imageData = ImageProcessing.ApplyFilter(imageData, filter, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
+                            //throw new NotImplementedException("Not in .Net Standard...");
+                            ImageProcessingFilters filter;
+                            if (Enum.TryParse<ImageProcessingFilters>(style, true, out filter))
+                                imageData = ImageProcessing.ApplyFilter(imageData, filter, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
                         }
                     }
 
@@ -159,7 +159,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
             return context.ServiceRequest.Service;
         }
 
-        private byte[] GetTile(IServiceRequestContext context, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation)
+        async private Task<byte[]> GetTile(IServiceRequestContext context, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation)
         {
             if (!metadata.EPSGCodes.Contains(epsg))
                 throw new ArgumentException("Wrong epsg argument");
@@ -194,7 +194,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     using (FileStream fs = File.Open(fi.FullName, FileMode.Open, FileAccess.Read, FileShare.Read)) //new FileStream(bundleFilename, FileMode.Open, FileAccess.Read))
                     {
                         byte[] data = new byte[fi.Length];
-                        fs.Read(data, 0, data.Length);
+                        await fs.ReadAsync(data, 0, data.Length);
                         return data;
                     }
                 }
@@ -243,8 +243,6 @@ namespace gView.Interoperability.OGC.Request.WMTS
             {
                 return await GetCompactTileBytes(context, path, row, col, format);
             }
-
-
 
             if (IsDirectoryEmpty(path))
             {
@@ -316,8 +314,8 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
             try
             {
-
-                int tileLength, tilePosition = bundleIndex.TilePosition(row - bundleStartRow, col - bundleStartCol, out tileLength);
+                var tilePositionResult = await bundleIndex.TilePosition(row - bundleStartRow, col - bundleStartCol);
+                int tileLength = tilePositionResult.tileLength, tilePosition = tilePositionResult.position;
 
                 if (tilePosition < 0)
                     return CreateEmpty(format);
@@ -327,7 +325,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     fs.Position = tilePosition;
 
                     byte[] data = new byte[tileLength];
-                    fs.Read(data, 0, tileLength);
+                    await fs.ReadAsync(data, 0, tileLength);
                     return data;
                 }
             }
@@ -399,7 +397,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
             #endregion
 
-            string restFulUrl = context.ServiceRequest.OnlineResource.ToLower().Replace("/maprequest/wmts/", "/tilewmts/");
+            string restFulUrl = context.ServiceRequest.OnlineResource.ToLower().Replace("/ogc/" + context.ServiceRequest.Service, "/tilewmts/" + context.ServiceRequest.Service);
 
             #region OperationsMetadata
 
@@ -723,7 +721,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
             public string Filename { get; private set; }
 
-            public int TilePosition(int row, int col, out int tileLength)
+            async public Task<(int position, int tileLength)> TilePosition(int row, int col)
             {
                 if (row < 0 || row > 128 || col < 0 || col > 128)
                     throw new ArgumentException("Compact Tile Index out of range");
@@ -734,12 +732,12 @@ namespace gView.Interoperability.OGC.Request.WMTS
                 {
                     byte[] data = new byte[8];
                     fs.Position = indexPosition;
-                    fs.Read(data, 0, 8);
+                    await fs.ReadAsync(data, 0, 8);
 
                     int position = BitConverter.ToInt32(data, 0);
-                    tileLength = BitConverter.ToInt32(data, 4);
+                    int tileLength = BitConverter.ToInt32(data, 4);
 
-                    return position;
+                    return (position, tileLength);
                 }
             }
         }

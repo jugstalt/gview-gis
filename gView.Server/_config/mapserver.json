@@ -3,12 +3,8 @@
   "services-folder": "C:\\Development_OpenSource\\GeoDaten\\gview5",
   "output-path": "C:\\ArcIMS\\Output",
   "output-url": "http://localhost/output",
-  "onlineresource-url": "http://localhost:8889",
-  "tilecache-root": "\\\\server\\E$\\sys\\data\\cache\\gview",
-
-  "security": {
-    "master-password": "abcdefghijklmnopqrstuvwxyz0123456789"
-  },
+  "onlineresource-url": "https://localhost:44331",
+  "tilecache-root": "\\\\gis3\\E$\\geonet_sys\\data\\cache\\gview",
 
   "task-queue": {
     "max-parallel-tasks": 5,

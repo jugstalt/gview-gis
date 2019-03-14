@@ -3,5 +3,18 @@
 }
 
 <div>
-
+    <div class="main-logo">
+        <div class="text">gView 5 Server</div>
+    </div>
+    <div class="main-nav-panels">
+        <a class="main-nav-panel browse" asp-area="" asp-controller="BrowseServices" asp-action="Index">
+            <div class="text">Browse Services</div>
+        </a>
+        <a class="main-nav-panel geoservices" href="@(gView.Server.AppCode.InternetMapServer.AppRootUrl(this.Context.Request))/geoservices/rest/services">
+            <div class="text">GeoServices (REST)</div>
+        </a>
+        <a class="main-nav-panel manage" asp-area="" asp-controller="Manage" asp-action="Index">
+            <div class="text">Manage</div>
+        </a>
+    </div>
 </div>

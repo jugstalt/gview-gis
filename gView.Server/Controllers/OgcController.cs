@@ -32,6 +32,8 @@ namespace gView.Server.Controllers
 
                 IServiceRequestInterpreter interpreter = null;
                 
+
+
                 switch(service.ToLower().Split(',')[0])
                 {
                     case "wms":
@@ -83,6 +85,7 @@ namespace gView.Server.Controllers
                    interpreter,
                    serviceRequest);
 
+
                 await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 return Result(serviceRequest.Response, "text/xml");
@@ -98,12 +101,10 @@ namespace gView.Server.Controllers
         // https://localhost:44331/tilewmts/tor_tiles/compact/ul/31256/default/8/14099/16266.jpg
         async public Task<IActionResult> TileWmts(string name, string cachetype, string origin, string epsg, string style, string level, string row, string col, string folder="")
         {
-            //if (IfMatch())
-            //{
-            //    OutgoingWebResponseContext context = WebOperationContext.Current.OutgoingResponse;
-            //    context.StatusCode = HttpStatusCode.NotModified;
-            //    return null;
-            //}
+            if (IfMatch())
+            {
+                return base.NotModified();
+            }
 
             #region Security
 
@@ -130,6 +131,7 @@ namespace gView.Server.Controllers
                    interpreter,
                    serviceRequest);
 
+            //await interpreter.Request(context);
             await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
 
             string ret = serviceRequest.Response;
@@ -137,9 +139,6 @@ namespace gView.Server.Controllers
 
             if (ret.StartsWith("image:"))
             {
-                //OutgoingWebResponseContext context = WebOperationContext.Current.OutgoingResponse;
-                //context.ContentType = "image/png";
-
                 ret = ret.Substring(6, ret.Length - 6);
                 return Result(ret, contentType);
             }
@@ -149,11 +148,8 @@ namespace gView.Server.Controllers
                 {
                     var mapServerResponse = gView.Framework.system.MapServerResponse.FromString(ret);
 
-                    //OutgoingWebResponseContext context = WebOperationContext.Current.OutgoingResponse;
-                    //context.ContentType = mapServerResponse.ContentType;
-
-                    //if (mapServerResponse.Expires != null)
-                    //    AppendEtag((DateTime)mapServerResponse.Expires);
+                    if (mapServerResponse.Expires != null)
+                        base.AppendEtag((DateTime)mapServerResponse.Expires);
 
                     return Result(mapServerResponse.Data, contentType);
                 }

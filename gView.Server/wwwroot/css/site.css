@@ -103,8 +103,78 @@ ul {
     }
 }
 
-/****** Browse **********/
+/****** Home *********/
 
+.gview-header-brand {
+    width: 48px;
+    height: 48px;
+    background-image: url('../images/logos/gview5_48x48-w.png');
+    display:inline-block;
+    margin-top:-14px;
+    
+}
+
+.main-logo {
+    display: block;
+    text-align: center;
+    height: 173px;
+    margin:10px;
+    background-image: url('../images/logos/gview5_100x100.png');
+    background-position: center 20px;
+    background-repeat: no-repeat;
+    position: relative;
+}
+    .main-logo .text {
+        position: absolute;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+        height: 40px;
+        color: #337ab7;
+        font-size: 28px;
+        white-space:nowrap;
+    }
+
+.main-nav-panels {
+    display: block;
+    text-align:center;
+}
+
+    .main-nav-panels .main-nav-panel {
+        width: 150px;
+        height: 100px;
+        display: inline-block;
+        position: relative;
+        background-color: #337ab7;
+        background-position: center 20px;
+        background-repeat: no-repeat;
+        margin: 10px;
+        box-shadow: 4px 4px 9px rgba(0, 0, 0, .4) !important;
+    }
+
+        .main-nav-panels .main-nav-panel .text {
+            color: white;
+            position: absolute;
+            bottom: 0px;
+            left: 0px;
+            right: 0px;
+            height: 30px;
+            text-align: center;
+            font-weight: lighter;
+            padding: 5px;
+        }
+
+        .main-nav-panels .main-nav-panel.browse {
+            background-image: url('../images/icons/browse-50-w.png');
+        }
+        .main-nav-panels .main-nav-panel.geoservices {
+            background-image: url('../images/icons/geoservices-50-w.png');
+        }
+        .main-nav-panels .main-nav-panel.manage {
+            background-image: url('../images/icons/manage-50-w.png');
+        }
+
+/****** Browse **********/
 table.service-capabilities {
     width: 100%;
     border-top: 1px solid #ddd;

@@ -107,6 +107,53 @@ namespace gView.Server.AppCode
 
         #endregion
 
+        #region ETAG
+
+        public IActionResult NotModified()
+        {
+            Response.StatusCode = 304;
+            return Content(String.Empty);
+        }
+
+        protected bool HasIfNonMatch
+        {
+            get
+            {
+                return (string)this.Request.Headers["If-None-Match"] != null;
+            }
+        }
+
+        public bool IfMatch()
+        {
+            try
+            {
+                if (HasIfNonMatch == false)
+                    return false;
+
+                var etag = long.Parse(this.Request.Headers["If-None-Match"]);
+
+                DateTime etagTime = new DateTime(etag, DateTimeKind.Utc);
+                if (DateTime.UtcNow > etagTime)
+                    return false;
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public void AppendEtag(DateTime expires)
+        {
+            this.Response.Headers.Add("ETag", expires.Ticks.ToString());
+            this.Response.Headers.Add("Last-Modified", DateTime.UtcNow.ToString("R"));
+            this.Response.Headers.Add("Expires", expires.ToString("R"));
+            this.Response.Headers.Add("Cache-Control", "private, max-age=" + (int)(new TimeSpan(24, 0, 0)).TotalSeconds);
+        }
+
+        #endregion
+
         async virtual protected Task<IActionResult> SecureMethodHandler(Func<Identity, Task<IActionResult>> func, Func<Exception, IActionResult> onException = null)
         {
             try

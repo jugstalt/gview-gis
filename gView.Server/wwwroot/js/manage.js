@@ -331,7 +331,7 @@ window.gview.manage = function () {
         get({
             url: '/manage/setservicestatus?service=' + $service.attr('data-service') + "&status="+status,
             type: 'post',
-            success(result) {
+            success: function(result) {
                 createServiceListItem($service.closest('.services'), result.service);
             }
         });
