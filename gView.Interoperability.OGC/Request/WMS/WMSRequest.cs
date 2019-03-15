@@ -130,8 +130,10 @@ namespace gView.Interoperability.OGC
 
         private WMSParameterDescriptor ParseParameters(IServiceRequestContext context)
         {
+            var queryString = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(context?.ServiceRequest?.Request);
+
             WMSParameterDescriptor parameters = new WMSParameterDescriptor();
-            if (!parameters.ParseParameters(context?.ServiceRequest?.Request?.Split('&')))
+            if (!parameters.ParseParameters(queryString/*context?.ServiceRequest?.Request?.Split('&')*/))
             {
                 throw new Exception("Invalid WMS Parameters");
             }
@@ -266,7 +268,7 @@ namespace gView.Interoperability.OGC
                             Framework.OGC.WMS.Version_1_1_1.BoundingBox[] bboxes = new Framework.OGC.WMS.Version_1_1_1.BoundingBox[0];
                             foreach (string s in caps.Capability.Layer.SRS)
                             {
-                                IEnvelope env = TransFormEPSG4326Envelope(env4326, s);
+                                IEnvelope env = TransFormEPSG4326Envelope(env4326, s, parameters.Version);
                                 if (env == null) continue;
 
                                 Array.Resize<Framework.OGC.WMS.Version_1_1_1.BoundingBox>(ref bboxes, bboxes.Length + 1);
@@ -409,7 +411,7 @@ namespace gView.Interoperability.OGC
                             Framework.OGC.WMS.Version_1_3_0.BoundingBox[] bboxes = new Framework.OGC.WMS.Version_1_3_0.BoundingBox[0];
                             foreach (string s in caps.Capability.Layer[0].CRS)
                             {
-                                IEnvelope env = TransFormEPSG4326Envelope(env4326, s);
+                                IEnvelope env = TransFormEPSG4326Envelope(env4326, s, parameters.Version);
                                 if (env == null) continue;
 
                                 Array.Resize<Framework.OGC.WMS.Version_1_3_0.BoundingBox>(ref bboxes, bboxes.Length + 1);
@@ -421,6 +423,7 @@ namespace gView.Interoperability.OGC
                                 bboxes[bboxes.Length - 1].maxy = env.maxy;
                             }
                             caps.Capability.Layer[0].BoundingBox = bboxes;
+
                             caps.Capability.Layer[0].EX_GeographicBoundingBox = new Framework.OGC.WMS.Version_1_3_0.EX_GeographicBoundingBox();
                             caps.Capability.Layer[0].EX_GeographicBoundingBox.westBoundLongitude = env4326.minx;
                             caps.Capability.Layer[0].EX_GeographicBoundingBox.southBoundLatitude = env4326.miny;
@@ -695,19 +698,25 @@ namespace gView.Interoperability.OGC
 
             void map_BeforeRenderLayers(IServiceMap sender, List<ILayer> layers)
             {
-                foreach (ILayer layer in layers)
-                {
-                    if (layer == null) continue;
-                    layer.Visible = false;
-                }
+                // if layers=MapName => Top Layer in Capabilites => all Layers visible (or default?)
+                var mapLayerVisible = _parameters.Layers.Length == 1 && _parameters.Layers[0] == sender.Name;
 
-                foreach (string id in _parameters.Layers)
+                if (mapLayerVisible == false)  // otherwise -> default
                 {
-                    if (id == String.Empty || id[0] != 'c') continue;
-
-                    foreach (ILayer layer in MapServerHelper.FindMapLayers(sender, _useTOC, id.Substring(1, id.Length - 1), layers))
+                    foreach (ILayer layer in layers)
                     {
-                        layer.Visible = true;
+                        if (layer == null) continue;
+                        layer.Visible = false;
+                    }
+
+                    foreach (string id in _parameters.Layers)
+                    {
+                        if (id == String.Empty || id[0] != 'c') continue;
+
+                        foreach (ILayer layer in MapServerHelper.FindMapLayers(sender, _useTOC, id.Substring(1, id.Length - 1), layers))
+                        {
+                            layer.Visible = true;
+                        }
                     }
                 }
 
@@ -1129,16 +1138,45 @@ namespace gView.Interoperability.OGC
             return (envelope != null) ? envelope : new Envelope(-180, -90, 180, 90);
         }
 
-        private IEnvelope TransFormEPSG4326Envelope(IEnvelope env4326, string projID)
+        private IEnvelope TransFormEPSG4326Envelope(IEnvelope env4326, string projID, string version)
         {
-            if (projID.ToLower() == "epsg:4326") return env4326;
             if (env4326 == null) return null;
 
-            ISpatialReference from = SpatialReference.FromID("epsg:4326");
-            ISpatialReference to = SpatialReference.FromID(projID);
-            if (from == null || to == null || from.Equals(to)) return env4326;
+            IEnvelope envelope = null;
+            ISpatialReference to = null;
+            if (projID.ToLower() == "epsg:4326")
+            {
+                to = SpatialReference.FromID("epsg:4326");
+                envelope = new Envelope(env4326);
+            }
+            else
+            {
 
-            return GeometricTransformer.Transform2D(env4326, from, to).Envelope;
+                ISpatialReference from = SpatialReference.FromID("epsg:4326");
+                to = SpatialReference.FromID(projID);
+
+                if (from == null || to == null || from.Equals(to))
+                {
+                    envelope = new Envelope(env4326);
+                }
+                else
+                {
+                    envelope = GeometricTransformer.Transform2D(env4326, from, to).Envelope;
+                }
+            }
+
+            if (version == "1.3.0" && envelope != null && to != null)
+            {
+                IPoint ll = envelope.LowerLeft;
+                IPoint ur = envelope.UpperRight;
+
+                ll = gView.Framework.OGC.GML.GeometryTranslator.Gml3Point(ll, to);
+                ur = gView.Framework.OGC.GML.GeometryTranslator.Gml3Point(ur, to);
+
+                envelope = new Envelope(ll, ur);
+            }
+
+            return envelope;
         }
 
         private void GetFeatureResponse(List<FeatureType> features, StringBuilder sb, WMSInfoFormat format, string formatXsl)

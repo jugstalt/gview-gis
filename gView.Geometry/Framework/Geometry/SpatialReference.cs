@@ -8,6 +8,7 @@ using gView.Framework.Geometry.SpatialRefTranslation;
 using System.Collections.Generic;
 using System.IO;
 using gView.Framework.Proj;
+using System.Linq;
 
 namespace gView.Framework.Geometry
 {
@@ -593,35 +594,51 @@ namespace gView.Framework.Geometry
                 string axisX = db.GetQoutedWKTParameter(pgWKT, "AXIS[\"X\"", ",", "]");
                 string axisY = db.GetQoutedWKTParameter(pgWKT, "AXIS[\"Y\"", ",", "]");
 
-                switch (axisX)
+                if (String.IsNullOrWhiteSpace(axisX) && String.IsNullOrWhiteSpace(axisY))
                 {
-                    case "NORTH":
-                        ret.Gml3AxisX = AxisDirection.North;
-                        break;
-                    case "EAST":
+                    if (ret.Parameters.Contains("+proj=utm"))
+                    {
                         ret.Gml3AxisX = AxisDirection.East;
-                        break;
-                    case "SOUTH":
-                        ret.Gml3AxisX = AxisDirection.South;
-                        break;
-                    case "WEST":
-                        ret.Gml3AxisX = AxisDirection.West;
-                        break;
-                }
-                switch (axisY)
-                {
-                    case "NORTH":
                         ret.Gml3AxisY = AxisDirection.North;
-                        break;
-                    case "EAST":
+                    }
+                    else if (ret.SpatialParameters.IsGeographic)  // 4326 => X-Axis to north => tested with QGIS!!
+                    {
+                        ret.Gml3AxisX = AxisDirection.North;
                         ret.Gml3AxisY = AxisDirection.East;
-                        break;
-                    case "SOUTH":
-                        ret.Gml3AxisY = AxisDirection.South;
-                        break;
-                    case "WEST":
-                        ret.Gml3AxisY = AxisDirection.West;
-                        break;
+                    } 
+                }
+                else
+                {
+                    switch (axisX)
+                    {
+                        case "NORTH":
+                            ret.Gml3AxisX = AxisDirection.North;
+                            break;
+                        case "EAST":
+                            ret.Gml3AxisX = AxisDirection.East;
+                            break;
+                        case "SOUTH":
+                            ret.Gml3AxisX = AxisDirection.South;
+                            break;
+                        case "WEST":
+                            ret.Gml3AxisX = AxisDirection.West;
+                            break;
+                    }
+                    switch (axisY)
+                    {
+                        case "NORTH":
+                            ret.Gml3AxisY = AxisDirection.North;
+                            break;
+                        case "EAST":
+                            ret.Gml3AxisY = AxisDirection.East;
+                            break;
+                        case "SOUTH":
+                            ret.Gml3AxisY = AxisDirection.South;
+                            break;
+                        case "WEST":
+                            ret.Gml3AxisY = AxisDirection.West;
+                            break;
+                    }
                 }
             }
             return ret;

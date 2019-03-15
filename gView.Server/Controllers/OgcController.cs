@@ -52,7 +52,6 @@ namespace gView.Server.Controllers
                 #region Request
 
                 string requestString = Request.QueryString.ToString();
-
                 if (Request.Method.ToLower()=="post" && Request.Body.CanRead)
                 {
                     MemoryStream ms = new MemoryStream();
