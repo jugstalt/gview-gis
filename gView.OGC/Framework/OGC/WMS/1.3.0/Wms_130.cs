@@ -17,6 +17,7 @@ namespace gView.Framework.OGC.WMS.Version_1_3_0
 
 
     /// <remarks/>
+    /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "2.0.50727.3038")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -33,6 +34,8 @@ namespace gView.Framework.OGC.WMS.Version_1_3_0
         private string versionField;
 
         private string updateSequenceField;
+
+        private XmlSerializerNamespaces xmlnsField;
 
         public WMS_Capabilities()
         {
@@ -91,6 +94,13 @@ namespace gView.Framework.OGC.WMS.Version_1_3_0
             {
                 this.updateSequenceField = value;
             }
+        }
+
+        [System.Xml.Serialization.XmlNamespaceDeclarations]
+        public XmlSerializerNamespaces NameSpaces
+        {
+            get { return xmlnsField; }
+            set { xmlnsField = value; }
         }
     }
 
@@ -904,6 +914,9 @@ namespace gView.Framework.OGC.WMS.Version_1_3_0
                 this.getFeatureInfoField = value;
             }
         }
+
+        //[System.Xml.Serialization.XmlElement(Namespace = "http://www.opengis.net/sld")]
+        public OperationType GetLegendGraphic { get; set; }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("_ExtendedOperation")]

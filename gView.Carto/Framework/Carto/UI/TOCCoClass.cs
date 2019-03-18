@@ -17,7 +17,7 @@ namespace gView.Framework.Carto.UI
 	/// <summary>
 	/// Zusammenfassung für TOCCoClass.
 	/// </summary>
-	public class TOC : gView.Framework.UI.ITOC,gView.Framework.IO.IPersistable
+	public class TOC : ITOC, IPersistable
 	{
         public event EventHandler TocChanged = null;
 
@@ -533,6 +533,20 @@ namespace gView.Framework.Carto.UI
                 foreach(ILayer e in tocElement.Layers)
                 {
                     if (e == layer) 
+                        return tocElement;
+                }
+            }
+            return null;
+        }
+
+        public ITOCElement GetTOCElementByLayerId(int layerId)
+        {
+            foreach (ITOCElement tocElement in _elements)
+            {
+                if (tocElement.Layers == null) continue;
+                foreach (ILayer e in tocElement.Layers)
+                {
+                    if (e.ID == layerId)
                         return tocElement;
                 }
             }

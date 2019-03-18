@@ -14,6 +14,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         public JsonLayer()
         {
             this.SubLayers = new JsonLayerLink[0];
+            this.Capabilities = "Map,Query";
         }
 
         [JsonProperty("currentVersion")]
@@ -54,6 +55,9 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
         [JsonProperty("drawingInfo")]
         public JsonDrawingInfo DrawingInfo { get; set; }
+
+        [JsonProperty("capabilities")]
+        public string Capabilities { get; set; }
 
         //[JsonIgnore]
         //public string FullName

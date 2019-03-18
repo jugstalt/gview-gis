@@ -497,6 +497,22 @@ namespace gView.Framework.Geometry
             set { _axisY = value; }
         }
 
+        public int EpsgCode
+        {
+            get
+            {
+                try
+                {
+                    if (!String.IsNullOrWhiteSpace(_ID) && _ID.ToLower().StartsWith("epsg:"))
+                    {
+                        return int.Parse(_ID.Substring(5));
+                    }
+                }
+                catch { }
+                return 0;
+            }
+        }
+
         public bool Equals(ISpatialReference sRef)
         {
             if (sRef == null) return true; // keine Projektion möglich/notwendig!!!
@@ -1045,6 +1061,8 @@ namespace gView.Framework.Geometry
         {
             get { return AxisDirection.North; }
         }
+
+        public int EpsgCode { get { return 0; } }
 
 		public bool Equals(ISpatialReference sRef) 
 		{

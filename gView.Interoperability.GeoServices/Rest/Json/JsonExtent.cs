@@ -22,7 +22,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         public double Ymax { get; set; }
 
         [JsonProperty("spatialReference")]
-        public JsonSpatialReference spatialReference { get; set; }
+        public JsonSpatialReference SpatialReference { get; set; }
 
         public bool IsInitialized()
         {

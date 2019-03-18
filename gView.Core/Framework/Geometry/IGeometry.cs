@@ -224,6 +224,8 @@ namespace gView.Framework.Geometry
         AxisDirection Gml3AxisX { get; }
         AxisDirection Gml3AxisY { get; }
 
+        int EpsgCode { get; }
+
         IGeodeticDatum Datum
         {
             get;

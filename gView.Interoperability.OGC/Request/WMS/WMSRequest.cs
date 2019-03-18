@@ -22,6 +22,8 @@ using gView.Framework.Metadata;
 using gView.Framework.OGC.WMS_C_1_4_0;
 using System.Xml.Serialization;
 using System.Threading.Tasks;
+using gView.Core.Framework.Exceptions;
+using System.Linq;
 
 namespace gView.Interoperability.OGC
 {
@@ -74,6 +76,9 @@ namespace gView.Interoperability.OGC
                     break;
                 case WMSRequestType.GetFeatureInfo:
                     context.ServiceRequest.Response = await WMS_FeatureInfo(context.ServiceRequest.Service, parameters, context);
+                    break;
+                case WMSRequestType.GetLegendGraphic:
+                    context.ServiceRequest.Response = await WMS_GetLegendGraphic(context.ServiceRequest.Service, parameters, context);
                     break;
                 case WMSRequestType.DescriptTiles:
                     context.ServiceRequest.Response = await WMSC_DescriptTiles(context.ServiceRequest.Service, parameters, context);
@@ -358,8 +363,8 @@ namespace gView.Interoperability.OGC
                         caps.Capability.Request.GetMap = new Framework.OGC.WMS.Version_1_3_0.OperationType();
                         caps.Capability.Request.GetMap.Format = new string[] { "image/png", "image/jpeg" };
                         caps.Capability.Request.GetMap.DCPType = new Framework.OGC.WMS.Version_1_3_0.DCPType[]{
-                        new Framework.OGC.WMS.Version_1_3_0.DCPType()
-                    };
+                            new Framework.OGC.WMS.Version_1_3_0.DCPType()
+                        };
                         caps.Capability.Request.GetMap.DCPType[0].HTTP = new Framework.OGC.WMS.Version_1_3_0.HTTP();
                         caps.Capability.Request.GetMap.DCPType[0].HTTP.Get = new Framework.OGC.WMS.Version_1_3_0.Get();
                         caps.Capability.Request.GetMap.DCPType[0].HTTP.Get.OnlineResource = new Framework.OGC.WMS.Version_1_3_0.OnlineResource();
@@ -381,12 +386,26 @@ namespace gView.Interoperability.OGC
                         caps.Capability.Request.GetFeatureInfo = new Framework.OGC.WMS.Version_1_3_0.OperationType();
                         caps.Capability.Request.GetFeatureInfo.Format = gfiFormats.ToArray();
                         caps.Capability.Request.GetFeatureInfo.DCPType = new Framework.OGC.WMS.Version_1_3_0.DCPType[]{
-                        new Framework.OGC.WMS.Version_1_3_0.DCPType()
-                    };
+                            new Framework.OGC.WMS.Version_1_3_0.DCPType()
+                        };
                         caps.Capability.Request.GetFeatureInfo.DCPType[0].HTTP = new Framework.OGC.WMS.Version_1_3_0.HTTP();
                         caps.Capability.Request.GetFeatureInfo.DCPType[0].HTTP.Get = new Framework.OGC.WMS.Version_1_3_0.Get();
                         caps.Capability.Request.GetFeatureInfo.DCPType[0].HTTP.Get.OnlineResource = new Framework.OGC.WMS.Version_1_3_0.OnlineResource();
                         caps.Capability.Request.GetFeatureInfo.DCPType[0].HTTP.Get.OnlineResource.href = sOnlineResource;
+                        #endregion
+
+                        #region GetLegendGraphic
+
+                        caps.Capability.Request.GetLegendGraphic = new Framework.OGC.WMS.Version_1_3_0.OperationType();
+                        caps.Capability.Request.GetLegendGraphic.DCPType = new Framework.OGC.WMS.Version_1_3_0.DCPType[]{
+                            new Framework.OGC.WMS.Version_1_3_0.DCPType()
+                        };
+                        caps.Capability.Request.GetLegendGraphic.Format = new string[] { "image/png" };
+                        caps.Capability.Request.GetLegendGraphic.DCPType[0].HTTP = new Framework.OGC.WMS.Version_1_3_0.HTTP();
+                        caps.Capability.Request.GetLegendGraphic.DCPType[0].HTTP.Get = new Framework.OGC.WMS.Version_1_3_0.Get();
+                        caps.Capability.Request.GetLegendGraphic.DCPType[0].HTTP.Get.OnlineResource = new Framework.OGC.WMS.Version_1_3_0.OnlineResource();
+                        caps.Capability.Request.GetLegendGraphic.DCPType[0].HTTP.Get.OnlineResource.href = sOnlineResource;
+
                         #endregion
 
                         #region Exception
@@ -843,6 +862,140 @@ namespace gView.Interoperability.OGC
 
                 return response.ToString();
             }
+        }
+
+        async public Task<string> WMS_GetLegendGraphic(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
+        {
+            if (parameters == null || _mapServer == null)
+                throw new ArgumentException();
+
+            if (String.IsNullOrWhiteSpace(parameters.Layer))
+                throw new MapServerException("Parameter layer missing");
+
+            using (var serviceMap = await context.CreateServiceMapInstance())
+            {
+                int imageWidth, imageHeight;
+                using(var dummy=new Bitmap(1,1))
+                {
+                    var size = DrawLegend(serviceMap, parameters, dummy);
+                    imageWidth = size.Width;
+                    imageHeight = size.Height;
+                }
+                using(var legendBitmap = new Bitmap(imageWidth, imageHeight))
+                {
+                    DrawLegend(serviceMap, parameters, legendBitmap);
+
+                    MemoryStream ms = new MemoryStream();
+                    legendBitmap.Save(ms, parameters.GetImageFormat());
+                    return "base64:" + parameters.GetContentType() + ":" + Convert.ToBase64String(ms.ToArray());
+                }
+            }
+        }
+
+        private Size DrawLegend(IServiceMap serviceMap, WMSParameterDescriptor parameters, Bitmap image)
+        {
+            if (serviceMap?.TOC == null)
+                throw new MapServerException("Map has not table of content (TOC)");
+
+            float offsetY = 5f, padding = 5f, lineSpan = 3f;
+            float width=0, height = 0;
+
+            #region Layers
+
+            bool defaultLayerVisibility = parameters.Layer == serviceMap.Name;
+            var layerIds = parameters.Layer.Split(',');
+
+            using (Graphics gr = Graphics.FromImage(image))
+            using (Font fontBold = new Font("Arial", 9, FontStyle.Bold))
+            using (Font fontRegular = new Font("Arial", 8, FontStyle.Regular))
+            {
+                gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+
+                foreach (var element in serviceMap.MapElements)
+                {
+                    if (!defaultLayerVisibility && !layerIds.Contains("c" + element.ID))
+                        continue;
+
+                    if (!(element.Class is IFeatureClass))
+                        continue;
+
+                    MapServerHelper.Layers layers = MapServerHelper.FindMapLayers(serviceMap, _useTOC, element.ID.ToString());
+                    if (layers == null)
+                        continue;
+
+                    foreach (IFeatureLayer featureLayer in layers.Where(l => l is IFeatureLayer && ((IFeatureLayer)l).FeatureRenderer != null))
+                    {
+
+                        var tocElement = serviceMap.TOC.GetTOCElement(featureLayer);
+                        if (tocElement == null)
+                            continue;
+
+                        if (defaultLayerVisibility == true && tocElement.LayerVisible == false)
+                            continue;
+
+                        using (var tocLegendItems = serviceMap.TOC.LegendSymbol(tocElement))
+                        {
+                            if (tocLegendItems.Items == null || tocLegendItems.Items.Count() == 0)
+                                continue;
+
+                            if (tocLegendItems.Items.Count() == 1)
+                            {
+                                var tocLegendItem = tocLegendItems.Items.First();
+                                if (tocLegendItem == null && tocLegendItem.Image == null)
+                                    continue;
+
+                                if (image.Width>1)
+                                {
+                                    gr.DrawImage(tocLegendItem.Image, new PointF(padding, offsetY));
+                                    gr.DrawString(tocElement.Name, fontBold, Brushes.Black, new PointF(padding * 2f + tocLegendItem.Image.Width, offsetY+3f));
+                                }
+
+                                var labelSize = gr.MeasureString(tocElement.Name, fontBold);
+                                width = Math.Max(width, padding * 2f + tocLegendItem.Image.Width + labelSize.Width + padding);
+                                height = Math.Max(height, offsetY + Math.Max(tocLegendItem.Image.Height, labelSize.Height) + padding);
+
+                                offsetY += Math.Max(tocLegendItem.Image.Height, labelSize.Height) + lineSpan;
+                            }
+                            else
+                            {
+                                if (image.Width > 1)
+                                {
+                                    gr.DrawString(tocElement.Name, fontBold, Brushes.Black, new PointF(padding, offsetY));
+                                }
+                                var titleSize = gr.MeasureString(tocElement.Name, fontBold);
+                                width = Math.Max(width, padding * 2f + titleSize.Width);
+                                height = Math.Max(height, offsetY + titleSize.Height + padding);
+
+                                offsetY += titleSize.Height + lineSpan;
+
+                                foreach (var tocLegendItem in tocLegendItems.Items)
+                                {
+                                    if (tocLegendItem.Image == null)
+                                        continue;
+
+                                    if (image.Width > 1)
+                                    {
+                                        gr.DrawImage(tocLegendItem.Image, new PointF(padding, offsetY));
+                                        if (!String.IsNullOrWhiteSpace(tocLegendItem.Label))
+                                            gr.DrawString(tocLegendItem.Label, fontRegular, Brushes.Black, new PointF(padding * 2f + tocLegendItem.Image.Width, offsetY+3f));
+                                    }
+
+                                    var labelSize = String.IsNullOrEmpty(tocLegendItem.Label) ? new SizeF(0f, 0f) : gr.MeasureString(tocLegendItem.Label, fontRegular);
+                                    width = Math.Max(width, padding * 2f + tocLegendItem.Image.Width + labelSize.Width + padding);
+                                    height = Math.Max(height, Math.Max(tocLegendItem.Image.Height, labelSize.Height) + padding);
+
+                                    offsetY += Math.Max(tocLegendItem.Image.Height, labelSize.Height) + lineSpan;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            #endregion
+
+            return new Size((int)width, (int)height);
         }
 
         async public Task<string> WMSC_DescriptTiles(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)

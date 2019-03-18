@@ -27,9 +27,10 @@ namespace gView.Interoperability.GeoServices.Rest.Json
             };
             SupportedImageFormats = "PNG32,PNG24,PNG,JPG";
             Capabilities = "Map,Query";
-            SupportedImageFormats = "geoJSON";
+            SupportedQueryFormats = "JSON";
             DatumTransformations = new GeoTransformation[0];
             SupportsDatumTransformation = true;
+            Units = "esriMeters";
 
             MaxRecordCount = 1000;
             MaxImageWidth = MaxImageHeight = 4096;
@@ -59,6 +60,9 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
         [JsonProperty(PropertyName = "singleFusedMapCache")]
         public bool SingleFusedMapCache => false;
+
+        [JsonProperty(PropertyName = "spatialReference")]
+        public SpatialReference SpatialReferenceInstance { get; set; }
 
         [JsonProperty(PropertyName = "fullExtent")]
         public Extent FullExtent { get; set; }

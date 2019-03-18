@@ -262,6 +262,7 @@ namespace gView.Framework.UI
 
         ITOCElement GetTOCElement(string name, ITOCElement parent);
         ITOCElement GetTOCElement(ILayer element);
+        ITOCElement GetTOCElementByLayerId(int layerId);
         //ITOCElement GetTOCElement(IClass element);
 
         List<ITOCElement> GroupElements { get; }

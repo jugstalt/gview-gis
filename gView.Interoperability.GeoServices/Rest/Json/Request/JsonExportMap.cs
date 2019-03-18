@@ -69,5 +69,22 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
 
         [JsonProperty(PropertyName = "historicMoment")]
         public long HistoricMoment { get; set; }
+
+        [JsonProperty(PropertyName = "f")]
+        public string OutputFormat { get; set; }
+
+        public string GetContentType()
+        {
+            switch (this.ImageFormat?.ToLower())
+            {
+
+
+                case "jpg":
+                case "jpeg":
+                    return "image/jpg";
+                default:
+                    return "image/png";
+            }
+        }
     }
 }

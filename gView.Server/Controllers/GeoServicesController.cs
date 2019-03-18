@@ -24,6 +24,7 @@ using Newtonsoft.Json.Serialization;
 using gView.Interoperability.GeoServices.Rest.Reflection;
 using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
 using gView.Core.Framework.Exceptions;
+using gView.Interoperability.GeoServices.Rest.Json.Features;
 
 namespace gView.Server.Controllers
 {
@@ -89,6 +90,8 @@ namespace gView.Server.Controllers
                     throw new Exception("unable to create map: " + id);
 
                 gView.Framework.Geometry.Envelope fullExtent = null;
+                var spatialReference = map.Display.SpatialReference;
+                int epsgCode = spatialReference != null ? spatialReference.EpsgCode : 0;
 
                 return Result(new JsonMapService()
                 {
@@ -114,13 +117,14 @@ namespace gView.Server.Controllers
                             MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale > 1 ? tocElement.Layers[0].MaximumScale : 0, 0) : 0,
                         };
                     }).ToArray(),
+                    SpatialReferenceInstance = epsgCode > 0 ? new JsonMapService.SpatialReference(epsgCode) : null,
                     FullExtent = new JsonMapService.Extent()
                     {
                         XMin = fullExtent != null ? fullExtent.minx : 0D,
                         YMin = fullExtent != null ? fullExtent.miny : 0D,
                         XMax = fullExtent != null ? fullExtent.maxx : 0D,
                         YMax = fullExtent != null ? fullExtent.maxy : 0D,
-                        SpatialReference = new JsonMapService.SpatialReference(0)
+                        SpatialReference = new JsonMapService.SpatialReference(epsgCode)
                     }
                 });
             });
@@ -212,7 +216,14 @@ namespace gView.Server.Controllers
 
                 if (serviceRequest.Succeeded)
                 {
-                    return Result(JsonConvert.DeserializeObject<JsonExportResponse>(serviceRequest.Response));
+                    if (Request.Query["f"] == "image" && serviceRequest.Response.StartsWith("base64:"))
+                    {
+                        return Base64Result(serviceRequest.Response);
+                    }
+                    else
+                    {
+                        return Result(JsonConvert.DeserializeObject<JsonExportResponse>(serviceRequest.Response));
+                    }
                 }
                 else
                 {
@@ -699,7 +710,7 @@ namespace gView.Server.Controllers
                 var groupLayer = (GroupLayer)datasetElement;
                 string type = "Group Layer";
 
-                return new JsonLayer()
+                var jsonGroupLayer = new JsonLayer()
                 {
                     CurrentVersion = Version,
                     Id = groupLayer.ID,
@@ -722,6 +733,48 @@ namespace gView.Server.Controllers
                             }).ToArray() :
                         new JsonLayerLink[0]
                 };
+
+                if (jsonGroupLayer.SubLayers != null)
+                {
+                    JsonSpatialReference spatialReference = new JsonSpatialReference(map.Display.SpatialReference != null ? map.Display.SpatialReference.EpsgCode : 0);
+                    JsonExtent extent = null;
+                    foreach (var subLayer in jsonGroupLayer.SubLayers)
+                    {
+                        var featureClass = map.MapElements.Where(e => e.ID == subLayer.Id && e.Class is IFeatureClass).Select(l => (IFeatureClass)l.Class).FirstOrDefault();
+
+                        if (featureClass != null)
+                        {
+                            int epsgCode = featureClass.SpatialReference != null ? featureClass.SpatialReference.EpsgCode : 0;
+                            if (epsgCode == spatialReference.Wkid || epsgCode == 0)
+                            {
+                                var envelope = featureClass.Envelope;
+                                if (envelope != null)
+                                {
+                                    if (extent == null)
+                                    {
+                                        extent = new JsonExtent()
+                                        {
+                                            Xmin = featureClass.Envelope.minx,
+                                            Ymin = featureClass.Envelope.miny,
+                                            Xmax = featureClass.Envelope.maxx,
+                                            Ymax = featureClass.Envelope.maxy,
+                                            SpatialReference = spatialReference
+                                        };
+                                    }
+                                    else
+                                    {
+                                        extent.Xmin = Math.Min(extent.Xmin, featureClass.Envelope.minx);
+                                        extent.Ymin = Math.Min(extent.Ymin, featureClass.Envelope.miny);
+                                        extent.Xmax = Math.Min(extent.Xmax, featureClass.Envelope.maxx);
+                                        extent.Ymax = Math.Min(extent.Ymax, featureClass.Envelope.maxy);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    jsonGroupLayer.Extent = extent;
+                }
+                return jsonGroupLayer;
             }
             else // Featurelayer, Rasterlayer
             {
@@ -740,6 +793,9 @@ namespace gView.Server.Controllers
                 }
 
                 JsonExtent extent = null;
+                var spatialReference = map.Display.SpatialReference;
+                int epsgCode = spatialReference != null ? spatialReference.EpsgCode : 0;
+
                 if (datasetElement.Class is IFeatureClass && ((IFeatureClass)datasetElement.Class).Envelope != null)
                 {
                     extent = new JsonExtent()
@@ -748,7 +804,8 @@ namespace gView.Server.Controllers
                         Xmin = ((IFeatureClass)datasetElement.Class).Envelope.minx,
                         Ymin = ((IFeatureClass)datasetElement.Class).Envelope.miny,
                         Xmax = ((IFeatureClass)datasetElement.Class).Envelope.maxx,
-                        Ymax = ((IFeatureClass)datasetElement.Class).Envelope.maxy
+                        Ymax = ((IFeatureClass)datasetElement.Class).Envelope.maxy,
+                        SpatialReference = new JsonSpatialReference(epsgCode)
                     };
                 }
 
@@ -781,7 +838,7 @@ namespace gView.Server.Controllers
                 result.ParentLayer = parentLayer;
                 result.DrawingInfo = drawingInfo;
                 result.GeometryType = datasetElement.Class is IFeatureClass ? Interoperability.GeoServices.Rest.Json.JsonLayer.ToGeometryType(((IFeatureClass)datasetElement.Class).GeometryType).ToString() : EsriGeometryType.esriGeometryNull.ToString();
-
+                
                 return result;
             }
         }
@@ -815,6 +872,37 @@ namespace gView.Server.Controllers
             return View("_htmlbody");
 
             #endregion
+        }
+
+        private IActionResult Base64Result(string response)
+        {
+            byte[] data = null;
+            string contentType = "";
+
+            if (response.StartsWith("base64:"))
+            {
+                response = response.Substring("base64:".Length);
+                if (response.Contains(":"))
+                {
+                    int pos = response.IndexOf(":");
+                    contentType = response.Substring(0, pos);
+                    response = response.Substring(pos + 1);
+                }
+                data = Convert.FromBase64String(response);
+            }
+            else
+            {
+                data = Encoding.UTF8.GetBytes(response);
+            }
+            return Result(data, contentType);
+        }
+
+        private IActionResult Result(byte[] data, string contentType)
+        {
+            ViewData["content-type"] = contentType;
+            ViewData["data"] = data;
+
+            return View("_binary");
         }
 
         public IActionResult FormResult(object obj)

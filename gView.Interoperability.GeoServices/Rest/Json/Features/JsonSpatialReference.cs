@@ -8,6 +8,13 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Features
 {
     public class JsonSpatialReference
     {
+        public JsonSpatialReference() { }
+
+        public JsonSpatialReference(int id)
+        {
+            this.Wkid = id;
+        }
+
         [JsonProperty("wkt")]
         public string Wkt { get; set; }
 

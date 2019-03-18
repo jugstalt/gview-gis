@@ -1,10 +1,12 @@
-﻿using gView.Framework.Carto;
+﻿using gView.Core.Framework.Exceptions;
+using gView.Framework.Carto;
 using gView.Framework.Carto.Rendering;
 using gView.Framework.Data;
 using gView.Framework.Editor.Core;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
+using gView.Framework.UI;
 using gView.Interoperability.GeoServices.Rest.Json;
 using gView.Interoperability.GeoServices.Rest.Json.Features;
 using gView.Interoperability.GeoServices.Rest.Json.FeatureServer;
@@ -127,7 +129,10 @@ namespace gView.Interoperability.GeoServices.Request
 
                     #region ImageFormat / Transparency
 
-                    var imageFormat = (ImageFormat)Enum.Parse(typeof(ImageFormat), _exportMap.ImageFormat);
+                    if(!Enum.TryParse<ImageFormat>(_exportMap.ImageFormat, true, out ImageFormat imageFormat))
+                    {
+                        throw new MapServerException("Unsuported image format: " + _exportMap.ImageFormat);
+                    }
                     var iFormat = System.Drawing.Imaging.ImageFormat.Png;
                     if (imageFormat == ImageFormat.jpg)
                         iFormat = System.Drawing.Imaging.ImageFormat.Jpeg;
@@ -157,30 +162,40 @@ namespace gView.Interoperability.GeoServices.Request
 
                     if (serviceMap.MapImage != null)
                     {
-                        string fileName = serviceMap.Name
-                            .Replace("/", "_")
-                            .Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + "." + iFormat.ToString().ToLower();
-
-                        string path = (_mapServer.OutputPath + @"/" + fileName).ToPlattformPath();
-                        serviceMap.SaveImage(path, iFormat);
-
-                        context.ServiceRequest.Succeeded = true;
-                        context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonExportResponse()
+                        if (_exportMap.OutputFormat?.ToLower() == "image")
                         {
-                            Href = _mapServer.OutputUrl + "/" + fileName,
-                            Width = serviceMap.Display.iWidth,
-                            Height = serviceMap.Display.iHeight,
-                            ContentType = "image/" + iFormat.ToString().ToLower(),
-                            Scale = serviceMap.Display.mapScale,
-                            Extent = new JsonExtent()
+                            context.ServiceRequest.Succeeded = true;
+                            MemoryStream ms = new MemoryStream();
+                            serviceMap.MapImage.Save(ms, iFormat);
+                            context.ServiceRequest.Response = "base64:" + _exportMap.GetContentType() + ":" + Convert.ToBase64String(ms.ToArray());
+                        }
+                        else
+                        {
+                            string fileName = serviceMap.Name
+                                .Replace("/", "_")
+                                .Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + "." + iFormat.ToString().ToLower();
+
+                            string path = (_mapServer.OutputPath + @"/" + fileName).ToPlattformPath();
+                            serviceMap.SaveImage(path, iFormat);
+
+                            context.ServiceRequest.Succeeded = true;
+                            context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonExportResponse()
                             {
-                                Xmin = serviceMap.Display.Envelope.minx,
-                                Ymin = serviceMap.Display.Envelope.miny,
-                                Xmax = serviceMap.Display.Envelope.maxx,
-                                Ymax = serviceMap.Display.Envelope.maxy
-                                // ToDo: SpatialReference
-                            }
-                        });
+                                Href = _mapServer.OutputUrl + "/" + fileName,
+                                Width = serviceMap.Display.iWidth,
+                                Height = serviceMap.Display.iHeight,
+                                ContentType = "image/" + iFormat.ToString().ToLower(),
+                                Scale = serviceMap.Display.mapScale,
+                                Extent = new JsonExtent()
+                                {
+                                    Xmin = serviceMap.Display.Envelope.minx,
+                                    Ymin = serviceMap.Display.Envelope.miny,
+                                    Xmax = serviceMap.Display.Envelope.maxx,
+                                    Ymax = serviceMap.Display.Envelope.maxy
+                                    // ToDo: SpatialReference
+                                }
+                            });
+                        }
                     }
                     else
                     {
@@ -221,20 +236,25 @@ namespace gView.Interoperability.GeoServices.Request
 
             foreach (var layer in layers)
             {
+                var tocElement = sender.TOC.GetTOCElementByLayerId(layer.ID);
+                bool layerIdContains = tocElement != null ?
+                    LayerOrParentIsInArray(sender, tocElement, layerIds) :
+                    layerIds.Contains(layer.ID);
+
                 switch (option)
                 {
                     case "show":
-                        layer.Visible = layerIds.Contains(layer.ID);
+                        layer.Visible = layerIdContains;
                         break;
                     case "hide":
-                        layer.Visible = !layerIds.Contains(layer.ID);
+                        layer.Visible = !layerIdContains;
                         break;
                     case "include":
-                        if (layerIds.Contains(layer.ID))
+                        if (layerIdContains)
                             layer.Visible = true;
                         break;
                     case "exclude":
-                        if (layerIds.Contains(layer.ID))
+                        if (layerIdContains)
                             layer.Visible = false;
                         break;
                 }
@@ -288,6 +308,24 @@ namespace gView.Interoperability.GeoServices.Request
                     }
                 }
             }
+        }
+
+        private bool LayerOrParentIsInArray(IServiceMap map, ITOCElement tocElement, int[] layerIds)
+        {
+            while (tocElement != null)
+            {
+                if (tocElement.Layers != null)
+                {
+                    foreach (var layer in tocElement.Layers)
+                    {
+                        if (layerIds.Contains(layer.ID))
+                            return true;
+                    }
+                }
+                tocElement = tocElement.ParentGroup;
+            }
+
+            return false;
         }
 
         #endregion

@@ -16,6 +16,7 @@ namespace gView.Framework.OGC.WMS
         GetCapabilities,
         GetMap,
         GetFeatureInfo,
+        GetLegendGraphic,
         DescriptTiles,
         GetTile,
 
@@ -137,6 +138,10 @@ namespace gView.Framework.OGC.WMS
             {
                 this.Request = WMSRequestType.GetFeatureInfo;
             }
+            else if (request["REQUEST"].ToUpper().IndexOf("GETLEGENDGRAPHIC") != -1)
+            {
+                this.Request = WMSRequestType.GetLegendGraphic;
+            }
             else if (request["REQUEST"].ToUpper().IndexOf("DESCRIPETILES") != -1)
             {
                 this.Request = WMSRequestType.DescriptTiles;
@@ -224,7 +229,7 @@ namespace gView.Framework.OGC.WMS
                     }
                 }
 
-                if (this.Request == WMSRequestType.GetMap || this.Request == WMSRequestType.GetTile)
+                if (this.Request == WMSRequestType.GetMap || this.Request == WMSRequestType.GetTile || this.Request == WMSRequestType.GetLegendGraphic)
                 {
                     if (request["FORMAT"] == null)
                     {
@@ -285,23 +290,27 @@ namespace gView.Framework.OGC.WMS
                     else
                         this.TileCol = int.Parse(request["TILECOL"]);
                 }
-                else
+                else if(this.Request == WMSRequestType.GetLegendGraphic)
                 {
-                    if (this.Request == WMSRequestType.GetMap || this.Request == WMSRequestType.GetFeatureInfo)
+                    if (request["LAYER"] == null)
+                        WriteError("mandatory LAYER parameter is missing.");
+                    else
+                        this.Layer = request["LAYER"];
+                }
+                else if (this.Request == WMSRequestType.GetMap || this.Request == WMSRequestType.GetFeatureInfo)
+                {
+                    if (request["HEIGHT"] == null)
                     {
-                        if (request["HEIGHT"] == null)
-                        {
-                            WriteError("mandatory HEIGHT parameter is missing.");
-                        }
-                        else
-                            this.Height = int.Parse(request["HEIGHT"]);
-                        if (request["WIDTH"] == null)
-                        {
-                            WriteError("mandatory WIDTH parameter is missing.");
-                        }
-                        else
-                            this.Width = int.Parse(request["WIDTH"]);
+                        WriteError("mandatory HEIGHT parameter is missing.");
                     }
+                    else
+                        this.Height = int.Parse(request["HEIGHT"]);
+                    if (request["WIDTH"] == null)
+                    {
+                        WriteError("mandatory WIDTH parameter is missing.");
+                    }
+                    else
+                        this.Width = int.Parse(request["WIDTH"]);
 
                     if (request["BBOX"] == null)
                     {
@@ -368,6 +377,7 @@ namespace gView.Framework.OGC.WMS
                         }
                     }
                 }
+
             }
             if (this.Request == WMSRequestType.GetFeatureInfo)
             {
