@@ -981,7 +981,7 @@ namespace gView.Server.Controllers
             return (await ServiceTypes(identity, mapService))
                         .Select(s => new AgsService()
                         {
-                            Name = mapService.Name,
+                            Name = (String.IsNullOrWhiteSpace(mapService.Folder) ? "" : mapService.Folder + "/") + mapService.Name,
                             Type = s
                         });
         }
@@ -1196,6 +1196,8 @@ namespace gView.Server.Controllers
 
             sb.Append("<table>");
 
+            bool hasFormatAttribute = false;
+
             foreach (var propertyInfo in obj.GetType().GetProperties())
             {
                 var jsonPropertyAttribute = propertyInfo.GetCustomAttribute<JsonPropertyAttribute>();
@@ -1208,10 +1210,17 @@ namespace gView.Server.Controllers
 
                 var inputType = inputAttribute?.InputType ?? FormInputAttribute.InputTypes.Text;
 
+                
                 if (propertyInfo.GetMethod.IsPublic && propertyInfo.SetMethod.IsPublic)
                 {
                     sb.Append("<tr>");
                     sb.Append("<td>");
+
+                    if (jsonPropertyAttribute.PropertyName == "f")
+                    {
+                        hasFormatAttribute = true;
+                    }
+
                     if (inputType != FormInputAttribute.InputTypes.Hidden)
                     {
                         sb.Append("<span>" + propertyInfo.Name + ":</span>");
@@ -1223,8 +1232,7 @@ namespace gView.Server.Controllers
                         sb.Append("<select name='" + jsonPropertyAttribute.PropertyName + "' style='min-width:auto;'><option value='false'>False</option><option value='true'>True</option></select>");
                     }
                     else
-                    {
-                        
+                    { 
                         switch (inputType)
                         {
                             case FormInputAttribute.InputTypes.TextBox:
@@ -1240,7 +1248,19 @@ namespace gView.Server.Controllers
                                 sb.Append("<input name='" + jsonPropertyAttribute.PropertyName + "' type='password' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");
                                 break;
                             default:
-                                sb.Append("<input name='" + jsonPropertyAttribute.PropertyName + "' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");
+                                if (inputAttribute?.Values != null && inputAttribute.Values.Count() > 0)
+                                {
+                                    sb.Append("<select name='" + jsonPropertyAttribute.PropertyName + "' style='min-width:auto;'>");
+                                    foreach(var val in inputAttribute.Values)
+                                    {
+                                        sb.Append("<option value='" + val + "'>" + val + "</option>");
+                                    }
+                                    sb.Append("</select>");
+                                }
+                                else
+                                {
+                                    sb.Append("<input name='" + jsonPropertyAttribute.PropertyName + "' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");
+                                }
                                 break;
                         }
                     }
@@ -1249,13 +1269,16 @@ namespace gView.Server.Controllers
                 }
             }
 
-            sb.Append("<tr>");
-            sb.Append("<td>");
-            sb.Append("<span>Format:</span>");
-            sb.Append("</td><td>");
-            sb.Append("<select name='f'><option value='pjson'>JSON</option></select>");
-            sb.Append("</td>");
-            sb.Append("</tr>");
+            if (!hasFormatAttribute)
+            {
+                sb.Append("<tr>");
+                sb.Append("<td>");
+                sb.Append("<span>Format:</span>");
+                sb.Append("</td><td>");
+                sb.Append("<select name='f'><option value='pjson'>JSON</option></select>");
+                sb.Append("</td>");
+                sb.Append("</tr>");
+            }
 
             sb.Append("<tr>");
             sb.Append("<td>");

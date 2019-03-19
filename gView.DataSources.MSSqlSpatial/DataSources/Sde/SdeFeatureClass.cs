@@ -38,7 +38,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             featureClass._dataset = dataset;
 
             if (featureClass._sRef == null && await dataset.RepoProvider.FeatureClassSpatialReference(featureClass) > 0)
-                featureClass._sRef = gView.Framework.Geometry.SpatialReference.FromID("epsg:" + dataset.RepoProvider.FeatureClassSpatialReference(featureClass));
+                featureClass._sRef = gView.Framework.Geometry.SpatialReference.FromID("epsg:" + await dataset.RepoProvider.FeatureClassSpatialReference(featureClass));
 
             return featureClass;
         }

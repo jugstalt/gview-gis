@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using gView.Interoperability.GeoServices.Rest.Reflection;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -71,6 +72,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
         public long HistoricMoment { get; set; }
 
         [JsonProperty(PropertyName = "f")]
+        [FormInput(Values = new string[] { "json","pjson","image" })]
         public string OutputFormat { get; set; }
 
         public string GetContentType()

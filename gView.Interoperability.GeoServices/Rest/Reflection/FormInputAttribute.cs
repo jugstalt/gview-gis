@@ -14,6 +14,8 @@ namespace gView.Interoperability.GeoServices.Rest.Reflection
 
         public InputTypes InputType { get; set; }
 
+        public string[] Values { get; set; }
+
         public enum InputTypes
         {
             Ignore,
