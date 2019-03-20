@@ -17,7 +17,7 @@ namespace gView.Server.AppCode
     {
         private ConcurrentBag<IMap> _maps = new ConcurrentBag<IMap>();
         // ToDo: ThreadSafe
-        private Dictionary<IMap, ModulesPersists> _mapModules = new Dictionary<IMap, ModulesPersists>();
+        private ConcurrentDictionary<IMap, IEnumerable<IMapApplicationModule>> _mapModules = new ConcurrentDictionary<IMap, IEnumerable<IMapApplicationModule>>();
         private ITableRelations _tableRelations;
 
         public ServerMapDocument()
@@ -161,7 +161,7 @@ namespace gView.Server.AppCode
 
                 var modules = new ModulesPersists(map);
                 stream.Load("Moduls", null, modules);
-                _mapModules.Add(map, modules);
+                _mapModules.TryAdd(map, modules.Modules);
             }
         }
 
@@ -173,7 +173,10 @@ namespace gView.Server.AppCode
 
                 if (_mapModules.ContainsKey(map))
                 {
-                    stream.Save("Moduls", _mapModules[map]);
+                    var modules = _mapModules.ContainsKey(map);
+                    var modulePersits = new ModulesPersists(map);
+
+                    stream.Save("Moduls", new ModulesPersists(map) { Modules = _mapModules[map] });
                 }
 
             }
@@ -187,10 +190,16 @@ namespace gView.Server.AppCode
         {
             if(_mapModules.ContainsKey(map))
             {
-                return _mapModules[map].Modules;
+                return _mapModules[map];
             }
 
             return new IMapApplicationModule[0];
+        }
+
+        public void SetMapModules(IMap map, IEnumerable<IMapApplicationModule> modules)
+        {
+            _mapModules.TryRemove(map, out IEnumerable<IMapApplicationModule> removed);
+            _mapModules.TryAdd(map, modules);
         }
 
         #endregion
@@ -206,7 +215,11 @@ namespace gView.Server.AppCode
             _map = map;
         }
 
-        public IEnumerable<IMapApplicationModule> Modules => _modules;
+        public IEnumerable<IMapApplicationModule> Modules
+        {
+            get { return _modules; }
+            set { _modules = value != null ? new List<IMapApplicationModule>(value) : new List<IMapApplicationModule>(); }
+        }
 
         #region IPersistable Member
 

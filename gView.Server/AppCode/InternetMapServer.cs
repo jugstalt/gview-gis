@@ -208,6 +208,8 @@ namespace gView.Server.AppCode
                         if (!MapDocument.AddMap(map))
                             return null;
 
+                        MapDocument.SetMapModules(map, doc.GetMapModules(map));
+
                         var mapService = InternetMapServer.mapServices.Where(s => s.Fullname == map.Name).FirstOrDefault();
                         if(mapService!=null)
                         {
@@ -333,18 +335,22 @@ namespace gView.Server.AppCode
                 Logger.LogAsync(map.Name, loggingMethod.error, "LoadConfig: " + ex.Message).Wait();
             }
         }
-        static public void SaveConfig(IMap map)
+        static public void SaveConfig(ServerMapDocument mapDocument/*IMap map*/)
         {
             try
             {
                 if (MapDocument == null) return;
 
-                ServerMapDocument doc = new ServerMapDocument();
-                if (!doc.AddMap(map))
-                    return;
+                //ServerMapDocument doc = new ServerMapDocument();
+                //if (!doc.AddMap(map))
+                //    return;
+
+                var map = mapDocument?.Maps.First() as Map;
+                if (map == null)
+                    throw new MapServerException("Mapdocument don't contain a map");
 
                 XmlStream stream = new XmlStream("MapServer");
-                stream.Save("MapDocument", doc);
+                stream.Save("MapDocument", mapDocument);
 
                 stream.WriteStream(ServicesPath + @"\" + map.Name + ".mxl");
 
@@ -353,7 +359,7 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Logger.LogAsync(map?.Name, loggingMethod.error, "LoadConfig: " + ex.Message).Wait();
+                Logger.LogAsync(mapDocument?.Maps?.First()?.Name, loggingMethod.error, "LoadConfig: " + ex.Message).Wait();
             }
         }
 
@@ -458,7 +464,7 @@ namespace gView.Server.AppCode
         static public bool AddMap(string mapName, string MapXML, string usr, string pwd)
         {
             string folder = mapName.FolderName();
-            if(!String.IsNullOrWhiteSpace(folder))
+            if (!String.IsNullOrWhiteSpace(folder))
             {
                 if (!Directory.Exists((InternetMapServer.ServicesPath + "/" + folder).ToPlattformPath()))
                     throw new MapServerException("Folder not exists");
@@ -477,9 +483,9 @@ namespace gView.Server.AppCode
                 // Überprüfen, ob schon eine Service mit gleiche Namen gibt...
                 // wenn ja, ist es nur einem Refresh eines bestehenden Services
                 bool found = false;
-                foreach (IMapService map in InternetMapServer.Instance.Maps(null))
+                foreach (IMapService existingMap in InternetMapServer.Instance.Maps(null))
                 {
-                    if (map.Name == mapName)
+                    if (existingMap.Name == mapName)
                     {
                         found = true;
                         break;
@@ -489,84 +495,65 @@ namespace gView.Server.AppCode
                     return false;
             }
 
-            if (MapXML.IndexOf("<IServiceableDataset") == 0)
-            {
-                XmlStream xmlStream = new XmlStream("");
+            XmlStream xmlStream = new XmlStream("MapDocument");
 
-                StringReader sr = new StringReader("<root>" + MapXML + "</root>");
+            using (StringReader sr = new StringReader(MapXML))
                 if (!xmlStream.ReadStream(sr)) return false;
 
-                IServiceableDataset sds = xmlStream.Load("IServiceableDataset", null) as IServiceableDataset;
-                if (sds != null && sds.Datasets != null)
-                {
-                    InternetMapServer.SaveServiceableDataset(sds, mapName);
-                    AddMapService(mapName, MapServiceType.SVC);
-                }
-            }
-            else if (MapXML.IndexOf("<ServiceCollection") == 0)
+            ServerMapDocument mapDocument = new ServerMapDocument();
+            mapDocument.Load(xmlStream);
+
+            if (mapDocument.Maps.Count() == 0)
+                throw new MapServerException("No maps found in document");
+
+            var map = mapDocument.Maps.First() as Map;
+            //Map map = new Map();
+            //map.Load(xmlStream);
+            map.Name = mapName;
+
+            StringBuilder errors = new StringBuilder();
+            foreach (var dataset in map.Datasets)
             {
-                XmlStream stream = new XmlStream("");
-
-                StringReader sr = new StringReader(MapXML);
-                if (!stream.ReadStream(sr)) return false;
-
-                InternetMapServer.SaveServiceCollection(mapName, stream);
+                if (!String.IsNullOrWhiteSpace(dataset.LastErrorMessage))
+                {
+                    errors.Append("Dataset " + dataset.GetType().ToString() + Environment.NewLine);
+                    errors.Append(dataset.LastErrorMessage + Environment.NewLine + Environment.NewLine);
+                }
             }
-            else  // Map
+
+            if (map.HasErrorMessages)
             {
-                XmlStream xmlStream = new XmlStream("IMap");
-
-                using (StringReader sr = new StringReader(MapXML))
-                    if (!xmlStream.ReadStream(sr)) return false;
-
-                Map map = new Map();
-                map.Load(xmlStream);
-                map.Name = mapName;
-
-                StringBuilder errors = new StringBuilder();
-                foreach(var dataset in map.Datasets)
+                errors.Append("Map Errors:" + Environment.NewLine);
+                foreach (var errorMessage in map.ErrorMessages)
                 {
-                    if (!String.IsNullOrWhiteSpace(dataset.LastErrorMessage))
-                    {
-                        errors.Append("Dataset " + dataset.GetType().ToString()+Environment.NewLine);
-                        errors.Append(dataset.LastErrorMessage + Environment.NewLine + Environment.NewLine);
-                    }
+                    errors.Append(errorMessage + Environment.NewLine);
                 }
-    
-                if(map.HasErrorMessages)
-                {
-                    errors.Append("Map Errors:" + Environment.NewLine);
-                    foreach(var errorMessage in map.ErrorMessages)
-                    {
-                        errors.Append(errorMessage + Environment.NewLine);
-                    }
-                }
-                if(map.LastException!=null)
-                {
-                    errors.Append("Map Exception:" + Environment.NewLine);
-                    errors.Append(map.LastException.Message?.ToString());
-                }
-
-                if (errors.Length > 0)
-                    throw new MapServerException(errors.ToString());
-
-                XmlStream pluginStream = new XmlStream("Moduls");
-                using (StringReader sr = new StringReader(MapXML))
-                    if (!xmlStream.ReadStream(sr)) return false;
-
-                ModulesPersists modules = new ModulesPersists(map);
-                modules.Load(pluginStream);
-
-                //foreach (IMap m in ListOperations<IMap>.Clone(_doc.Maps))
-                //{
-                //    if (m.Name == map.Name) _doc.RemoveMap(m);
-                //}
-
-                //if (!_doc.AddMap(map)) return false;
-                AddMapService(mapName, MapServiceType.MXL);
-
-                InternetMapServer.SaveConfig(map);
             }
+            if (map.LastException != null)
+            {
+                errors.Append("Map Exception:" + Environment.NewLine);
+                errors.Append(map.LastException.Message?.ToString());
+            }
+
+            if (errors.Length > 0)
+                throw new MapServerException(errors.ToString());
+
+            XmlStream pluginStream = new XmlStream("Moduls");
+            using (StringReader sr = new StringReader(MapXML))
+                if (!xmlStream.ReadStream(sr)) return false;
+
+            ModulesPersists modules = new ModulesPersists(map);
+            modules.Load(pluginStream);
+
+            //foreach (IMap m in ListOperations<IMap>.Clone(_doc.Maps))
+            //{
+            //    if (m.Name == map.Name) _doc.RemoveMap(m);
+            //}
+
+            //if (!_doc.AddMap(map)) return false;
+            AddMapService(mapName, MapServiceType.MXL);
+
+            InternetMapServer.SaveConfig(mapDocument);
 
             return true;
         }

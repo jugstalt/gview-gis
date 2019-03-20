@@ -87,6 +87,33 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
 
         public IEnumerable<SdeLayer> Layers => this.SdeLayers.ToArray();
 
+        public SdeLayer LayerFromTableClass(ITableClass tableClass)
+        {
+            return this.Layers?.Where(l => (l.Owner + "." + l.TableName).Equals(tableClass?.Name, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+        }
+
+        async public Task<int> GetInsertRowId(SdeLayer sdeLayer)
+        {
+            var providerFactory = System.Data.SqlClient.SqlClientFactory.Instance;
+
+            using (DbConnection connection = providerFactory.CreateConnection())
+            {
+                connection.ConnectionString = _connectionString;
+                await connection.OpenAsync();
+
+                var command = providerFactory.CreateCommand();
+                command.Connection = connection;
+
+                command.CommandText =
+@"declare @newid int
+exec sde.next_rowid '" + sdeLayer.Owner + @"','" + sdeLayer.TableName + @"',@newid OUTPUT
+SELECT @newid ""Next RowID""";
+
+                object newId = await command.ExecuteScalarAsync();
+                return Convert.ToInt32(newId);
+            }
+        }
+
         #region IRepoProvider 
 
         async public Task<IEnvelope> FeatureClassEnveolpe(IFeatureClass fc)

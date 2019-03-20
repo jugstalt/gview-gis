@@ -358,5 +358,21 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
             return null;
         }
+
+        public override bool HasManagedRowIds(ITableClass table)
+        {
+            return false;
+        }
+        async public override Task<int?> GetNextInsertRowId(ITableClass table)
+        {
+            if (RepoProvider == null)
+                throw new Exception("Repository not initialized");
+
+            var sdeLayer = RepoProvider.LayerFromTableClass(table);
+            if (sdeLayer == null)
+                throw new Exception("Sde layer not found: " + table?.Name);
+
+            return await RepoProvider.GetInsertRowId(sdeLayer);
+        }
     }
 }

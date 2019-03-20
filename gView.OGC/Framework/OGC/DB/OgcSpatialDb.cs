@@ -9,6 +9,7 @@ using gView.Framework.Geometry;
 using System.Data;
 using gView.Framework.Editor.Core;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace gView.Framework.OGC.DB
 {
@@ -598,6 +599,26 @@ namespace gView.Framework.OGC.DB
                             }
                         }
 
+                        #region Id
+
+                        if (!HasManagedRowIds(fClass))
+                        {
+                            var rowId = await GetNextInsertRowId(fClass);
+                            if (rowId.HasValue)
+                            {
+                                var idFieleValue = feature.Fields.Where(f => f.Name.Equals(fClass.IDFieldName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                                if (idFieleValue == null)
+                                {
+                                    idFieleValue = new FieldValue(fClass.IDFieldName);
+                                    feature.Fields.Add(idFieleValue);
+                                }
+                                idFieleValue.Value = rowId;
+                                
+                            }
+                        }
+
+                        #endregion
+
                         foreach (IFieldValue fv in feature.Fields)
                         {
                             string fvName = fv.Name;
@@ -613,7 +634,14 @@ namespace gView.Framework.OGC.DB
                                     break;
                             }
 
-                            if (fvName == fClass.IDFieldName || fvName == fClass.ShapeFieldName) continue;
+                            if (fvName == fClass.IDFieldName && HasManagedRowIds(fClass))
+                            {
+                                continue;
+                            }
+                            if (fvName == fClass.ShapeFieldName)
+                            {
+                                continue;
+                            }
 
                             IField field = fClass.FindField(fvName);
                             if (field == null) continue;
@@ -928,6 +956,12 @@ namespace gView.Framework.OGC.DB
             }
 
             return Task.FromResult(envelope);
+        }
+
+        virtual public bool HasManagedRowIds(ITableClass table) { return true; }
+        virtual public Task<int?> GetNextInsertRowId(ITableClass table)
+        {
+            return null;
         }
 
         protected object ExecuteFunction(string function)
