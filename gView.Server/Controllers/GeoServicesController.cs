@@ -1140,9 +1140,10 @@ namespace gView.Server.Controllers
             if (htmlLink == null)
                 return valString;
 
-            
 
-            string link = htmlLink.LinkTemplate.Replace("{url}", InternetMapServer.AppRootUrl(this.Request) + "/" + Request.Path).Replace("{0}", valString);
+            string link = htmlLink.LinkTemplate
+                .Replace("{url}", InternetMapServer.AppRootUrl(this.Request).CombineUri(Request.Path))
+                .Replace("{0}", valString);
 
             if (instance != null && link.Contains("{") && link.Contains("}"))  // Replace instance properties
             {
@@ -1156,7 +1157,7 @@ namespace gView.Server.Controllers
                 }
             }
 
-            return "<a href='" + link + "'>" + valString + "</a>";
+            return "<a href='" + link.ToValidUri() + "'>" + valString + "</a>";
         }
 
         private IEnumerable<PropertyInfo> SortYamlProperties(IEnumerable<PropertyInfo> propertyInfos)

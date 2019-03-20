@@ -599,7 +599,7 @@ namespace gView.Framework.OGC.DB
                             }
                         }
 
-                        #region Id
+                        #region Unmanaged Ids (eg SDE)
 
                         if (!HasManagedRowIds(fClass))
                         {
@@ -612,8 +612,7 @@ namespace gView.Framework.OGC.DB
                                     idFieleValue = new FieldValue(fClass.IDFieldName);
                                     feature.Fields.Add(idFieleValue);
                                 }
-                                idFieleValue.Value = rowId;
-                                
+                                idFieleValue.Value = rowId; 
                             }
                         }
 

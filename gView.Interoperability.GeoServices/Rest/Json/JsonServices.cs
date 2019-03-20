@@ -23,8 +23,21 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         public class AgsService
         {
             [JsonProperty(PropertyName = "name")]
-            [HtmlLink("{url}/{0}/{Type}")]
+            //[HtmlLink("{url}/{0}/{Type}")]
+            [HtmlLink("{url}/{ServiceName}/{Type}")]
             public string Name { get; set; }
+
+            [JsonIgnore]
+            public string ServiceName
+            {
+                get
+                {
+                    if (this.Name.Contains("/"))
+                        return Name.Substring(Name.LastIndexOf("/") + 1);
+
+                    return Name;
+                }
+            }
 
             [JsonProperty(PropertyName = "type")]
             public string Type { get; set; }
