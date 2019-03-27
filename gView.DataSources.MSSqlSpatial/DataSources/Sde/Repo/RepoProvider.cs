@@ -2,6 +2,7 @@
 using gView.Framework.Geometry;
 using gView.OGC.Framework.OGC.DB;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
@@ -130,6 +131,10 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
         {
             var providerFactory = System.Data.SqlClient.SqlClientFactory.Instance;
 
+            string sdeSchemaName = TableSchemaName("sde_layers");
+            if (String.IsNullOrWhiteSpace(sdeSchemaName))
+                throw new Exception("Can't determine sde db-schema");
+
             using (DbConnection connection = providerFactory.CreateConnection())
             {
                 connection.ConnectionString = _connectionString;
@@ -140,7 +145,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
 
                 command.CommandText =
 @"declare @newid int
-exec sde.next_rowid '" + sdeLayer.Owner + @"','" + sdeLayer.TableName + @"',@newid OUTPUT
+exec " + sdeSchemaName + @".next_rowid '" + sdeLayer.Owner + @"','" + sdeLayer.TableName + @"',@newid OUTPUT
 SELECT @newid ""Next RowID""";
 
                 object newId = await command.ExecuteScalarAsync();
