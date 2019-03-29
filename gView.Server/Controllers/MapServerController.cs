@@ -158,19 +158,18 @@ namespace gView.Server.Controllers
         #region Manage
 
         [HttpPost]
-        public IActionResult AddMap(string name, string folder)
+        async public Task<IActionResult> AddMap(string name, string folder)
         {
             try
             {
                 string input = GetBody();
-
 
                 string user=String.Empty, pwd=String.Empty;
                 //var request = Request(out user, out pwd);
 
                 name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
-                bool ret = InternetMapServer.AddMap(name, input, user, pwd);
+                bool ret = await InternetMapServer.AddMap(name, input, user, pwd);
 
                 return Result(ret.ToString(), "text/plain");
             }
@@ -208,7 +207,7 @@ namespace gView.Server.Controllers
             }
         }
 
-        public IActionResult GetMetadata(string name, string folder)
+        async public Task<IActionResult> GetMetadata(string name, string folder)
         {
             try
             {
@@ -217,7 +216,7 @@ namespace gView.Server.Controllers
 
                 name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
-                string ret = InternetMapServer.GetMetadata(name, user, pwd);
+                string ret = await InternetMapServer.GetMetadata(name, user, pwd);
 
                 return Result(ret, "text/xml");
             }
@@ -232,7 +231,7 @@ namespace gView.Server.Controllers
         }
 
         [HttpPost]
-        public IActionResult SetMetadata(string name, string folder)
+        async public Task<IActionResult> SetMetadata(string name, string folder)
         {
             try
             {
@@ -243,7 +242,7 @@ namespace gView.Server.Controllers
                 string user = String.Empty, pwd = String.Empty;
                 // var request = Request(out user, out pwd);
 
-                bool ret = InternetMapServer.SetMetadata(name, input, user, pwd);
+                bool ret = await InternetMapServer.SetMetadata(name, input, user, pwd);
 
                 return Result(ret.ToString(), "text/plain");
             }

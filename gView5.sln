@@ -75,7 +75,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Test", "gView.Test\gV
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Interoperability.GeoServices", "gView.Interoperability.GeoServices\gView.Interoperability.GeoServices.csproj", "{7B010002-084B-4D1D-9B06-4EC70EC93CA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Security", "gView.Security\gView.Security.csproj", "{F90E3A4D-8A73-4899-9F49-A756F58828F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Security", "gView.Security\gView.Security.csproj", "{F90E3A4D-8A73-4899-9F49-A756F58828F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.EventTable", "gView.DataSources.EventTable\gView.DataSources.EventTable.csproj", "{77AFD455-9FD0-4087-8163-44BA03886670}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -231,6 +233,10 @@ Global
 		{F90E3A4D-8A73-4899-9F49-A756F58828F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F90E3A4D-8A73-4899-9F49-A756F58828F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F90E3A4D-8A73-4899-9F49-A756F58828F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77AFD455-9FD0-4087-8163-44BA03886670}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77AFD455-9FD0-4087-8163-44BA03886670}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77AFD455-9FD0-4087-8163-44BA03886670}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77AFD455-9FD0-4087-8163-44BA03886670}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

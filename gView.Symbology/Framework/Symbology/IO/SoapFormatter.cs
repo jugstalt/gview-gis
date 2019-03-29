@@ -28,7 +28,7 @@ namespace gView.Symbology.Framework.Symbology.IO
 </SOAP-ENV:Envelope>".Replace("\n", "").Replace("\n", "");
 
                 var font = (System.Drawing.Font)obj;
-                xml = xml.Replace("{font-name}", font.Name);
+                xml = xml.Replace("{font-name}", EscapeXml(font.Name));   // Replace & => &amp; , > to &lt;
                 xml = xml.Replace("{font-size}", font.Size.ToString().Replace(",", "."));
                 xml = xml.Replace("{font-style}", font.Style.ToString());
                 xml = xml.Replace("{font-unit}", font.Unit.ToString());
@@ -74,6 +74,21 @@ namespace gView.Symbology.Framework.Symbology.IO
             }
 
             return default(T);
+        }
+
+        private string EscapeXml(string toXmlString)
+        {
+            if (!string.IsNullOrEmpty(toXmlString))
+            {
+                // replace literal values with entities
+                toXmlString = toXmlString.Replace("&", "&amp;");
+                toXmlString = toXmlString.Replace("'", "&apos;");
+                toXmlString = toXmlString.Replace("\"", "&quot;");
+                toXmlString = toXmlString.Replace(">", "&gt;");
+                toXmlString = toXmlString.Replace("<", "&lt;");
+            }
+
+            return toXmlString;
         }
     }
 }

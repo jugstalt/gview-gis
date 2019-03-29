@@ -373,7 +373,7 @@ namespace gView.Server.AppCode
 
             if (name.Contains(",")) return null;
 
-            IMap m = await InternetMapServer.LoadMap(name, context);
+            IMap m = await InternetMapServer.LoadMap(name);
             if (m is Map)
                 return (Map)m;
 

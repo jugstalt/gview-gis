@@ -180,7 +180,7 @@ namespace gView.Server.AppCode
             }
         }
 
-        async internal static Task<IMap> LoadMap(string name, IServiceRequestContext context)
+        async internal static Task<IMap> LoadMap(string name)
         {
             try
             {
@@ -227,69 +227,10 @@ namespace gView.Server.AppCode
                     }
                     return null;
                 }
-                fi = new FileInfo(ServicesPath + @"/" + name + ".svc");
-                if (fi.Exists)
-                {
-                    XmlStream stream = new XmlStream("");
-                    stream.ReadStream(fi.FullName);
-                    IServiceableDataset sds = stream.Load("IServiceableDataset", null) as IServiceableDataset;
-                    if (sds != null && sds.Datasets != null)
-                    {
-                        Map map = new Map();
-                        map.Name = name;
-
-                        foreach (IDataset dataset in sds.Datasets)
-                        {
-                            if (dataset is IRequestDependentDataset)
-                            {
-                                if (!((IRequestDependentDataset)dataset).Open(context)) return null;
-                            }
-                            else
-                            {
-                                if (!dataset.Open()) return null;
-                            }
-                            //map.AddDataset(dataset, 0);
-
-                            foreach (IDatasetElement element in await dataset.Elements())
-                            {
-                                if (element == null) continue;
-                                ILayer layer = LayerFactory.Create(element.Class, element as ILayer);
-                                if (layer == null) continue;
-
-                                map.AddLayer(layer);
-
-                                if (element.Class is IWebServiceClass)
-                                {
-                                    if (map.SpatialReference == null)
-                                        map.SpatialReference = ((IWebServiceClass)element.Class).SpatialReference;
-
-                                    foreach (IWebServiceTheme theme in ((IWebServiceClass)element.Class).Themes)
-                                    {
-                                        map.SetNewLayerID(theme);
-                                    }
-                                }
-                                else if (element.Class is IFeatureClass && map.SpatialReference == null)
-                                {
-                                    map.SpatialReference = ((IFeatureClass)element.Class).SpatialReference;
-                                }
-                                else if (element.Class is IRasterClass && map.SpatialReference == null)
-                                {
-                                    map.SpatialReference = ((IRasterClass)element.Class).SpatialReference;
-                                }
-                            }
-                        }
-                        ApplyMetadata(map);
-
-                        if (!MapDocument.AddMap(map))
-                            return null;
-                        return map;
-                    }
-                    return null;
-                }
             }
             catch (Exception ex)
             {
-                await Logger.LogAsync(context, loggingMethod.error, "LoadConfig: " + ex.Message);
+                await Logger.LogAsync(name, loggingMethod.error, "LoadConfig: " + ex.Message);
             }
 
             return null;
@@ -461,7 +402,7 @@ namespace gView.Server.AppCode
 
         #region Manage
 
-        static public bool AddMap(string mapName, string MapXML, string usr, string pwd)
+        async static public Task<bool> AddMap(string mapName, string MapXML, string usr, string pwd)
         {
             string folder = mapName.FolderName();
             if (!String.IsNullOrWhiteSpace(folder))
@@ -472,7 +413,7 @@ namespace gView.Server.AppCode
 
             if (String.IsNullOrEmpty(MapXML))
             {
-                return ReloadMap(mapName, usr, pwd);
+                return await ReloadMap(mapName, usr, pwd);
             }
 
             if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, "admin_addmap"))
@@ -555,7 +496,7 @@ namespace gView.Server.AppCode
 
             InternetMapServer.SaveConfig(mapDocument);
 
-            return true;
+            return await ReloadMap(mapName, usr, pwd);
         }
         static public bool RemoveMap(string mapName, string usr, string pwd)
         {
@@ -586,66 +527,67 @@ namespace gView.Server.AppCode
             return found;
         }
 
-        static public bool ReloadMap(string mapName, string usr, string pwd)
+        async static public Task<bool> ReloadMap(string mapName, string usr, string pwd)
         {
             if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, mapName))
                 return false;
 
+            
+            if (MapDocument == null) return false;
+
+            MapDocument.RemoveMap(mapName);
+            return await LoadMap(mapName) != null;
+
             // ToDo: needfull?
-
-            /*
-            if (_doc == null) return false;
-
             // Remove map(s) (GDI) from Document
-            List<IMap> maps = new List<IMap>();
-            foreach (IMap m in _doc.Maps)
-            {
-                if (mapName.Contains(","))   // wenn ',' -> nur GDI Service suchen
-                {
-                    if (mapName == m.Name)
-                    {
-                        maps.Add(m);
-                        break;
-                    }
-                }
-                else   // sonst alle Services (incl GDI) suchen und entfernen
-                {
-                    foreach (string name in m.Name.Split(','))
-                    {
-                        if (mapName == name)
-                        {
-                            maps.Add(m);
-                            break;
-                        }
-                    }
-                }
-            }
+            //List<IMap> maps = new List<IMap>();
+            //foreach (IMap m in MapDocument.Maps)
+            //{
+            //    if (mapName.Contains(","))   // wenn ',' -> nur GDI Service suchen
+            //    {
+            //        if (mapName == m.Name)
+            //        {
+            //            maps.Add(m);
+            //            break;
+            //        }
+            //    }
+            //    else   // sonst alle Services (incl GDI) suchen und entfernen
+            //    {
+            //        foreach (string name in m.Name.Split(','))
+            //        {
+            //            if (mapName == name)
+            //            {
+            //                maps.Add(m);
+            //                break;
+            //            }
+            //        }
+            //    }
+            //}
 
-            if (maps.Count == 0)
-            {
-                // Reload map...
-                IServiceMap smap = IMS.mapServer[mapName];
-            }
-            else
-            {
-                foreach (IMap m in maps)
-                {
-                    _doc.RemoveMap(m);
-                    // Reload map(s) (GDI)...
-                    IServiceMap smap = IMS.mapServer[m.Name];
-                }
-            }
+            //if (maps.Count == 0)
+            //{
+            //    // Reload map...
+            //    IServiceMap smap = InternetMapServer.LoadMap()
+            //}
+            //else
+            //{
+            //    foreach (IMap m in maps)
+            //    {
+            //        MapDocument.RemoveMap(m);
+            //        // Reload map(s) (GDI)...
+            //        IServiceMap smap = IMS.mapServer[m.Name];
+            //    }
+            //}
 
-    */
-            return true;
+            //return true;
         }
 
-        static public string GetMetadata(string mapName, string usr, string pwd)
+        async static public Task<string> GetMetadata(string mapName, string usr, string pwd)
         {
             if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, "admin_metadata_get"))
                 return "ERROR: Not Authorized!";
 
-            if (!ReloadMap(mapName, usr, pwd)) return String.Empty;
+            if (!await ReloadMap(mapName, usr, pwd)) return String.Empty;
 
             //if (IMS.mapServer == null || IMS.mapServer[mapName] == null)
             //    return String.Empty;
@@ -660,7 +602,7 @@ namespace gView.Server.AppCode
                 return ret;
             }
         }
-        static public bool SetMetadata(string mapName, string metadata, string usr, string pwd)
+        async static public Task<bool> SetMetadata(string mapName, string metadata, string usr, string pwd)
         {
             if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, "admin_metadata_set"))
                 return false;
@@ -672,14 +614,14 @@ namespace gView.Server.AppCode
             xmlStream.ReadStream(sr);
             xmlStream.WriteStream(fi.FullName);
 
-            return ReloadMap(mapName, usr, pwd);
+            return await ReloadMap(mapName, usr, pwd);
         }
 
         static private void AddMapService(string mapName, MapServiceType type)
         {
             foreach (IMapService service in InternetMapServer.mapServices)
             {
-                if (service.Name == mapName)
+                if (service.Fullname == mapName)
                     return;
             }
             string folder = String.Empty;
