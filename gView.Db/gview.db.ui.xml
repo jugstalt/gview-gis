@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+
+  <connectionStrings>
+    <provider id="mssql" name="Mircosoft SQL Server" provider="SqlClient" >
+      <schema name="Standard Security">
+        Server=[Server];Database=[Database];User Id=[User];Password=[Password];
+      </schema>
+      <schema name="Trusted Connection">
+        Server=[Server];Database=[Database];Trusted_Connection=True;
+      </schema>
+    </provider>
+    <provider id="oracle" name="Oracle" provider="OracleClient" >
+      <!--
+       <schema name="Standard">
+         Data Source=[Data Source];Integrated Security=yes;
+       </schema>
+       <schema name="Specifying username and password">
+         Data Source=[Data Source];User Id=[User];Password=[Password];Integrated Security=no;
+       </schema>
+       -->
+      <schema name="Omiting tnsnames.ora">
+        Data Source=(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=[Host])(PORT=[Port])))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=[OracleSID])));User Id=[User];Password=[Password];
+      </schema>
+    </provider>
+    <provider id="oledb" name="Ole DB" provider="OleDB" >
+      <schema name="MS Access: Standard security" filefilter="MS Access|*.mdb" >
+        Provider=Microsoft.Jet.OLEDB.4.0;Data Source=[File];
+      </schema>
+      <schema name="MS Access: Use password" filefilter="MS Access|*.mdb">
+        Provider=Microsoft.Jet.OLEDB.4.0;Data Source=[File];Jet OLEDB:Database Password=[Password];
+      </schema>
+      <schema name="dBase V Standard">
+        Provider=Microsoft.Jet.OLEDB.4.0;Data Source=[Folder];Extended Properties=dBASE IV;User ID=Admin;Password=
+      </schema>
+      <schema name="Excel 12.0" filefilter="MS Excel|*.xls">
+        Provider=Microsoft.Jet.OLEDB.4.0;Data Source=[File];Extended Properties="Excel 8.0;HDR=Yes;IMEX=1";
+      </schema>
+    </provider>
+    <provider id="postgre" name="Postgre Npgsql" provider="Npgsql">
+      <schema name="Postgre/Npgsql">
+        Server=[Server];Port=[Port];Userid=[User];Password=[Password];Database=[Database];Protocol=3;SSL=true; Pooling=true;MinPoolSize=3;MaxPoolSize=20;Encoding=UNICODE;Timeout=20;SslMode=Disable;
+      </schema>
+      <schema name="Postgre/Npgsql + Schema">
+        Server=[Server];Port=[Port];Userid=[User];Password=[Password];Database=[Database];SearchPath=[Schema];Protocol=3;SSL=true; Pooling=true;MinPoolSize=3;MaxPoolSize=20;Encoding=UNICODE;Timeout=20;SslMode=Disable;
+      </schema>
+      <schema name="Postgre/Npgsql SSL">
+        Server=[Server];Port=[Port];Userid=[User];Password=[Password];Database=[Database];Protocol=3;SSL=true; Pooling=true;MinPoolSize=3;MaxPoolSize=20;Encoding=UNICODE;Timeout=20;SslMode=Require;
+      </schema>
+    </provider>
+    <!--
+     <provider id="postgre" name="Postgre ODBC" provider="ODBC">
+       <schema name="Postgre/ODBC Standard">
+         DSN=[DSN];UID=[User];PWD=[Password];
+       </schema>
+     </provider>
+     <provider id="postgre" name="Postgre OleDb" provider="OleDb">
+       <schema name="Postgre/OleDb">
+         Provider=PostgreSQL OLE DB Provider;Data Source=[Server];location=[Database];User ID=[User];password=[Password];timeout=1000;
+       </schema>
+     </provider>
+     -->
+    <provider id="arcsde" name="ArcSDE Connection" provider="sde">
+      <schema name="Specifying user and password">
+        server=[Server];instance=[Instance];database=[Database];usr=[User];pwd=[Password];
+      </schema>
+    </provider>
+  </connectionStrings>
+</configuration>

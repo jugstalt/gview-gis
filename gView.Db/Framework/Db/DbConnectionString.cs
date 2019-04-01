@@ -39,7 +39,7 @@ namespace gView.Framework.Db
                 try
                 {
                     XmlDocument doc = new XmlDocument();
-                    doc.Load(SystemVariables.ApplicationDirectory + @"\gView.DB.UI.xml");
+                    doc.Load(SystemVariables.ApplicationDirectory + @"\gview.db.ui.xml");
 
                     XmlNode providerNode = doc.SelectSingleNode("//connectionStrings/provider[@id='" + _providerID + "']");
                     if (providerNode == null) return String.Empty;
@@ -190,7 +190,7 @@ namespace gView.Framework.Db
                 string appPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
                 
                 XmlDocument doc = new XmlDocument();
-                doc.Load(appPath + @"\gView.DB.UI.xml");
+                doc.Load(appPath + @"\gview.db.ui.xml");
 
                 while (connectionString.EndsWith(";"))
                     connectionString = connectionString.Substring(0, connectionString.Length - 1).Trim();
