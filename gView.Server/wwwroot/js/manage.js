@@ -2,7 +2,7 @@
     window.gview = {};
 
 window.gview.manage = function () {
-    var rootUrl = '';
+    var rootUrl = '/';
 
     var setRootUrl = function (url) {
         rootUrl = url;
