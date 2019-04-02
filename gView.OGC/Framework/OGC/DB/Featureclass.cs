@@ -6,10 +6,11 @@ using gView.Framework.Data;
 using gView.Framework.Geometry;
 using System.Data.Common;
 using System.Threading.Tasks;
+using gView.Framework.system;
 
 namespace gView.Framework.OGC.DB
 {
-    public class OgcSpatialFeatureclass : IFeatureClass2
+    public class OgcSpatialFeatureclass : IFeatureClass2, IDebugging
     {
         protected string _name, _shapefield, _idfield;
         protected geometryType _geomType;
@@ -162,7 +163,7 @@ namespace gView.Framework.OGC.DB
                             }
 
                             Field field = new Field(row["ColumnName"].ToString());
-                            if (row["DataType"]?.GetType() == typeof(Type))
+                            if (row["DataType"] is Type)
                             {
                                 if ((Type)row["DataType"] == typeof(System.Int32))
                                     field.type = FieldType.integer;

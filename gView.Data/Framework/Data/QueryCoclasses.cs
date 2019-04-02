@@ -277,12 +277,21 @@ namespace gView.Framework.Data
 
                 foreach (string field in m_orderBy.Replace(",", " ").Split(' '))
                 {
-                    if (sb.Length > 0) sb.Append(",");
-                    if (field.IndexOf(m_fieldPrefix) != 0 && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
-                        sb.Append(m_fieldPrefix);
-                    sb.Append(field);
-                    if (field.IndexOf(m_fieldPostfix, Math.Min(m_fieldPrefix.Length, field.Length)) != field.Length - m_fieldPostfix.Length && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
-                        sb.Append(m_fieldPostfix);
+                    if (sb.Length > 0 && (field.ToLower() == "asc" || field.ToLower() == "desc"))
+                    {
+                        sb.Append(" " + field);
+                    }
+                    else
+                    {
+                        if (sb.Length > 0)
+                            sb.Append(",");
+
+                        if (field.IndexOf(m_fieldPrefix) != 0 && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                            sb.Append(m_fieldPrefix);
+                        sb.Append(field);
+                        if (field.IndexOf(m_fieldPostfix, Math.Min(m_fieldPrefix.Length, field.Length)) != field.Length - m_fieldPostfix.Length && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                            sb.Append(m_fieldPostfix);
+                    }
                 }
 
                 return sb.ToString();

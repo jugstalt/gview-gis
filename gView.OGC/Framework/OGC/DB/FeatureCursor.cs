@@ -89,6 +89,8 @@ namespace gView.Framework.OGC.DB
                     featureCursor._conn.Close();
                     featureCursor._conn = null;
                 }
+
+                fc.LastException = ex;
             }
 
             return featureCursor;
@@ -145,6 +147,7 @@ namespace gView.Framework.OGC.DB
                 {
                     if (_fc != null)
                         _fc.LastException = ex;
+
                     //string errMsg = ex.Message;
                     //return null;
                 }

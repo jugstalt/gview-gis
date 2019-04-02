@@ -1272,9 +1272,10 @@ namespace gView.Framework.OGC.WFS
                 switch (field.type)
                 {
                     case FieldType.String:
-                        fieldvalue = "'" + fieldvalue + "'";
-                        break;
+                    case FieldType.NString:
                     case FieldType.Date:
+                    case FieldType.guid:
+                    case FieldType.character:
                         fieldvalue = "'" + fieldvalue + "'";
                         break;
                 }

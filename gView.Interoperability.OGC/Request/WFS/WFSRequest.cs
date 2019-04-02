@@ -720,6 +720,8 @@ namespace gView.Interoperability.OGC
                         //if (parameters.MaxFeatures < 0 || parameters.MaxFeatures > 10000)
                         //    parameters.MaxFeatures = 10000;
 
+                        //sb.Append("WHERE " + filter.WhereClause + " ORDER BY " + filter.OrderBy);
+
                         filter.SetUserData("IServiceRequestContext", context);
                         using (IFeatureCursor cursor = await fc.GetFeatures(filter))
                         {
@@ -727,6 +729,12 @@ namespace gView.Interoperability.OGC
 
                             await FeatureTranslator.Features2GML(cursor, fc, fcid, sb, srsName, transformer, gmlVersion, parameters.MaxFeatures);
                         }
+
+                        //if(fc is IDebugging && ((IDebugging)fc).LastException!=null)
+                        //{
+                        //    sb.Append(((IDebugging)fc).LastException.Message);
+                        //    sb.Append(((IDebugging)fc).LastException.StackTrace);
+                        //}
 
                         if (transformer != null)
                             transformer.Release();
