@@ -1,0 +1,525 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Menu.Activate" xml:space="preserve">
+    <value>Aktiv setzen</value>
+  </data>
+  <data name="Menu.AddToFavorites" xml:space="preserve">
+    <value>Zu den Favoriten hinzufügen ...</value>
+  </data>
+  <data name="Menu.Close" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="Menu.DataViews" xml:space="preserve">
+    <value>Daten Sichten</value>
+  </data>
+  <data name="Menu.Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Menu.DeleteMap" xml:space="preserve">
+    <value>Karte entfernen</value>
+  </data>
+  <data name="Menu.Import" xml:space="preserve">
+    <value>Importieren</value>
+  </data>
+  <data name="Menu.InsertGroup" xml:space="preserve">
+    <value>Neuen Gruppenlayer anlegen</value>
+  </data>
+  <data name="Menu.InsertNewDataview" xml:space="preserve">
+    <value>Neue Datensicht anlegen ...</value>
+  </data>
+  <data name="Menu.LockLayer" xml:space="preserve">
+    <value>Layer sperren</value>
+  </data>
+  <data name="Menu.MapProperties" xml:space="preserve">
+    <value>Karteneigenschaften...</value>
+  </data>
+  <data name="Menu.Metadata" xml:space="preserve">
+    <value>Metadaten...</value>
+  </data>
+  <data name="Menu.MoveToGroup" xml:space="preserve">
+    <value>In Gruppenlayer verschieben</value>
+  </data>
+  <data name="Menu.New" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="Menu.NewMap" xml:space="preserve">
+    <value>Neue Karte</value>
+  </data>
+  <data name="Menu.NewServiceFromMap" xml:space="preserve">
+    <value>Neues Kartenservice aus gView Karte ...</value>
+  </data>
+  <data name="Menu.Options" xml:space="preserve">
+    <value>Optionen ...</value>
+  </data>
+  <data name="Menu.Properties" xml:space="preserve">
+    <value>Eigenschaften ...</value>
+  </data>
+  <data name="Menu.Remove" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="Menu.Rename" xml:space="preserve">
+    <value>Umbenennen</value>
+  </data>
+  <data name="Menu.Scales" xml:space="preserve">
+    <value>Maßstabsgrenzen</value>
+  </data>
+  <data name="Menu.SpatialReferenceSystem" xml:space="preserve">
+    <value>Räumliches Bezugssystem</value>
+  </data>
+  <data name="Menu.SplitLayerGroup" xml:space="preserve">
+    <value>Layergruppierung aufheben</value>
+  </data>
+  <data name="Menu.Toolbars" xml:space="preserve">
+    <value>Werkzeugleisten</value>
+  </data>
+  <data name="Menu.UnlockLayer" xml:space="preserve">
+    <value>Layer entsperren</value>
+  </data>
+  <data name="Menu.UsedGDIServers" xml:space="preserve">
+    <value>Verwendete GDI Server ...</value>
+  </data>
+  <data name="Menu.Visibility" xml:space="preserve">
+    <value>Sichtbarkeit</value>
+  </data>
+  <data name="Menu.ZoomIn" xml:space="preserve">
+    <value>Kartenausschnitt vergrößern (Zoom In)</value>
+  </data>
+  <data name="Menu.ZoomOut" xml:space="preserve">
+    <value>Kartenausschnitt verkleineren (Zoom Out)</value>
+  </data>
+  <data name="MenuHeader.Apply" xml:space="preserve">
+    <value>Anwenden auf</value>
+  </data>
+  <data name="MenuHeader.DataViews" xml:space="preserve">
+    <value>Daten Sichten</value>
+  </data>
+  <data name="MenuHeader.Edit" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="MenuHeader.Favorites" xml:space="preserve">
+    <value>Favoriten</value>
+  </data>
+  <data name="MenuHeader.File" xml:space="preserve">
+    <value>Datei</value>
+  </data>
+  <data name="MenuHeader.Help" xml:space="preserve">
+    <value>?</value>
+  </data>
+  <data name="MenuHeader.Insert" xml:space="preserve">
+    <value>Einfügen</value>
+  </data>
+  <data name="MenuHeader.Options" xml:space="preserve">
+    <value>Extras</value>
+  </data>
+  <data name="MenuHeader.Toolbars" xml:space="preserve">
+    <value>Werkzeugleisten</value>
+  </data>
+  <data name="MenuHeader.View" xml:space="preserve">
+    <value>Ansicht</value>
+  </data>
+  <data name="Shape.Arrow" xml:space="preserve">
+    <value>Pfeil</value>
+  </data>
+  <data name="Shape.Dimension" xml:space="preserve">
+    <value>Bemaßung</value>
+  </data>
+  <data name="Shape.Ellipse" xml:space="preserve">
+    <value>Ellipse</value>
+  </data>
+  <data name="Shape.Freehand" xml:space="preserve">
+    <value>Stift</value>
+  </data>
+  <data name="Shape.Line" xml:space="preserve">
+    <value>Linie</value>
+  </data>
+  <data name="Shape.Point" xml:space="preserve">
+    <value>Punkt</value>
+  </data>
+  <data name="Shape.Polygon" xml:space="preserve">
+    <value>Polygon</value>
+  </data>
+  <data name="Shape.Polyline" xml:space="preserve">
+    <value>Polylinie</value>
+  </data>
+  <data name="Shape.Rectangle" xml:space="preserve">
+    <value>Recteck</value>
+  </data>
+  <data name="Shape.Text" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="String.Back" xml:space="preserve">
+    <value>Zurück</value>
+  </data>
+  <data name="String.Choose" xml:space="preserve">
+    <value>Wählen</value>
+  </data>
+  <data name="String.Conflicts" xml:space="preserve">
+    <value>Konflikte</value>
+  </data>
+  <data name="String.CreateNewFeatures" xml:space="preserve">
+    <value>Objekte anlegen</value>
+  </data>
+  <data name="String.Edit" xml:space="preserve">
+    <value>Bearb.:</value>
+  </data>
+  <data name="String.Editor" xml:space="preserve">
+    <value>Editor</value>
+  </data>
+  <data name="String.Export" xml:space="preserve">
+    <value>Exportieren</value>
+  </data>
+  <data name="String.ModifyFeatures" xml:space="preserve">
+    <value>Objekte ändern</value>
+  </data>
+  <data name="String.NewConnection" xml:space="preserve">
+    <value>Neue Verbindung erstellen ...</value>
+  </data>
+  <data name="String.Next" xml:space="preserve">
+    <value>Weiter</value>
+  </data>
+  <data name="String.ProxySettings" xml:space="preserve">
+    <value>Proxy Einstellungen</value>
+  </data>
+  <data name="String.QueryResults" xml:space="preserve">
+    <value>Abfrage Ergebnisse</value>
+  </data>
+  <data name="String.Selection" xml:space="preserve">
+    <value>Auswahl</value>
+  </data>
+  <data name="String.Snapping" xml:space="preserve">
+    <value>Objekt Fang</value>
+  </data>
+  <data name="String.SnappingSchema" xml:space="preserve">
+    <value>Fang Muster</value>
+  </data>
+  <data name="String.Source" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="String.Task" xml:space="preserve">
+    <value>Aktion</value>
+  </data>
+  <data name="String.UserDefined" xml:space="preserve">
+    <value>Benutzerdefiniert ...</value>
+  </data>
+  <data name="Text.Scale" xml:space="preserve">
+    <value>Maßstab:</value>
+  </data>
+  <data name="Text.Search" xml:space="preserve">
+    <value>Suchen in:</value>
+  </data>
+  <data name="Toolbars.Graphics" xml:space="preserve">
+    <value>Zeichnen</value>
+  </data>
+  <data name="Toolbars.Scale" xml:space="preserve">
+    <value>Maßstab</value>
+  </data>
+  <data name="Toolbars.Tools" xml:space="preserve">
+    <value>Werkzeuge</value>
+  </data>
+  <data name="Tools.About" xml:space="preserve">
+    <value>Info ...</value>
+  </data>
+  <data name="Tools.AddData" xml:space="preserve">
+    <value>Daten hinzufügen ...</value>
+  </data>
+  <data name="Tools.ClearSelection" xml:space="preserve">
+    <value>Auswahl aufheben</value>
+  </data>
+  <data name="Tools.CloneLayer" xml:space="preserve">
+    <value>Klonen</value>
+  </data>
+  <data name="Tools.Copy" xml:space="preserve">
+    <value>Kopieren</value>
+  </data>
+  <data name="Tools.Cut" xml:space="preserve">
+    <value>Ausschneiden</value>
+  </data>
+  <data name="Tools.DataTable" xml:space="preserve">
+    <value>Tabelle ...</value>
+  </data>
+  <data name="Tools.Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Tools.Editor.Attributes" xml:space="preserve">
+    <value>Attribut Editor</value>
+  </data>
+  <data name="Tools.Editor.Delete" xml:space="preserve">
+    <value>Objekt löschen</value>
+  </data>
+  <data name="Tools.Editor.DeleteSktech" xml:space="preserve">
+    <value>Sketch löschen. Bearbeitung verwerfen</value>
+  </data>
+  <data name="Tools.Editor.ModifyFeature" xml:space="preserve">
+    <value>Objekt/Sketch ändern</value>
+  </data>
+  <data name="Tools.Editor.NewFeature" xml:space="preserve">
+    <value>Feature/Vertex anlegen</value>
+  </data>
+  <data name="Tools.Editor.Store" xml:space="preserve">
+    <value>Objekt speichern</value>
+  </data>
+  <data name="Tools.EditVertices" xml:space="preserve">
+    <value>Vertizes bearbeiten</value>
+  </data>
+  <data name="Tools.Exit" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="Tools.ExportFeatures" xml:space="preserve">
+    <value>Features exportieren ...</value>
+  </data>
+  <data name="Tools.Find" xml:space="preserve">
+    <value>Suchen ...</value>
+  </data>
+  <data name="Tools.Identify" xml:space="preserve">
+    <value>Identifizieren</value>
+  </data>
+  <data name="Tools.ImportRenderer" xml:space="preserve">
+    <value>Renderer importieren ...</value>
+  </data>
+  <data name="Tools.Load" xml:space="preserve">
+    <value>Laden ...</value>
+  </data>
+  <data name="Tools.Measure" xml:space="preserve">
+    <value>Messen</value>
+  </data>
+  <data name="Tools.New" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="Tools.NewMap" xml:space="preserve">
+    <value>Karte hinzufügen</value>
+  </data>
+  <data name="Tools.OverViewMap" xml:space="preserve">
+    <value>Übersichtskarte</value>
+  </data>
+  <data name="Tools.PageSetup" xml:space="preserve">
+    <value>Seite einrichten ...</value>
+  </data>
+  <data name="Tools.Pan" xml:space="preserve">
+    <value>Verschieben</value>
+  </data>
+  <data name="Tools.Paste" xml:space="preserve">
+    <value>Einfügen</value>
+  </data>
+  <data name="Tools.PasteSchema" xml:space="preserve">
+    <value>Schema einfügen</value>
+  </data>
+  <data name="Tools.Pointer" xml:space="preserve">
+    <value>Zeiger</value>
+  </data>
+  <data name="Tools.Print" xml:space="preserve">
+    <value>Drucken</value>
+  </data>
+  <data name="Tools.PrintPreview" xml:space="preserve">
+    <value>Druck Vorschau</value>
+  </data>
+  <data name="Tools.Properties" xml:space="preserve">
+    <value>Eigenschaften ...</value>
+  </data>
+  <data name="Tools.Refresh" xml:space="preserve">
+    <value>Aktualisieren</value>
+  </data>
+  <data name="Tools.RefreshMap" xml:space="preserve">
+    <value>Karte neu zeichnen</value>
+  </data>
+  <data name="Tools.Rename" xml:space="preserve">
+    <value>Umbenennen ...</value>
+  </data>
+  <data name="Tools.Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="Tools.SaveAs" xml:space="preserve">
+    <value>Speichern unter ...</value>
+  </data>
+  <data name="Tools.Select" xml:space="preserve">
+    <value>Auswählen</value>
+  </data>
+  <data name="Tools.SelectByAttributes" xml:space="preserve">
+    <value>Auswahl mittels Sql ...</value>
+  </data>
+  <data name="Tools.ShowLegend" xml:space="preserve">
+    <value>Legende anzeigen</value>
+  </data>
+  <data name="Tools.SmartNavigation" xml:space="preserve">
+    <value>Zoomen/Verschieben</value>
+  </data>
+  <data name="Tools.SplitWithFilter" xml:space="preserve">
+    <value>"Splitten" mittels Filter ...</value>
+  </data>
+  <data name="Tools.TOC" xml:space="preserve">
+    <value>Inhaltsverzeichnis</value>
+  </data>
+  <data name="Tools.XY" xml:space="preserve">
+    <value>Auf Koordinate Zoomen</value>
+  </data>
+  <data name="Tools.ZoomBack" xml:space="preserve">
+    <value>Zurück</value>
+  </data>
+  <data name="Tools.ZoomForward" xml:space="preserve">
+    <value>Vorwärts</value>
+  </data>
+  <data name="Tools.ZoomIn" xml:space="preserve">
+    <value>Vergrößern</value>
+  </data>
+  <data name="Tools.ZoomInStatic" xml:space="preserve">
+    <value>Schrittweise Vergrößern</value>
+  </data>
+  <data name="Tools.ZoomOut" xml:space="preserve">
+    <value>Verkleinern</value>
+  </data>
+  <data name="Tools.ZoomOutStatic" xml:space="preserve">
+    <value>Schrittweise Verkleinern</value>
+  </data>
+  <data name="Tools.ZoomToFullExtent" xml:space="preserve">
+    <value>Zoom auf Kartenausdehnung</value>
+  </data>
+  <data name="Tools.ZoomToLayer" xml:space="preserve">
+    <value>Zoomen auf Layerausdehnung</value>
+  </data>
+  <data name="Tools.ZoomToSelection" xml:space="preserve">
+    <value>Zoom auf Auswahl</value>
+  </data>
+  <data name="Menu.ConnectionProperties" xml:space="preserve">
+    <value>Verbindingseigenschaften...</value>
+  </data>
+  <data name="String.Network" xml:space="preserve">
+    <value>Netzwerk</value>
+  </data>
+  <data name="Create.New" xml:space="preserve">
+    <value>Neu erstellen</value>
+  </data>
+  <data name="ArgString.Create" xml:space="preserve">
+    <value>{0} erstellen</value>
+  </data>
+  <data name="ArgString.New" xml:space="preserve">
+    <value>Neue {0}</value>
+  </data>
+  <data name="Tools.MirgrateMapToFeatureDatabase" xml:space="preserve">
+    <value>Karten(vektor)daten in gView Featuredatabase migrieren...</value>
+  </data>
+  <data name="Tools.PublishMap" xml:space="preserve">
+    <value>Karte veröffentlichen...</value>
+  </data>
+  <data name="String.MapNetFolder" xml:space="preserve">
+    <value>(Netzwerk) Verzeichnis hinzufügen...</value>
+  </data>
+  <data name="String.Refresh" xml:space="preserve">
+    <value>Aktualisieren</value>
+  </data>
+</root>

@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>22, 49</value>
+  </data>
+  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>102, 13</value>
+  </data>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Referenzmaßstab 1:</value>
+  </data>
+  <data name="btnCancel.Text" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="label2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>20, 22</value>
+  </data>
+  <data name="txtName.Location" type="System.Drawing.Point, System.Drawing">
+    <value>76, 19</value>
+  </data>
+  <data name="txtName.Size" type="System.Drawing.Size, System.Drawing">
+    <value>463, 20</value>
+  </data>
+  <data name="label3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>40, 111</value>
+  </data>
+  <data name="label3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>82, 13</value>
+  </data>
+  <data name="label3.Text" xml:space="preserve">
+    <value>Einheiten Karte:</value>
+  </data>
+  <data name="cmbMapUnits.Location" type="System.Drawing.Point, System.Drawing">
+    <value>128, 107</value>
+  </data>
+  <data name="cmbDisplayUnits.Location" type="System.Drawing.Point, System.Drawing">
+    <value>128, 134</value>
+  </data>
+  <data name="label4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>27, 137</value>
+  </data>
+  <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>95, 13</value>
+  </data>
+  <data name="label4.Text" xml:space="preserve">
+    <value>Einheiten Anzeige:</value>
+  </data>
+  <data name="panel2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>457, 0</value>
+  </data>
+  <data name="panel1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 543</value>
+  </data>
+  <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>565, 39</value>
+  </data>
+  <data name="btnNoAntialiasFeatures.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 70</value>
+  </data>
+  <data name="btnNoAntialiasFeatures.Size" type="System.Drawing.Size, System.Drawing">
+    <value>203, 23</value>
+  </data>
+  <data name="btnNoAntialiasFeatures.Text" xml:space="preserve">
+    <value>Keine Glättung für alle Features setzen</value>
+  </data>
+  <data name="btnAntialiasFeatures.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 95</value>
+  </data>
+  <data name="btnAntialiasFeatures.Size" type="System.Drawing.Size, System.Drawing">
+    <value>203, 23</value>
+  </data>
+  <data name="btnAntialiasFeatures.Text" xml:space="preserve">
+    <value>Glättung für alle Features setzen</value>
+  </data>
+  <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 4</value>
+  </data>
+  <data name="label7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>252, 57</value>
+  </data>
+  <data name="label7.Text" xml:space="preserve">
+    <value>Glättungsmethode für alle Features in der Karte setzen. Achtung: diese Methoden können nicht rückgängig gemacht werden. Bitte vor dem Anwenden das Projekt speichern!
+</value>
+  </data>
+  <data name="panel4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>277, 121</value>
+  </data>
+  <data name="btnNoAntialiasLabels.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 70</value>
+  </data>
+  <data name="btnNoAntialiasLabels.Size" type="System.Drawing.Size, System.Drawing">
+    <value>242, 23</value>
+  </data>
+  <data name="btnNoAntialiasLabels.Text" xml:space="preserve">
+    <value>Keine Glättung für alle Beschriftungen setzen</value>
+  </data>
+  <data name="btnAntialiasLabels.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 95</value>
+  </data>
+  <data name="btnAntialiasLabels.Size" type="System.Drawing.Size, System.Drawing">
+    <value>242, 23</value>
+  </data>
+  <data name="btnAntialiasLabels.Text" xml:space="preserve">
+    <value>Glättung für alle Beschriftungen setzen</value>
+  </data>
+  <data name="label6.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 8</value>
+  </data>
+  <data name="label6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>245, 59</value>
+  </data>
+  <data name="label6.Text" xml:space="preserve">
+    <value>Glättungsmethode für alle Beschriftungen in der Karte setzen. Achtung: diese Methoden können nicht rückgängig gemacht werden. Bitte vor dem Anwenden das Projekt speichern!</value>
+  </data>
+  <data name="panel3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>256, 121</value>
+  </data>
+  <data name="groupBox3.Text" xml:space="preserve">
+    <value>Erweiterte Werkzeuge</value>
+  </data>
+  <data name="label5.Text" xml:space="preserve">
+    <value>Hintergrund Farbe:</value>
+  </data>
+  <data name="numRefScale.Location" type="System.Drawing.Point, System.Drawing">
+    <value>128, 47</value>
+  </data>
+  <data name="groupBox2.Text" xml:space="preserve">
+    <value>Anzeige</value>
+  </data>
+  <data name="groupBox1.Text" xml:space="preserve">
+    <value>Karte</value>
+  </data>
+  <data name="tabMap.Size" type="System.Drawing.Size, System.Drawing">
+    <value>557, 517</value>
+  </data>
+  <data name="tabMap.Text" xml:space="preserve">
+    <value>Karte / Anzeige</value>
+  </data>
+  <data name="tabSR.Size" type="System.Drawing.Size, System.Drawing">
+    <value>557, 517</value>
+  </data>
+  <data name="tabSR.Text" xml:space="preserve">
+    <value>Räumliches Bezugssystem</value>
+  </data>
+  <data name="panelDefaultLayerSR.Size" type="System.Drawing.Size, System.Drawing">
+    <value>557, 431</value>
+  </data>
+  <data name="btnDefaultLayerSRFromSpatialReference.Location" type="System.Drawing.Point, System.Drawing">
+    <value>316, 57</value>
+  </data>
+  <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
+    <value>410, 52</value>
+  </data>
+  <data name="label8.Text" xml:space="preserve">
+    <value>Für alle Laye, die keine Bezugssstem besitzen, wird dieses System angewandt.
+Das ist sinnvoll die Karten, die als Dienst veröffentlicht werden. Wenn nicht alle Layer
+aus einer Datenquelle mit Bezugssystem kommen wird so gewärleistet, dass alle Layer
+richtig proziert werden.
+</value>
+  </data>
+  <data name="panel5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>557, 86</value>
+  </data>
+  <data name="tabDefLayerSR.Size" type="System.Drawing.Size, System.Drawing">
+    <value>557, 517</value>
+  </data>
+  <data name="tabDefLayerSR.Text" xml:space="preserve">
+    <value>Default Bezugssystem für Layer</value>
+  </data>
+  <data name="tabControl1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>565, 543</value>
+  </data>
+  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
+    <value>565, 582</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Eigenschaften Karte</value>
+  </data>
+</root>

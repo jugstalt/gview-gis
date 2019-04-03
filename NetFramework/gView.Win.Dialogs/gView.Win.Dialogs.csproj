@@ -1,0 +1,621 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{5E36EAA4-15C4-4D04-973B-245AD8A59B97}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>gView.Win.Dialogs</RootNamespace>
+    <AssemblyName>gView.Win.Dialogs</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Common, Version=4.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Drawing.Common.4.5.1\lib\net461\System.Drawing.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Management" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Framework\UI\Controls\AdditionalFieldsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\AdditionalFieldsControl.Designer.cs">
+      <DependentUpon>AdditionalFieldsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\Behavior.cs" />
+    <Compile Include="Framework\UI\Controls\DatasetInfoControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\DatasetInfoControl.Designer.cs">
+      <DependentUpon>DatasetInfoControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\EvalFunctionControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\EvalFunctionControl.Designer.cs">
+      <DependentUpon>EvalFunctionControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\GridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\GridControl.Designer.cs">
+      <DependentUpon>GridControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\HillShadeControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\HillShadeControl.designer.cs">
+      <DependentUpon>HillShadeControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\PreviewControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\PreviewControl.Designer.cs">
+      <DependentUpon>PreviewControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\PreviewFeatureDataset.cs" />
+    <Compile Include="Framework\UI\Controls\ScrollingListBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\ScrollingListBox.Designer.cs">
+      <DependentUpon>ScrollingListBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\Selection.cs" />
+    <Compile Include="Framework\UI\Controls\SimpleMultiplicationControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\SimpleMultiplicationControl.Designer.cs">
+      <DependentUpon>SimpleMultiplicationControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\SpatialIndexControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\SpatialIndexControl.Designer.cs">
+      <DependentUpon>SpatialIndexControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\SymbolsListView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\TextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\TOCControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\TOCControl_Items.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\Wizard\IWizardPageNotification.cs" />
+    <Compile Include="Framework\UI\Controls\Wizard\WizardControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Controls\Wizard\WizardControl.Designer.cs">
+      <DependentUpon>WizardControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\Buttons.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormAddDataset.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormConnectionProperties.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormConnectionProperties.Designer.cs">
+      <DependentUpon>FormConnectionProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormDatasetProperties.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormDatasetProperties.Designer.cs">
+      <DependentUpon>FormDatasetProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormDataTable.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormDataTable.Designer.cs">
+      <DependentUpon>FormDataTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormDataTable2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormDeleteDatasetElements.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormDeleteDatasetElements.Designer.cs">
+      <DependentUpon>FormDeleteDatasetElements.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormGridColorClass.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormGridColorClass.Designer.cs">
+      <DependentUpon>FormGridColorClass.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormGridSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormGridSettings.Designer.cs">
+      <DependentUpon>FormGridSettings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormGridWizard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormGridWizard.Designer.cs">
+      <DependentUpon>FormGridWizard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormHillShade.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormHillShade.Designer.cs">
+      <DependentUpon>FormHillShade.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormLayerFilter.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormLayerFilter.Designer.cs">
+      <DependentUpon>FormLayerFilter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormLayerProperties.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormLayerSource.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormLayerSource.Designer.cs">
+      <DependentUpon>FormLayerSource.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormMapProperties.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormMapProperties.Designer.cs">
+      <DependentUpon>FormMapProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormNewDataset.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormNewDataset.Designer.cs">
+      <DependentUpon>FormNewDataset.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormNewFeatureclass.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormNewFeatureclass.Designer.cs">
+      <DependentUpon>FormNewFeatureclass.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormNewTileGridClass.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormNewTileGridClass.Designer.cs">
+      <DependentUpon>FormNewTileGridClass.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormPropertyGrid.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormQueryBuilder.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormQueryBuilder.Designer.cs">
+      <DependentUpon>FormQueryBuilder.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormSelectLayer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormSelectLayer.Designer.cs">
+      <DependentUpon>FormSelectLayer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormSpatialReference.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormSpatialReferenceSystems.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormTileGridLevels.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\FormTileGridLevels.Designer.cs">
+      <DependentUpon>FormTileGridLevels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\Network\ComplexEdgesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\Network\ComplexEdgesControl.Designer.cs">
+      <DependentUpon>ComplexEdgesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\Network\CreateNetworkExcecute.cs" />
+    <Compile Include="Framework\UI\Dialogs\Network\FormNewNetworkclass.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\Network\FormNewNetworkclass.Designer.cs">
+      <DependentUpon>FormNewNetworkclass.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\Network\NetworkEdgeWeightsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\Network\NetworkEdgeWeightsControl.Designer.cs">
+      <DependentUpon>NetworkEdgeWeightsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\Network\NetworkSwitchesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\Network\NetworkSwitchesControl.Designer.cs">
+      <DependentUpon>NetworkSwitchesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\Network\NetworkToleranceControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\Network\NetworkToleranceControl.Designer.cs">
+      <DependentUpon>NetworkToleranceControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\Network\SelectFeatureclassesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\Network\SelectFeatureclassesControl.Designer.cs">
+      <DependentUpon>SelectFeatureclassesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\OptionPageProxy.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\OptionPageProxy.Designer.cs">
+      <DependentUpon>OptionPageProxy.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UI\Dialogs\Properties\PropertyGridObjects.cs" />
+    <Compile Include="Framework\UI\Dialogs\XmlViewTree.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Framework\UI\Tools\Tools.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\gView.Carto.Rendering\gView.Carto.Rendering.csproj">
+      <Project>{961d9a60-014e-4139-907f-0112f5dfac4d}</Project>
+      <Name>gView.Carto.Rendering</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Carto\gView.Carto.csproj">
+      <Project>{517f72fa-aa41-4e70-8469-e7becca58ad6}</Project>
+      <Name>gView.Carto</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Core\gView.Core.csproj">
+      <Project>{5a66d185-6e2c-4da4-97d7-00616a182bd8}</Project>
+      <Name>gView.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Data\gView.Data.csproj">
+      <Project>{9b556868-8431-4d6c-b002-3fef15df0498}</Project>
+      <Name>gView.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Geometry\gView.Geometry.csproj">
+      <Project>{82012e45-2efc-498e-9bb1-f3deba4b87c5}</Project>
+      <Name>gView.Geometry</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Math\gView.Math.csproj">
+      <Project>{deb9738e-ec3b-4e04-9301-617cb56641ac}</Project>
+      <Name>gView.Math</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Network\gView.Network.csproj">
+      <Project>{f47ea9df-e750-4afe-bdff-8644403e17bb}</Project>
+      <Name>gView.Network</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Symbology\gView.Symbology.csproj">
+      <Project>{c37d6d4b-5670-49b9-8592-48e9dcc0aa3c}</Project>
+      <Name>gView.Symbology</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.System\gView.System.csproj">
+      <Project>{e50d8014-0fb8-4b67-8291-0abee04a1403}</Project>
+      <Name>gView.System</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Web\gView.Web.csproj">
+      <Project>{b0f8bfa1-0034-4797-ae21-cd4cbd489e4c}</Project>
+      <Name>gView.Web</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Carto.UI\gView.Win.Carto.UI.csproj">
+      <Project>{77538348-8321-4978-842d-2d97cdedeca6}</Project>
+      <Name>gView.Win.Carto.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Core.UI\gView.Win.Core.UI.csproj">
+      <Project>{3c8ffd95-66e8-41e5-b891-4b13d44942c3}</Project>
+      <Name>gView.Win.Core.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Explorer.UI\gView.Win.Explorer.UI.csproj">
+      <Project>{fec5f35a-cf6e-4f6b-b910-72949954be82}</Project>
+      <Name>gView.Win.Explorer.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Globalisation\gView.Win.Globalisation.csproj">
+      <Project>{68ff06ec-cebd-4ba4-a536-6c09d9714066}</Project>
+      <Name>gView.Win.Globalisation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Symbology.UI\gView.Win.Symbology.UI.csproj">
+      <Project>{9957f5fa-1e21-4d79-883e-88ffe3a7f01b}</Project>
+      <Name>gView.Win.Symbology.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.System.UI\gView.Win.System.UI.csproj">
+      <Project>{a82d4f52-bdcd-4721-9363-09ccf4a3bb7a}</Project>
+      <Name>gView.Win.System.UI</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Framework\UI\Controls\AdditionalFieldsControl.resx">
+      <DependentUpon>AdditionalFieldsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\DatasetInfoControl.resx">
+      <DependentUpon>DatasetInfoControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\EvalFunctionControl.resx">
+      <DependentUpon>EvalFunctionControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\GridControl.de.resx">
+      <DependentUpon>GridControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\GridControl.resx">
+      <DependentUpon>GridControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\HillShadeControl.resx">
+      <DependentUpon>HillShadeControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\PreviewControl.resx">
+      <DependentUpon>PreviewControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\ScrollingListBox.resx">
+      <DependentUpon>ScrollingListBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\SimpleMultiplicationControl.resx">
+      <DependentUpon>SimpleMultiplicationControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\SpatialIndexControl.de.resx">
+      <DependentUpon>SpatialIndexControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\SpatialIndexControl.resx">
+      <DependentUpon>SpatialIndexControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\SymbolsListView.de.resx">
+      <DependentUpon>SymbolsListView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\SymbolsListView.resx">
+      <DependentUpon>SymbolsListView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\TextBox.resx">
+      <DependentUpon>TextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\TOCControl.resx">
+      <DependentUpon>TOCControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\TOCControl_Items.resx">
+      <DependentUpon>TOCControl_Items.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Controls\Wizard\WizardControl.resx">
+      <DependentUpon>WizardControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\Buttons.resx">
+      <DependentUpon>Buttons.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormAddDataset.resx">
+      <DependentUpon>FormAddDataset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormConnectionProperties.resx">
+      <DependentUpon>FormConnectionProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormDatasetProperties.de.resx">
+      <DependentUpon>FormDatasetProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormDatasetProperties.resx">
+      <DependentUpon>FormDatasetProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormDataTable.de.resx">
+      <DependentUpon>FormDataTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormDataTable.resx">
+      <DependentUpon>FormDataTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormDataTable2.resx">
+      <DependentUpon>FormDataTable2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormDeleteDatasetElements.de-DE.resx">
+      <DependentUpon>FormDeleteDatasetElements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormDeleteDatasetElements.de.resx">
+      <DependentUpon>FormDeleteDatasetElements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormDeleteDatasetElements.resx">
+      <DependentUpon>FormDeleteDatasetElements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormGridColorClass.de.resx">
+      <DependentUpon>FormGridColorClass.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormGridColorClass.resx">
+      <DependentUpon>FormGridColorClass.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormGridSettings.resx">
+      <DependentUpon>FormGridSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormGridWizard.de.resx">
+      <DependentUpon>FormGridWizard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormGridWizard.resx">
+      <DependentUpon>FormGridWizard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormHillShade.de.resx">
+      <DependentUpon>FormHillShade.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormHillShade.resx">
+      <DependentUpon>FormHillShade.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormLayerFilter.de.resx">
+      <DependentUpon>FormLayerFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormLayerFilter.resx">
+      <DependentUpon>FormLayerFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormLayerProperties.de.resx">
+      <DependentUpon>FormLayerProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormLayerProperties.resx">
+      <DependentUpon>FormLayerProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormLayerSource.de.resx">
+      <DependentUpon>FormLayerSource.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormLayerSource.resx">
+      <DependentUpon>FormLayerSource.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormMapProperties.de.resx">
+      <DependentUpon>FormMapProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormMapProperties.resx">
+      <DependentUpon>FormMapProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormNewDataset.de-DE.resx">
+      <DependentUpon>FormNewDataset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormNewDataset.de.resx">
+      <DependentUpon>FormNewDataset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormNewDataset.resx">
+      <DependentUpon>FormNewDataset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormNewFeatureclass.de.resx">
+      <DependentUpon>FormNewFeatureclass.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormNewFeatureclass.resx">
+      <DependentUpon>FormNewFeatureclass.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormNewTileGridClass.resx">
+      <DependentUpon>FormNewTileGridClass.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormPropertyGrid.resx">
+      <DependentUpon>FormPropertyGrid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormQueryBuilder.de.resx">
+      <DependentUpon>FormQueryBuilder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormQueryBuilder.resx">
+      <DependentUpon>FormQueryBuilder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormSelectLayer.de.resx">
+      <DependentUpon>FormSelectLayer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormSelectLayer.resx">
+      <DependentUpon>FormSelectLayer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormSpatialReference.de.resx">
+      <DependentUpon>FormSpatialReference.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormSpatialReference.resx">
+      <DependentUpon>FormSpatialReference.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormSpatialReferenceSystems.de.resx">
+      <DependentUpon>FormSpatialReferenceSystems.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormSpatialReferenceSystems.resx">
+      <DependentUpon>FormSpatialReferenceSystems.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\FormTileGridLevels.resx">
+      <DependentUpon>FormTileGridLevels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\Network\ComplexEdgesControl.resx">
+      <DependentUpon>ComplexEdgesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\Network\FormNewNetworkclass.resx">
+      <DependentUpon>FormNewNetworkclass.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\Network\NetworkEdgeWeightsControl.resx">
+      <DependentUpon>NetworkEdgeWeightsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\Network\NetworkSwitchesControl.resx">
+      <DependentUpon>NetworkSwitchesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\Network\NetworkToleranceControl.resx">
+      <DependentUpon>NetworkToleranceControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\Network\SelectFeatureclassesControl.resx">
+      <DependentUpon>SelectFeatureclassesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\OptionPageProxy.de.resx">
+      <DependentUpon>OptionPageProxy.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\OptionPageProxy.resx">
+      <DependentUpon>OptionPageProxy.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\XmlViewTree.resx">
+      <DependentUpon>XmlViewTree.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\add_16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\arrow-down_16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\arrow-up_16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\delete_16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\img-9.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\img-18.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\layers.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\point.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\polygon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\polyline.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\rectangle.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<MapApplication>
+  <Menubar>
+    <Menu name="File">
+      <MenuItem guid="97F8675C-E01F-451e-AAE0-DC29CD547EB5" />
+    </Menu>
+    <Menu name="Edit">
+      <MenuItem guid="3E36C2AD-2C58-42ca-A662-EE0C2DC1369D" />
+      <MenuItem guid="97F70651-C96C-4b6e-A6AD-E9D3A22BFD45" />
+      <MenuItem guid="0F8673B3-F1C9-4f5f-86C4-2B41FCBE535B" />
+      <MenuItem guid="4F54D455-1C22-469e-9DBB-78DBBEF6078D" />
+      <MenuItem />
+      <MenuItem guid="91F17A8E-D859-4840-A287-7FDE14152CB1" />
+      <MenuItem />
+      <MenuItem guid="54597B19-B37A-4fa2-BA45-8B4137F2910E" />
+    </Menu>
+    <Menu name="View" type="view" />
+    <Menu name="Options" type="options">
+      <MenuItem />
+      <MenuItem guid="AD24DF4B-A03F-4022-A671-FAE1BEF4D302" />
+    </Menu>
+	<Menu name="Favorites" type="favorites" />
+    <Menu name="Help" type="help">
+      <MenuItem guid="6782B011-83C8-420B-9158-9267EB9C70D0" />
+      <MenuItem />
+      <MenuItem guid="7219766E-55AB-4f64-B65E-C2DBC70E5786" />
+    </Menu>
+  </Menubar>
+</MapApplication>

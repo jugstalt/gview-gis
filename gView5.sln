@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28729.10
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.106
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.System", "gView.System\gView.System.csproj", "{E50D8014-0FB8-4B67-8291-0ABEE04A1403}"
 EndProject
@@ -78,6 +78,22 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Security", "gView.Security\gView.Security.csproj", "{F90E3A4D-8A73-4899-9F49-A756F58828F7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.EventTable", "gView.DataSources.EventTable\gView.DataSources.EventTable.csproj", "{77AFD455-9FD0-4087-8163-44BA03886670}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Core.UI", "NetFramework\gView.Win.Core.UI\gView.Win.Core.UI.csproj", "{3C8FFD95-66E8-41E5-B891-4B13D44942C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.System.UI", "NetFramework\gView.Win.System.UI\gView.Win.System.UI.csproj", "{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Explorer.UI", "NetFramework\gView.Win.Explorer.UI\gView.Win.Explorer.UI.csproj", "{FEC5F35A-CF6E-4F6B-B910-72949954BE82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Globalisation", "NetFramework\gView.Win.Globalisation\gView.Win.Globalisation.csproj", "{68FF06EC-CEBD-4BA4-A536-6C09D9714066}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Dialogs", "NetFramework\gView.Win.Dialogs\gView.Win.Dialogs.csproj", "{5E36EAA4-15C4-4D04-973B-245AD8A59B97}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Symbology.UI", "NetFramework\gView.Win.Symbology.UI\gView.Win.Symbology.UI.csproj", "{9957F5FA-1E21-4D79-883E-88FFE3A7F01B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Carto.UI", "NetFramework\gView.Win.Carto.UI\gView.Win.Carto.UI.csproj", "{77538348-8321-4978-842D-2D97CDEDECA6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Snapping.Core", "NetFramework\gView.Win.Snapping.Core\gView.Win.Snapping.Core.csproj", "{1075BB0D-7DFC-440C-A790-51001BCF0725}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -237,6 +253,38 @@ Global
 		{77AFD455-9FD0-4087-8163-44BA03886670}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77AFD455-9FD0-4087-8163-44BA03886670}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{77AFD455-9FD0-4087-8163-44BA03886670}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C8FFD95-66E8-41E5-B891-4B13D44942C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C8FFD95-66E8-41E5-B891-4B13D44942C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C8FFD95-66E8-41E5-B891-4B13D44942C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C8FFD95-66E8-41E5-B891-4B13D44942C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEC5F35A-CF6E-4F6B-B910-72949954BE82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEC5F35A-CF6E-4F6B-B910-72949954BE82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEC5F35A-CF6E-4F6B-B910-72949954BE82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEC5F35A-CF6E-4F6B-B910-72949954BE82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68FF06EC-CEBD-4BA4-A536-6C09D9714066}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68FF06EC-CEBD-4BA4-A536-6C09D9714066}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68FF06EC-CEBD-4BA4-A536-6C09D9714066}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68FF06EC-CEBD-4BA4-A536-6C09D9714066}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E36EAA4-15C4-4D04-973B-245AD8A59B97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E36EAA4-15C4-4D04-973B-245AD8A59B97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E36EAA4-15C4-4D04-973B-245AD8A59B97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E36EAA4-15C4-4D04-973B-245AD8A59B97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9957F5FA-1E21-4D79-883E-88FFE3A7F01B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9957F5FA-1E21-4D79-883E-88FFE3A7F01B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9957F5FA-1E21-4D79-883E-88FFE3A7F01B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9957F5FA-1E21-4D79-883E-88FFE3A7F01B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77538348-8321-4978-842D-2D97CDEDECA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77538348-8321-4978-842D-2D97CDEDECA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77538348-8321-4978-842D-2D97CDEDECA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77538348-8321-4978-842D-2D97CDEDECA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1075BB0D-7DFC-440C-A790-51001BCF0725}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1075BB0D-7DFC-440C-A790-51001BCF0725}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1075BB0D-7DFC-440C-A790-51001BCF0725}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1075BB0D-7DFC-440C-A790-51001BCF0725}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

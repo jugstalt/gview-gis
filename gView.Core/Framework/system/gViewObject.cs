@@ -165,7 +165,7 @@ namespace gView.Framework.system
     public interface ILicense
     {
         LicenseTypes ComponentLicenseType(string componentName);
-        int DurationDaysLeft { get; }
+
         string ProductID
         {
             get;

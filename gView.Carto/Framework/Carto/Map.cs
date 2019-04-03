@@ -232,7 +232,7 @@ namespace gView.Framework.Carto
             this.Dispose();
         }
 
-        internal void DisposeGraphicsAndImage()
+        public void DisposeGraphicsAndImage()
         {
             if (_graphics != null)
             {
@@ -326,7 +326,7 @@ namespace gView.Framework.Carto
                 _msSelection = null;
             }
         }
-        internal bool DisposeGraphics()
+        public bool DisposeGraphics()
         {
             if (_graphics == null) return true;
             lock (_graphics)

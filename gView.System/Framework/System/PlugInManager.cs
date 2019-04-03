@@ -14,6 +14,7 @@ using gView.Framework.FDB;
 using gView.Framework.IO;
 using gView.Framework.GeoProcessing;
 using gView.Framework.Network;
+using System.Linq;
 
 namespace gView.Framework.system
 {
@@ -111,6 +112,53 @@ namespace gView.Framework.system
             return pluginTypes;
         }
 
+        public IEnumerable<Type> GetPlugins(Plugins.Type type)
+        {
+            Init();
+
+            Init();
+
+            List<Type> pluginTypes = new List<Type>();
+
+            foreach (var pluginType in _pluginTypes.Values)
+            {
+                foreach (var interfaceType in pluginType.GetInterfaces().Where(t => t.ToString().ToLower().StartsWith("gview.framework.")))
+                {
+                    if (interfaceType.ToString().Substring(interfaceType.ToString().LastIndexOf(".") + 1).ToLower() == type.ToString().ToLower())
+                        pluginTypes.Add(pluginType);
+
+                }
+            }
+
+            return pluginTypes;
+        }
+
+        public IEnumerable<object> GetPluginInstances(Type interfaceType)
+        {
+            return GetPlugins(interfaceType).Select(i => Activator.CreateInstance(i));
+        }
+
+        public IEnumerable<Type> GetPluginTypes
+        {
+            get
+            {
+                Init();
+
+                List<Type> types = new List<Type>();
+                foreach (var pluginType in _pluginTypes.Values)
+                {
+                    foreach(var interfaceType in pluginType.GetInterfaces().Where(t=>t.ToString().ToLower().StartsWith("gview.framework.")))
+                    {
+                        if (types.Contains(interfaceType))
+                            types.Add(interfaceType);
+                    }
+                    
+                }
+
+                return types;
+            }
+        }
+
 		public object CreateInstance(Guid guid) 
 		{
             return PlugInManager.Create(guid);
@@ -119,6 +167,12 @@ namespace gView.Framework.system
         {
             return (T)Activator.CreateInstance(type);
         }
+
+        public object CreateInstance(Type type)
+        {
+            return Activator.CreateInstance(type);
+        }
+
         public object CreateInstance(object plugin)
         {
             return PlugInManager.Create(plugin);
@@ -198,6 +252,11 @@ namespace gView.Framework.system
             return (plugin != null);
         }
 
+        static public Guid PluginIDFromType(Type type)
+        {
+            return PlugInID(new PlugInManager().CreateInstance((Type)type));
+        }
+
         static public Guid PlugInID(object obj)
         {
             if (obj == null) return new Guid();
@@ -252,150 +311,6 @@ namespace gView.Framework.system
 
                 return false;
             }
-        }
-
-        #endregion
-    }
-
-    public class ExplorerObjectManager : ISerializableExplorerObjectCache
-    {
-        private List<IExplorerObject> _exObjectsCache = new List<IExplorerObject>();
-
-        public void Dispose()
-        {
-            foreach (IExplorerObject exObject in _exObjectsCache)
-            {
-                exObject.Dispose();
-            }
-            _exObjectsCache.Clear();
-        }
-
-        private IExplorerObject GetExObjectFromCache(string FullName)
-        {
-            foreach (IExplorerObject exObject in _exObjectsCache)
-            {
-                if (exObject == null) continue;
-                if (exObject.FullName == FullName) return exObject;
-            }
-            return null;
-        }
-        public IExplorerObject DeserializeExplorerObject(Guid guid, string FullName)
-        {
-            IExplorerObject cached = GetExObjectFromCache(FullName);
-            if (cached != null) return cached;
-
-            PlugInManager compManager = new PlugInManager();
-            object obj = compManager.CreateInstance(guid);
-            if (!(obj is ISerializableExplorerObject)) return null;
-
-            return ((ISerializableExplorerObject)obj).CreateInstanceByFullName(FullName,this);
-        }
-        public IExplorerObject DeserializeExplorerObject(IExplorerObjectSerialization exObjectSerialization)
-        {
-            try
-            {
-                if (exObjectSerialization == null) return null;
-
-                return DeserializeExplorerObject(
-                    exObjectSerialization.Guid,
-                    exObjectSerialization.FullName);
-            }
-            catch { return null; }
-        }
-        
-        public List<IExplorerObject> DeserializeExplorerObject(IEnumerable<IExplorerObjectSerialization> list)
-        {
-            List<IExplorerObject> l = new List<IExplorerObject>();
-            if (list == null) return l;
-
-            foreach (IExplorerObjectSerialization ser in list)
-            {
-                IExplorerObject exObject = DeserializeExplorerObject(ser);
-                if (exObject == null) continue;
-
-                l.Add(exObject);
-            }
-            return l;
-        }
-        static public ExplorerObjectSerialization SerializeExplorerObject(IExplorerObject exObject)
-        {
-            if (!(exObject is ISerializableExplorerObject))
-            {
-                return null;
-            }
-            else
-            {
-                return new ExplorerObjectSerialization(exObject);
-            }
-        }
-
-        #region ISerializableExplorerObjectCache Member
-
-        public void Append(IExplorerObject exObject)
-        {
-            if (exObject == null || Contains(exObject.FullName)) return;
-            _exObjectsCache.Add(exObject);
-        }
-
-        public bool Contains(string FullName)
-        {
-            foreach (IExplorerObject exObject in _exObjectsCache)
-            {
-                if (exObject == null) continue;
-                if (exObject.FullName == FullName) return true;
-            }
-            return false;
-        }
-
-        public IExplorerObject this[string FullName]
-        {
-            get
-            {
-                return GetExObjectFromCache(FullName);
-            }
-        }
-
-        #endregion
-    }
-
-    [Serializable]
-    public class ExplorerObjectSerialization : IExplorerObjectSerialization
-    {
-        private Guid _guid;
-        private string _fullname;
-        private List<Type> _exObjectTypes = new List<Type>();
-        private List<Type> _ObjectTypes = new List<Type>();
-
-        public ExplorerObjectSerialization()
-        {
-        }
-        public ExplorerObjectSerialization(IExplorerObject exObject)
-        {
-            if (!PlugInManager.IsPlugin(exObject)) return;
-            _guid = PlugInManager.PlugInID(exObject);
-            _fullname = exObject.FullName;
-        }
-
-        #region IExplorerObjectSerialization Member
-
-        public Guid Guid
-        {
-            get { return _guid; }
-        }
-
-        public string FullName
-        {
-            get { return _fullname; }
-        }
-
-        public List<Type> ExplorerObjectTypes
-        {
-            get { return _exObjectTypes; }
-        }
-
-        public List<Type> ObjectTypes
-        {
-            get { return _ObjectTypes; }
         }
 
         #endregion
@@ -498,74 +413,74 @@ namespace gView.Framework.system
             IExplorerRibbonTab
         };
 
-        public static string TypeName(Plugins.Type type) 
-        {
-            switch (type)
-            {
-                case Type.IDataset:
-                    return typeof(IDataset).ToString(); 
-                case Type.ITool:
-                    return typeof(ITool).ToString(); 
-                case Type.IExTool:
-                    return typeof(IExTool).ToString();
-                case Type.IDatasetElementContextMenuItem:
-                    return typeof(IDatasetElementContextMenuItem).ToString();
-                case Type.IMapContextMenuItem:
-                    return typeof(IMapContextMenuItem).ToString();
-                case Type.IFeatureRenderer:
-                    return typeof(IFeatureRenderer).ToString();
-                case Type.ILabelRenderer:
-                    return typeof(ILabelRenderer).ToString();
-                case Type.ISymbol:
-                    return typeof(ISymbol).ToString();
-                case Type.IDockableWindowContainer:
-                    return typeof(IDockableWindowContainer).ToString();
-                case Type.IExplorerObject:
-                    return typeof(IExplorerObject).ToString();
-                case Type.IExplorerCommand:
-                    return typeof(IExplorerCommand).ToString();
-                case Type.IExplorerTabPage:
-                    return "gView.Framework.UI.IExplorerTabPage";
-                case Type.IServiceRequestInterpreter:
-                    return typeof(IServiceRequestInterpreter).ToString();
-                case Type.IMapOptionPage:
-                    return "gView.Framework.UI.IMapOptionPage";
-                case Type.IExplorerOptionPage:
-                    return "gView.Framework.UI.IExplorerOptionPage";
-                case Type.ILayerPropertyPage:
-                    return "gView.Framework.UI.ILayerPropertyPage";
-                case Type.IGraphicElement2:
-                    return typeof(IGraphicElement2).ToString();
-                case Type.IAutoField:
-                    return typeof(IAutoField).ToString();
-                case Type.IFieldDomain:
-                    return typeof(IFieldDomain).ToString();
-                case Type.IServiceableDataset:
-                    return typeof(IServiceableDataset).ToString();
-                case Type.IFileFeatureDatabase:
-                    return typeof(IFileFeatureDatabase).ToString();
-                case Type.IMetadataProvider:
-                    return typeof(IMetadataProvider).ToString();
-                case Type.IPersistable:
-                    return typeof(IPersistable).ToString();
-                case Type.IMapApplicationModule:
-                    return typeof(IMapApplicationModule).ToString();
-                case Type.IActivity:
-                    return typeof(IActivity).ToString();
-                case Type.ISimpleNumberCalculation:
-                    return typeof(ISimpleNumberCalculation).ToString();
-                case Type.INetworkTracer:
-                    return typeof(INetworkTracer).ToString();
-                case Type.IFeatureLayerJoin:
-                    return typeof(IFeatureLayerJoin).ToString();
-                case Type.IFeatureDatabase:
-                    return typeof(IFeatureDatabase).ToString();
-                case Type.ICartoRibbonTab:
-                    return "gView.Framework.UI.ICartoRibbonTab";
-                case Type.IExplorerRibbonTab:
-                    return "gView.Framework.UI.IExplorerRibbonTab";
-            }
-            return String.Empty;
-        }
+        //public static string TypeName(Plugins.Type type) 
+        //{
+        //    switch (type)
+        //    {
+        //        case Type.IDataset:
+        //            return typeof(IDataset).ToString(); 
+        //        case Type.ITool:
+        //            return typeof(ITool).ToString(); 
+        //        case Type.IExTool:
+        //            return typeof(IExTool).ToString();
+        //        case Type.IDatasetElementContextMenuItem:
+        //            return typeof(IDatasetElementContextMenuItem).ToString();
+        //        case Type.IMapContextMenuItem:
+        //            return typeof(IMapContextMenuItem).ToString();
+        //        case Type.IFeatureRenderer:
+        //            return typeof(IFeatureRenderer).ToString();
+        //        case Type.ILabelRenderer:
+        //            return typeof(ILabelRenderer).ToString();
+        //        case Type.ISymbol:
+        //            return typeof(ISymbol).ToString();
+        //        case Type.IDockableWindowContainer:
+        //            return typeof(IDockableWindowContainer).ToString();
+        //        case Type.IExplorerObject:
+        //            return typeof(IExplorerObject).ToString();
+        //        case Type.IExplorerCommand:
+        //            return typeof(IExplorerCommand).ToString();
+        //        case Type.IExplorerTabPage:
+        //            return "gView.Framework.UI.IExplorerTabPage";
+        //        case Type.IServiceRequestInterpreter:
+        //            return typeof(IServiceRequestInterpreter).ToString();
+        //        case Type.IMapOptionPage:
+        //            return "gView.Framework.UI.IMapOptionPage";
+        //        case Type.IExplorerOptionPage:
+        //            return "gView.Framework.UI.IExplorerOptionPage";
+        //        case Type.ILayerPropertyPage:
+        //            return "gView.Framework.UI.ILayerPropertyPage";
+        //        case Type.IGraphicElement2:
+        //            return typeof(IGraphicElement2).ToString();
+        //        case Type.IAutoField:
+        //            return typeof(IAutoField).ToString();
+        //        case Type.IFieldDomain:
+        //            return typeof(IFieldDomain).ToString();
+        //        case Type.IServiceableDataset:
+        //            return typeof(IServiceableDataset).ToString();
+        //        case Type.IFileFeatureDatabase:
+        //            return typeof(IFileFeatureDatabase).ToString();
+        //        case Type.IMetadataProvider:
+        //            return typeof(IMetadataProvider).ToString();
+        //        case Type.IPersistable:
+        //            return typeof(IPersistable).ToString();
+        //        case Type.IMapApplicationModule:
+        //            return typeof(IMapApplicationModule).ToString();
+        //        case Type.IActivity:
+        //            return typeof(IActivity).ToString();
+        //        case Type.ISimpleNumberCalculation:
+        //            return typeof(ISimpleNumberCalculation).ToString();
+        //        case Type.INetworkTracer:
+        //            return typeof(INetworkTracer).ToString();
+        //        case Type.IFeatureLayerJoin:
+        //            return typeof(IFeatureLayerJoin).ToString();
+        //        case Type.IFeatureDatabase:
+        //            return typeof(IFeatureDatabase).ToString();
+        //        case Type.ICartoRibbonTab:
+        //            return "gView.Framework.UI.ICartoRibbonTab";
+        //        case Type.IExplorerRibbonTab:
+        //            return "gView.Framework.UI.IExplorerRibbonTab";
+        //    }
+        //    return String.Empty;
+        //}
     }
 }

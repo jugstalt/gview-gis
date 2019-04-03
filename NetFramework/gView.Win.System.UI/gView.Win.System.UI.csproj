@@ -1,0 +1,186 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>gView.Win.System.UI</RootNamespace>
+    <AssemblyName>gView.Win.System.UI</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Common, Version=4.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Drawing.Common.4.5.1\lib\net461\System.Drawing.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Management" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Framework\system\Sorter.cs" />
+    <Compile Include="Framework\system\ExplorerObjectSerialization.cs" />
+    <Compile Include="Framework\system\LicenseManager.cs" />
+    <Compile Include="Framework\system\ExplorerObjectManager.cs" />
+    <Compile Include="Framework\system\SystemInfo.cs" />
+    <Compile Include="Framework\system\UI\AboutBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\system\UI\AboutBox.Designer.cs">
+      <DependentUpon>AboutBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\system\UI\AeroGlass.cs" />
+    <Compile Include="Framework\system\UI\AppUIGlobals.cs" />
+    <Compile Include="Framework\system\UI\AssemblyExplorer.cs" />
+    <Compile Include="Framework\system\UI\DictionaryPropertyGridAdapter .cs" />
+    <Compile Include="Framework\system\UI\DocumentFiller.cs" />
+    <Compile Include="Framework\system\UI\DocumentTab.cs" />
+    <Compile Include="Framework\system\UI\DocWindow.designer.cs" />
+    <Compile Include="Framework\system\UI\ExplorerObjects.cs" />
+    <Compile Include="Framework\system\UI\Extentsionscs.cs" />
+    <Compile Include="Framework\system\UI\FeatureImport.cs" />
+    <Compile Include="Framework\system\UI\FormException.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\system\UI\FormException.Designer.cs">
+      <DependentUpon>FormException.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\system\UI\FormToolException.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\system\UI\FormToolException.Designer.cs">
+      <DependentUpon>FormToolException.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\system\UI\IUIImageList.cs" />
+    <Compile Include="Framework\system\UI\PluginManagerControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\system\UI\PluginManagerControl.Designer.cs">
+      <DependentUpon>PluginManagerControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\system\UI\SplashScreen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\system\UI\SplashScreen.Designer.cs">
+      <DependentUpon>SplashScreen.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\system\UI\ToolCls.cs" />
+    <Compile Include="Framework\system\UI\ToolWindow.cs" />
+    <Compile Include="Framework\system\UI\ToolWindow.designer.cs">
+      <DependentUpon>ToolWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\system\UI\UIExceptionBox.cs" />
+    <Compile Include="Framework\system\UI\VistaStyleTreeView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\gView.Core\gView.Core.csproj">
+      <Project>{5a66d185-6e2c-4da4-97d7-00616a182bd8}</Project>
+      <Name>gView.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Data\gView.Data.csproj">
+      <Project>{9b556868-8431-4d6c-b002-3fef15df0498}</Project>
+      <Name>gView.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Geometry\gView.Geometry.csproj">
+      <Project>{82012e45-2efc-498e-9bb1-f3deba4b87c5}</Project>
+      <Name>gView.Geometry</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.System\gView.System.csproj">
+      <Project>{e50d8014-0fb8-4b67-8291-0abee04a1403}</Project>
+      <Name>gView.System</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Core.UI\gView.Win.Core.UI.csproj">
+      <Project>{3c8ffd95-66e8-41e5-b891-4b13d44942c3}</Project>
+      <Name>gView.Win.Core.UI</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Framework\system\UI\AboutBox.de-DE.resx">
+      <DependentUpon>AboutBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\system\UI\AboutBox.de.resx">
+      <DependentUpon>AboutBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\system\UI\AboutBox.resx">
+      <DependentUpon>AboutBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\system\UI\DocumentTab.resx">
+      <DependentUpon>DocumentTab.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\system\UI\FormException.de.resx">
+      <DependentUpon>FormException.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\system\UI\FormException.resx">
+      <DependentUpon>FormException.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\system\UI\FormToolException.resx">
+      <DependentUpon>FormToolException.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\system\UI\PluginManagerControl.resx">
+      <DependentUpon>PluginManagerControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\system\UI\SplashScreen.resx">
+      <DependentUpon>SplashScreen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\system\UI\ToolWindow.resx">
+      <DependentUpon>ToolWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Resources\gViewOS1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\gViewOS11.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\tree_minus.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\tree_plus.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Warning_notification.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

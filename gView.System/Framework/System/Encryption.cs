@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 
 namespace gView.Framework.system
 {
-    static class Encryption
+    public static class Encryption
     {
         static public string InverseByBase(string st, int MoveBase)
         {
