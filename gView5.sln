@@ -99,7 +99,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Wpf", "NetFramewo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Sys.UI", "NetFramework\gView.Win.Sys.UI\gView.Win.Sys.UI.csproj", "{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Plugin.Tools", "NetFramework\gView.Win.Plugin.Tools\gView.Win.Plugin.Tools.csproj", "{10BC8626-1D94-4740-9ED3-9D1BD71857B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Plugins.Tools", "NetFramework\gView.Win.Plugin.Tools\gView.Win.Plugins.Tools.csproj", "{10BC8626-1D94-4740-9ED3-9D1BD71857B7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace gView.Win.Plugin.Tools.Properties {
+namespace gView.Win.Plugins.Tools.Properties {
     using System;
     
     

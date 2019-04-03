@@ -299,7 +299,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.add_map; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.add_map; }
         }
 
         #endregion
