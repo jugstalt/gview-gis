@@ -32,7 +32,7 @@ namespace gView.Plugins.ExTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.Refresh; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.Refresh; }
         }
 
         public void OnCreate(object hook)
@@ -106,7 +106,7 @@ namespace gView.Plugins.ExTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.netdirectory; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.netdirectory; }
         }
 
         public void OnCreate(object hook)

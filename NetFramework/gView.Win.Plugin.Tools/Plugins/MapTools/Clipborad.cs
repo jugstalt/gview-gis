@@ -13,6 +13,7 @@ using System.Threading;
 using gView.Plugins.ExTools.Dialogs;
 using gView.Framework.UI.Controls.Filter;
 using gView.Framework.UI.Dialogs;
+using gView.Framework.Sys.UI;
 
 namespace gView.Plugins.MapTools
 {
@@ -77,7 +78,7 @@ namespace gView.Plugins.MapTools
         {
             get
             {
-                return global::gView.Plugins.Tools.Properties.Resources.copy_;
+                return global::gView.Win.Plugins.Tools.Properties.Resources.copy_;
             }
         }
 
@@ -212,7 +213,7 @@ namespace gView.Plugins.MapTools
         {
             get
             {
-                return global::gView.Plugins.Tools.Properties.Resources.copyto;
+                return global::gView.Win.Plugins.Tools.Properties.Resources.copyto;
             }
         }
 
@@ -284,7 +285,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.cut; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.cut; }
         }
 
         public void OnCreate(object hook)
@@ -414,7 +415,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.paste_; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.paste_; }
         }
 
         public void OnCreate(object hook)
@@ -652,7 +653,7 @@ namespace gView.Plugins.MapTools
 
         object IExTool.Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.paste; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.paste; }
         }
 
         void IExTool.OnCreate(object hook)
@@ -849,7 +850,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.delete; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.delete; }
         }
 
         public void OnCreate(object hook)

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.106
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.System", "gView.System\gView.System.csproj", "{E50D8014-0FB8-4B67-8291-0ABEE04A1403}"
 EndProject
@@ -100,6 +100,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Sys.UI", "NetFramework\gView.Win.Sys.UI\gView.Win.Sys.UI.csproj", "{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Plugins.Tools", "NetFramework\gView.Win.Plugin.Tools\gView.Win.Plugins.Tools.csproj", "{10BC8626-1D94-4740-9ED3-9D1BD71857B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.MapServer.Connector", "NetFramework\gView.Win.MapServer.Connector\gView.Win.MapServer.Connector.csproj", "{249E5894-40CA-4692-B876-9DF3B1A9E481}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Datasources.Fdb.UI", "NetFramework\gView.Win.Datasources.Fdb.UI\gView.Win.Datasources.Fdb.UI.csproj", "{B3944C41-5BB6-4CBC-9173-59D5E50F74A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -303,6 +307,14 @@ Global
 		{10BC8626-1D94-4740-9ED3-9D1BD71857B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10BC8626-1D94-4740-9ED3-9D1BD71857B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10BC8626-1D94-4740-9ED3-9D1BD71857B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{249E5894-40CA-4692-B876-9DF3B1A9E481}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{249E5894-40CA-4692-B876-9DF3B1A9E481}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{249E5894-40CA-4692-B876-9DF3B1A9E481}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{249E5894-40CA-4692-B876-9DF3B1A9E481}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3944C41-5BB6-4CBC-9173-59D5E50F74A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3944C41-5BB6-4CBC-9173-59D5E50F74A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3944C41-5BB6-4CBC-9173-59D5E50F74A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3944C41-5BB6-4CBC-9173-59D5E50F74A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

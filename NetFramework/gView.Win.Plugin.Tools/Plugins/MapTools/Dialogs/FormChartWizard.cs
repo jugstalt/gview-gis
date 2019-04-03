@@ -15,6 +15,7 @@ using gView.Framework.Symbology;
 using gView.Framework.Geometry;
 using gView.Framework.Carto.Rendering;
 using gView.Framework.UI.Controls;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -307,10 +308,10 @@ namespace gView.Plugins.MapTools.Dialogs
                 tab.Columns.Add(new SeriesDataColumn(item.Text) { Color = col, SeriesName = item.SubItems[1].Text });
             }
 
-            using (ICursor cursor = ((ITableClass)_layer.Class).Search(filterItem.QueryFilter))
+            using (ICursor cursor = ((ITableClass)_layer.Class).Search(filterItem.QueryFilter).Result)
             {
                 IRow row = null;
-                while ((row = NextRow(cursor)) != null)
+                while ((row = NextRow(cursor).Result) != null)
                 {
                     object dataValue = row[dataField.name];
                     if (dataValue == System.DBNull.Value) continue;
@@ -420,13 +421,13 @@ namespace gView.Plugins.MapTools.Dialogs
             return ret.Count > 0 ? ret : null;
         }
 
-        private IRow NextRow(ICursor cursor)
+        async private Task<IRow> NextRow(ICursor cursor)
         {
             if (cursor is IFeatureCursor)
-                return ((IFeatureCursor)cursor).NextFeature;
+                return await ((IFeatureCursor)cursor).NextFeature();
 
             if (cursor is IRowCursor)
-                return ((IRowCursor)cursor).NextRow;
+                return await ((IRowCursor)cursor).NextRow();
 
             return null;
         }

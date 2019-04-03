@@ -11,6 +11,7 @@ using gView.Framework.Globalisation;
 using gView.Framework.UI.Controls.Filter;
 using gView.Framework.UI.Dialogs;
 using gView.Plugins.MapTools.Dialogs;
+using System.Linq;
 
 namespace gView.Plugins.MapTools
 {
@@ -91,7 +92,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.import; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.import; }
         }
 
         public int SortOrder
@@ -237,7 +238,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return gView.Plugins.Tools.Properties.Resources.properties; }
+            get { return gView.Win.Plugins.Tools.Properties.Resources.document_properties; }
         }
 
         #endregion
@@ -284,7 +285,7 @@ namespace gView.Plugins.MapTools
         {
             if (_doc != null)
             {
-                int counter = _doc.Maps.Count + 1;
+                int counter = _doc.Maps.Count() + 1;
                 string name = LocalizedResources.GetResString("Tools.Map", "Map") + " " + (counter);
 
                 while (_doc[name] != null)
@@ -355,7 +356,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.remove_map; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.remove_map; }
         }
 
         #endregion
@@ -416,7 +417,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.data_info; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.data_info; }
         }
 
         #endregion
@@ -489,7 +490,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.pie_diagram; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.pie_diagram; }
         }
 
         #endregion

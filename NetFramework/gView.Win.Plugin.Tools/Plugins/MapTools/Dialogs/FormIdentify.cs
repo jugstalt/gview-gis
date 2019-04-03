@@ -285,7 +285,7 @@ namespace gView.Plugins.MapTools.Dialogs
                         primaryDisplayField=((IFeatureLayer)target).Fields.PrimaryDisplayField.name;
 
                     IFeature feature = null;
-                    while ((feature = cursor.NextFeature) != null)
+                    while ((feature = cursor.NextFeature().Result) != null)
                     {
                         rtn.Nodes.Add(new FeatureTreeNode(_doc, feature, 
                             _doc.FocusMap.Display.SpatialReference, 

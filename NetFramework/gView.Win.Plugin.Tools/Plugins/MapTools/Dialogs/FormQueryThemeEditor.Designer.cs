@@ -113,7 +113,7 @@
             // 
             // btnAddQuery
             // 
-            this.btnAddQuery.Image = global::gView.Plugins.Tools.Properties.Resources.search;
+            this.btnAddQuery.Image = global::gView.Win.Plugins.Tools.Properties.Resources.search;
             this.btnAddQuery.Name = "btnAddQuery";
             this.btnAddQuery.Size = new System.Drawing.Size(133, 22);
             this.btnAddQuery.Text = "Query";
@@ -121,7 +121,7 @@
             // 
             // btnAddSeperator
             // 
-            this.btnAddSeperator.Image = global::gView.Plugins.Tools.Properties.Resources.seperator;
+            this.btnAddSeperator.Image = global::gView.Win.Plugins.Tools.Properties.Resources.seperator;
             this.btnAddSeperator.Name = "btnAddSeperator";
             this.btnAddSeperator.Size = new System.Drawing.Size(133, 22);
             this.btnAddSeperator.Text = "Seperator";
@@ -130,7 +130,7 @@
             // btnAddTable
             // 
             this.btnAddTable.Enabled = false;
-            this.btnAddTable.Image = global::gView.Plugins.Tools.Properties.Resources.tab;
+            this.btnAddTable.Image = global::gView.Win.Plugins.Tools.Properties.Resources.tab;
             this.btnAddTable.Name = "btnAddTable";
             this.btnAddTable.Size = new System.Drawing.Size(133, 22);
             this.btnAddTable.Text = "Table";

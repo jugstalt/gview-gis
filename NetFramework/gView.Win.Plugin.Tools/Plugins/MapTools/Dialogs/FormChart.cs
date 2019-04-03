@@ -65,7 +65,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         public Image Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.pie_diagram; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.pie_diagram; }
         }
 
         #endregion
@@ -90,7 +90,7 @@ namespace gView.Plugins.MapTools.Dialogs
         private class SaveChart : MapToolCls
         {
             public SaveChart()
-                : base("Save Chart", global::gView.Plugins.Tools.Properties.Resources.save)
+                : base("Save Chart", global::gView.Win.Plugins.Tools.Properties.Resources.save)
             {
             }
 

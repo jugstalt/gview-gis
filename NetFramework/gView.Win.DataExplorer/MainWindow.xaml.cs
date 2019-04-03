@@ -117,14 +117,14 @@ namespace gView.Win.DataExplorer
 
         private void dockManager_Loaded(object sender, RoutedEventArgs e)
         {
-            //_tree.InitTree(true);
+            _tree.InitTree(true);
 
             ////App.CloseSplash();
 
-            //foreach (var item in ribbon.QuickAccessItems)
-            //{
-            //    ribbon.AddToQuickAccessToolBar(item.Target);
-            //}
+            foreach (var item in ribbon.QuickAccessItems)
+            {
+                ribbon.AddToQuickAccessToolBar(item.Target);
+            }
         }
 
         private void toolBarNav_Loaded(object sender, RoutedEventArgs e)

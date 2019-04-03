@@ -122,7 +122,7 @@ namespace gView.Framework.UI
 
         public System.Drawing.Image Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.proj; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.proj; }
         }
 
         #endregion

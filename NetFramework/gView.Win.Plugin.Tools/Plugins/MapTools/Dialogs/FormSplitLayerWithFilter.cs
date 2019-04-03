@@ -140,7 +140,7 @@ namespace gView.Plugins.MapTools.Dialogs
                 if (cursor == null) return;
 
                 IFeature feature;
-                while ((feature = cursor.NextFeature) != null)
+                while ((feature = cursor.NextFeature().Result) != null)
                 {
                     object oobj;
                     object obj = oobj = feature[fieldName];

@@ -21,6 +21,7 @@ using System.Text;
 using gView.Plugins.MapTools.Dialogs;
 using gView.Plugins.MapTools.Controls;
 using gView.system.UI.Framework.system.UI;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.MapTools
 {
@@ -465,7 +466,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.publish; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.publish; }
         }
 
         public void OnCreate(object hook)
@@ -523,7 +524,7 @@ namespace gView.Plugins.MapTools
                     gView.MapServer.Connector.MapServerConnection service = new MapServer.Connector.MapServerConnection(serverUrl);
                     if (!service.AddMap(dlg.ServiceName, sb.ToString(), dlg.Username, dlg.Password))
                     {
-                        throw new Exception("Unable to add service..." + Environment.NewLine + service.lastErrorMsg);
+                        throw new Exception("Unable to add service..." + Environment.NewLine + service.LastErrorMessage);
                     }
 
                     if (_doc.Application is IGUIApplication)
@@ -801,7 +802,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.map16; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.map16; }
         }
 
         public void OnCreate(object hook)
@@ -1823,7 +1824,7 @@ namespace gView.Plugins.MapTools
                 {
                     foreach (IWebServiceTheme theme in ((IWebServiceLayer)layer).WebServiceClass.Themes)
                     {
-                        envelope = SelectionEnvelope(map, theme as IFeatureLayer);
+                        envelope = SelectionEnvelope(map, theme as IFeatureLayer).Result;
                         if (envelope == null) continue;
                         if (env == null)
                             env = new Envelope(envelope);
@@ -1837,7 +1838,7 @@ namespace gView.Plugins.MapTools
                     }
                 }
 
-                envelope = SelectionEnvelope(map, layer as IFeatureLayer);
+                envelope = SelectionEnvelope(map, layer as IFeatureLayer).Result;
                 if (envelope == null) continue;
                 if (env == null)
                     env = new Envelope(envelope);
@@ -1923,7 +1924,7 @@ namespace gView.Plugins.MapTools
         #endregion
 
         #region Helper
-        private IEnvelope SelectionEnvelope(IMap map, IFeatureLayer fLayer)
+        async private Task<IEnvelope> SelectionEnvelope(IMap map, IFeatureLayer fLayer)
         {
             if (!(fLayer is IFeatureSelection) ||
                 fLayer.FeatureClass == null ||
@@ -1953,11 +1954,13 @@ namespace gView.Plugins.MapTools
 
             filter.AddField(fc.ShapeFieldName);
             Envelope env = null;
-            using (IFeatureCursor cursor = (fc is ISelectionCache) ? ((ISelectionCache)fc).GetSelectedFeatures() : fc.GetFeatures(filter))
+            using (IFeatureCursor cursor = (fc is ISelectionCache) ? 
+                ((ISelectionCache)fc).GetSelectedFeatures() : 
+                await fc.GetFeatures(filter))
             {
                 if (cursor == null) return null;
                 IFeature feat;
-                while ((feat = cursor.NextFeature) != null)
+                while ((feat = await cursor.NextFeature()) != null)
                 {
                     if (feat.Shape == null) continue;
 
@@ -2256,7 +2259,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.table; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.table; }
         }
 
         public int SortOrder
@@ -2323,7 +2326,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.sql; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.sql; }
         }
 
         public int SortOrder
@@ -2397,7 +2400,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.properties; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.document_properties; }
         }
 
         public int SortOrder
@@ -2475,7 +2478,7 @@ namespace gView.Plugins.MapTools
         {
             get
             {
-                return global::gView.Plugins.Tools.Properties.Resources.info;
+                return global::gView.Win.Plugins.Tools.Properties.Resources.info;
             }
         }
 
@@ -2583,12 +2586,12 @@ namespace gView.Plugins.MapTools
 
                         if (iPoint != null)
                         {
-                            using (ICursor cursor = ((IPointIdentify)element.Class).PointQuery(map.Display, queryPoint, map.Display.SpatialReference, new UserData()))
+                            using (ICursor cursor = ((IPointIdentify)element.Class).PointQuery(map.Display, queryPoint, map.Display.SpatialReference, new UserData()).Result)
                             {
                                 if (cursor is IRowCursor)
                                 {
                                     IRow row;
-                                    while ((row = ((IRowCursor)cursor).NextRow) != null)
+                                    while ((row = ((IRowCursor)cursor).NextRow().Result) != null)
                                     {
                                         _dlg.AddFeature(new Feature(row), mapSR, null, element.Title);
                                         counter++;
@@ -2658,7 +2661,7 @@ namespace gView.Plugins.MapTools
                         if (cursor != null)
                         {
                             IFeature feature;
-                            while ((feature = cursor.NextFeature) != null)
+                            while ((feature = cursor.NextFeature().Result) != null)
                             {
                                 _dlg.AddFeature(feature, mapSR, layer, title);
                                 counter++;
@@ -2756,7 +2759,7 @@ namespace gView.Plugins.MapTools
                             using (IFeatureCursor cursor = (IFeatureCursor)fc.Search(filter))
                             {
                                 IFeature feature;
-                                while ((feature = cursor.NextFeature) != null)
+                                while ((feature = cursor.NextFeature().Result) != null)
                                 {
                                     _dlg.AddFeature(feature, mapSR, layer, title, fields, primaryDisplayField);
                                 }
@@ -2937,7 +2940,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.find; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.find; }
         }
 
         public void OnCreate(object hook)
@@ -3562,7 +3565,7 @@ namespace gView.Plugins.MapTools
 
             GeoUnitConverter converter = new GeoUnitConverter();
             length = Math.Round(converter.Convert(length, _doc.FocusMap.Display.MapUnits, _lengthUnit), 2);
-            area = Math.Round(converter.Convert(area, _doc.FocusMap.Display.MapUnits, _areaUnit, 2), 2);
+            area = Math.Round(converter.Convert(area, _doc.FocusMap.Display.MapUnits, _areaUnit, (int)2), 2);
             segLength = Math.Round(converter.Convert(segLength, _doc.FocusMap.Display.MapUnits, _lengthUnit), 2);
             segAngle = Math.Round(segAngle, 2);
 
@@ -4077,7 +4080,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.Refresh; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.Refresh; }
         }
 
         public void OnCreate(object hook)
@@ -4136,7 +4139,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.help; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.help; }
         }
 
         public void OnCreate(object hook)
@@ -4264,7 +4267,7 @@ namespace gView.Plugins.MapTools
 
             public object Image
             {
-                get { return gView.Plugins.Tools.Properties.Resources.pdf; }
+                get { return gView.Win.Plugins.Tools.Properties.Resources.pdf; }
             }
 
             public void OnCreate(object hook)
@@ -4493,7 +4496,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.time; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.time; }
         }
 
         public void OnCreate(object hook)
@@ -4552,7 +4555,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.xy; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.xy; }
         }
 
         public void OnCreate(object hook)

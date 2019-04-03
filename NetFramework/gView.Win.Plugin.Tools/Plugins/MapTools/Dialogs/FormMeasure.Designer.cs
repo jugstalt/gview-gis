@@ -204,7 +204,7 @@
             resources.ApplyResources(this.btnNew, "btnNew");
             this.btnNew.BackgroundImage = null;
             this.btnNew.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnNew.Image = global::gView.Plugins.Tools.Properties.Resources.delete;
+            this.btnNew.Image = global::gView.Win.Plugins.Tools.Properties.Resources.delete;
             this.btnNew.Name = "btnNew";
             this.btnNew.Click += new System.EventHandler(this.btnNew_Click);
             // 
@@ -215,7 +215,7 @@
             resources.ApplyResources(this.btnStop, "btnStop");
             this.btnStop.BackgroundImage = null;
             this.btnStop.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnStop.Image = global::gView.Plugins.Tools.Properties.Resources.stop_measure;
+            this.btnStop.Image = global::gView.Win.Plugins.Tools.Properties.Resources.stop_measure;
             this.btnStop.Name = "btnStop";
             this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
             // 
@@ -226,7 +226,7 @@
             resources.ApplyResources(this.btnStopAndClose, "btnStopAndClose");
             this.btnStopAndClose.BackgroundImage = null;
             this.btnStopAndClose.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnStopAndClose.Image = global::gView.Plugins.Tools.Properties.Resources.stop_and_close_measure;
+            this.btnStopAndClose.Image = global::gView.Win.Plugins.Tools.Properties.Resources.stop_and_close_measure;
             this.btnStopAndClose.Name = "btnStopAndClose";
             this.btnStopAndClose.Click += new System.EventHandler(this.btnStopAndClose_Click);
             // 

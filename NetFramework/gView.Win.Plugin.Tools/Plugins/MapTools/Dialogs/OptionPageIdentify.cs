@@ -147,7 +147,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         public Image Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.info; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.info; }
         }
 
         public void Commit()

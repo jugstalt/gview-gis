@@ -86,12 +86,12 @@ namespace gView.Framework.Carto
         {
             return Convert(val, from, to, 1, 0.0);
         }
-        internal double Convert(double val, GeoUnits from, GeoUnits to, int dim)
+        public double Convert(double val, GeoUnits from, GeoUnits to, int dim)
         {
             return Convert(val, from, to, dim, 0.0);
         }
 
-        internal double Convert(double val, GeoUnits from, GeoUnits to, int dim, double phi)
+        public double Convert(double val, GeoUnits from, GeoUnits to, int dim, double phi)
         {
             double m = ToMeters(val, from, phi, dim);
             return FromMeters(m, to, phi, dim);

@@ -383,9 +383,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\gView.Carto.Rendering\gView.Carto.Rendering.csproj">
       <Project>{961d9a60-014e-4139-907f-0112f5dfac4d}</Project>
       <Name>gView.Carto.Rendering</Name>
@@ -438,6 +435,10 @@
       <Project>{68ff06ec-cebd-4ba4-a536-6c09d9714066}</Project>
       <Name>gView.Win.Globalisation</Name>
     </ProjectReference>
+    <ProjectReference Include="..\gView.Win.MapServer.Connector\gView.Win.MapServer.Connector.csproj">
+      <Project>{249e5894-40ca-4692-b876-9df3b1a9e481}</Project>
+      <Name>gView.Win.MapServer.Connector</Name>
+    </ProjectReference>
     <ProjectReference Include="..\gView.Win.Snapping.Core\gView.Win.Snapping.Core.csproj">
       <Project>{1075bb0d-7dfc-440c-a790-51001bcf0725}</Project>
       <Name>gView.Win.Snapping.Core</Name>
@@ -452,6 +453,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="Resources\add_data.png" />
   </ItemGroup>
   <ItemGroup>

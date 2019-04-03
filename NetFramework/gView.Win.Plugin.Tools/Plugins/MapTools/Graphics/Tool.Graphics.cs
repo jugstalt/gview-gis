@@ -111,9 +111,9 @@ namespace gView.Plugins.MapTools.Graphics
             _removeItem.DropDownItems.Add(new ToolStripSeparator());
 
             PlugInManager compMan = new PlugInManager();
-            foreach (XmlNode grNode in compMan.GetPluginNodes(gView.Framework.system.Plugins.Type.IGraphicElement2))
+            foreach (var grType in compMan.GetPlugins(gView.Framework.system.Plugins.Type.IGraphicElement2))
             {
-                IGraphicElement2 element2 = compMan.CreateInstance(grNode) as IGraphicElement2;
+                IGraphicElement2 element2 = compMan.CreateInstance<IGraphicElement2>(grType);
                 if (element2 == null) continue;
 
                 GraphicElement2MenuItem item = new GraphicElement2MenuItem(element2);
@@ -812,9 +812,9 @@ namespace gView.Plugins.MapTools.Graphics
             _tools = new List<ITool>();
 
             PlugInManager compMan = new PlugInManager();
-            foreach (XmlNode elementNode in compMan.GetPluginNodes(gView.Framework.system.Plugins.Type.IGraphicElement2))
+            foreach (var elementType in compMan.GetPlugins(gView.Framework.system.Plugins.Type.IGraphicElement2))
             {
-                IGraphicElement2 element = compMan.CreateInstance(elementNode) as IGraphicElement2;
+                IGraphicElement2 element = compMan.CreateInstance<IGraphicElement2>(elementType);
                 if (element == null) continue;
 
                 _tools.Add(new GraphicElementTool(element));
@@ -1131,7 +1131,7 @@ namespace gView.Plugins.MapTools.Graphics
 
                 _picker = new gView.Framework.Symbology.UI.Controls.ToolStripColorPicker(System.Drawing.Color.Red,
                     ((IMapApplication)_doc.Application).ApplicationWindow as Form);
-                _picker.Image = global::gView.Plugins.Tools.Properties.Resources.BucketFill;
+                _picker.Image = global::gView.Win.Plugins.Tools.Properties.Resources.BucketFill;
                 _picker.ImageTransparentColor = System.Drawing.Color.Magenta;
                 _picker.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
                 _picker.AddColorNameToToolTip = false;
@@ -1230,7 +1230,7 @@ namespace gView.Plugins.MapTools.Graphics
 
                 _picker = new gView.Framework.Symbology.UI.Controls.ToolStripColorPicker(System.Drawing.Color.Blue, 
                     ((IMapApplication)_doc.Application).ApplicationWindow as Form);
-                _picker.Image = global::gView.Plugins.Tools.Properties.Resources.PenDraw;
+                _picker.Image = global::gView.Win.Plugins.Tools.Properties.Resources.PenDraw;
                 _picker.ImageTransparentColor = System.Drawing.Color.Magenta;
                 _picker.ImageAlign = System.Drawing.ContentAlignment.MiddleCenter;
                 _picker.AddColorNameToToolTip = false;
@@ -1329,7 +1329,7 @@ namespace gView.Plugins.MapTools.Graphics
 
                 _picker = new gView.Framework.Symbology.UI.Controls.ToolStripColorPicker(System.Drawing.Color.Black,
                     ((IMapApplication)_doc.Application).ApplicationWindow as Form);
-                _picker.Image = global::gView.Plugins.Tools.Properties.Resources.TextColor;
+                _picker.Image = global::gView.Win.Plugins.Tools.Properties.Resources.TextColor;
                 _picker.ImageTransparentColor = System.Drawing.Color.Magenta;
                 _picker.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
                 _picker.AddColorNameToToolTip = false;
@@ -1397,7 +1397,7 @@ namespace gView.Plugins.MapTools.Graphics
 
                 _picker = new ToolStripLineWidthPicker(
                     ((IMapApplication)_doc.Application).ApplicationWindow as Form);
-                _picker.Image = global::gView.Plugins.Tools.Properties.Resources.penWidth;
+                _picker.Image = global::gView.Win.Plugins.Tools.Properties.Resources.penWidth;
                 _picker.PenWidthSelected += new EventHandler(picker_PenWidthSelected);
             }
         }
@@ -1477,7 +1477,7 @@ namespace gView.Plugins.MapTools.Graphics
 
                 _picker = new ToolStripDashStylePicker(
                     ((IMapApplication)_doc.Application).ApplicationWindow as Form);
-                _picker.Image = global::gView.Plugins.Tools.Properties.Resources.dashstyle;
+                _picker.Image = global::gView.Win.Plugins.Tools.Properties.Resources.dashstyle;
                 _picker.PenDashStyleSelected += new EventHandler(picker_DashStyleSelected);
             }
         }

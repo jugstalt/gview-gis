@@ -191,7 +191,7 @@ namespace gView.Plugins.MapTools.Controls
             this.toolStripMenuItemSelectByAttributes.AccessibleName = null;
             resources.ApplyResources(this.toolStripMenuItemSelectByAttributes, "toolStripMenuItemSelectByAttributes");
             this.toolStripMenuItemSelectByAttributes.BackgroundImage = null;
-            this.toolStripMenuItemSelectByAttributes.Image = global::gView.Plugins.Tools.Properties.Resources.SQL1;
+            this.toolStripMenuItemSelectByAttributes.Image = global::gView.Win.Plugins.Tools.Properties.Resources.SQL1;
             this.toolStripMenuItemSelectByAttributes.Name = "toolStripMenuItemSelectByAttributes";
             this.toolStripMenuItemSelectByAttributes.ShortcutKeyDisplayString = null;
             this.toolStripMenuItemSelectByAttributes.Click += new System.EventHandler(this.toolStripMenuItemSelectByAttributes_Click);
@@ -202,7 +202,7 @@ namespace gView.Plugins.MapTools.Controls
             this.toolStripMenuItemZoomToSelection.AccessibleName = null;
             resources.ApplyResources(this.toolStripMenuItemZoomToSelection, "toolStripMenuItemZoomToSelection");
             this.toolStripMenuItemZoomToSelection.BackgroundImage = null;
-            this.toolStripMenuItemZoomToSelection.Image = global::gView.Plugins.Tools.Properties.Resources.zoom2selection;
+            this.toolStripMenuItemZoomToSelection.Image = global::gView.Win.Plugins.Tools.Properties.Resources.zoom2selection;
             this.toolStripMenuItemZoomToSelection.Name = "toolStripMenuItemZoomToSelection";
             this.toolStripMenuItemZoomToSelection.ShortcutKeyDisplayString = null;
             this.toolStripMenuItemZoomToSelection.Click += new System.EventHandler(this.toolStripMenuItemZoomToSelection_Click);
@@ -213,7 +213,7 @@ namespace gView.Plugins.MapTools.Controls
             this.toolStripMenuItemClearSelection.AccessibleName = null;
             resources.ApplyResources(this.toolStripMenuItemClearSelection, "toolStripMenuItemClearSelection");
             this.toolStripMenuItemClearSelection.BackgroundImage = null;
-            this.toolStripMenuItemClearSelection.Image = global::gView.Plugins.Tools.Properties.Resources.sel_base1;
+            this.toolStripMenuItemClearSelection.Image = global::gView.Win.Plugins.Tools.Properties.Resources.sel_base1;
             this.toolStripMenuItemClearSelection.Name = "toolStripMenuItemClearSelection";
             this.toolStripMenuItemClearSelection.ShortcutKeyDisplayString = null;
             this.toolStripMenuItemClearSelection.Click += new System.EventHandler(this.toolStripMenuItemClearSelection_Click);
@@ -342,7 +342,7 @@ namespace gView.Plugins.MapTools.Controls
             this.btnIntersects.AccessibleName = null;
             resources.ApplyResources(this.btnIntersects, "btnIntersects");
             this.btnIntersects.BackgroundImage = null;
-            this.btnIntersects.Image = global::gView.Plugins.Tools.Properties.Resources.intersects;
+            this.btnIntersects.Image = global::gView.Win.Plugins.Tools.Properties.Resources.intersects;
             this.btnIntersects.Name = "btnIntersects";
             this.btnIntersects.ShortcutKeyDisplayString = null;
             this.btnIntersects.Click += new System.EventHandler(this.btnIntersects_Click);
@@ -353,7 +353,7 @@ namespace gView.Plugins.MapTools.Controls
             this.btnContains.AccessibleName = null;
             resources.ApplyResources(this.btnContains, "btnContains");
             this.btnContains.BackgroundImage = null;
-            this.btnContains.Image = global::gView.Plugins.Tools.Properties.Resources.within;
+            this.btnContains.Image = global::gView.Win.Plugins.Tools.Properties.Resources.within;
             this.btnContains.Name = "btnContains";
             this.btnContains.ShortcutKeyDisplayString = null;
             this.btnContains.Click += new System.EventHandler(this.btnContains_Click);
@@ -364,7 +364,7 @@ namespace gView.Plugins.MapTools.Controls
             this.btnWithin.AccessibleName = null;
             resources.ApplyResources(this.btnWithin, "btnWithin");
             this.btnWithin.BackgroundImage = null;
-            this.btnWithin.Image = global::gView.Plugins.Tools.Properties.Resources.contains;
+            this.btnWithin.Image = global::gView.Win.Plugins.Tools.Properties.Resources.contains;
             this.btnWithin.Name = "btnWithin";
             this.btnWithin.ShortcutKeyDisplayString = null;
             this.btnWithin.Click += new System.EventHandler(this.btnWithin_Click);
@@ -390,7 +390,7 @@ namespace gView.Plugins.MapTools.Controls
             this.btnCombinationNew.AccessibleName = null;
             resources.ApplyResources(this.btnCombinationNew, "btnCombinationNew");
             this.btnCombinationNew.BackgroundImage = null;
-            this.btnCombinationNew.Image = global::gView.Plugins.Tools.Properties.Resources.pointer_new;
+            this.btnCombinationNew.Image = global::gView.Win.Plugins.Tools.Properties.Resources.pointer_new;
             this.btnCombinationNew.Name = "btnCombinationNew";
             this.btnCombinationNew.ShortcutKeyDisplayString = null;
             this.btnCombinationNew.Click += new System.EventHandler(this.btnCombination_Click);
@@ -401,7 +401,7 @@ namespace gView.Plugins.MapTools.Controls
             this.btnCombinationUnion.AccessibleName = null;
             resources.ApplyResources(this.btnCombinationUnion, "btnCombinationUnion");
             this.btnCombinationUnion.BackgroundImage = null;
-            this.btnCombinationUnion.Image = global::gView.Plugins.Tools.Properties.Resources.plus;
+            this.btnCombinationUnion.Image = global::gView.Win.Plugins.Tools.Properties.Resources.plus;
             this.btnCombinationUnion.Name = "btnCombinationUnion";
             this.btnCombinationUnion.ShortcutKeyDisplayString = null;
             this.btnCombinationUnion.Click += new System.EventHandler(this.btnCombination_Click);
@@ -412,7 +412,7 @@ namespace gView.Plugins.MapTools.Controls
             this.btnCombinationDifference.AccessibleName = null;
             resources.ApplyResources(this.btnCombinationDifference, "btnCombinationDifference");
             this.btnCombinationDifference.BackgroundImage = null;
-            this.btnCombinationDifference.Image = global::gView.Plugins.Tools.Properties.Resources.minus;
+            this.btnCombinationDifference.Image = global::gView.Win.Plugins.Tools.Properties.Resources.minus;
             this.btnCombinationDifference.Name = "btnCombinationDifference";
             this.btnCombinationDifference.ShortcutKeyDisplayString = null;
             this.btnCombinationDifference.Click += new System.EventHandler(this.btnCombination_Click);
@@ -423,7 +423,7 @@ namespace gView.Plugins.MapTools.Controls
             this.btnCombinationIntersection.AccessibleName = null;
             resources.ApplyResources(this.btnCombinationIntersection, "btnCombinationIntersection");
             this.btnCombinationIntersection.BackgroundImage = null;
-            this.btnCombinationIntersection.Image = global::gView.Plugins.Tools.Properties.Resources.intersection;
+            this.btnCombinationIntersection.Image = global::gView.Win.Plugins.Tools.Properties.Resources.intersection;
             this.btnCombinationIntersection.Name = "btnCombinationIntersection";
             this.btnCombinationIntersection.ShortcutKeyDisplayString = null;
             this.btnCombinationIntersection.Click += new System.EventHandler(this.btnCombination_Click);
@@ -434,7 +434,7 @@ namespace gView.Plugins.MapTools.Controls
             this.btnCombinationSymDifference.AccessibleName = null;
             resources.ApplyResources(this.btnCombinationSymDifference, "btnCombinationSymDifference");
             this.btnCombinationSymDifference.BackgroundImage = null;
-            this.btnCombinationSymDifference.Image = global::gView.Plugins.Tools.Properties.Resources.XOR;
+            this.btnCombinationSymDifference.Image = global::gView.Win.Plugins.Tools.Properties.Resources.XOR;
             this.btnCombinationSymDifference.Name = "btnCombinationSymDifference";
             this.btnCombinationSymDifference.ShortcutKeyDisplayString = null;
             this.btnCombinationSymDifference.Click += new System.EventHandler(this.btnCombination_Click);
@@ -473,7 +473,7 @@ namespace gView.Plugins.MapTools.Controls
             resources.ApplyResources(this.btnSelByLocation, "btnSelByLocation");
             this.btnSelByLocation.BackgroundImage = null;
             this.btnSelByLocation.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnSelByLocation.Image = global::gView.Plugins.Tools.Properties.Resources.SelByLocation;
+            this.btnSelByLocation.Image = global::gView.Win.Plugins.Tools.Properties.Resources.SelByLocation;
             this.btnSelByLocation.Name = "btnSelByLocation";
             this.btnSelByLocation.Click += new System.EventHandler(this.btnSelByLocation_Click);
             // 
@@ -484,7 +484,7 @@ namespace gView.Plugins.MapTools.Controls
             resources.ApplyResources(this.btnSelByGraphic, "btnSelByGraphic");
             this.btnSelByGraphic.BackgroundImage = null;
             this.btnSelByGraphic.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnSelByGraphic.Image = global::gView.Plugins.Tools.Properties.Resources.SelByGraphic;
+            this.btnSelByGraphic.Image = global::gView.Win.Plugins.Tools.Properties.Resources.SelByGraphic;
             this.btnSelByGraphic.Name = "btnSelByGraphic";
             this.btnSelByGraphic.Click += new System.EventHandler(this.btnSelByGraphic_Click);
             // 
@@ -1216,11 +1216,11 @@ namespace gView.Plugins.MapTools.Controls
 
                 filter.AddField(fc.ShapeFieldName);
 
-                using (IFeatureCursor cursor = fc.GetFeatures(filter))
+                using (IFeatureCursor cursor = fc.GetFeatures(filter).Result)
                 {
                     if (cursor == null) continue;
                     IFeature feat;
-                    while ((feat = cursor.NextFeature) != null)
+                    while ((feat = cursor.NextFeature().Result) != null)
                     {
                         if (feat.Shape == null) continue;
 
@@ -1471,19 +1471,19 @@ namespace gView.Plugins.MapTools.Controls
                     }
                     filter.AddField(layer.FeatureClass.ShapeFieldName);
                     filter.FeatureSpatialReference = _doc.FocusMap.Display.SpatialReference;
-                    cursor = layer.FeatureClass.GetFeatures(filter);
+                    cursor = layer.FeatureClass.GetFeatures(filter).Result;
                 }
                 else
                 {
                     QueryFilter filter=new QueryFilter();
                     filter.AddField(layer.FeatureClass.ShapeFieldName);
                     filter.FeatureSpatialReference = _doc.FocusMap.Display.SpatialReference;
-                    cursor = layer.FeatureClass.GetFeatures(filter);
+                    cursor = layer.FeatureClass.GetFeatures(filter).Result;
                 }
 
                 AggregateGeometry aGeometry = new AggregateGeometry();
                 IFeature feature;
-                while ((feature = cursor.NextFeature) != null)
+                while ((feature = cursor.NextFeature().Result) != null)
                 {
                     if (feature.Shape == null) continue;
 

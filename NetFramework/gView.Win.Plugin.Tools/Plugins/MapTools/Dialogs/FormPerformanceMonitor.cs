@@ -83,7 +83,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         public Image Image
         {
-            get { return global::gView.Plugins.Tools.Properties.Resources.time; }
+            get { return global::gView.Win.Plugins.Tools.Properties.Resources.time; }
         }
 
         #endregion

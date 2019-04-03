@@ -183,7 +183,7 @@ namespace gView.Plugins.MapTools.Dialogs
                         int counter = 0;
                         IFeature feature;
                         List<IFeature> features = new List<IFeature>();
-                        while ((feature = cursor.NextFeature) != null)
+                        while ((feature = cursor.NextFeature().Result) != null)
                         {
                             if (!_cancelTracker.Continue)
                             {
@@ -380,7 +380,7 @@ namespace gView.Plugins.MapTools.Dialogs
                         int counter = 0;
                         IFeature feature;
                         List<IFeature> features = new List<IFeature>();
-                        while ((feature = cursor.NextFeature) != null)
+                        while ((feature = cursor.NextFeature().Result) != null)
                         {
                             if (!_cancelTracker.Continue)
                             {

@@ -42,9 +42,9 @@ namespace gView.Plugins.MapTools.Controls
                 _document = (IMapDocument)hook;
 
                 PlugInManager compMan = new PlugInManager();
-                foreach (XmlNode pageNode in compMan.GetPluginNodes(gView.Framework.system.Plugins.Type.IMapOptionPage))
+                foreach (var pageType in compMan.GetPlugins(gView.Framework.system.Plugins.Type.IMapOptionPage))
                 {
-                    IMapOptionPage page = compMan.CreateInstance(pageNode) as IMapOptionPage;
+                    IMapOptionPage page = compMan.CreateInstance<IMapOptionPage>(pageType);
                     if (page == null) continue;
 
                     Panel pagePanel = page.OptionPage(_document);
