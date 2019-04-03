@@ -179,7 +179,7 @@ namespace gView.DataSources.Fdb.UI
 
                 if (!AlterTable.AlterTable(_exObject.Name, null, nField))
                 {
-                    MessageBox.Show("ERROR: " + ((AlterTable is IDatabase) ? ((IDatabase)AlterTable).lastErrorMsg : ""));
+                    MessageBox.Show("ERROR: " + ((AlterTable is IDatabase) ? ((IDatabase)AlterTable).LastErrorMessage : ""));
                     return;
                 }
 
@@ -217,7 +217,7 @@ namespace gView.DataSources.Fdb.UI
                     {
                         if (!AlterTable.AlterTable(_exObject.Name, null, new Field(field)))
                         {
-                            MessageBox.Show("ERROR :" + ((AlterTable is IDatabase) ? ((IDatabase)AlterTable).lastErrorMsg : ""));
+                            MessageBox.Show("ERROR :" + ((AlterTable is IDatabase) ? ((IDatabase)AlterTable).LastErrorMessage : ""));
                             break;
                         }
                     }
@@ -241,7 +241,7 @@ namespace gView.DataSources.Fdb.UI
 
                 if (!AlterTable.AlterTable(_exObject.Name, oField, null))
                 {
-                    MessageBox.Show("ERROR :" + ((AlterTable is IDatabase) ? ((IDatabase)AlterTable).lastErrorMsg : ""));
+                    MessageBox.Show("ERROR :" + ((AlterTable is IDatabase) ? ((IDatabase)AlterTable).LastErrorMessage : ""));
                     break;
                 }
             }
@@ -270,7 +270,7 @@ namespace gView.DataSources.Fdb.UI
 
                         if (!AlterTable.AlterTable(_exObject.Name, oField, nField))
                         {
-                            MessageBox.Show("ERROR: " + ((AlterTable is IDatabase) ? ((IDatabase)AlterTable).lastErrorMsg : ""));
+                            MessageBox.Show("ERROR: " + ((AlterTable is IDatabase) ? ((IDatabase)AlterTable).LastErrorMessage : ""));
                             return;
                         }
 

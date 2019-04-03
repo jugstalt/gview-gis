@@ -35,7 +35,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
             if (!fdb.Open(this.ConnectionString))
             {
-                MessageBox.Show(fdb.lastErrorMsg, "Error");
+                MessageBox.Show(fdb.LastErrorMessage, "Error");
                 return;
             }
 

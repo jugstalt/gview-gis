@@ -134,6 +134,11 @@
     <Compile Include="DataSources\Fdb\UI\SQLite\SQLiteFDBExpolorerObjects.cs" />
     <Compile Include="DataSources\Fdb\UI\SQLServerFinder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DataSources\Fdb\UI\FeatureClassExplorerTabPage.de.resx">
@@ -193,6 +198,10 @@
     <EmbeddedResource Include="DataSources\Fdb\UI\PostgresSql\FormCreatePostgreFeatureDatabase.resx">
       <DependentUpon>FormCreatePostgreFeatureDatabase.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\gView.Carto\gView.Carto.csproj">
@@ -222,6 +231,10 @@
     <ProjectReference Include="..\..\gView.DataSources.Raster\gView.DataSources.Raster.csproj">
       <Project>{180b4390-78e4-47cd-ba97-30f5ef31af07}</Project>
       <Name>gView.DataSources.Raster</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Data\gView.Data.csproj">
+      <Project>{9b556868-8431-4d6c-b002-3fef15df0498}</Project>
+      <Name>gView.Data</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\gView.Db\gView.Db.csproj">
       <Project>{fb98412b-8def-4b02-b903-2979a433e75e}</Project>
@@ -255,6 +268,10 @@
       <Project>{5e36eaa4-15c4-4d04-973b-245ad8a59b97}</Project>
       <Name>gView.Win.Dialogs</Name>
     </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Explorer.UI\gView.Win.Explorer.UI.csproj">
+      <Project>{fec5f35a-cf6e-4f6b-b910-72949954be82}</Project>
+      <Name>gView.Win.Explorer.UI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\gView.Win.Globalisation\gView.Win.Globalisation.csproj">
       <Project>{68ff06ec-cebd-4ba4-a536-6c09d9714066}</Project>
       <Name>gView.Win.Globalisation</Name>
@@ -266,6 +283,57 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\addfolder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\dataset.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\db_connect.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\db_connect2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\field_geom_line.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\field_geom_point.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\field_geom_polygon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\file_fdb.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\folder-open_16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\folder-open_161.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imagedataset.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\linked_geom_line.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\linked_geom_point.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\linked_geom_polygon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\network.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\table_relationship_16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\table_relationship_32.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

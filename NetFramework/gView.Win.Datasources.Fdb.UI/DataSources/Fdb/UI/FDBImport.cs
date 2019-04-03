@@ -10,6 +10,7 @@ using gView.Framework.UI.Dialogs;
 using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.DataSources.Fdb.MSAccess;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.UI
 {
@@ -59,15 +60,15 @@ namespace gView.DataSources.Fdb.UI
             set { _schemaOnly = value; }
         }
 
-        public bool ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project)
+        public Task<bool> ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project)
         {
             return ImportToNewFeatureclass(fdb, dsname, fcname, sourceFC, fieldTranslation, true, null);
         }
-        public bool ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters)
+        public Task<bool> ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters)
         {
             return ImportToNewFeatureclass(fdb, dsname, fcname, sourceFC, fieldTranslation, true, filters, null);
         }
-        public bool ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters, ISpatialIndexDef sIndexDef, geometryType? sourceGeometryType = null)
+        async public Task<bool> ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters, ISpatialIndexDef sIndexDef, geometryType? sourceGeometryType = null)
         {
             if (!_cancelTracker.Continue) return true;
 
@@ -115,11 +116,11 @@ namespace gView.DataSources.Fdb.UI
                 IFeatureDataset destDS = fdb[dsname];
                 if (destDS == null)
                 {
-                    _errMsg = fdb.lastErrorMsg;
+                    _errMsg = fdb.LastErrorMessage;
                     return false;
                 }
 
-                IDatasetElement destLayer = destDS[fcname] as IDatasetElement;
+                IDatasetElement destLayer = await destDS.Element(fcname);
                 if (destLayer != null)
                 {
                     if (ReportRequest != null)
@@ -157,7 +158,7 @@ namespace gView.DataSources.Fdb.UI
                                                       fieldTranslation.DestinationFields);
                         if (fcID < 0)
                         {
-                            _errMsg = "Can't replace featureclass " + fcname + "...\r\n" + fdb.lastErrorMsg;
+                            _errMsg = "Can't replace featureclass " + fcname + "...\r\n" + fdb.LastErrorMessage;
                             destDS.Dispose();
                             return false;
                         }
@@ -178,16 +179,16 @@ namespace gView.DataSources.Fdb.UI
                 }
                 if (fcID < 0)
                 {
-                    _errMsg = "Can't create featureclass " + fcname + "...\r\n" + fdb.lastErrorMsg;
+                    _errMsg = "Can't create featureclass " + fcname + "...\r\n" + fdb.LastErrorMessage;
                     destDS.Dispose();
                     return false;
                 }
 
-                destLayer = destDS[fcname] as IDatasetElement;
+                destLayer = await destDS.Element(fcname);
 
                 if (destLayer == null || !(destLayer.Class is IFeatureClass))
                 {
-                    _errMsg = "Can't load featureclass " + fcname + "...\r\n" + destDS.lastErrorMsg;
+                    _errMsg = "Can't load featureclass " + fcname + "...\r\n" + destDS.LastErrorMessage;
                     destDS.Dispose();
                     return false;
                 }
@@ -224,7 +225,7 @@ namespace gView.DataSources.Fdb.UI
                 {
                     if (_treeVersion == TreeVersion.BinaryTree)
                     {
-                        tree = SpatialIndex(sourceFC, sIndexDef.MaxPerNode, filters);
+                        tree = await SpatialIndex(sourceFC, sIndexDef.MaxPerNode, filters);
                         if (tree == null) return false;
                     }
                     else if (_treeVersion == TreeVersion.BinaryTree2)
@@ -236,7 +237,7 @@ namespace gView.DataSources.Fdb.UI
                         }
                         else
                         {
-                            tree2 = SpatialIndex2(fdb, sourceFC, sIndexDef, filters);
+                            tree2 = await SpatialIndex2(fdb, sourceFC, sIndexDef, filters);
                             if (tree2 == null) return false;
                         }
                     }
@@ -266,21 +267,21 @@ namespace gView.DataSources.Fdb.UI
                     {
                         if (msSpatial)
                         {
-                            result = CopyFeatures(sourceFC, fdb, destFC, fieldTranslation, filters);
+                            result = await CopyFeatures(sourceFC, fdb, destFC, fieldTranslation, filters);
                         }
                         else if (_treeVersion == TreeVersion.BinaryTree)
                         {
                             if (String.IsNullOrEmpty(sourceFC.IDFieldName)) // SDE Views haben keine ID -> Tree enthält keine Features
-                                result = CopyFeatures(sourceFC, fdb, destFC, fieldTranslation, filters);
+                                result = await CopyFeatures(sourceFC, fdb, destFC, fieldTranslation, filters);
                             else
-                                result = CopyFeatures(sourceFC, fdb, destFC, fieldTranslation, tree);
+                                result = await CopyFeatures(sourceFC, fdb, destFC, fieldTranslation, tree);
                         }
                         else if (_treeVersion == TreeVersion.BinaryTree2)
                         {
                             if (String.IsNullOrEmpty(sourceFC.IDFieldName)) // SDE Views haben keine ID -> Tree enthält keine Features
-                                result = CopyFeatures(sourceFC, fdb, destFC, fieldTranslation, filters);
+                                result = await CopyFeatures(sourceFC, fdb, destFC, fieldTranslation, filters);
                             else
-                                result = CopyFeatures2(sourceFC, fdb, destFC, fieldTranslation, tree2);
+                                result = await CopyFeatures2(sourceFC, fdb, destFC, fieldTranslation, tree2);
                         }
                         if (!result)
                         {
@@ -296,7 +297,7 @@ namespace gView.DataSources.Fdb.UI
                 if (_cancelTracker.Continue && fdb is AccessFDB)
                 {
                     if (ReportAction != null) ReportAction(this, "Calculate extent");
-                    ((AccessFDB)fdb).CalculateExtent(destFC);
+                    await ((AccessFDB)fdb).CalculateExtent(destFC);
 
                     if (msSpatial == false)
                     {
@@ -328,7 +329,7 @@ namespace gView.DataSources.Fdb.UI
             }
         }
 
-        private DualTree SpatialIndex(IFeatureClass fc, int maxPerNode, List<IQueryFilter> filters)
+        async private Task<DualTree> SpatialIndex(IFeatureClass fc, int maxPerNode, List<IQueryFilter> filters)
         {
             if (fc == null || fc.Envelope == null) return null;
 
@@ -344,7 +345,7 @@ namespace gView.DataSources.Fdb.UI
 
             foreach (IQueryFilter filter in filters)
             {
-                IFeatureCursor fCursor = fc.GetFeatures(filter);
+                IFeatureCursor fCursor = await fc.GetFeatures(filter);
                 if (fCursor == null)
                 {
                     _errMsg = "Fatal error: sourcedb query failed...";
@@ -367,7 +368,7 @@ namespace gView.DataSources.Fdb.UI
 
                 int counter = 0;
                 IFeature feat;
-                while ((feat = fCursor.NextFeature) != null)
+                while ((feat = await fCursor.NextFeature()) != null)
                 {
                     if (!_cancelTracker.Continue) break;
 
@@ -402,15 +403,15 @@ namespace gView.DataSources.Fdb.UI
             return dualTree;
         }
 
-        private BinaryTree2Builder SpatialIndex2(IFeatureDatabase fdb, IFeatureClass fc, ISpatialIndexDef def, List<IQueryFilter> filters)
+        async private Task<BinaryTree2Builder> SpatialIndex2(IFeatureDatabase fdb, IFeatureClass fc, ISpatialIndexDef def, List<IQueryFilter> filters)
         {
             if (fc == null) return null;
 
             IEnvelope bounds = null;
             if (fc.Envelope != null)
                 bounds = fc.Envelope;
-            else if (fc.Dataset is IFeatureDataset && ((IFeatureDataset)fc.Dataset).Envelope != null)
-                bounds = ((IFeatureDataset)fc.Dataset).Envelope;
+            else if (fc.Dataset is IFeatureDataset && await ((IFeatureDataset)fc.Dataset).Envelope() != null)
+                bounds = await ((IFeatureDataset)fc.Dataset).Envelope();
             if (bounds == null) return null;
             if (_transformer != null)
             {
@@ -436,7 +437,7 @@ namespace gView.DataSources.Fdb.UI
             }
             foreach (IQueryFilter filter in filters)
             {
-                using (IFeatureCursor fCursor = fc.GetFeatures(filter))
+                using (IFeatureCursor fCursor = await fc.GetFeatures(filter))
                 {
                     if (fCursor == null)
                     {
@@ -461,7 +462,7 @@ namespace gView.DataSources.Fdb.UI
 
                     int counter = 0;
                     IFeature feat;
-                    while ((feat = fCursor.NextFeature) != null)
+                    while ((feat = await fCursor.NextFeature()) != null)
                     {
                         if (!_cancelTracker.Continue) break;
 
@@ -488,7 +489,7 @@ namespace gView.DataSources.Fdb.UI
             return treeBuilder;
         }
 
-        private bool CopyFeatures(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation fTrans, DualTree tree)
+        async private Task<bool> CopyFeatures(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation fTrans, DualTree tree)
         {
             if (tree == null || tree.Nodes == null)
             {
@@ -509,18 +510,22 @@ namespace gView.DataSources.Fdb.UI
                 filter.IDs = node.IDs;
                 filter.SubFields = "*";
 
-                using (IFeatureCursor fCursor = source.GetFeatures(filter))
+                using (IFeatureCursor fCursor = await source.GetFeatures(filter))
                 {
                     if (fCursor == null)
                     {
                         _errMsg = "Fatal error: sourcedb query failed...";
                         return false;
                     }
-                    if (!CopyFeatures(fCursor, node.NID, fdb, dest, fTrans, ref featcounter))
+
+                    int copycounter = await CopyFeatures(fCursor, node.NID, fdb, dest, fTrans, featcounter);
+                    if (copycounter<0)
                     {
                         fCursor.Dispose();
                         return false;
                     }
+                    featcounter = copycounter;
+
                     fCursor.Dispose();
                 }
             }
@@ -531,7 +536,7 @@ namespace gView.DataSources.Fdb.UI
             return true;
         }
 
-        private bool CopyFeatures2(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation fTrans, BinaryTree2Builder treeBuilder)
+        async private Task<bool> CopyFeatures2(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation fTrans, BinaryTree2Builder treeBuilder)
         {
             List<BinaryTree2BuilderNode> nodes;
 
@@ -554,18 +559,22 @@ namespace gView.DataSources.Fdb.UI
                 filter.IDs = node.OIDs;
                 filter.SubFields = "*";
 
-                using (IFeatureCursor fCursor = source.GetFeatures(filter))
+                using (IFeatureCursor fCursor = await source.GetFeatures(filter))
                 {
                     if (fCursor == null)
                     {
                         _errMsg = "Fatal error: sourcedb query failed...";
                         return false;
                     }
-                    if (!CopyFeatures(fCursor, node.Number, fdb, dest, fTrans, ref featcounter))
+
+                    int copycounter = await CopyFeatures(fCursor, node.Number, fdb, dest, fTrans, featcounter);
+                    if (copycounter<0)
                     {
                         fCursor.Dispose();
                         return false;
                     }
+                    featcounter = copycounter;
+
                     fCursor.Dispose();
                 }
             }
@@ -576,13 +585,13 @@ namespace gView.DataSources.Fdb.UI
             return true;
         }
 
-        private bool CopyFeatures(IFeatureCursor fCursor, long NID, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation fTrans, ref int featcounter)
+        async private Task<int> CopyFeatures(IFeatureCursor fCursor, long NID, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation fTrans, int featcounter)
         {
             IFeature feat;
 
             List<IFeature> features = new List<IFeature>();
 
-            while ((feat = fCursor.NextFeature) != null)
+            while ((feat = await fCursor.NextFeature()) != null)
             {
                 if (!_cancelTracker.Continue) break;
 
@@ -597,10 +606,10 @@ namespace gView.DataSources.Fdb.UI
                 features.Add(feat);
                 if (features.Count >= this.FeatureBufferSize)
                 {
-                    if (!fdb.Insert(dest, features))
+                    if (!await fdb.Insert(dest, features))
                     {
-                        _errMsg = "Fatal error: destdb insert failed...\n" + fdb.lastErrorMsg;
-                        return false;
+                        _errMsg = "Fatal error: destdb insert failed...\n" + fdb.LastErrorMessage;
+                        return -1;
                     }
                     features.Clear();
                 }
@@ -613,18 +622,18 @@ namespace gView.DataSources.Fdb.UI
 
             if (features.Count > 0 && _cancelTracker.Continue)
             {
-                if (!fdb.Insert(dest, features))
+                if (!await fdb.Insert(dest, features))
                 {
-                    _errMsg = "Fatal error: destdb insert failed...\n" + fdb.lastErrorMsg;
-                    return false;
+                    _errMsg = "Fatal error: destdb insert failed...\n" + fdb.LastErrorMessage;
+                    return -1;
                 }
                 features.Clear();
             }
 
-            return true;
+            return featcounter;
         }
 
-        private bool CopyFeatures(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation fTrans, List<IQueryFilter> filters)
+        async private Task<bool> CopyFeatures(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation fTrans, List<IQueryFilter> filters)
         {
             if (ReportAction != null)
             {
@@ -643,10 +652,10 @@ namespace gView.DataSources.Fdb.UI
             }
             foreach (IQueryFilter filter in filters)
             {
-                using (IFeatureCursor fCursor = source.GetFeatures(filter))
+                using (IFeatureCursor fCursor = await source.GetFeatures(filter))
                 {
                     IFeature feature;
-                    while ((feature = fCursor.NextFeature) != null)
+                    while ((feature = await fCursor.NextFeature()) != null)
                     {
                         if (!_cancelTracker.Continue) break;
 
@@ -659,9 +668,9 @@ namespace gView.DataSources.Fdb.UI
                         features.Add(feature);
                         if (features.Count >= this.FeatureBufferSize)
                         {
-                            if (!fdb.Insert(dest, features))
+                            if (!await fdb.Insert(dest, features))
                             {
-                                _errMsg = "Fatal error: destdb insert failed...\n" + fdb.lastErrorMsg;
+                                _errMsg = "Fatal error: destdb insert failed...\n" + fdb.LastErrorMessage;
                                 return false;
                             }
                             features.Clear();
@@ -674,9 +683,9 @@ namespace gView.DataSources.Fdb.UI
                     }
                     if (features.Count > 0 && _cancelTracker.Continue)
                     {
-                        if (!fdb.Insert(dest, features))
+                        if (!await fdb.Insert(dest, features))
                         {
-                            _errMsg = "Fatal error: destdb insert failed...\n" + fdb.lastErrorMsg;
+                            _errMsg = "Fatal error: destdb insert failed...\n" + fdb.LastErrorMessage;
                             return false;
                         }
                         features.Clear();

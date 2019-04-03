@@ -1057,7 +1057,7 @@ namespace gView.DataSources.Fdb.UI.MSAccess
 
         public System.Drawing.Image Image
         {
-            get { return global::gView.DataSources.Fdb.UI.Properties.Resources.dataset; }
+            get { return global::gView.Win.Datasources.Fdb.UI.Properties.Resources.dataset; }
         }
 
         #endregion
@@ -1091,7 +1091,7 @@ namespace gView.DataSources.Fdb.UI.MSAccess
 
         public System.Drawing.Image Image
         {
-            get { return global::gView.DataSources.Fdb.UI.Properties.Resources.field_geom_point; }
+            get { return global::gView.Win.Datasources.Fdb.UI.Properties.Resources.field_geom_point; }
         }
 
         #endregion
@@ -1108,7 +1108,7 @@ namespace gView.DataSources.Fdb.UI.MSAccess
 
         public System.Drawing.Image Image
         {
-            get { return global::gView.DataSources.Fdb.UI.Properties.Resources.field_geom_line; }
+            get { return global::gView.Win.Datasources.Fdb.UI.Properties.Resources.field_geom_line; }
         }
 
         #endregion
@@ -1125,7 +1125,7 @@ namespace gView.DataSources.Fdb.UI.MSAccess
 
         public System.Drawing.Image Image
         {
-            get { return global::gView.DataSources.Fdb.UI.Properties.Resources.field_geom_polygon; }
+            get { return global::gView.Win.Datasources.Fdb.UI.Properties.Resources.field_geom_polygon; }
         }
 
         #endregion
@@ -1159,7 +1159,7 @@ namespace gView.DataSources.Fdb.UI.MSAccess
 
         public System.Drawing.Image Image
         {
-            get { return global::gView.DataSources.Fdb.UI.Properties.Resources.network; }
+            get { return global::gView.Win.Datasources.Fdb.UI.Properties.Resources.network; }
         }
 
         #endregion
@@ -1176,7 +1176,7 @@ namespace gView.DataSources.Fdb.UI.MSAccess
 
         public System.Drawing.Image Image
         {
-            get { return global::gView.DataSources.Fdb.UI.Properties.Resources.table_relationship_16; }
+            get { return global::gView.Win.Datasources.Fdb.UI.Properties.Resources.table_relationship_16; }
         }
 
         #endregion
@@ -1193,7 +1193,7 @@ namespace gView.DataSources.Fdb.UI.MSAccess
 
         public System.Drawing.Image Image
         {
-            get { return global::gView.DataSources.Fdb.UI.Properties.Resources.linked_geom_point; }
+            get { return global::gView.Win.Datasources.Fdb.UI.Properties.Resources.linked_geom_point; }
         }
 
         #endregion
@@ -1210,7 +1210,7 @@ namespace gView.DataSources.Fdb.UI.MSAccess
 
         public System.Drawing.Image Image
         {
-            get { return global::gView.DataSources.Fdb.UI.Properties.Resources.linked_geom_line; }
+            get { return global::gView.Win.Datasources.Fdb.UI.Properties.Resources.linked_geom_line; }
         }
 
         #endregion
@@ -1227,7 +1227,7 @@ namespace gView.DataSources.Fdb.UI.MSAccess
 
         public System.Drawing.Image Image
         {
-            get { return global::gView.DataSources.Fdb.UI.Properties.Resources.linked_geom_polygon; }
+            get { return global::gView.Win.DataSources.Fdb.UI.Properties.Resources.linked_geom_polygon; }
         }
 
         #endregion
