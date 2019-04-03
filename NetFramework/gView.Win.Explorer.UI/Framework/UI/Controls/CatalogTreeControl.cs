@@ -16,6 +16,7 @@ using gView.Framework.system.UI;
 using gView.Framework.IO;
 using gView.Framework.UI.Dialogs;
 using gView.system.UI.Framework.system.UI;
+using gView.Framework.Sys.UI;
 
 namespace gView.Framework.UI.Controls
 {

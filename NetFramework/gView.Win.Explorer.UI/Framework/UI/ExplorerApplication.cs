@@ -8,7 +8,7 @@ using gView.Framework.UI;
 using gView.Framework.system;
 using gView.Framework.UI.Dialogs;
 using gView.Explorer.UI.Framework.UI;
-using gView.Framework.system.UI;
+using gView.Framework.Sys.UI;
 
 namespace gView.Framework.UI
 {

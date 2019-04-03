@@ -124,9 +124,9 @@
       <Project>{1075bb0d-7dfc-440c-a790-51001bcf0725}</Project>
       <Name>gView.Win.Snapping.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\gView.Win.System.UI\gView.Win.System.UI.csproj">
+    <ProjectReference Include="..\gView.Win.Sys.UI\gView.Win.Sys.UI.csproj">
       <Project>{a82d4f52-bdcd-4721-9363-09ccf4a3bb7a}</Project>
-      <Name>gView.Win.System.UI</Name>
+      <Name>gView.Win.Sys.UI</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

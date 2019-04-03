@@ -366,9 +366,9 @@
       <Project>{9957f5fa-1e21-4d79-883e-88ffe3a7f01b}</Project>
       <Name>gView.Win.Symbology.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\gView.Win.System.UI\gView.Win.System.UI.csproj">
-      <Project>{a82d4f52-bdcd-4721-9363-09ccf4a3bb7a}</Project>
-      <Name>gView.Win.System.UI</Name>
+    <ProjectReference Include="..\gView.Win.Sys.UI\gView.Win.Sys.UI.csproj">
+      <Project>{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}</Project>
+      <Name>gView.Win.Sys.UI</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,674 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{10BC8626-1D94-4740-9ED3-9D1BD71857B7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>gView.Win.Plugin.Tools</RootNamespace>
+    <AssemblyName>gView.Win.Plugin.Tools</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Common, Version=4.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Drawing.Common.4.5.1\lib\net461\System.Drawing.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Framework\UI\DoackableWindowContainers.cs" />
+    <Compile Include="Framework\UI\MapXMLExplorerObject.cs" />
+    <Compile Include="Framework\UI\PrjExplorerObject.cs" />
+    <Compile Include="Plugins\ExTools\Dialogs\FormDeleteExObjects.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\ExTools\Dialogs\FormDeleteExObjects.Designer.cs">
+      <DependentUpon>FormDeleteExObjects.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\ExTools\Dialogs\FormRenameExObject.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\ExTools\Dialogs\FormRenameExObject.Designer.cs">
+      <DependentUpon>FormRenameExObject.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\ExTools\ExTools.cs" />
+    <Compile Include="Plugins\ExTools\Icons.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\ExTools\Icons.Designer.cs">
+      <DependentUpon>Icons.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\ExTools\RibbonTabs\HomeRibbonTab.cs" />
+    <Compile Include="Plugins\MapTools\BaseTools.cs" />
+    <Compile Include="Plugins\MapTools\Buttons.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Clipborad.cs" />
+    <Compile Include="Plugins\MapTools\CloneLayer.cs" />
+    <Compile Include="Plugins\MapTools\ContextMenuItems.cs" />
+    <Compile Include="Plugins\MapTools\Controls\CoordControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Controls\CoordControl.Designer.cs">
+      <DependentUpon>CoordControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Controls\IdentifyResultControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Controls\IdentifyResultControl.Designer.cs">
+      <DependentUpon>IdentifyResultControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Controls\MapOptionsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Controls\MapOptionsControl.Designer.cs">
+      <DependentUpon>MapOptionsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Controls\NewToolControl.xaml.cs">
+      <DependentUpon>NewToolControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Controls\SelectionEnvironmentControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Controls\SelectionEnvironmentControl_Items.cs" />
+    <Compile Include="Plugins\MapTools\Dialogs\FormChart.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormChart.Designer.cs">
+      <DependentUpon>FormChart.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormChartWizard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormChartWizard.Designer.cs">
+      <DependentUpon>FormChartWizard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormIdentify.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormIdentify.Designer.cs">
+      <DependentUpon>FormIdentify.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormImportRenderers.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormImportRenderers.Designer.cs">
+      <DependentUpon>FormImportRenderers.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormLegend.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormLegend.Designer.cs">
+      <DependentUpon>FormLegend.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormMapDatasets.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormMapDatasets.Designer.cs">
+      <DependentUpon>FormMapDatasets.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormMeasure.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormMeasure.Designer.cs">
+      <DependentUpon>FormMeasure.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormOverviewMap.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormOverviewMap.Designer.cs">
+      <DependentUpon>FormOverviewMap.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormPerformanceMonitor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormPerformanceMonitor.Designer.cs">
+      <DependentUpon>FormPerformanceMonitor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormPrintPreview.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormPrintPreview.Designer.cs">
+      <DependentUpon>FormPrintPreview.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormPublishMap.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormPublishMap.Designer.cs">
+      <DependentUpon>FormPublishMap.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormQuery.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormQuery.Designer.cs">
+      <DependentUpon>FormQuery.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormQueryThemeEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormQueryThemeEditor.Designer.cs">
+      <DependentUpon>FormQueryThemeEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormSaveEncrypted.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormSaveEncrypted.Designer.cs">
+      <DependentUpon>FormSaveEncrypted.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormSplitLayerWithFilter.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormSplitLayerWithFilter.Designer.cs">
+      <DependentUpon>FormSplitLayerWithFilter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormXY.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\FormXY.Designer.cs">
+      <DependentUpon>FormXY.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\OptionPageIdentify.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Dialogs\OptionPageIdentify.Designer.cs">
+      <DependentUpon>OptionPageIdentify.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Graphics\Dialogs\FormText.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Graphics\Dialogs\FormText.Designer.cs">
+      <DependentUpon>FormText.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\MapTools\Graphics\Rectangle.cs" />
+    <Compile Include="Plugins\MapTools\Graphics\Tool.Graphics.cs" />
+    <Compile Include="Plugins\MapTools\gvChart.cs" />
+    <Compile Include="Plugins\MapTools\NewTool.cs" />
+    <Compile Include="Plugins\MapTools\OnMapStart.cs" />
+    <Compile Include="Plugins\MapTools\OpenRendererFilter.cs" />
+    <Compile Include="Plugins\MapTools\Printing.cs" />
+    <Compile Include="Plugins\MapTools\RibbonTabs\GraphicsRibbonTab.cs" />
+    <Compile Include="Plugins\MapTools\RibbonTabs\StandardRibbonTab.cs" />
+    <Compile Include="Plugins\MapTools\ThreeD.cs" />
+    <Compile Include="Plugins\MapTools\Toolbars.cs" />
+    <Compile Include="Plugins\MapTools\ToolPlugins.cs" />
+    <Compile Include="Plugins\MapTools\Tools.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Plugins\ExTools\Dialogs\FormDeleteExObjects.de.resx">
+      <DependentUpon>FormDeleteExObjects.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\ExTools\Dialogs\FormDeleteExObjects.resx">
+      <DependentUpon>FormDeleteExObjects.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\ExTools\Dialogs\FormRenameExObject.de.resx">
+      <DependentUpon>FormRenameExObject.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\ExTools\Dialogs\FormRenameExObject.resx">
+      <DependentUpon>FormRenameExObject.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\ExTools\Icons.resx">
+      <DependentUpon>Icons.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Buttons.resx">
+      <DependentUpon>Buttons.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Controls\CoordControl.de.resx">
+      <DependentUpon>CoordControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Controls\CoordControl.resx">
+      <DependentUpon>CoordControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Controls\IdentifyResultControl.resx">
+      <DependentUpon>IdentifyResultControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Controls\MapOptionsControl.resx">
+      <DependentUpon>MapOptionsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Controls\SelectionEnvironmentControl.de.resx">
+      <DependentUpon>SelectionEnvironmentControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Controls\SelectionEnvironmentControl.resx">
+      <DependentUpon>SelectionEnvironmentControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormChart.resx">
+      <DependentUpon>FormChart.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormChartWizard.resx">
+      <DependentUpon>FormChartWizard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormIdentify.de-DE.resx">
+      <DependentUpon>FormIdentify.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormIdentify.de.resx">
+      <DependentUpon>FormIdentify.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormIdentify.resx">
+      <DependentUpon>FormIdentify.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormImportRenderers.de.resx">
+      <DependentUpon>FormImportRenderers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormImportRenderers.resx">
+      <DependentUpon>FormImportRenderers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormLegend.de.resx">
+      <DependentUpon>FormLegend.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormLegend.resx">
+      <DependentUpon>FormLegend.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormMapDatasets.resx">
+      <DependentUpon>FormMapDatasets.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormMeasure.de.resx">
+      <DependentUpon>FormMeasure.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormMeasure.resx">
+      <DependentUpon>FormMeasure.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormOverviewMap.de.resx">
+      <DependentUpon>FormOverviewMap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormOverviewMap.resx">
+      <DependentUpon>FormOverviewMap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormPerformanceMonitor.resx">
+      <DependentUpon>FormPerformanceMonitor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormPrintPreview.de.resx">
+      <DependentUpon>FormPrintPreview.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormPrintPreview.resx">
+      <DependentUpon>FormPrintPreview.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormPublishMap.de.resx">
+      <DependentUpon>FormPublishMap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormPublishMap.resx">
+      <DependentUpon>FormPublishMap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormQuery.de.resx">
+      <DependentUpon>FormQuery.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormQuery.resx">
+      <DependentUpon>FormQuery.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormQueryThemeEditor.resx">
+      <DependentUpon>FormQueryThemeEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormSaveEncrypted.resx">
+      <DependentUpon>FormSaveEncrypted.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormSplitLayerWithFilter.de-DE.resx">
+      <DependentUpon>FormSplitLayerWithFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormSplitLayerWithFilter.de.resx">
+      <DependentUpon>FormSplitLayerWithFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormSplitLayerWithFilter.resx">
+      <DependentUpon>FormSplitLayerWithFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormXY.de.resx">
+      <DependentUpon>FormXY.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\FormXY.resx">
+      <DependentUpon>FormXY.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\OptionPageIdentify.de-DE.resx">
+      <DependentUpon>OptionPageIdentify.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\OptionPageIdentify.de.resx">
+      <DependentUpon>OptionPageIdentify.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Dialogs\OptionPageIdentify.resx">
+      <DependentUpon>OptionPageIdentify.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Graphics\Dialogs\FormText.de.resx">
+      <DependentUpon>FormText.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Plugins\MapTools\Graphics\Dialogs\FormText.resx">
+      <DependentUpon>FormText.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Plugins\MapTools\Controls\NewToolControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\gView.Carto.Rendering\gView.Carto.Rendering.csproj">
+      <Project>{961d9a60-014e-4139-907f-0112f5dfac4d}</Project>
+      <Name>gView.Carto.Rendering</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Carto\gView.Carto.csproj">
+      <Project>{517f72fa-aa41-4e70-8469-e7becca58ad6}</Project>
+      <Name>gView.Carto</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Core\gView.Core.csproj">
+      <Project>{5a66d185-6e2c-4da4-97d7-00616a182bd8}</Project>
+      <Name>gView.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Data\gView.Data.csproj">
+      <Project>{9b556868-8431-4d6c-b002-3fef15df0498}</Project>
+      <Name>gView.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Geometry\gView.Geometry.csproj">
+      <Project>{82012e45-2efc-498e-9bb1-f3deba4b87c5}</Project>
+      <Name>gView.Geometry</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Offline\gView.Offline.csproj">
+      <Project>{7eaf9c21-4c1d-4996-b111-7c503217b8f5}</Project>
+      <Name>gView.Offline</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Symbology\gView.Symbology.csproj">
+      <Project>{c37d6d4b-5670-49b9-8592-48e9dcc0aa3c}</Project>
+      <Name>gView.Symbology</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.System\gView.System.csproj">
+      <Project>{e50d8014-0fb8-4b67-8291-0abee04a1403}</Project>
+      <Name>gView.System</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Carto.UI\gView.Win.Carto.UI.csproj">
+      <Project>{77538348-8321-4978-842d-2d97cdedeca6}</Project>
+      <Name>gView.Win.Carto.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Core.UI\gView.Win.Core.UI.csproj">
+      <Project>{3c8ffd95-66e8-41e5-b891-4b13d44942c3}</Project>
+      <Name>gView.Win.Core.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Dialogs\gView.Win.Dialogs.csproj">
+      <Project>{5e36eaa4-15c4-4d04-973b-245ad8a59b97}</Project>
+      <Name>gView.Win.Dialogs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Explorer.UI\gView.Win.Explorer.UI.csproj">
+      <Project>{fec5f35a-cf6e-4f6b-b910-72949954be82}</Project>
+      <Name>gView.Win.Explorer.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Globalisation\gView.Win.Globalisation.csproj">
+      <Project>{68ff06ec-cebd-4ba4-a536-6c09d9714066}</Project>
+      <Name>gView.Win.Globalisation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Snapping.Core\gView.Win.Snapping.Core.csproj">
+      <Project>{1075bb0d-7dfc-440c-a790-51001bcf0725}</Project>
+      <Name>gView.Win.Snapping.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Symbology.UI\gView.Win.Symbology.UI.csproj">
+      <Project>{9957f5fa-1e21-4d79-883e-88ffe3a7f01b}</Project>
+      <Name>gView.Win.Symbology.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Sys.UI\gView.Win.Sys.UI.csproj">
+      <Project>{a82d4f52-bdcd-4721-9363-09ccf4a3bb7a}</Project>
+      <Name>gView.Win.Sys.UI</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\add_data.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\add_map.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BucketFill.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\check.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\clone.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\connect.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\contains.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\copy.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\copy_.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\copyto.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\cut.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\dashstyle.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\data_info.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\delete.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\document_properties.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\export.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\find.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\help.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\import.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\info.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\intersection.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\intersects.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\layer.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\layergroup.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\layers.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\map16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\map161.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\minus.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\netdirectory.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\paste.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\paste_.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pdf.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PenDraw.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\penWidth.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pie_diagram.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\plus.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\point.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pointer_new.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\polygon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\polyline.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\polyline1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\proj.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\publish.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\rectangle.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Refresh.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\remove_map.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\save.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\search.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\sel_base.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\sel_base1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SelByGraphic.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SelByLocation.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\seperator.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\split.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\split_right.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\sql.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SQL1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\stop_and_close_measure.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\stop_measure.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\tab.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\table.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\TextColor.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\time.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\within.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\XOR.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\xy.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\zoom.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\zoom_dyn.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\zoom_in.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\zoom_in_fix.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\zoom_out.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\zoom_out_fix.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\zoom2selection.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

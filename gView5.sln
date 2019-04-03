@@ -81,8 +81,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.EventTabl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Core.UI", "NetFramework\gView.Win.Core.UI\gView.Win.Core.UI.csproj", "{3C8FFD95-66E8-41E5-B891-4B13D44942C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.System.UI", "NetFramework\gView.Win.System.UI\gView.Win.System.UI.csproj", "{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Explorer.UI", "NetFramework\gView.Win.Explorer.UI\gView.Win.Explorer.UI.csproj", "{FEC5F35A-CF6E-4F6B-B910-72949954BE82}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Globalisation", "NetFramework\gView.Win.Globalisation\gView.Win.Globalisation.csproj", "{68FF06EC-CEBD-4BA4-A536-6C09D9714066}"
@@ -94,6 +92,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Carto.UI", "NetFramework\gView.Win.Carto.UI\gView.Win.Carto.UI.csproj", "{77538348-8321-4978-842D-2D97CDEDECA6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Snapping.Core", "NetFramework\gView.Win.Snapping.Core\gView.Win.Snapping.Core.csproj", "{1075BB0D-7DFC-440C-A790-51001BCF0725}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.DataExplorer", "NetFramework\gView.Win.DataExplorer\gView.Win.DataExplorer.csproj", "{8F9FEB99-4BFF-4581-8F7D-3058F2482BDF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Wpf", "NetFramework\gView.Win.Wpf\gView.Win.Wpf.csproj", "{5160FF91-1E3D-41B0-9CE7-2F233AB4BCFA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Sys.UI", "NetFramework\gView.Win.Sys.UI\gView.Win.Sys.UI.csproj", "{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Plugin.Tools", "NetFramework\gView.Win.Plugin.Tools\gView.Win.Plugin.Tools.csproj", "{10BC8626-1D94-4740-9ED3-9D1BD71857B7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -257,10 +263,6 @@ Global
 		{3C8FFD95-66E8-41E5-B891-4B13D44942C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C8FFD95-66E8-41E5-B891-4B13D44942C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C8FFD95-66E8-41E5-B891-4B13D44942C3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FEC5F35A-CF6E-4F6B-B910-72949954BE82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FEC5F35A-CF6E-4F6B-B910-72949954BE82}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FEC5F35A-CF6E-4F6B-B910-72949954BE82}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -285,6 +287,22 @@ Global
 		{1075BB0D-7DFC-440C-A790-51001BCF0725}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1075BB0D-7DFC-440C-A790-51001BCF0725}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1075BB0D-7DFC-440C-A790-51001BCF0725}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F9FEB99-4BFF-4581-8F7D-3058F2482BDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F9FEB99-4BFF-4581-8F7D-3058F2482BDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F9FEB99-4BFF-4581-8F7D-3058F2482BDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F9FEB99-4BFF-4581-8F7D-3058F2482BDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5160FF91-1E3D-41B0-9CE7-2F233AB4BCFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5160FF91-1E3D-41B0-9CE7-2F233AB4BCFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5160FF91-1E3D-41B0-9CE7-2F233AB4BCFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5160FF91-1E3D-41B0-9CE7-2F233AB4BCFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10BC8626-1D94-4740-9ED3-9D1BD71857B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10BC8626-1D94-4740-9ED3-9D1BD71857B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10BC8626-1D94-4740-9ED3-9D1BD71857B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10BC8626-1D94-4740-9ED3-9D1BD71857B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

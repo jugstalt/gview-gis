@@ -16,6 +16,7 @@ using gView.Framework.Symbology;
 using gView.Framework.Snapping.Core;
 using System.Collections.Generic;
 using gView.Framework.UI.Dialogs;
+using gView.Framework.system.UI;
 
 namespace gView.Framework.UI.Controls
 {
@@ -1238,7 +1239,7 @@ namespace gView.Framework.UI.Controls
             {
                 if (ex is UIException)
                 {
-                    gView.Framework.system.UI.UIExceptionBox.Show((UIException)ex);
+                    UIExceptionBox.Show((UIException)ex);
                 }
             }
             this.Cursor = currentCursor;

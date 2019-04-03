@@ -17,6 +17,7 @@ using gView.Framework.FDB;
 using System.Threading;
 using gView.Framework.system.UI;
 using gView.Framework.UI.Dialogs;
+using gView.Framework.Sys.UI;
 
 namespace gView.Framework.UI.Controls
 {

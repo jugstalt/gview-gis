@@ -17,7 +17,7 @@ using gView.Framework.Carto.UI;
 
 namespace gView.Framework.Carto
 {
-    internal sealed class PrinterMap : Map
+    public sealed class PrinterMap : Map
     {
         public override event DoRefreshMapViewEvent DoRefreshMapView;
         public override event DrawingLayerEvent DrawingLayer;

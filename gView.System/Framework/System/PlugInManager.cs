@@ -66,10 +66,13 @@ namespace gView.Framework.system
                 return;
 
             string currentDll = String.Empty;
+            var error = new StringBuilder();
+
             try
             {
                 _pluginTypes = new Dictionary<Guid, Type>();
-                FileInfo entryAssembly = new FileInfo(Assembly.GetEntryAssembly().Location);
+                FileInfo entryAssembly = new FileInfo(Assembly.GetEntryAssembly().Location);    
+
                 foreach(FileInfo dll in entryAssembly.Directory.GetFiles("*.dll"))
                 {
                     currentDll = dll.Name;
@@ -89,11 +92,22 @@ namespace gView.Framework.system
                     catch (BadImageFormatException)
                     {
                     }
+                    catch(Exception ex)
+                    {
+                        error.Append(currentDll + ": " + ex.Message);
+                        error.Append(Environment.NewLine);
+                    }
                 }
             }
             catch(Exception ex)
             {
-                throw new Exception("PluginMananger.Init() " + currentDll, ex);
+                error.Append(currentDll + ": " + ex.Message);
+                error.Append(Environment.NewLine);
+            }
+
+            if(error.Length>0)
+            {
+                //throw new Exception("PluginMananger.Init() " + Environment.NewLine + error.ToString());
             }
         }
 

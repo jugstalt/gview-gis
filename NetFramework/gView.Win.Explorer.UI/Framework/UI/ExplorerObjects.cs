@@ -15,6 +15,7 @@ using System.Threading;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using System.Threading.Tasks;
+using gView.Framework.Sys.UI;
 
 namespace gView.Framework.UI
 {
