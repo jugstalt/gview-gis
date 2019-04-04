@@ -44,6 +44,9 @@
     <PackageReference Include="Dirkster.AvalonDock.Themes.Aero">
       <Version>3.5.0.2</Version>
     </PackageReference>
+    <PackageReference Include="Dirkster.AvalonDock.Themes.Metro">
+      <Version>3.5.0.2</Version>
+    </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013">
       <Version>3.5.0.2</Version>
     </PackageReference>
