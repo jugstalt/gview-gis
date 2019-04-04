@@ -75,7 +75,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             // btnImportDirectory
             // 
             this.btnImportDirectory.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnImportDirectory.Image = global::gView.DataSources.Fdb.UI.Properties.Resources.addfolder;
+            this.btnImportDirectory.Image = global::gView.Win.DataSources.Fdb.UI.Properties.Resources.addfolder;
             this.btnImportDirectory.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnImportDirectory.Name = "btnImportDirectory";
             this.btnImportDirectory.Size = new System.Drawing.Size(23, 22);

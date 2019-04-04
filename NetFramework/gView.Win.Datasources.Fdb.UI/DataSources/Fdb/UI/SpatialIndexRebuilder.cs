@@ -57,7 +57,7 @@ namespace gView.DataSources.Fdb.UI
                 AccessFDB fdb = cl.Dataset.Database as AccessFDB;
                 if (!fdb.ShrinkSpatialIndex(cl.Name))
                 {
-                    MessageBox.Show("Error rebuilding " + cl.Name + " index:\n" + fdb.lastErrorMsg);
+                    MessageBox.Show("Error rebuilding " + cl.Name + " index:\n" + fdb.LastErrorMessage);
                     return;
                 }
                 if (!_cancelTracker.Continue) return;

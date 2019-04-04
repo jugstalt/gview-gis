@@ -182,6 +182,18 @@ namespace gView.Framework.system
             return (T)Activator.CreateInstance(type);
         }
 
+        public T TryCreateInstance<T>(Type type)
+        {
+            try
+            {
+                return CreateInstance<T>(type);
+            }
+            catch
+            {
+                return default(T);
+            }
+        }
+
         public object CreateInstance(Type type)
         {
             return Activator.CreateInstance(type);

@@ -7,8 +7,8 @@
     <ProjectGuid>{B3944C41-5BB6-4CBC-9173-59D5E50F74A4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>gView.Win.Datasources.Fdb.UI</RootNamespace>
-    <AssemblyName>gView.Win.Datasources.Fdb.UI</AssemblyName>
+    <RootNamespace>gView.Win.DataSources.Fdb.UI</RootNamespace>
+    <AssemblyName>gView.Win.DataSources.Fdb.UI</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -263,6 +263,10 @@
     <ProjectReference Include="..\gView.Win.Core.UI\gView.Win.Core.UI.csproj">
       <Project>{3c8ffd95-66e8-41e5-b891-4b13d44942c3}</Project>
       <Name>gView.Win.Core.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Db.UI\gView.Win.Db.UI.csproj">
+      <Project>{e5ed18b7-1d13-441b-9b3e-55a65a147928}</Project>
+      <Name>gView.Win.Db.UI</Name>
     </ProjectReference>
     <ProjectReference Include="..\gView.Win.Dialogs\gView.Win.Dialogs.csproj">
       <Project>{5e36eaa4-15c4-4d04-973b-245ad8a59b97}</Project>

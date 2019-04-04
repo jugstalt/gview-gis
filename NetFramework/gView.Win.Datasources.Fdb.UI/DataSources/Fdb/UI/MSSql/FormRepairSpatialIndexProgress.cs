@@ -50,9 +50,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         private void Process()
         {
-            if (!_fdb.RepairSpatialIndex(_fc.Name, new EventHandler(ProcessEventHandler)))
+            if (!_fdb.RepairSpatialIndex(_fc.Name, new EventHandler(ProcessEventHandler)).Result)
             {
-                MessageBox.Show(_fdb.lastErrorMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(_fdb.LastErrorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             _finished = true;
             ProcessEventHandler(this, new EventArgs());

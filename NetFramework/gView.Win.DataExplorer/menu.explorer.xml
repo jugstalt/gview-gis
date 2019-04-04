@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<MapApplication>
+  <Menubar>
+    <Menu name="File">
+      <MenuItem guid="97F8675C-E01F-451e-AAE0-DC29CD547EB5" />
+    </Menu>
+    <Menu name="QuickAccess">
+      <MenuItem guid="7219766E-55AB-4f64-B65E-C2DBC70E5786" />
+    </Menu>
+  </Menubar>
+</MapApplication>

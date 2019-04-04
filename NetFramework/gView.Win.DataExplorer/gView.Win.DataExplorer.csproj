@@ -35,6 +35,26 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="ControlzEx">
+      <Version>3.0.2.4</Version>
+    </PackageReference>
+    <PackageReference Include="Dirkster.AvalonDock">
+      <Version>3.5.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Dirkster.AvalonDock.Themes.Aero">
+      <Version>3.5.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013">
+      <Version>3.5.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Fluent.Ribbon">
+      <Version>6.1.0.326</Version>
+    </PackageReference>
+    <PackageReference Include="Legacy2CPSWorkaround" Version="1.0.0">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="ControlzEx, Version=3.0.2.4, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\ControlzEx.3.0.2.4\lib\net462\ControlzEx.dll</HintPath>
     </Reference>
@@ -279,6 +299,14 @@
       <Project>{3c8ffd95-66e8-41e5-b891-4b13d44942c3}</Project>
       <Name>gView.Win.Core.UI</Name>
     </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Datasources.Fdb.UI\gView.Win.DataSources.Fdb.UI.csproj">
+      <Project>{b3944c41-5bb6-4cbc-9173-59d5e50f74a4}</Project>
+      <Name>gView.Win.DataSources.Fdb.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Db.UI\gView.Win.Db.UI.csproj">
+      <Project>{e5ed18b7-1d13-441b-9b3e-55a65a147928}</Project>
+      <Name>gView.Win.Db.UI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\gView.Win.Dialogs\gView.Win.Dialogs.csproj">
       <Project>{5e36eaa4-15c4-4d04-973b-245ad8a59b97}</Project>
       <Name>gView.Win.Dialogs</Name>
@@ -396,6 +424,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\tree_plus.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="menu.explorer.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

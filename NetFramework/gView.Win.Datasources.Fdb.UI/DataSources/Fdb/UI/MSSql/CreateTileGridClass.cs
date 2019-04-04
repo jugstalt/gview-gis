@@ -121,7 +121,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 IClass cls = null;
                 try
                 {
-                    cls = _sourceDataset.Elements[0].Class;
+                    cls = _sourceDataset.Elements().Result[0].Class;
                 }
                 catch { cls = null; }
                 IMultiGridIdentify gridClass = cls as IMultiGridIdentify;
@@ -142,7 +142,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                 #region Create Featureclass
                 IFeatureClass fc = null;
-                IDatasetElement element = _targetDataset[_name];
+                IDatasetElement element = _targetDataset.Element(_name).Result;
                 if (element != null && element.Class is IFeatureClass)
                 {
                     fc = (IFeatureClass)element.Class;
@@ -176,7 +176,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     _fdb.CreateFeatureClass(_targetDataset.DatasetName, _name,
                         new GeometryDef(geometryType.Polygon),
                         fields);
-                    element = _targetDataset[_name];
+                    element = _targetDataset.Element(_name).Result;
                     if (element == null || !(element.Class is IFeatureClass))
                         return;
                     _fdb.SetSpatialIndexBounds(_name, "BinaryTree2", iBounds, _spatialIndexDef.SplitRatio, _spatialIndexDef.MaxPerNode, _spatialIndexDef.Levels);
@@ -248,9 +248,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
                                     filter.AddField(sourceFc.IDFieldName);
                                     filter.Geometry = polygon;
                                     filter.FilterSpatialReference = fc.SpatialReference;
-                                    using (IFeatureCursor cursor = sourceFc.GetFeatures(filter))
+                                    using (IFeatureCursor cursor = sourceFc.GetFeatures(filter).Result)
                                     {
-                                        if (cursor.NextFeature == null)
+                                        if (cursor.NextFeature().Result == null)
                                         {
                                             column++;
                                             report.featurePos++;
@@ -272,7 +272,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                                             null,
                                             new IPoint[] { ring[0], ring[1], ring[3] },
                                             _resX, _resY,
-                                            fc.SpatialReference, null);
+                                            fc.SpatialReference, null).Result;
                                         if (!HasFloatArrayData(vals))
                                         {
                                             column++;
@@ -307,9 +307,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
                                 if (features.Count >= reportInterval)
                                 {
                                     if (ReportProgress != null) ReportProgress(report);
-                                    if (!_fdb.Insert(fc, features))
+                                    if (!_fdb.Insert(fc, features).Result)
                                     {
-                                        MessageBox.Show(_fdb.lastErrorMsg, "DB Insert Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        MessageBox.Show(_fdb.LastErrorMessage, "DB Insert Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                         return;
                                     }
                                     features.Clear();

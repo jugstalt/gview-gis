@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:avalonDock="http://schemas.xceed.com/wpf/xaml/avalondock"
         xmlns:winformsIntegration="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
-        xmlns:Fluent="urn:fluent-ribbon"
+        xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
         Title="gView.DataExplorer" Width="600" Height="300" WindowState="Maximized">
     <Grid>
         <Grid.RowDefinitions>
@@ -13,9 +13,7 @@
             <RowDefinition Height="23"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" x:Name="ribbonGrid">
-            <Fluent:Ribbon x:Name="ribbon" Background="#FF293955">
-
+        <Fluent:Ribbon Grid.Row="0" x:Name="ribbon">
             <!--Backstage Items-->
             <Fluent:Ribbon.Menu>
                 <Fluent:Backstage>
@@ -25,35 +23,28 @@
                 </Fluent:Backstage>
             </Fluent:Ribbon.Menu>
         </Fluent:Ribbon>
-        </Grid>
+
         <Grid Grid.Row="1" Background="#FFDCE7F4">
-        <winformsIntegration:WindowsFormsHost x:Name="winFormsHostStripAddress" Margin="53,2,2,2" OpacityMask="{x:Null}" />
-        <ToolBar ToolBarTray.IsLocked="True" Height="26" HorizontalAlignment="Left" Name="toolBarNav" VerticalAlignment="Top" Width="61" Background="#FFDAE6F3" BorderBrush="#FFEEF5FD" Loaded="toolBarNav_Loaded" Margin="0" Padding="1,0,0,0">
-            <Button ToolBar.OverflowMode="Never" >
-                <Image Source="/gView.Win.DataExplorer;component/Images/back.png"></Image>
-            </Button>
-            <Button ToolBar.OverflowMode="Never">
-                <Image Source="/gView.Win.DataExplorer;component/Images/fore.png"></Image>
-            </Button>
-        </ToolBar>
-    </Grid>
+            <winformsIntegration:WindowsFormsHost x:Name="winFormsHostStripAddress" Margin="53,2,2,2" OpacityMask="{x:Null}" />
+            <ToolBar ToolBarTray.IsLocked="True" Height="26" HorizontalAlignment="Left" Name="toolBarNav" VerticalAlignment="Top" Width="61" Background="#FFDAE6F3" BorderBrush="#FFEEF5FD" Loaded="toolBarNav_Loaded" Margin="0" Padding="1,0,0,0">
+                <Button ToolBar.OverflowMode="Never" >
+                    <Image Source="/gView.Win.DataExplorer;component/Images/back.png"></Image>
+                </Button>
+                <Button ToolBar.OverflowMode="Never">
+                    <Image Source="/gView.Win.DataExplorer;component/Images/fore.png"></Image>
+                </Button>
+            </ToolBar>
+        </Grid>
 
         <avalonDock:DockingManager Grid.Row="2" x:Name="dockManager" AllowMixedOrientation="True" Loaded="dockManager_Loaded" >
-            <!--<avalonDock:DockingManager.Theme>
-                <avalonDock:AeroTheme/>
-            </avalonDock:DockingManager.Theme>-->
+            <avalonDock:DockingManager.Theme>
+                <avalonDock:Vs2013BlueTheme/>
+            </avalonDock:DockingManager.Theme>
 
             <avalonDock:LayoutRoot>
                 <avalonDock:LayoutPanel Orientation="Horizontal">
                     <avalonDock:LayoutAnchorablePane DockWidth="250" x:Name="anchorPaneLeft">
-                        <!--
-                        <avalonDock:LayoutAnchorable x:Name="explorerTree"  ContentId="explorerTree" Title="Explorer Tree" ToolTip="Explorer Tree" CanHide="True" CanClose="False" >
-                            <winformsIntegration:WindowsFormsHost x:Name="winFormsHostExplorerTree"/>
-                        </avalonDock:LayoutAnchorable>
-                        <avalonDock:LayoutAnchorable x:Name="favorites"  ContentId="explorerTree" Title="Favortites" ToolTip="Favortites" CanHide="True" CanClose="False" >
-                            <winformsIntegration:WindowsFormsHost x:Name="winFormsHostFavorites"/>
-                        </avalonDock:LayoutAnchorable>
-                        -->
+
                     </avalonDock:LayoutAnchorablePane>
 
                     <avalonDock:LayoutDocumentPaneGroup>

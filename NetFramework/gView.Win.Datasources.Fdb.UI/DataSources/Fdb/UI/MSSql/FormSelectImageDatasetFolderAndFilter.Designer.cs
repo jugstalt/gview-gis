@@ -56,7 +56,7 @@
             // btnGetFolder
             // 
             resources.ApplyResources(this.btnGetFolder, "btnGetFolder");
-            this.btnGetFolder.Image = global::gView.DataSources.Fdb.UI.Properties.Resources.folder_open_16;
+            this.btnGetFolder.Image = global::gView.Win.DataSources.Fdb.UI.Properties.Resources.folder_open_16;
             this.btnGetFolder.Name = "btnGetFolder";
             this.btnGetFolder.UseVisualStyleBackColor = false;
             this.btnGetFolder.Click += new System.EventHandler(this.btnGetFolder_Click);

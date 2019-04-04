@@ -102,9 +102,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
         private void FillFormatList()
         {
             PlugInManager compMan = new PlugInManager();
-            foreach (XmlNode ds in compMan.GetPluginNodes(Plugins.Type.IDataset))
+            foreach (var dsType in compMan.GetPlugins(Plugins.Type.IDataset))
             {
-                IRasterFileDataset rds = compMan.CreateInstance(ds) as IRasterFileDataset;
+                IRasterFileDataset rds = compMan.CreateInstance<IRasterFileDataset>(dsType);
                 if (rds == null) continue;
 
                 foreach (string format in rds.SupportedFileFilter.Split('|'))

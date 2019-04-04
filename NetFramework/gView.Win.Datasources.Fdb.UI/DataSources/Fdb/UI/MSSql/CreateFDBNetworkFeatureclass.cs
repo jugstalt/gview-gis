@@ -115,7 +115,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
             IFeatureDatabaseReplication db = (IFeatureDatabaseReplication)_fdb;
 
-            if (_dataset[_networkName] != null)
+            if (_dataset.Element(_networkName) != null)
             {
                 MessageBox.Show("Featureclass '" + _networkName + "' already exists!");
                 return;
@@ -130,7 +130,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 if (datasetId == -1)
                     return;
 
-                NetworkBuilder networkBuilder = new NetworkBuilder(_dataset.Envelope, _tolerance);
+                NetworkBuilder networkBuilder = new NetworkBuilder(_dataset.Envelope().Result, _tolerance);
                 if (ReportProgress != null)
                     networkBuilder.reportProgress += new ProgressReporterEvent(networkBuilder_reportProgress);
 
@@ -215,7 +215,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                        (_complexEdgeFcs.Contains(fcId) || _complexEdgeFcs.Contains(-1)))
                         useWithComplexEdges = true;
 
-                    using (IFeatureCursor cursor = fc.GetFeatures(filter))
+                    using (IFeatureCursor cursor = fc.GetFeatures(filter).Result)
                     {
                         #region Report
                         report.Message = "Analize Edges: " + fc.Name;
@@ -225,7 +225,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                         #endregion
 
                         IFeature feature;
-                        while ((feature = cursor.NextFeature) != null)
+                        while ((feature = cursor.NextFeature().Result) != null)
                         {
                             bool oneway = false;
                             if (useOneway)
@@ -311,7 +311,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                         filter.AddField(fc.ShapeFieldName);
                         filter.AddField(switchStateFieldname);
 
-                        using (IFeatureCursor cursor = fc.GetFeatures(filter))
+                        using (IFeatureCursor cursor = fc.GetFeatures(filter).Result)
                         {
                             #region Report
                             report.Message = "Analize Nodes: " + fc.Name;
@@ -321,7 +321,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                             #endregion
 
                             IFeature feature;
-                            while ((feature = cursor.NextFeature) != null)
+                            while ((feature = cursor.NextFeature().Result) != null)
                             {
                                 bool switchState = isSwitchable;
                                 if (isSwitchable && !String.IsNullOrEmpty(switchStateFieldname))
@@ -396,7 +396,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     _networkName + "_ComplexEdges",
                     new GeometryDef(geometryType.Polyline),
                     fields);
-                IDatasetElement element = _dataset[_networkName + "_ComplexEdges"];
+                IDatasetElement element = _dataset.Element(_networkName + "_ComplexEdges").Result;
                 if (element == null || !(element.Class is IFeatureClass))
                     return;
                 if (edgeTreeDef != null)
@@ -420,7 +420,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 string tabEdgesName = _fdb.TableName(_networkName + "_Edges");
                 string tabEdgeIndexName = _fdb.TableName(_networkName + "_EdgeIndex");
 
-                while ((f = c.NextFeature) != null)
+                while ((f = c.NextFeature().Result) != null)
                 {
                     int eid = (int)f["EID"];
                     if ((bool)f["ISCOMPLEX"] == true)
@@ -549,7 +549,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     new GeometryDef(geometryType.Point),
                     fields);
 
-                element = _dataset[_networkName + "_Nodes"];
+                element = _dataset.Element(_networkName + "_Nodes").Result;
                 if (element == null || !(element.Class is IFeatureClass))
                     return;
                 if (nodeTreeDef != null)
@@ -568,7 +568,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 if (ReportProgress != null) ReportProgress(report);
                 #endregion
 
-                while ((f = c.NextFeature) != null)
+                while ((f = c.NextFeature().Result) != null)
                 {
                     features.Add(f);
 
@@ -603,7 +603,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     new GeometryDef(geometryType.Network),
                     fields);
 
-                element = _dataset[_networkName];
+                element = _dataset.Element(_networkName).Result;
                 if (element == null || !(element.Class is IFeatureClass))
                     return;
 
@@ -620,7 +620,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                 string fcNetworkName = _fdb.TableName("FC_" + _networkName);
 
-                while ((f = c.NextFeature) != null)
+                while ((f = c.NextFeature().Result) != null)
                 {
                     report.featurePos++;
 

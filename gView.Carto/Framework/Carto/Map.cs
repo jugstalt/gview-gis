@@ -773,6 +773,8 @@ namespace gView.Framework.Carto
             }
         }
 
+        public IntPtr TargetWindowHandle { get; set; }
+
         async virtual public Task<bool> RefreshMap(DrawPhase phase, ICancelTracker cancelTracker)
         {
             _requestExceptions = null;
@@ -805,23 +807,35 @@ namespace gView.Framework.Carto
                     if (_image == null)
                     {
                         DisposeStreams();
-                        _image = new System.Drawing.Bitmap(iWidth, iHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                        if (this.TargetWindowHandle == IntPtr.Zero)
+                        {
+                            _image = new System.Drawing.Bitmap(iWidth, iHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                        }
                         //if (NewBitmap != null && cancelTracker.Continue) NewBitmap(_image);
                     }
                     // NewBitmap immer aufrufen, da sonst neuer DataView nix mitbekommt
-                    if (NewBitmap != null && cancelTracker.Continue) NewBitmap(_image);
+                    if (this.TargetWindowHandle == IntPtr.Zero && NewBitmap != null && cancelTracker.Continue)
+                    {
+                        NewBitmap(_image);
+                    }
 
-
-                    _graphics = System.Drawing.Graphics.FromImage(_image);
+                    if (this.TargetWindowHandle != IntPtr.Zero)
+                    {
+                        _graphics = System.Drawing.Graphics.FromHwnd(this.TargetWindowHandle);
+                    }
+                    else
+                    {
+                        _graphics = System.Drawing.Graphics.FromImage(_image);
+                    }
                     this.dpi = _graphics.DpiX;
 
                     using (System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(_backgroundColor))
                     {
-                        _graphics.FillRectangle(brush, 0, 0, _image.Width, _image.Height);
+                        _graphics.FillRectangle(brush, 0, 0, /*_image.Width, _image.Height*/ iWidth, iHeight);
                         brush.Dispose();
                     }
 
-                    if (DoRefreshMapView != null)
+                    if (this.TargetWindowHandle==IntPtr.Zero && DoRefreshMapView != null)
                     {
                         mapRefreshThread.Start(cancelTracker);
                     }
@@ -829,6 +843,7 @@ namespace gView.Framework.Carto
                 #endregion
 
                 #region Geometry
+
                 if (Bit.Has(phase, DrawPhase.Geography))
                 //if (phase == DrawPhase.All || phase == DrawPhase.Geography)
                 {
@@ -886,9 +901,11 @@ namespace gView.Framework.Carto
                     }
 
                     List<IFeatureLayer> labelLayers = this.OrderedLabelLayers(layers);
+
                     #endregion
 
                     #region Renderer Features
+
                     foreach (ILayer layer in layers)
                     {
                         if (!cancelTracker.Continue) break;

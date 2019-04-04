@@ -4,6 +4,8 @@
              xmlns:local="clr-namespace:gView.Win.DataExplorer"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <!--Attach Default Fluent Control's Theme-->
+        <ResourceDictionary Source="pack://application:,,,/Fluent;Component/Themes/Generic.xaml" />
+        <!--<ResourceDictionary Source="pack://application:,,,/Fluent;Component/Themes/Office2010/Silver.xaml" />-->
     </Application.Resources>
 </Application>

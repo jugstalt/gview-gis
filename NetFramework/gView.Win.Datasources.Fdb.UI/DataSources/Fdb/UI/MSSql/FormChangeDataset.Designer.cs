@@ -87,7 +87,7 @@
             this.btnChangeConnectionString.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.btnChangeConnectionString.BackColor = System.Drawing.Color.White;
-            this.btnChangeConnectionString.Image = global::gView.DataSources.Fdb.UI.Properties.Resources.db_connect;
+            this.btnChangeConnectionString.Image = global::gView.Win.DataSources.Fdb.UI.Properties.Resources.db_connect;
             this.btnChangeConnectionString.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnChangeConnectionString.Location = new System.Drawing.Point(12, 12);
             this.btnChangeConnectionString.Name = "btnChangeConnectionString";

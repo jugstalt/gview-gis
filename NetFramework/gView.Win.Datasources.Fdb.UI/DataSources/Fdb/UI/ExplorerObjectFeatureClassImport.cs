@@ -14,6 +14,8 @@ using gView.Framework.UI.Dialogs;
 using gView.Framework.FDB;
 using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
+using System.Threading.Tasks;
+using gView.Framework.Sys.UI;
 
 namespace gView.DataSources.Fdb.UI
 {
@@ -218,7 +220,7 @@ namespace gView.DataSources.Fdb.UI
             if (datasetObject is IFeatureDataset)
             {
                 IFeatureDataset dataset = (IFeatureDataset)datasetObject;
-                foreach (IDatasetElement element in dataset.Elements)
+                foreach (IDatasetElement element in dataset.Elements().Result)
                 {
                     if (element is IFeatureLayer)
                     {
@@ -293,7 +295,7 @@ namespace gView.DataSources.Fdb.UI
                     null,
                     true,
                     null,
-                    sIndexDef))
+                    sIndexDef).Result)
                 {
                     MessageBox.Show(_import.lastErrorMsg);
                 }
@@ -316,7 +318,7 @@ namespace gView.DataSources.Fdb.UI
                     item.ImportFieldTranslation,
                     true,
                     null,
-                    sIndexDef))
+                    sIndexDef).Result)
                 {
                     MessageBox.Show(_import.lastErrorMsg);
                 }

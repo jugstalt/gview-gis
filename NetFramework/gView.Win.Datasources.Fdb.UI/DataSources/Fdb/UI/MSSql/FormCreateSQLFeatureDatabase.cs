@@ -97,7 +97,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     fdb.Open(ConnectionString);
                     if (!fdb.Create(txtDatabase.Text, MdfFilename))
                     {
-                        MessageBox.Show(fdb.lastErrorMsg, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(fdb.LastErrorMessage, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
                 }
@@ -110,7 +110,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                     if (!fdb.Create(txtDatabase.Text, parameters))
                     {
-                        MessageBox.Show(fdb.lastErrorMsg, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(fdb.LastErrorMessage, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
                     if (chkCreateReplicationDatamodel.Checked == true)

@@ -81,7 +81,7 @@ namespace gView.DataSources.EventTable
                 filter = SpatialFilter.Project(filter as ISpatialFilter, this.SpatialReference);
             }
 
-            return await FeatureCursor.Create(_etcon, filter);
+            return await FeatureCursor.Create(_etcon, filter, this);
         }
 
         #endregion

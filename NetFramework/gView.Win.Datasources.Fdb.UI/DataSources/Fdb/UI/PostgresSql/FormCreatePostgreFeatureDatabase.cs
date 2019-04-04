@@ -60,7 +60,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
                 if (!fdb.Create(txtDatabase.Text, parameters))
                 {
-                    MessageBox.Show(fdb.lastErrorMsg, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(fdb.LastErrorMessage, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
                 //if (chkCreateReplicationDatamodel.Checked == true)

@@ -360,7 +360,15 @@ namespace gView.Interoperability.GeoServices.Request
                         objectIdFieldName = tableClass.IDFieldName;
                         if (tableClass is IFeatureClass)
                         {
-                            esriGeometryType = JsonLayer.ToGeometryType(((IFeatureClass)tableClass).GeometryType);
+                            var geometryType = ((IFeatureClass)tableClass).GeometryType;
+                            if (geometryType == geometryType.Unknown)
+                            {
+                                var featureLayer = serviceMap.MapElements.Where(l => l.ID == query.LayerId).FirstOrDefault() as IFeatureLayer;
+                                if (featureLayer != null)
+                                    geometryType = featureLayer.LayerGeometryType;
+                            }
+
+                            esriGeometryType = JsonLayer.ToGeometryType(geometryType);
                         }
 
                         QueryFilter filter;
@@ -422,11 +430,6 @@ namespace gView.Interoperability.GeoServices.Request
 
                         #region Feature Spatial Reference
 
-                        if (query.OutSRef != null)
-                        {
-                            filter.FeatureSpatialReference = SRef(query.OutSRef);
-                        }
-
                         filter.Limit = query.ResultRecordCount > 0 ?
                             Math.Min(query.ResultRecordCount, _mapServer.FeatureQueryLimit) :
                             _mapServer.FeatureQueryLimit;
@@ -438,7 +441,6 @@ namespace gView.Interoperability.GeoServices.Request
 
                         using (var cursor = await tableClass.Search(filter))
                         {
-
                             bool firstFeature = true;
                             if (cursor is IFeatureCursor)
                             {

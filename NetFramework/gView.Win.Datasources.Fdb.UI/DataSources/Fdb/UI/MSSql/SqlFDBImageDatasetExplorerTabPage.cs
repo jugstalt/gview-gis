@@ -82,12 +82,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
         {
             if (exObject == null) return false;
             if (TypeHelper.Match(exObject.ObjectType, typeof(gView.DataSources.Fdb.MSSql.SqlFDBImageCatalogClass))) return true;
-            if (TypeHelper.Match(exObject.ObjectType, typeof(gView.DataSources.Fdb.MSAccess.AccessFDBImageCatalogClass))) return true;
             if (TypeHelper.Match(exObject.ObjectType, typeof(gView.DataSources.Fdb.PostgreSql.pgImageCatalogClass))) return true;
             if (TypeHelper.Match(exObject.ObjectType, typeof(gView.DataSources.Fdb.SQLite.SQLiteFDBImageCatalogClass))) return true;
 
             if (exObject.Object is gView.DataSources.Fdb.MSSql.SqlFDBImageCatalogClass) return true;
-            if (exObject.Object is gView.DataSources.Fdb.MSAccess.AccessFDBImageCatalogClass) return true;
             if (exObject.Object is gView.DataSources.Fdb.PostgreSql.pgImageCatalogClass) return true;
             if (exObject.Object is gView.DataSources.Fdb.SQLite.SQLiteFDBImageCatalogClass) return true;
 
@@ -129,11 +127,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     SqlFDBImageCatalogClass layer = (SqlFDBImageCatalogClass)_exObject.Object;
 
                     _cancelWorker = false;
-                    _gui_worker.RunWorkerAsync(layer.ImageList);
+                    _gui_worker.RunWorkerAsync(layer.ImageList().Result);
                 }
-                else if (_exObject.Object is AccessFDBImageCatalogClass)
+                else if (_exObject.Object is IRasterCatalogClass)
                 {
-                    AccessFDBImageCatalogClass layer = (AccessFDBImageCatalogClass)_exObject.Object;
+                    IRasterCatalogClass layer = (IRasterCatalogClass)_exObject.Object;
 
                     _cancelWorker = false;
                     //_gui_worker.RunWorkerAsync(layer.ImageList);
@@ -142,21 +140,21 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     // Workerthread ausgeführt wird...
                     // funzt nur bei SQL Server!!
                     //
-                    worker_DoWork(_gui_worker, new DoWorkEventArgs(layer.ImageList));
+                    worker_DoWork(_gui_worker, new DoWorkEventArgs(layer.ImageList().Result));
                 }
                 else if (_exObject.Object is pgImageCatalogClass)
                 {
                     pgImageCatalogClass layer = (pgImageCatalogClass)_exObject.Object;
 
                     _cancelWorker = false;
-                    _gui_worker.RunWorkerAsync(layer.ImageList);
+                    _gui_worker.RunWorkerAsync(layer.ImageList().Result);
                 }
                 else if (_exObject.Object is SQLiteFDBImageCatalogClass)
                 {
                     SQLiteFDBImageCatalogClass layer = (SQLiteFDBImageCatalogClass)_exObject.Object;
 
                     _cancelWorker = false;
-                    _gui_worker.RunWorkerAsync(layer.ImageList);
+                    _gui_worker.RunWorkerAsync(layer.ImageList().Result);
                 }
             }
         }
@@ -184,7 +182,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
             _cursor = (IFeatureCursor)e.Argument;
             IFeature row;
-            while ((row = _cursor.NextFeature) != null)
+            while ((row = _cursor.NextFeature().Result) != null)
             {
                 row.CaseSensitivFieldnameMatching = false;  // sollte auch pgSQL funktionieren
 
@@ -410,9 +408,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
                             }
                         }
                     }
-                    else if (_exObject.Object is AccessFDBImageCatalogClass)
+                    else if (_exObject.Object is IRasterCatalogClass)
                     {
-                        AccessFDBImageCatalogClass layer = (AccessFDBImageCatalogClass)_exObject.Object;
+                        IRasterCatalogClass layer = (IRasterCatalogClass)_exObject.Object;
                         if (layer.Dataset == null) return;
 
                         if (di.Exists)
@@ -454,10 +452,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 SqlFDBImageCatalogClass layer = (SqlFDBImageCatalogClass)_exObject.Object;
                 iDataset = new FDBImageDataset(layer._fdb, layer.Name);
             }
-            else if (_exObject.Object is AccessFDBImageCatalogClass)
+            else if (_exObject.Object is IRasterCatalogClass)
             {
-                AccessFDBImageCatalogClass layer = (AccessFDBImageCatalogClass)_exObject.Object;
-                iDataset = new FDBImageDataset(layer._fdb, layer.Name);
+                IRasterCatalogClass layer = (IRasterCatalogClass)_exObject.Object;
+                iDataset = new FDBImageDataset((IImageDB)layer.Dataset.Database, layer.Name);
             }
             if (iDataset == null) return;
 
@@ -506,10 +504,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 SqlFDBImageCatalogClass layer = (SqlFDBImageCatalogClass)_exObject.Object;
                 iDataset = new FDBImageDataset(layer._fdb, layer.Name);
             }
-            else if (_exObject.Object is AccessFDBImageCatalogClass)
+            else if (_exObject.Object is IRasterCatalogClass)
             {
-                AccessFDBImageCatalogClass layer = (AccessFDBImageCatalogClass)_exObject.Object;
-                iDataset = new FDBImageDataset(layer._fdb, layer.Name);
+                IRasterCatalogClass layer = (IRasterCatalogClass)_exObject.Object;
+                iDataset = new FDBImageDataset((IImageDB)layer.Dataset.Database, layer.Name);
             }
             if (iDataset == null) return;
 

@@ -422,6 +422,7 @@ namespace gView.Framework.Data
 
     public interface IRasterCatalogClass : IFeatureClass, IRasterClass
     {
+        Task<ICursor> ImageList();
     }
 
     public interface IRasterClass2 : IRasterClass

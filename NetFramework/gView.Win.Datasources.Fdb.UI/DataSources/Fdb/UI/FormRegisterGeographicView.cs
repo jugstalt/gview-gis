@@ -33,7 +33,7 @@ namespace gView.DataSources.Fdb.UI
             if (_dataset == null)
                 return;
 
-            foreach (IDatasetElement element in _dataset.Elements)
+            foreach (IDatasetElement element in _dataset.Elements().Result)
             {
                 if (element.Class is IFeatureClass)
                 {

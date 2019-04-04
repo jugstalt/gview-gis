@@ -333,7 +333,7 @@ namespace gView.DataSources.MSSqlSpatial
                 }
             }
 
-            command.CommandText = "SELECT " + limit + fieldNames + " FROM " + fc.Name;
+            command.CommandText = "SELECT " + top + fieldNames + " FROM " + fc.Name;
 
             if (!String.IsNullOrEmpty(where))
             {

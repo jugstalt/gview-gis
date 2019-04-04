@@ -205,6 +205,7 @@ namespace gView.Interoperability.ArcXML
 
             await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
         }
+
         async private Task PerformGetImageRequest(IServiceRequestContext context, XmlNode rType)
         {
             if (context == null || context.ServiceRequest == null)

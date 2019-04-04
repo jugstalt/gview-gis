@@ -65,7 +65,7 @@ namespace gView.DataSources.Fdb.UI
                 return false;
             }
 
-            DataTable tab = _conn.Select("*", "FDB_Datasets", "Name='" + _dsname + "' AND ImageDataset=1");
+            DataTable tab = _conn.Select("*", "FDB_Datasets", "Name='" + _dsname + "' AND ImageDataset=1").Result;
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -82,87 +82,14 @@ namespace gView.DataSources.Fdb.UI
 
             if (imageSpace.Equals(System.DBNull.Value) || imageSpace.Equals("database") || imageSpace.Equals(""))
             {
-                if (!(layer is IBitmap))
-                {
-                    _errMsg = "Layer don't implement the IBitmap Interface...";
-                    return false;
-                }
-
-                System.Drawing.Bitmap bm = ((IBitmap)layer).LoadBitmap();
-                if (bm == null)
-                {
-                    _errMsg = "Can't load Bitmap...";
-                    return false;
-                }
-
-                TFWFile tfw = new TFWFile(
-                    layer.RasterClass.oX,
-                    layer.RasterClass.oY,
-                    layer.RasterClass.dx1,
-                    layer.RasterClass.dx2,
-                    layer.RasterClass.dy1,
-                    layer.RasterClass.dy2);
-
-                Pyramid pyramid = new Pyramid();
-                if (pyramid.Create(image_id, _dsname, bm, tfw, _conn, levels, format))
-                {
-                    return true;
-                }
-                else
-                {
-                    _errMsg = pyramid.lastErrorMessage;
-                    return false;
-                }
+                _errMsg = "Not implemented (imageSpace==database)";
             }
             else
             {
-                try
-                {
-                    if (!(layer is IRasterFile))
-                    {
-                        _errMsg = "Can't get Filename from Rasterlayer...";
-                        return false;
-                    }
-                    FileInfo fi = new FileInfo(((IRasterFile)layer).Filename);
-                    if (!fi.Exists)
-                    {
-                        _errMsg = "Rasterfile does not exist...";
-                        return false;
-                    }
-                    DirectoryInfo di = new DirectoryInfo(imageSpace);
-                    if (!di.Exists) di.Create();
-
-                    Pyramid pyramid = new Pyramid();
-                    string filename = di.FullName + @"\pyr_" + System.Guid.NewGuid().ToString("N");
-
-                    if (pyramid.Create(fi.FullName, filename, levels, format))
-                    {
-                        DataTable fc_tab = _conn.Select("FDB_OID,MANAGED_FILE", "FC_" + _dsname + "_IMAGE_POLYGONS", "FDB_OID=" + image_id, "", true);
-                        if (fc_tab == null || tab.Rows.Count != 1)
-                        {
-                            _errMsg = _conn.errorMessage;
-                            return false;
-                        }
-                        fc_tab.Rows[0]["MANAGED_FILE"] = pyramid.FileName.ToLower().Replace(imageSpace.ToLower(), "");
-                        if (!_conn.Update(fc_tab))
-                        {
-                            _errMsg = _conn.errorMessage;
-                            return false;
-                        }
-                        return true;
-                    }
-                    else
-                    {
-                        _errMsg = pyramid.lastErrorMessage;
-                        return false;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _errMsg = "Check Imagespace: " + ex.Message;
-                    return false;
-                }
+                _errMsg = "Not implemented (imageSpace!=unmanaged)";
             }
+
+            return false;
         }
 
         public bool UpdateImageDatasetBitmap(int image_id)
@@ -265,7 +192,7 @@ namespace gView.DataSources.Fdb.UI
 
             if (imageSpace.Equals(System.DBNull.Value)) imageSpace = "database";
 
-            DataTable tab = _conn.Select("*", "FC_" + _dsname + "_IMAGE_POLYGONS", "FDB_OID=" + image_id, "", ((bitmapOnly) ? false : true));
+            DataTable tab = _conn.Select("*", "FC_" + _dsname + "_IMAGE_POLYGONS", "FDB_OID=" + image_id, "", ((bitmapOnly) ? false : true)).Result;
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -296,7 +223,7 @@ namespace gView.DataSources.Fdb.UI
             {
                 case "":
                 case "database":
-                    DataTable images = _conn.Select("ID", _dsname + "_IMAGE_DATA", "IMAGE_ID=" + image_id, "", true);
+                    DataTable images = _conn.Select("ID", _dsname + "_IMAGE_DATA", "IMAGE_ID=" + image_id, "", true).Result;
                     if (images == null)
                     {
                         _errMsg = _conn.errorMessage;
@@ -460,9 +387,9 @@ namespace gView.DataSources.Fdb.UI
             IRasterFileDataset rFileDataset = null;
             IRasterLayer rasterLayer = null;
             PlugInManager compMan = new PlugInManager();
-            foreach (XmlNode ds in compMan.GetPluginNodes(Plugins.Type.IDataset))
+            foreach (var dsType in compMan.GetPlugins(Plugins.Type.IDataset))
             {
-                IRasterFileDataset rds = compMan.CreateInstance(ds) as IRasterFileDataset;
+                IRasterFileDataset rds = compMan.CreateInstance<IRasterFileDataset>(dsType);
                 if (rds == null) continue;
 
                 if (rds.SupportsFormat(fi.Extension) < 0) continue;
@@ -487,12 +414,12 @@ namespace gView.DataSources.Fdb.UI
             {
                 rfd.AddRasterFile(fi.FullName);
 
-                if (rfd.Elements.Count == 0)
+                if (rfd.Elements().Result.Count == 0)
                 {
                     //Console.WriteLine(_errMsg = fi.FullName + " is not a valid Raster File...");
                     continue;
                 }
-                IDatasetElement element = rfd.Elements[0];
+                IDatasetElement element = rfd.Elements().Result[0];
                 if (!(element is IRasterLayer))
                 {
                     //Console.WriteLine(_errMsg = fi.FullName + " is not a valid Raster Layer...");
@@ -588,9 +515,9 @@ namespace gView.DataSources.Fdb.UI
             else
                 filter.WhereClause = "PATH='" + fullName + "'";
             int deleteOID = -1;
-            using (IFeatureCursor cursor = rasterFC.GetFeatures(filter))
+            using (IFeatureCursor cursor = rasterFC.GetFeatures(filter).Result)
             {
-                IFeature existingFeature = cursor.NextFeature;
+                IFeature existingFeature = cursor.NextFeature().Result;
                 if (existingFeature != null)
                 {
                     DateTime dt1 = (DateTime)existingFeature["LAST_MODIFIED"];
@@ -618,9 +545,9 @@ namespace gView.DataSources.Fdb.UI
             }
             if (deleteOID != -1)
             {
-                if (!fdb.Delete(rasterFC, deleteOID))
+                if (!fdb.Delete(rasterFC, deleteOID).Result)
                 {
-                    Console.WriteLine(_errMsg = "Can't delete old record " + fi.FullName + "\n" + fdb.lastErrorMsg);
+                    Console.WriteLine(_errMsg = "Can't delete old record " + fi.FullName + "\n" + fdb.LastErrorMessage);
                     return false;
                 }
             }
@@ -649,9 +576,9 @@ namespace gView.DataSources.Fdb.UI
             feature.Fields.Add(new FieldValue("CELLY", cellY));
             feature.Fields.Add(new FieldValue("LEVELS", (_managed) ? Math.Max(_levels, 1) : 0));
 
-            if (!fdb.Insert(rasterFC, feature))
+            if (!fdb.Insert(rasterFC, feature).Result)
             {
-                Console.WriteLine("\nERROR@" + fi.FullName + ": " + fdb.lastErrorMsg);
+                Console.WriteLine("\nERROR@" + fi.FullName + ": " + fdb.LastErrorMessage);
             }
             else
             {
@@ -663,10 +590,10 @@ namespace gView.DataSources.Fdb.UI
                         filter.WhereClause = ((AccessFDB)_fdb).DbColName("PATH") + "='" + fi.FullName + "'";
                     else
                         qfilter.WhereClause = "PATH='" + fi.FullName + "'";
-                    IFeatureCursor cursor = ((SqlFDB)fdb).Query(rasterFC, qfilter);
+                    IFeatureCursor cursor = ((SqlFDB)fdb).Query(rasterFC, qfilter).Result;
                     if (cursor != null)
                     {
-                        IFeature feat = cursor.NextFeature;
+                        IFeature feat = cursor.NextFeature().Result;
                         if (feat != null)
                         {
                             InsertImageDatasetBitmap(feat.OID, rasterLayer, _levels, format);
@@ -708,10 +635,10 @@ namespace gView.DataSources.Fdb.UI
             filter.AddField("LAST_MODIFIED2");
 
             List<int> Oids = new List<int>();
-            using (IFeatureCursor cursor = rasterFC.GetFeatures(filter))
+            using (IFeatureCursor cursor = rasterFC.GetFeatures(filter).Result)
             {
                 IFeature feature;
-                while ((feature = cursor.NextFeature) != null)
+                while ((feature = cursor.NextFeature().Result) != null)
                 {
                     string path = (string)feature["PATH"];
                     string path2 = (string)feature["PATH2"];
@@ -747,7 +674,7 @@ namespace gView.DataSources.Fdb.UI
 
                 foreach (int oid in Oids)
                 {
-                    if (!((AccessFDB)_fdb).Delete(rasterFC, oid))
+                    if (!((AccessFDB)_fdb).Delete(rasterFC, oid).Result)
                     {
                         Console.WriteLine(_errMsg = "Can't delete record OID=" + oid);
                         return false;

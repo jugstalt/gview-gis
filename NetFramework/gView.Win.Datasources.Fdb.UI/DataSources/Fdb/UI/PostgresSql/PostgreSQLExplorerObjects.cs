@@ -399,7 +399,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                     pgFDB fdb = new pgFDB();
                     if (!fdb.Open(_connectionString))
                     {
-                        _errMsg = fdb.lastErrorMsg;
+                        _errMsg = fdb.LastErrorMessage;
                         return null;
                     }
                     string[] ds = fdb.DatasetNames;
@@ -418,7 +418,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                             dsMod[i++] = dsname;
                         }
                     }
-                    if (ds == null) _errMsg = fdb.lastErrorMsg;
+                    if (ds == null) _errMsg = fdb.LastErrorMessage;
                     fdb.Dispose();
 
                     return dsMod;
@@ -612,12 +612,12 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 int id = _fdb.CreateSpatialReference(dlg.SpatialReference);
                 if (id == -1)
                 {
-                    MessageBox.Show("Can't create Spatial Reference!\n", _fdb.lastErrorMsg);
+                    MessageBox.Show("Can't create Spatial Reference!\n", _fdb.LastErrorMessage);
                     return;
                 }
                 if (!_fdb.SetSpatialReferenceID(_dataset.DatasetName, id))
                 {
-                    MessageBox.Show("Can't set Spatial Reference!\n", _fdb.lastErrorMsg);
+                    MessageBox.Show("Can't set Spatial Reference!\n", _fdb.LastErrorMessage);
                     return;
                 }
                 _dataset.SpatialReference = dlg.SpatialReference;
@@ -629,7 +629,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             if (_dataset == null) return;
 
             List<IClass> classes = new List<IClass>();
-            foreach (IDatasetElement element in _dataset.Elements)
+            foreach (IDatasetElement element in _dataset.Elements().Result)
             {
                 if (element == null || element.Class == null) continue;
                 classes.Add(element.Class);
@@ -708,7 +708,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
             if (_dataset.Open())
             {
-                foreach (IDatasetElement element in _dataset.Elements)
+                foreach (IDatasetElement element in _dataset.Elements().Result)
                 {
                     base.AddChildObject(new FeatureClassExplorerObject(this, _dsname, element));
                 }
@@ -724,7 +724,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
             if (!((IFeatureDatabase)_dataset.Database).DeleteFeatureClass(name))
             {
-                MessageBox.Show(_dataset.Database.lastErrorMsg);
+                MessageBox.Show(_dataset.Database.LastErrorMessage);
                 return false;
             }
             return true;
@@ -734,9 +734,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         {
             if (_dataset == null || !(_dataset.Database is IFeatureDatabase)) return false;
 
-            if (!((IFeatureDatabase)_dataset.Database).DeleteDataset(dsname))
+            if (!((IFeatureDatabase)_dataset.Database).DeleteDataset(dsname).Result)
             {
-                MessageBox.Show(_dataset.Database.lastErrorMsg);
+                MessageBox.Show(_dataset.Database.LastErrorMessage);
                 return false;
             }
             return true;
@@ -808,17 +808,17 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             switch (dlg.DatasetType)
             {
                 case FormNewDataset.datasetType.FeatureDataset:
-                    dsID = fdb.CreateDataset(datasetName, sRef, sIndexDef);
+                    dsID = fdb.CreateDataset(datasetName, sRef, sIndexDef).Result;
                     break;
                 case FormNewDataset.datasetType.ImageDataset:
-                    dsID = fdb.CreateImageDataset(datasetName, sRef, sIndexDef, dlg.ImageSpace, dlg.AdditionalFields);
+                    dsID = fdb.CreateImageDataset(datasetName, sRef, sIndexDef, dlg.ImageSpace, dlg.AdditionalFields).Result;
                     datasetName = "#" + datasetName;
                     break;
             }
 
             if (dsID == -1)
             {
-                MessageBox.Show(fdb.lastErrorMsg, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(fdb.LastErrorMessage, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return null;
             }
 
@@ -870,7 +870,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             }
             if (!((pgFDB)_dataset.Database).RenameDataset(this.Name, newName))
             {
-                MessageBox.Show("Can't rename dataset...\n" + ((pgFDB)_dataset.Database).lastErrorMsg);
+                MessageBox.Show("Can't rename dataset...\n" + ((pgFDB)_dataset.Database).LastErrorMessage);
                 return false;
             }
 
@@ -1192,7 +1192,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
             if (!((pgFDB)_fc.Dataset.Database).RenameFeatureClass(this.Name, newName))
             {
-                MessageBox.Show("Can't rename featureclass...\n" + ((pgFDB)_fc.Dataset.Database).lastErrorMsg);
+                MessageBox.Show("Can't rename featureclass...\n" + ((pgFDB)_fc.Dataset.Database).LastErrorMessage);
                 return false;
             }
 
@@ -1236,14 +1236,14 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
             if (FCID < 0)
             {
-                MessageBox.Show("ERROR: " + fdb.lastErrorMsg);
+                MessageBox.Show("ERROR: " + fdb.LastErrorMessage);
                 return null;
             }
 
             ISpatialIndexDef sIndexDef = fdb.SpatialIndexDef(parentExObject.Name);
             fdb.SetSpatialIndexBounds(dlg.FeatureclassName, "BinaryTree2", dlg.SpatialIndexExtents, 0.55, 200, dlg.SpatialIndexLevels);
 
-            IDatasetElement element = ((IFeatureDataset)parentExObject.Object)[dlg.FeatureclassName];
+            IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.FeatureclassName).Result;
             return new FeatureClassExplorerObject(
                 parentExObject as DatasetExplorerObject,
                 parentExObject.Name,
@@ -1357,7 +1357,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             FormProgress progress = new FormProgress();
             progress.ShowProgressDialog(creator, null, creator.Thread);
 
-            IDatasetElement element = ((IFeatureDataset)parentExObject.Object)[dlg.NetworkName];
+            IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.NetworkName).Result;
             return new FeatureClassExplorerObject(
                 parentExObject as DatasetExplorerObject,
                 parentExObject.Name,
@@ -1394,7 +1394,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             {
                 int fc_id = fdb.CreateSpatialView(dataset.DatasetName, dlg.SpatialViewAlias);
 
-                IDatasetElement element = ((IFeatureDataset)parentExObject.Object)[dlg.SpatialViewAlias];
+                IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.SpatialViewAlias).Result;
                 return new FeatureClassExplorerObject(
                     parentExObject as DatasetExplorerObject,
                     parentExObject.Name,
@@ -1503,7 +1503,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                         int fcid = fdb.CreateLinkedFeatureClass(dataset.DatasetName, (IFeatureClass)exObj.Object);
                         if (ret == null)
                         {
-                            IDatasetElement element = dataset[((IFeatureClass)exObj.Object).Name];
+                            IDatasetElement element = dataset.Element(((IFeatureClass)exObj.Object).Name).Result;
                             if (element != null)
                             {
                                 ret = new FeatureClassExplorerObject(
@@ -1672,7 +1672,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             FormProgress progress = new FormProgress();
             progress.ShowProgressDialog(creator, null, creator.Thread);
 
-            IDatasetElement element = ((IFeatureDataset)parentExObject.Object)[dlg.GridName];
+            IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.GridName).Result;
             return new FeatureClassExplorerObject(
                 parentExObject as DatasetExplorerObject,
                 parentExObject.Name,

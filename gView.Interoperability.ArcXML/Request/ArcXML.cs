@@ -1437,7 +1437,12 @@ namespace gView.Interoperability.ArcXML
                                 xWriter.WriteAttributeString("group", Layers.GroupName);
 
                             xWriter.WriteStartElement("FCLASS");
-                            switch (fClass.GeometryType)
+
+                            var geomType = fClass.GeometryType;  // if layer is SQL Spatial with undefined geometrytype...
+                            if (geomType == geometryType.Unknown && fLayer.LayerGeometryType != geometryType.Unknown)  // take the settings from layer-properties
+                                geomType = fLayer.LayerGeometryType;
+
+                            switch (geomType)
                             {
                                 case geometryType.Envelope:
                                 case geometryType.Polygon:

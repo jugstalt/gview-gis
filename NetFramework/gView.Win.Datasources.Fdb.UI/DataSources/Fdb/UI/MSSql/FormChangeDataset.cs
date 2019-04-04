@@ -11,6 +11,8 @@ using gView.Framework.Db;
 using gView.Framework.IO;
 using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
+using gView.DataSources.Fdb.PostgreSql;
+using gView.DataSources.Fdb.SQLite;
 
 namespace gView.DataSources.Fdb.UI.MSSql
 {
@@ -31,7 +33,23 @@ namespace gView.DataSources.Fdb.UI.MSSql
         private void BuildList()
         {
             lstDatasets.Items.Clear();
-            AccessFDB fdb = (_providerId == "mssql" ? new SqlFDB() : new AccessFDB());
+            AccessFDB fdb = null;
+
+            switch (_providerId)
+            {
+                case "mssql":
+                    fdb = new SqlFDB();
+                    break;
+                case "postgres":
+                    fdb = new pgFDB();
+                    break;
+                case "sqlite":
+                    fdb = new SQLiteFDB();
+                    break;
+            }
+
+            if (fdb == null)
+                return;
 
             if (!fdb.Open(this.ConnectionString))
             {
@@ -84,7 +102,24 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         private void btnChangeConnectionString_Click(object sender, EventArgs e)
         {
-            AccessFDB fdb = (_providerId == "mssql" ? new SqlFDB() : new AccessFDB());
+            AccessFDB fdb = null;
+
+            switch (_providerId)
+            {
+                case "mssql":
+                    fdb = new SqlFDB();
+                    break;
+                case "postgres":
+                    fdb = new pgFDB();
+                    break;
+                case "sqlite":
+                    fdb = new SQLiteFDB();
+                    break;
+            }
+
+            if (fdb == null)
+                return;
+
             fdb.Open(_connectionString);
 
             DbConnectionString dbConnStr = new DbConnectionString();

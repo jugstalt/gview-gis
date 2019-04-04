@@ -1249,5 +1249,45 @@ namespace gView.Framework.Db
             }
             return tableNames.ToArray();
         }
+
+        public (string top, string limit) LimitResults(Data.IQueryFilter filter, Data.IFeatureClass fc)
+        {
+            string top=String.Empty, limit = String.Empty;
+            switch(dbType)
+            {
+                case DBType.sql:
+                    if (filter.Limit > 0)
+                    {
+                        if (String.IsNullOrEmpty(fc.IDFieldName) && String.IsNullOrWhiteSpace(filter.OrderBy))
+                        {
+                            top = " top(" + filter.Limit + ") ";
+                        }
+                        else
+                        {
+                            if (String.IsNullOrWhiteSpace(filter.OrderBy))
+                            {
+                                limit += " order by " + filter.fieldPrefix + fc.IDFieldName + filter.fieldPostfix;
+                            }
+
+                            limit += " offset " + Math.Max(0, filter.BeginRecord - 1) + " rows fetch next " + filter.Limit + " rows only";
+                        }
+                    }
+                    break;
+                case DBType.npgsql:
+                    if (filter.Limit > 0)
+                    {
+                        if(String.IsNullOrWhiteSpace(filter.OrderBy) && !String.IsNullOrWhiteSpace(fc.IDFieldName))
+                        {
+                            limit += " order by " + filter.fieldPrefix + fc.IDFieldName + filter.fieldPostfix;
+                        }
+                        limit += " limit " + filter.Limit;
+                        if (filter.BeginRecord > 1)  // Default in QueryFilter is one!!!
+                            limit += " offset " + Math.Max(0, filter.BeginRecord - 1);
+                    }
+                    break;
+            }
+
+            return (top: top, limit: limit);
+        } 
     }
 }

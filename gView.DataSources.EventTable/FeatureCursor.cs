@@ -30,7 +30,7 @@ namespace gView.DataSources.EventTable
             
         }
 
-        async static public Task<FeatureCursor> Create(EventTableConnection etconn, IQueryFilter filter)
+        async static public Task<FeatureCursor> Create(EventTableConnection etconn, IQueryFilter filter, IFeatureClass fc)
         {
             var cursor = new FeatureCursor(etconn, filter);
 
@@ -89,7 +89,10 @@ namespace gView.DataSources.EventTable
                 //_tab = conn.Select(sb.ToString(), etconn.TableName, where);
                 //_addShape = _tab.Columns.Contains(_etcon.XFieldName) &&
                 //            _tab.Columns.Contains(_etcon.YFieldName);
-                var dataReaderResult = await conn.DataReaderAsync("select " + fields + " from " + etconn.TableName + (String.IsNullOrEmpty(where) ? String.Empty : " WHERE " + where));
+
+                var limits = conn.LimitResults(filter, fc);
+                var dataReaderResult = await conn.DataReaderAsync("select " + limits.top + fields + " from " + etconn.TableName + (String.IsNullOrEmpty(where) ? String.Empty : " WHERE " + where) + limits.limit);
+
                 cursor._dbReader = dataReaderResult.reader;
                 cursor._dbConnection = dataReaderResult.connection;
             }

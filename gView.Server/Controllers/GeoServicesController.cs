@@ -793,7 +793,7 @@ namespace gView.Server.Controllers
                 }
 
                 JsonExtent extent = null;
-                var spatialReference = map.Display.SpatialReference;
+                var spatialReference = (datasetElement.Class is IFeatureClass ? ((IFeatureClass)datasetElement.Class).SpatialReference : null) ?? map.Display.SpatialReference;
                 int epsgCode = spatialReference != null ? spatialReference.EpsgCode : 0;
 
                 if (datasetElement.Class is IFeatureClass && ((IFeatureClass)datasetElement.Class).Envelope != null)
@@ -826,6 +826,13 @@ namespace gView.Server.Controllers
 
                 result = result ?? new JsonLayer();
 
+                var geometryType = datasetElement.Class is IFeatureClass ?
+                    ((IFeatureClass)datasetElement.Class).GeometryType :
+                    Framework.Geometry.geometryType.Unknown;
+
+                if (geometryType == Framework.Geometry.geometryType.Unknown && datasetElement is IFeatureLayer)   // if layer is SQL Spatial with undefined geometrytype...
+                    geometryType = ((IFeatureLayer)datasetElement).LayerGeometryType;                             // take the settings from layer-properties
+
                 result.CurrentVersion = Version;
                 result.Id = datasetElement.ID;
                 result.Name = tocElement != null ? tocElement.Name : datasetElement.Title;
@@ -837,7 +844,9 @@ namespace gView.Server.Controllers
                 result.Type = type;
                 result.ParentLayer = parentLayer;
                 result.DrawingInfo = drawingInfo;
-                result.GeometryType = datasetElement.Class is IFeatureClass ? Interoperability.GeoServices.Rest.Json.JsonLayer.ToGeometryType(((IFeatureClass)datasetElement.Class).GeometryType).ToString() : EsriGeometryType.esriGeometryNull.ToString();
+                result.GeometryType = datasetElement.Class is IFeatureClass ? 
+                    Interoperability.GeoServices.Rest.Json.JsonLayer.ToGeometryType(geometryType).ToString() : 
+                    EsriGeometryType.esriGeometryNull.ToString();
                 
                 return result;
             }

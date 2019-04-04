@@ -535,7 +535,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     SqlFDB fdb = new SqlFDB();
                     if (!fdb.Open(_connectionString))
                     {
-                        _errMsg = fdb.lastErrorMsg;
+                        _errMsg = fdb.LastErrorMessage;
                         return null;
                     }
                     if (fdb.lastException != null)
@@ -560,7 +560,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                             dsMod[i++] = dsname;
                         }
                     }
-                    if (ds == null) _errMsg = fdb.lastErrorMsg;
+                    if (ds == null) _errMsg = fdb.LastErrorMessage;
                     fdb.Dispose();
 
                     return dsMod;
@@ -865,12 +865,12 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 int id = _fdb.CreateSpatialReference(dlg.SpatialReference);
                 if (id == -1)
                 {
-                    MessageBox.Show("Can't create Spatial Reference!\n", _fdb.lastErrorMsg);
+                    MessageBox.Show("Can't create Spatial Reference!\n", _fdb.LastErrorMessage);
                     return;
                 }
                 if (!_fdb.SetSpatialReferenceID(_dataset.DatasetName, id))
                 {
-                    MessageBox.Show("Can't set Spatial Reference!\n", _fdb.lastErrorMsg);
+                    MessageBox.Show("Can't set Spatial Reference!\n", _fdb.LastErrorMessage);
                     return;
                 }
                 _dataset.SpatialReference = dlg.SpatialReference;
@@ -882,7 +882,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             if (_dataset == null) return;
 
             List<IClass> classes = new List<IClass>();
-            foreach (IDatasetElement element in _dataset.Elements)
+            foreach (IDatasetElement element in _dataset.Elements().Result)
             {
                 if (element == null || element.Class == null) continue;
                 classes.Add(element.Class);
@@ -961,7 +961,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
             if (_dataset.Open())
             {
-                foreach (IDatasetElement element in _dataset.Elements)
+                foreach (IDatasetElement element in _dataset.Elements().Result)
                 {
                     base.AddChildObject(new SqlFDBFeatureClassExplorerObject(this, _dsname, element));
                 }
@@ -977,7 +977,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
             if (!((IFeatureDatabase)_dataset.Database).DeleteFeatureClass(name))
             {
-                MessageBox.Show(_dataset.Database.lastErrorMsg);
+                MessageBox.Show(_dataset.Database.LastErrorMessage);
                 return false;
             }
             return true;
@@ -987,9 +987,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
         {
             if (_dataset == null || !(_dataset.Database is IFeatureDatabase)) return false;
 
-            if (!((IFeatureDatabase)_dataset.Database).DeleteDataset(dsname))
+            if (!((IFeatureDatabase)_dataset.Database).DeleteDataset(dsname).Result)
             {
-                MessageBox.Show(_dataset.Database.lastErrorMsg);
+                MessageBox.Show(_dataset.Database.LastErrorMessage);
                 return false;
             }
             return true;
@@ -1067,17 +1067,17 @@ namespace gView.DataSources.Fdb.UI.MSSql
             switch (dlg.DatasetType)
             {
                 case FormNewDataset.datasetType.FeatureDataset:
-                    dsID = fdb.CreateDataset(datasetName, sRef, sIndexDef);
+                    dsID = fdb.CreateDataset(datasetName, sRef, sIndexDef).Result;
                     break;
                 case FormNewDataset.datasetType.ImageDataset:
-                    dsID = fdb.CreateImageDataset(datasetName, sRef, sIndexDef, dlg.ImageSpace, dlg.AdditionalFields);
+                    dsID = fdb.CreateImageDataset(datasetName, sRef, sIndexDef, dlg.ImageSpace, dlg.AdditionalFields).Result;
                     datasetName = "#" + datasetName;
                     break;
             }
 
             if (dsID == -1)
             {
-                MessageBox.Show(fdb.lastErrorMsg, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(fdb.LastErrorMessage, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return null;
             }
 
@@ -1129,7 +1129,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             }
             if (!((AccessFDB)_dataset.Database).RenameDataset(this.Name, newName))
             {
-                MessageBox.Show("Can't rename dataset...\n" + ((AccessFDB)_dataset.Database).lastErrorMsg);
+                MessageBox.Show("Can't rename dataset...\n" + ((AccessFDB)_dataset.Database).LastErrorMessage);
                 return false;
             }
 
@@ -1465,7 +1465,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
             if (!((AccessFDB)_fc.Dataset.Database).RenameFeatureClass(this.Name, newName))
             {
-                MessageBox.Show("Can't rename featureclass...\n" + ((AccessFDB)_fc.Dataset.Database).lastErrorMsg);
+                MessageBox.Show("Can't rename featureclass...\n" + ((AccessFDB)_fc.Dataset.Database).LastErrorMessage);
                 return false;
             }
 
@@ -1509,7 +1509,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
             if (FCID < 0)
             {
-                MessageBox.Show("ERROR: " + fdb.lastErrorMsg);
+                MessageBox.Show("ERROR: " + fdb.LastErrorMessage);
                 return null;
             }
 
@@ -1526,7 +1526,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 fdb.SetSpatialIndexBounds(dlg.FeatureclassName, "BinaryTree2", dlg.SpatialIndexExtents, 0.55, 200, dlg.SpatialIndexLevels);
             }
 
-            IDatasetElement element = ((IFeatureDataset)parentExObject.Object)[dlg.FeatureclassName];
+            IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.FeatureclassName).Result;
             return new SqlFDBFeatureClassExplorerObject(
                 parentExObject as SqlFDBDatasetExplorerObject,
                 parentExObject.Name,
@@ -1637,7 +1637,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             FormProgress progress = new FormProgress();
             progress.ShowProgressDialog(creator, null, creator.Thread);
 
-            IDatasetElement element = ((IFeatureDataset)parentExObject.Object)[dlg.NetworkName];
+            IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.NetworkName).Result;
             return new SqlFDBFeatureClassExplorerObject(
                 parentExObject as SqlFDBDatasetExplorerObject,
                 parentExObject.Name,
@@ -1674,7 +1674,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             {
                 int fc_id = fdb.CreateSpatialView(dataset.DatasetName, dlg.SpatialViewAlias);
 
-                IDatasetElement element = ((IFeatureDataset)parentExObject.Object)[dlg.SpatialViewAlias];
+                IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.SpatialViewAlias).Result;
                 return new SqlFDBFeatureClassExplorerObject(
                     parentExObject as SqlFDBDatasetExplorerObject,
                     parentExObject.Name,
@@ -1783,12 +1783,12 @@ namespace gView.DataSources.Fdb.UI.MSSql
                         int fcid = fdb.CreateLinkedFeatureClass(dataset.DatasetName, (IFeatureClass)exObj.Object);
                         if (fcid < 0)
                         {
-                            MessageBox.Show(fdb.lastErrorMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show(fdb.LastErrorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             continue;
                         }
                         if (ret == null)
                         {
-                            IDatasetElement element = dataset[((IFeatureClass)exObj.Object).Name];
+                            IDatasetElement element = dataset.Element(((IFeatureClass)exObj.Object).Name).Result;
                             if (element != null)
                             {
                                 ret = new SqlFDBFeatureClassExplorerObject(
@@ -1952,7 +1952,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             FormProgress progress = new FormProgress();
             progress.ShowProgressDialog(creator, null, creator.Thread);
 
-            IDatasetElement element = ((IFeatureDataset)parentExObject.Object)[dlg.GridName];
+            IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.GridName).Result;
             return new SqlFDBFeatureClassExplorerObject(
                 parentExObject as SqlFDBDatasetExplorerObject,
                 parentExObject.Name,

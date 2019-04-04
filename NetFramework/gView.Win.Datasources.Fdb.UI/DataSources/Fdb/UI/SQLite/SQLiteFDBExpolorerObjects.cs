@@ -105,7 +105,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
                     SQLiteFDB fdb = new SQLiteFDB();
                     if (!fdb.Open(_filename))
                     {
-                        _errMsg = fdb.lastErrorMsg;
+                        _errMsg = fdb.LastErrorMessage;
                         return null;
                     }
                     string[] ds = fdb.DatasetNames;
@@ -124,7 +124,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
                             dsMod[i++] = dsname;
                         }
                     }
-                    if (ds == null) _errMsg = fdb.lastErrorMsg;
+                    if (ds == null) _errMsg = fdb.LastErrorMessage;
                     fdb.Dispose();
 
                     return dsMod;
@@ -202,7 +202,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
                 SQLiteFDB fdb = new SQLiteFDB();
                 if (!fdb.Create(dlg.FileName))
                 {
-                    MessageBox.Show(fdb.lastErrorMsg, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(fdb.LastErrorMessage, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return null;
                 }
                 _filename = dlg.FileName;
@@ -295,12 +295,12 @@ namespace gView.DataSources.Fdb.UI.SQLite
                 int id = _fdb.CreateSpatialReference(dlg.SpatialReference);
                 if (id == -1)
                 {
-                    MessageBox.Show("Can't create Spatial Reference!\n", _fdb.lastErrorMsg);
+                    MessageBox.Show("Can't create Spatial Reference!\n", _fdb.LastErrorMessage);
                     return;
                 }
                 if (!_fdb.SetSpatialReferenceID(_dataset.DatasetName, id))
                 {
-                    MessageBox.Show("Can't set Spatial Reference!\n", _fdb.lastErrorMsg);
+                    MessageBox.Show("Can't set Spatial Reference!\n", _fdb.LastErrorMessage);
                     return;
                 }
                 _dataset.SpatialReference = dlg.SpatialReference;
@@ -312,7 +312,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
             if (_dataset == null) return;
 
             List<IClass> classes = new List<IClass>();
-            foreach (IDatasetElement element in _dataset.Elements)
+            foreach (IDatasetElement element in _dataset.Elements().Result)
             {
                 if (element == null || element.Class == null) continue;
                 classes.Add(element.Class);
@@ -381,7 +381,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
             
             if (_dataset.Open())
             {
-                foreach (IDatasetElement element in _dataset.Elements)
+                foreach (IDatasetElement element in _dataset.Elements().Result)
                 {
                     base.AddChildObject(new SQLiteFDBFeatureClassExplorerObject(this, _filename, _dsname, element));
                 }
@@ -442,7 +442,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
             if (!((IFeatureDatabase)_dataset.Database).DeleteFeatureClass(name))
             {
-                MessageBox.Show(_dataset.Database.lastErrorMsg);
+                MessageBox.Show(_dataset.Database.LastErrorMessage);
                 return false;
             }
             return true;
@@ -452,9 +452,9 @@ namespace gView.DataSources.Fdb.UI.SQLite
         {
             if (_dataset == null || !(_dataset.Database is IFeatureDatabase)) return false;
 
-            if (!((IFeatureDatabase)_dataset.Database).DeleteDataset(dsname))
+            if (!((IFeatureDatabase)_dataset.Database).DeleteDataset(dsname).Result)
             {
-                MessageBox.Show(_dataset.Database.lastErrorMsg);
+                MessageBox.Show(_dataset.Database.LastErrorMessage);
                 return false;
             }
             return true;
@@ -485,17 +485,17 @@ namespace gView.DataSources.Fdb.UI.SQLite
             switch (dlg.DatasetType)
             {
                 case FormNewDataset.datasetType.FeatureDataset:
-                    dsID = fdb.CreateDataset(datasetName, dlg.SpatialReferene);
+                    dsID = fdb.CreateDataset(datasetName, dlg.SpatialReferene).Result;
                     break;
                 case FormNewDataset.datasetType.ImageDataset:
-                    dsID = fdb.CreateImageDataset(datasetName, dlg.SpatialReferene, null, dlg.ImageSpace, dlg.AdditionalFields);
+                    dsID = fdb.CreateImageDataset(datasetName, dlg.SpatialReferene, null, dlg.ImageSpace, dlg.AdditionalFields).Result;
                     datasetName = "#" + datasetName;
                     break;
             }
 
             if (dsID == -1)
             {
-                MessageBox.Show(fdb.lastErrorMsg, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(fdb.LastErrorMessage, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return null;
             }
 
@@ -544,7 +544,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
             }
             if (!((SQLiteFDB)_dataset.Database).RenameDataset(this.Name, newName))
             {
-                MessageBox.Show("Can't rename dataset...\n" + ((SQLiteFDB)_dataset.Database).lastErrorMsg);
+                MessageBox.Show("Can't rename dataset...\n" + ((SQLiteFDB)_dataset.Database).LastErrorMessage);
                 return false;
             }
 
@@ -850,7 +850,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
             if (!((SQLiteFDB)_fc.Dataset.Database).RenameFeatureClass(this.Name, newName))
             {
-                MessageBox.Show("Can't rename featureclass...\n" + ((SQLiteFDB)_fc.Dataset.Database).lastErrorMsg);
+                MessageBox.Show("Can't rename featureclass...\n" + ((SQLiteFDB)_fc.Dataset.Database).LastErrorMessage);
                 return false;
             }
 
@@ -894,14 +894,14 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
             if (FCID < 0)
             {
-                MessageBox.Show("ERROR: " + fdb.lastErrorMsg);
+                MessageBox.Show("ERROR: " + fdb.LastErrorMessage);
                 return null;
             }
 
             ISpatialIndexDef sIndexDef = fdb.SpatialIndexDef(parentExObject.Name);
             fdb.SetSpatialIndexBounds(dlg.FeatureclassName, "BinaryTree2", dlg.SpatialIndexExtents, 0.55, 200, dlg.SpatialIndexLevels);
 
-            IDatasetElement element = ((IFeatureDataset)parentExObject.Object)[dlg.FeatureclassName];
+            IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.FeatureclassName).Result;
             return new SQLiteFDBFeatureClassExplorerObject(
                 parentExObject as SQLiteFDBDatasetExplorerObject,
                 _filename,
@@ -950,7 +950,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
                         int fcid = fdb.CreateLinkedFeatureClass(dataset.DatasetName, (IFeatureClass)exObj.Object);
                         if (ret == null)
                         {
-                            IDatasetElement element=dataset[((IFeatureClass)exObj.Object).Name];
+                            IDatasetElement element=dataset.Element(((IFeatureClass)exObj.Object).Name).Result;
                             if (element != null)
                             {
                                 ret = new SQLiteFDBFeatureClassExplorerObject(
@@ -1117,7 +1117,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
             FormProgress progress = new FormProgress();
             progress.ShowProgressDialog(creator, null, creator.Thread);
 
-            IDatasetElement element = ((IFeatureDataset)parentExObject.Object)[dlg.NetworkName];
+            IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.NetworkName).Result;
             return new SQLiteFDBFeatureClassExplorerObject(
                                     parent,
                                     parent.FileName,
@@ -1144,7 +1144,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
         {
             get
             {
-                return global::gView.DataSources.Fdb.UI.Properties.Resources.file_fdb;
+                return global::gView.Win.DataSources.Fdb.UI.Properties.Resources.file_fdb;
             }
         }
         

@@ -119,7 +119,7 @@ namespace gView.Win.DataExplorer
         {
             _tree.InitTree(true);
 
-            ////App.CloseSplash();
+            App.CloseSplash();
 
             foreach (var item in ribbon.QuickAccessItems)
             {
@@ -1034,7 +1034,7 @@ namespace gView.Win.DataExplorer
             List<IOrder> items = new List<IOrder>();
             foreach (var toolType in compMan.GetPlugins(gView.Framework.system.Plugins.Type.IExTool))
             {
-                IContextMenuItem item = compMan.CreateInstance<IContextMenuItem>(toolType);
+                IContextMenuItem item = compMan.TryCreateInstance<IContextMenuItem>(toolType);
                 if (item == null || !item.ShowWith(context) || !(item is IExTool)) continue;
 
                 ((IExTool)item).OnCreate(_application);
