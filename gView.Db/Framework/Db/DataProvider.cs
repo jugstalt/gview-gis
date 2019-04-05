@@ -186,7 +186,7 @@ namespace gView.Framework.Db
         {
             get
             {
-                return Microsoft.Data.Sqlite.SqliteFactory.Instance;
+                return System.Data.SQLite.SQLiteFactory.Instance;
             }
         }
 

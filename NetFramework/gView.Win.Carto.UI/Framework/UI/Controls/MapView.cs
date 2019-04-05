@@ -17,6 +17,7 @@ using gView.Framework.Snapping.Core;
 using System.Collections.Generic;
 using gView.Framework.UI.Dialogs;
 using gView.Framework.system.UI;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Controls
 {
@@ -32,7 +33,6 @@ namespace gView.Framework.UI.Controls
         private double _diff_y, _sX, _sY, _wsX, _wsY;
         private Rectangle m_rubberband;
         private Envelope m_limit = null, _wheelImageStartEnv = null;
-        private Thread m_mapThread = null;
         private ITool _actTool = null, _actMouseDownTool = null, _mapTool = null, _shiftTool = null;
         private NavigationType _navType = NavigationType.Standard;
         private CancelTracker _cancelTracker;
@@ -56,10 +56,8 @@ namespace gView.Framework.UI.Controls
         private bool _mouseWheel = true;
         private ContextMenuStrip _contextMenu = null;
         private System.Windows.Forms.Timer timerWheel;
-        private FormLoadMap _loadMap = null;
         private Panel panelCopyright;
         private LinkLabel lnkCopyright;
-        private object _imageLocker = new object();
 
         delegate void MakeMapViewRefreshCallback();
         delegate void NewBitmapCreatedCallbark(System.Drawing.Image image);
@@ -69,6 +67,8 @@ namespace gView.Framework.UI.Controls
             InitializeComponent();
 
             _cancelTracker = new CancelTracker();
+
+            this.DoubleBuffered = true;
 
             this.MouseWheel += new MouseEventHandler(MapView_MouseWheel);
         }
@@ -141,13 +141,9 @@ namespace gView.Framework.UI.Controls
                     _map.Display.iHeight = this.Height;
                     this.BackColor = _map.Display.BackgroundColor;
                     //m_map.NewBitmap+=new NewBitmapEvent(NewBitmapCreated);
-                    //m_map.DoRefreshMapView+=new DoRefreshMapViewEvent(MakeMapViewRefresh);
+                    _map.DoRefreshMapView+=new DoRefreshMapViewEvent(MakeMapViewRefresh);
                     //m_map.DrawingLayer+=new gView.Framework.Carto.DrawingLayerEvent(OnDrawingLayer);
                 }
-                if (_map is Map)
-                    _imageLocker = ((Map)_map).imageLocker;
-                else
-                    _imageLocker = new object();
             }
         }
         public NavigationType MouseNavigationType
@@ -217,29 +213,17 @@ namespace gView.Framework.UI.Controls
                 {
                     if (_image != null)
                     {
-                        //this.Refresh();
-                        //lock (_imageLocker)  ... wird jetzt unten mit TypEnter gemacht.
+                        try
                         {
-                            System.Drawing.Graphics gr = null;
-                            if (Monitor.TryEnter(_imageLocker, 300))
+                            using (var gr = System.Drawing.Graphics.FromHwnd(this.Handle))
                             {
-                                try
-                                {
-
-                                    gr = System.Drawing.Graphics.FromHwnd(this.Handle);
-                                    gr.DrawImage(_image, new PointF(0, 0));
-                                    _iSnapX = _iSnapY = int.MinValue;
-                                }
-                                catch (Exception ex)
-                                {
-                                    //MessageBox.Show("MakeMapViewRefresh: " + ex.Message);
-                                }
-                                finally
-                                {
-                                    if (gr != null) gr.Dispose();
-                                    Monitor.Exit(_imageLocker);
-                                }
+                                gr.DrawImage(_image, new PointF(0, 0));
                             }
+                            _iSnapX = _iSnapY = int.MinValue;
+                        }
+                        catch (Exception ex)
+                        {
+                            //MessageBox.Show("MakeMapViewRefresh: " + ex.Message);
                         }
                     }
                 }
@@ -364,25 +348,16 @@ namespace gView.Framework.UI.Controls
                 if (!_cancelTracker.Continue) return;
                 //lock (lockThis)
                 {
-                    if (m_mapThread != null && m_mapThread.IsAlive)
+                    while (_cancelTracker.Continue)
                     {
-                        // Thread nur unterbrechen, wenn Drawphase All
-                        if (phase == DrawPhase.All)
-                            _cancelTracker.Cancel();
-
-                        if (Thread.CurrentThread != m_mapThread)
-                        {
-                            m_mapThread.Join();
-                        }
-
-                        if (_map is Map)
-                            ((Map)_map).DisposeGraphics();
-
-                        if (EndRequest != null) EndRequest(false);
-                        if (AfterRefreshMap != null) AfterRefreshMap();
+                        _cancelTracker.Cancel();
+                        Task.Delay(5);
                     }
-                    if (_loadMap != null) _loadMap.HideIt();
-                    m_mapThread = null;
+                    if (_map is Map)
+                        ((Map)_map).DisposeGraphics();
+
+                    if (EndRequest != null) EndRequest(false);
+                    if (AfterRefreshMap != null) AfterRefreshMap();
                 }
             }
             finally
@@ -391,47 +366,30 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public bool RefreshMap(DrawPhase phase)
+        async public Task<bool> RefreshMap(DrawPhase phase)
         {
             if (!hasMap) return false;
 
             if (DesignMode) return true;
             try
             {
-                if (m_mapThread != null)
+                if (_cancelTracker.Continue)
                 {
                     CancelDrawing(phase);
-                    /*
-					if(m_mapThread.IsAlive) 
-					{
-						//return false;
-						_cancelTracker.Cancel();
-						while(m_mapThread.IsAlive) 
-						{
-                            if (timer1 == null)
-                            {
-                                timer1 = new System.Windows.Forms.Timer();
-                                timer1.Interval = 1000;
-                                timer1.Tick += new EventHandler(timer1_Tick);
-                                timer1.Start();
-                            }
-							return false;
-						}
-					}
-					m_mapThread=null;
-                     * */
                 }
                 if (BeforeRefreshMap != null) BeforeRefreshMap();
 
                 _map.Display.iWidth = this.Width;
                 _map.Display.iHeight = this.Height;
 
-                _cancelTracker.Reset();
                 _phase = phase;
-                m_mapThread = new Thread(new ThreadStart(this.RefreshTread));
-                if (_loadMap != null) _loadMap.ShowIt();
-                m_mapThread.Start();
                 _canceled = false;
+
+                if (StartRequest != null) StartRequest();
+
+                _cancelTracker.Reset();
+                await _map.RefreshMap(_phase, _cancelTracker);
+                MakeMapViewRefresh();
             }
             catch (Exception ex)
             {
@@ -452,46 +410,6 @@ namespace gView.Framework.UI.Controls
                 panelCopyright.Visible = _map.HasDataCopyright;
             }
         }
-
-        private void RefreshTread()
-        {
-            try
-            {
-                if (StartRequest != null) StartRequest();
-                _map.RefreshMap(_phase, _cancelTracker);
-
-                if (_cancelTracker.Continue)
-                {
-                    //this.Refresh();
-                    MakeMapViewRefresh();
-
-                    // Events nur ausführen wenn canceltracker.Continue
-                    // da es sonst zu Daealocking kommen kann...
-                    // zB im AferRefreshmap führt der Hauptthread ein 
-                    // SetPanelText aus (wird über Invoke umgeleitet)!
-                    // CancelDrawing wartet allerding... (m_thread.Join())
-                    if (EndRequest != null && _cancelTracker.Continue) EndRequest(true);
-                    if (AfterRefreshMap != null && _cancelTracker.Continue) AfterRefreshMap();
-                }
-                if (_loadMap != null) _loadMap.HideIt();
-            }
-            catch (Exception ex)
-            {
-
-            }
-            finally
-            {
-                m_mapThread = null;
-            }
-        }
-        private void StartCancelThread()
-        {
-            if (_cancelling) return;
-
-            Thread ct = new Thread(new ThreadStart(CancelDrawing));
-            ct.Start();
-        }
-
 
         /// <summary> 
         /// Die verwendeten Ressourcen bereinigen.
@@ -709,10 +627,10 @@ namespace gView.Framework.UI.Controls
                     break;
                 case ToolType.smartnavigation:
                     //CancelDrawing(DrawPhase.All);
-                    StartCancelThread();
+                    CancelDrawing();
                     break;
                 case ToolType.pan:
-                    if (_navType == NavigationType.Standard) StartCancelThread(); //CancelDrawing(DrawPhase.All);
+                    if (_navType == NavigationType.Standard) CancelDrawing(); //CancelDrawing(DrawPhase.All);
                     break;
             }
 
@@ -758,7 +676,7 @@ namespace gView.Framework.UI.Controls
             if (_map == null || _map.Display == null || e.Delta == 0) return;
             //if (_canceled)
             //    CancelDrawing(DrawPhase.All);
-            StartCancelThread();
+            CancelDrawing();
 
             bool first = (_wheelImageStartEnv == null);
 
@@ -1053,7 +971,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private void Pan_MouseMove(System.Windows.Forms.MouseEventArgs e)
+        async private void Pan_MouseMove(System.Windows.Forms.MouseEventArgs e)
         {
             if (_image == null) return;
 
@@ -1110,7 +1028,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private void this_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
+        async private void this_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             if (_cancelling) return;
 
@@ -1268,7 +1186,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private void MapView_MouseClick(object sender, MouseEventArgs e)
+        async private void MapView_MouseClick(object sender, MouseEventArgs e)
         {
             if (_actTool is IToolMouseActions)
             {
@@ -1276,7 +1194,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private void MapView_MouseDoubleClick(object sender, MouseEventArgs e)
+        async private void MapView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if (_actTool is IToolMouseActions)
             {
@@ -1331,12 +1249,12 @@ namespace gView.Framework.UI.Controls
         //}
         protected override void OnPaint(PaintEventArgs e)
         {
-            MakeMapViewRefresh();
+            //MakeMapViewRefresh();
             //base.OnPaint(e);
         }
 
         #region Key
-        private void MapView_KeyDown(object sender, KeyEventArgs e)
+        async private void MapView_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.ControlKey)
             {
@@ -1349,7 +1267,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private void MapView_KeyPress(object sender, KeyPressEventArgs e)
+        async private void MapView_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (_actTool is IToolKeyActions)
             {
@@ -1357,7 +1275,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private void MapView_KeyUp(object sender, KeyEventArgs e)
+        async private void MapView_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.ControlKey)
             {

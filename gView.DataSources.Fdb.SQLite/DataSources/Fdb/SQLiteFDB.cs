@@ -7,12 +7,13 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using Microsoft.Data.Sqlite;
 using System.IO;
 using System.Linq;
 using System.Text;
-using gView.DataSources.Fdb.Sqlite;
+using gView.DataSources.Fdb.SQLite;
 using System.Threading.Tasks;
+using System.Data.SQLite;
+using gView.DataSources.Fdb.Sqlite;
 
 namespace gView.DataSources.Fdb.SQLite
 {
@@ -32,7 +33,7 @@ namespace gView.DataSources.Fdb.SQLite
                 if (fi.Exists)
                     return false;
 
-                using (SqliteConnection connection = new SqliteConnection())
+                using (SQLiteConnection connection = new SQLiteConnection())
                 using (StreamReader reader = new StreamReader(SystemVariables.StartupDirectory + @"/sql/SQLiteFDB/createdatabase.sql"))
                 {
                     connection.ConnectionString = "Data Source=" + name;
@@ -44,7 +45,7 @@ namespace gView.DataSources.Fdb.SQLite
                     {
                         if (line.Trim().ToLower() == "go")
                         {
-                            using (SqliteCommand command = new SqliteCommand())
+                            using (SQLiteCommand command = new SQLiteCommand())
                             {
                                 command.Connection = connection;
                                 command.CommandText = sql.ToString();
@@ -378,11 +379,11 @@ namespace gView.DataSources.Fdb.SQLite
             }
             try
             {
-                using (SqliteConnection connection = new SqliteConnection(_conn.ConnectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
                 {
                     await connection.OpenAsync();
 
-                    using(var command=new SqliteCommand())
+                    using(var command=new SQLiteCommand())
                     using (var transaction = connection.BeginTransaction())
                     {
                         command.Connection = connection;
@@ -421,7 +422,7 @@ namespace gView.DataSources.Fdb.SQLite
                                 writer.BaseStream.Read(geometry, (int)0, (int)writer.BaseStream.Length);
                                 writer.Close();
 
-                                SqliteParameter parameter = new SqliteParameter("@FDB_SHAPE", geometry);
+                                SQLiteParameter parameter = new SQLiteParameter("@FDB_SHAPE", geometry);
                                 fields.Append("[FDB_SHAPE]");
                                 parameters.Append("@FDB_SHAPE");
                                 command.Parameters.Add(parameter);
@@ -445,8 +446,8 @@ namespace gView.DataSources.Fdb.SQLite
                                     if (fields.Length != 0) fields.Append(",");
                                     if (parameters.Length != 0) parameters.Append(",");
 
-                                    SqliteParameter parameter;
-                                    parameter = new SqliteParameter("@" + name, fv.Value);
+                                    SQLiteParameter parameter;
+                                    parameter = new SQLiteParameter("@" + name, fv.Value);
                                     ModifyDbParameter(parameter);
 
                                     fields.Append("[" + name + "]");
@@ -464,7 +465,7 @@ namespace gView.DataSources.Fdb.SQLite
                                 if (fields.Length != 0) fields.Append(",");
                                 if (parameters.Length != 0) parameters.Append(",");
 
-                                SqliteParameter parameter = new SqliteParameter("@FDB_NID", NID);
+                                SQLiteParameter parameter = new SQLiteParameter("@FDB_NID", NID);
                                 fields.Append("[FDB_NID]");
                                 parameters.Append("@FDB_NID");
                                 command.Parameters.Add(parameter);
@@ -600,11 +601,11 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 //List<long> _nids = new List<long>();
 
-                using (SqliteConnection connection = new SqliteConnection(_conn.ConnectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
                 {
                     await connection.OpenAsync();
 
-                    using (SqliteCommand command = connection.CreateCommand())
+                    using (SQLiteCommand command = connection.CreateCommand())
                     using (var transaction = connection.BeginTransaction())
                     {
                         ReplicationTransaction replTrans = new ReplicationTransaction(connection, transaction);
@@ -654,7 +655,7 @@ namespace gView.DataSources.Fdb.SQLite
                                 writer.BaseStream.Read(geometry, (int)0, (int)writer.BaseStream.Length);
                                 writer.Close();
 
-                                SqliteParameter parameter = new SqliteParameter("@FDB_SHAPE", geometry);
+                                SQLiteParameter parameter = new SQLiteParameter("@FDB_SHAPE", geometry);
                                 fields.Append("[FDB_SHAPE]=@FDB_SHAPE");
                                 command.Parameters.Add(parameter);
                             }
@@ -674,7 +675,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                                     if (fields.Length != 0) fields.Append(",");
 
-                                    SqliteParameter parameter = new SqliteParameter("@" + name, fv.Value);
+                                    SQLiteParameter parameter = new SQLiteParameter("@" + name, fv.Value);
                                     ModifyDbParameter(parameter);
 
                                     fields.Append("[" + name + "]=@" + name);
@@ -698,7 +699,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                                     if (fields.Length != 0) fields.Append(",");
 
-                                    SqliteParameter parameterNID = new SqliteParameter("@FDB_NID", NID);
+                                    SQLiteParameter parameterNID = new SQLiteParameter("@FDB_NID", NID);
                                     fields.Append("[FDB_NID]=@FDB_NID");
                                     command.Parameters.Add(parameterNID);
 
@@ -738,13 +739,13 @@ namespace gView.DataSources.Fdb.SQLite
 
             try
             {
-                using (SqliteConnection connection = new SqliteConnection(_conn.ConnectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
                 {
                     await connection.OpenAsync();
 
                     string sql = "DELETE FROM " + FcTableName(fClass) + ((where != String.Empty) ? " WHERE " + where : "");
-                    using(SqliteCommand command = new SqliteCommand(sql, connection))
-                    using (SqliteTransaction transaction = connection.BeginTransaction())
+                    using(SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
                         ReplicationTransaction replTrans = new ReplicationTransaction(connection, transaction);
                         command.Transaction = transaction;
@@ -1088,7 +1089,7 @@ namespace gView.DataSources.Fdb.SQLite
         {
             if (_conn == null) return false;
 
-            using (SqliteConnection connection = new SqliteConnection(_conn.ConnectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
             {
                 connection.Open();
                 DataTable tables = connection.GetSchema("Tables");
@@ -1376,9 +1377,9 @@ namespace gView.DataSources.Fdb.SQLite
             try
             {
                 bool useTrans = replTrans != null && replTrans.IsValid;
-                using (SqliteConnection connection = new SqliteConnection(_conn.ConnectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
                 {
-                    using (SqliteCommand command =  new SqliteCommand())
+                    using (SQLiteCommand command =  new SQLiteCommand())
                     {
                         if (!useTrans)
                         {
@@ -1395,8 +1396,8 @@ namespace gView.DataSources.Fdb.SQLite
                             if (fields.Length != 0) fields.Append(",");
                             if (parameters.Length != 0) parameters.Append(",");
 
-                            SqliteParameter parameter;
-                            parameter = new SqliteParameter("@" + name, fv.Value);
+                            SQLiteParameter parameter;
+                            parameter = new SQLiteParameter("@" + name, fv.Value);
                             ModifyDbParameter(parameter);
 
                             fields.Append(this.DbColName(name));
@@ -1433,11 +1434,11 @@ namespace gView.DataSources.Fdb.SQLite
             try
             {
                 bool useTrans = replTrans != null && replTrans.IsValid;
-                using (SqliteConnection connection = new SqliteConnection(_conn.ConnectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
                 {
                     if (useTrans)
                     {
-                        using (SqliteCommand command = new SqliteCommand())
+                        using (SQLiteCommand command = new SQLiteCommand())
                         {
                             if (!useTrans)
                             {
@@ -1456,7 +1457,7 @@ namespace gView.DataSources.Fdb.SQLite
                                     if (fields.Length != 0) fields.Append(",");
                                     if (parameters.Length != 0) parameters.Append(",");
 
-                                    SqliteParameter parameter = new SqliteParameter("@" + name, fv.Value);
+                                    SQLiteParameter parameter = new SQLiteParameter("@" + name, fv.Value);
 
                                     fields.Append("[" + name + "]");
                                     parameters.Append("@" + name);
@@ -1478,7 +1479,7 @@ namespace gView.DataSources.Fdb.SQLite
                     }
                     else
                     {
-                        using (SqliteCommand command = new SqliteCommand())
+                        using (SQLiteCommand command = new SQLiteCommand())
                         using (var transaction = connection.BeginTransaction())
                         {
                             command.Connection = connection;
@@ -1496,7 +1497,7 @@ namespace gView.DataSources.Fdb.SQLite
                                     if (fields.Length != 0) fields.Append(",");
                                     if (parameters.Length != 0) parameters.Append(",");
 
-                                    SqliteParameter parameter = new SqliteParameter("@" + name, fv.Value);
+                                    SQLiteParameter parameter = new SQLiteParameter("@" + name, fv.Value);
 
                                     fields.Append("[" + name + "]");
                                     parameters.Append("@" + name);
@@ -1527,7 +1528,7 @@ namespace gView.DataSources.Fdb.SQLite
         {
             try
             {
-                SqliteCommand command = new SqliteCommand();
+                SQLiteCommand command = new SQLiteCommand();
                 command.Parameters.Clear();
                 StringBuilder commandText = new StringBuilder();
 
@@ -1543,7 +1544,7 @@ namespace gView.DataSources.Fdb.SQLite
                     string name = fv.Name;
                     if (fields.Length != 0) fields.Append(",");
 
-                    SqliteParameter parameter = new SqliteParameter("@" + name, fv.Value);
+                    SQLiteParameter parameter = new SQLiteParameter("@" + name, fv.Value);
                     fields.Append("[" + name + "]=@" + name);
                     command.Parameters.Add(parameter);
                 }
@@ -1561,7 +1562,7 @@ namespace gView.DataSources.Fdb.SQLite
                 }
                 else
                 {
-                    using (SqliteConnection connection = new SqliteConnection(_conn.ConnectionString))
+                    using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
                     {
                         connection.Open();
                         command.Connection = connection;
@@ -1581,7 +1582,7 @@ namespace gView.DataSources.Fdb.SQLite
             try
             {
                 string sql = "DELETE FROM " + table + ((where != String.Empty) ? " WHERE " + where : "");
-                SqliteCommand command = new SqliteCommand();
+                SQLiteCommand command = new SQLiteCommand();
                 command.CommandText = sql;
 
                 if (replTrans != null && replTrans.IsValid)
@@ -1590,7 +1591,7 @@ namespace gView.DataSources.Fdb.SQLite
                 }
                 else
                 {
-                    using (SqliteConnection connection = new SqliteConnection(_conn.ConnectionString))
+                    using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
                     {
                         connection.Open();
                         command.Connection = connection;
@@ -1635,7 +1636,7 @@ namespace gView.DataSources.Fdb.SQLite
             get
             {
                 if (_factory == null)
-                    _factory = Microsoft.Data.Sqlite.SqliteFactory.Instance;
+                    _factory = System.Data.SQLite.SQLiteFactory.Instance;
 
                 return _factory;
             }
@@ -1650,11 +1651,11 @@ namespace gView.DataSources.Fdb.SQLite
 
             try
             {
-                using (SqliteConnection connection = new SqliteConnection(_conn.ConnectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
                 {
                     connection.Open();
 
-                    using(SqliteCommand command = new SqliteCommand("UPDATE " + FcTableName(fc) + " SET " + DbColName("FDB_NID") + "=" + nid.ToString() + " WHERE " + DbColName(fc.IDFieldName) + "=" + oid.ToString(), connection))
+                    using(SQLiteCommand command = new SQLiteCommand("UPDATE " + FcTableName(fc) + " SET " + DbColName("FDB_NID") + "=" + nid.ToString() + " WHERE " + DbColName(fc.IDFieldName) + "=" + oid.ToString(), connection))
                         command.ExecuteNonQuery();
 
                     connection.Close();
@@ -1677,11 +1678,11 @@ namespace gView.DataSources.Fdb.SQLite
 
             try
             {
-                using (SqliteConnection connection = new SqliteConnection(_conn.ConnectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
                 {
                     connection.Open();
 
-                    using(SqliteCommand command = new SqliteCommand())
+                    using(SQLiteCommand command = new SQLiteCommand())
                     using(var transaction=connection.BeginTransaction())
                     {
                         command.Connection = connection;
@@ -1693,7 +1694,7 @@ namespace gView.DataSources.Fdb.SQLite
                         transaction.Commit();
                     }
 
-                    using (SqliteCommand command = new SqliteCommand())
+                    using (SQLiteCommand command = new SQLiteCommand())
                     using (var transaction = connection.BeginTransaction())
                     {
                         command.Connection = connection;
@@ -1701,7 +1702,7 @@ namespace gView.DataSources.Fdb.SQLite
                         {
                             command.Parameters.Clear();
 
-                            SqliteParameter parameter = new SqliteParameter("@NID", nid);
+                            SQLiteParameter parameter = new SQLiteParameter("@NID", nid);
                             command.CommandText = "INSERT INTO " + FcsiTableName(fcName) + " (NID) VALUES (@NID);";
                             command.Parameters.Add(parameter);
                             command.ExecuteNonQuery();
@@ -1748,8 +1749,8 @@ namespace gView.DataSources.Fdb.SQLite
 
         internal class SQLiteFDBFeatureCursorIDs : FeatureCursor
         {
-            SqliteConnection _connection;
-            SqliteDataReader _reader;
+            SQLiteConnection _connection;
+            SQLiteDataReader _reader;
             //DataTable _schemaTable;
             IGeometryDef _geomDef;
             List<int> _IDs;
@@ -1768,7 +1769,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                 try
                 {
-                    cursor._connection = new SqliteConnection(connString);
+                    cursor._connection = new SQLiteConnection(connString);
                     cursor._sql = sql;
                     cursor._connection.Open();
                     cursor._geomDef = geomDef;
@@ -1827,8 +1828,8 @@ namespace gView.DataSources.Fdb.SQLite
 
                 string where = " WHERE [FDB_OID] IN (" + sb.ToString() + ")";
 
-                SqliteCommand command = new SqliteCommand(_sql + where, _connection);
-                _reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
+                SQLiteCommand command = new SQLiteCommand(_sql + where, _connection);
+                _reader = (SQLiteDataReader)await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
                 return true;
             }
@@ -1912,9 +1913,9 @@ namespace gView.DataSources.Fdb.SQLite
 
         internal class SQLiteFDBFeatureCursor : FeatureCursor
         {
-            SqliteConnection _connection = null;
-            SqliteDataReader _reader = null;
-            SqliteCommand _readerCommand = null;
+            SQLiteConnection _connection = null;
+            SQLiteDataReader _reader = null;
+            SQLiteCommand _readerCommand = null;
             //DataTable _schemaTable=null;
             string _sql = "", _where = "", _orderby = "";
             int _nid_pos = 0;
@@ -1936,7 +1937,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                 //try 
                 {
-                    cursor._connection = new SqliteConnection(connString);
+                    cursor._connection = new SQLiteConnection(connString);
                     cursor._sql = sql;
                     await cursor._connection.OpenAsync();
                     cursor._geomDef = geomDef;
@@ -2000,7 +2001,7 @@ namespace gView.DataSources.Fdb.SQLite
                 string where = _where;
 
                 StringBuilder sb = new StringBuilder();
-                SqliteParameter parameter = null, parameter2 = null;
+                SQLiteParameter parameter = null, parameter2 = null;
                 long pVal = 0, p2Val = 0;
                 if (_nids != null)
                 {
@@ -2017,8 +2018,8 @@ namespace gView.DataSources.Fdb.SQLite
                     {
                         where = "(FDB_NID BETWEEN @FDB_NID_FROM AND @FDB_NID_TO)" + (!String.IsNullOrEmpty(where) ? " AND (" + where + ")" : String.Empty);
                         //where = "(FDB_NID>=@FDB_NID_FROM AND FDB_NID<=@FDB_NID_TO)" + (!String.IsNullOrEmpty(where) ? " AND (" + where + ")" : String.Empty);
-                        parameter = new SqliteParameter("@FDB_NID_FROM", 0L);
-                        parameter2 = new SqliteParameter("@FDB_NID_TO", 0L);
+                        parameter = new SQLiteParameter("@FDB_NID_FROM", 0L);
+                        parameter2 = new SQLiteParameter("@FDB_NID_TO", 0L);
 
                         pVal = -_nids[_nid_pos];
                         p2Val = _nids[_nid_pos + 1];
@@ -2027,7 +2028,7 @@ namespace gView.DataSources.Fdb.SQLite
                     else
                     {
                         where = "(FDB_NID=@FDB_NID)" + (!String.IsNullOrEmpty(where) ? " AND (" + where + ")" : String.Empty);
-                        parameter = new SqliteParameter("@FDB_NID", 0L);
+                        parameter = new SQLiteParameter("@FDB_NID", 0L);
 
                         pVal = _nids[_nid_pos];
                     }
@@ -2039,7 +2040,7 @@ namespace gView.DataSources.Fdb.SQLite
                 if (where != "") where = " WHERE " + where;
 
                 _nid_pos++;
-                _readerCommand = new SqliteCommand(_sql +
+                _readerCommand = new SQLiteCommand(_sql +
                                                         where +
                                                         ((_orderby != String.Empty) ? " ORDER BY " + _orderby : ""),
                                                         _connection);
@@ -2052,7 +2053,7 @@ namespace gView.DataSources.Fdb.SQLite
                 if (parameter != null) parameter.Value = pVal;
                 if (parameter2 != null) parameter2.Value = p2Val;
 
-                _reader = await _readerCommand.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
+                _reader = (SQLiteDataReader)await _readerCommand.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
                 return true;
             }

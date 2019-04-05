@@ -54,7 +54,6 @@ namespace gView.Framework.Carto
         private ConcurrentBag<string> _errorMessages = new ConcurrentBag<string>();
 
         private IntegerSequence _layerIDSequece = new IntegerSequence();
-        public object imageLocker = new object();
 
         protected List<Exception> _requestExceptions = null;
 
@@ -773,8 +772,6 @@ namespace gView.Framework.Carto
             }
         }
 
-        public IntPtr TargetWindowHandle { get; set; }
-
         async virtual public Task<bool> RefreshMap(DrawPhase phase, ICancelTracker cancelTracker)
         {
             _requestExceptions = null;
@@ -782,7 +779,6 @@ namespace gView.Framework.Carto
 
             if (StartRefreshMap != null) StartRefreshMap(this);
 
-            Thread mapRefreshThread = new Thread(new ParameterizedThreadStart(MapViewRefreshThread));
             try
             {
                 _lastException = null;
@@ -807,37 +803,23 @@ namespace gView.Framework.Carto
                     if (_image == null)
                     {
                         DisposeStreams();
-                        if (this.TargetWindowHandle == IntPtr.Zero)
-                        {
-                            _image = new System.Drawing.Bitmap(iWidth, iHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                        }
+                        _image = new System.Drawing.Bitmap(iWidth, iHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                         //if (NewBitmap != null && cancelTracker.Continue) NewBitmap(_image);
                     }
                     // NewBitmap immer aufrufen, da sonst neuer DataView nix mitbekommt
-                    if (this.TargetWindowHandle == IntPtr.Zero && NewBitmap != null && cancelTracker.Continue)
+                    if (NewBitmap != null && cancelTracker.Continue)
                     {
                         NewBitmap(_image);
                     }
 
-                    if (this.TargetWindowHandle != IntPtr.Zero)
-                    {
-                        _graphics = System.Drawing.Graphics.FromHwnd(this.TargetWindowHandle);
-                    }
-                    else
-                    {
-                        _graphics = System.Drawing.Graphics.FromImage(_image);
-                    }
+                    _graphics = System.Drawing.Graphics.FromImage(_image);
+                    
                     this.dpi = _graphics.DpiX;
 
                     using (System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(_backgroundColor))
                     {
                         _graphics.FillRectangle(brush, 0, 0, /*_image.Width, _image.Height*/ iWidth, iHeight);
                         brush.Dispose();
-                    }
-
-                    if (this.TargetWindowHandle==IntPtr.Zero && DoRefreshMapView != null)
-                    {
-                        mapRefreshThread.Start(cancelTracker);
                     }
                 }
                 #endregion
@@ -908,7 +890,8 @@ namespace gView.Framework.Carto
 
                     foreach (ILayer layer in layers)
                     {
-                        if (!cancelTracker.Continue) break;
+                        if (!cancelTracker.Continue)
+                            break;
 
                         if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale) continue;
                         if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale) continue;
@@ -1023,6 +1006,7 @@ namespace gView.Framework.Carto
 
                     if (!printerMap) LabelEngine.Draw(this.Display, cancelTracker);
                     LabelEngine.Release();
+
                     #endregion
 
                     #region Waiting for Webservices
@@ -1041,29 +1025,25 @@ namespace gView.Framework.Carto
                     }
                     if (m_imageMerger.Count > 0)
                     {
-                        lock (this.imageLocker)
-                        {
-                            System.Drawing.Bitmap clonedBitmap = _image.Clone(new System.Drawing.Rectangle(0, 0, _image.Width, _image.Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                            clonedBitmap.MakeTransparent(_backgroundColor);
-                            m_imageMerger.Add(new GeorefBitmap(clonedBitmap), 999);
+                        System.Drawing.Bitmap clonedBitmap = _image.Clone(new System.Drawing.Rectangle(0, 0, _image.Width, _image.Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                        clonedBitmap.MakeTransparent(_backgroundColor);
+                        m_imageMerger.Add(new GeorefBitmap(clonedBitmap), 999);
 
-                            if (!m_imageMerger.Merge(_image, this.Display) &&
-                                (this is IServiceMap) &&
-                                ((IServiceMap)this).MapServer != null)
-                            {
-                                ((IServiceMap)this).MapServer.LogAsync(
-                                    this.Name,
-                                    "Image Merger:",
-                                    loggingMethod.error,
-                                    m_imageMerger.LastErrorMessage).Wait();
-                            }
-                            m_imageMerger.Clear();
+                        if (!m_imageMerger.Merge(_image, this.Display) &&
+                            (this is IServiceMap) &&
+                            ((IServiceMap)this).MapServer != null)
+                        {
+                            ((IServiceMap)this).MapServer.LogAsync(
+                                this.Name,
+                                "Image Merger:",
+                                loggingMethod.error,
+                                m_imageMerger.LastErrorMessage).Wait();
                         }
+                        m_imageMerger.Clear();
                     }
 
-                    //if (DoRefreshMapView != null && cancelTracker.Continue) DoRefreshMapView();
-
                     StreamImage(ref _msGeometry, _image);
+
                     #endregion
                 }
                 #endregion
@@ -1176,12 +1156,6 @@ namespace gView.Framework.Carto
             }
             finally
             {
-                if (mapRefreshThread.IsAlive)
-                {
-                    mapRefreshThread.Abort();
-                    mapRefreshThread.Join();
-                }
-
                 AppendExceptionsToImage();
 
                 if (!printerMap)
@@ -1271,6 +1245,12 @@ namespace gView.Framework.Carto
             set;
         }
         #endregion
+
+        internal void FireRefreshMapView()
+        {
+            if (this.DoRefreshMapView != null)
+                this.DoRefreshMapView();
+        }
 
         private bool LayerIDExists(int layerID)
         {
@@ -1880,18 +1860,6 @@ namespace gView.Framework.Carto
             }
             catch (Exception ex)
             {
-            }
-        }
-
-        private void MapViewRefreshThread(object canceltracker)
-        {
-            if (DoRefreshMapView == null) return;
-
-            ICancelTracker cancelTracker = canceltracker as ICancelTracker;
-            while (cancelTracker != null ? cancelTracker.Continue : true)
-            {
-                Thread.Sleep(500);
-                DoRefreshMapView();
             }
         }
 
@@ -3007,6 +2975,9 @@ namespace gView.Framework.Carto
                                 renderer.Draw(_map, feature);
                                 if (labelRenderer != null) labelRenderer.Draw(_map, feature);
                                 _counter.Counter++;
+
+                                if (_counter.Counter % 10000 == 0)
+                                    _map.FireRefreshMapView();
                             }
                         }
                         else if (labelRenderer != null)
@@ -3019,6 +2990,8 @@ namespace gView.Framework.Carto
 
                                 labelRenderer.Draw(_map, feature);
                                 _counter.Counter++;
+
+                                
                             }
                         }
                         if (labelRenderer != null) labelRenderer.Release();
