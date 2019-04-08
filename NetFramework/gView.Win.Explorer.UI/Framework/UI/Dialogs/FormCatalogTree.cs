@@ -12,6 +12,7 @@ using gView.Framework.UI;
 using gView.Framework.system;
 using gView.Framework.Data;
 using gView.Framework.UI.Controls;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -84,9 +85,9 @@ namespace gView.Framework.UI.Dialogs
             get { return catalogTreeControl1; }
         }
 
-        public void RefreshSelectedNode()
+        async public Task RefreshSelectedNode()
         {
-            TreeControl.RefreshSelectedNode();
+            await TreeControl.RefreshSelectedNode();
         }
 
         private void FormCatalogTree_Load(object sender, EventArgs e)

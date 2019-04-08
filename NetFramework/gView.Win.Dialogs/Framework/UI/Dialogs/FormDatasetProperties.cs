@@ -43,7 +43,7 @@ namespace gView.Framework.UI.Dialogs
 
             if (dataset.State != DatasetState.opened)
             {
-                if (!dataset.Open())
+                if (!dataset.Open().Result)
                 {
                     MessageBox.Show("Can't open dataset '" + dataset.DatasetName + "'.\n" + dataset.LastErrorMessage);
                     return;

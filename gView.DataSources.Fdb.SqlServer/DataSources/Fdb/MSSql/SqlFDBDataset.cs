@@ -252,22 +252,23 @@ namespace gView.DataSources.Fdb.MSSql
             get { return _state; }
         }
 
-        public bool Open()
+        public Task<bool> Open()
         {
-            if (_fdb == null) return false;
+            if (_fdb == null)
+                return Task.FromResult(false);
 
             _dsID = _fdb.DatasetID(_dsname);
             if (_dsID < 0)
             {
                 _errMsg = _fdb.LastErrorMessage ?? _fdb.lastException?.Message;
-                return false;
+                return Task.FromResult(false);
             }
 
             _sRef = this.SpatialReference;
             _state = DatasetState.opened;
             _sIndexDef = _fdb.SpatialIndexDef(_dsID);
 
-            return true;
+            return Task.FromResult(true);
         }
 
         public string LastErrorMessage
@@ -318,10 +319,10 @@ namespace gView.DataSources.Fdb.MSSql
             get { return _fdb; }
         }
 
-        public void RefreshClasses()
+        async public Task RefreshClasses()
         {
             if (_fdb != null)
-                _fdb.RefreshClasses(this);
+                await _fdb.RefreshClasses(this);
         }
         #endregion
 

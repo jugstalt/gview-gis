@@ -11,6 +11,7 @@ using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Explorer.UI;
 using gView.Framework.UI.Dialogs;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Controls
 {
@@ -44,14 +45,14 @@ namespace gView.Framework.UI.Controls
 
         }
 
-        public void InitComboBox()
+        async public Task InitComboBox()
         {
             cmbCatalog.Items.Clear();
 
             ComputerObject computer = new ComputerObject(null);
             cmbCatalog.Items.Add(new ExplorerObjectComboItem(computer.Name, 0, 0, computer));
 
-            foreach (IExplorerObject exObject in computer.ChildObjects)
+            foreach (IExplorerObject exObject in await computer.ChildObjects())
             {
                 cmbCatalog.Items.Add(
                     new DriveComboItem(

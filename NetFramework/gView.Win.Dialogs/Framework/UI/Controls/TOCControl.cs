@@ -1966,7 +1966,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private void list_DragDrop(object sender, DragEventArgs e)
+        async private void list_DragDrop(object sender, DragEventArgs e)
         {
             if (_iMapDocument == null || _iMapDocument.FocusMap == null) return;
             foreach (string format in e.Data.GetFormats())
@@ -1977,7 +1977,7 @@ namespace gView.Framework.UI.Controls
                 {
                     ExplorerObjectManager exObjectManager = new ExplorerObjectManager();
 
-                    List<IExplorerObject> exObjects = exObjectManager.DeserializeExplorerObject((List<IExplorerObjectSerialization>)ob);
+                    List<IExplorerObject> exObjects = await exObjectManager.DeserializeExplorerObject((List<IExplorerObjectSerialization>)ob);
                     if (exObjects == null) return;
 
                     Envelope newMapEnvelope = null;

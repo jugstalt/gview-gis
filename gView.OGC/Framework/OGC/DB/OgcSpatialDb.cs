@@ -130,10 +130,10 @@ namespace gView.Framework.OGC.DB
             get { return _state; }
         }
 
-        virtual public bool Open()
+        virtual public Task<bool> Open()
         {
             _state = DatasetState.opened;
-            return true;
+            return Task.FromResult(true);
         }
 
         public string LastErrorMessage
@@ -257,7 +257,7 @@ namespace gView.Framework.OGC.DB
             }
         }
 
-        public void RefreshClasses()
+        async public Task RefreshClasses()
         {
         }
         #endregion
@@ -321,7 +321,7 @@ namespace gView.Framework.OGC.DB
             throw new Exception("The method or operation is not implemented.");
         }
 
-        virtual public bool Open(string name)
+        virtual public Task<bool> Open(string name)
         {
             throw new Exception("The method or operation is not implemented.");
         }

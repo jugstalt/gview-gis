@@ -1161,7 +1161,7 @@ namespace gView.Framework.Offline
                     return null;
                 }
                 parentDs.ConnectionString = connectionString;
-                if (!parentDs.Open())
+                if (!parentDs.Open().Result)
                 {
                     errMsg = parentDs.LastErrorMessage;
                     return null;

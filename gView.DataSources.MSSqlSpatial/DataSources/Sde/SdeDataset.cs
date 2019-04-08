@@ -49,13 +49,13 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             get { return _factory; }
         }
 
-        public override bool Open()
+        async public override Task<bool> Open()
         {
             var repo = new RepoProvider();
-            repo.Init(_connectionString).Wait();
+            await repo.Init(_connectionString);
             RepoProvider = repo;
 
-            return base.Open();
+            return await base.Open();
         }
 
         public override string OgcDictionary(string ogcExpression)

@@ -97,7 +97,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
-        public override bool Open(string connString)
+        public override Task<bool> Open(string connString)
         {
             try
             {
@@ -115,11 +115,11 @@ namespace gView.DataSources.Fdb.PostgreSql
                 }
 
                 SetVersion();
-                return true;
+                return Task.FromResult(true);
             }
             catch
             {
-                return false;
+                return Task.FromResult(false);
             }
         }
 

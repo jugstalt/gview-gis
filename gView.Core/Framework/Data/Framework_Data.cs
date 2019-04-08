@@ -192,7 +192,7 @@ namespace gView.Framework.Data
 
         DatasetState State { get; }
 
-        bool Open();
+        Task<bool> Open();
 
         Task<List<IDatasetElement>> Elements();
         Task<IDatasetElement> Element(string title);
@@ -202,7 +202,7 @@ namespace gView.Framework.Data
 
         IDatabase Database { get; }
 
-        void RefreshClasses();
+        Task RefreshClasses();
     }
 
     public interface IServiceableDataset : gView.Framework.IO.IPersistable
@@ -216,7 +216,7 @@ namespace gView.Framework.Data
 
     public interface IRequestDependentDataset
     {
-        bool Open(gView.MapServer.IServiceRequestContext context);
+        Task<bool> Open(gView.MapServer.IServiceRequestContext context);
     }
 
     /// <summary>

@@ -58,12 +58,12 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private void ExplorerDialogControl_Load(object sender, EventArgs e)
+        async private void ExplorerDialogControl_Load(object sender, EventArgs e)
         {
             contentsList1.ItemSelected += new ContentsList.ItemClickedEvent(contentsList1_ItemSelected);
             contentsList1.ItemDoubleClicked += new ContentsList.ItemDoubleClickedEvent(contentsList1_ItemDoubleClicked);
             contentsList1.SmallImageList = ExplorerImageList.List.ImageList;
-            catalogComboBox1.InitComboBox();
+            await catalogComboBox1.InitComboBox();
 
             LocalizedResources.GlobalizeMenuItem(btnFavorites);
             bool first = true;
@@ -205,11 +205,11 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private void cmbFilters_SelectedIndexChanged(object sender, EventArgs e)
+        async private void cmbFilters_SelectedIndexChanged(object sender, EventArgs e)
         {
             contentsList1.Filter = (ExplorerDialogFilter)cmbFilters.SelectedItem;
             Cursor = Cursors.WaitCursor;
-            contentsList1.RefreshContents();
+            await contentsList1.RefreshContents();
             contentsList1.ExplorerObject = contentsList1.ExplorerObject;
             Cursor = Cursors.Default;
 
@@ -309,7 +309,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        void fItem_Click(object sender, EventArgs e)
+        async void fItem_Click(object sender, EventArgs e)
         {
             if (sender is FavoriteMenuItem)
             {
@@ -317,7 +317,7 @@ namespace gView.Framework.UI.Controls
 
                 this.Cursor = Cursors.WaitCursor;
 
-                catalogComboBox1.InitComboBox();
+                await catalogComboBox1.InitComboBox();
                 try
                 {
                     StringBuilder fullPath = new StringBuilder();

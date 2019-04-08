@@ -9,6 +9,7 @@ using gView.Framework.system;
 using gView.Framework.UI.Dialogs;
 using gView.Explorer.UI.Framework.UI;
 using gView.Framework.Sys.UI;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI
 {
@@ -192,10 +193,12 @@ namespace gView.Framework.UI
 
         #region IExplorerApplication Members
 
-        public void ExecuteBatch(string batch,ExplorerExecuteBatchCallback callback)
+        async public Task ExecuteBatch(string batch, ExplorerExecuteBatchCallback callback)
         {
-            Thread thread = new Thread(new ParameterizedThreadStart(CommandInterpreter.RunProcess));
-            thread.Start(new CommandInterpregerArgs(batch, callback));
+            //Thread thread = new Thread(new ParameterizedThreadStart(CommandInterpreter.RunProcess));
+            //thread.Start(new CommandInterpregerArgs(batch, callback));
+
+            await CommandInterpreter.RunProcess(batch, callback);
         }
 
         public List<IExplorerObject> SelectedObjects

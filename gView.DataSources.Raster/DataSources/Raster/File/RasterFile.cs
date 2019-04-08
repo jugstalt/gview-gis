@@ -66,9 +66,9 @@ namespace gView.DataSources.Raster.File
             get { return _state; }
         }
 
-        public bool Open()
+        public Task<bool> Open()
         {
-            return false;
+            return Task.FromResult(false);
         }
 
         public string LastErrorMessage
@@ -144,7 +144,7 @@ namespace gView.DataSources.Raster.File
             return Task.FromResult<IDatasetElement>(null);
         }
 
-        public void RefreshClasses()
+        async public Task RefreshClasses()
         {
         }
         #endregion

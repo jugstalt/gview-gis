@@ -32,7 +32,7 @@ namespace gView.Framework.Sys.UI
             }
             return null;
         }
-        public IExplorerObject DeserializeExplorerObject(Guid guid, string FullName)
+        async public Task<IExplorerObject> DeserializeExplorerObject(Guid guid, string FullName)
         {
             IExplorerObject cached = GetExObjectFromCache(FullName);
             if (cached != null) return cached;
@@ -41,29 +41,29 @@ namespace gView.Framework.Sys.UI
             object obj = compManager.CreateInstance(guid);
             if (!(obj is ISerializableExplorerObject)) return null;
 
-            return ((ISerializableExplorerObject)obj).CreateInstanceByFullName(FullName, this);
+            return await ((ISerializableExplorerObject)obj).CreateInstanceByFullName(FullName, this);
         }
-        public IExplorerObject DeserializeExplorerObject(IExplorerObjectSerialization exObjectSerialization)
+        async public Task<IExplorerObject> DeserializeExplorerObject(IExplorerObjectSerialization exObjectSerialization)
         {
             try
             {
                 if (exObjectSerialization == null) return null;
 
-                return DeserializeExplorerObject(
+                return await DeserializeExplorerObject(
                     exObjectSerialization.Guid,
                     exObjectSerialization.FullName);
             }
             catch { return null; }
         }
 
-        public List<IExplorerObject> DeserializeExplorerObject(IEnumerable<IExplorerObjectSerialization> list)
+        async public Task<List<IExplorerObject>> DeserializeExplorerObject(IEnumerable<IExplorerObjectSerialization> list)
         {
             List<IExplorerObject> l = new List<IExplorerObject>();
             if (list == null) return l;
 
             foreach (IExplorerObjectSerialization ser in list)
             {
-                IExplorerObject exObject = DeserializeExplorerObject(ser);
+                IExplorerObject exObject = await DeserializeExplorerObject(ser);
                 if (exObject == null) continue;
 
                 l.Add(exObject);

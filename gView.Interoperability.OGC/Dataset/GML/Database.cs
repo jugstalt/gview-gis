@@ -52,7 +52,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             }
         }
 
-        public bool Open(string name)
+        public Task<bool> Open(string name)
         {
             try
             {
@@ -60,20 +60,20 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 if (di.Exists)
                 {
                     _name = _directoryName = name;
-                    return true;
+                    return Task.FromResult(true);
                 }
                 else
                 {
                     _name = name;
                     _errMsg = "Directory not exists!";
-                    return false;
+                    return Task.FromResult(false);
                 }
             }
             catch (Exception ex)
             {
                 _errMsg = ex.Message;
                 _name = "";
-                return false;
+                return Task.FromResult(false);
             }
         }
 

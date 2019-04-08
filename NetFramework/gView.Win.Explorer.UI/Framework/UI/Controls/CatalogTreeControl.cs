@@ -17,6 +17,7 @@ using gView.Framework.IO;
 using gView.Framework.UI.Dialogs;
 using gView.system.UI.Framework.system.UI;
 using gView.Framework.Sys.UI;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Controls
 {
@@ -285,7 +286,7 @@ namespace gView.Framework.UI.Controls
             }
             return null;
         }
-        internal IExplorerObject AddChildNode(IExplorerObject exObject)
+        async internal Task<IExplorerObject> AddChildNode(IExplorerObject exObject)
         {
             if (!(treeView.SelectedNode is ExplorerObjectNode) || exObject == null)
                 return exObject;
@@ -293,8 +294,8 @@ namespace gView.Framework.UI.Controls
             ExplorerObjectNode node = treeView.SelectedNode as ExplorerObjectNode;
             if (node.ExplorerObject is IExplorerParentObject)
             {
-                ((IExplorerParentObject)node.ExplorerObject).Refresh();
-                foreach (IExplorerObject child in ((IExplorerParentObject)node.ExplorerObject).ChildObjects)
+                await ((IExplorerParentObject)node.ExplorerObject).Refresh();
+                foreach (IExplorerObject child in await ((IExplorerParentObject)node.ExplorerObject).ChildObjects())
                 {
                     if (ExObjectComparer.Equals(child, exObject))
                     {
@@ -341,15 +342,15 @@ namespace gView.Framework.UI.Controls
 
         }
 
-        public void RefreshSelectedNode()
+        async public Task RefreshSelectedNode()
         {
             if (treeView.SelectedNode == null || !treeView.SelectedNode.IsExpanded) return;
-            InsertNodeElements(treeView.SelectedNode);
+            await InsertNodeElements(treeView.SelectedNode);
         }
 
-        private void treeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
+        async private void treeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
-            e.Cancel = !InsertNodeElements(e.Node);
+            e.Cancel = !await InsertNodeElements(e.Node);
         }
 
         /*
@@ -419,7 +420,7 @@ namespace gView.Framework.UI.Controls
         }
 */
 
-        private bool InsertNodeElements(TreeNode treenode)
+        async private Task<bool> InsertNodeElements(TreeNode treenode)
         {
             if (!(treenode is ExplorerObjectNode))
             {
@@ -440,7 +441,7 @@ namespace gView.Framework.UI.Controls
 
                     treenode.Nodes.Clear();
                     IStatusBar statusbar = (_app != null) ? _app.StatusBar : null;
-                    List<IExplorerObject> childObjects = ((IExplorerParentObject)exObject).ChildObjects;
+                    List<IExplorerObject> childObjects = await ((IExplorerParentObject)exObject).ChildObjects();
                     if (childObjects == null) return false;
                     int pos = 0, count = childObjects.Count;
                     if (statusbar != null) statusbar.ProgressVisible = true;
@@ -504,13 +505,13 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        void CatalogTreeControl_Refreshed(object sender)
+        async void CatalogTreeControl_Refreshed(object sender)
         {
             if (sender is IExplorerObject &&
                 treeView.SelectedNode is ExplorerObjectNode &&
                 ((ExplorerObjectNode)treeView.SelectedNode).ExplorerObject == (IExplorerObject)sender)
             {
-                RefreshSelectedNode();
+                await RefreshSelectedNode();
             }
         }
 
@@ -531,7 +532,7 @@ namespace gView.Framework.UI.Controls
         }
 
         ExplorerObjectNode _contextNode = null;
-        private void treeView_MouseClick(object sender, MouseEventArgs e)
+        async private void treeView_MouseClick(object sender, MouseEventArgs e)
         {
             TreeNode node = treeView.GetNodeAt(e.X, e.Y);
             if (!(node is ExplorerObjectNode)) return;
@@ -559,7 +560,7 @@ namespace gView.Framework.UI.Controls
 
                 if (_contentsList != null)
                 {
-                    ContextMenuStrip strip = _contentsList.BuildContextMenu(exObject);
+                    ContextMenuStrip strip = await _contentsList.BuildContextMenu(exObject);
 
                     if (strip != null && strip.Items.Count > 0)
                     {

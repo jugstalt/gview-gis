@@ -102,16 +102,19 @@ namespace gView.Framework.UI
 
         #region IExplorerParentObject Member
 
-        public override void Refresh()
+        async public override Task<bool> Refresh()
         {
-            base.Refresh();
+            await base.Refresh();
             List<IExplorerObject> childs = DirectoryObject.Refresh(this, this.FullName);
-            if (childs == null) return;
+            if (childs == null)
+                return false;
 
             foreach (IExplorerObject child in childs)
             {
                 base.AddChildObject(child);
             }
+
+            return true;
         }
 
         #endregion
@@ -159,9 +162,10 @@ namespace gView.Framework.UI
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+                return Task.FromResult<IExplorerObject>(cache[FullName]);
 
             try
             {
@@ -170,11 +174,11 @@ namespace gView.Framework.UI
 
                 DirectoryObject dObject = new DirectoryObject(this, FullName);
                 cache.Append(dObject);
-                return dObject;
+                return Task.FromResult<IExplorerObject>(dObject);
             }
             catch
             {
-                return null;
+                return Task.FromResult<IExplorerObject>(null);
             }
         }
 
@@ -296,7 +300,7 @@ namespace gView.Framework.UI
 
         #region IExplorerObjectContentDragDropEvents2 Member
 
-        public void Content_DragDrop(DragEventArgs e, IUserData userdata)
+        async public void Content_DragDrop(DragEventArgs e, IUserData userdata)
         {
             PlugInManager compMan = new PlugInManager();
             List<IFileFeatureDatabase> databases = new List<IFileFeatureDatabase>();
@@ -324,7 +328,7 @@ namespace gView.Framework.UI
                 {
                     ExplorerObjectManager exObjectManager = new ExplorerObjectManager();
 
-                    List<IExplorerObject> exObjects = new List<IExplorerObject>(exObjectManager.DeserializeExplorerObject((IEnumerable<IExplorerObjectSerialization>)ob));
+                    List<IExplorerObject> exObjects = new List<IExplorerObject>(await exObjectManager.DeserializeExplorerObject((IEnumerable<IExplorerObjectSerialization>)ob));
                     if (exObjects == null) return;
 
                     foreach (IExplorerObject exObject in ListOperations<IExplorerObject>.Clone(exObjects))
@@ -656,27 +660,31 @@ namespace gView.Framework.UI
 
         #region IExplorerParentObject Member
 
-        public override void Refresh()
+        async public override Task<bool> Refresh()
         {
-            base.Refresh();
+            await base.Refresh();
             List<IExplorerObject> childs = DirectoryObject.Refresh(this, this.FullName);
-            if (childs == null) return;
+            if (childs == null)
+                return false;
 
             foreach (IExplorerObject child in childs)
             {
                 base.AddChildObject(child);
             }
+
+            return true;
         }
 
         #endregion
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+                return Task.FromResult<IExplorerObject>(cache[FullName]);
 
-            return null;
+            return Task.FromResult<IExplorerObject>(null);
         }
 
         #endregion
@@ -775,21 +783,21 @@ namespace gView.Framework.UI
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (FullName == String.Empty)
-                return new ComputerObject(_application);
+                return Task.FromResult<IExplorerObject>(new ComputerObject(_application));
 
-            return null;
+            return Task.FromResult<IExplorerObject>(null);
         }
 
         #endregion
 
       #region IExplorerParentObject Member
 
-        public override void Refresh()
+        async public override Task<bool> Refresh()
         {
-            base.Refresh();
+            await base.Refresh();
 
             string[] drives = System.IO.Directory.GetLogicalDrives();
 
@@ -820,6 +828,8 @@ namespace gView.Framework.UI
 
                 base.AddChildObject(exObject);
             }
+
+            return true;
         }
 
         #endregion

@@ -45,7 +45,7 @@ namespace gView.Framework.UI
 
     public interface ISerializableExplorerObject
     {
-        IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache);
+        Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache);
     }
 
     public interface ISerializableExplorerObjectCache
@@ -98,9 +98,9 @@ namespace gView.Framework.UI
 
     public interface IExplorerParentObject
     {
-        List<IExplorerObject> ChildObjects { get; }
-        void Refresh();
-        void DiposeChildObjects();
+        Task<List<IExplorerObject>> ChildObjects();
+        Task<bool> Refresh();
+        Task<bool> DiposeChildObjects();
     }
 
     public interface IExplorerObjectTreeNode

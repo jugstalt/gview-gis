@@ -18,6 +18,7 @@ using System.Threading;
 using gView.Framework.system.UI;
 using gView.Framework.UI.Dialogs;
 using gView.Framework.Sys.UI;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Controls
 {
@@ -151,8 +152,9 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public void OnShow()
+        public Task<bool> OnShow()
         {
+            return Task.FromResult(true);
         }
         public void OnHide()
         {
@@ -165,25 +167,28 @@ namespace gView.Framework.UI.Controls
 
         public string Title { get { return "Contents"; } }
 
-        public void RefreshContents()
+        async public Task<bool> RefreshContents()
         {
-            if (this.InvokeRequired)
-            {
-                RefreshContextDelegate d = new RefreshContextDelegate(RefreshContents);
-                this.Invoke(d);
-            }
-            else
+            //if (this.InvokeRequired)
+            //{
+            //    RefreshContextDelegate d = new RefreshContextDelegate(RefreshContents);
+            //    this.Invoke(d);
+            //}
+            //else
             {
 
-                if (!(_exObject is IExplorerParentObject)) return;
+                if (!(_exObject is IExplorerParentObject))
+                    return false;
 
                 Cursor = Cursors.WaitCursor;
-                ((IExplorerParentObject)_exObject).Refresh();
-                BuildList();
+                await ((IExplorerParentObject)_exObject).Refresh();
+                await BuildList();
 
                 base.Refresh();
                 Cursor = Cursors.Default;
             }
+
+            return true;
         }
 
         public IExplorerObject ExplorerObject
@@ -204,11 +209,11 @@ namespace gView.Framework.UI.Controls
         }
         #endregion
 
-        private void BuildList()
+        async private Task BuildList()
         {
-            BuildList(false);
+            await BuildList(false);
         }
-        private void BuildList(bool checkTreeNodes)
+        async private Task BuildList(bool checkTreeNodes)
         {
             if (_worker != null)
             {
@@ -219,23 +224,23 @@ namespace gView.Framework.UI.Controls
             //_worker=new Thread(new ParameterizedThreadStart(BuildListThread));
             //_worker.Start(checkTreeNodes);
 
-            BuildListThread(checkTreeNodes);
+            await BuildListThread(checkTreeNodes);
         }
 
         #region BuildListThread
 
-        private void BuildListThread(object chkTreeNodes)
+        async private Task BuildListThread(object chkTreeNodes)
         {
             bool checkTreeNodes = (bool)chkTreeNodes;
             ClearList();
 
             if (_exObject is IExplorerParentObject)
             {
-                List<IExplorerObject> childs = ((IExplorerParentObject)_exObject).ChildObjects;
+                List<IExplorerObject> childs = await ((IExplorerParentObject)_exObject).ChildObjects();
                 if (childs != null)
                 {
                     IStatusBar statusbar = (_app != null) ? _app.StatusBar : null;
-                    List<IExplorerObject> childObjects = ((IExplorerParentObject)_exObject).ChildObjects;
+                    List<IExplorerObject> childObjects = await ((IExplorerParentObject)_exObject).ChildObjects();
                     if (childObjects == null) return;
                     int pos = 0, count = childObjects.Count;
                     if (statusbar != null) statusbar.ProgressVisible = true;
@@ -275,7 +280,7 @@ namespace gView.Framework.UI.Controls
                         AddListItem(item);
                         if (checkTreeNodes && _tree != null)
                         {
-                            CheckTree(exObject);
+                            await CheckTree(exObject);
                         }
 
                         if (exObject is IExplorerObjectDeletable)
@@ -348,17 +353,17 @@ namespace gView.Framework.UI.Controls
         }
 
         private delegate void CheckTreeCallback(IExplorerObject exObject);
-        private void CheckTree(IExplorerObject exObject)
+        async private Task CheckTree(IExplorerObject exObject)
         {
-            if (this.InvokeRequired)
-            {
-                CheckTreeCallback d = new CheckTreeCallback(CheckTree);
-                this.Invoke(d, new object[] { exObject });
-            }
-            else
+            //if (this.InvokeRequired)
+            //{
+            //    CheckTreeCallback d = new CheckTreeCallback(CheckTree);
+            //    this.Invoke(d, new object[] { exObject });
+            //}
+            //else
             {
                 if (!_tree.HasChildNode(exObject))
-                    _tree.AddChildNode(exObject);
+                    await _tree.AddChildNode(exObject);
             }
         }
         #endregion
@@ -459,23 +464,23 @@ namespace gView.Framework.UI.Controls
 
         #region ContextMenu
 
-        private void listView_Click(object sender, EventArgs e)
+        async private void listView_Click(object sender, EventArgs e)
         {
-            ShowContextMenu();
+            await ShowContextMenu();
         }
 
-        private void listView_MouseDown(object sender, MouseEventArgs e)
+        async private void listView_MouseDown(object sender, MouseEventArgs e)
         {
             _button = e.Button;
             if (listView.GetItemAt(_mX, _mY) != null) return;
 
-            ShowContextMenu();
+            await ShowContextMenu();
         }
 
         //private ExplorerObjectListViewItem _contextItem = null;
         private IExplorerObject _contextObject = null;
         ContextMenuStrip _strip = null;
-        private void ShowContextMenu()
+        async private Task ShowContextMenu()
         {
             if (!_allowContextMenu) return;
 
@@ -495,7 +500,7 @@ namespace gView.Framework.UI.Controls
 
             if (_button == MouseButtons.Right)
             {
-                ContextMenuStrip strip = BuildContextMenu(exObject, this.SelectedExplorerObjects, item == null);
+                ContextMenuStrip strip = await BuildContextMenu(exObject, this.SelectedExplorerObjects, item == null);
 
                 if (strip != null && strip.Items.Count > 0)
                 {
@@ -511,13 +516,13 @@ namespace gView.Framework.UI.Controls
             Cursor = Cursors.Default;
         }
 
-        internal ContextMenuStrip BuildContextMenu(IExplorerObject exObject)
+        async internal Task<ContextMenuStrip> BuildContextMenu(IExplorerObject exObject)
         {
             List<IExplorerObject> context = new List<IExplorerObject>();
             context.Add(exObject);
-            return BuildContextMenu(exObject, context, false);
+            return await BuildContextMenu(exObject, context, false);
         }
-        private ContextMenuStrip BuildContextMenu(IExplorerObject exObject, List<IExplorerObject> context, bool emptyContentsClick)
+        private Task<ContextMenuStrip> BuildContextMenu(IExplorerObject exObject, List<IExplorerObject> context, bool emptyContentsClick)
         {
             if (_strip != null && _strip.Visible == true)
             {
@@ -610,7 +615,7 @@ namespace gView.Framework.UI.Controls
             }
 
             _contextObject = exObject;
-            return _strip;
+            return Task.FromResult<ContextMenuStrip>(_strip);
         }
 
         private int _mX = 0, _mY = 0;
@@ -623,15 +628,15 @@ namespace gView.Framework.UI.Controls
 
         #endregion
 
-        public void createNewItem_Click(object sender, EventArgs e)
+        async public void createNewItem_Click(object sender, EventArgs e)
         {
             if (!(sender is CreateNewToolStripItem)) return;
 
             IExplorerObject exObject = ((CreateNewToolStripItem)sender).ExplorerObject;
-            CreateNewItem(exObject);
+            await CreateNewItem(exObject);
         }
 
-        public void CreateNewItem(IExplorerObject exObject)
+        async public Task CreateNewItem(IExplorerObject exObject)
         {
             if (!(exObject is IExplorerObjectCreatable)) return;
 
@@ -639,7 +644,7 @@ namespace gView.Framework.UI.Controls
             if (newExObj == null) return;
 
             if (_tree != null)
-                newExObj = _tree.AddChildNode(newExObj);
+                newExObj = await _tree.AddChildNode(newExObj);
 
             int imageIndex = gView.Explorer.UI.Framework.UI.ExplorerIcons.ImageIndex(newExObj);
             string[] texts = { newExObj.Name, newExObj.Type };

@@ -184,7 +184,7 @@ namespace gView.DataSources.Fdb.MSSql
         }
 
         //private SqlConnection _connection=null;
-        override public bool Open(string connString)
+        override public Task<bool> Open(string connString)
         {
             try
             {
@@ -215,11 +215,11 @@ namespace gView.DataSources.Fdb.MSSql
                 _connection=new SqlConnection(parseConnectionString(connString));
                 _connection.Open();
                 */
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
-                return false;
+                return Task.FromResult(false);
             }
         }
 

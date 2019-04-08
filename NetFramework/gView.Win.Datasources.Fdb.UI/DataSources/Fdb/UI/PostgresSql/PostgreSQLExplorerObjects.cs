@@ -19,6 +19,7 @@ using gView.DataSources.Fdb.UI.MSSql;
 using gView.DataSources.Fdb.UI.MSAccess;
 using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.UI.Controls.Filter;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.UI.PostgreSql
 {
@@ -69,9 +70,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         #region IExplorerParentObject Members
 
-        public override void Refresh()
+        async public override Task<bool> Refresh()
         {
-            base.Refresh();
+            await base.Refresh();
             base.AddChildObject(new NewConnectionObject());
 
             ConfigTextStream stream = new ConfigTextStream("postgrefdb_connections");
@@ -90,24 +91,27 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 dbConn.FromString(DbConnectionStrings[DbConnName]);
                 base.AddChildObject(new ExplorerObject(this, DbConnName, dbConn));
             }
+
+            return true;
         }
 
         #endregion
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+                return Task.FromResult<IExplorerObject>(cache[FullName]);
 
             if (this.FullName == FullName)
             {
                 ExplorerGroupObject exObject = new ExplorerGroupObject();
                 cache.Append(exObject);
-                return exObject;
+                return Task.FromResult<IExplorerObject>(exObject);
             }
 
-            return null;
+            return Task.FromResult<IExplorerObject>(null);
         }
 
         #endregion
@@ -176,11 +180,12 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+                return Task.FromResult<IExplorerObject>(cache[FullName]);
 
-            return null;
+            return Task.FromResult<IExplorerObject>(null);
         }
 
         #endregion
@@ -263,11 +268,12 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+                return Task.FromResult<IExplorerObject>(cache[FullName]);
 
-            return null;
+            return Task.FromResult<IExplorerObject>(null);
         }
 
         #endregion
@@ -397,7 +403,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 try
                 {
                     pgFDB fdb = new pgFDB();
-                    if (!fdb.Open(_connectionString))
+                    if (!fdb.Open(_connectionString).Result)
                     {
                         _errMsg = fdb.LastErrorMessage;
                         return null;
@@ -433,9 +439,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         #region IExplorerParentObject Members
 
-        public override void Refresh()
+        async public override Task<bool> Refresh()
         {
-            base.Refresh();
+            await base.Refresh();
             string[] ds = DatasetNames;
             if (ds == null)
             {
@@ -449,6 +455,8 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                     base.AddChildObject(new DatasetExplorerObject(this, dsname));
                 }
             }
+
+            return true;
         }
         #endregion
 
@@ -468,7 +476,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName)) return cache[FullName];
 
@@ -477,7 +485,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
             group = (ExplorerGroupObject)((cache.Contains(group.FullName)) ? cache[group.FullName] : group);
 
-            foreach (IExplorerObject exObject in group.ChildObjects)
+            foreach (IExplorerObject exObject in await group.ChildObjects())
             {
                 if (exObject.FullName == FullName)
                 {
@@ -698,22 +706,24 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         #region IExplorerParentObject Members
 
-        public override void Refresh()
+        async public override Task<bool> Refresh()
         {
-            base.Refresh();
+            await base.Refresh();
             this.Dispose();
 
             _dataset = new pgDataset();
             _dataset.ConnectionString = this.ConnectionString + ";dsname=" + _dsname;
 
-            if (_dataset.Open())
+            if (await _dataset.Open())
             {
-                foreach (IDatasetElement element in _dataset.Elements().Result)
+                foreach (IDatasetElement element in await _dataset.Elements())
                 {
                     base.AddChildObject(new FeatureClassExplorerObject(this, _dsname, element));
                 }
             }
             _fdb = (pgFDB)_dataset.Database;
+
+            return true;
         }
 
         #endregion
@@ -744,7 +754,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName)) return cache[FullName];
 
@@ -756,10 +766,10 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             string dsName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
 
             ExplorerObject fdbObject = new ExplorerObject(1);
-            fdbObject = (ExplorerObject)fdbObject.CreateInstanceByFullName(fdbName, cache);
-            if (fdbObject == null || fdbObject.ChildObjects == null) return null;
+            fdbObject = (ExplorerObject)await fdbObject.CreateInstanceByFullName(fdbName, cache);
+            if (fdbObject == null || await fdbObject.ChildObjects() == null) return null;
 
-            foreach (IExplorerObject exObject in fdbObject.ChildObjects)
+            foreach (IExplorerObject exObject in await fdbObject.ChildObjects())
             {
                 if (exObject.Name == dsName)
                 {
@@ -1061,7 +1071,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName)) return cache[FullName];
 
@@ -1073,10 +1083,10 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             string fcName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
 
             DatasetExplorerObject dsObject = new DatasetExplorerObject();
-            dsObject = (DatasetExplorerObject)dsObject.CreateInstanceByFullName(dsName, cache);
-            if (dsObject == null || dsObject.ChildObjects == null) return null;
+            dsObject = (DatasetExplorerObject)await dsObject.CreateInstanceByFullName(dsName, cache);
+            if (dsObject == null || await dsObject.ChildObjects() == null) return null;
 
-            foreach (IExplorerObject exObject in dsObject.ChildObjects)
+            foreach (IExplorerObject exObject in await dsObject.ChildObjects())
             {
                 if (exObject.Name == fcName)
                 {
@@ -1316,9 +1326,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            return null;
+            return Task.FromResult<IExplorerObject>(null);
         }
 
         #endregion
@@ -1457,9 +1467,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            return null;
+            return Task.FromResult<IExplorerObject>(null);
         }
 
         #endregion
@@ -1572,9 +1582,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            return null;
+            return Task.FromResult<IExplorerObject>(null);
         }
 
         #endregion
@@ -1630,9 +1640,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            return null;
+            return Task.FromResult<IExplorerObject>(null);
         }
 
         #endregion

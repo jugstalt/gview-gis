@@ -10,6 +10,7 @@ using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.system;
 using gView.Explorer.UI;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Controls
 {
@@ -97,16 +98,18 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public void OnShow()
+        async public Task<bool> OnShow()
         {
-            if (this.InvokeRequired)
+            //if (this.InvokeRequired)
+            //{
+            //    this.Invoke(new MethodInvoker(() => { OnShow(); }));
+            //}
+            //else
             {
-                this.Invoke(new MethodInvoker(() => { OnShow(); }));
+                await mapView1.RefreshMap(DrawPhase.Geography);
             }
-            else
-            {
-                mapView1.RefreshMap(DrawPhase.Geography);
-            }
+
+            return true;
         }
 
         public void OnHide()
@@ -219,17 +222,19 @@ namespace gView.Framework.UI.Controls
             get { return "Preview"; }
         }
 
-        public void RefreshContents()
+        async public Task<bool> RefreshContents()
         {
-            if (this.InvokeRequired)
-            {
-                this.Invoke(new MethodInvoker(() => { RefreshContents(); }));
-            }
-            else
+            //if (this.InvokeRequired)
+            //{
+            //    this.Invoke(new MethodInvoker(() => { RefreshContents(); }));
+            //}
+            //else
             {
                 mapView1.CancelDrawing(DrawPhase.All);
-                mapView1.RefreshMap(DrawPhase.All);
+                await mapView1.RefreshMap(DrawPhase.All);
             }
+
+            return true;
         }
         #endregion
 
@@ -356,16 +361,19 @@ namespace gView.Framework.UI.Controls
         {
         }
 
-        public void OnShow()
+        async public Task<bool> OnShow()
         {
             OnHide();
-            if (_exObject == null) return;
+            if (_exObject == null)
+                return false;
 
             if (_exObject.Object is ITableClass && _table != null)
             {
                 _table.TableClass = (ITableClass)_exObject.Object;
                 _table.StartWorkerThread();
             }
+
+            return true;
         }
         public void OnHide()
         {
@@ -408,8 +416,9 @@ namespace gView.Framework.UI.Controls
             get { return "Data Table"; }
         }
 
-        public void RefreshContents()
+        public Task<bool> RefreshContents()
         {
+            return Task.FromResult(true);
         }
         #endregion
 

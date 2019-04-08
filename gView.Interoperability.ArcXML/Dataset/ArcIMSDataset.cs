@@ -109,9 +109,9 @@ namespace gView.Interoperability.ArcXML.Dataset
             get { return _state; }
         }
 
-        public bool Open()
+        async public Task<bool> Open()
         {
-            return Open(null);
+            return await Open(null);
         }
 
         public string LastErrorMessage
@@ -170,14 +170,14 @@ namespace gView.Interoperability.ArcXML.Dataset
             return Task.FromResult<IDatasetElement>(null);
         }
 
-        public void RefreshClasses()
+        async public Task RefreshClasses()
         {
         }
         #endregion
 
         #region IRequestDependentDataset Member
 
-        public bool Open(IServiceRequestContext context)
+        public Task<bool> Open(IServiceRequestContext context)
         {
             if (_class == null) _class = new ArcIMSClass(this);
 
@@ -316,14 +316,14 @@ namespace gView.Interoperability.ArcXML.Dataset
                     _themes.Add(theme);
                 }
                 _state = DatasetState.opened;
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 _state = DatasetState.unknown;
                 _errMsg = ex.Message;
                 ArcIMSClass.ErrorLog(context, "Open Dataset", server, service, ex);
-                return false;
+                return Task.FromResult(false);
             }
         }
 

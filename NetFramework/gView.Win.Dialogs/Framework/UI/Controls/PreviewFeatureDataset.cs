@@ -97,9 +97,9 @@ namespace gView.Framework.UI.Controls
             get { return DatasetState.unknown; }
         }
 
-        public bool Open()
+        public Task<bool> Open()
         {
-            return true;
+            return Task.FromResult(true);
         }
 
         public string LastErrorMessage
@@ -159,7 +159,7 @@ namespace gView.Framework.UI.Controls
             return Task.FromResult<IDatasetElement>(null); ;
         }
 
-        public void RefreshClasses()
+        async public Task RefreshClasses()
         {
         }
         #endregion

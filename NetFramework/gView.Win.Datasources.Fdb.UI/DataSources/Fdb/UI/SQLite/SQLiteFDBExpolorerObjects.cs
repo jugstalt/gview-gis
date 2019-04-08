@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI.SQLite
@@ -86,7 +87,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
                 if (!(new FileInfo(f).Exists)) return null;
                 using (SQLiteFDB fdb = new SQLiteFDB())
                 {
-                    if (!fdb.Open(f) || !fdb.IsValidAccessFDB)
+                    if (!fdb.Open(f).Result || !fdb.IsValidAccessFDB)
                         return null;
                 }
             }
@@ -103,7 +104,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
                 try
                 {
                     SQLiteFDB fdb = new SQLiteFDB();
-                    if (!fdb.Open(_filename))
+                    if (!fdb.Open(_filename).Result)
                     {
                         _errMsg = fdb.LastErrorMessage;
                         return null;
@@ -139,9 +140,9 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
         #region IExplorerParentObject Members
 
-        public override void Refresh()
+        async public override Task<bool> Refresh()
         {
-            base.Refresh();
+            await base.Refresh();
             string[] ds = DatasetNames;
             if (ds != null)
             {
@@ -151,6 +152,8 @@ namespace gView.DataSources.Fdb.UI.SQLite
                     base.AddChildObject(new SQLiteFDBDatasetExplorerObject(this, _filename, dsname));
                 }
             }
+
+            return true;
         }
 
         #endregion
@@ -171,11 +174,11 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             IExplorerObject obj = (cache.Contains(FullName)) ? cache[FullName] : CreateInstance(null, FullName);
             cache.Append(obj);
-            return obj;
+            return Task.FromResult<IExplorerObject>(obj);
         }
 
         #endregion
@@ -371,22 +374,24 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
         #region IExplorerParentObject Members
 
-        public override void Refresh()
+        async public override Task<bool> Refresh()
         {
-            base.Refresh();
+            await base.Refresh();
             this.Dispose();
 
             _dataset = new SQLiteFDBDataset();
             _dataset.ConnectionString = "Data Source=" + _filename + ";dsname=" + _dsname;
             
-            if (_dataset.Open())
+            if (await _dataset.Open())
             {
-                foreach (IDatasetElement element in _dataset.Elements().Result)
+                foreach (IDatasetElement element in await _dataset.Elements())
                 {
                     base.AddChildObject(new SQLiteFDBFeatureClassExplorerObject(this, _filename, _dsname, element));
                 }
             }
             _fdb = (SQLiteFDB)_dataset.Database;
+
+            return true;
         }
 
         #endregion
@@ -408,7 +413,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName)) return cache[FullName];
 
@@ -420,10 +425,10 @@ namespace gView.DataSources.Fdb.UI.SQLite
             string dsName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
 
             SQLiteFDBExplorerObject fdbObject = new SQLiteFDBExplorerObject();
-            fdbObject = (SQLiteFDBExplorerObject)fdbObject.CreateInstanceByFullName(mdbName, cache);
-            if (fdbObject == null || fdbObject.ChildObjects == null) return null;
+            fdbObject = (SQLiteFDBExplorerObject)await fdbObject.CreateInstanceByFullName(mdbName, cache);
+            if (fdbObject == null || await fdbObject.ChildObjects() == null) return null;
 
-            foreach (IExplorerObject exObject in fdbObject.ChildObjects)
+            foreach (IExplorerObject exObject in await fdbObject.ChildObjects())
             {
                 if (exObject.Name == dsName)
                 {
@@ -725,7 +730,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName)) return cache[FullName];
 
@@ -737,10 +742,10 @@ namespace gView.DataSources.Fdb.UI.SQLite
             string fcName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
 
             SQLiteFDBDatasetExplorerObject dsObject = new SQLiteFDBDatasetExplorerObject();
-            dsObject = dsObject.CreateInstanceByFullName(dsName, cache) as SQLiteFDBDatasetExplorerObject;
-            if (dsObject == null || dsObject.ChildObjects == null) return null;
+            dsObject = await dsObject.CreateInstanceByFullName(dsName, cache) as SQLiteFDBDatasetExplorerObject;
+            if (dsObject == null || await dsObject.ChildObjects() == null) return null;
 
-            foreach (IExplorerObject exObject in dsObject.ChildObjects)
+            foreach (IExplorerObject exObject in await dsObject.ChildObjects())
             {
                 if (exObject.Name == fcName)
                 {
@@ -1021,9 +1026,9 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            return null;
+            return Task.FromResult<IExplorerObject>(null);
         }
 
         #endregion
@@ -1074,9 +1079,9 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            return null;
+            return Task.FromResult<IExplorerObject>(null);
         }
 
         #endregion

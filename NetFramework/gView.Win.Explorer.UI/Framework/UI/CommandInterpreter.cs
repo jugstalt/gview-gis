@@ -9,24 +9,25 @@ using System.Diagnostics;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Framework.UI.Dialogs;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI
 {
-    internal class CommandInterpregerArgs
-    {
-        public string Command="";
-        public ExplorerExecuteBatchCallback Callback = null;
+    //internal class CommandInterpregerArgs
+    //{
+    //    public string Command="";
+    //    public ExplorerExecuteBatchCallback Callback = null;
 
-        public CommandInterpregerArgs(string command)
-        {
-            Command = command;
-        }
-        public CommandInterpregerArgs(string command, ExplorerExecuteBatchCallback callback)
-            : this(command)
-        {
-            Callback = callback;
-        }
-    }
+    //    public CommandInterpregerArgs(string command)
+    //    {
+    //        Command = command;
+    //    }
+    //    public CommandInterpregerArgs(string command, ExplorerExecuteBatchCallback callback)
+    //        : this(command)
+    //    {
+    //        Callback = callback;
+    //    }
+    //}
 
     internal class CommandInterpreter
     {
@@ -70,7 +71,7 @@ namespace gView.Framework.UI
             }
         }
 
-        static private void CommandItem_Click(object sender, EventArgs e)
+        async static private void CommandItem_Click(object sender, EventArgs e)
         {
             if (_proc != null) return;
 
@@ -84,15 +85,12 @@ namespace gView.Framework.UI
             {
                 //if (Standardoutput != null) Standardoutput.Text = "";
 
-                Thread thread = new Thread(new ParameterizedThreadStart(RunProcess));
-                thread.Start(new CommandInterpregerArgs(dlg.Command));
+                await RunProcess(dlg.Command, null);
             }
         }
 
-        static internal void RunProcess(object commandargs)
+        async static internal Task RunProcess(string batch, ExplorerExecuteBatchCallback callback)
         {
-            if (!(commandargs is CommandInterpregerArgs)) return;
-            CommandInterpregerArgs args = (CommandInterpregerArgs)commandargs;
 
             string path = SystemVariables.MyApplicationConfigPath + @"\explorer\tmp";
             DirectoryInfo di = new DirectoryInfo(path);
@@ -100,7 +98,7 @@ namespace gView.Framework.UI
 
             string filename = di.FullName + @"\bat_" + Guid.NewGuid().ToString("N") + ".bat";
             StreamWriter sw = new StreamWriter(filename);
-            String2DOS(sw.BaseStream, "echo off\n" + args.Command.ToString());
+            String2DOS(sw.BaseStream, "echo off\n" + batch.ToString());
             sw.Close();
 
             Thread thread1 = new Thread(new ThreadStart(ReadProcessStandardOutput));
@@ -128,11 +126,11 @@ namespace gView.Framework.UI
 
             _proc = null;
             
-            if (args.Callback != null)
+            if (callback != null)
             {
-                args.Callback.Invoke();
+                var task = callback.Invoke();
+                await task;
             }
-            
         }
 
         static private void ReadProcessStandardOutput()

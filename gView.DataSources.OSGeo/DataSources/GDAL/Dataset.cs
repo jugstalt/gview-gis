@@ -170,9 +170,9 @@ namespace gView.DataSources.GDAL
             get { return _state; }
         }
 
-        public bool Open()
+        public Task<bool> Open()
         {
-            return true;
+            return Task.FromResult(true);
         }
 
         public string LastErrorMessage
@@ -211,7 +211,7 @@ namespace gView.DataSources.GDAL
             return Task.FromResult((IDatasetElement)null);
         }
 
-        public void RefreshClasses()
+        async public Task RefreshClasses()
         {
         }
         #endregion

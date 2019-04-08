@@ -256,13 +256,13 @@ namespace gView.DataSources.Fdb.MSAccess
             */
             return true;
         }
-        virtual public bool Open(string connectionString)
+        virtual public Task<bool> Open(string connectionString)
         {
             _conn = new CommonDbConnection();
             ((CommonDbConnection)_conn).ConnectionString2 = _filename = parseConnectionString(connectionString);
 
             SetVersion();
-            return true;
+            return Task.FromResult(true);
         }
         virtual public void Dispose()
         {
@@ -2571,7 +2571,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
                 ds.ConnectionString = connectionString;
                 if (open)
-                    ds.Open();
+                    ds.Open().Wait();
 
                 _cache.Add(key, ds);
                 return ds;
@@ -2627,7 +2627,7 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         #endregion
 
-        public void RefreshClasses(IDataset dataset)
+        async public Task RefreshClasses(IDataset dataset)
         {
             if (dataset == null) return;
             List<IDatasetElement> elements = DatasetLayers(dataset);
@@ -2637,7 +2637,7 @@ namespace gView.DataSources.Fdb.MSAccess
             {
                 if (element == null || element.Class == null) continue;
 
-                foreach (IDatasetElement orig in dataset.Elements().Result)
+                foreach (IDatasetElement orig in await dataset.Elements())
                 {
                     if (orig == null || orig.Class == null) continue;
 
@@ -3008,7 +3008,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 {
                     AccessFDBDataset dataset = new AccessFDBDataset(this);
                     dataset.ConnectionString = _filename + ";" + row["Name"].ToString();
-                    if (dataset.Open())
+                    if (dataset.Open().Result)
                         datasets.Add(dataset);
                 }
 

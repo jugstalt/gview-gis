@@ -203,7 +203,7 @@ namespace gView.DataSources.Shape
             get { return _state; }
         }
 
-		public bool Open()
+		public Task<bool> Open()
 		{
             /*
 			_file=new SHPFile(_connectionString);
@@ -258,7 +258,7 @@ namespace gView.DataSources.Shape
             */
 
             _state = DatasetState.opened;
-			return true;
+			return Task.FromResult(true);
 		}
 
 		public string LastErrorMessage
@@ -367,7 +367,7 @@ namespace gView.DataSources.Shape
             return null;
         }
 
-        public void RefreshClasses()
+        async public Task RefreshClasses()
         {
         }
 		#endregion

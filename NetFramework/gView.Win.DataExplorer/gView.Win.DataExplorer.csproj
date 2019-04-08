@@ -326,6 +326,10 @@
       <Project>{b3944c41-5bb6-4cbc-9173-59d5e50f74a4}</Project>
       <Name>gView.Win.DataSources.Fdb.UI</Name>
     </ProjectReference>
+    <ProjectReference Include="..\gView.Win.DataSources.MSSqlSpatial.UI\gView.Win.DataSources.MSSqlSpatial.UI.csproj">
+      <Project>{58919130-d4fd-4346-a2df-b5728201da86}</Project>
+      <Name>gView.Win.DataSources.MSSqlSpatial.UI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\gView.Win.Db.UI\gView.Win.Db.UI.csproj">
       <Project>{e5ed18b7-1d13-441b-9b3e-55a65a147928}</Project>
       <Name>gView.Win.Db.UI</Name>
@@ -342,9 +346,17 @@
       <Project>{68ff06ec-cebd-4ba4-a536-6c09d9714066}</Project>
       <Name>gView.Win.Globalisation</Name>
     </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Interoperability.OGC.UI\gView.Win.Interoperability.OGC.UI.csproj">
+      <Project>{ed609e9d-4942-4426-bad1-8de67d23385a}</Project>
+      <Name>gView.Win.Interoperability.OGC.UI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\gView.Win.MapServer.Connector\gView.Win.MapServer.Connector.csproj">
       <Project>{249e5894-40ca-4692-b876-9df3b1a9e481}</Project>
       <Name>gView.Win.MapServer.Connector</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.OGC.UI\gView.Win.OGC.UI.csproj">
+      <Project>{fa5c7709-9cb5-4747-9302-1f108f9a3caf}</Project>
+      <Name>gView.Win.OGC.UI</Name>
     </ProjectReference>
     <ProjectReference Include="..\gView.Win.Plugin.Tools\gView.Win.Plugins.Tools.csproj">
       <Project>{10bc8626-1d94-4740-9ed3-9d1bd71857b7}</Project>

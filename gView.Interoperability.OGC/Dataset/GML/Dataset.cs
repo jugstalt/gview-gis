@@ -149,7 +149,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             get { return _state; }
         }
 
-        public bool Open()
+        public Task<bool> Open()
         {
             try
             {
@@ -157,9 +157,9 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 _elements.Clear();
 
                 FileInfo fi_gml = new FileInfo(_connectionString);
-                if (!fi_gml.Exists) return false;
+                if (!fi_gml.Exists) return Task.FromResult(false);
                 FileInfo fi_xsd = new FileInfo(fi_gml.FullName.Substring(0, fi_gml.FullName.Length - fi_gml.Extension.Length) + ".xsd");
-                if (!fi_xsd.Exists) return false;
+                if (!fi_xsd.Exists) return Task.FromResult(false);
 
                 _gml_file = fi_gml.FullName;
                 _xsd_file = fi_xsd.FullName;
@@ -168,7 +168,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 schema.Load(fi_xsd.FullName);
                 XmlSchemaReader schemaReader = new XmlSchemaReader(schema);
                 string targetNamespace = schemaReader.TargetNamespaceURI;
-                if (targetNamespace == String.Empty) return false;
+                if (targetNamespace == String.Empty) return Task.FromResult(false);
 
                 PlugInManager compMan = new PlugInManager();
                 foreach (string elementName in schemaReader.ElementNames)
@@ -214,12 +214,12 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 }
 
                 _state = DatasetState.opened;
-                return true;
+                return Task.FromResult(true);
             }
             catch(Exception ex)
             {
                 _errMsg = ex.Message;
-                return false;
+                return Task.FromResult(false);
             }
         }
 
@@ -249,11 +249,11 @@ namespace gView.Interoperability.OGC.Dataset.GML
             get { return _database; }
         }
 
-        public Task<IDatasetElement> Element(string title)
+        async public Task<IDatasetElement> Element(string title)
         {
             foreach (IDatasetElement element in _elements)
                 if (element.Title == title)
-                    return Task.FromResult(element);
+                    return element;
 
             try
             {
@@ -262,17 +262,17 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
                 Dataset ds = new Dataset();
                 ds.ConnectionString = di + @"\" + title + ".gml";
-                if (ds.Open())
+                if (await ds.Open())
                 {
-                    return ds.Element(title);
+                    return await ds.Element(title);
                 }
             }
             catch { }
 
-            return Task.FromResult<IDatasetElement>(null);
+            return null;
         }
 
-        public void RefreshClasses()
+        async public Task RefreshClasses()
         {
         }
         #endregion

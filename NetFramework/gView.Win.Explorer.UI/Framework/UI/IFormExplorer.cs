@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using gView.Framework.UI;
 
@@ -12,7 +13,7 @@ namespace gView.Explorer.UI.Framework.UI
         void ValidateButtons();
         void AppendContextMenuItems(ContextMenuStrip strip, object context);
         void Close();
-        void RefreshContents();
+        Task<bool> RefreshContents();
         void SetStatusbarText(string text);
         void SetStatusbarProgressVisibility(bool vis);
         void SetStatusbarProgressValue(int val);

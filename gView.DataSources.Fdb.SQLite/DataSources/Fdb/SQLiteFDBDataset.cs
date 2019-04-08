@@ -181,18 +181,20 @@ namespace gView.DataSources.Fdb.SQLite
             }
         }
 
-        public bool Open()
+        public Task<bool> Open()
         {
-            if (_fdb == null) return false;
+            if (_fdb == null)
+                return Task.FromResult(false);
 
             _dsID = _fdb.DatasetID(_dsname);
-            if (_dsID < 0) return false;
+            if (_dsID < 0)
+                return Task.FromResult(false);
 
             _sRef = this.SpatialReference;
             _state = DatasetState.opened;
             _sIndexDef = _fdb.SpatialIndexDef(_dsID);
 
-            return true;
+            return Task.FromResult(true);
         }
 
         public string LastErrorMessage
@@ -272,10 +274,10 @@ namespace gView.DataSources.Fdb.SQLite
             return Task.FromResult(element);
         }
 
-        public void RefreshClasses()
+        async public Task RefreshClasses()
         {
             if (_fdb != null)
-                _fdb.RefreshClasses(this);
+                await _fdb.RefreshClasses(this);
         }
 
         #endregion

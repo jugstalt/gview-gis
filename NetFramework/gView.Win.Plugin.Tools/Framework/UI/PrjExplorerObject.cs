@@ -4,6 +4,7 @@ using System.Text;
 using System.IO;
 using gView.Framework.Geometry;
 using gView.Framework.system.UI;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI
 {
@@ -103,9 +104,9 @@ namespace gView.Framework.UI
 
         #region ISerializableExplorerObject Member
 
-        public IExplorerObject CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            return null;
+            return Task.FromResult<IExplorerObject>(null);
         }
 
         #endregion

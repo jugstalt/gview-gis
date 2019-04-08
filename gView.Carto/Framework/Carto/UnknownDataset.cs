@@ -113,9 +113,9 @@ namespace gView.Carto.Framework.Carto
             return null;
         }
 
-        public bool Open()
+        public Task<bool> Open()
         {
-            return true;
+            return Task.FromResult(true);
         }
 
         public void ReadMetadata(IPersistStream stream)
@@ -123,7 +123,7 @@ namespace gView.Carto.Framework.Carto
            
         }
 
-        public void RefreshClasses()
+        async public Task RefreshClasses()
         {
             
         }

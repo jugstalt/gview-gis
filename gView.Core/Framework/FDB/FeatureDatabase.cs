@@ -13,7 +13,7 @@ namespace gView.Framework.FDB
     public interface IDatabase : IErrorMessage ,IDisposable
     {
         bool Create(string name);
-        bool Open(string name);
+        Task<bool> Open(string name);
 
         string LastErrorMessage { get; }
         Exception lastException { get; }

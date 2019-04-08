@@ -279,19 +279,21 @@ namespace gView.DataSources.Fdb.MSAccess
             get { return _state; }
         }
 
-        public bool Open()
+        public Task<bool> Open()
         {
             if (_connString == null || _connString == "" ||
-                _dsname == null || _dsname == "" || _fdb == null) return false;
+                _dsname == null || _dsname == "" || _fdb == null)
+                return Task.FromResult(false);
 
             _dsID = _fdb.DatasetID(_dsname);
-            if (_dsID == -1) return false;
+            if (_dsID == -1)
+                return Task.FromResult(false);
 
             _sRef = _fdb.SpatialReference(_dsname);
             _sIndexDef = _fdb.SpatialIndexDef(_dsID);
 
             _state = DatasetState.opened;
-            return true;
+            return Task.FromResult(true);
         }
 
         public string LastErrorMessage
@@ -330,10 +332,10 @@ namespace gView.DataSources.Fdb.MSAccess
             get { return _fdb; }
         }
 
-        public void RefreshClasses()
+        async public Task RefreshClasses()
         {
             if (_fdb != null)
-                _fdb.RefreshClasses(this);
+                await _fdb.RefreshClasses(this);
         }
         #endregion
 

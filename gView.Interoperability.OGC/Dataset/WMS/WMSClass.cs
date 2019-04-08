@@ -325,7 +325,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
             if (!_dataset.IsOpened)
             {
-                if (!_dataset.Open()) return false;
+                if (!_dataset.Open().Result) return false;
             }
 
             List<IWebServiceTheme> themes = Themes;
@@ -531,7 +531,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             {
                 if (!_dataset.IsOpened)
                 {
-                    if (!_dataset.Open()) return null;
+                    if (!_dataset.Open().Result) return null;
                 }
 
                 IEnvelope ret = null;
@@ -576,7 +576,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             {
                 if (!_dataset.IsOpened)
                 {
-                    if (!_dataset.Open()) return null;
+                    if (!_dataset.Open().Result) return null;
                 }
 
                 if (_clonedThemes != null) return _clonedThemes;

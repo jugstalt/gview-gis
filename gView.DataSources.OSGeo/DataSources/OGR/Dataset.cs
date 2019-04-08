@@ -72,7 +72,7 @@ namespace gView.DataSources.OGR
             get { return _state; }
         }
 
-        public bool Open()
+        public Task<bool> Open()
         {
             try
             {
@@ -82,14 +82,14 @@ namespace gView.DataSources.OGR
                 if (_dataSource != null)
                 {
                     _state = DatasetState.opened;
-                    return true;
+                    return Task.FromResult(true);
                 }
-                return false;
+                return Task.FromResult(false);
             }
             catch (Exception ex)
             {
                 _lastErrMsg = ex.Message;
-                return false;
+                return Task.FromResult(false);
             }
         }
 
@@ -166,7 +166,7 @@ namespace gView.DataSources.OGR
             return null;
         }
 
-        public void RefreshClasses()
+        async public Task RefreshClasses()
         {
         }
         #endregion

@@ -13,6 +13,7 @@ using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.DataSources.Fdb.SQLite;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.UI.MSSql
 {
@@ -30,7 +31,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             _connectionString = ConfigTextStream.RemoveValue(connectionSring, "dsname");
         }
 
-        private void BuildList()
+        async private Task BuildList()
         {
             lstDatasets.Items.Clear();
             AccessFDB fdb = null;
@@ -51,7 +52,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             if (fdb == null)
                 return;
 
-            if (!fdb.Open(this.ConnectionString))
+            if (!await fdb.Open(this.ConnectionString))
             {
                 MessageBox.Show(fdb.LastErrorMessage, "Error");
                 return;
@@ -82,9 +83,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 return _connectionString + ";dsname=" + _dsname;
             }
         }
-        private void FormChangeDataset_Load(object sender, EventArgs e)
+        async private void FormChangeDataset_Load(object sender, EventArgs e)
         {
-            BuildList();
+            await BuildList();
         }
 
         private void lstDatasets_SelectedIndexChanged(object sender, EventArgs e)
@@ -100,7 +101,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             }
         }
 
-        private void btnChangeConnectionString_Click(object sender, EventArgs e)
+        async private void btnChangeConnectionString_Click(object sender, EventArgs e)
         {
             AccessFDB fdb = null;
 
@@ -120,7 +121,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             if (fdb == null)
                 return;
 
-            fdb.Open(_connectionString);
+            await fdb.Open(_connectionString);
 
             DbConnectionString dbConnStr = new DbConnectionString();
             dbConnStr.UseProviderInConnectionString = false;
@@ -135,7 +136,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 dbConnStr = dlg.DbConnectionString;
                 _connectionString = dbConnStr.ConnectionString;
 
-                BuildList();
+                await BuildList();
             }
         }
     }

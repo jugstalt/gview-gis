@@ -69,7 +69,7 @@ namespace gView.DataSources.Fdb.SQLite
             }
             return true;
         }
-        override public bool Open(string connectionString)
+        override public Task<bool> Open(string connectionString)
         {
             _filename = parseConnectionString(connectionString);
             if (String.IsNullOrEmpty(_filename))
@@ -81,7 +81,7 @@ namespace gView.DataSources.Fdb.SQLite
             _conn = new SqliteConn(_filename);
 
             SetVersion();
-            return true;
+            return Task.FromResult(true);
         }
         override public void Dispose()
         {

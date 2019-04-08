@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using gView.Framework.UI;
 
 namespace gView.Framework.system.UI
@@ -41,24 +42,24 @@ namespace gView.Framework.system.UI
 
         #region IExplorerParentObject Member
 
-        virtual public List<IExplorerObject> ChildObjects
+        async virtual public Task<List<IExplorerObject>> ChildObjects()
         {
-            get
-            {
-                if (_childObjects == null) Refresh();
-                return _childObjects;
-            }
+            if (_childObjects == null) await Refresh();
+            return _childObjects;
         }
 
-        virtual public void Refresh()
+        async virtual public Task<bool> Refresh()
         {
-            this.DiposeChildObjects();
+            await this.DiposeChildObjects();
             _childObjects = new List<IExplorerObject>();
+
+            return true;
         }
 
-        public void DiposeChildObjects()
+        public Task<bool> DiposeChildObjects()
         {
-            if (_childObjects == null) return;
+            if (_childObjects == null)
+                return Task.FromResult(false);
 
             foreach (IExplorerObject exObject in _childObjects)
             {
@@ -66,6 +67,8 @@ namespace gView.Framework.system.UI
                 exObject.Dispose();
             }
             _childObjects = null;
+
+            return Task.FromResult(true);
         }
 
         #endregion

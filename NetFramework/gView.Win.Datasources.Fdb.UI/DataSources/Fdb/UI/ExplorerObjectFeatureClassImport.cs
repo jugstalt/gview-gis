@@ -67,7 +67,7 @@ namespace gView.DataSources.Fdb.UI
 
         #region IExplorerObjectContentDragDropEvents2 Member
 
-        public void Content_DragDrop(DragEventArgs e, IUserData userdata)
+        async public void Content_DragDrop(DragEventArgs e, IUserData userdata)
         {
             if (_fdb == null) return;
 
@@ -91,7 +91,7 @@ namespace gView.DataSources.Fdb.UI
                     {
                         ExplorerObjectManager exObjectManager = new ExplorerObjectManager();
 
-                        List<IExplorerObject> exObjects = new List<IExplorerObject>(exObjectManager.DeserializeExplorerObject((IEnumerable<IExplorerObjectSerialization>)ob));
+                        List<IExplorerObject> exObjects = new List<IExplorerObject>(await exObjectManager.DeserializeExplorerObject((IEnumerable<IExplorerObjectSerialization>)ob));
                         if (exObjects == null) return;
 
                         foreach (IExplorerObject exObject in ListOperations<IExplorerObject>.Clone(exObjects))

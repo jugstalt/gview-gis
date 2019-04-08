@@ -12,6 +12,7 @@ using gView.Framework.UI.Dialogs;
 using gView.Framework.FDB;
 using gView.Framework.system;
 using gView.Framework.UI.Controls.Filter;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.UI
 {
@@ -37,14 +38,17 @@ namespace gView.DataSources.Fdb.UI
             
         }
 
-        public void OnShow()
+        public Task<bool> OnShow()
         {
             listView1.Items.Clear();
-            if (_exObject == null || !(_exObject.Object is IFeatureClass)) return;
+            if (_exObject == null || !(_exObject.Object is IFeatureClass))
+                return Task.FromResult(false);
 
             IFeatureClass fc = (IFeatureClass)_exObject.Object;
 
-            if (fc.Fields == null) return;
+            if (fc.Fields == null)
+                return Task.FromResult(false);
+
             foreach (IField field in fc.Fields.ToEnumerable())
             {
                 int iIndex = (field is IAutoField) ? 5 : 0;
@@ -72,6 +76,8 @@ namespace gView.DataSources.Fdb.UI
                 }
                 listView1.Items.Add(new FieldListViewItem(new Field(field), iIndex));
             }
+
+            return Task.FromResult(true);
         }
 
         public void OnHide()
@@ -110,8 +116,9 @@ namespace gView.DataSources.Fdb.UI
             get { return "FeatureClass"; }
         }
 
-        public void RefreshContents()
+        public Task<bool> RefreshContents()
         {
+            return Task.FromResult(true);
         }
         #endregion
 

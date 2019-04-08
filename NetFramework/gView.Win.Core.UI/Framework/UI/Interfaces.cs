@@ -6,6 +6,7 @@ using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace gView.Framework.UI
@@ -267,10 +268,10 @@ namespace gView.Framework.UI
         //void DrawReversibleGeometry(IGeometry geometry, System.Drawing.Color color);
     }
 
-    public delegate void ExplorerExecuteBatchCallback();
+    public delegate Task ExplorerExecuteBatchCallback();
     public interface IExplorerApplication : IGUIApplication
     {
-        void ExecuteBatch(string batch, ExplorerExecuteBatchCallback callback);
+        Task ExecuteBatch(string batch, ExplorerExecuteBatchCallback callback);
 
         List<IExplorerObject> SelectedObjects { get; }
         bool MoveToTreeNode(string path);
@@ -282,7 +283,7 @@ namespace gView.Framework.UI
         ToolStripItem[] ContextMenuItems { get; }
     }
 
-    public delegate void RefreshContextDelegate();
+    public delegate Task<bool> RefreshContextDelegate();
     public interface IExplorerObjectContextMenu2
     {
         ToolStripItem[] ContextMenuItems(RefreshContextDelegate callback);
@@ -316,7 +317,7 @@ namespace gView.Framework.UI
 
         void OnCreate(object hook);
 
-        void OnShow();
+        Task<bool> OnShow();
         void OnHide();
 
         IExplorerObject ExplorerObject
@@ -328,7 +329,7 @@ namespace gView.Framework.UI
         bool ShowWith(IExplorerObject exObject);
         string Title { get; }
 
-        void RefreshContents();
+        Task<bool> RefreshContents();
     }
 
     public interface IStatusBar

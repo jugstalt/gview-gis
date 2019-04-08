@@ -25,7 +25,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             {
                 _gmlDataset = new Dataset();
                 _gmlDataset.ConnectionString = filename;
-                if (!_gmlDataset.Open())
+                if (!_gmlDataset.Open().Result)
                     _gmlDataset = null;
 
                 _filename = filename;

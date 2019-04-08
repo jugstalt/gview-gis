@@ -18,6 +18,7 @@ using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.SQLite;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.UI.MSSql
 {
@@ -53,10 +54,12 @@ namespace gView.DataSources.Fdb.UI.MSSql
             }
         }
 
-        public void OnShow()
+        async public Task<bool> OnShow()
         {
             if (listView.Items.Count == 0 && !_gui_worker.IsBusy)
-                RefreshList();
+                await RefreshList();
+
+            return true;
         }
         public void OnHide()
         {
@@ -97,9 +100,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
             get { return "Images"; }
         }
 
-        public void RefreshContents()
+        async public Task<bool> RefreshContents()
         {
-            RefreshList();
+            await RefreshList();
+
+            return true;
         }
         #endregion
 
@@ -108,26 +113,27 @@ namespace gView.DataSources.Fdb.UI.MSSql
         IFeatureCursor _cursor = null;
 
         private delegate void RefreshListCallback();
-        private void RefreshList()
+        async private Task RefreshList()
         {
-            if (listView.InvokeRequired)
-            {
-                RefreshListCallback d = new RefreshListCallback(RefreshList);
-                this.BeginInvoke(d);
-            }
-            else
+            //if (listView.InvokeRequired)
+            //{
+            //    RefreshListCallback d = new RefreshListCallback(RefreshList);
+            //    this.BeginInvoke(d);
+            //}
+            //else
             {
                 CancelRefreshList();
                 listView.Items.Clear();
                 _itemCollection.Clear();
 
-                if (_exObject == null) return;
+                if (_exObject == null)
+                    return;
                 if (_exObject.Object is SqlFDBImageCatalogClass)
                 {
                     SqlFDBImageCatalogClass layer = (SqlFDBImageCatalogClass)_exObject.Object;
 
                     _cancelWorker = false;
-                    _gui_worker.RunWorkerAsync(layer.ImageList().Result);
+                    _gui_worker.RunWorkerAsync(await layer.ImageList());
                 }
                 else if (_exObject.Object is IRasterCatalogClass)
                 {
@@ -140,21 +146,21 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     // Workerthread ausgeführt wird...
                     // funzt nur bei SQL Server!!
                     //
-                    worker_DoWork(_gui_worker, new DoWorkEventArgs(layer.ImageList().Result));
+                    worker_DoWork(_gui_worker, new DoWorkEventArgs(await layer.ImageList()));
                 }
                 else if (_exObject.Object is pgImageCatalogClass)
                 {
                     pgImageCatalogClass layer = (pgImageCatalogClass)_exObject.Object;
 
                     _cancelWorker = false;
-                    _gui_worker.RunWorkerAsync(layer.ImageList().Result);
+                    _gui_worker.RunWorkerAsync(await layer.ImageList());
                 }
                 else if (_exObject.Object is SQLiteFDBImageCatalogClass)
                 {
                     SQLiteFDBImageCatalogClass layer = (SQLiteFDBImageCatalogClass)_exObject.Object;
 
                     _cancelWorker = false;
-                    _gui_worker.RunWorkerAsync(layer.ImageList().Result);
+                    _gui_worker.RunWorkerAsync(await layer.ImageList());
                 }
             }
         }
@@ -296,7 +302,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             ImportFiles(data, true, null);
         }
 
-        private bool ImportFiles(string[] data, bool refreshList, Dictionary<string,Guid> providers)
+        async private Task<bool> ImportFiles(string[] data, bool refreshList, Dictionary<string,Guid> providers)
         {
             IRasterClass rc = _exObject.Object as IRasterClass;
             if (rc == null) return false;
@@ -319,7 +325,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             progress.Mode = ProgressMode.ProgressDisk;
             progress.ShowDialog();
 
-            if (refreshList) RefreshList();
+            if (refreshList) await RefreshList();
 
             if (!reporter.CancelTracker.Continue)
             {
@@ -550,12 +556,12 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         #endregion
 
-        private void Key_pressed(object sender, KeyEventArgs e)
+        async private void Key_pressed(object sender, KeyEventArgs e)
         {
             switch (e.KeyValue)
             {
                 case 116:
-                    RefreshList();
+                    await RefreshList();
                     break;
                 case 27:
                     CancelRefreshList();
@@ -590,7 +596,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             rDS.RefreshClasses();
         }
 
-        private void btnImportDirectory_Click(object sender, EventArgs e)
+        async private void btnImportDirectory_Click(object sender, EventArgs e)
         {
             FormSelectImageDatasetFolderAndFilter dlg = new FormSelectImageDatasetFolderAndFilter();
 
@@ -602,12 +608,14 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     string[] filters = dlg.FormatFilters;
                     Dictionary<string, Guid> providers = dlg.ProviderGuids;
 
-                    int counter = 0;
-                    if (!ImportDirectory(new DirectoryInfo(rootPath), filters, ref counter, providers))
+                    var importResult = await ImportDirectory(new DirectoryInfo(rootPath), filters, providers);
+                    int counter = importResult.dirCount;
+
+                    if (!importResult.success)
                     {
                         //MessageBox.Show("Canceled...");
                     }
-                    RefreshList();
+                    await RefreshList();
                 }
                 catch (Exception ex)
                 {
@@ -623,9 +631,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
             rDS.RefreshClasses();
         }
 
-        private bool ImportDirectory(DirectoryInfo di, string[] filters, ref int dirCount, Dictionary<string,Guid> providers)
+        async private Task<(bool success, int dirCount)> ImportDirectory(DirectoryInfo di, string[] filters, Dictionary<string,Guid> providers)
         {
             //if (dirCount++ > 100) return;
+            int dirCount = 1;
 
             foreach (string filter in filters)
             {
@@ -639,20 +648,20 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     for (int i = 0; i < fis.Length; i++)
                         filenames[i] = fis[i].FullName;
 
-                    if (!ImportFiles(filenames, false, providers))
+                    if (!await ImportFiles(filenames, false, providers))
                     {
-                        return false;
+                        return (false, dirCount);
                     }
                 }
             }
 
             foreach (DirectoryInfo sub in di.GetDirectories())
-                if (!ImportDirectory(sub, filters, ref dirCount, providers))
+                if (!(await ImportDirectory(sub, filters, providers)).success)
                 {
-                    return false;
+                    return (false, dirCount);
                 }
 
-            return true;
+            return (true, dirCount);
         }
     }
 

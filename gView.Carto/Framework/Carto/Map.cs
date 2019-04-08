@@ -1521,7 +1521,7 @@ namespace gView.Framework.Carto
             {
                 if (dataset.State != DatasetState.opened)
                 {
-                    dataset.Open();
+                    dataset.Open().Wait();
                 }
                 if(!String.IsNullOrWhiteSpace(dataset.LastErrorMessage))
                 {

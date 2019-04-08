@@ -95,9 +95,9 @@ namespace gView.DataSources.EventTable
             get { return _state; }
         }
 
-        public bool Open()
+        async public Task<bool> Open()
         {
-            RefreshClasses();
+            await RefreshClasses();
             _state = DatasetState.opened;
             return true;
         }
@@ -142,11 +142,11 @@ namespace gView.DataSources.EventTable
             return Task.FromResult<IDatasetElement>(null);
         }
 
-        public void RefreshClasses()
+        async public Task RefreshClasses()
         {
             if (_etcon != null)
             {
-                _fc = FeatureClass.Create(this, _etcon).Result;
+                _fc = await FeatureClass.Create(this, _etcon);
             }
         }
 

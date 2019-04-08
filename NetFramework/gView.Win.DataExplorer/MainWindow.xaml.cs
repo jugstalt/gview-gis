@@ -213,7 +213,7 @@ namespace gView.Win.DataExplorer
         #endregion
 
         #region TreeEvents
-        private void tree_NodeSelected(global::System.Windows.Forms.TreeNode node)
+        async private void tree_NodeSelected(global::System.Windows.Forms.TreeNode node)
         {
             if (_toolStripAddress == null) return;
             if (node is ExplorerObjectNode && ((ExplorerObjectNode)node).ExplorerObject != null)
@@ -224,7 +224,7 @@ namespace gView.Win.DataExplorer
                 while (pathObject != null)
                 {
                     if (pathObject is IExplorerParentObject)
-                        _toolStripAddress.Items.Insert(0, new SubPathParentToolStripItem(this, (IExplorerParentObject)pathObject));
+                        _toolStripAddress.Items.Insert(0, await SubPathParentToolStripItem.Create(this, (IExplorerParentObject)pathObject));
 
                     SubPathToolStripItem item = new SubPathToolStripItem(pathObject);
                     item.Click += new EventHandler(SubPathItem_Click);
@@ -495,7 +495,7 @@ namespace gView.Win.DataExplorer
             if (_selected.Count == 0 && _exObject != null) _selected.Add(_exObject);
         }
 
-        private void addNetworkDirectory_Click(object sender, EventArgs e)
+        async private void addNetworkDirectory_Click(object sender, EventArgs e)
         {
             gView.Framework.UI.Dialogs.FormAddNetworkDirectory dlg = new gView.Framework.UI.Dialogs.FormAddNetworkDirectory();
             if (dlg.ShowDialog() == global::System.Windows.Forms.DialogResult.OK && !String.IsNullOrEmpty(dlg.Path))
@@ -504,7 +504,7 @@ namespace gView.Win.DataExplorer
                 connStream.Add(dlg.Path, dlg.Path);
 
                 _tree.SelectRootNode();
-                RefreshContents();
+                await RefreshContents();
             }
         }
 
@@ -565,12 +565,12 @@ namespace gView.Win.DataExplorer
             ValidateButtons();
         }
 
-        public void createNewItem_Click(object sender, EventArgs e)
+        async public void createNewItem_Click(object sender, EventArgs e)
         {
             if (!(sender is CreateNewToolStripItem) || _content == null) return;
 
             IExplorerObject exObject = ((CreateNewToolStripItem)sender).ExplorerObject;
-            _content.CreateNewItem(exObject);
+            await _content.CreateNewItem(exObject);
 
             ValidateButtons();
         }
@@ -827,30 +827,37 @@ namespace gView.Win.DataExplorer
 
         public class SubPathParentToolStripItem : global::System.Windows.Forms.ToolStripDropDownButton
         {
-            public SubPathParentToolStripItem(MainWindow window, IExplorerParentObject exObject)
+            private SubPathParentToolStripItem()
             {
+    
+            }
 
+            async static public Task<SubPathParentToolStripItem> Create(MainWindow window, IExplorerParentObject exObject)
+            {
+                var item = new SubPathParentToolStripItem();
                 if (exObject != null)
                 {
-                    base.DisplayStyle = global::System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-                    base.Image = gView.Win.DataExplorer.Properties.Resources.pfeil_r_s;
-                    base.ImageScaling = global::System.Windows.Forms.ToolStripItemImageScaling.None;
-                    base.ShowDropDownArrow = false;
+                    item.DisplayStyle = global::System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+                    item.Image = gView.Win.DataExplorer.Properties.Resources.pfeil_r_s;
+                    item.ImageScaling = global::System.Windows.Forms.ToolStripItemImageScaling.None;
+                    item.ShowDropDownArrow = false;
 
-                    if (exObject.ChildObjects != null)
+                    if (await exObject.ChildObjects() != null)
                     {
-                        foreach (IExplorerObject childObject in exObject.ChildObjects)
+                        foreach (IExplorerObject childObject in await exObject.ChildObjects())
                         {
                             SubPathToolStripItem child = new SubPathToolStripItem(childObject);
                             child.Click += new EventHandler(window.SubPathItem_Click);
-                            base.DropDownItems.Add(child);
+                            item.DropDownItems.Add(child);
 
                         }
                     }
                 }
-                base.BackColor = global::System.Drawing.Color.White;
+                item.BackColor = global::System.Drawing.Color.White;
 
                 //base.Size = new Size(base.Size.Width, 14);
+
+                return item;
             }
         }
 
@@ -1058,11 +1065,13 @@ namespace gView.Win.DataExplorer
             }
         }
 
-        public void RefreshContents()
+        async public Task<bool> RefreshContents()
         {
-            if (_activeTabPage != null) _activeTabPage.RefreshContents();
+            if (_activeTabPage != null) await _activeTabPage.RefreshContents();
 
-            _tree.RefreshSelectedNode();
+            await _tree.RefreshSelectedNode();
+
+            return true;
         }
 
         public gView.Framework.UI.Dialogs.FormCatalogTree CatalogTree

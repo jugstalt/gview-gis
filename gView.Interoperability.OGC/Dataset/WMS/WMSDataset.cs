@@ -128,9 +128,9 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             get { return _state; }
         }
 
-        public bool Open()
+        async public Task<bool> Open()
         {
-            return Open(null);
+            return await Open(null);
         }
 
         public string LastErrorMessage
@@ -206,14 +206,14 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             return Task.FromResult<IDatasetElement>(null);
         }
 
-        public void RefreshClasses()
+        async public Task RefreshClasses()
         {
         }
         #endregion
 
         #region IRequestDependentDataset Member
 
-        public bool Open(gView.MapServer.IServiceRequestContext context)
+        public Task<bool> Open(gView.MapServer.IServiceRequestContext context)
         {
             string url = String.Empty;
             try
@@ -241,7 +241,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
                 _state = (ret) ? DatasetState.opened : DatasetState.unknown;
 
-                return ret;
+                return Task.FromResult(ret);
             }
             catch (Exception ex)
             {
@@ -249,7 +249,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 _class = null;
                 _wfsDataset = null;
 
-                return false;
+                return Task.FromResult(false);
             }
         }
 

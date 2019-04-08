@@ -1170,7 +1170,7 @@ namespace gView.Framework.UI.Controls
                 }
                 else
                 {
-                    RefreshMap(phase);
+                    await RefreshMap(phase);
                 }
             }
             else
@@ -1328,7 +1328,7 @@ namespace gView.Framework.UI.Controls
         }
 
         private bool _inSizing = false;
-        private void timerResize_Tick(object sender, EventArgs e)
+        async private void timerResize_Tick(object sender, EventArgs e)
         {
             if (_inSizing) return;
 
@@ -1354,11 +1354,11 @@ namespace gView.Framework.UI.Controls
             if (_mapDoc != null && _mapDoc.Application is IMapApplication)
                 ((IMapApplication)_mapDoc.Application).RefreshActiveMap(DrawPhase.All);
             else
-                RefreshMap(DrawPhase.All);
+                await RefreshMap(DrawPhase.All);
         }
         #endregion
 
-        private void timerWheel_Tick(object sender, EventArgs e)
+        async private void timerWheel_Tick(object sender, EventArgs e)
         {
             timerWheel.Stop();
 
@@ -1367,7 +1367,7 @@ namespace gView.Framework.UI.Controls
             if (_mapDoc != null && _mapDoc.Application is IMapApplication)
                 ((IMapApplication)_mapDoc.Application).RefreshActiveMap(DrawPhase.All);
             else
-                RefreshMap(DrawPhase.All);
+                await RefreshMap(DrawPhase.All);
         }
 
         private void lnkCopyright_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
