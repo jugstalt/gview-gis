@@ -242,16 +242,13 @@ namespace gView.DataSources.Raster.File
             return Task.FromResult((IEnvelope)env);
         }
 
-        public ISpatialReference SpatialReference
+        public Task<ISpatialReference> GetSpatialReference()
         {
-            get
-            {
-                return null;
-            }
-            set
-            {
+            return Task.FromResult<ISpatialReference>(null);
+        }
+        public void SetSpatialReference(ISpatialReference sRef)
+        {
 
-            }
         }
 
         #endregion

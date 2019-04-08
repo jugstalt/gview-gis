@@ -56,12 +56,12 @@ namespace gView.Framework.Network.Tracers
             List<int> neighborNodeFcIds = new List<int>();
             Dictionary<int, string> neighborFcs = new Dictionary<int, string>();
 
-            foreach (var networkClass in network.NetworkClasses)
+            foreach (var networkClass in await network.NetworkClasses())
             {
                 if (networkClass.GeometryType != geometryType.Point)
                     continue;
 
-                int fcid = network.NetworkClassId(networkClass.Name);
+                int fcid = await network.NetworkClassId(networkClass.Name);
 
                 neighborNodeFcIds.Add(fcid);
                 neighborFcs.Add(fcid, networkClass.Name);

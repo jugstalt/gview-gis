@@ -1726,12 +1726,9 @@ namespace gView.Framework.Data
 		}
         */
 
-        public int CountFeatures
+        public Task<int> CountFeatures()
         {
-            get
-            {
-                return 0;
-            }
+            return Task.FromResult(0);
         }
 
         public string ShapeFieldName

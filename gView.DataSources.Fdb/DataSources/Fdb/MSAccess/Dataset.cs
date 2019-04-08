@@ -69,7 +69,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
             if (_layers == null || _layers.Count == 0)
             {
-                _layers = _fdb.DatasetLayers(this);
+                _layers = await _fdb.DatasetLayers(this);
 
                 if (_layers != null && _addedLayers.Count != 0)
                 {
@@ -130,7 +130,7 @@ namespace gView.DataSources.Fdb.MSAccess
             {
                 if (!(layer.Class is IFeatureClass)) continue;
                 IEnvelope envelope = ((IFeatureClass)layer.Class).Envelope;
-                if (envelope.Width > 1e10 && ((IFeatureClass)layer.Class).CountFeatures == 0)
+                if (envelope.Width > 1e10 && await ((IFeatureClass)layer.Class).CountFeatures() == 0)
                     envelope = null;
 
                 if (gView.Framework.Geometry.Envelope.IsNull(envelope)) continue;
@@ -180,24 +180,20 @@ namespace gView.DataSources.Fdb.MSAccess
                 return null;
             }
         }
-        public ISpatialReference SpatialReference
+        public Task<ISpatialReference> GetSpatialReference()
         {
-            get
-            {
-                return _sRef;
 
-                // wird sonst Zach, wenns bei jedem Bildaufbau von jedem Thema gelesen werden muﬂ...
-                //if(_sRef!=null) return _sRef;
+            return Task.FromResult(_sRef);
 
-                //if(_fdb==null) return null;
-                //return _sRef=_fdb.SpatialReference(_dsname);
-            }
-            set
-            {
-                // nicht in DB schreiben!!
+            // wird sonst Zach, wenns bei jedem Bildaufbau von jedem Thema gelesen werden muﬂ...
+            //if(_sRef!=null) return _sRef;
 
-                _sRef = value;
-            }
+            //if(_fdb==null) return null;
+            //return _sRef=_fdb.SpatialReference(_dsname);
+        }
+        public void SetSpatialReference(ISpatialReference sRef)
+        {
+            _sRef = sRef;
         }
 
         #endregion
@@ -279,21 +275,21 @@ namespace gView.DataSources.Fdb.MSAccess
             get { return _state; }
         }
 
-        public Task<bool> Open()
+        async public Task<bool> Open()
         {
             if (_connString == null || _connString == "" ||
                 _dsname == null || _dsname == "" || _fdb == null)
-                return Task.FromResult(false);
+                return false;
 
-            _dsID = _fdb.DatasetID(_dsname);
+            _dsID = await _fdb.DatasetID(_dsname);
             if (_dsID == -1)
-                return Task.FromResult(false);
+                return false;
 
-            _sRef = _fdb.SpatialReference(_dsname);
-            _sIndexDef = _fdb.SpatialIndexDef(_dsID);
+            _sRef = await _fdb.SpatialReference(_dsname);
+            _sIndexDef = await _fdb.SpatialIndexDef(_dsID);
 
             _state = DatasetState.opened;
-            return Task.FromResult(true);
+            return true;
         }
 
         public string LastErrorMessage
@@ -353,7 +349,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
         }
 
-        void SqlFDB_TableAltered(string table)
+        async void SqlFDB_TableAltered(string table)
         {
             if (_layers == null) return;
 
@@ -362,7 +358,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 if (element.Class is AccessFDBFeatureClass &&
                     ((AccessFDBFeatureClass)element.Class).Name == table)
                 {
-                    var fields = _fdb.FeatureClassFields(this._dsID, table);
+                    var fields = await _fdb.FeatureClassFields(this._dsID, table);
 
                     AccessFDBFeatureClass fc = element.Class as AccessFDBFeatureClass;
                     ((Fields)fc.Fields).Clear();
@@ -381,17 +377,19 @@ namespace gView.DataSources.Fdb.MSAccess
                 _dsname = newName;
         }
 
-        public Task<IDatasetElement> Element(string DatasetElementTitle)
+        async public Task<IDatasetElement> Element(string DatasetElementTitle)
         {
-            if (_fdb == null) return null;
-            IDatasetElement element = _fdb.DatasetElement(this, DatasetElementTitle);
+            if (_fdb == null)
+                return null;
+
+            IDatasetElement element = await _fdb.DatasetElement(this, DatasetElementTitle);
 
             if (element != null && element.Class is AccessFDBFeatureClass)
             {
                 ((AccessFDBFeatureClass)element.Class).SpatialReference = _sRef;
             }
 
-            return Task.FromResult<IDatasetElement>(element);
+            return element;
         }
 
         public override string ToString()
@@ -487,7 +485,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 if (e.Title == elementName) return;
             }
 
-            IDatasetElement element = _fdb.DatasetElement(this, elementName);
+            IDatasetElement element = await _fdb.DatasetElement(this, elementName);
             if (element != null) _layers.Add(element);
         }
 
@@ -537,13 +535,10 @@ namespace gView.DataSources.Fdb.MSAccess
         public string Name { get { return _name; } set { _name = value; } }
         public string Aliasname { get { return _aliasname; } set { _aliasname = value; } }
 
-        public int CountFeatures
+        async public Task<int> CountFeatures()
         {
-            get
-            {
                 if (_fdb == null) return -1;
-                return _fdb.CountFeatures(_name);
-            }
+                return await _fdb.CountFeatures(_name);
         }
         async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter/*, gView.Framework.Data.getFeatureQueryType type*/)
         {
@@ -762,14 +757,12 @@ namespace gView.DataSources.Fdb.MSAccess
             }
         }
 
-        public List<SpatialIndexNode> SpatialIndexNodes
+        async public Task<List<SpatialIndexNode>> SpatialIndexNodes()
         {
-            get
-            {
-                if (_fdb == null) return null;
-                return _fdb.SpatialIndexNodes2(_name);
-            }
+            if (_fdb == null) return null;
+            return await _fdb.SpatialIndexNodes2(_name);
         }
+
         #endregion
 
         #region IGeometryDef Member

@@ -21,14 +21,11 @@ namespace gView.Framework.Offline
         public delegate void ReplicationGuidsAppendedEventHandler(Replication sender, int count_appended);
         public event ReplicationGuidsAppendedEventHandler ReplicationGuidsAppended;
 
-        static public bool CreateRelicationModel(IFeatureDatabaseReplication db, out string errMsg)
+        static public bool CreateRelicationModel(IFeatureDatabaseReplication db)
         {
-            errMsg = String.Empty;
-
             if (db == null)
             {
-                errMsg = "Argument Exception: db==null !";
-                return false;
+                throw new Exception("Argument Exception: db==null !");
             }
 
             Fields fields = new Fields();
@@ -38,8 +35,7 @@ namespace gView.Framework.Offline
             fields.Add(new Field("PARENT_SESSION_GUID", FieldType.guid));
             if (!db.CreateIfNotExists("GV_CHECKOUT_OBJECT_GUID", fields))
             {
-                errMsg = db.LastErrorMessage;
-                return false;
+                throw new Exception(db.LastErrorMessage);
             }
 
             fields = new Fields();
@@ -61,8 +57,7 @@ namespace gView.Framework.Offline
             fields.Add(new Field("REPLICATION_STATE", FieldType.integer));
             if (!db.CreateIfNotExists("GV_CHECKOUT_SESSIONS", fields))
             {
-                errMsg = db.LastErrorMessage;
-                return false;
+                throw new Exception(db.LastErrorMessage);
             }
 
             fields = new Fields();
@@ -76,8 +71,7 @@ namespace gView.Framework.Offline
             fields.Add(new Field("TRANSACTION_ID", FieldType.guid));
             if (!db.CreateIfNotExists("GV_CHECKOUT_DIFFERENCE", fields))
             {
-                errMsg = db.LastErrorMessage;
-                return false;
+                throw new Exception(db.LastErrorMessage);
             }
 
             fields = new Fields();
@@ -94,8 +88,7 @@ namespace gView.Framework.Offline
             fields.Add(new Field("CONFLICT_SQL_STATEMENT", FieldType.integer));
             if (!db.CreateIfNotExists("GV_CHECKOUT_CONFLICTS", fields))
             {
-                errMsg = db.LastErrorMessage;
-                return false;
+                throw new Exception(db.LastErrorMessage);
             }
 
             fields = new Fields();
@@ -107,8 +100,7 @@ namespace gView.Framework.Offline
             fields.Add(new Field("REPLICATION_STATE", FieldType.integer));
             if (!db.CreateIfNotExists("GV_CHECKOUT_LOCKS", fields))
             {
-                errMsg = db.LastErrorMessage;
-                return false;
+                throw new Exception(db.LastErrorMessage);
             }
             return true;
         }
@@ -119,11 +111,11 @@ namespace gView.Framework.Offline
 
             try
             {
-                int fc_id = db.GetFeatureClassID(fc.Name);
-                if (!CreateRelicationModel(db, out errMsg))
+                int fc_id = await db.GetFeatureClassID(fc.Name);
+                if (!CreateRelicationModel(db))
                     return (false, errMsg);
 
-                if (!db.CreateObjectGuidColumn(fc.Name, fieldName))
+                if (!await db.CreateObjectGuidColumn(fc.Name, fieldName))
                 {
                     errMsg = db.LastErrorMessage;
                     return (false, errMsg);
@@ -251,26 +243,26 @@ namespace gView.Framework.Offline
             return (true, errMsg);
         }
 
-        public bool RemoveReplicationIDField(IFeatureClass fc)
+        async public Task<bool> RemoveReplicationIDField(IFeatureClass fc)
         {
             if (fc == null ||
                 fc.Dataset == null ||
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
 
-            if (FeatureClassHasReplications(fc))
+            if (await FeatureClassHasReplications(fc))
             {
                 // Feld kann nicht gelöscht werden, wenns Replikationen gibt...
                 return false;
             }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return false;
 
             return db.DeleteRows("GV_CHECKOUT_OBJECT_GUID", db.DbColName("FC_ID") + "=" + fc_id.ToString(), null);
         }
 
-        static public bool InsertNewCheckoutSession(IFeatureClass sourceFC, IFeatureClass destFC, string description, out string errMsg)
+        static public Task<bool> InsertNewCheckoutSession(IFeatureClass sourceFC, IFeatureClass destFC, string description)
         {
             return InsertNewCheckoutSession(
                 sourceFC,
@@ -278,12 +270,10 @@ namespace gView.Framework.Offline
                 destFC,
                 VersionRights.INSERT | VersionRights.UPDATE | VersionRights.DELETE,
                 ConflictHandling.NORMAL,
-                description,
-                out errMsg);
+                description);
         }
-        static public bool InsertNewCheckoutSession(IFeatureClass sourceFC, VersionRights parentRights, IFeatureClass destFC, VersionRights childRights, ConflictHandling confHandling, string description, out string errMsg)
+        async static public Task<bool> InsertNewCheckoutSession(IFeatureClass sourceFC, VersionRights parentRights, IFeatureClass destFC, VersionRights childRights, ConflictHandling confHandling, string description)
         {
-            errMsg = String.Empty;
 
             if (sourceFC == null ||
                 sourceFC.Dataset == null ||
@@ -298,20 +288,19 @@ namespace gView.Framework.Offline
             IFeatureDatabaseReplication sourceDB = sourceFC.Dataset.Database as IFeatureDatabaseReplication;
             IFeatureDatabaseReplication destDB = destFC.Dataset.Database as IFeatureDatabaseReplication;
 
-            int generation = FeatureClassGeneration(sourceFC);
+            int generation = await FeatureClassGeneration(sourceFC);
             if (generation < 0)
             {
-                errMsg = "Can't determine source featureclass generation...";
-                return false;
+                throw new Exception("Can't determine source featureclass generation...");
             }
 
-            if (!CreateRelicationModel(sourceDB, out errMsg))
+            if (!CreateRelicationModel(sourceDB))
                 return false;
-            if (!CreateRelicationModel(destDB, out errMsg))
+            if (!CreateRelicationModel(destDB))
                 return false;
 
-            int sourceFc_id = sourceDB.GetFeatureClassID(sourceFC.Name);
-            int destFc_id = destDB.GetFeatureClassID(destFC.Name);
+            int sourceFc_id = await sourceDB.GetFeatureClassID(sourceFC.Name);
+            int destFc_id = await destDB.GetFeatureClassID(destFC.Name);
 
             if (sourceFc_id < 0)
             {
@@ -325,19 +314,17 @@ namespace gView.Framework.Offline
             System.Guid guid = System.Guid.NewGuid();
 
             // PARENT_SESSION_GUID in Tabelle GV_CHECKOUT_OBJECT_GUID der child version setzen
-            int rowID = FeatureClassReplicationID_RowID(destFC);
+            int rowID = await FeatureClassReplicationID_RowID(destFC);
             if (rowID == -1)
             {
-                errMsg = "Can't determine destination replicationfield id...";
-                return false;
+                throw new Exception("Can't determine destination replicationfield id...");
             }
             Row row = new Row();
             row.OID = rowID;
             row.Fields.Add(new FieldValue("PARENT_SESSION_GUID", guid));
             if (!destDB.UpdateRow("GV_CHECKOUT_OBJECT_GUID", row, "ID", null))
             {
-                errMsg = destDB.LastErrorMessage;
-                return false;
+                throw new Exception(destDB.LastErrorMessage);
             }
 
             row = new Row();
@@ -356,8 +343,7 @@ namespace gView.Framework.Offline
 
             if (!sourceDB.InsertRow("GV_CHECKOUT_SESSIONS", row, null))
             {
-                errMsg = sourceDB.LastErrorMessage;
-                return false;
+                throw new Exception(sourceDB.LastErrorMessage);
             }
 
             row = new Row();
@@ -376,26 +362,23 @@ namespace gView.Framework.Offline
 
             if (!destDB.InsertRow("GV_CHECKOUT_SESSIONS", row, null))
             {
-                errMsg = destDB.LastErrorMessage;
-                return false;
+                throw new Exception(destDB.LastErrorMessage);
             }
             return true;
         }
-        static public bool InsertReplicationIDFieldname(IFeatureClass fc, string replicationIDFieldName, out string errMsg)
+        async static public Task<bool> InsertReplicationIDFieldname(IFeatureClass fc, string replicationIDFieldName)
         {
-            errMsg = String.Empty;
-
             if (fc == null ||
                 fc.Dataset == null ||
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            if (!CreateRelicationModel(db, out errMsg))
+            if (!CreateRelicationModel(db))
             {
                 return false;
             }
 
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return false;
 
             Row row = new Row();
@@ -404,16 +387,13 @@ namespace gView.Framework.Offline
             row.Fields.Add(new FieldValue("PARENT_SESSION_GUID", DBNull.Value));
             if (!db.InsertRow("GV_CHECKOUT_OBJECT_GUID", row, null))
             {
-                errMsg = db.LastErrorMessage;
-                return false;
+                throw new Exception(db.LastErrorMessage);
             }
 
             return true;
         }
-        static public bool InsertCheckoutLocks(IFeatureClass sourceFC, IFeatureClass destFC, out string errMsg)
+        async static public Task<bool> InsertCheckoutLocks(IFeatureClass sourceFC, IFeatureClass destFC)
         {
-            errMsg = String.Empty;
-
             try
             {
                 if (sourceFC == null ||
@@ -429,20 +409,19 @@ namespace gView.Framework.Offline
                 IFeatureDatabaseReplication sourceDB = sourceFC.Dataset.Database as IFeatureDatabaseReplication;
                 IFeatureDatabaseReplication destDB = destFC.Dataset.Database as IFeatureDatabaseReplication;
 
-                int generation = FeatureClassGeneration(sourceFC);
+                int generation = await FeatureClassGeneration(sourceFC);
                 if (generation < 0)
                 {
-                    errMsg = "Can't determine source featureclass generation...";
-                    return false;
+                    throw new Exception("Can't determine source featureclass generation...");
                 }
 
-                if (!CreateRelicationModel(sourceDB, out errMsg))
+                if (!CreateRelicationModel(sourceDB))
                     return false;
-                if (!CreateRelicationModel(destDB, out errMsg))
+                if (!CreateRelicationModel(destDB))
                     return false;
 
-                int sourceFc_id = sourceDB.GetFeatureClassID(sourceFC.Name);
-                int destFc_id = destDB.GetFeatureClassID(destFC.Name);
+                int sourceFc_id = await sourceDB.GetFeatureClassID(sourceFC.Name);
+                int destFc_id = await destDB.GetFeatureClassID(destFC.Name);
 
                 if (sourceFc_id < 0)
                 {
@@ -480,8 +459,7 @@ namespace gView.Framework.Offline
                     row.Fields.Add(new FieldValue("REPLICATION_STATE", -1));
                     if (!destDB.InsertRow("GV_CHECKOUT_LOCKS", row, null))
                     {
-                        errMsg = "Can't insert feature locks!";
-                        return false;
+                        throw new Exception("Can't insert feature locks!");
                     }
                 }
 
@@ -489,19 +467,18 @@ namespace gView.Framework.Offline
             }
             catch (Exception ex)
             {
-                errMsg = "Exception: " + ex.Message + "\n" + ex.StackTrace;
-                return false;
+                throw new Exception("Exception: " + ex.Message + "\n" + ex.StackTrace);
             }
         }
 
-        public static bool FeatureClassHasRelicationID(IFeatureClass fc)
+        async public static Task<bool> FeatureClassHasRelicationID(IFeatureClass fc)
         {
             if (fc == null ||
                 fc.Dataset == null ||
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return false;
 
             try
@@ -513,14 +490,14 @@ namespace gView.Framework.Offline
                 return false;
             }
         }
-        public static string FeatureClassReplicationIDFieldname(IFeatureClass fc)
+        async public static Task<string> FeatureClassReplicationIDFieldname(IFeatureClass fc)
         {
             if (fc == null ||
                 fc.Dataset == null ||
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return null;
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return null;
 
             try
@@ -546,21 +523,21 @@ namespace gView.Framework.Offline
                 return null;
             }
         }
-        public static bool AllowFeatureClassEditing(IFeatureClass fc, out string replFieldName)
+        async public static Task<(bool allow, string replFieldName)> AllowFeatureClassEditing(IFeatureClass fc)
         {
-            replFieldName = null;
+            string replFieldName = null;
 
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return true;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return (true, replFieldName);
 
-            if (!FeatureClassHasRelicationID(fc)) return true;
+            if (!await FeatureClassHasRelicationID(fc)) return (true, replFieldName);
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0)
             {
-                return false;
+                return (false, replFieldName);
             }
 
             try
@@ -577,13 +554,13 @@ namespace gView.Framework.Offline
                     DataTable tab = new DataTable("TAB");
                     adapter.Fill(tab);
 
-                    if (tab.Rows.Count == 0) return true;
+                    if (tab.Rows.Count == 0) return (true, replFieldName);
                     replFieldName = (string)tab.Rows[0]["OBJECT_GUID_FIELDNAME"];
 
                     if (tab.Rows[0]["PARENT_SESSION_GUID"] == DBNull.Value ||
                         tab.Rows[0]["PARENT_SESSION_GUID"].Equals(new Guid()))
                     {
-                        return true;
+                        return (true, replFieldName);
                     }
 
                     Guid parentSessionGuid = Convert2Guid(tab.Rows[0]["PARENT_SESSION_GUID"]);
@@ -592,23 +569,23 @@ namespace gView.Framework.Offline
                         connection.Open();
 
                     object obj = command.ExecuteScalar();
-                    return (obj != null && obj.GetType() == typeof(int));
+                    return ((obj != null && obj.GetType() == typeof(int)), replFieldName);
                 }
             }
             catch
             {
-                return false;
+                return (false, replFieldName); 
             }
         }
 
-        public static int FeatureClassReplicationID_RowID(IFeatureClass fc)
+        async public static Task<int> FeatureClassReplicationID_RowID(IFeatureClass fc)
         {
             if (fc == null ||
                 fc.Dataset == null ||
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return -1;
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return -1;
 
             try
@@ -634,14 +611,14 @@ namespace gView.Framework.Offline
                 return -1;
             }
         }
-        public static bool FeatureClassHasReplications(IFeatureClass fc)
+        async public static Task<bool> FeatureClassHasReplications(IFeatureClass fc)
         {
             if (fc == null ||
                 fc.Dataset == null ||
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return false;
 
             try
@@ -664,16 +641,16 @@ namespace gView.Framework.Offline
                 return false;
             }
         }
-        public static bool FeatureClassCanReplicate(IFeatureClass fc)
+        async public static Task<bool> FeatureClassCanReplicate(IFeatureClass fc)
         {
-            if (!FeatureClassHasRelicationID(fc)) return false;
+            if (!await FeatureClassHasRelicationID(fc)) return false;
 
             if (fc == null ||
                 fc.Dataset == null ||
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return false;
 
             try
@@ -696,16 +673,16 @@ namespace gView.Framework.Offline
                 return false;
             }
         }
-        public static int FeatureClassGeneration(IFeatureClass fc)
+        async public static Task<int> FeatureClassGeneration(IFeatureClass fc)
         {
-            if (!FeatureClassHasRelicationID(fc)) return -1;
+            if (!await FeatureClassHasRelicationID(fc)) return -1;
 
             if (fc == null ||
                 fc.Dataset == null ||
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return -1;
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return -1;
 
             try
@@ -733,16 +710,16 @@ namespace gView.Framework.Offline
             }
         }
         // gibt NULL zurück, wenn keine Sessions vorhanden...
-        public static List<Guid> FeatureClassSessions(IFeatureClass fc)
+        async public static Task<List<Guid>> FeatureClassSessions(IFeatureClass fc)
         {
-            if (!FeatureClassHasRelicationID(fc)) return null;
+            if (!await FeatureClassHasRelicationID(fc)) return null;
 
             if (fc == null ||
                 fc.Dataset == null ||
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return null;
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return null;
 
             try
@@ -892,16 +869,16 @@ namespace gView.Framework.Offline
             }
         }
 
-        public static bool FeatureClassHasConflicts(IFeatureClass fc)
+        async public static Task<bool> FeatureClassHasConflicts(IFeatureClass fc)
         {
-            if (!FeatureClassHasRelicationID(fc)) return false;
+            if (!await FeatureClassHasRelicationID(fc)) return false;
 
             if (fc == null ||
                 fc.Dataset == null ||
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return false;
 
             try
@@ -928,16 +905,16 @@ namespace gView.Framework.Offline
                 return false;
             }
         }
-        public static List<Guid> FeatureClassConflictsParentGuids(IFeatureClass fc)
+        async public static Task<List<Guid>> FeatureClassConflictsParentGuids(IFeatureClass fc)
         {
-            if (!FeatureClassHasRelicationID(fc)) return null;
+            if (!await FeatureClassHasRelicationID(fc)) return null;
 
             if (fc == null ||
                 fc.Dataset == null ||
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return null;
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return null;
 
             try
@@ -970,14 +947,14 @@ namespace gView.Framework.Offline
         }
         async public static Task<Conflict> FeatureClassConflict(IFeatureClass fc, Guid objectGuid)
         {
-            if (!FeatureClassHasRelicationID(fc)) return null;
+            if (!await FeatureClassHasRelicationID(fc)) return null;
 
             if (fc == null ||
                 fc.Dataset == null ||
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return null;
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return null;
 
             try
@@ -1024,7 +1001,7 @@ namespace gView.Framework.Offline
                         conflict.rowIDs.Add(Convert.ToInt32(row["ID"]));
                     }
 
-                    conflict.Init();
+                    await conflict.Init();
                     return conflict;
                 }
             }
@@ -1038,7 +1015,7 @@ namespace gView.Framework.Offline
         {
             try
             {
-                string repl_field_name = FeatureClassReplicationIDFieldname(fc);
+                string repl_field_name = await FeatureClassReplicationIDFieldname(fc);
                 if (String.IsNullOrEmpty(repl_field_name)) return null;
 
                 IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
@@ -1059,10 +1036,10 @@ namespace gView.Framework.Offline
             }
         }
 
-        public static string FeatureClassCheckoutName(IFeatureClass fc)
+        async public static Task<string> FeatureClassCheckoutName(IFeatureClass fc)
         {
-            if (!FeatureClassHasRelicationID(fc)) return string.Empty;
-            int generation = FeatureClassGeneration(fc);
+            if (!await FeatureClassHasRelicationID(fc)) return string.Empty;
+            int generation = await FeatureClassGeneration(fc);
             if (generation < 0) return String.Empty;
 
             if (fc == null ||
@@ -1070,7 +1047,7 @@ namespace gView.Framework.Offline
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return String.Empty;
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return String.Empty;
 
             try
@@ -1097,9 +1074,9 @@ namespace gView.Framework.Offline
                 return String.Empty;
             }
         }
-        public static IFeatureDatabaseReplication FeatureClassDb(IFeatureClass fc)
+        async public static Task<IFeatureDatabaseReplication> FeatureClassDb(IFeatureClass fc)
         {
-            if (!FeatureClassHasRelicationID(fc)) return null;
+            if (!await FeatureClassHasRelicationID(fc)) return null;
 
             if (fc == null ||
                 fc.Dataset == null ||
@@ -1108,28 +1085,24 @@ namespace gView.Framework.Offline
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             return db;
         }
-        public static IFeatureClass FeatureClassParentFc(IFeatureClass fc, out string errMsg)
+        async public static Task<IFeatureClass> FeatureClassParentFc(IFeatureClass fc)
         {
-            errMsg = String.Empty;
             try
             {
-                IFeatureDatabaseReplication db = FeatureClassDb(fc);
+                IFeatureDatabaseReplication db = await FeatureClassDb(fc);
                 if (db == null)
                 {
-                    errMsg = "Featureclass has no replication functionallity";
-                    return null;
+                    throw new Exception("Featureclass has no replication functionallity");
                 }
-                int generation = FeatureClassGeneration(fc);
+                int generation = await FeatureClassGeneration(fc);
                 if (generation <= 0)
                 {
-                    errMsg = "Can't determine generation";
-                    return null;
+                    throw new Exception("Can't determine generation");
                 }
-                int fc_id = db.GetFeatureClassID(fc.Name);
+                int fc_id = await db.GetFeatureClassID(fc.Name);
                 if (fc_id < 0)
                 {
-                    errMsg = "Can't determine featureclass id";
-                    return null;
+                    throw new Exception("Can't determine featureclass id");
                 }
 
                 DataTable tab = new DataTable("GV_CHECKOUT_SESSIONS");
@@ -1145,8 +1118,7 @@ namespace gView.Framework.Offline
 
                     if (adapter.Fill(tab) != 1)
                     {
-                        errMsg = "No session with generation " + generation + " defined";
-                        return null;
+                        throw new Exception("No session with generation " + generation + " defined");
                     }
                 }
 
@@ -1157,19 +1129,16 @@ namespace gView.Framework.Offline
                 IDataset parentDs = PlugInManager.Create(dsGuid) as IDataset;
                 if (parentDs == null)
                 {
-                    errMsg = "Can't create dataset from guid";
-                    return null;
+                    throw new Exception("Can't create dataset from guid");
                 }
                 parentDs.ConnectionString = connectionString;
-                if (!parentDs.Open().Result)
+                if (!await parentDs.Open())
                 {
-                    errMsg = parentDs.LastErrorMessage;
-                    return null;
+                    throw new Exception(parentDs.LastErrorMessage);
                 }
                 if (!(parentDs.Database is IFeatureDatabaseReplication))
                 {
-                    errMsg = "Can't checkin to parent database type";
-                    return null;
+                    throw new Exception("Can't checkin to parent database type");
                 }
 
                 IFeatureDatabaseReplication parentDb = (IFeatureDatabaseReplication)parentDs.Database;
@@ -1193,30 +1162,26 @@ namespace gView.Framework.Offline
 
                     if (adapter.Fill(tab2) != 1)
                     {
-                        errMsg = "No parent session with generation " + (generation - 1).ToString() + " defined";
-                        return null;
+                        throw new Exception("No parent session with generation " + (generation - 1).ToString() + " defined");
                     }
                 }
-                string parendFcName = parentDb.GetFeatureClassName(Convert.ToInt32(tab2.Rows[0]["FC_ID"]));
+                string parendFcName = await parentDb.GetFeatureClassName(Convert.ToInt32(tab2.Rows[0]["FC_ID"]));
                 if (String.IsNullOrEmpty(parendFcName))
                 {
-                    errMsg = "Can't determine parent featureclass name";
-                    return null;
+                    throw new Exception("Can't determine parent featureclass name");
                 }
 
-                IDatasetElement element = parentDs.Element(parendFcName).Result;
+                IDatasetElement element = await parentDs.Element(parendFcName);
                 if (element == null || !(element.Class is IFeatureClass))
                 {
-                    errMsg = "Can't determine parent featureclass '" + parendFcName + "'";
-                    return null;
+                    throw new Exception("Can't determine parent featureclass '" + parendFcName + "'");
                 }
 
                 return element.Class as IFeatureClass;
             }
             catch (Exception ex)
             {
-                errMsg = "Exception-" + ex.Message + "\n" + ex.StackTrace;
-                return null;
+                throw new Exception("Exception-" + ex.Message + "\n" + ex.StackTrace);
             }
         }
         public static void AllocateNewObjectGuid(IFeature feature, string replicationFieldName)
@@ -1257,27 +1222,25 @@ namespace gView.Framework.Offline
                 return Convert2Guid(feat[replicationFieldName]);
             }
         }
-        public static bool WriteDifferencesToTable(IFeatureClass fc, System.Guid objectGuid, SqlStatement statement, ReplicationTransaction replTrans, out string errMsg)
+        public static Task<bool> WriteDifferencesToTable(IFeatureClass fc, System.Guid objectGuid, SqlStatement statement, ReplicationTransaction replTrans)
         {
-            return WriteDifferencesToTable(fc,
+            return WriteDifferencesToTable(
+                fc,
                 objectGuid,
                 statement,
                 replTrans,
                 ((fc is FeatureClassDifferenceDateTime) ?
                     ((FeatureClassDifferenceDateTime)fc).DiffTime :
-                    DateTime.Now),
-                out errMsg);
+                    DateTime.Now));
         }
-        private static bool WriteDifferencesToTable(IFeatureClass fc, System.Guid objectGuid, SqlStatement statement, ReplicationTransaction replTrans, DateTime td, out string errMsg)
+        async private static Task<bool> WriteDifferencesToTable(IFeatureClass fc, System.Guid objectGuid, SqlStatement statement, ReplicationTransaction replTrans, DateTime td)
         {
-            errMsg = String.Empty;
-
             if (fc == null ||
                 fc.Dataset == null ||
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return false;
 
             try
@@ -1330,18 +1293,15 @@ namespace gView.Framework.Offline
                             case SqlStatement.UPDATE:
                                 if (lock_state == LockState.Hardlock)
                                 {
-                                    errMsg = "Session is hardlocked, no updates possible. Try in again in few seconds...";
-                                    return false;
+                                    throw new Exception("Session is hardlocked, no updates possible. Try in again in few seconds...");
                                 }
                                 // Konflikte testen
                                 switch (HasLocksOrConflicts(db, fc_id, objectGuid, runningReplicationGuid))
                                 {
                                     case LockFeatureType.ConflictFeatureLock:
-                                        errMsg = "Can't update feature. Solve conflict first...";
-                                        return false;
+                                        throw new Exception("Can't update feature. Solve conflict first...");
                                     case LockFeatureType.CheckinReconileLock:
-                                        errMsg = "Can't update feature. Feature is locked for checkin/reconcile. Try later again.";
-                                        return false;
+                                        throw new Exception("Can't update feature. Feature is locked for checkin/reconcile. Try later again.");
                                     case LockFeatureType.PrivateCheckinReconcileLock:
                                         // kein echte lock -> ok, weitermachen
                                         break;
@@ -1350,18 +1310,15 @@ namespace gView.Framework.Offline
                             case SqlStatement.DELETE:
                                 if (lock_state == LockState.Hardlock)
                                 {
-                                    errMsg = "Session is hardlocked, no delete possible. Try in again in few seconds...";
-                                    return false;
+                                    throw new Exception("Session is hardlocked, no delete possible. Try in again in few seconds...");
                                 }
                                 // Konflikte testen
                                 switch (HasLocksOrConflicts(db, fc_id, objectGuid, runningReplicationGuid))
                                 {
                                     case LockFeatureType.ConflictFeatureLock:
-                                        errMsg = "Can't delete feature. Solve conflict first...";
-                                        return false;
+                                        throw new Exception("Can't delete feature. Solve conflict first...");
                                     case LockFeatureType.CheckinReconileLock:
-                                        errMsg = "Can't delete feature. Feature is locked for checkin/reconcile. Try later again.";
-                                        return false;
+                                        throw new Exception("Can't delete feature. Feature is locked for checkin/reconcile. Try later again.");
                                     case LockFeatureType.PrivateCheckinReconcileLock:
                                         // kein echte lock -> ok, weitermachen
                                         break;
@@ -1371,8 +1328,7 @@ namespace gView.Framework.Offline
 
                         if (!db.InsertRow("GV_CHECKOUT_DIFFERENCE", row, replTrans))
                         {
-                            errMsg = db.LastErrorMessage;
-                            return false;
+                            throw new Exception(db.LastErrorMessage);
                         }
                     }
                 }
@@ -1381,8 +1337,7 @@ namespace gView.Framework.Offline
             }
             catch (Exception ex)
             {
-                errMsg = ex.Message;
-                return false;
+                throw new Exception(ex.Message);
             }
         }
 
@@ -1739,38 +1694,39 @@ namespace gView.Framework.Offline
         public enum ProcessType { CheckinAndRelease = 0, Reconcile = 1 }
         async public Task<(bool sucess, string errMsg)> Process(IFeatureClass parentFc, IFeatureClass childFc, ProcessType type)
         {
-            string errMsg;
-
+            string errMsg = String.Empty;
             CheckinConst c = new CheckinConst();
-            if (!c.Init(this, parentFc, childFc, true, out errMsg))
-                return (false, errMsg);
 
             try
             {
-                if (!CheckForLockedFeatureclassSessions(parentFc, c.checkout_guid, 60, out errMsg))
-                    return (false, errMsg);
-                if (!CheckForLockedFeatureclassSessions(childFc, c.checkout_guid, 60, out errMsg))
-                    return (false, errMsg);
+                if (!await c.Init(this, parentFc, childFc, true))
+                    return (false, "Unknown Error");
 
-                LockReplicationSession(parentFc, c.checkout_guid, LockState.Hardlock);
-                LockReplicationSession(childFc, c.checkout_guid, LockState.Hardlock);
+            
+                if (!await CheckForLockedFeatureclassSessions(parentFc, c.checkout_guid, 60))
+                    return (false, "Unknown Error");
+                if (!await CheckForLockedFeatureclassSessions(childFc, c.checkout_guid, 60))
+                    return (false, "Unknown Error");
 
-                if (!CheckForLockedFeatureclassSessions(parentFc, c.checkout_guid, out errMsg))
-                    return (false, errMsg);
-                if (!CheckForLockedFeatureclassSessions(childFc, c.checkout_guid, out errMsg))
-                    return (false, errMsg);
+                await LockReplicationSession(parentFc, c.checkout_guid, LockState.Hardlock);
+                await LockReplicationSession(childFc, c.checkout_guid, LockState.Hardlock);
 
-                IncReplicationState(parentFc, c.checkout_guid);
-                IncReplicationState(childFc, c.checkout_guid);
+                if (!await CheckForLockedFeatureclassSessions(parentFc, c.checkout_guid))
+                    return (false, "Unknown Error");
+                if (!await CheckForLockedFeatureclassSessions(childFc, c.checkout_guid))
+                    return (false, "Unknown Error");
+
+                await IncReplicationState(parentFc, c.checkout_guid);
+                await IncReplicationState(childFc, c.checkout_guid);
                 // 0,5 sec warten, damit letzte Änderungen, die mit alter 
                 // StateID geschrieben werden in der Datenbank landen...
                 System.Threading.Thread.Sleep(500);
 
                 #region Thin Difference Tables
                 if (!ThinDifferencesTable(c.childDb, c.checkout_guid, c.childReplicationState, out errMsg))
-                    return (false, errMsg);
+                    return (false, "Unknown Error");
                 if (!ThinDifferencesTable(c.parentDb, c.checkout_guid, c.parentReplactionState, out errMsg))
-                    return (false, errMsg);
+                    return (false, "Unknown Error");
                 #endregion
 
                 #region WriteChildLocks
@@ -1904,24 +1860,22 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 }
                 #endregion
 
-                LockReplicationSession(parentFc, c.checkout_guid, LockState.Softlock);
-                LockReplicationSession(childFc, c.checkout_guid, LockState.Softlock);
+                await LockReplicationSession(parentFc, c.checkout_guid, LockState.Softlock);
+                await LockReplicationSession(childFc, c.checkout_guid, LockState.Softlock);
 
                 var checkInResult = await CheckIn(parentFc, childFc, c);
 
                 if (!checkInResult.success)
                 {
-                    errMsg = "ERROR ON CHECKIN:\n" + checkInResult.errMsg;
-                    return (false, errMsg);
+                    throw new Exception("ERROR ON CHECKIN:\n" + checkInResult.errMsg);
                 }
 
                 switch (type)
                 {
                     case ProcessType.CheckinAndRelease:
-                        if (!ReleaseVersion(parentFc, childFc, out errMsg))
+                        if (!await ReleaseVersion(parentFc, childFc))
                         {
-                            errMsg = "ERROR ON RELEASE VERSION:\n" + errMsg;
-                            return (false, errMsg);
+                            throw new Exception("ERROR ON RELEASE VERSION:\n");
                         }
                         break;
                     case ProcessType.Reconcile:
@@ -1931,29 +1885,26 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
 
                         if (!postResult.success)
                         {
-                            errMsg = "ERROR ON POST:\n" + postResult.errMsg;
-                            return (false, errMsg);
+                            throw new Exception("ERROR ON POST:\n" + postResult.errMsg);
                         }
-                        if (!Replication.InsertCheckoutLocks(parentFc, childFc, out errMsg))
+                        if (!await Replication.InsertCheckoutLocks(parentFc, childFc))
                         {
-                            errMsg = "ERROR ON INSERT LOCKS: " + errMsg;
-                            return (false, errMsg);
+                            throw new Exception("ERROR ON INSERT LOCKS: ");
                         }
                         break;
                 }
             }
             catch (Exception ex)
             {
-                errMsg = "Exception: " + ex.Message;
-                return (false, errMsg);
+                throw new Exception("Exception: " + ex.Message);
             }
             finally
             {
-                RemoveReplicationLocks(childFc, c.checkout_guid, c.childReplicationState);
-                RemoveReplicationLocks(parentFc, c.checkout_guid, c.parentReplactionState);
+                await RemoveReplicationLocks(childFc, c.checkout_guid, c.childReplicationState);
+                await RemoveReplicationLocks(parentFc, c.checkout_guid, c.parentReplactionState);
 
-                LockReplicationSession(childFc, c.checkout_guid, LockState.Unlock);
-                LockReplicationSession(parentFc, c.checkout_guid, LockState.Unlock);
+                await LockReplicationSession(childFc, c.checkout_guid, LockState.Unlock);
+                await LockReplicationSession(parentFc, c.checkout_guid, LockState.Unlock);
             }
             return (true, errMsg);
         }
@@ -1977,87 +1928,76 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             LockState parentLocked = LockState.Error;
             LockState childLocked = LockState.Error;
 
-            public bool Init(Replication repl, IFeatureClass parentFc, IFeatureClass childFc, bool checkin, out string errMsg)
+            async public Task<bool> Init(Replication repl, IFeatureClass parentFc, IFeatureClass childFc, bool checkin)
             {
-                errMsg = String.Empty;
-
                 #region Initalisierung
-                parentDb = FeatureClassDb(parentFc);
+
+                parentDb = await FeatureClassDb(parentFc);
                 if (parentDb == null)
                 {
-                    errMsg = "Can't checkin to parent database...";
-                    return false;
+                    throw new Exception("Can't checkin to parent database...");
                 }
-                if (!CreateRelicationModel(parentDb, out errMsg))
+                if (!CreateRelicationModel(parentDb))
                 {
                     return false;
                 }
-                childDb = FeatureClassDb(childFc);
+                childDb = await FeatureClassDb(childFc);
                 if (childDb == null)
                 {
-                    errMsg = "Can't checkout from child database...";
-                    return false;
+                    throw new Exception("Can't checkout from child database...");
                 }
 
-                parentFc_id = parentDb.GetFeatureClassID(parentFc.Name);
+                parentFc_id = await parentDb.GetFeatureClassID(parentFc.Name);
                 if (parentFc_id < 0)
                 {
-                    errMsg = "Can't determine parent featureclass id...";
-                    return false;
+                    throw new Exception("Can't determine parent featureclass id...");
                 }
-                childFc_id = childDb.GetFeatureClassID(childFc.Name);
+                childFc_id = await childDb.GetFeatureClassID(childFc.Name);
                 if (childFc_id < 0)
                 {
-                    errMsg = "Can't determine child featureclass id...";
-                    return false;
+                    throw new Exception("Can't determine child featureclass id...");
                 }
-                child_generation = FeatureClassGeneration(childFc);
+                child_generation = await FeatureClassGeneration(childFc);
                 if (checkin)
                 {
                     if (child_generation <= 0)
                     {
-                        errMsg = "Can't determine child featureclass generation";
-                        return false;
+                        throw new Exception("Can't determine child featureclass generation");
                     }
                 }
                 else
                 {
                     if (child_generation < 0)
                     {
-                        errMsg = "Can't determine child featureclass generation";
-                        return false;
+                        throw new Exception("Can't determine child featureclass generation");
                     }
                 }
-                parent_generation = FeatureClassGeneration(parentFc);
+                parent_generation = await FeatureClassGeneration(parentFc);
                 if (checkin)
                 {
                     if (parent_generation != child_generation - 1)
                     {
-                        errMsg = "Can't determine parent featureclass generation";
-                        return false;
+                        throw new Exception("Can't determine parent featureclass generation");
                     }
                 }
                 else
                 {
                     if (parent_generation != child_generation + 1)
                     {
-                        errMsg = "Can't determine parent featureclass generation";
-                        return false;
+                        throw new Exception("Can't determine parent featureclass generation");
                     }
                 }
-                child_repl_id_fieldname = FeatureClassReplicationIDFieldname(childFc);
+                child_repl_id_fieldname = await FeatureClassReplicationIDFieldname(childFc);
                 if (String.IsNullOrEmpty(child_repl_id_fieldname))
                 {
-                    errMsg = "Can't determine child featureclass replication ID fieldname";
-                    return false;
+                    throw new Exception("Can't determine child featureclass replication ID fieldname");
                 }
-                parent_repl_id_fieldname = FeatureClassReplicationIDFieldname(parentFc);
+                parent_repl_id_fieldname = await FeatureClassReplicationIDFieldname(parentFc);
                 if (String.IsNullOrEmpty(parent_repl_id_fieldname))
                 {
-                    errMsg = "Can't determine parent featureclass replication ID fieldname";
-                    return false;
+                    throw new Exception("Can't determine parent featureclass replication ID fieldname");
                 }
-                checkout_name = FeatureClassCheckoutName(childFc);
+                checkout_name = await FeatureClassCheckoutName(childFc);
                 if (checkin)
                 {
                     using (DbConnection connection = childDb.ProviderFactory.CreateConnection())
@@ -2093,42 +2033,36 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     SessionConflictHandling(childDb, checkout_guid));
 
 
-                parentReplactionState = repl.GetReplicationState(parentFc, checkout_guid);
+                parentReplactionState = await repl.GetReplicationState(parentFc, checkout_guid);
                 if (parentReplactionState == -1)
                 {
-                    errMsg = "Can't determine parent replication state";
-                    return false;
+                    throw new Exception("Can't determine parent replication state");
                 }
-                childReplicationState = repl.GetReplicationState(childFc, checkout_guid);
+                childReplicationState = await repl.GetReplicationState(childFc, checkout_guid);
                 if (childReplicationState == -1)
                 {
-                    errMsg = "Can't determine child replication state";
-                    return false;
+                    throw new Exception("Can't determine child replication state");
                 }
 
-                parentLocked = repl.IsReplicationSessionLocked(parentFc, checkout_guid);
-                childLocked = repl.IsReplicationSessionLocked(childFc, checkout_guid);
+                parentLocked = await repl.IsReplicationSessionLocked(parentFc, checkout_guid);
+                childLocked = await repl.IsReplicationSessionLocked(childFc, checkout_guid);
 
                 switch (parentLocked)
                 {
                     case LockState.Error:
-                        errMsg = "Can't determine parent lock state";
-                        return false;
+                        throw new Exception("Can't determine parent lock state");
                     case LockState.Hardlock:
                     case LockState.Softlock:
-                        errMsg = "Parent Session is locked...";
-                        return false;
+                        throw new Exception("Parent Session is locked...");
                 }
 
                 switch (childLocked)
                 {
                     case LockState.Error:
-                        errMsg = "Can't determine child lock state";
-                        return false;
+                        throw new Exception("Can't determine child lock state");
                     case LockState.Hardlock:
                     case LockState.Softlock:
-                        errMsg = "Child Session is locked...";
-                        return false;
+                        throw new Exception("Child Session is locked...");
                 }
 
                 #endregion
@@ -2169,41 +2103,35 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             return await CheckIn(childFc, parentFc, false, c);
         }
 
-        public bool ReleaseVersion(IFeatureClass parentFc, IFeatureClass childFc, out string errMsg)
+        async public Task<bool> ReleaseVersion(IFeatureClass parentFc, IFeatureClass childFc)
         {
-            errMsg = String.Empty;
             try
             {
                 #region Initalisierung
-                IFeatureDatabaseReplication parentDb = FeatureClassDb(parentFc);
+                IFeatureDatabaseReplication parentDb = await FeatureClassDb(parentFc);
                 if (parentDb == null)
                 {
-                    errMsg = "Can't checkin to parent database...";
-                    return false;
+                    throw new Exception("Can't checkin to parent database...");
                 }
-                IFeatureDatabaseReplication childDb = FeatureClassDb(childFc);
+                IFeatureDatabaseReplication childDb = await FeatureClassDb(childFc);
                 if (childDb == null)
                 {
-                    errMsg = "Can't checkout from child database...";
-                    return false;
+                    throw new Exception("Can't checkout from child database...");
                 }
-                int childFc_id = childDb.GetFeatureClassID(childFc.Name);
+                int childFc_id = await childDb.GetFeatureClassID(childFc.Name);
                 if (childFc_id < 0)
                 {
-                    errMsg = "Can't determine child featureclass id...";
-                    return false;
+                    throw new Exception("Can't determine child featureclass id...");
                 }
-                int child_generation = FeatureClassGeneration(childFc);
+                int child_generation = await FeatureClassGeneration(childFc);
                 if (child_generation <= 0)
                 {
-                    errMsg = "Can't determine child featureclass generation";
-                    return false;
+                    throw new Exception("Can't determine child featureclass generation");
                 }
-                int parent_generation = FeatureClassGeneration(parentFc);
+                int parent_generation = await FeatureClassGeneration(parentFc);
                 if (parent_generation != child_generation - 1)
                 {
-                    errMsg = "Can't determine parent featureclass generation";
-                    return false;
+                    throw new Exception("Can't determine parent featureclass generation");
                 }
                 Guid checkout_guid;
                 using (DbConnection connection = childDb.ProviderFactory.CreateConnection())
@@ -2268,18 +2196,17 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             }
             catch (Exception ex)
             {
-                errMsg = "Exception: " + ex.Message;
-                return false;
+                throw new Exception("Exception: " + ex.Message);
             }
         }
-        public bool RemoveReplicationLocks(IFeatureClass fc, Guid checkout_guid, int replState)
+        async public Task<bool> RemoveReplicationLocks(IFeatureClass fc, Guid checkout_guid, int replState)
         {
             if (fc == null ||
                 fc.Dataset == null ||
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return false;
 
             try
@@ -2307,7 +2234,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             string errMsg = String.Empty;
             if (parentFc == null || childFc == null || c == null) return (false, errMsg);
 
-            if (!CheckForLockedFeatureclassSessions(parentFc, c.checkout_guid, out errMsg))
+            if (!await CheckForLockedFeatureclassSessions(parentFc, c.checkout_guid))
             {
                 return (false, errMsg);
             }
@@ -2720,12 +2647,12 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
         }
 
         public enum LockState { Error = -1, Unlock = 0, Softlock = 1, Hardlock = 2 }
-        private bool LockReplicationSession(IFeatureClass fc, Guid session_guid, LockState lockState)
+        async private Task<bool> LockReplicationSession(IFeatureClass fc, Guid session_guid, LockState lockState)
         {
-            IFeatureDatabaseReplication db = FeatureClassDb(fc);
+            IFeatureDatabaseReplication db = await FeatureClassDb(fc);
             if (db == null)
                 return false;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return false;
             try
             {
@@ -2745,12 +2672,12 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             }
             catch { return false; }
         }
-        private LockState IsReplicationSessionLocked(IFeatureClass fc, Guid session_guid)
+        async private Task<LockState> IsReplicationSessionLocked(IFeatureClass fc, Guid session_guid)
         {
-            IFeatureDatabaseReplication db = FeatureClassDb(fc);
+            IFeatureDatabaseReplication db = await FeatureClassDb(fc);
             if (db == null)
                 return LockState.Error;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return LockState.Error;
 
             try
@@ -2778,9 +2705,9 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             }
         }
 
-        public int GetReplicationState(IFeatureClass fc, Guid session_guid)
+        async public Task<int> GetReplicationState(IFeatureClass fc, Guid session_guid)
         {
-            IFeatureDatabaseReplication db = FeatureClassDb(fc);
+            IFeatureDatabaseReplication db = await FeatureClassDb(fc);
             if (db == null)
                 return -1;
 
@@ -2803,12 +2730,12 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             }
             catch { return -1; }
         }
-        public bool IncReplicationState(IFeatureClass fc, Guid session_guid)
+        async public Task<bool> IncReplicationState(IFeatureClass fc, Guid session_guid)
         {
-            int replState = GetReplicationState(fc, session_guid);
+            int replState = await GetReplicationState(fc, session_guid);
             if (replState == -1) return false;
 
-            IFeatureDatabaseReplication db = FeatureClassDb(fc);
+            IFeatureDatabaseReplication db = await FeatureClassDb(fc);
             if (db == null)
                 return false;
 
@@ -2830,12 +2757,12 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
 
         }
 
-        private DataTable LockedSessions(IFeatureClass fc)
+        async private Task<DataTable> LockedSessions(IFeatureClass fc)
         {
-            IFeatureDatabaseReplication db = FeatureClassDb(fc);
+            IFeatureDatabaseReplication db = await FeatureClassDb(fc);
             if (db == null)
                 return null;
-            int fc_id = db.GetFeatureClassID(fc.Name);
+            int fc_id = await db.GetFeatureClassID(fc.Name);
             if (fc_id < 0) return null;
 
             try
@@ -2861,15 +2788,12 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 return null;
             }
         }
-        private bool CheckForLockedFeatureclassSessions(IFeatureClass fc, Guid checkout_guid, out string errMsg)
+        async private Task<bool> CheckForLockedFeatureclassSessions(IFeatureClass fc, Guid checkout_guid)
         {
-            errMsg = String.Empty;
-
-            DataTable tab = LockedSessions(fc);
+            DataTable tab = await LockedSessions(fc);
             if (tab == null)
             {
-                errMsg = "Can't derminate featureclass session lockstate";
-                return false;
+                throw new Exception("Can't derminate featureclass session lockstate");
             }
 
             StringBuilder sb = new StringBuilder();
@@ -2891,19 +2815,18 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             if (found)
             {
                 sb.Append("Try checkin later again...");
-                errMsg = sb.ToString();
-                return false;
+                throw new Exception(sb.ToString());
             }
 
             return true;
         }
-        private bool CheckForLockedFeatureclassSessions(IFeatureClass fc, Guid checkout_guid, int waitSeconds, out string errMsg)
+        async private Task<bool> CheckForLockedFeatureclassSessions(IFeatureClass fc, Guid checkout_guid, int waitSeconds)
         {
             DateTime td = DateTime.Now;
 
             while (true)
             {
-                if (CheckForLockedFeatureclassSessions(fc, checkout_guid, out errMsg))
+                if (await CheckForLockedFeatureclassSessions(fc, checkout_guid))
                     return true;
 
                 TimeSpan ts = DateTime.Now - td;
@@ -2942,11 +2865,11 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 Date = date;
             }
 
-            internal void Init()
+            async internal Task Init()
             {
                 if (FeatureClass == null || FeatureClass.Fields == null) return;
 
-                string repl_field_name = Replication.FeatureClassReplicationIDFieldname(FeatureClass);
+                string repl_field_name = await Replication.FeatureClassReplicationIDFieldname(FeatureClass);
 
                 FieldConflicts.Add(new FieldConflict(this, FeatureClass.ShapeFieldName));
                 foreach (IField field in FeatureClass.Fields.ToEnumerable())
@@ -3194,10 +3117,9 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 }
             }
 
-            public bool RemoveConflict(out string errMsg)
+            async public Task<bool> RemoveConflict()
             {
-                errMsg = String.Empty;
-                IFeatureDatabaseReplication db = Replication.FeatureClassDb(FeatureClass);
+                IFeatureDatabaseReplication db = await Replication.FeatureClassDb(FeatureClass);
                 if (db == null) return false;
 
                 try
@@ -3222,17 +3144,16 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 }
                 catch (Exception ex)
                 {
-                    errMsg = "RemoveConflict -> " + ex.Message;
-                    return false;
+                    throw new Exception("RemoveConflict -> " + ex.Message);
                 }
             }
             async public Task<(bool success, string errMsg)> SolveConflict()
             {
                 string errMsg = String.Empty;
-                if (!RemoveConflict(out errMsg))
+                if (!await RemoveConflict())
                     return (false, errMsg);
 
-                IFeatureDatabaseReplication db = Replication.FeatureClassDb(FeatureClass);
+                IFeatureDatabaseReplication db = await Replication.FeatureClassDb(FeatureClass);
                 if (db == null) return (false, errMsg);
 
                 IFeature sFeature = this.SolvedFeature;
@@ -3249,7 +3170,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 {
                     // Ursprüngliches Features wurde gelöscht und soll jetzt
                     // "upgedatet" werden. -> neuer Insert mit OBJECT_GUID
-                    string repl_field_name = Replication.FeatureClassReplicationIDFieldname(FeatureClass);
+                    string repl_field_name = await Replication.FeatureClassReplicationIDFieldname(FeatureClass);
                     if (String.IsNullOrEmpty(repl_field_name))
                     {
                         errMsg = "SolveConflict -> can't get replication field name";
@@ -3360,9 +3281,9 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 get { return _fc.Envelope; }
             }
 
-            public int CountFeatures
+            public Task<int> CountFeatures()
             {
-                get { return _fc.CountFeatures; }
+                return _fc.CountFeatures();
             }
 
             async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)

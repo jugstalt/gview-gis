@@ -60,7 +60,7 @@ namespace gView.Framework.Network.Tracers
                 if (prop.Value == false)
                     continue;
 
-                int fcid = network.NetworkClassId(prop.Name);
+                int fcid = await network.NetworkClassId(prop.Name);
                 if (fcid < 0)
                     continue;
 
@@ -229,13 +229,13 @@ namespace gView.Framework.Network.Tracers
 
         #region INetworkTracerProperties Member
 
-        public object NetworkTracerProperties(INetworkFeatureClass network, NetworkTracerInputCollection input)
+        async public Task<object> NetworkTracerProperties(INetworkFeatureClass network, NetworkTracerInputCollection input)
         {
             if (network == null)
                 return null;
 
             _properties.Clear();
-            List<IFeatureClass> fcs = network.NetworkClasses;
+            List<IFeatureClass> fcs = await network.NetworkClasses();
             if (fcs != null)
             {
                 foreach (IFeatureClass fc in fcs)

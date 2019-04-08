@@ -152,9 +152,9 @@ namespace gView.Framework.Network.Tracers
 
         #region INetworkTracerProperties Member
 
-        public object NetworkTracerProperties(INetworkFeatureClass network, NetworkTracerInputCollection input)
+        public Task<object> NetworkTracerProperties(INetworkFeatureClass network, NetworkTracerInputCollection input)
         {
-            return _properties;
+            return Task.FromResult<object>(_properties);
         }
 
         #endregion

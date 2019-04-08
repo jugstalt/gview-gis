@@ -324,13 +324,10 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
-        public int CountFeatures
+        async public Task<int> CountFeatures()
         {
-            get
-            {
-                if (_fc == null) return 0;
-                return _fc.CountFeatures;
-            }
+            if (_fc == null) return 0;
+            return await _fc.CountFeatures();
         }
 
         async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)

@@ -22,7 +22,8 @@ namespace gView.Framework.Data
     {
         Task<IEnvelope> Envelope();
 
-        ISpatialReference SpatialReference { get; set; }
+        Task<ISpatialReference> GetSpatialReference();
+        void SetSpatialReference(ISpatialReference sRef);
     }
 
     public interface IRasterFileDataset : IRasterDataset
@@ -38,7 +39,8 @@ namespace gView.Framework.Data
     {
         Task<IEnvelope> Envelope();
 
-        ISpatialReference SpatialReference { get; set; }
+        Task<ISpatialReference> GetSpatialReference();
+        void SetSpatialReference(ISpatialReference sRef);
     }
 
     public interface IDataset2 : IDataset
@@ -272,7 +274,7 @@ namespace gView.Framework.Data
         string ShapeFieldName { get; }
         IEnvelope Envelope { get; }
 
-        int CountFeatures { get; }
+        Task<int> CountFeatures();
 
         //IFeature GetFeature(int id, getFeatureQueryType type);
         //IFeatureCursor GetFeatures(List<int> ids, getFeatureQueryType type);

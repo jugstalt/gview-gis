@@ -42,7 +42,7 @@ namespace gView.Framework.Network.Tracers
                         if (nodeFeature != null && nodeFeature.Shape is IPoint)
                         {
                             if (!fcNames.ContainsKey(fcId))
-                                fcNames.Add(fcId, network.NetworkClassName(fcId));
+                                fcNames.Add(fcId, await network.NetworkClassName(fcId));
 
                             string fcName = fcNames[fcId];
 

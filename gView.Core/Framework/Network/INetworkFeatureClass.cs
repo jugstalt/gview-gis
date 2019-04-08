@@ -19,9 +19,9 @@ namespace gView.Framework.Network
         Task<IFeature> GetNodeFeatureAttributes(int nodeId, string[] attributes);
         Task<IFeature> GetEdgeFeatureAttributes(int edgeId, string[] attributes);
 
-        List<IFeatureClass> NetworkClasses { get; }
-        string NetworkClassName(int fcid);
-        int NetworkClassId(string className);
+        Task<List<IFeatureClass>> NetworkClasses();
+        Task<string> NetworkClassName(int fcid);
+        Task<int> NetworkClassId(string className);
 
         int MaxNodeId { get; }
         bool HasDisabledSwitches { get; }

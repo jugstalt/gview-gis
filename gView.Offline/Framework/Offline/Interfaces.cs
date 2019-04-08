@@ -4,15 +4,16 @@ using System.Text;
 using gView.Framework.Data;
 using System.Data.Common;
 using gView.Framework.FDB;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Offline
 {
     public interface IFeatureDatabaseReplication : IFeatureDatabase, IFeatureUpdater, IDatabaseNames
     {
         bool CreateIfNotExists(string tableName, IFields fields);
-        bool CreateObjectGuidColumn(string fcName, string fieldname);
-        int GetFeatureClassID(string fcName);
-        string GetFeatureClassName(int fcID);
+        Task<bool> CreateObjectGuidColumn(string fcName, string fieldname);
+        Task<int> GetFeatureClassID(string fcName);
+        Task<string> GetFeatureClassName(int fcID);
 
         bool InsertRow(string table, IRow row, IReplicationTransaction replTrans);
         bool InsertRows(string table, List<IRow> rows, IReplicationTransaction replTrans); 

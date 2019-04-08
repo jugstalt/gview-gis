@@ -52,10 +52,10 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         #region IFeatureDataset Member
 
-        public Task<IEnvelope> Envelope()
+        async public Task<IEnvelope> Envelope()
         {
             if (_layers == null)
-                return Task.FromResult<IEnvelope>(null);
+                return null;
 
             bool first = true;
             IEnvelope env = null;
@@ -66,7 +66,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 if (layer.Class is IFeatureClass)
                 {
                     envelope = ((IFeatureClass)layer.Class).Envelope;
-                    if (envelope.Width > 1e10 && ((IFeatureClass)layer.Class).CountFeatures == 0)
+                    if (envelope.Width > 1e10 && await ((IFeatureClass)layer.Class).CountFeatures() == 0)
                         envelope = null;
                 }
                 else if (layer.Class is IRasterClass)
@@ -86,23 +86,21 @@ namespace gView.DataSources.Fdb.PostgreSql
                     env.Union(envelope);
                 }
             }
-            return Task.FromResult(env);
+            return env;
         }
 
-        public ISpatialReference SpatialReference
+        async public Task<ISpatialReference> GetSpatialReference()
         {
-            get
-            {
-                if (_sRef != null) return _sRef;
 
-                if (_fdb == null) return null;
-                return _sRef = _fdb.SpatialReference(_dsname);
-            }
-            set
-            {
-                // Nicht in Databank übernehmen !!!
-                _sRef = value;
-            }
+            if (_sRef != null) return _sRef;
+
+            if (_fdb == null) return null;
+            return _sRef = await _fdb.SpatialReference(_dsname);
+        }
+        public void SetSpatialReference(ISpatialReference sRef)
+        {
+            // Nicht in Databank übernehmen !!!
+            _sRef = sRef;
         }
 
         #endregion
@@ -175,20 +173,20 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
-        public Task<bool> Open()
+        async public Task<bool> Open()
         {
             if (_fdb == null)
-                return Task.FromResult(false);
+                return false;
 
-            _dsID = _fdb.DatasetID(_dsname);
+            _dsID = await _fdb.DatasetID(_dsname);
             if (_dsID < 0)
-                return Task.FromResult(false);
+                return false;
 
-            _sRef = this.SpatialReference;
+            _sRef = await this.GetSpatialReference();
             _state = DatasetState.opened;
-            _sIndexDef = _fdb.SpatialIndexDef(_dsID);
+            _sIndexDef = await _fdb.SpatialIndexDef(_dsID);
 
-            return Task.FromResult(true);
+            return true;
         }
 
         public string LastErrorMessage
@@ -200,11 +198,11 @@ namespace gView.DataSources.Fdb.PostgreSql
             set { _errMsg = value; }
         }
 
-        public Task<List<IDatasetElement>> Elements()
+        async public Task<List<IDatasetElement>> Elements()
         {
             if (_layers == null || _layers.Count == 0)
             {
-                _layers = _fdb.DatasetLayers(this);
+                _layers = await _fdb.DatasetLayers(this);
 
                 if (_layers != null && _addedLayers.Count != 0)
                 {
@@ -233,9 +231,9 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
 
             if (_layers == null)
-                return Task.FromResult(new List<IDatasetElement>());
+                return new List<IDatasetElement>();
 
-            return Task.FromResult(_layers);
+            return _layers;
         }
 
         public string Query_FieldPrefix
@@ -253,18 +251,19 @@ namespace gView.DataSources.Fdb.PostgreSql
             get { return _fdb; }
         }
 
-        public Task<IDatasetElement> Element(string title)
+        async public Task<IDatasetElement> Element(string title)
         {
             if (_fdb == null)
-                return Task.FromResult<IDatasetElement>(null);
-            IDatasetElement element = _fdb.DatasetElement(this, title);
+                return null;
+
+            IDatasetElement element = await _fdb.DatasetElement(this, title);
 
             if (element != null && element.Class is pgFeatureClass)
             {
                 ((pgFeatureClass)element.Class).SpatialReference = _sRef;
             }
 
-            return Task.FromResult(element);
+            return element;
         }
 
         async public Task RefreshClasses()
@@ -297,7 +296,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                     return;
             }
 
-            IDatasetElement element = _fdb.DatasetElement(this, elementName);
+            IDatasetElement element = await _fdb.DatasetElement(this, elementName);
             if (element != null) _layers.Add(element);
         }
 
@@ -373,7 +372,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
-        void SqlFDB_TableAltered(string table)
+        async void SqlFDB_TableAltered(string table)
         {
             if (_layers == null) return;
 
@@ -382,7 +381,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 if (element.Class is pgFeatureClass &&
                     ((pgFeatureClass)element.Class).Name == table)
                 {
-                    var fields = _fdb.FeatureClassFields(this._dsID, table);
+                    var fields = await _fdb.FeatureClassFields(this._dsID, table);
 
                     pgFeatureClass fc = element.Class as pgFeatureClass;
                     ((Fields)fc.Fields).Clear();

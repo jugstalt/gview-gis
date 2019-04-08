@@ -33,7 +33,7 @@ namespace gView.Framework.FDB
         //int OpenFeatureClass(int DatasetID,string name);
 
         Task<int> CreateDataset(string name, ISpatialReference sRef);
-		int CreateFeatureClass(
+		Task<int> CreateFeatureClass(
 			string dsname,
 			string fcname,
 			IGeometryDef geomDef,
@@ -42,14 +42,14 @@ namespace gView.Framework.FDB
         IFeatureDataset this[string name] { get; }
 
         Task<bool> DeleteDataset(string dsName);
-        bool DeleteFeatureClass(string fcName);
+        Task<bool> DeleteFeatureClass(string fcName);
 
-        bool RenameDataset(string name, string newName);
-        bool RenameFeatureClass(string name, string newName);
+        Task<bool> RenameDataset(string name, string newName);
+        Task<bool> RenameFeatureClass(string name, string newName);
 
 		Task<IFeatureCursor> Query(IFeatureClass fc,IQueryFilter filter);
 
-        string[] DatasetNames { get; }
+        Task<string[]> DatasetNames();
 	}
     public interface IFeatureDatabase2 : IFeatureDatabase
     {
@@ -57,9 +57,9 @@ namespace gView.Framework.FDB
     }
     public interface IFeatureDatabase3 : IFeatureDatabase2
     {
-        int DatasetID(string dsname);
-        int FeatureClassID(int datasetId, string fcname);
-        int GetFeatureClassID(string fcname);
+        Task<int> DatasetID(string dsname);
+        Task<int> FeatureClassID(int datasetId, string fcname);
+        Task<int> GetFeatureClassID(string fcname);
     }
 
     public interface IFileFeatureDatabase : IFeatureDatabase, IFeatureUpdater
@@ -73,7 +73,7 @@ namespace gView.Framework.FDB
     public interface IImageDB
     {
         Task<int> CreateImageDataset(string name, ISpatialReference sRef, ISpatialIndexDef sIndexDef, string imageSpace, IFields fields);
-        bool IsImageDataset(string dsname, out string imageSpace);
+        Task<(bool isImageDataset, string imageSpace)> IsImageDataset(string dsname);
     }
 
 	public interface IReportProgress 
@@ -104,7 +104,7 @@ namespace gView.Framework.FDB
 
     public interface IAltertable
     {
-        bool AlterTable(string table, IField oldField, IField newField);
+        Task<bool> AlterTable(string table, IField oldField, IField newField);
     }
     public interface IAlterDatabase
     {
@@ -133,7 +133,7 @@ namespace gView.Framework.FDB
 		double SpatialRatio { get; }
 		int MaxFeaturesPerNode { get; }
 
-		List<SpatialIndexNode> SpatialIndexNodes { get ; }
+        Task<List<SpatialIndexNode>> SpatialIndexNodes();
 	}
 
 	public class SpatialIndexNode : ISpatialIndexNode,IComparable
@@ -306,10 +306,10 @@ namespace gView.Framework.FDB
 
     public interface IFDBDatabase : IFeatureDatabase3
     {
-        bool SetSpatialIndexBounds(string FCName, string TreeType, IEnvelope Bounds, double SpatialRatio, int maxPerNode, int maxLevels);
-        ISpatialIndexDef SpatialIndexDef(string dsName);
-        bool ShrinkSpatialIndex(string fcName, List<long> NIDs);
-        bool SetFeatureclassExtent(string fcName, IEnvelope envelope);
+        Task<bool> SetSpatialIndexBounds(string FCName, string TreeType, IEnvelope Bounds, double SpatialRatio, int maxPerNode, int maxLevels);
+        Task<ISpatialIndexDef> SpatialIndexDef(string dsName);
+        Task<bool> ShrinkSpatialIndex(string fcName, List<long> NIDs);
+        Task<bool> SetFeatureclassExtent(string fcName, IEnvelope envelope);
         Task<bool> CalculateExtent(string fcName);
     }
 }

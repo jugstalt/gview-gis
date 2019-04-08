@@ -565,7 +565,7 @@ namespace gView.Framework.Network
 
     public interface INetworkTracerProperties
     {
-        object NetworkTracerProperties(INetworkFeatureClass network, NetworkTracerInputCollection input);
+        Task<object> NetworkTracerProperties(INetworkFeatureClass network, NetworkTracerInputCollection input);
     }
 
     public enum NetworkNodeType

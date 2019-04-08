@@ -169,7 +169,7 @@ namespace gView.Framework.UI.Controls
             get { return _resizeMode; }
             set { _resizeMode = value; }
         }
-        private void AfterLoadMapDocument(IMapDocument mapDocument)
+        async private void AfterLoadMapDocument(IMapDocument mapDocument)
         {
             if (mapDocument == null) return;
             if (!(mapDocument.FocusMap is Map)) return;
@@ -184,7 +184,7 @@ namespace gView.Framework.UI.Controls
                 if (mapDocument.Application is IMapApplication)
                     ((IMapApplication)mapDocument.Application).RefreshActiveMap(DrawPhase.All);
                 else
-                    RefreshMap(DrawPhase.All);
+                    await RefreshMap(DrawPhase.All);
             }
         }
 

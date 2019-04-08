@@ -5,6 +5,7 @@ using gView.Framework.Geometry;
 using gView.Framework.Data;
 using gView.Framework.FDB;
 using gView.Framework.system;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data
 {
@@ -1113,6 +1114,6 @@ namespace gView.Framework.Data
 
     public interface IImplementsBinarayTreeDef
     {
-        BinaryTreeDef BinaryTreeDef(string fcname);
+        Task<BinaryTreeDef> BinaryTreeDef(string fcname);
     }
 }

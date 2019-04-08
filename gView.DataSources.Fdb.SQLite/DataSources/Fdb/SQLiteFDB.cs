@@ -364,7 +364,7 @@ namespace gView.DataSources.Fdb.SQLite
             if (features.Count == 0) return true;
 
             BinarySearchTree2 tree = null;
-            CheckSpatialSearchTreeVersion(fClass.Name);
+            await CheckSpatialSearchTreeVersion(fClass.Name);
             if (_spatialSearchTrees[fClass.Name] == null)
             {
                 _spatialSearchTrees[fClass.Name] = this.SpatialSearchTree(fClass.Name);
@@ -584,7 +584,7 @@ namespace gView.DataSources.Fdb.SQLite
 
             //int counter = 0;
             BinarySearchTree2 tree = null;
-            CheckSpatialSearchTreeVersion(fClass.Name);
+            await CheckSpatialSearchTreeVersion(fClass.Name);
             if (_spatialSearchTrees[fClass.Name] == null)
             {
                 _spatialSearchTrees[fClass.Name] = this.SpatialSearchTree(fClass.Name);
@@ -816,7 +816,7 @@ namespace gView.DataSources.Fdb.SQLite
                     _addTreeNodes[fcName].Add(nid);
             }
         }
-        private void AddTreeNodes()
+        async private Task AddTreeNodes()
         {
             lock (thisLock)
             {
@@ -824,7 +824,7 @@ namespace gView.DataSources.Fdb.SQLite
                 {
                     foreach (long nid in _addTreeNodes[fcName])
                     {
-                        base.AddTreeNode(fcName, nid);
+                        base.AddTreeNode(fcName, nid).Wait();
                     }
                 }
                 _addTreeNodes.Clear();
@@ -982,7 +982,7 @@ namespace gView.DataSources.Fdb.SQLite
                 {
                     sFilter.Geometry = ((ISpatialFilter)filter).Geometry;
                 }
-                CheckSpatialSearchTreeVersion(fc.Name);
+                await CheckSpatialSearchTreeVersion(fc.Name);
                 if (_spatialSearchTrees[OriginFcName(fc.Name)] == null)
                 {
                     _spatialSearchTrees[OriginFcName(fc.Name)] = this.SpatialSearchTree(fc.Name);

@@ -32,9 +32,9 @@ namespace gView.DataSources.Fdb
             get { return _fc != null ? _fc.Envelope : null; }
         }
 
-        public int CountFeatures
+        async public Task<int> CountFeatures()
         {
-            get { return _fc != null ? _fc.CountFeatures : 0; }
+            return _fc != null ? await _fc.CountFeatures() : 0;
         }
 
         async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)

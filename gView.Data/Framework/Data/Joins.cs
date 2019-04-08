@@ -80,9 +80,9 @@ namespace gView.Framework.Data
             get { return _fc.Envelope; }
         }
 
-        public int CountFeatures
+        public Task<int> CountFeatures()
         {
-            get { return _fc.CountFeatures; }
+            return _fc.CountFeatures();
         }
 
         async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)

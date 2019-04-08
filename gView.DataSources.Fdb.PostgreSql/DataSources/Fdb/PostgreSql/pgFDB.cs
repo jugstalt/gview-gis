@@ -156,18 +156,19 @@ namespace gView.DataSources.Fdb.PostgreSql
         #endregion
 
         #region Internals
-        override public IDatasetElement DatasetElement(IDataset dataset, string elementName)
+        async override public Task<IDatasetElement> DatasetElement(IDataset dataset, string elementName)
         {
             pgDataset pgDataset = dataset as pgDataset;
             if (pgDataset == null)
                 throw new Exception("datasset is null or not an PostgresDataset");
 
-            ISpatialReference sRef = this.SpatialReference(pgDataset.DatasetName);
+            ISpatialReference sRef = await this.SpatialReference(pgDataset.DatasetName);
 
             if (pgDataset.DatasetName == elementName)
             {
-                string imageSpace;
-                if (IsImageDataset(pgDataset.DatasetName, out imageSpace))
+                var isImageDatasetResult = await IsImageDataset(pgDataset.DatasetName);
+                string imageSpace=isImageDatasetResult.imageSpace;
+                if (isImageDatasetResult.isImageDataset)
                 {
                     IDatasetElement fLayer = DatasetElement(pgDataset, elementName + "_IMAGE_POLYGONS") as IDatasetElement;
                     if (fLayer != null && fLayer.Class is IFeatureClass)
@@ -200,7 +201,7 @@ namespace gView.DataSources.Fdb.PostgreSql
 
             if (IsLinkedFeatureClass(row))
             {
-                IDataset linkedDs = LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
+                IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                 if (linkedDs == null)
                     return null;
                 IDatasetElement linkedElement = linkedDs.Element((string)row["Name"]).Result;
@@ -234,16 +235,16 @@ namespace gView.DataSources.Fdb.PostgreSql
                 geomDef = new GeometryDef((geometryType)fcRow["geometrytype"], null, true);
             }
 
-            DatasetElement layer = new pgDatasetElement(this, pgDataset, row["name"].ToString(), geomDef);
+            DatasetElement layer = await pgDatasetElement.Create(this, pgDataset, row["name"].ToString(), geomDef);
             if (layer.Class is pgFeatureClass) // kann auch SqlFDBNetworkClass sein
             {
-                ((pgFeatureClass)layer.Class).Envelope = this.FeatureClassExtent(layer.Class.Name);
+                ((pgFeatureClass)layer.Class).Envelope = await this.FeatureClassExtent(layer.Class.Name);
                 ((pgFeatureClass)layer.Class).IDFieldName = "FDB_OID";
                 ((pgFeatureClass)layer.Class).ShapeFieldName = "FDB_SHAPE";
                 //((SqlFDBFeatureClass)layer.FeatureClass).SetSpatialTreeInfo(this.SpatialTreeInfo(row["Name"].ToString()));
                 ((pgFeatureClass)layer.Class).SpatialReference = sRef;
             }
-            var fields = this.FeatureClassFields(pgDataset._dsID, layer.Class.Name);
+            var fields = await this.FeatureClassFields(pgDataset._dsID, layer.Class.Name);
             if (fields != null && layer.Class is ITableClass)
             {
                 foreach (IField field in fields)
@@ -601,7 +602,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             {
                 sFilter = (ISpatialFilter)filter;
 
-                CheckSpatialSearchTreeVersion(fc.Name);
+                await CheckSpatialSearchTreeVersion(fc.Name);
                 if (_spatialSearchTrees[OriginFcName(fc.Name)] == null)
                 {
                     _spatialSearchTrees[OriginFcName(fc.Name)] = this.SpatialSearchTree(fc.Name);
@@ -646,15 +647,15 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
         {
             string tabName = ((fc is pgFeatureClass) ? ((pgFeatureClass)fc).DbTableName : "fc_" + fc.Name);
             string sql = "SELECT " + subFields + " FROM " + tabName;
-            return await pgFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, this.GetGeometryDef(fc.Name), toSRef);
+            return await pgFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, await this.GetGeometryDef(fc.Name), toSRef);
         }
 
-        override public List<IDatasetElement> DatasetLayers(IDataset dataset)
+        async override public Task<List<IDatasetElement>> DatasetLayers(IDataset dataset)
         {
             _errMsg = String.Empty;
             if (_conn == null) return null;
 
-            int dsID = this.DatasetID(dataset.DatasetName);
+            int dsID = await this.DatasetID(dataset.DatasetName);
             if (dsID == -1) return null;
 
             DataSet ds = new DataSet();
@@ -665,21 +666,22 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             }
 
             List<IDatasetElement> layers = new List<IDatasetElement>();
-            ISpatialReference sRef = SpatialReference(dataset.DatasetName);
+            ISpatialReference sRef = await SpatialReference(dataset.DatasetName);
 
-            string imageSpace;
-            if (IsImageDataset(dataset.DatasetName, out imageSpace))
+            var isDatasetImageResult = await IsImageDataset(dataset.DatasetName);
+            string imageSpace = isDatasetImageResult.imageSpace;
+            if (isDatasetImageResult.isImageDataset)
             {
                 if (TableExists("FC_" + dataset.DatasetName + "_IMAGE_POLYGONS") &&
                     CheckTablePrivilege(FcTableName(dataset.DatasetName + "_IMAGE_POLYGONS")))
                 {
-                    IFeatureClass fc = new pgFeatureClass(this, dataset, new GeometryDef(geometryType.Polygon, sRef, false));
+                    IFeatureClass fc = await pgFeatureClass.Create(this, dataset, new GeometryDef(geometryType.Polygon, sRef, false));
                     ((pgFeatureClass)fc).Name = dataset.DatasetName + "_IMAGE_POLYGONS";
-                    ((pgFeatureClass)fc).Envelope = this.FeatureClassExtent(fc.Name);
+                    ((pgFeatureClass)fc).Envelope = await this.FeatureClassExtent(fc.Name);
                     ((pgFeatureClass)fc).IDFieldName = "FDB_OID";
                     ((pgFeatureClass)fc).ShapeFieldName = "FDB_SHAPE";
 
-                    var fields = this.FeatureClassFields(dataset.DatasetName, fc.Name);
+                    var fields = await this.FeatureClassFields(dataset.DatasetName, fc.Name);
                     if (fields != null)
                     {
                         foreach (IField field in fields)
@@ -711,7 +713,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                 if (IsLinkedFeatureClass(row))
                 {
-                    IDataset linkedDs = LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
+                    IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                     if (linkedDs == null)
                         continue;
                     IDatasetElement linkedElement = linkedDs.Element((string)row["Name"]).Result;
@@ -754,10 +756,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     geomDef = new GeometryDef((geometryType)fcRow["geometrytype"], null, true);
                 }
 
-                pgDatasetElement layer = new pgDatasetElement(this, dataset, row["name"].ToString(), geomDef);
+                pgDatasetElement layer = await pgDatasetElement.Create(this, dataset, row["name"].ToString(), geomDef);
                 if (layer.Class is pgFeatureClass)
                 {
-                    ((pgFeatureClass)layer.Class).Envelope = this.FeatureClassExtent(layer.Class.Name);
+                    ((pgFeatureClass)layer.Class).Envelope = await this.FeatureClassExtent(layer.Class.Name);
                     ((pgFeatureClass)layer.Class).IDFieldName = "FDB_OID";
                     ((pgFeatureClass)layer.Class).ShapeFieldName = "FDB_SHAPE";
                     if (sRef != null)
@@ -765,7 +767,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                         ((pgFeatureClass)layer.Class).SpatialReference = (ISpatialReference)(new SpatialReference((SpatialReference)sRef));
                     }
                 }
-                var fields = this.FeatureClassFields(dataset.DatasetName, layer.Class.Name);
+                var fields = await this.FeatureClassFields(dataset.DatasetName, layer.Class.Name);
                 if (fields != null && layer.Class is ITableClass)
                 {
                     foreach (IField field in fields)
@@ -794,15 +796,16 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             BinarySearchTree2 tree = null;
             bool isNetwork = fClass.GeometryType == geometryType.Network;
 
-            CheckSpatialSearchTreeVersion(fClass.Name);
+            await CheckSpatialSearchTreeVersion(fClass.Name);
             if (_spatialSearchTrees[fClass.Name] == null)
             {
                 _spatialSearchTrees[fClass.Name] = this.SpatialSearchTree(fClass.Name);
             }
             tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
 
-            string replicationField = null;
-            if (!Replication.AllowFeatureClassEditing(fClass, out replicationField))
+            var allowFcEditing = await Replication.AllowFeatureClassEditing(fClass);
+            string replicationField = allowFcEditing.replFieldName;
+            if (allowFcEditing.allow)
             {
                 _errMsg = "Replication Error: can't edit checked out and released featureclass...";
                 return false;
@@ -833,9 +836,8 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             if (!String.IsNullOrEmpty(replicationField))
                             {
                                 Replication.AllocateNewObjectGuid(feature, replicationField);
-                                if (!Replication.WriteDifferencesToTable(fClass, (System.Guid)feature[replicationField], Replication.SqlStatement.INSERT, replTrans, out _errMsg))
+                                if (!await Replication.WriteDifferencesToTable(fClass, (System.Guid)feature[replicationField], Replication.SqlStatement.INSERT, replTrans))
                                 {
-                                    _errMsg = "Replication Error: " + _errMsg;
                                     return false;
                                 }
                             }
@@ -936,15 +938,16 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
             BinarySearchTree2 tree = null;
 
-            CheckSpatialSearchTreeVersion(fClass.Name);
+            await CheckSpatialSearchTreeVersion(fClass.Name);
             if (_spatialSearchTrees[fClass.Name] == null)
             {
                 _spatialSearchTrees[fClass.Name] = this.SpatialSearchTree(fClass.Name);
             }
             tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
 
-            string replicationField = null;
-            if (!Replication.AllowFeatureClassEditing(fClass, out replicationField))
+            var allowFcEditing = await Replication.AllowFeatureClassEditing(fClass);
+            string replicationField = allowFcEditing.replFieldName;
+            if (!allowFcEditing.allow)
             {
                 _errMsg = "Replication Error: can't edit checked out and released featureclass...";
                 return false;
@@ -974,11 +977,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             }
                             if (!String.IsNullOrEmpty(replicationField))
                             {
-                                if (!Replication.WriteDifferencesToTable(fClass,
+                                if (!await Replication.WriteDifferencesToTable(fClass,
                                     await Replication.FeatureObjectGuid(fClass, feature, replicationField),
-                                    Replication.SqlStatement.UPDATE, replTrans, out _errMsg))
+                                    Replication.SqlStatement.UPDATE, replTrans))
                                 {
-                                    _errMsg = "Replication Error: " + _errMsg;
                                     return false;
                                 }
                             }
@@ -1093,8 +1095,9 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                         ReplicationTransaction replTrans = new ReplicationTransaction(connection, transaction);
                         command.Transaction = transaction;
 
-                        string replicationField = null;
-                        if (!Replication.AllowFeatureClassEditing(fClass, out replicationField))
+                        var allowFcEditing = await Replication.AllowFeatureClassEditing(fClass);
+                        string replicationField = allowFcEditing.replFieldName;
+                        if (!allowFcEditing.allow)
                         {
                             _errMsg = "Replication Error: can't edit checked out and released featureclass...";
                             return false;
@@ -1110,13 +1113,11 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                             foreach (DataRow row in tab.Rows)
                             {
-                                if (!Replication.WriteDifferencesToTable(fClass,
+                                if (!await Replication.WriteDifferencesToTable(fClass,
                                     (System.Guid)row[replicationField],
                                     Replication.SqlStatement.DELETE,
-                                    replTrans,
-                                    out _errMsg))
+                                    replTrans))
                                 {
-                                    _errMsg = "Replication Error: " + _errMsg;
                                     return false;
                                 }
                             }
@@ -1461,18 +1462,18 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
         #region IAltertable
         public event AlterTableEventHandler TableAltered = null;
 
-        public override bool AlterTable(string table, IField oldField, IField newField)
+        async public override Task<bool> AlterTable(string table, IField oldField, IField newField)
         {
             if (oldField == null && newField == null) return true;
 
             if (_conn == null) return false;
-            int dsID = DatasetIDFromFeatureClassName(table);
-            string dsname = DatasetNameFromFeatureClassName(table);
+            int dsID = await DatasetIDFromFeatureClassName(table);
+            string dsname = await DatasetNameFromFeatureClassName(table);
             if (dsname == "")
             {
                 return false;
             }
-            int fcID = FeatureClassID(dsID, table);
+            int fcID = await FeatureClassID(dsID, table);
             if (fcID == -1)
             {
                 return false;
@@ -1505,7 +1506,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                         }
                         if (oldField.name != newField.name)
                         {
-                            if (!RenameField(table, oldField, newField))
+                            if (!await RenameField(table, oldField, newField))
                             {
                                 return false;
                             }
@@ -1513,12 +1514,12 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     }
                     else    // DROP COLUMN
                     {
-                        string replIDFieldname = Replication.FeatureClassReplicationIDFieldname(fc);
+                        string replIDFieldname = await Replication.FeatureClassReplicationIDFieldname(fc);
                         if (!String.IsNullOrEmpty(replIDFieldname) &&
                             replIDFieldname == oldField.name)
                         {
                             Replication repl = new Replication();
-                            if (!repl.RemoveReplicationIDField(fc))
+                            if (!await repl.RemoveReplicationIDField(fc))
                             {
                                 _errMsg = "Can't remove replication id field...";
                                 return false;
@@ -1547,7 +1548,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     }
                 }
 
-                return AlterFeatureclassField(fcID, oldField, newField);
+                return await AlterFeatureclassField(fcID, oldField, newField);
             }
             finally
             {
@@ -1562,19 +1563,28 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
         {
             private ISelectionSet m_selectionset;
 
-            public pgDatasetElement(pgFDB fdb, IDataset dataset, string name, GeometryDef geomDef)
+            private pgDatasetElement()
             {
+
+            }
+
+            async static public Task<pgDatasetElement> Create(pgFDB fdb, IDataset dataset, string name, GeometryDef geomDef)
+            {
+                var dsElement = new pgDatasetElement();
+
                 if (geomDef.GeometryType == geometryType.Network)
                 {
-                    _class = new pgNetworkFeatureClass(fdb, dataset, name, geomDef);
+                    dsElement._class = await pgNetworkFeatureClass.Create(fdb, dataset, name, geomDef);
                 }
                 else
                 {
-                    _class = new pgFeatureClass(fdb, dataset, geomDef);
-                    ((pgFeatureClass)_class).Name =
-                    ((pgFeatureClass)_class).Aliasname = name;
+                    dsElement._class = await pgFeatureClass.Create(fdb, dataset, geomDef);
+                    ((pgFeatureClass)dsElement._class).Name =
+                    ((pgFeatureClass)dsElement._class).Aliasname = name;
                 }
-                this.Title = name;
+                dsElement.Title = name;
+
+                return dsElement;
             }
 
             public pgDatasetElement(LinkedFeatureClass fc)
