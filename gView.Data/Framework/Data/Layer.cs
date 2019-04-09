@@ -321,7 +321,7 @@ namespace gView.Framework.Data
 
         #region IPersistable Member
 
-        virtual public void Load(IPersistStream stream)
+        virtual public Task<bool> Load(IPersistStream stream)
         {
             this.ID = (int)stream.Load("ID", 0);
             this.SID = (string)stream.Load("SID", null);
@@ -340,9 +340,10 @@ namespace gView.Framework.Data
 
             _MaximumZoomToFeatureScale = (double)stream.Load("MaximumZoomToFeatureScale", 0.0);
 
+            return Task.FromResult(true);
         }
 
-        virtual public void Save(IPersistStream stream)
+        virtual public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("ID", this.ID);
             if (HasSID) stream.Save("SID", this.SID);
@@ -360,6 +361,8 @@ namespace gView.Framework.Data
             stream.Save("MaximumLabelScale", _MaximumLabelScale);
 
             stream.Save("MaximumZoomToFeatureScale", _MaximumZoomToFeatureScale);
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -559,7 +562,7 @@ namespace gView.Framework.Data
         #endregion
 
         #region IPersistable
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             string primaryField = (string)stream.Load("PrimaryField", "");
 
@@ -583,8 +586,10 @@ namespace gView.Framework.Data
                 if (f.name == primaryField)
                     _primaryField = f;
             }
+
+            return Task.FromResult(true);
         }
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             if (_fields != null)
             {
@@ -595,6 +600,8 @@ namespace gView.Framework.Data
             }
 
             if (_primaryField != null) stream.Save("PrimaryField", _primaryField.name);
+
+            return Task.FromResult(true);
         }
         #endregion
 
@@ -1017,9 +1024,9 @@ namespace gView.Framework.Data
 
         #region IPersistable Member
 
-        override public void Load(IPersistStream stream)
+        async override public Task<bool> Load(IPersistStream stream)
         {
-            base.Load(stream);
+            await base.Load(stream);
 
             //_featureclass=new FeatureClass();
             //((FeatureClass)_featureclass).Name=(string)stream.Load("Featureclass","");
@@ -1042,11 +1049,13 @@ namespace gView.Framework.Data
             }
 
             this.Joins = (FeatureLayerJoins)stream.Load("Joins", null, new FeatureLayerJoins());
+
+            return true;
         }
 
-        override public void Save(IPersistStream stream)
+        async override public Task<bool> Save(IPersistStream stream)
         {
-            base.Save(stream);
+            await base.Save(stream);
 
             //stream.Save("Featureclass", FeatureClass != null ? FeatureClass.Name : _title);
 
@@ -1076,6 +1085,8 @@ namespace gView.Framework.Data
 
             if (_joins != null)
                 stream.Save("Joins", _joins);
+
+            return true;
         }
 
         #endregion
@@ -1273,22 +1284,26 @@ namespace gView.Framework.Data
             }
         }
 
-        override public void Load(IPersistStream stream)
+        async override public Task<bool> Load(IPersistStream stream)
         {
-            base.Load(stream);
+            await base.Load(stream);
 
             _interpolMethod = (InterpolationMethod)stream.Load("interpolation", (int)InterpolationMethod.Fast);
             _transparency = (float)stream.Load("transparency", 0f);
             _transColor = System.Drawing.Color.FromArgb((int)stream.Load("transcolor", System.Drawing.Color.Transparent.ToArgb()));
+
+            return true;
         }
 
-        override public void Save(IPersistStream stream)
+        async override public Task<bool> Save(IPersistStream stream)
         {
-            base.Save(stream);
+            await base.Save(stream);
 
             stream.Save("interpolation", (int)_interpolMethod);
             stream.Save("transparency", _transparency);
             stream.Save("transcolor", _transColor.ToArgb());
+
+            return true;
         }
 
         #endregion
@@ -1382,23 +1397,27 @@ namespace gView.Framework.Data
             }
         }
 
-        override public void Load(IPersistStream stream)
+        async override public Task<bool> Load(IPersistStream stream)
         {
-            base.Load(stream);
+            await base.Load(stream);
 
             _interpolMethod = (InterpolationMethod)stream.Load("interpolation", (int)InterpolationMethod.Fast);
             _transparency = (float)stream.Load("transparency", 0f);
             int argb = (int)stream.Load("transcolor", System.Drawing.Color.Transparent.ToArgb());
             _transColor = System.Drawing.Color.FromArgb(argb);
+
+            return true;
         }
 
-        override public void Save(IPersistStream stream)
+        async override public Task<bool> Save(IPersistStream stream)
         {
-            base.Save(stream);
+            await base.Save(stream);
 
             stream.Save("interpolation", (int)_interpolMethod);
             stream.Save("transparency", _transparency);
             stream.Save("transcolor", _transColor.ToArgb());
+
+            return true;
         }
 
         #endregion
@@ -1491,9 +1510,9 @@ namespace gView.Framework.Data
             }
             _themes = null;
         }
-        public override void Load(IPersistStream stream)
+        async public override Task<bool> Load(IPersistStream stream)
         {
-            base.Load(stream);
+            await base.Load(stream);
 
             WebServiceTheme theme;
             while ((theme = (WebServiceTheme)stream.Load("IWebServiceTheme", null, new WebServiceTheme())) != null)
@@ -1503,11 +1522,13 @@ namespace gView.Framework.Data
             }
 
             SerializeThemes();
+
+            return true;
         }
 
-        public override void Save(IPersistStream stream)
+        async public override Task<bool> Save(IPersistStream stream)
         {
-            base.Save(stream);
+            await base.Save(stream);
 
             if (_class is IWebServiceClass && ((IWebServiceClass)_class).Themes != null)
             {
@@ -1519,6 +1540,8 @@ namespace gView.Framework.Data
                     }
                 }
             }
+
+            return true;
         }
     }
 
@@ -1595,20 +1618,24 @@ namespace gView.Framework.Data
 
         #region IPersistable Member
 
-        public override void Load(IPersistStream stream)
+        async public override Task<bool> Load(IPersistStream stream)
         {
-            base.Load(stream);
+            await base.Load(stream);
 
             _id = (string)stream.Load("id", "");
             _locked = (bool)stream.Load("locked", false);
+
+            return true;
         }
 
-        public override void Save(IPersistStream stream)
+        async public override Task<bool> Save(IPersistStream stream)
         {
-            base.Save(stream);
+            await base.Save(stream);
 
             stream.Save("id", _id);
             stream.Save("locked", _locked);
+
+            return true;
         }
 
         #endregion
@@ -1687,20 +1714,24 @@ namespace gView.Framework.Data
 
         #region IPersistable Member
 
-        public override void Load(IPersistStream stream)
+        async public override Task<bool> Load(IPersistStream stream)
         {
-            base.Load(stream);
+            await base.Load(stream);
 
             _id = (string)stream.Load("id", "");
             _locked = (bool)stream.Load("locked", false);
+
+            return true;
         }
 
-        public override void Save(IPersistStream stream)
+        async public override Task<bool> Save(IPersistStream stream)
         {
-            base.Save(stream);
+            await base.Save(stream);
 
             stream.Save("id", _id);
             stream.Save("locked", _locked);
+
+            return true;
         }
 
         #endregion

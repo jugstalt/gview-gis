@@ -5,6 +5,7 @@ using gView.Framework.Data;
 using gView.Framework.UI;
 using System.Reflection;
 using gView.Framework.IO;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Dataset.WMS
 {
@@ -65,7 +66,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        async public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
         {
             _dataset = null;
             string connectionString = (string)stream.Load("ConnectionString", String.Empty);
@@ -73,15 +74,20 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             if (connectionString != String.Empty)
             {
                 _dataset = new WMSDataset();
-                _dataset.SetConnectionString(connectionString);
+                await _dataset.SetConnectionString(connectionString);
             }
+
+            return true;
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
         {
-            if (_dataset == null) return;
+            if (_dataset == null)
+                return Task.FromResult(true);
 
             stream.Save("ConnectionString", _dataset.ConnectionString);
+
+            return Task.FromResult(true);
         }
 
         #endregion

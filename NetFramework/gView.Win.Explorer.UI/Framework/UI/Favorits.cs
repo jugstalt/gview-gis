@@ -119,7 +119,7 @@ namespace gView.Framework.UI
 
             #region IPersistable Member
 
-            public void Load(IPersistStream stream)
+            public Task<bool> Load(IPersistStream stream)
             {
                 Favorite fav;
                 while ((fav = (Favorite)stream.Load("fav", null, new Favorite())) != null)
@@ -128,7 +128,7 @@ namespace gView.Framework.UI
                 }
             }
 
-            public void Save(IPersistStream stream)
+            public Task<bool> Save(IPersistStream stream)
             {
                 foreach (Favorite fav in this)
                 {
@@ -158,7 +158,7 @@ namespace gView.Framework.UI
 
             #region IPersistable Member
 
-            public void Load(IPersistStream stream)
+            public Task<bool> Load(IPersistStream stream)
             {
                 _name = (string)stream.Load("name", String.Empty);
                 _path = (string)stream.Load("path", String.Empty);
@@ -179,7 +179,7 @@ namespace gView.Framework.UI
                 }
             }
 
-            public void Save(IPersistStream stream)
+            public Task<bool> Save(IPersistStream stream)
             {
                 stream.Save("name", _name);
                 stream.Save("path", _path);

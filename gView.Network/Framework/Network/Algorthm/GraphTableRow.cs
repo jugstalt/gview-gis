@@ -4,6 +4,7 @@ using System.Text;
 using System.Data;
 using gView.Framework.Network;
 using gView.Framework.system;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Algorthm
 {
@@ -167,7 +168,7 @@ namespace gView.Framework.Network.Algorthm
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
         {
             _name = (string)stream.Load("name", String.Empty);
             _guid = new Guid((string)stream.Load("guid", new Guid()));
@@ -178,9 +179,11 @@ namespace gView.Framework.Network.Algorthm
             {
                 _gwfcs.Add(gwfc);
             }
+
+            return Task.FromResult(true);
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("name", _name);
             stream.Save("guid", _guid.ToString());
@@ -190,6 +193,8 @@ namespace gView.Framework.Network.Algorthm
             {
                 stream.Save("IGraphWeightFeatureClass", gwfc);
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -239,19 +244,23 @@ namespace gView.Framework.Network.Algorthm
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
         {
             _fcId = (int)stream.Load("fcid", -1);
             _fieldName = (string)stream.Load("fieldname", String.Empty);
             _calc = stream.Load("calc", null) as ISimpleNumberCalculation;
+
+            return Task.FromResult(true);
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("fcid", _fcId);
             stream.Save("fieldname", _fieldName);
             if (_calc != null)
                 stream.Save("calc", _calc);
+
+            return Task.FromResult(true);
         }
 
         #endregion

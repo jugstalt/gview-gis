@@ -2879,7 +2879,7 @@ namespace gView.Plugins.MapTools
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             _type = (ToolType)stream.Load("ToolType", (int)ToolType.click);
             _tolerance = (double)stream.Load("Tolerance", (double)3.0);
@@ -2888,7 +2888,7 @@ namespace gView.Plugins.MapTools
             ThemeMode = (QueryThemeMode)stream.Load("QueryMode", (int)QueryThemeMode.Default);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("ToolType", (int)_type);
             stream.Save("Tolerance", _tolerance);

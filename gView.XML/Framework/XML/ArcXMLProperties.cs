@@ -153,12 +153,12 @@ namespace gView.Framework.XML
 
     //    #region IPersistable Member
 
-    //    public void Load(IPersistStream stream)
+    //    public Task<bool> Load(IPersistStream stream)
     //    {
             
     //    }
 
-    //    public void Save(IPersistStream stream)
+    //    public Task<bool> Save(IPersistStream stream)
     //    {
     //        if (_node == null) return;
 

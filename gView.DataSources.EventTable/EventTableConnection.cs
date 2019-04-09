@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.EventTable
 {
@@ -57,7 +58,7 @@ namespace gView.DataSources.EventTable
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             _dbConn = new DbConnectionString();
             _dbConn.FromString((string)stream.Load("dbconn", String.Empty));
@@ -75,9 +76,11 @@ namespace gView.DataSources.EventTable
                 _sRef = new SpatialReference();
                 _sRef.FromXmlString(sr);
             }
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("dbconn", _dbConn.ToString());
             stream.Save("table", _table);
@@ -86,6 +89,8 @@ namespace gView.DataSources.EventTable
             stream.Save("yfield", _yField);
             if (_sRef != null)
                 stream.Save("sref", _sRef.ToXmlString());
+
+            return Task.FromResult(true);
         }
 
         #endregion

@@ -9,6 +9,7 @@ using gView.Framework.system;
 using gView.Framework.UI;
 using System.Reflection;
 using gView.Framework.Carto.Rendering.UI;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Carto.Rendering
 {
@@ -501,7 +502,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IPersistable Members
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
         {
             _fieldname = (string)stream.Load("Fieldname");
             _sizeField = (string)stream.Load("Sizefield");
@@ -516,9 +517,11 @@ namespace gView.Framework.Carto.Rendering
             _lineLabelling = (CartographicLineLabeling)stream.Load("lineLabelling", (int)CartographicLineLabeling.Parallel);
 
             _symbolRotation = (SymbolRotation)stream.Load("SymbolRotation", _symbolRotation, _symbolRotation);
+
+            return Task.FromResult(true);
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("Fieldname", _fieldname);
             stream.Save("Sizefield", _sizeField);
@@ -536,6 +539,8 @@ namespace gView.Framework.Carto.Rendering
             {
                 stream.Save("SymbolRotation", _symbolRotation);
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion

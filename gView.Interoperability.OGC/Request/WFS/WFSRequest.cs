@@ -926,7 +926,7 @@ namespace gView.Interoperability.OGC
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             //string epsg = String.Empty;
             //if (map.Display != null && map.Display.SpatialReference != null)
@@ -934,9 +934,11 @@ namespace gView.Interoperability.OGC
 
             _metadata = new Metadata(String.Empty);
             stream.Load("WFS_Export", null, _metadata);
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             if (_metadata == null && _map != null)
             {
@@ -947,6 +949,8 @@ namespace gView.Interoperability.OGC
                 _metadata = new Metadata(epsg);
             }
             stream.Save("WFS_Export", _metadata);
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -992,7 +996,7 @@ namespace gView.Interoperability.OGC
             }
             #region IPersistable Member
 
-            public void Load(IPersistStream stream)
+            public Task<bool> Load(IPersistStream stream)
             {
                 _epsgCodes = new IndexList<string>();
                 XmlStreamStringArray epsg = stream.Load("EPSG_Codes") as XmlStreamStringArray;
@@ -1010,12 +1014,16 @@ namespace gView.Interoperability.OGC
                 {
                     SetDefaultEPSGCodes();
                 }
+
+                return Task.FromResult(true);
             }
 
-            public void Save(IPersistStream stream)
+            public Task<bool> Save(IPersistStream stream)
             {
                 XmlStreamStringArray epsg = new XmlStreamStringArray(_epsgCodes.ToArray());
                 stream.Save("EPSG_Codes", epsg);
+
+                return Task.FromResult(true);
             }
 
             #endregion

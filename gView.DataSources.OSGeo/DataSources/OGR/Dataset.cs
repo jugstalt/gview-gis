@@ -247,15 +247,19 @@ namespace gView.DataSources.OGR
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             _connectionString = (string)stream.Load("connectionstring", String.Empty);
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.SaveEncrypted("connectionstring", _connectionString);
             //this.Open();
+
+            return Task.FromResult(true);
         }
 
         #endregion

@@ -2239,7 +2239,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 await CheckSpatialSearchTreeVersion(fcName);
                 if (_spatialSearchTrees[fcName] == null)
                 {
-                    _spatialSearchTrees[fcName] = this.SpatialSearchTree(fcName);
+                    _spatialSearchTrees[fcName] = await this.SpatialSearchTree(fcName);
                 }
                 tree = _spatialSearchTrees[fcName] as BinarySearchTree2;
 

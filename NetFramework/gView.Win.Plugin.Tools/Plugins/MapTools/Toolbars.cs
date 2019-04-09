@@ -72,12 +72,12 @@ namespace gView.Plugins.MapTools
             get { return ""; }
         }
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
         {
 
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
         {
 
         }
@@ -203,12 +203,12 @@ namespace gView.Plugins.MapTools
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             
         }

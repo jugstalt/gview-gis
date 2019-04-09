@@ -153,7 +153,7 @@ namespace gView.Framework.Data.Joins
 
         #region IPersistable Member
 
-        public void Load(IO.IPersistStream stream)
+        public Task<bool> Load(IO.IPersistStream stream)
         {
             this.JoinName = (string)stream.Load("joinname", "Join");
             this.Field = (string)stream.Load("field", String.Empty);
@@ -161,9 +161,11 @@ namespace gView.Framework.Data.Joins
 
             _joinLayerId = (int)stream.Load("joinlayerid", -1);
             this.JoinField = (string)stream.Load("joinfield", String.Empty);
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IO.IPersistStream stream)
+        public Task<bool> Save(IO.IPersistStream stream)
         {
             stream.Save("joinname", this.JoinName);
             stream.Save("field", this.Field);
@@ -172,6 +174,8 @@ namespace gView.Framework.Data.Joins
             if (_joinLayer != null)
                 stream.Save("joinlayerid", _joinLayer.ID);
             stream.Save("joinfield", this.JoinField);
+
+            return Task.FromResult(true);
         }
 
         #endregion

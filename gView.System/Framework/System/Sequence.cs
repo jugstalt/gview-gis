@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using gView.Framework.IO;
 
 namespace gView.Framework.system
@@ -37,16 +38,20 @@ namespace gView.Framework.system
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             _number = (int)stream.Load("number", 0);
             _inc = (int)stream.Load("increment", 0);
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("number", _number);
             stream.Save("increment", _inc);
+
+            return Task.FromResult(true);
         }
 
         #endregion

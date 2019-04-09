@@ -371,15 +371,19 @@ namespace gView.DataSources.Shape
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        async public Task<bool> Load(IPersistStream stream)
         {
             _connectionString = (string)stream.Load("connectionstring", "");
-            this.Open();
+            await this.Open();
+
+            return true;
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("connectionstring", _connectionString);
+
+            return Task.FromResult(true);
         }
 
         #endregion

@@ -7,6 +7,7 @@ using gView.Framework.UI;
 using System.Reflection;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Metadata
 {
@@ -190,7 +191,7 @@ namespace gView.Framework.Metadata
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             _use = (bool)stream.Load("use", false);
 
@@ -247,9 +248,11 @@ namespace gView.Framework.Metadata
                     (double)stream.Load("origin_ll_y" + i, GetOriginLowerLeft(epsg)?.Y ?? 0D)
                     ));
             }
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("use", _use);
 
@@ -306,6 +309,8 @@ namespace gView.Framework.Metadata
 
                 counter++;
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion

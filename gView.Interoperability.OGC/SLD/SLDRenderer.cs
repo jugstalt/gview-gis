@@ -16,6 +16,7 @@ using gView.Framework.Geometry;
 using gView.Framework.Xml;
 using gView.Framework.XML;
 using gView.Framework.Carto.Rendering;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.SLD
 {
@@ -236,7 +237,7 @@ namespace gView.Interoperability.OGC.SLD
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
         {
             _useRefScale = (bool)stream.Load("UseRefScale", true);
 
@@ -246,9 +247,11 @@ namespace gView.Interoperability.OGC.SLD
             {
                 _rules.Add(rule);
             }
+
+            return Task.FromResult(true);
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("UseRefScale", _useRefScale);
 
@@ -256,6 +259,8 @@ namespace gView.Interoperability.OGC.SLD
             {
                 stream.Save("Rule", rule);
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -501,7 +506,7 @@ namespace gView.Interoperability.OGC.SLD
 
             #region IPersistable Member
 
-            public void Load(IPersistStream stream)
+            public Task<bool> Load(IPersistStream stream)
             {
                 _minScale = (double)stream.Load("MinScale", 0.0);
                 _maxScale = (double)stream.Load("MaxScale", 0.0);
@@ -512,9 +517,11 @@ namespace gView.Interoperability.OGC.SLD
                 _filter = (gView.Framework.OGC.WFS.Filter)stream.Load("Filter");
 
                 SetLegendText();
+
+                return Task.FromResult(true);
             }
 
-            public void Save(IPersistStream stream)
+            public Task<bool> Save(IPersistStream stream)
             {
                 if (_minScale != 0.0)
                     stream.Save("MinScale", _minScale);
@@ -526,6 +533,8 @@ namespace gView.Interoperability.OGC.SLD
                 stream.Save("FilterType", (int)_filterType);
                 if (_filter != null)
                     stream.Save("Filter", _filter);
+
+                return Task.FromResult(true);
             }
 
             #endregion

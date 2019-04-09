@@ -348,7 +348,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
-        public void Load(IPersistStream stream)
+        async public Task<bool> Load(IPersistStream stream)
         {
             string connectionString = (string)stream.Load("connectionstring", "");
             if (_fdb != null)
@@ -357,13 +357,17 @@ namespace gView.DataSources.Fdb.PostgreSql
                 _fdb = null;
             }
 
-            this.SetConnectionString(connectionString);
-            this.Open();
+            await this.SetConnectionString(connectionString);
+            await this.Open();
+
+            return true;
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.SaveEncrypted("connectionstring", this.ConnectionString);
+
+            return Task.FromResult(true);
         }
 
         #endregion

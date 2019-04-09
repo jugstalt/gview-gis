@@ -9,6 +9,7 @@ using System.Xml;
 using gView.Framework.UI;
 using System.Reflection;
 using gView.Framework.system;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.ArcXML.Dataset
 {
@@ -109,7 +110,7 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             _credMethod = (credentialMethod)stream.Load("credMethod", (int)credentialMethod.none);
             _credUser = (string)stream.Load("credUser", String.Empty);
@@ -120,9 +121,11 @@ namespace gView.Interoperability.ArcXML.Dataset
 
             _modifyOutputFile = (string)stream.Load("modOFile", String.Empty);
             _modifyOutputUrl = (string)stream.Load("modOUrl", String.Empty);
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("credMethod", (int)_credMethod);
             stream.Save("credUser", _credUser);
@@ -135,6 +138,8 @@ namespace gView.Interoperability.ArcXML.Dataset
 
             stream.Save("modOFile", _modifyOutputFile);
             stream.Save("modOUrl", _modifyOutputUrl);
+
+            return Task.FromResult(true);
         }
 
         #endregion

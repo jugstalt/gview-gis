@@ -5,6 +5,7 @@ using gView.Framework.system;
 using gView.Framework.IO;
 using System.Xml;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Db
 {
@@ -72,7 +73,7 @@ namespace gView.Framework.Db
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             foreach (String key in this.UserDataTypes)
             {
@@ -88,9 +89,11 @@ namespace gView.Framework.Db
             {
                 this.SetUserData(kv.Key, kv.Value);
             }
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("ProviderID", _providerID);
             stream.Save("SchemaName", _schemaName);
@@ -107,6 +110,8 @@ namespace gView.Framework.Db
                     stream.Save("KeyValue", new KeyValue(key, this.GetUserData(key).ToString()));
                 }
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -137,7 +142,7 @@ namespace gView.Framework.Db
 
             #region IPersistable Member
 
-            public void Load(IPersistStream stream)
+            public Task<bool> Load(IPersistStream stream)
             {
                 _key = (string)stream.Load("Key", String.Empty);
                 if (_key.ToLower() == "password")
@@ -148,9 +153,11 @@ namespace gView.Framework.Db
                 {
                     _value = (string)stream.Load("Val", String.Empty);
                 }
+
+                return Task.FromResult(true);
             }
 
-            public void Save(IPersistStream stream)
+            public Task<bool> Save(IPersistStream stream)
             {
                 stream.Save("Key", _key);
                 if (_key.ToLower() == "password")
@@ -161,6 +168,8 @@ namespace gView.Framework.Db
                 {
                     stream.Save("Val", _value);
                 }
+
+                return Task.FromResult(true);
             }
 
             #endregion

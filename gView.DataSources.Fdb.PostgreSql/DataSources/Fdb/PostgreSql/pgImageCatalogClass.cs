@@ -682,7 +682,7 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             _colorClasses = null;
             List<GridColorClass> classes = new List<GridColorClass>();
@@ -701,9 +701,11 @@ namespace gView.DataSources.Fdb.PostgreSql
             _useNoDataValue = (bool)stream.Load("UseIgnoreData", 0);
             _noDataValue = (double)stream.Load("IgnoreData", 0.0);
             _renderRawGridValues = (bool)stream.Load("RenderRawGridValues", false);
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             if (_colorClasses != null)
             {
@@ -720,6 +722,8 @@ namespace gView.DataSources.Fdb.PostgreSql
             stream.Save("UseIgnoreData", _useNoDataValue);
             stream.Save("IgnoreData", _noDataValue);
             stream.Save("RenderRawGridValues", _renderRawGridValues);
+
+            return Task.FromResult(true);
         }
 
         #endregion

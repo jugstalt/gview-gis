@@ -4,6 +4,7 @@ using System.Text;
 using gView.Framework.Data;
 using System.Reflection;
 using gView.Framework.UI;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.ArcXML.Dataset
 {
@@ -64,7 +65,7 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        async public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
         {
             _dataset = null;
             string connectionString = (string)stream.Load("ConnectionString", String.Empty);
@@ -72,15 +73,20 @@ namespace gView.Interoperability.ArcXML.Dataset
             if (connectionString != String.Empty)
             {
                 _dataset = new ArcIMSDataset();
-                _dataset.SetConnectionString(connectionString);
+                await _dataset.SetConnectionString(connectionString);
             }
+
+            return true;
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
         {
-            if (_dataset == null) return;
+            if (_dataset == null)
+                return Task.FromResult(true);
 
             stream.Save("ConnectionString", _dataset.ConnectionString);
+
+            return Task.FromResult(true);
         }
 
         #endregion

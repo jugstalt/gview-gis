@@ -11,6 +11,7 @@ using gView.Framework.Data;
 using System.Reflection;
 using gView.Framework.Network;
 using gView.Framework.Carto.Rendering.UI;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Carto.Rendering
 {
@@ -194,7 +195,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             _useRefScale = (bool)stream.Load("useRefScale", true);
 
@@ -204,9 +205,11 @@ namespace gView.Framework.Carto.Rendering
             {
                 _renderers.Add(renderer);
             }
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("useRefScale", _useRefScale);
 
@@ -215,6 +218,8 @@ namespace gView.Framework.Carto.Rendering
                 if (renderer == null) continue;
                 stream.Save("FeatureRenderer", renderer);
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion

@@ -87,7 +87,7 @@ namespace gView.Framework.UI.Controls
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             if (_toolbar == null) return;
             _toolbar.Load(stream);
@@ -114,7 +114,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             if (_toolbar == null) return;
             _toolbar.Save(stream);

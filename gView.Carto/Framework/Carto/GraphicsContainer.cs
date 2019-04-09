@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using gView.Framework.Carto;
 using gView.Framework.IO;
 using gView.Framework.system;
@@ -56,7 +57,7 @@ namespace gView.Framework.Carto
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             _elements.Clear();
             _selectedelements.Clear();
@@ -66,9 +67,11 @@ namespace gView.Framework.Carto
             {
                 _elements.Add(grElement);
             }
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             foreach (IGraphicElement grElement in _elements)
             {
@@ -78,6 +81,8 @@ namespace gView.Framework.Carto
                     stream.Save("GraphicElement", grElement);
                 }
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion

@@ -69,7 +69,7 @@ namespace gView.DataSources.Fdb.SQLite
             }
             return true;
         }
-        override public Task<bool> Open(string connectionString)
+        async override public Task<bool> Open(string connectionString)
         {
             _filename = parseConnectionString(connectionString);
             if (String.IsNullOrEmpty(_filename))
@@ -80,8 +80,8 @@ namespace gView.DataSources.Fdb.SQLite
 
             _conn = new SqliteConn(_filename);
 
-            SetVersion();
-            return Task.FromResult(true);
+            await SetVersion();
+            return true;
         }
         override public void Dispose()
         {
@@ -368,7 +368,7 @@ namespace gView.DataSources.Fdb.SQLite
             await CheckSpatialSearchTreeVersion(fClass.Name);
             if (_spatialSearchTrees[fClass.Name] == null)
             {
-                _spatialSearchTrees[fClass.Name] = this.SpatialSearchTree(fClass.Name);
+                _spatialSearchTrees[fClass.Name] = await this.SpatialSearchTree(fClass.Name);
             }
             tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
 
@@ -589,7 +589,7 @@ namespace gView.DataSources.Fdb.SQLite
             await CheckSpatialSearchTreeVersion(fClass.Name);
             if (_spatialSearchTrees[fClass.Name] == null)
             {
-                _spatialSearchTrees[fClass.Name] = this.SpatialSearchTree(fClass.Name);
+                _spatialSearchTrees[fClass.Name] = await this.SpatialSearchTree(fClass.Name);
             }
             tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
 
@@ -838,7 +838,7 @@ namespace gView.DataSources.Fdb.SQLite
 
         #region Internals
 
-       async  override public Task<IDatasetElement> DatasetElement(IDataset ds, string elementName)
+       async override public Task<IDatasetElement> DatasetElement(IDataset ds, string elementName)
         {
             if (!(ds is SQLiteFDBDataset))
                 throw new ArgumentException("dataset must be SQLiteFDBDataset");
@@ -989,7 +989,7 @@ namespace gView.DataSources.Fdb.SQLite
                 await CheckSpatialSearchTreeVersion(fc.Name);
                 if (_spatialSearchTrees[OriginFcName(fc.Name)] == null)
                 {
-                    _spatialSearchTrees[OriginFcName(fc.Name)] = this.SpatialSearchTree(fc.Name);
+                    _spatialSearchTrees[OriginFcName(fc.Name)] = await this.SpatialSearchTree(fc.Name);
                 }
                 ISearchTree tree = (ISearchTree)_spatialSearchTrees[OriginFcName(fc.Name)];
                 if (tree != null && ((ISpatialFilter)filter).Geometry != null)
@@ -1719,7 +1719,7 @@ namespace gView.DataSources.Fdb.SQLite
                 return false;
             }
 
-            IncSpatialIndexVersion(fcName);
+            await IncSpatialIndexVersion(fcName);
             return true;
         }
 

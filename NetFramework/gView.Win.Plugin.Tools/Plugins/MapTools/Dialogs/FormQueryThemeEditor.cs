@@ -325,7 +325,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             if (_queries == null) _queries = new List<QueryTheme>();
 
@@ -339,7 +339,7 @@ namespace gView.Plugins.MapTools.Dialogs
             }
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             if (_queries == null) return;
 
@@ -385,7 +385,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             _type = (NodeType)stream.Load("Type", (int)NodeType.query);
 
@@ -412,7 +412,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("Type", (int)_type);
 
@@ -446,7 +446,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             Rows.Clear();
 
@@ -460,7 +460,7 @@ namespace gView.Plugins.MapTools.Dialogs
             }
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             foreach (DataRow row in Rows)
             {
@@ -533,7 +533,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             base.Text = (string)stream.Load("Text","");
             _layerID = (int)stream.Load("LayerID", -1);
@@ -545,7 +545,7 @@ namespace gView.Plugins.MapTools.Dialogs
             if (_visFields == null) _visFields = new QueryThemeVisibleFieldDef();
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("Text", base.Text);
             stream.Save("LayerID", _layerID);
@@ -570,7 +570,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             Rows.Clear();
 
@@ -584,7 +584,7 @@ namespace gView.Plugins.MapTools.Dialogs
             }
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             foreach (DataRow row in Rows)
             {
@@ -620,7 +620,7 @@ namespace gView.Plugins.MapTools.Dialogs
         }
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             _useDefault = (bool)stream.Load("UseDefault", true);
             _primaryField = (string)stream.Load("PrimaryField", "");
@@ -637,7 +637,7 @@ namespace gView.Plugins.MapTools.Dialogs
             }
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("UseDefault", _useDefault);
             stream.Save("PrimaryField", _primaryField);
@@ -661,7 +661,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             if (_row == null || _row.Table == null || _row.Table.Columns == null) return;
 
@@ -675,7 +675,7 @@ namespace gView.Plugins.MapTools.Dialogs
             }
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             if (_row == null || _row.Table == null || _row.Table.Columns == null) return;
 

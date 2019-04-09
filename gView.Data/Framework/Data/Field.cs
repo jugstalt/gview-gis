@@ -4,6 +4,7 @@ using gView.Framework.IO;
 using gView.Framework.Data;
 using gView.Framework.system;
 using System.Data;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data
 {
@@ -225,7 +226,7 @@ namespace gView.Framework.Data
 
 		#region IPersistable Member
 
-		public void Load(IPersistStream stream)
+		public Task<bool> Load(IPersistStream stream)
 		{
             m_name = (string)stream.Load("Name", "");
             m_aliasname = (string)stream.Load("Alias", "");
@@ -240,9 +241,11 @@ namespace gView.Framework.Data
 
             _domain = stream.Load("Domain", null) as IFieldDomain;
             _priority = (int)stream.Load("Priority", (int)-1);
-		}
 
-        public void Save(IPersistStream stream)
+            return Task.FromResult(true);
+        }
+
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("Name", m_name);
             stream.Save("Alias", m_aliasname);
@@ -261,6 +264,8 @@ namespace gView.Framework.Data
             }
 
             stream.Save("Priority", _priority);
+
+            return Task.FromResult(true);
         }
 
 		#endregion

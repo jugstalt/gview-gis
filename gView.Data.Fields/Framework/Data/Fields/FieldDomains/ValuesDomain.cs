@@ -7,6 +7,7 @@ using gView.Framework.UI;
 using System.Reflection;
 using System.Data;
 using gView.Framework.Db;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Fields.FieldDomains
 {
@@ -45,7 +46,7 @@ namespace gView.Framework.Data.Fields.FieldDomains
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
         {
             _values.Clear();
             object o;
@@ -53,15 +54,19 @@ namespace gView.Framework.Data.Fields.FieldDomains
             {
                 _values.Add(o);
             }
+
+            return Task.FromResult(true);
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
         {
             foreach (object o in _values)
             {
                 if (o == null) continue;
                 stream.Save("Value", o);
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -158,19 +163,23 @@ namespace gView.Framework.Data.Fields.FieldDomains
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
         {
             this.DbConnectionString = (gView.Framework.Db.DbConnectionString)stream.Load("DbConnectionString", null, new DbConnectionString());
             this.SqlStatement = (string)stream.Load("SqlStatement", String.Empty);
+
+            return Task.FromResult(true);
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
         {
             if (_dbConnString != null)
                 stream.Save("DbConnectionString", _dbConnString);
 
             if (_sql != null)
                 stream.Save("SqlStatement", _sql);
+
+            return Task.FromResult(true);
         }
 
         #endregion

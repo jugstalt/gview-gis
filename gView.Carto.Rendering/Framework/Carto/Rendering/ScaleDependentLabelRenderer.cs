@@ -9,6 +9,7 @@ using gView.Framework.Data;
 using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.Framework.Carto.Rendering.UI;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Carto.Rendering
 {
@@ -79,22 +80,26 @@ namespace gView.Framework.Carto.Rendering
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             ScaleRendererPersist persist;
             while ((persist = stream.Load("ScaleRenderer", null, new ScaleRendererPersist(new ScaleRenderer(null))) as ScaleRendererPersist) != null)
             {
                 _renderers.Add(persist.ScaleRenderer);
             }
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             foreach (ILabelRenderer renderer in _renderers)
             {
                 if (renderer == null) continue;
                 stream.Save("ScaleRenderer", new ScaleRendererPersist(renderer as ScaleRenderer));
             }
+
+            return Task.FromResult(true);
         }
         #endregion
 
@@ -254,24 +259,30 @@ namespace gView.Framework.Carto.Rendering
 
             #region IPersistable Member
 
-            public void Load(IPersistStream stream)
+            public Task<bool> Load(IPersistStream stream)
             {
-                if (_renderer == null) return;
+                if (_renderer == null)
+                    return Task.FromResult(true);
 
                 _renderer.MinimumScale = (double)stream.Load("MinScale", 0.0);
                 _renderer.MaximumScale = (double)stream.Load("MaxScale", 0.0);
 
                 _renderer.Renderer = stream.Load("Renderer", null) as ILabelRenderer;
+
+                return Task.FromResult(true);
             }
 
-            public void Save(IPersistStream stream)
+            public Task<bool> Save(IPersistStream stream)
             {
-                if (_renderer == null) return;
+                if (_renderer == null)
+                    return Task.FromResult(true);
 
                 stream.Save("MinScale", _renderer.MinimumScale);
                 stream.Save("MaxScale", _renderer.MaximumScale);
 
                 stream.Save("Renderer", _renderer.Renderer);
+
+                return Task.FromResult(true);
             }
 
             #endregion
@@ -388,18 +399,18 @@ namespace gView.Framework.Carto.Rendering
 
             #region IPersistable Member
 
-            public void Load(gView.Framework.IO.IPersistStream stream)
+            async public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
             {
                 ScaleRendererPersist persist = new ScaleRendererPersist(this);
 
-                persist.Load(stream);
+                return await persist.Load(stream);
             }
 
-            public void Save(gView.Framework.IO.IPersistStream stream)
+            async public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
             {
                 ScaleRendererPersist persist = new ScaleRendererPersist(this);
 
-                persist.Save(stream);
+                return await persist.Save(stream);
             }
 
             #endregion

@@ -4,6 +4,7 @@ using System.Text;
 using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.Data;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Metadata
 {
@@ -47,7 +48,7 @@ namespace gView.Framework.Metadata
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             _dictionary.Clear();
 
@@ -57,9 +58,11 @@ namespace gView.Framework.Metadata
 
                 _dictionary.Add(key, stream.Load(key, null));
             }
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("__DictionaryKeys", GetKeys());
 
@@ -68,6 +71,8 @@ namespace gView.Framework.Metadata
                 if (_dictionary[key] != null) 
                     stream.Save(key, _dictionary[key]);
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -109,16 +114,20 @@ namespace gView.Framework.Metadata
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             if (_metadata != null)
                 _metadata.ReadMetadata(stream);
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             if (_metadata != null)
                 _metadata.WriteMetadata(stream);
+
+            return Task.FromResult(true);
         }
 
         #endregion

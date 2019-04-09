@@ -420,7 +420,8 @@ namespace gView.Interoperability.ArcXML.Dataset
             get
             {
                 if (_dataset == null) return null;
-                if (_dataset.State != DatasetState.opened) _dataset.Open();
+                if (_dataset.State != DatasetState.opened)
+                    _dataset.Open();
                 return _dataset.Envelope().Result;
             }
         }

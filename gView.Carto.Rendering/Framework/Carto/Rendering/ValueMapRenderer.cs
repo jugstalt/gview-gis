@@ -11,6 +11,7 @@ using gView.Framework.IO;
 using gView.Framework.system;
 using System.Reflection;
 using gView.Framework.Carto.Rendering.UI;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Carto.Rendering
 {
@@ -456,7 +457,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             _valueField = (string)stream.Load("field", "");
             // Kompatibilität zu äteren Projekten
@@ -472,9 +473,11 @@ namespace gView.Framework.Carto.Rendering
                 this[sym._key] = sym._symbol;
             }
             _symbolRotation = (SymbolRotation)stream.Load("SymbolRotation", _symbolRotation, _symbolRotation);
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("field", _valueField);
             //stream.Save("default", _defaultSymbol);
@@ -489,6 +492,8 @@ namespace gView.Framework.Carto.Rendering
             {
                 stream.Save("SymbolRotation", _symbolRotation);
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -641,21 +646,25 @@ namespace gView.Framework.Carto.Rendering
             }
         }
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             _key = (string)stream.Load("key");
             if (_key == "__gview_all_other_values__")
                 _key = null;
             _symbol = (ISymbol)stream.Load("symbol");
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             if (_key == null)
                 stream.Save("key", "__gview_all_other_values__");
             else
                 stream.Save("key", _key);
             stream.Save("symbol", _symbol);
+
+            return Task.FromResult(true);
         }
 
         #endregion

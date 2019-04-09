@@ -1483,7 +1483,7 @@ namespace gView.Framework.Carto
             _layers = _layers.Where(l => l.Class != null).ToList();
         }
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             m_name = (string)stream.Load("name", "");
             m_minX = (double)stream.Load("minx", 0.0);
@@ -1681,9 +1681,11 @@ namespace gView.Framework.Carto
                     layer.FirePropertyChanged();
                 }
             }
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("name", m_name);
             stream.Save("minx", m_minX);
@@ -1739,6 +1741,8 @@ namespace gView.Framework.Carto
             stream.Save("IClasses", new PersistableClasses(_layers));
             stream.Save("ITOC", _toc);
             stream.Save("IGraphicsContainer", Display.GraphicsContainer);
+
+            return Task.FromResult(true);
         }
 
         private class PersistableClasses : IPersistable
@@ -1751,15 +1755,17 @@ namespace gView.Framework.Carto
 
             #region IPersistable Member
 
-            public void Load(IPersistStream stream)
+            public Task<bool> Load(IPersistStream stream)
             {
                 PersistableClass pClass;
                 while ((pClass = (PersistableClass)stream.Load("IClass", null, new PersistableClass(_layers))) != null)
                 {
                 }
+
+                return Task.FromResult(true);
             }
 
-            public void Save(IPersistStream stream)
+            public Task<bool> Save(IPersistStream stream)
             {
                 foreach (ILayer layer in _layers)
                 {
@@ -1768,6 +1774,8 @@ namespace gView.Framework.Carto
                         stream.Save("IClass", new PersistableClass(layer));
                     }
                 }
+
+                return Task.FromResult(true);
             }
 
             #endregion
@@ -1787,9 +1795,10 @@ namespace gView.Framework.Carto
 
             #region IPersistable Member
 
-            public void Load(IPersistStream stream)
+            public Task<bool> Load(IPersistStream stream)
             {
-                if (_layers == null) return;
+                if (_layers == null)
+                    return Task.FromResult(true);
 
                 int layerID = (int)stream.Load("LayerID", -99);
                 foreach (ILayer layer in _layers)
@@ -1800,15 +1809,18 @@ namespace gView.Framework.Carto
                         stream.Load("Stream", null, layer.Class);
                     }
                 }
+                return Task.FromResult(true);
             }
 
-            public void Save(IPersistStream stream)
+            public Task<bool> Save(IPersistStream stream)
             {
                 if (_layer == null || !(_layer.Class is IPersistable))
-                    return;
+                    return Task.FromResult(true); 
 
                 stream.Save("LayerID", _layer.ID);
                 stream.Save("Stream", _layer.Class);
+
+                return Task.FromResult(true);
             }
 
             #endregion

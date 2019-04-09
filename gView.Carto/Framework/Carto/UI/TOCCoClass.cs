@@ -10,6 +10,7 @@ using gView.Framework.UI;
 using gView.Framework.Data;
 using gView.Framework.IO;
 using gView.Framework.Symbology;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Carto.UI
 {
@@ -986,7 +987,7 @@ namespace gView.Framework.Carto.UI
 
 		#region IPersistable Member
 
-		public void Load(gView.Framework.IO.IPersistStream stream)
+		public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
 		{
 			_elements.Clear();
 
@@ -995,15 +996,19 @@ namespace gView.Framework.Carto.UI
 			{
 				_elements.Add(element);
 			}
-		}
 
-		public void Save(gView.Framework.IO.IPersistStream stream)
+            return Task.FromResult(true);
+        }
+
+		public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
 		{
 			foreach(TOCElement element in _elements) 
 			{
 				stream.Save("ITOCElement",element);
 			}
-		}
+
+            return Task.FromResult(true);
+        }
 
 		#endregion
 
@@ -1337,7 +1342,7 @@ namespace gView.Framework.Carto.UI
 
 		#region IPersistable Member
 
-		public void Load(gView.Framework.IO.IPersistStream stream)
+		public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
 		{
 			_name=(string)stream.Load("Name");
 			_type=(TOCElementType)stream.Load("Type");
@@ -1420,9 +1425,11 @@ namespace gView.Framework.Carto.UI
                         ((GroupLayer)_parent.Layers[0]).Add(pElement.DatasetElement as Layer);
                 }
             }
-		}
 
-		public void Save(gView.Framework.IO.IPersistStream stream)
+            return Task.FromResult(true);
+        }
+
+		public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
 		{
             stream.Save("Name", (_type == TOCElementType.OpenedGroup || _type == TOCElementType.ClosedGroup) ? RecursiveName(this) : _name);
 			stream.Save("Type",(int)_type);
@@ -1442,7 +1449,9 @@ namespace gView.Framework.Carto.UI
 				PersistLayer pElement=new PersistLayer(_toc._map, layer);
 				stream.Save("DatasetElement",pElement);
 			}
-		}
+
+            return Task.FromResult(true);
+        }
 
 		#endregion
     }
@@ -1468,11 +1477,12 @@ namespace gView.Framework.Carto.UI
 
 		#region IPersistable Member
 
-		public void Load(gView.Framework.IO.IPersistStream stream)
+		public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
 		{
-			if(_map==null) return;
+			if(_map==null)
+                return Task.FromResult(true);
 
-			int datasetIndex=(int)stream.Load("DatasetIndex",-1);
+            int datasetIndex=(int)stream.Load("DatasetIndex",-1);
 
 			IDataset dataset=_map[datasetIndex];
 			// dataset ist bei Grouplayern immer null, darum kein abbruch
@@ -1488,20 +1498,23 @@ namespace gView.Framework.Carto.UI
                 webClassName = (string)stream.Load("ClassName", "");
 
                 IDatasetElement wElement = dataset.Element(webClassName).Result;
-                if (wElement == null || !(wElement.Class is IWebServiceClass)) return;
+                if (wElement == null || !(wElement.Class is IWebServiceClass))
+                    return Task.FromResult(true);
 
                 IWebServiceClass wc = wElement.Class as IWebServiceClass;
-                if (wc == null || wc.Themes == null) return;
+                if (wc == null || wc.Themes == null)
+                    return Task.FromResult(true);
 
                 foreach (IWebServiceTheme theme in wc.Themes)
                 {
                     if (theme.LayerID == webThemeId)
                     {
                         _element = theme;
-                        return;
+                        return Task.FromResult(true); 
                     }
                 }
-                return;
+
+                return Task.FromResult(true);
             }
 
             string name = (string)stream.Load("Name", "");
@@ -1514,7 +1527,7 @@ namespace gView.Framework.Carto.UI
                     if (layer.Class != null && layer.Class.Dataset == dataset && layer.Title == name)
                     {
                         _element = layer;
-                        return;
+                        return Task.FromResult(true);
                     }
                 }
             }
@@ -1529,14 +1542,14 @@ namespace gView.Framework.Carto.UI
                         layer.Title == name)
                     {
                         _element = layer;
-                        return;
+                        return Task.FromResult(true);
                     }
                     // Layer
                     if (layer.Class != null && layer.Class.Dataset == dataset && 
                         layer.Title == name && layer.ID==_id_)
                     {
                         _element = layer;
-                        return;
+                        return Task.FromResult(true);
                     }
                 }
             }
@@ -1551,11 +1564,14 @@ namespace gView.Framework.Carto.UI
                 ((NullLayer)_element).PersistClassName = webClassName;
                 ((NullLayer)_element).Title = name;
             }
-		}
 
-		public void Save(gView.Framework.IO.IPersistStream stream)
+            return Task.FromResult(true);
+        }
+
+		public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
 		{
-            if (_element == null || _map == null) return;
+            if (_element == null || _map == null)
+                return Task.FromResult(true);
 
             if (_element is NullLayer)
             {
@@ -1599,7 +1615,9 @@ namespace gView.Framework.Carto.UI
                     stream.Save("Name", _element.Title);
                 }
             }
-		}
+
+            return Task.FromResult(true);
+        }
 
 		#endregion
 	}

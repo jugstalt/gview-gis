@@ -227,7 +227,7 @@ namespace gView.Framework.UI
 			}
 		}
 
-		public void Load(IPersistStream stream)
+		public Task<bool> Load(IPersistStream stream)
 		{
             while (_maps.Count > 0)
             {
@@ -256,7 +256,7 @@ namespace gView.Framework.UI
             _tableRelations = (TableRelations)stream.Load("TableRelations", new TableRelations(this), new TableRelations(this));
 		}
 
-		public void Save(IPersistStream stream)
+		public Task<bool> Save(IPersistStream stream)
 		{
 			stream.Save("focusMapIndex",_focusMapIndex);
 
@@ -289,7 +289,7 @@ namespace gView.Framework.UI
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             if (_application == null) return;
 
@@ -300,7 +300,7 @@ namespace gView.Framework.UI
             }
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             if (_application == null) return;
 
@@ -330,7 +330,7 @@ namespace gView.Framework.UI
         }
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             if (_app == null) return;
 
@@ -345,7 +345,7 @@ namespace gView.Framework.UI
             catch { }
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             if (_tool == null || !(_tool is IPersistable)) return;
 
@@ -367,7 +367,7 @@ namespace gView.Framework.UI
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             if (_application == null) return;
 
@@ -378,7 +378,7 @@ namespace gView.Framework.UI
             }
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             if (_application == null) return;
 
@@ -444,7 +444,7 @@ namespace gView.Framework.UI
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             if (_app == null) return;
 
@@ -459,7 +459,7 @@ namespace gView.Framework.UI
             catch { }
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             if (_toolbar == null || !(_toolbar is IPersistable)) return;
 
@@ -481,7 +481,7 @@ namespace gView.Framework.UI
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             if (_application == null) return;
 
@@ -494,7 +494,7 @@ namespace gView.Framework.UI
             }
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             if (_application == null) return;
 
@@ -528,7 +528,7 @@ namespace gView.Framework.UI
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             if (_app == null) return;
 
@@ -543,7 +543,7 @@ namespace gView.Framework.UI
             catch { }
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             if (_module == null || !(_module is IPersistable)) return;
 

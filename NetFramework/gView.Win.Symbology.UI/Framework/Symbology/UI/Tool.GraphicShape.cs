@@ -1161,7 +1161,7 @@ namespace gView.Framework.Symbology.UI
 
         #region IPersistable Member
 
-        virtual public void Load(IPersistStream stream)
+        virtual public Task<bool> Load(IPersistStream stream)
         {
             _scaleX = (double)stream.Load("scaleX", 1.0);
             _scaleY = (double)stream.Load("scaleY", 1.0);
@@ -1184,7 +1184,7 @@ namespace gView.Framework.Symbology.UI
             }
         }
 
-        virtual public void Save(IPersistStream stream)
+        virtual public Task<bool> Save(IPersistStream stream)
         {
             if (this is IConstructable && ((IConstructable)this).hasVertices && _template!=null)
             {

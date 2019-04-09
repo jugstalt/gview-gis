@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Globalization;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.Framework.IO
 {
@@ -1066,12 +1067,12 @@ namespace gView.Framework.IO
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             throw new Exception("The method or operation is not implemented.");
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             PropertyInfo[] props_of_class = this.GetType().GetProperties();
 
@@ -1091,6 +1092,8 @@ namespace gView.Framework.IO
             {
                 stream.Save(child.Name, child);
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion

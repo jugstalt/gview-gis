@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using gView.Framework.IO;
 using gView.Framework.UI;
 
@@ -46,21 +47,25 @@ namespace gView.Framework.Data.Relations
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             ITableRelation relation;
             while ((relation = stream.Load("Relation", null, new TableRelation(_mapDocument)) as ITableRelation) != null)
             {
                 this.Add(relation);
             }
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             foreach (ITableRelation relation in this)
             {
                 stream.Save("Relation", relation);
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion

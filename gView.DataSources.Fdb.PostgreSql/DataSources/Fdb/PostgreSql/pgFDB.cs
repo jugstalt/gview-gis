@@ -602,7 +602,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 await CheckSpatialSearchTreeVersion(fc.Name);
                 if (_spatialSearchTrees[OriginFcName(fc.Name)] == null)
                 {
-                    _spatialSearchTrees[OriginFcName(fc.Name)] = this.SpatialSearchTree(fc.Name);
+                    _spatialSearchTrees[OriginFcName(fc.Name)] = await this.SpatialSearchTree(fc.Name);
                 }
                 ISearchTree tree = (ISearchTree)_spatialSearchTrees[OriginFcName(fc.Name)];
                 if (tree != null && ((ISpatialFilter)filter).Geometry != null)
@@ -796,7 +796,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             await CheckSpatialSearchTreeVersion(fClass.Name);
             if (_spatialSearchTrees[fClass.Name] == null)
             {
-                _spatialSearchTrees[fClass.Name] = this.SpatialSearchTree(fClass.Name);
+                _spatialSearchTrees[fClass.Name] = await this.SpatialSearchTree(fClass.Name);
             }
             tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
 
@@ -938,7 +938,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             await CheckSpatialSearchTreeVersion(fClass.Name);
             if (_spatialSearchTrees[fClass.Name] == null)
             {
-                _spatialSearchTrees[fClass.Name] = this.SpatialSearchTree(fClass.Name);
+                _spatialSearchTrees[fClass.Name] = await this.SpatialSearchTree(fClass.Name);
             }
             tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
 
