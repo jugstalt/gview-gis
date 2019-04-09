@@ -53,16 +53,13 @@ namespace gView.Interoperability.ArcXML.Dataset
             return Task.FromResult<IEnvelope>(_envelope);
         }
 
-        public gView.Framework.Geometry.ISpatialReference SpatialReference
+        public Task<ISpatialReference> GetSpatialReference()
         {
-            get
-            {
-                return _sRef;
-            }
-            set
-            {
-                _sRef = value;
-            }
+            return Task.FromResult(_sRef);
+        }
+        public void SetSpatialReference(ISpatialReference sRef)
+        {
+            _sRef = sRef;
         }
 
         #endregion
@@ -80,13 +77,15 @@ namespace gView.Interoperability.ArcXML.Dataset
             {
                 return _connection + ";service=" + _name;
             }
-            set
-            {
-                _connection = "server=" + ConfigTextStream.ExtractValue(value, "server") +
-                                ";user=" + ConfigTextStream.ExtractValue(value, "user") +
-                                ";pwd=" + ConfigTextStream.ExtractValue(value, "pwd");
-                _name = ConfigTextStream.ExtractValue(value, "service");
-            }
+        }
+        public Task<bool> SetConnectionString(string value)
+        {
+            _connection = "server=" + ConfigTextStream.ExtractValue(value, "server") +
+                            ";user=" + ConfigTextStream.ExtractValue(value, "user") +
+                            ";pwd=" + ConfigTextStream.ExtractValue(value, "pwd");
+            _name = ConfigTextStream.ExtractValue(value, "service");
+
+            return Task.FromResult(true);
         }
 
         public string DatasetGroupName
@@ -331,19 +330,23 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        async public Task<bool> Load(IPersistStream stream)
         {
-            this.ConnectionString = (string)stream.Load("ConnectionString", "");
+            await this.SetConnectionString((string)stream.Load("ConnectionString", ""));
             _properties = stream.Load("Properties", new ArcXMLProperties(), new ArcXMLProperties()) as ArcXMLProperties;
 
             _class = new ArcIMSClass(this);
-            Open();
+            await Open();
+
+            return true;
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("ConnectionString", this.ConnectionString);
             stream.Save("Properties", _properties);
+
+            return Task.FromResult(true);
         }
 
         #endregion

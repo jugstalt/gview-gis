@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using gView.Framework.IO;
 using System.Xml;
+using System.Threading.Tasks;
 
 namespace gView.Framework.XML
 {
@@ -112,7 +113,7 @@ namespace gView.Framework.XML
         }
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             string outerXml = (string)stream.Load("xml", "");
             if (outerXml != "")
@@ -128,11 +129,15 @@ namespace gView.Framework.XML
                 {
                 }
             }
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.Save("xml", _doc.OuterXml);
+
+            return Task.FromResult(true);
         }
 
         #endregion

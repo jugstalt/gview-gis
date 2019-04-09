@@ -106,17 +106,11 @@ namespace gView.DataSources.GDAL
             return Task.FromResult<IEnvelope>(env);
         }
 
-        public gView.Framework.Geometry.ISpatialReference SpatialReference
+        public Task<ISpatialReference> GetSpatialReference()
         {
-            get
-            {
-                return null;
-            }
-            set
-            {
-                
-            }
+            return Task.FromResult<ISpatialReference>(null);
         }
+        public void SetSpatialReference(ISpatialReference sRef) { }
 
         #endregion
 
@@ -138,17 +132,20 @@ namespace gView.DataSources.GDAL
 
                 return _connectionString;
             }
-            set
-            {
-                _layers.Clear();
-                _connectionString = value;
-                foreach (string filename in _connectionString.Split(';'))
-                {
-                    if (filename.Trim() == String.Empty) continue;
-                    AddRasterFile(filename);
-                }
-            }
         }
+        public Task<bool> SetConnectionString(string value)
+        {
+            _layers.Clear();
+            _connectionString = value;
+            foreach (string filename in _connectionString.Split(';'))
+            {
+                if (filename.Trim() == String.Empty) continue;
+                AddRasterFile(filename);
+            }
+
+            return Task.FromResult(true);
+        }
+        
 
         public string DatasetGroupName
         {
@@ -229,7 +226,7 @@ namespace gView.DataSources.GDAL
 
         public void Load(IPersistStream stream)
         {
-            ConnectionString = (string)stream.Load("filename", String.Empty);
+            SetConnectionString((string)stream.Load("filename", String.Empty));
 
             //if (_layers.Count == 1 && _layers[0].Class is IPersistable)
             //{

@@ -24,23 +24,30 @@ namespace gView.DataSources.Fdb.MSSql
         private GeometryDef _geomDef;
         private string _dbSchema = String.Empty;
 
-        public SqlFDBFeatureClass(SqlFDB fdb, IDataset dataset, GeometryDef geomDef)
+        private SqlFDBFeatureClass() { }
+
+        async static public Task<SqlFDBFeatureClass> Create(SqlFDB fdb, IDataset dataset, GeometryDef geomDef)
         {
-            _fdb = fdb;
+            var fc = new SqlFDBFeatureClass();
+            fc._fdb = fdb;
 
-            _dataset = dataset;
-            _geomDef = (geomDef != null) ? geomDef : new GeometryDef();
+            fc._dataset = dataset;
+            fc._geomDef = (geomDef != null) ? geomDef : new GeometryDef();
 
-            if (_geomDef != null && _geomDef.SpatialReference == null && dataset is IFeatureDataset)
-                _geomDef.SpatialReference = ((IFeatureDataset)dataset).SpatialReference;
+            if (fc._geomDef != null && fc._geomDef.SpatialReference == null && dataset is IFeatureDataset)
+                fc._geomDef.SpatialReference = await ((IFeatureDataset)dataset).GetSpatialReference();
 
-            m_fields = new Fields();
+            fc.m_fields = new Fields();
+
+            return fc;
         }
 
-        public SqlFDBFeatureClass(SqlFDB fdb, IDataset dataset, GeometryDef geomDef, BinarySearchTree tree)
-            : this(fdb, dataset, geomDef)
+        async static public Task<SqlFDBFeatureClass> Create(SqlFDB fdb, IDataset dataset, GeometryDef geomDef, BinarySearchTree tree)
         {
-            _searchTree = tree;
+            var fc = await SqlFDBFeatureClass.Create(fdb, dataset, geomDef);
+            fc._searchTree = tree;
+
+            return fc;
         }
 
         #region FeatureClass Member
@@ -62,22 +69,16 @@ namespace gView.DataSources.Fdb.MSSql
         }
         public string Aliasname { get { return _aliasname; } set { _aliasname = value; } }
 
-        public int CountFeatures
+        async public Task<int> CountFeatures()
         {
-            get
-            {
-                if (_fdb == null) return -1;
-                return _fdb.CountFeatures(_name);
-            }
+            if (_fdb == null) return -1;
+            return await _fdb.CountFeatures(_name);
         }
 
-        public List<SpatialIndexNode> SpatialIndexNodes
+        async public Task<List<SpatialIndexNode>> SpatialIndexNodes()
         {
-            get
-            {
-                if (_fdb == null) return null;
-                return _fdb.SpatialIndexNodes2(_name);
-            }
+            if (_fdb == null) return null;
+            return await _fdb.SpatialIndexNodes2(_name);
         }
 
         async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter/*, gView.Framework.Data.getFeatureQueryType type*/)

@@ -48,12 +48,9 @@ namespace gView.Framework.XML
         public string Name { get { return _name; } set { _name = value; } }
         public string Aliasname { get { return _aliasname; } set { _name = value; } }
 
-        public int CountFeatures
+        public Task<int> CountFeatures()
         {
-            get
-            {
-                return -1;
-            }
+            return Task.FromResult(-1);
         }
 
         //public ArrayList SpatialIndexNodes { get { return null; } }

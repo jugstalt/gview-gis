@@ -39,7 +39,7 @@ namespace gView.Framework.FDB
 			IGeometryDef geomDef,
 			IFields Fields);
 
-        IFeatureDataset this[string name] { get; }
+        Task<IFeatureDataset> GetDataset(string name);
 
         Task<bool> DeleteDataset(string dsName);
         Task<bool> DeleteFeatureClass(string fcName);

@@ -50,7 +50,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                         string connectionString = ((IConnectionString)dlg).ConnectionString;
 
                         _dataset = new WMSDataset();
-                        _dataset.ConnectionString = connectionString;
+                        _dataset.SetConnectionString(connectionString);
                         return true;
                     }
                 }
@@ -73,7 +73,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             if (connectionString != String.Empty)
             {
                 _dataset = new WMSDataset();
-                _dataset.ConnectionString = connectionString;
+                _dataset.SetConnectionString(connectionString);
             }
         }
 

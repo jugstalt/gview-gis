@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace gView.Framework.IO
 {
@@ -20,8 +21,8 @@ namespace gView.Framework.IO
 
     public interface IPersistable 
 	{
-        void Load(IPersistStream stream);
-		void Save(IPersistStream stream);
+        Task<bool> Load(IPersistStream stream);
+		Task<bool> Save(IPersistStream stream);
 	}
 
     public interface IPersistableDictionary : IPersistable

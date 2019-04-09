@@ -27,30 +27,33 @@ namespace gView.DataSources.Fdb.SQLite
         private GraphWeights _weights = null;
         private NetworkObjectSerializer.PageManager _pageManager = null;
 
-        public SQLiteFDBNetworkFeatureClass(SQLiteFDB fdb, IDataset dataset, string name, GeometryDef geomDef)
+        private SQLiteFDBNetworkFeatureClass() { }
+
+        async static public Task<SQLiteFDBNetworkFeatureClass> Create(SQLiteFDB fdb, IDataset dataset, string name, GeometryDef geomDef)
         {
-            _fdb = fdb;
-            _fcid = _fdb.FeatureClassID(_fdb.DatasetID(dataset.DatasetName), name);
+            var fc = new SQLiteFDBNetworkFeatureClass();
+            fc._fdb = fdb;
+            fc._fcid = await fc._fdb.FeatureClassID(await fc._fdb.DatasetID(dataset.DatasetName), name);
 
-            _dataset = dataset;
-            _geomDef = (geomDef != null) ? geomDef : new GeometryDef();
+            fc._dataset = dataset;
+            fc._geomDef = (geomDef != null) ? geomDef : new GeometryDef();
 
-            if (_geomDef != null && _geomDef.SpatialReference == null && dataset is IFeatureDataset)
-                _geomDef.SpatialReference = ((IFeatureDataset)dataset).SpatialReference;
+            if (fc._geomDef != null && fc._geomDef.SpatialReference == null && dataset is IFeatureDataset)
+                fc._geomDef.SpatialReference = await ((IFeatureDataset)dataset).GetSpatialReference();
 
-            _fields = new Fields();
+            fc._fields = new Fields();
 
-            _name = _aliasname = name;
+            fc._name = fc._aliasname = name;
 
-            IDatasetElement element = _dataset.Element(_name + "_Nodes").Result;
+            IDatasetElement element = fc._dataset.Element(fc._name + "_Nodes").Result;
             if (element != null)
-                _nodeFc = element.Class as IFeatureClass;
+                fc._nodeFc = element.Class as IFeatureClass;
 
-            element = _dataset.Element(_name + "_ComplexEdges").Result;
+            element = await fc._dataset.Element(fc._name + "_ComplexEdges");
             if (element != null && element.Class is IFeatureClass)
-                _edgeFcs.Add(-1, (IFeatureClass)element.Class);
+                fc._edgeFcs.Add(-1, (IFeatureClass)element.Class);
 
-            DataTable tab = _fdb.Select("FCID", "FDB_NetworkClasses", "NetworkId=" + _fcid);
+            DataTable tab = await fc._fdb.Select("FCID", "FDB_NetworkClasses", "NetworkId=" + fc._fcid);
             if (tab != null && tab.Rows.Count > 0)
             {
                 StringBuilder where = new StringBuilder();
@@ -62,42 +65,44 @@ namespace gView.DataSources.Fdb.SQLite
                 }
                 where.Append(")");
 
-                tab = _fdb.Select("ID,Name", "FDB_FeatureClasses", where.ToString());
+                tab = await fc._fdb.Select("ID,Name", "FDB_FeatureClasses", where.ToString());
                 if (tab != null)
                 {
                     foreach (DataRow row in tab.Rows)
                     {
-                        element = _dataset.Element(row["name"].ToString()).Result;
+                        element = fc._dataset.Element(row["name"].ToString()).Result;
                         if (element != null && element.Class is IFeatureClass)
-                            _edgeFcs.Add(Convert.ToInt32(row["id"]), element.Class as IFeatureClass);
+                            fc._edgeFcs.Add(Convert.ToInt32(row["id"]), element.Class as IFeatureClass);
                     }
                 }
             }
 
-            _weights = _fdb.GraphWeights(name);
+            fc._weights = await fc._fdb.GraphWeights(name);
             Dictionary<Guid, string> weightTableNames = null;
             Dictionary<Guid, GraphWeightDataType> weightDataTypes = null;
-            if (_weights != null && _weights.Count > 0)
+            if (fc._weights != null && fc._weights.Count > 0)
             {
                 weightTableNames = new Dictionary<Guid, string>();
                 weightDataTypes = new Dictionary<Guid, GraphWeightDataType>();
-                foreach (IGraphWeight weight in _weights)
+                foreach (IGraphWeight weight in fc._weights)
                 {
                     if (weight == null)
                         continue;
 
-                    weightTableNames.Add(weight.Guid, _fdb.TableName(_name + "_Weights_" + weight.Guid.ToString("N").ToLower()));
+                    weightTableNames.Add(weight.Guid, fc._fdb.TableName(fc._name + "_Weights_" + weight.Guid.ToString("N").ToLower()));
                     weightDataTypes.Add(weight.Guid, weight.DataType);
                 }
             }
-            _pageManager = new NetworkObjectSerializer.PageManager(
+            fc._pageManager = new NetworkObjectSerializer.PageManager(
                 gView.Framework.Db.DataProvider.SQLiteProviderFactory,
-                _fdb.ConnectionString, _name,
-                _fdb.TableName("FC_" + _name),
-                _fdb.TableName(_name + "_Edges"),
-                _fdb.TableName("FC_" + name + "_Nodes"),
-                weightTableNames, weightDataTypes, _fdb
+                fc._fdb.ConnectionString, fc._name,
+                fc._fdb.TableName("FC_" + fc._name),
+                fc._fdb.TableName(fc._name + "_Edges"),
+                fc._fdb.TableName("FC_" + name + "_Nodes"),
+                weightTableNames, weightDataTypes, fc._fdb
                 );
+
+            return fc;
         }
 
         #region IFeatureClass Member
@@ -136,21 +141,18 @@ namespace gView.DataSources.Fdb.SQLite
             }
         }
 
-        public int CountFeatures
+        async public Task<int> CountFeatures()
         {
-            get
+            int c = 0;
+            if (_edgeFcs != null)
             {
-                int c = 0;
-                if (_edgeFcs != null)
-                {
-                    foreach (IFeatureClass edgeFc in _edgeFcs.Values)
-                        if (edgeFc != null)
-                            c += edgeFc.CountFeatures;
-                }
-                if (_nodeFc != null)
-                    c += _nodeFc.CountFeatures;
-                return c;
+                foreach (IFeatureClass edgeFc in _edgeFcs.Values)
+                    if (edgeFc != null)
+                        c += await edgeFc.CountFeatures();
             }
+            if (_nodeFc != null)
+                c += await _nodeFc.CountFeatures();
+            return c;
         }
 
         public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
@@ -281,7 +283,7 @@ namespace gView.DataSources.Fdb.SQLite
                 if (_edgeCursor == null && _edgeFcs != null && _edgeFcIndex < _edgeFcs.Count)
                 {
                     IFeatureClass fc = _edgeFcs[_edgeFcIndex++];
-                    _fcid = _fdb.FeatureClassID(_fdb.DatasetID(fc.Dataset.DatasetName), fc.Name);
+                    _fcid = await _fdb.FeatureClassID(await _fdb.DatasetID(fc.Dataset.DatasetName), fc.Name);
                     if (_fcid < 0)
                         return await NextFeature();
                     if (fc.Name == _networkName + "_ComplexEdges")
@@ -464,7 +466,7 @@ namespace gView.DataSources.Fdb.SQLite
             return null;
         }
 
-        public Task<IFeatureCursor> GetEdgeFeatures(IQueryFilter filter)
+        async public Task<IFeatureCursor> GetEdgeFeatures(IQueryFilter filter)
         {
             if (_edgeFcs.Count == 0)
                 return null;
@@ -477,7 +479,7 @@ namespace gView.DataSources.Fdb.SQLite
                     foreach (IFeatureClass fc in _edgeFcs.Values)
                         edgeFcs.Add(fc);
                 }
-                return Task.FromResult<IFeatureCursor>( new NetworkFeatureCursor(_fdb, _name, edgeFcs, null, filter));
+                return new NetworkFeatureCursor(_fdb, _name, edgeFcs, null, filter);
             }
 
             if (filter is RowIDFilter)
@@ -497,7 +499,7 @@ namespace gView.DataSources.Fdb.SQLite
                         string idFieldName = "FDB_OID";
                         string shapeFieldName = "FDB_SHAPE";
 
-                        IFeatureClass fc = edge.FcId >= 0 ? _fdb.GetFeatureclass(edge.FcId) : null;
+                        IFeatureClass fc = edge.FcId >= 0 ? await _fdb.GetFeatureclass(edge.FcId) : null;
                         if (fc != null)
                         {
                             idFieldName = fc.IDFieldName;
@@ -540,7 +542,7 @@ namespace gView.DataSources.Fdb.SQLite
                     ceFilter.WhereClause = complexEdgeFilter.RowIDWhereClause;
                     rfilters[-1] = ceFilter;
                 }
-                return Task.FromResult<IFeatureCursor>(new CursorCollection<int>(_edgeFcs, rfilters, additionalFields));
+                return new CursorCollection<int>(_edgeFcs, rfilters, additionalFields);
             }
 
             return null;
@@ -615,7 +617,7 @@ namespace gView.DataSources.Fdb.SQLite
                 if (feature == null)
                     return null;
 
-                string fcName = _fdb.GetFeatureClassName(Convert.ToInt32(feature["FCID"]));
+                string fcName = await _fdb.GetFeatureClassName(Convert.ToInt32(feature["FCID"]));
                 IDatasetElement element = await _dataset.Element(fcName);
                 if (element == null)
                     return null;
@@ -809,30 +811,27 @@ namespace gView.DataSources.Fdb.SQLite
             }
         }
 
-        public List<IFeatureClass> NetworkClasses
+        async public Task<List<IFeatureClass>> NetworkClasses()
         {
-            get
-            {
-                if (_fdb == null)
-                    return new List<IFeatureClass>();
+            if (_fdb == null)
+                return new List<IFeatureClass>();
 
-                return _fdb.NetworkFeatureClasses(this.Name);
-            }
+            return await _fdb.NetworkFeatureClasses(this.Name);
         }
 
-        public string NetworkClassName(int fcid)
+        async public Task<string> NetworkClassName(int fcid)
         {
             if (_fdb == null)
                 return String.Empty;
 
-            return _fdb.GetFeatureClassName(fcid);
+            return await _fdb.GetFeatureClassName(fcid);
         }
 
-        public int NetworkClassId(string className)
+        async public Task<int> NetworkClassId(string className)
         {
             if (_fdb == null || _dataset == null)
                 return -1;
-            return _fdb.FeatureClassID(_fdb.DatasetID(_dataset.DatasetName), className);
+            return await _fdb.FeatureClassID(await _fdb.DatasetID(_dataset.DatasetName), className);
         }
         #endregion
     }

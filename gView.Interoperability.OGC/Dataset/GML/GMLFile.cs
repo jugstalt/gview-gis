@@ -7,6 +7,7 @@ using gView.Framework.Data;
 using System.Xml;
 using gView.Framework.system;
 using gView.Framework.OGC.GML;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Dataset.GML
 {
@@ -19,31 +20,35 @@ namespace gView.Interoperability.OGC.Dataset.GML
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
         private GmlVersion _gmlVersion = GmlVersion.v1;
 
-        public GMLFile(string filename)
+        private GMLFile() { }
+
+        async static public Task<GMLFile> Create(string filename)
         {
             try
             {
-                _gmlDataset = new Dataset();
-                _gmlDataset.ConnectionString = filename;
-                if (!_gmlDataset.Open().Result)
-                    _gmlDataset = null;
+                var file = new GMLFile();
 
-                _filename = filename;
+                file._gmlDataset = new Dataset();
+                await file._gmlDataset.SetConnectionString (filename);
+                if (!file._gmlDataset.Open().Result)
+                    file._gmlDataset = null;
 
-                _doc = new XmlDocument();
-                _doc.Load(_filename);
+                file._filename = filename;
 
-                _ns = new XmlNamespaceManager(_doc.NameTable);
-                _ns.AddNamespace("GML", "http://www.opengis.net/gml");
-                _ns.AddNamespace("WFS", "http://www.opengis.net/wfs");
-                _ns.AddNamespace("OGC", "http://www.opengis.net/ogc");
-                _ns.AddNamespace("myns", _gmlDataset.targetNamespace);
+                file._doc = new XmlDocument();
+                file._doc.Load(file._filename);
 
+                file._ns = new XmlNamespaceManager(file._doc.NameTable);
+                file._ns.AddNamespace("GML", "http://www.opengis.net/gml");
+                file._ns.AddNamespace("WFS", "http://www.opengis.net/wfs");
+                file._ns.AddNamespace("OGC", "http://www.opengis.net/ogc");
+                file._ns.AddNamespace("myns", file._gmlDataset.targetNamespace);
 
+                return file;
             }
             catch
             {
-                _doc = null;
+                return null;
             }
         }
 

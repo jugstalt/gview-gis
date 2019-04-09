@@ -30,11 +30,16 @@ namespace gView.DataSources.Fdb.PostgreSql
             _addedLayers = new List<string>();
             _fdb = new pgFDB();
         }
-        internal pgDataset(pgFDB fdb, string dsname)
-            : this()
+
+
+        async static internal Task<pgDataset> Create(pgFDB fdb, string dsname)
         {
-            ConnectionString = fdb.DatabaseConnectionString + ";dsname=" + dsname;
-            Open();
+            var ds = new pgDataset();
+
+            await ds.SetConnectionString(fdb.DatabaseConnectionString + ";dsname=" + dsname);
+            await ds.Open();
+
+            return ds;
         }
 
         ~pgDataset()
@@ -128,29 +133,34 @@ namespace gView.DataSources.Fdb.PostgreSql
 
                 return c;
             }
-            set
-            {
-                _connStr = value;
-                if (value == null) return;
-                while (_connStr.IndexOf(";;") != -1)
-                    _connStr = _connStr.Replace(";;", ";");
-
-                _dsname = ConfigTextStream.ExtractValue(value, "dsname");
-                _addedLayers.Clear();
-                foreach (string layername in ConfigTextStream.ExtractValue(value, "layers").Split('@'))
-                {
-                    if (layername == "") continue;
-                    if (_addedLayers.IndexOf(layername) != -1) continue;
-                    _addedLayers.Add(layername);
-                }
-                if (_fdb == null) _fdb = new pgFDB();
-
-                _fdb.DatasetRenamed += new gView.DataSources.Fdb.MSAccess.AccessFDB.DatasetRenamedEventHandler(SqlFDB_DatasetRenamed);
-                _fdb.FeatureClassRenamed += new gView.DataSources.Fdb.MSAccess.AccessFDB.FeatureClassRenamedEventHandler(SqlFDB_FeatureClassRenamed);
-                _fdb.TableAltered += new gView.DataSources.Fdb.MSAccess.AccessFDB.AlterTableEventHandler(SqlFDB_TableAltered);
-                _fdb.Open(_connStr);
-            }
         }
+        async public Task<bool> SetConnectionString(string value)
+        {
+            _connStr = value;
+            if (value == null)
+                return false;
+
+            while (_connStr.IndexOf(";;") != -1)
+                _connStr = _connStr.Replace(";;", ";");
+
+            _dsname = ConfigTextStream.ExtractValue(value, "dsname");
+            _addedLayers.Clear();
+            foreach (string layername in ConfigTextStream.ExtractValue(value, "layers").Split('@'))
+            {
+                if (layername == "") continue;
+                if (_addedLayers.IndexOf(layername) != -1) continue;
+                _addedLayers.Add(layername);
+            }
+            if (_fdb == null) _fdb = new pgFDB();
+
+            _fdb.DatasetRenamed += new gView.DataSources.Fdb.MSAccess.AccessFDB.DatasetRenamedEventHandler(SqlFDB_DatasetRenamed);
+            _fdb.FeatureClassRenamed += new gView.DataSources.Fdb.MSAccess.AccessFDB.FeatureClassRenamedEventHandler(SqlFDB_FeatureClassRenamed);
+            _fdb.TableAltered += new gView.DataSources.Fdb.MSAccess.AccessFDB.AlterTableEventHandler(SqlFDB_TableAltered);
+            await _fdb.Open(_connStr);
+
+            return true;
+        }
+        
 
         public DatasetState State
         {
@@ -276,11 +286,11 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         #region IDataset2 Member
 
-        public IDataset2 EmptyCopy()
+        async public Task<IDataset2> EmptyCopy()
         {
             pgDataset dataset = new pgDataset();
-            dataset.ConnectionString = ConnectionString;
-            dataset.Open();
+            await dataset.SetConnectionString(ConnectionString);
+            await dataset.Open();
 
             return dataset;
         }
@@ -347,7 +357,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 _fdb = null;
             }
 
-            this.ConnectionString = connectionString;
+            this.SetConnectionString(connectionString);
             this.Open();
         }
 

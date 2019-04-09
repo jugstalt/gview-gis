@@ -93,36 +93,37 @@ namespace gView.DataSources.Fdb.SQLite
                 LinkedDatasetCacheInstance.Dispose();
         }
         
-        override public List<IDatasetElement> DatasetLayers(IDataset dataset)
+        async override public Task<List<IDatasetElement>> DatasetLayers(IDataset dataset)
         {
             _errMsg = "";
             if (_conn == null) return null;
 
-            int dsID = this.DatasetID(dataset.DatasetName);
+            int dsID = await this.DatasetID(dataset.DatasetName);
             if (dsID == -1) return null;
 
             DataSet ds = new DataSet();
-            if (!_conn.SQLQuery(ds, "SELECT * FROM FDB_FeatureClasses WHERE DatasetID=" + dsID, "FC").Result)
+            if (!await _conn.SQLQuery(ds, "SELECT * FROM FDB_FeatureClasses WHERE DatasetID=" + dsID, "FC"))
             {
                 _errMsg = _conn.errorMessage;
                 return null;
             }
 
             List<IDatasetElement> layers = new List<IDatasetElement>();
-            ISpatialReference sRef = SpatialReference(dataset.DatasetName);
+            ISpatialReference sRef = await SpatialReference(dataset.DatasetName);
 
-            string imageSpace;
-            if (IsImageDataset(dataset.DatasetName, out imageSpace))
+            var isImageDatasetResult = await IsImageDataset(dataset.DatasetName);
+            string imageSpace = isImageDatasetResult.imageSpace;
+            if (isImageDatasetResult.isImageDataset)
             {
                 if (TableExists("FC_" + dataset.DatasetName + "_IMAGE_POLYGONS"))
                 {
-                    IFeatureClass fc = new SQLiteFDBFeatureClass(this, dataset, new GeometryDef(geometryType.Polygon, sRef, false));
+                    IFeatureClass fc = await SQLiteFDBFeatureClass.Create(this, dataset, new GeometryDef(geometryType.Polygon, sRef, false));
                     ((SQLiteFDBFeatureClass)fc).Name = dataset.DatasetName + "_IMAGE_POLYGONS";
-                    ((SQLiteFDBFeatureClass)fc).Envelope = this.FeatureClassExtent(fc.Name);
+                    ((SQLiteFDBFeatureClass)fc).Envelope = await this.FeatureClassExtent(fc.Name);
                     ((SQLiteFDBFeatureClass)fc).IDFieldName = "FDB_OID";
                     ((SQLiteFDBFeatureClass)fc).ShapeFieldName = "FDB_SHAPE";
 
-                    var fields = this.FeatureClassFields(dataset.DatasetName, fc.Name);
+                    var fields = await this.FeatureClassFields(dataset.DatasetName, fc.Name);
                     if (fields != null)
                     {
                         foreach (IField field in fields)
@@ -154,10 +155,10 @@ namespace gView.DataSources.Fdb.SQLite
 
                 if (IsLinkedFeatureClass(row))
                 {
-                    IDataset linkedDs = LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
+                    IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                     if (linkedDs == null)
                         continue;
-                    IDatasetElement linkedElement = linkedDs.Element((string)row["Name"]).Result;
+                    IDatasetElement linkedElement = await linkedDs.Element((string)row["Name"]);
 
                     LinkedFeatureClass fc = new LinkedFeatureClass(dataset,
                         linkedElement != null && linkedElement.Class is IFeatureClass ? linkedElement.Class as IFeatureClass : null,
@@ -196,10 +197,10 @@ namespace gView.DataSources.Fdb.SQLite
                     geomDef = new GeometryDef((geometryType)fcRow["GeometryType"], null, true);
                 }
 
-                SQLiteFDBDatasetElement layer = new SQLiteFDBDatasetElement(this, dataset, row["Name"].ToString(), geomDef);
+                SQLiteFDBDatasetElement layer = await SQLiteFDBDatasetElement.Create(this, dataset, row["Name"].ToString(), geomDef);
                 if (layer.Class is SQLiteFDBFeatureClass)
                 {
-                    ((SQLiteFDBFeatureClass)layer.Class).Envelope = this.FeatureClassExtent(layer.Class.Name);
+                    ((SQLiteFDBFeatureClass)layer.Class).Envelope = await this.FeatureClassExtent(layer.Class.Name);
                     ((SQLiteFDBFeatureClass)layer.Class).IDFieldName = "FDB_OID";
                     ((SQLiteFDBFeatureClass)layer.Class).ShapeFieldName = "FDB_SHAPE";
                     if (sRef != null)
@@ -207,7 +208,7 @@ namespace gView.DataSources.Fdb.SQLite
                         ((SQLiteFDBFeatureClass)layer.Class).SpatialReference = (ISpatialReference)(new SpatialReference((SpatialReference)sRef));
                     }
                 }
-                var fields = this.FeatureClassFields(dataset.DatasetName, layer.Class.Name);
+                var fields = await this.FeatureClassFields(dataset.DatasetName, layer.Class.Name);
                 if (fields != null && layer.Class is ITableClass)
                 {
                     foreach (IField field in fields)
@@ -371,8 +372,9 @@ namespace gView.DataSources.Fdb.SQLite
             }
             tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
 
-            string replicationField = null;
-            if (!Replication.AllowFeatureClassEditing(fClass, out replicationField))
+            var allowFcEditing = await Replication.AllowFeatureClassEditing(fClass);
+            string replicationField = allowFcEditing.replFieldName;
+            if (!allowFcEditing.allow)
             {
                 _errMsg = "Replication Error: can't edit checked out and released featureclass...";
                 return false;
@@ -399,9 +401,9 @@ namespace gView.DataSources.Fdb.SQLite
                             if (!String.IsNullOrEmpty(replicationField))
                             {
                                 Replication.AllocateNewObjectGuid(feature, replicationField);
-                                if (!Replication.WriteDifferencesToTable(fClass,
+                                if (!await Replication.WriteDifferencesToTable(fClass,
                                     feature[replicationField] is Guid ? (Guid)feature[replicationField] : new Guid(feature[replicationField].ToString()),
-                                    Replication.SqlStatement.INSERT, replTrans, out _errMsg))
+                                    Replication.SqlStatement.INSERT, replTrans))
                                 {
                                     _errMsg = "Replication Error: " + _errMsg;
                                     return false;
@@ -483,7 +485,7 @@ namespace gView.DataSources.Fdb.SQLite
                     }
                 }
 
-                AddTreeNodes();
+               await AddTreeNodes();
             }
             catch (Exception ex)
             {
@@ -591,8 +593,9 @@ namespace gView.DataSources.Fdb.SQLite
             }
             tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
 
-            string replicationField = null;
-            if (!Replication.AllowFeatureClassEditing(fClass, out replicationField))
+            var allowFcEditing = await Replication.AllowFeatureClassEditing(fClass);
+            string replicationField = allowFcEditing.replFieldName;
+            if (!allowFcEditing.allow)
             {
                 _errMsg = "Replication Error: can't edit checked out and released featureclass...";
                 return false;
@@ -619,9 +622,9 @@ namespace gView.DataSources.Fdb.SQLite
                             }
                             if (!String.IsNullOrEmpty(replicationField))
                             {
-                                if (!Replication.WriteDifferencesToTable(fClass,
+                                if (!await Replication.WriteDifferencesToTable(fClass,
                                     await Replication.FeatureObjectGuid(fClass, feature, replicationField),
-                                    Replication.SqlStatement.UPDATE, replTrans, out _errMsg))
+                                    Replication.SqlStatement.UPDATE, replTrans))
                                 {
                                     _errMsg = "Replication Error: " + _errMsg;
                                     return false;
@@ -717,7 +720,7 @@ namespace gView.DataSources.Fdb.SQLite
                     }
                 }
 
-                AddTreeNodes();
+                await AddTreeNodes();
             }
 
             catch (Exception ex)
@@ -750,8 +753,9 @@ namespace gView.DataSources.Fdb.SQLite
                         ReplicationTransaction replTrans = new ReplicationTransaction(connection, transaction);
                         command.Transaction = transaction;
 
-                        string replicationField = null;
-                        if (!Replication.AllowFeatureClassEditing(fClass, out replicationField))
+                        var allowFcEditing = await Replication.AllowFeatureClassEditing(fClass);
+                        string replicationField = allowFcEditing.replFieldName;
+                        if (!allowFcEditing.allow)
                         {
                             _errMsg = "Replication Error: can't edit checked out and released featureclass...";
                             return false;
@@ -767,11 +771,10 @@ namespace gView.DataSources.Fdb.SQLite
 
                             foreach (DataRow row in tab.Rows)
                             {
-                                if (!Replication.WriteDifferencesToTable(fClass,
+                                if (!await Replication.WriteDifferencesToTable(fClass,
                                     row[replicationField] is Guid ? (Guid)row[replicationField] : new Guid(row[replicationField].ToString()),
                                     Replication.SqlStatement.DELETE,
-                                    replTrans,
-                                    out _errMsg))
+                                    replTrans))
                                 {
                                     _errMsg = "Replication Error: " + _errMsg;
                                     return false;
@@ -804,7 +807,7 @@ namespace gView.DataSources.Fdb.SQLite
 
         private Dictionary<string, List<long>> _addTreeNodes = new Dictionary<string, List<long>>();
         private object thisLock = new object();
-        protected override void AddTreeNode(string fcName, long nid)
+        async protected override Task AddTreeNode(string fcName, long nid)
         {
             lock (thisLock)
             {
@@ -835,18 +838,19 @@ namespace gView.DataSources.Fdb.SQLite
 
         #region Internals
 
-        override public IDatasetElement DatasetElement(IDataset ds, string elementName)
+       async  override public Task<IDatasetElement> DatasetElement(IDataset ds, string elementName)
         {
             if (!(ds is SQLiteFDBDataset))
                 throw new ArgumentException("dataset must be SQLiteFDBDataset");
 
             SQLiteFDBDataset dataset = (SQLiteFDBDataset)ds;
-            ISpatialReference sRef = this.SpatialReference(dataset.DatasetName);
+            ISpatialReference sRef = await this.SpatialReference(dataset.DatasetName);
 
             if (dataset.DatasetName == elementName)
             {
-                string imageSpace;
-                if (IsImageDataset(dataset.DatasetName, out imageSpace))
+                var isImageDatasetResult = await IsImageDataset(dataset.DatasetName);
+                string imageSpace = isImageDatasetResult.imageSpace;
+                if (isImageDatasetResult.isImageDataset)
                 {
                     IDatasetElement fLayer = DatasetElement(dataset, elementName + "_IMAGE_POLYGONS") as IDatasetElement;
                     if (fLayer != null && fLayer.Class is IFeatureClass)
@@ -858,7 +862,7 @@ namespace gView.DataSources.Fdb.SQLite
                 }
             }
 
-            DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + dataset._dsID + " AND " + DbColName("Name") + "='" + elementName + "'").Result;
+            DataTable tab = await _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + dataset._dsID + " AND " + DbColName("Name") + "='" + elementName + "'");
             if (tab == null || tab.Rows == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -879,10 +883,10 @@ namespace gView.DataSources.Fdb.SQLite
 
             if (IsLinkedFeatureClass(row))
             {
-                IDataset linkedDs = LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
+                IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                 if (linkedDs == null)
                     return null;
-                IDatasetElement linkedElement = linkedDs.Element(row["Name"]?.ToString()).Result;
+                IDatasetElement linkedElement = await linkedDs.Element(row["Name"]?.ToString());
 
                 LinkedFeatureClass fc = new LinkedFeatureClass(dataset,
                     linkedElement != null && linkedElement.Class is IFeatureClass ? linkedElement.Class as IFeatureClass : null,
@@ -897,7 +901,7 @@ namespace gView.DataSources.Fdb.SQLite
                 string[] viewNames = row["Name"].ToString().Split('@');
                 if (viewNames.Length != 2)
                     return null;
-                DataTable tab2 = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + dataset._dsID + " AND " + DbColName("Name") + "='" + viewNames[0] + "'").Result;
+                DataTable tab2 = await _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + dataset._dsID + " AND " + DbColName("Name") + "='" + viewNames[0] + "'");
                 if (tab2 == null || tab2.Rows.Count != 1)
                     return null;
                 fcRow = tab2.Rows[0];
@@ -913,16 +917,16 @@ namespace gView.DataSources.Fdb.SQLite
                 geomDef = new GeometryDef((geometryType)Convert.ToInt32(fcRow["geometrytype"]), null, true);
             }
 
-            DatasetElement layer = new SQLiteFDBDatasetElement(this, dataset, row["name"].ToString(), geomDef);
+            DatasetElement layer = await SQLiteFDBDatasetElement.Create(this, dataset, row["name"].ToString(), geomDef);
             if (layer.Class is SQLiteFDBFeatureClass) // kann auch SqlFDBNetworkClass sein
             {
-                ((SQLiteFDBFeatureClass)layer.Class).Envelope = this.FeatureClassExtent(layer.Class.Name);
+                ((SQLiteFDBFeatureClass)layer.Class).Envelope = await this.FeatureClassExtent(layer.Class.Name);
                 ((SQLiteFDBFeatureClass)layer.Class).IDFieldName = "FDB_OID";
                 ((SQLiteFDBFeatureClass)layer.Class).ShapeFieldName = "FDB_SHAPE";
                 //((SqlFDBFeatureClass)layer.FeatureClass).SetSpatialTreeInfo(this.SpatialTreeInfo(row["Name"].ToString()));
                 ((SQLiteFDBFeatureClass)layer.Class).SpatialReference = sRef;
             }
-            var fields = this.FeatureClassFields(dataset._dsID, layer.Class.Name);
+            var fields = await this.FeatureClassFields(dataset._dsID, layer.Class.Name);
             if (fields != null && layer.Class is ITableClass)
             {
                 foreach (IField field in fields)
@@ -934,10 +938,10 @@ namespace gView.DataSources.Fdb.SQLite
             return layer;
         }
 
-        internal DataTable Select(string fields, string from, string where)
+        async internal Task<DataTable> Select(string fields, string from, string where)
         {
             if (_conn == null) return null;
-            return _conn.Select(fields, from, where).Result;
+            return await _conn.Select(fields, from, where);
         }
 
         #endregion
@@ -1045,24 +1049,24 @@ namespace gView.DataSources.Fdb.SQLite
             return filename;
         }
 
-        public override IFeatureClass GetFeatureclass(string fcName)
+        async public override Task<IFeatureClass> GetFeatureclass(string fcName)
         {
             if (_conn == null) return null;
 
-            int fcID = this.GetFeatureClassID(fcName);
+            int fcID = await this.GetFeatureClassID(fcName);
 
-            DataTable featureclasses = _conn.Select(DbColName("DatasetID"), TableName("FDB_FeatureClasses"), DbColName("ID") + "=" + fcID).Result;
+            DataTable featureclasses = await _conn.Select(DbColName("DatasetID"), TableName("FDB_FeatureClasses"), DbColName("ID") + "=" + fcID);
             if (featureclasses == null || featureclasses.Rows.Count != 1)
                 return null;
 
-            DataTable datasets = _conn.Select(DbColName("Name"), TableName("FDB_Datasets"), DbColName("ID") + "=" + featureclasses.Rows[0]["DatasetID"].ToString()).Result;
+            DataTable datasets = await _conn.Select(DbColName("Name"), TableName("FDB_Datasets"), DbColName("ID") + "=" + featureclasses.Rows[0]["DatasetID"].ToString());
             if (datasets == null || datasets.Rows.Count != 1)
                 return null;
 
-            return GetFeatureclass(datasets.Rows[0]["Name"].ToString(), fcName);
+            return await GetFeatureclass(datasets.Rows[0]["Name"].ToString(), fcName);
         }
 
-        public override IFeatureClass GetFeatureclass(string dsName, string fcName)
+        async public override Task<IFeatureClass> GetFeatureclass(string dsName, string fcName)
         {
             SQLiteFDBDataset dataset = new SQLiteFDBDataset();
 
@@ -1070,10 +1074,10 @@ namespace gView.DataSources.Fdb.SQLite
             if (!connString.Contains(";dsname=" + dsName))
                 connString += ";dsname=" + dsName;
 
-            dataset.ConnectionString = connString;
-            dataset.Open();
+            await dataset.SetConnectionString(connString);
+            await dataset.Open();
 
-            IDatasetElement element = dataset.Element(fcName).Result;
+            IDatasetElement element = await dataset.Element(fcName);
             if (element != null && element.Class is IFeatureClass)
             {
                 return element.Class as IFeatureClass;
@@ -1101,18 +1105,15 @@ namespace gView.DataSources.Fdb.SQLite
             //return true;
         }
 
-        public override IFeatureDataset this[string dsname]
+        async public override Task<IFeatureDataset> GetDataset(string dsname)
         {
-            get
+            SQLiteFDBDataset dataset = await SQLiteFDBDataset.Create(this, dsname);
+            if (dataset._dsID == -1)
             {
-                SQLiteFDBDataset dataset = new SQLiteFDBDataset(this, dsname);
-                if (dataset._dsID == -1)
-                {
-                    _errMsg = "Dataset '" + dsname + "' does not exist!";
-                    return null;
-                }
-                return dataset;
+                _errMsg = "Dataset '" + dsname + "' does not exist!";
+                return null;
             }
+            return dataset;
         }
 
         protected override string FieldDataType(IField field)
@@ -1267,7 +1268,7 @@ namespace gView.DataSources.Fdb.SQLite
         }
 
         #region IAltertable
-        public override bool AlterTable(string table, IField oldField, IField newField)
+        async public override Task<bool> AlterTable(string table, IField oldField, IField newField)
         {
             if (oldField == null && newField == null) return true;
 
@@ -1282,19 +1283,19 @@ namespace gView.DataSources.Fdb.SQLite
             }
 
             if (_conn == null) return false;
-            int dsID = DatasetIDFromFeatureClassName(table);
-            string dsname = DatasetNameFromFeatureClassName(table);
+            int dsID = await DatasetIDFromFeatureClassName(table);
+            string dsname = await DatasetNameFromFeatureClassName(table);
             if (dsname == "")
             {
                 return false;
             }
-            int fcID = FeatureClassID(dsID, table);
+            int fcID = await FeatureClassID(dsID, table);
             if (fcID == -1)
             {
                 return false;
             }
 
-            IFeatureClass fc = GetFeatureclass(dsname, table);
+            IFeatureClass fc = await GetFeatureclass(dsname, table);
 
             if (fc == null || fc.Fields == null) return false;
 
@@ -1321,7 +1322,7 @@ namespace gView.DataSources.Fdb.SQLite
                         }
                         if (oldField.name != newField.name)
                         {
-                            if (!RenameField(table, oldField, newField))
+                            if (!await RenameField(table, oldField, newField))
                             {
                                 return false;
                             }
@@ -1329,12 +1330,12 @@ namespace gView.DataSources.Fdb.SQLite
                     }
                     else    // DROP COLUMN
                     {
-                        string replIDFieldname = Replication.FeatureClassReplicationIDFieldname(fc);
+                        string replIDFieldname = await Replication.FeatureClassReplicationIDFieldname(fc);
                         if (!String.IsNullOrEmpty(replIDFieldname) &&
                             replIDFieldname == oldField.name)
                         {
                             Replication repl = new Replication();
-                            if (!repl.RemoveReplicationIDField(fc))
+                            if (!await repl.RemoveReplicationIDField(fc))
                             {
                                 _errMsg = "Can't remove replication id field...";
                                 return false;
@@ -1363,7 +1364,7 @@ namespace gView.DataSources.Fdb.SQLite
                     }
                 }
 
-                return AlterFeatureclassField(fcID, oldField, newField);
+                return await AlterFeatureclassField(fcID, oldField, newField);
             }
             finally
             {
@@ -1670,7 +1671,7 @@ namespace gView.DataSources.Fdb.SQLite
         }
         #endregion
 
-        public override bool ShrinkSpatialIndex(string fcName, List<long> NIDs)
+        async public override Task<bool> ShrinkSpatialIndex(string fcName, List<long> NIDs)
         {
             if (NIDs == null || _conn == null) return false;
 
@@ -1722,7 +1723,7 @@ namespace gView.DataSources.Fdb.SQLite
             return true;
         }
 
-        private void IncSpatialIndexVersion(string fcName)
+        async private Task IncSpatialIndexVersion(string fcName)
         {
             if (_conn == null) return;
 
@@ -1730,7 +1731,7 @@ namespace gView.DataSources.Fdb.SQLite
             try
             {
                 int siVersion = 1;
-                object siVersionObject = _conn.QuerySingleField("SELECT " + DbColName("SIVersion") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcName + "'", ColumnName("SIVersion")).Result;
+                object siVersionObject = await _conn.QuerySingleField("SELECT " + DbColName("SIVersion") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcName + "'", ColumnName("SIVersion"));
                 if (siVersionObject != System.DBNull.Value && siVersionObject != null)
                 {
                     siVersion = Convert.ToInt32(siVersionObject) + 1;
@@ -2177,19 +2178,28 @@ namespace gView.DataSources.Fdb.SQLite
         {
             private ISelectionSet m_selectionset;
 
-            public SQLiteFDBDatasetElement(SQLiteFDB fdb, IDataset dataset, string name, GeometryDef geomDef)
+            private SQLiteFDBDatasetElement()
             {
+
+            }
+
+            async static public Task<SQLiteFDBDatasetElement> Create(SQLiteFDB fdb, IDataset dataset, string name, GeometryDef geomDef)
+            {
+                var dsElement = new SQLiteFDBDatasetElement();
+
                 if (geomDef.GeometryType == geometryType.Network)
                 {
-                    _class = new SQLiteFDBNetworkFeatureClass(fdb, dataset, name, geomDef);
+                    dsElement._class = await SQLiteFDBNetworkFeatureClass.Create(fdb, dataset, name, geomDef);
                 }
                 else
                 {
-                    _class = new SQLiteFDBFeatureClass(fdb, dataset, geomDef);
-                    ((SQLiteFDBFeatureClass)_class).Name =
-                    ((SQLiteFDBFeatureClass)_class).Aliasname = name;
+                    dsElement._class = await SQLiteFDBFeatureClass.Create(fdb, dataset, geomDef);
+                    ((SQLiteFDBFeatureClass)dsElement._class).Name =
+                    ((SQLiteFDBFeatureClass)dsElement._class).Aliasname = name;
                 }
-                this.Title = name;
+                dsElement.Title = name;
+
+                return dsElement;
             }
 
             public SQLiteFDBDatasetElement(LinkedFeatureClass fc)

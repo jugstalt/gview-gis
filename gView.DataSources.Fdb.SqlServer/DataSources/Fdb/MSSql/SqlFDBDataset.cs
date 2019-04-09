@@ -38,11 +38,14 @@ namespace gView.DataSources.Fdb.MSSql
             _addedLayers = new List<string>();
             _fdb = new SqlFDB();
         }
-        internal SqlFDBDataset(SqlFDB fdb, string dsname)
-            : this()
+        async static internal Task<SqlFDBDataset> Create(SqlFDB fdb, string dsname)
         {
-            ConnectionString = fdb.ConnectionString + ";dsname=" + dsname;
-            Open();
+            var ds = new SqlFDBDataset();
+
+            await ds.SetConnectionString(fdb.ConnectionString + ";dsname=" + dsname);
+            await ds.Open();
+
+            return ds;
         }
 
         ~SqlFDBDataset()
@@ -71,11 +74,11 @@ namespace gView.DataSources.Fdb.MSSql
 
         #region IFeatureDataset Member
 
-        public Task<List<IDatasetElement>> Elements()
+        async public Task<List<IDatasetElement>> Elements()
         {
             if (_layers == null || _layers.Count == 0)
             {
-                _layers = _fdb.DatasetLayers(this);
+                _layers = await _fdb.DatasetLayers(this);
 
                 if (_layers != null && _addedLayers.Count != 0)
                 {
@@ -104,9 +107,9 @@ namespace gView.DataSources.Fdb.MSSql
             }
 
             if (_layers == null)
-                return Task.FromResult(new List<IDatasetElement>());
+                return new List<IDatasetElement>();
 
-            return Task.FromResult(_layers);
+            return _layers;
         }
 
         public bool renderImage(IDisplay display)
@@ -130,10 +133,10 @@ namespace gView.DataSources.Fdb.MSSql
             }
         }
 
-        public Task<IEnvelope> Envelope()
+        async public Task<IEnvelope> Envelope()
         {
             if (_layers == null)
-                return Task.FromResult<IEnvelope>(null);
+                return null;
 
             bool first = true;
             IEnvelope env = null;
@@ -144,7 +147,7 @@ namespace gView.DataSources.Fdb.MSSql
                 if (layer.Class is IFeatureClass)
                 {
                     envelope = ((IFeatureClass)layer.Class).Envelope;
-                    if (envelope.Width > 1e10 && ((IFeatureClass)layer.Class).CountFeatures == 0)
+                    if (envelope.Width > 1e10 && await ((IFeatureClass)layer.Class).CountFeatures() == 0)
                         envelope = null;
                 }
                 else if (layer.Class is IRasterClass)
@@ -164,24 +167,22 @@ namespace gView.DataSources.Fdb.MSSql
                     env.Union(envelope);
                 }
             }
-            return Task.FromResult(env);
+            return env;
         }
 
-        public ISpatialReference SpatialReference
-        {
-            get
-            {
+        async public Task<ISpatialReference> GetSpatialReference()
+        { 
                 if (_sRef != null) return _sRef;
 
                 if (_fdb == null) return null;
-                return _sRef = _fdb.SpatialReference(_dsname);
+                return _sRef = await _fdb.SpatialReference(_dsname);
             }
-            set
-            {
-                // Nicht in Databank übernehmen !!!
-                _sRef = value;
-            }
+        public void SetSpatialReference(ISpatialReference sRef)
+        {
+            // Nicht in Databank übernehmen !!!
+            _sRef = sRef;
         }
+        
         #endregion
 
         #region IDataset Member
@@ -223,52 +224,57 @@ namespace gView.DataSources.Fdb.MSSql
                  * */
                 return c;
             }
-            set
-            {
-                _connStr = value;
-                if (value == null) return;
-                while (_connStr.IndexOf(";;") != -1)
-                    _connStr = _connStr.Replace(";;", ";");
-
-                _dsname = ConfigTextStream.ExtractValue(value, "dsname");
-                _addedLayers.Clear();
-                foreach (string layername in ConfigTextStream.ExtractValue(value, "layers").Split('@'))
-                {
-                    if (layername == "") continue;
-                    if (_addedLayers.IndexOf(layername) != -1) continue;
-                    _addedLayers.Add(layername);
-                }
-                if (_fdb == null) _fdb = new SqlFDB();
-
-                _fdb.DatasetRenamed += new gView.DataSources.Fdb.MSAccess.AccessFDB.DatasetRenamedEventHandler(SqlFDB_DatasetRenamed);
-                _fdb.FeatureClassRenamed += new gView.DataSources.Fdb.MSAccess.AccessFDB.FeatureClassRenamedEventHandler(SqlFDB_FeatureClassRenamed);
-                _fdb.TableAltered += new gView.DataSources.Fdb.MSAccess.AccessFDB.AlterTableEventHandler(SqlFDB_TableAltered);
-                _fdb.Open(_connStr);
-            }
         }
+        async public Task<bool> SetConnectionString(string value)
+        {
+            _connStr = value;
+            if (value == null)
+                return false;
+
+            while (_connStr.IndexOf(";;") != -1)
+                _connStr = _connStr.Replace(";;", ";");
+
+            _dsname = ConfigTextStream.ExtractValue(value, "dsname");
+            _addedLayers.Clear();
+            foreach (string layername in ConfigTextStream.ExtractValue(value, "layers").Split('@'))
+            {
+                if (layername == "") continue;
+                if (_addedLayers.IndexOf(layername) != -1) continue;
+                _addedLayers.Add(layername);
+            }
+            if (_fdb == null) _fdb = new SqlFDB();
+
+            _fdb.DatasetRenamed += new gView.DataSources.Fdb.MSAccess.AccessFDB.DatasetRenamedEventHandler(SqlFDB_DatasetRenamed);
+            _fdb.FeatureClassRenamed += new gView.DataSources.Fdb.MSAccess.AccessFDB.FeatureClassRenamedEventHandler(SqlFDB_FeatureClassRenamed);
+            _fdb.TableAltered += new gView.DataSources.Fdb.MSAccess.AccessFDB.AlterTableEventHandler(SqlFDB_TableAltered);
+            await _fdb.Open(_connStr);
+
+            return true;
+        }
+        
 
         public DatasetState State
         {
             get { return _state; }
         }
 
-        public Task<bool> Open()
+        async public Task<bool> Open()
         {
             if (_fdb == null)
-                return Task.FromResult(false);
+                return false;
 
-            _dsID = _fdb.DatasetID(_dsname);
+            _dsID = await _fdb.DatasetID(_dsname);
             if (_dsID < 0)
             {
                 _errMsg = _fdb.LastErrorMessage ?? _fdb.lastException?.Message;
-                return Task.FromResult(false);
+                return false;
             }
 
-            _sRef = this.SpatialReference;
+            _sRef = await this.GetSpatialReference();
             _state = DatasetState.opened;
-            _sIndexDef = _fdb.SpatialIndexDef(_dsID);
+            _sIndexDef = await _fdb.SpatialIndexDef(_dsID);
 
-            return Task.FromResult(true);
+            return true;
         }
 
         public string LastErrorMessage
@@ -299,19 +305,19 @@ namespace gView.DataSources.Fdb.MSSql
         public string Query_FieldPrefix { get { return "["; } }
         public string Query_FieldPostfix { get { return "]"; } }
 
-        public Task<IDatasetElement> Element(string DatasetElementTitle)
+        async public Task<IDatasetElement> Element(string DatasetElementTitle)
         {
             if (_fdb == null)
-                return Task.FromResult<IDatasetElement>(null);
+                return null;
 
-            IDatasetElement element = _fdb.DatasetElement(this, DatasetElementTitle);
+            IDatasetElement element = await _fdb.DatasetElement(this, DatasetElementTitle);
 
             if (element != null && element.Class is SqlFDBFeatureClass)
             {
                 ((SqlFDBFeatureClass)element.Class).SpatialReference = _sRef;
             }
 
-            return Task.FromResult(element);
+            return element;
         }
 
         public IDatabase Database
@@ -345,7 +351,7 @@ namespace gView.DataSources.Fdb.MSSql
                 _fdb = null;
             }
 
-            this.ConnectionString = connectionString;
+            this.SetConnectionString(connectionString);
             this.Open();
         }
 
@@ -358,11 +364,11 @@ namespace gView.DataSources.Fdb.MSSql
 
         #region IDataset2 Member
 
-        public IDataset2 EmptyCopy()
+        async public Task<IDataset2> EmptyCopy()
         {
             SqlFDBDataset dataset = new SqlFDBDataset();
-            dataset.ConnectionString = ConnectionString;
-            dataset.Open();
+            await dataset.SetConnectionString(ConnectionString);
+            await dataset.Open();
 
             return dataset;
         }
@@ -376,7 +382,7 @@ namespace gView.DataSources.Fdb.MSSql
                 if (e.Title == elementName) return;
             }
 
-            IDatasetElement element = _fdb.DatasetElement(this, elementName);
+            IDatasetElement element = await _fdb.DatasetElement(this, elementName);
             if (element != null) _layers.Add(element);
         }
 
@@ -396,7 +402,7 @@ namespace gView.DataSources.Fdb.MSSql
             }
         }
 
-        void SqlFDB_TableAltered(string table)
+        async void SqlFDB_TableAltered(string table)
         {
             if (_layers == null) return;
 
@@ -405,7 +411,7 @@ namespace gView.DataSources.Fdb.MSSql
                 if (element.Class is SqlFDBFeatureClass &&
                     ((SqlFDBFeatureClass)element.Class).Name == table)
                 {
-                    var fields = _fdb.FeatureClassFields(this._dsID, table);
+                    var fields = await _fdb.FeatureClassFields(this._dsID, table);
 
                     SqlFDBFeatureClass fc = element.Class as SqlFDBFeatureClass;
                     ((Fields)fc.Fields).Clear();

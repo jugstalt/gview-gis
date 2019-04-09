@@ -48,17 +48,11 @@ namespace gView.Framework.OGC.DB
             return new Envelope();
         }
 
-        public gView.Framework.Geometry.ISpatialReference SpatialReference
+        public Task<ISpatialReference> GetSpatialReference()
         {
-            get
-            {
-                return null;
-            }
-            set
-            {
-
-            }
+            return Task.FromResult<ISpatialReference>(null);
         }
+        public void SetSpatialReference(ISpatialReference sRef) { }
 
         #endregion
 
@@ -70,45 +64,48 @@ namespace gView.Framework.OGC.DB
             {
                 return _connectionString;
             }
-            set
-            {
-                string provider = String.Empty;
-                if (value.ToLower().IndexOf("sql:") == 0 ||
-                   value.ToLower().IndexOf("sqlclient:") == 0)
-                {
-                    _connectionString = value.Substring(value.IndexOf(":") + 1, value.Length - value.IndexOf(":") - 1);
-                    provider = "SqlClient";
-                }
-                else if (value.ToLower().IndexOf("odbc:") == 0)
-                {
-                    _connectionString = value.Substring(value.IndexOf(":") + 1, value.Length - value.IndexOf(":") - 1);
-                    provider = "Odbc";
-                }
-                else if (value.ToLower().IndexOf("oracle:") == 0 ||
-                        value.ToLower().IndexOf("oracleclient:") == 0)
-                {
-                    _connectionString = value.Substring(value.IndexOf(":") + 1, value.Length - value.IndexOf(":") - 1);
-                    provider = "OracleClient";
-                }
-                else if (value.ToLower().IndexOf("npgsql:") == 0)
-                {
-                    _connectionString = value.Substring(value.IndexOf(":") + 1, value.Length - value.IndexOf(":") - 1);
-                    provider = "Npgsql";
-                }
-                else if (value.ToLower().IndexOf("oledb:") == 0)
-                {
-                    _connectionString = value.Substring(value.IndexOf(":") + 1, value.Length - value.IndexOf(":") - 1);
-                    provider = "OleDb";
-                }
-                else
-                {
-                    _connectionString = value;
-                }
-
-                if (ConnectionStringChanged != null)
-                    ConnectionStringChanged(this, provider);
-            }
         }
+        public Task<bool> SetConnectionString(string value)
+        {
+            string provider = String.Empty;
+            if (value.ToLower().IndexOf("sql:") == 0 ||
+               value.ToLower().IndexOf("sqlclient:") == 0)
+            {
+                _connectionString = value.Substring(value.IndexOf(":") + 1, value.Length - value.IndexOf(":") - 1);
+                provider = "SqlClient";
+            }
+            else if (value.ToLower().IndexOf("odbc:") == 0)
+            {
+                _connectionString = value.Substring(value.IndexOf(":") + 1, value.Length - value.IndexOf(":") - 1);
+                provider = "Odbc";
+            }
+            else if (value.ToLower().IndexOf("oracle:") == 0 ||
+                    value.ToLower().IndexOf("oracleclient:") == 0)
+            {
+                _connectionString = value.Substring(value.IndexOf(":") + 1, value.Length - value.IndexOf(":") - 1);
+                provider = "OracleClient";
+            }
+            else if (value.ToLower().IndexOf("npgsql:") == 0)
+            {
+                _connectionString = value.Substring(value.IndexOf(":") + 1, value.Length - value.IndexOf(":") - 1);
+                provider = "Npgsql";
+            }
+            else if (value.ToLower().IndexOf("oledb:") == 0)
+            {
+                _connectionString = value.Substring(value.IndexOf(":") + 1, value.Length - value.IndexOf(":") - 1);
+                provider = "OleDb";
+            }
+            else
+            {
+                _connectionString = value;
+            }
+
+            if (ConnectionStringChanged != null)
+                ConnectionStringChanged(this, provider);
+
+            return Task.FromResult(true);
+        }
+        
 
         virtual public string DatasetGroupName
         {
@@ -273,11 +270,11 @@ namespace gView.Framework.OGC.DB
 
         #region IDataset2 Member
 
-        public IDataset2 EmptyCopy()
+        async public Task<IDataset2> EmptyCopy()
         {
             OgcSpatialDataset dataset = CreateInstance();
-            dataset.ConnectionString = ConnectionString;
-            dataset.Open();
+            await dataset.SetConnectionString(ConnectionString);
+            await dataset.Open();
 
             return dataset;
         }
@@ -303,7 +300,7 @@ namespace gView.Framework.OGC.DB
         public void Load(IPersistStream stream)
         {
             if (_layers != null) _layers.Clear();
-            this.ConnectionString = (string)stream.Load("connectionstring", "");
+            this.SetConnectionString((string)stream.Load("connectionstring", ""));
             this.Open();
         }
 
@@ -335,7 +332,7 @@ namespace gView.Framework.OGC.DB
             throw new Exception("The method or operation is not implemented.");
         }
 
-        virtual public int CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFields Fields)
+        async virtual public Task<int> CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFields Fields)
         {
             DatasetNameCase nameCase = DatasetNameCase.ignore;
             foreach (System.Attribute attribute in System.Attribute.GetCustomAttributes(this.GetType()))
@@ -418,23 +415,23 @@ namespace gView.Framework.OGC.DB
                 using (DbConnection connection = this.ProviderFactory.CreateConnection())
                 {
                     connection.ConnectionString = _connectionString;
-                    connection.Open();
+                    await connection.OpenAsync();
 
                     DbCommand command = this.ProviderFactory.CreateCommand();
                     command.CommandText = sb.ToString();
                     command.Connection = connection;
-                    command.ExecuteNonQuery();
+                    await command.ExecuteNonQueryAsync();
 
                     command.CommandText = CreateGidSequence(fcname);
                     if (!String.IsNullOrEmpty(command.CommandText))
-                        command.ExecuteNonQuery();
+                        await command.ExecuteNonQueryAsync();
                     command.CommandText = CreateGidTrigger(fcname, OgcDictionary("gid"));
                     if (!String.IsNullOrEmpty(command.CommandText))
-                        command.ExecuteNonQuery();
+                        await command.ExecuteNonQueryAsync();
 
                     command.CommandText = AddGeometryColumn("", fcname, OgcDictionary("the_geom"), "-1", geomTypeString);
                     if (!String.IsNullOrEmpty(command.CommandText))
-                        command.ExecuteNonQuery();
+                        await command.ExecuteNonQueryAsync();
                 }
                 return 0;
             }
@@ -455,25 +452,22 @@ namespace gView.Framework.OGC.DB
             return "@" + name;
         }
 
-        IFeatureDataset IFeatureDatabase.this[string name]
+        Task<IFeatureDataset> IFeatureDatabase.GetDataset(string name)
         {
-            get
-            {
                 if (this.DatasetName == name)
-                    return this;
+                    return Task.FromResult<IFeatureDataset>(this);
                 else
-                    return null;
-            }
+                    return Task.FromResult<IFeatureDataset>(null);
         }
 
-        virtual public bool DeleteFeatureClass(string name)
+        async virtual public Task<bool> DeleteFeatureClass(string name)
         {
             try
             {
                 using (DbConnection connection = this.ProviderFactory.CreateConnection())
                 {
                     connection.ConnectionString = this.ConnectionString;
-                    connection.Open();
+                    await connection.OpenAsync();
 
                     //NpgsqlCommand command = new NpgsqlCommand("DROP TABLE " + name, connection);
                     //NpgsqlCommand command = new NpgsqlCommand("SELECT DropGeometryTable ('','" + name + "')", connection);
@@ -482,7 +476,7 @@ namespace gView.Framework.OGC.DB
                     foreach (var commandText in DropGeometryTable("", name).Split(';'))
                     {
                         command.CommandText = commandText;
-                        command.ExecuteNonQuery();
+                        await command.ExecuteNonQueryAsync();
                     }
                 }
                 return true;
@@ -499,21 +493,18 @@ namespace gView.Framework.OGC.DB
             throw new Exception("The method or operation is not implemented.");
         }
 
-        virtual public bool RenameDataset(string name, string newName)
+        virtual public Task<bool> RenameDataset(string name, string newName)
         {
             throw new Exception("The method or operation is not implemented.");
         }
-        virtual public bool RenameFeatureClass(string name, string newName)
+        virtual public Task<bool> RenameFeatureClass(string name, string newName)
         {
             throw new Exception("The method or operation is not implemented.");
         }
 
-        virtual public string[] DatasetNames
+        virtual public Task<string[]> DatasetNames()
         {
-            get
-            {
-                throw new Exception("The method or operation is not implemented.");
-            }
+            throw new Exception("The method or operation is not implemented.");
         }
 
         async public Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)

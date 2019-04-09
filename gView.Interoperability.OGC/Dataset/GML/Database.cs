@@ -93,9 +93,9 @@ namespace gView.Interoperability.OGC.Dataset.GML
             return Task.FromResult<int>(Create(name) ? 0 : -1);
         }
 
-        public int CreateFeatureClass(string dsname, string fcname, gView.Framework.Geometry.IGeometryDef geomDef, IFields fields)
+        public Task<int> CreateFeatureClass(string dsname, string fcname, gView.Framework.Geometry.IGeometryDef geomDef, IFields fields)
         {
-            if (geomDef == null || fields == null) return -1;
+            if (geomDef == null || fields == null) return Task.FromResult(-1);
 
             string filename = _directoryName + @"\" + fcname + ".gml";
             Fields f = new Fields();
@@ -104,32 +104,29 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 f.Add(field);
 
             if (!GMLFile.Create(filename, geomDef, f, _gmlVersion))
-                return -1;
+                return Task.FromResult(-1);
 
-            return 0;
+            return Task.FromResult(0);
         }
 
-        public gView.Framework.Data.IFeatureDataset this[string name]
+        async public Task<IFeatureDataset> GetDataset(string name)
         {
-            get
+            if (name.ToLower() == "gml dataset" ||
+                name.ToLower() == _directoryName.ToLower())
             {
-                if (name.ToLower() == "gml dataset" ||
-                    name.ToLower() == _directoryName.ToLower())
-                {
-                    Dataset dataset = new Dataset();
-                    dataset.ConnectionString = _directoryName;
-                    dataset.Open();
+                Dataset dataset = new Dataset();
+                await dataset.SetConnectionString(_directoryName);
+                await dataset.Open();
 
-                    return dataset;
-                }
-                else
-                {
-                    Dataset dataset = new Dataset();
-                    dataset.ConnectionString = name;
-                    dataset.Open();
+                return dataset;
+            }
+            else
+            {
+                Dataset dataset = new Dataset();
+                await dataset.SetConnectionString(name);
+                await dataset.Open();
 
-                    return dataset;
-                }
+                return dataset;
             }
         }
 
@@ -149,31 +146,28 @@ namespace gView.Interoperability.OGC.Dataset.GML
             }
         }
 
-        public bool RenameDataset(string name, string newName)
+        public Task<bool> RenameDataset(string name, string newName)
         {
             throw new Exception("The method or operation is not implemented.");
         }
-        public bool RenameFeatureClass(string name, string newName)
+        public Task<bool> RenameFeatureClass(string name, string newName)
         {
             throw new Exception("The method or operation is not implemented.");
         }
 
-        public string[] DatasetNames
+        public Task<string[]> DatasetNames()
         {
-            get
-            {
-                throw new Exception("The method or operation is not implemented.");
-            }
+            throw new Exception("The method or operation is not implemented.");
         }
 
-        public bool DeleteFeatureClass(string fcName)
+        async public Task<bool> DeleteFeatureClass(string fcName)
         {
             string filename = _directoryName + @"\" + fcName + ".gml";
 
             FileInfo fi = new FileInfo(filename);
             if (fi.Exists)
             {
-                GMLFile file = new GMLFile(fi.FullName);
+                GMLFile file = await GMLFile.Create(fi.FullName);
                 return file.Delete();
             }
             return false;
@@ -208,9 +202,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
             return Insert(fClass, features);
         }
 
-        public Task<bool> Insert(gView.Framework.Data.IFeatureClass fClass, List<gView.Framework.Data.IFeature> features)
+        async public Task<bool> Insert(gView.Framework.Data.IFeatureClass fClass, List<gView.Framework.Data.IFeature> features)
         {
-            if (fClass == null || !(fClass.Dataset is Dataset) || features == null) return Task.FromResult<bool>(false);
+            if (fClass == null || !(fClass.Dataset is Dataset) || features == null)
+                return false;
 
             GMLFile gmlFile=null;
             try
@@ -221,24 +216,26 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 }
                 else
                 {
-                    gmlFile = ((Dataset)fClass.Dataset).GMLFile;
+                    gmlFile = await ((Dataset)fClass.Dataset).GetGMLFile();
                     _gmlFiles.Add(((Dataset)fClass.Dataset).ConnectionString, gmlFile);
                 }
             }
             catch
             {
-                return Task.FromResult<bool>(false);
+                return false;
             }
-            if (gmlFile == null) return Task.FromResult<bool>(false);
+            if (gmlFile == null)
+                return false;
 
             foreach (IFeature feature in features)
             {
                 if (feature == null) continue;
 
-                if (!gmlFile.AppendFeature(fClass, feature)) return Task.FromResult<bool>(false);
+                if (!gmlFile.AppendFeature(fClass, feature))
+                    return false;
             }
 
-            return Task.FromResult<bool>(true);
+            return true;
         }
 
         public Task<bool> Update(gView.Framework.Data.IFeatureClass fClass, gView.Framework.Data.IFeature feature)

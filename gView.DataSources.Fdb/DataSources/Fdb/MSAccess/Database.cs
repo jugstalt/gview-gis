@@ -966,7 +966,7 @@ namespace gView.DataSources.Fdb.MSAccess
                     DirectoryInfo di = new DirectoryInfo(dsname);
                     if (di.Exists)
                     {
-                        IFeatureClass fc = this.GetFeatureclass(dsname, dsname + "_IMAGE_POLYGONS");
+                        IFeatureClass fc = await this.GetFeatureclass(dsname, dsname + "_IMAGE_POLYGONS");
                         QueryFilter filter = new QueryFilter();
                         filter.AddField(DbColName("MANAGED_FILE"));
                         IFeatureCursor cursor = await fc.Search(filter) as IFeatureCursor;
@@ -1029,10 +1029,7 @@ namespace gView.DataSources.Fdb.MSAccess
             return await CreateFeatureClass(dsname, fcname, geomDef, Fields, true);
         }
 
-        abstract public IFeatureDataset this[string dsname]
-        {
-            get;
-        }
+        abstract public Task<IFeatureDataset> GetDataset(string dsname);
 
         virtual protected string FieldDataType(IField field)
         {
@@ -2568,7 +2565,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 if (ds == null)
                     return null;
 
-                ds.ConnectionString = connectionString;
+                await ds.SetConnectionString(connectionString);
                 if (open)
                     await ds.Open();
 
@@ -2865,7 +2862,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
         }
 
-        virtual protected bool UpdateSpatialIndexID(string FCName, List<SpatialIndexNode> nodes)
+        virtual protected Task<bool> UpdateSpatialIndexID(string FCName, List<SpatialIndexNode> nodes)
         {
             throw new NotImplementedException();
         }
@@ -2945,7 +2942,7 @@ namespace gView.DataSources.Fdb.MSAccess
                     return false;
                 }
 
-                return UpdateSpatialIndexID(fc.Name, nodes);
+                return await UpdateSpatialIndexID(fc.Name, nodes);
             }
             catch (Exception ex)
             {
@@ -2954,7 +2951,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
         }
 
-        virtual public bool ReorderRecords(IFeatureClass fClass)
+        virtual public Task<bool> ReorderRecords(IFeatureClass fClass)
         {
             throw new NotImplementedException();
         }
@@ -3004,7 +3001,7 @@ namespace gView.DataSources.Fdb.MSAccess
             foreach (DataRow row in ds.Tables[0].Rows)
             {
                 AccessFDBDataset dataset = new AccessFDBDataset(this);
-                dataset.ConnectionString = _filename + ";" + row["Name"].ToString();
+                await dataset.SetConnectionString(_filename + ";" + row["Name"].ToString());
                 if (await dataset.Open())
                     datasets.Add(dataset);
             }
@@ -3031,9 +3028,9 @@ namespace gView.DataSources.Fdb.MSAccess
             if (datasets == null || datasets.Rows.Count != 1)
                 return null;
 
-            return GetFeatureclass(datasets.Rows[0]["Name"].ToString(), fcName);
+            return await GetFeatureclass(datasets.Rows[0]["Name"].ToString(), fcName);
         }
-        abstract public IFeatureClass GetFeatureclass(string dsName, string fcName);
+        abstract public Task<IFeatureClass> GetFeatureclass(string dsName, string fcName);
         async virtual public Task<IFeatureClass> GetFeatureclass(int fcId)
         {
             if (_conn == null) return null;
@@ -3046,7 +3043,7 @@ namespace gView.DataSources.Fdb.MSAccess
             if (datasets == null || datasets.Rows.Count != 1)
                 return null;
 
-            return GetFeatureclass(datasets.Rows[0]["Name"].ToString(), (string)featureclasses.Rows[0]["Name"]);
+            return await GetFeatureclass(datasets.Rows[0]["Name"].ToString(), (string)featureclasses.Rows[0]["Name"]);
         }
 
         async protected Task<int> DatasetIDFromFeatureClassName(string fcName)
@@ -3686,7 +3683,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 return false;
             }
 
-            IFeatureClass fc = GetFeatureclass(dsname, table);
+            IFeatureClass fc = await GetFeatureclass(dsname, table);
 
             if (fc == null || fc.Fields == null) return false;
 

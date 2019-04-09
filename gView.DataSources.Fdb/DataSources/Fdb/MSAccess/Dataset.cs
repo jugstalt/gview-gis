@@ -36,15 +36,6 @@ namespace gView.DataSources.Fdb.MSAccess
             _addedLayers = new List<string>();
             _fdb = fdb;
         }
-        internal AccessFDBDataset(AccessFDB fdb, string dsname, ISpatialIndexDef sIndexDef)
-            : this(fdb)
-        {
-            if (fdb == null)
-                return;
-
-            ConnectionString = "mdb=" + fdb.ConnectionString + ";dsname=" + dsname;
-            Open();
-        }
 
         ~AccessFDBDataset()
         {
@@ -244,31 +235,36 @@ namespace gView.DataSources.Fdb.MSAccess
                  * */
                 return c;
             }
-            set
-            {
-                _connString = value;
-                if (value == null) return;
-                while (_connString.IndexOf(";;") != -1)
-                    _connString = _connString.Replace(";;", ";");
-
-                _dsname = ConfigTextStream.ExtractValue(value, "dsname");
-                _addedLayers.Clear();
-                foreach (string layername in ConfigTextStream.ExtractValue(value, "layers").Split('@'))
-                {
-                    if (layername == "") continue;
-                    if (_addedLayers.IndexOf(layername) != -1) continue;
-                    _addedLayers.Add(layername);
-                }
-
-                if (_fdb == null)
-                    throw new NullReferenceException("_fdb==null");
-
-                _fdb.DatasetRenamed += new AccessFDB.DatasetRenamedEventHandler(AccessFDB_DatasetRenamed);
-                _fdb.FeatureClassRenamed += new AccessFDB.FeatureClassRenamedEventHandler(AccessFDB_FeatureClassRenamed);
-                _fdb.TableAltered += new AccessFDB.AlterTableEventHandler(SqlFDB_TableAltered);
-                _fdb.Open(ConfigTextStream.ExtractValue(_connString, "mdb"));
-            }
         }
+        async public Task<bool> SetConnectionString(string value)
+        {
+            _connString = value;
+            if (value == null)
+                return false;
+
+            while (_connString.IndexOf(";;") != -1)
+                _connString = _connString.Replace(";;", ";");
+
+            _dsname = ConfigTextStream.ExtractValue(value, "dsname");
+            _addedLayers.Clear();
+            foreach (string layername in ConfigTextStream.ExtractValue(value, "layers").Split('@'))
+            {
+                if (layername == "") continue;
+                if (_addedLayers.IndexOf(layername) != -1) continue;
+                _addedLayers.Add(layername);
+            }
+
+            if (_fdb == null)
+                throw new NullReferenceException("_fdb==null");
+
+            _fdb.DatasetRenamed += new AccessFDB.DatasetRenamedEventHandler(AccessFDB_DatasetRenamed);
+            _fdb.FeatureClassRenamed += new AccessFDB.FeatureClassRenamedEventHandler(AccessFDB_FeatureClassRenamed);
+            _fdb.TableAltered += new AccessFDB.AlterTableEventHandler(SqlFDB_TableAltered);
+            await _fdb.Open(ConfigTextStream.ExtractValue(_connString, "mdb"));
+
+            return true;
+        }
+        
 
         public DatasetState State
         {
@@ -407,7 +403,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
         }
 
-        public void Load(IPersistStream stream)
+        async public Task<bool> Load(IPersistStream stream)
         {
             string connectionString = (string)stream.Load("connectionstring", "");
             if (_fdb != null)
@@ -416,8 +412,8 @@ namespace gView.DataSources.Fdb.MSAccess
                 _fdb = null;
             }
 
-            this.ConnectionString = connectionString;
-            this.Open();
+            await this.SetConnectionString(connectionString);
+            await this.Open();
 
             /*
             if (_layers == null) _layers = new List<IDatasetElement>();
@@ -446,9 +442,11 @@ namespace gView.DataSources.Fdb.MSAccess
                 }
             }
              * */
+
+            return true;
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
             stream.SaveEncrypted("connectionstring", this.ConnectionString);
 
@@ -459,17 +457,19 @@ namespace gView.DataSources.Fdb.MSAccess
                     stream.Save("IFeatureLayer",element);
             }
              * */
+
+            return Task.FromResult(true);
         }
 
         #endregion
 
         #region IDataset2 Member
 
-        public IDataset2 EmptyCopy()
+        async public Task<IDataset2> EmptyCopy()
         {
             AccessFDBDataset dataset = new AccessFDBDataset(_fdb);
-            dataset.ConnectionString = ConnectionString;
-            dataset.Open();
+            await dataset.SetConnectionString(ConnectionString);
+            await dataset.Open();
 
             return dataset;
         }

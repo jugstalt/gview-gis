@@ -23,11 +23,12 @@ namespace gView.Carto.Framework.Carto
             {
                 return String.Empty;
             }
-
-            set
-            {
-            }
         }
+        public Task<bool> SetConnectionString(string value)
+        {
+            return Task.FromResult(true);
+        }
+        
 
         public IDatabase Database
         {

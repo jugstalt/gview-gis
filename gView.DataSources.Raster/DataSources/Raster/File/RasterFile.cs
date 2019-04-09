@@ -40,10 +40,12 @@ namespace gView.DataSources.Raster.File
             {
                 return _directory;
             }
-            set
-            {
-                _directory = value;
-            }
+        }
+        public Task<bool> SetConnectionString(string value)
+        {
+            _directory = value;
+
+            return Task.FromResult(true);
         }
 
         public string DatasetGroupName

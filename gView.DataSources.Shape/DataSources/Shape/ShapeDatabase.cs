@@ -28,9 +28,9 @@ namespace gView.DataSources.Shape
             return Task.FromResult<int>(Create(name) ? 0 : -1);
         }
 
-        public int CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFields fields)
+        public Task<int> CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFields fields)
         {
-            if (geomDef == null || fields == null) return -1;
+            if (geomDef == null || fields == null) return Task.FromResult(-1);
 
             string filename = _directoryName + @"\" + fcname;
             Fields f = new Fields();
@@ -39,43 +39,35 @@ namespace gView.DataSources.Shape
                 f.Add(field);
 
             if (!SHPFile.Create(filename, geomDef, f))
-                return -1;
+                return Task.FromResult(-1);
 
-            return 0;
+            return Task.FromResult(0);
         }
 
-        public IFeatureDataset this[string name]
+        async public Task<IFeatureDataset> GetDataset(string name)
         {
-            get
+            if (name.ToLower() == _directoryName.ToLower() ||
+                name.ToLower() == "esri shapefile")
             {
-                if (name.ToLower() == _directoryName.ToLower() ||
-                    name.ToLower() == "esri shapefile")
-                {
-                    ShapeDataset dataset = new ShapeDataset();
-                    dataset.ConnectionString = _directoryName;
-                    dataset.Open();
+                ShapeDataset dataset = new ShapeDataset();
+                await dataset.SetConnectionString(_directoryName);
+                await dataset.Open();
 
-                    return dataset;
-                }
-                else
-                {
-                    ShapeDataset dataset = new ShapeDataset();
-                    dataset.ConnectionString = name;
-                    dataset.Open();
+                return dataset;
+            }
+            else
+            {
+                ShapeDataset dataset = new ShapeDataset();
+                await dataset.SetConnectionString(name);
+                await dataset.Open();
 
-                    return dataset;
-                }
-
-                return null;
+                return dataset;
             }
         }
 
-        public string[] DatasetNames
+        public Task<string[]> DatasetNames()
         {
-            get
-            {
-                throw new Exception("The method or operation is not implemented.");
-            }
+            throw new Exception("The method or operation is not implemented.");
         }
 
         public Task<bool> DeleteDataset(string dsName)
@@ -94,18 +86,20 @@ namespace gView.DataSources.Shape
             }
         }
 
-        public bool DeleteFeatureClass(string fcName)
+        public Task<bool> DeleteFeatureClass(string fcName)
         {
-            if(_name=="") return false;
+            if(_name=="")
+                return Task.FromResult(false);
+
             SHPFile file = new SHPFile(_name + @"\" + fcName + ".shp");
-            return file.Delete();
+            return Task.FromResult(file.Delete());
         }
 
-        public bool RenameDataset(string name, string newName)
+        public Task<bool> RenameDataset(string name, string newName)
         {
             throw new Exception("The method or operation is not implemented.");
         }
-        public bool RenameFeatureClass(string name, string newName)
+        public Task<bool> RenameFeatureClass(string name, string newName)
         {
             throw new Exception("The method or operation is not implemented.");
         }

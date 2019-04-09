@@ -215,13 +215,11 @@ namespace gView.DataSources.Shape
 		}
         */
 
-        public int CountFeatures
+        public Task<int> CountFeatures()
         {
-            get
-            {
-                if (_file == null) return -1;
-                return (int)_file.Entities;
-            }
+            if (_file == null)
+                return Task.FromResult(-1);
+            return Task.FromResult((int)_file.Entities);
         }
 
         public ArrayList SpatialIndexNodes { get { return null; } }

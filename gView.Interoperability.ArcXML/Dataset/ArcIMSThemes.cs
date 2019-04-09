@@ -17,7 +17,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             if (dataset is IFeatureDataset)
             {
                 this.Envelope = ((IFeatureDataset)dataset).Envelope().Result;
-                this.SpatialReference = ((IFeatureDataset)dataset).SpatialReference;
+                this.SpatialReference = ((IFeatureDataset)dataset).GetSpatialReference().Result;
             }
         }
 

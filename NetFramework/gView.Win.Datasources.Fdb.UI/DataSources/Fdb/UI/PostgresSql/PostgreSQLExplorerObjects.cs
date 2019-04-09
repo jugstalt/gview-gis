@@ -601,11 +601,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             _contextItems[1].Click += new EventHandler(ShrinkSpatialIndices_Click);
         }
 
-        void SpatialReference_Click(object sender, EventArgs e)
+        async void SpatialReference_Click(object sender, EventArgs e)
         {
             if (_dataset == null || _fdb == null)
             {
-                Refresh();
+                await Refresh();
                 if (_dataset == null || _fdb == null)
                 {
                     MessageBox.Show("Can't open dataset...");
@@ -613,7 +613,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 }
             }
 
-            FormSpatialReference dlg = new FormSpatialReference(_dataset.SpatialReference);
+            FormSpatialReference dlg = new FormSpatialReference(await _dataset.GetSpatialReference());
 
             if (dlg.ShowDialog() == DialogResult.OK)
             {

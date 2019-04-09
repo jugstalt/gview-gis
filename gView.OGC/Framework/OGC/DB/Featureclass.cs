@@ -258,31 +258,29 @@ namespace gView.Framework.OGC.DB
             }
         }
 
-        public int CountFeatures
+        async public Task<int> CountFeatures()
         {
-            get
+
+            try
             {
-                try
+                _lastException = null;
+                using (DbConnection connection = _dataset.ProviderFactory.CreateConnection())
                 {
-                    _lastException = null;
-                    using (DbConnection connection = _dataset.ProviderFactory.CreateConnection())
-                    {
-                        connection.ConnectionString = _dataset.ConnectionString;
-                        connection.Open();
+                    connection.ConnectionString = _dataset.ConnectionString;
+                    await connection.OpenAsync();
 
-                        DbCommand command = _dataset.ProviderFactory.CreateCommand();
-                        command.CommandText = "select count(" + _idfield + ") from " + this.Name;
-                        command.Connection = connection;
+                    DbCommand command = _dataset.ProviderFactory.CreateCommand();
+                    command.CommandText = "select count(" + _idfield + ") from " + this.Name;
+                    command.Connection = connection;
 
-                        //NpgsqlCommand command = new NpgsqlCommand("SELECT count(" + _idfield + ") from " + this.Name, connection);
-                        return Convert.ToInt32(command.ExecuteScalar());
-                    }
+                    //NpgsqlCommand command = new NpgsqlCommand("SELECT count(" + _idfield + ") from " + this.Name, connection);
+                    return Convert.ToInt32(await command.ExecuteScalarAsync());
                 }
-                catch (Exception ex)
-                {
-                    _lastException = ex;
-                    return 0;
-                }
+            }
+            catch (Exception ex)
+            {
+                _lastException = ex;
+                return 0;
             }
         }
 

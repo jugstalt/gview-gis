@@ -37,9 +37,9 @@ namespace gView.Interoperability.OGC.Dataset.GML
             get { return _dataset.Envelope().Result; }
         }
 
-        public int CountFeatures
+        public Task<int> CountFeatures()
         {
-            get { return 0; }
+            return Task.FromResult(0); 
         }
 
         public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
@@ -128,7 +128,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         public gView.Framework.Geometry.ISpatialReference SpatialReference
         {
-            get { return _dataset.SpatialReference; }
+            get { return _dataset.GetSpatialReference().Result; }
         }
 
         public gView.Framework.Geometry.geometryType GeometryType

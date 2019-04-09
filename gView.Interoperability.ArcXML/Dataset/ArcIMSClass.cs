@@ -432,7 +432,8 @@ namespace gView.Interoperability.ArcXML.Dataset
                 if (_clonedThemes != null) return _clonedThemes;
                 if (_dataset != null)
                 {
-                    if (_dataset.State != DatasetState.opened) _dataset.Open();
+                    if (_dataset.State != DatasetState.opened)
+                        _dataset.Open();
                     return _dataset._themes;
                 }
                 return new List<IWebServiceTheme>();
@@ -444,14 +445,14 @@ namespace gView.Interoperability.ArcXML.Dataset
             get
             {
                 if (_dataset != null) 
-                    return _dataset.SpatialReference;
+                    return _dataset.GetSpatialReference().Result;
 
                 return null;
             }
             set
             {
                 if (_dataset != null)
-                    _dataset.SpatialReference = value;
+                    _dataset.SetSpatialReference(value);
             }
         }
 

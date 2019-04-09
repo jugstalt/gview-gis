@@ -69,9 +69,9 @@ namespace gView.DataSources.EventTable
             get { return _env; }
         }
 
-        public int CountFeatures
+        public Task<int> CountFeatures()
         {
-            get { return 0; }
+            return Task.FromResult<int>(0);
         }
 
         async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)

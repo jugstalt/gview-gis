@@ -91,9 +91,9 @@ namespace gView.DataSources.OGR
             get { return _envelope; }
         }
 
-        public int CountFeatures
+        public Task<int> CountFeatures()
         {
-            get { return _countFeatures; }
+            return Task.FromResult(_countFeatures);
         }
 
         public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)

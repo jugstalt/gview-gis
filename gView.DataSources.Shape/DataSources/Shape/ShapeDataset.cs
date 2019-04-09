@@ -120,17 +120,11 @@ namespace gView.DataSources.Shape
 			return false;
 		}
 
-		public gView.Framework.Geometry.ISpatialReference SpatialReference
+		public Task<ISpatialReference> GetSpatialReference()
 		{
-			get
-			{
-				return null;
-			}
-			set
-			{
-				
-			}
+            return Task.FromResult<ISpatialReference>(null);
 		}
+        public void SetSpatialReference(ISpatialReference sRef) { }
 
 		#endregion
 
@@ -169,17 +163,20 @@ namespace gView.DataSources.Shape
 		}
 
 		public string ConnectionString
-		{
-			get
-			{
-				return _connectionString;
-			}
-			set
-			{
-				_connectionString=value;
-                _database.DirectoryName = _connectionString;
-			}
-		}
+        {
+            get
+            {
+                return _connectionString;
+            }
+        }
+        public Task<bool> SetConnectionString(string value)
+        {
+            _connectionString = value;
+            _database.DirectoryName = _connectionString;
+
+            return Task.FromResult(true);
+        }
+		
 
         /*
         public bool DeleteSpatialIndex()

@@ -27,20 +27,17 @@ namespace gView.DataSources.EventTable
             return Task.FromResult<IEnvelope>(null);
         }
 
-        public ISpatialReference SpatialReference
+        public Task<ISpatialReference> GetSpatialReference()
         {
-            get
-            {
-                if (_etcon != null)
-                    return _etcon.SpatialReference;
+            if (_etcon != null)
+                return Task.FromResult(_etcon.SpatialReference);
 
-                return null;
-            }
-            set
-            {
-                if (_etcon != null)
-                    _etcon.SpatialReference = value;
-            }
+            return Task.FromResult<ISpatialReference>(null);
+        }
+        public void SetSpatialReference(ISpatialReference sRef)
+        {
+            if (_etcon != null)
+                _etcon.SpatialReference = sRef;
         }
 
         #endregion
@@ -56,17 +53,19 @@ namespace gView.DataSources.EventTable
 
                 return String.Empty;
             }
-            set
+        }
+        public Task<bool> SetConnectionString(string value)
+        {
+            if (value == String.Empty)
+                _etcon = null;
+            else
             {
-                if (value == String.Empty)
-                    _etcon = null;
-                else
-                {
-                    _etcon = new EventTableConnection();
-                    _etcon.FromXmlString(value);
-                    _state = DatasetState.unknown;
-                }
+                _etcon = new EventTableConnection();
+                _etcon.FromXmlString(value);
+                _state = DatasetState.unknown;
             }
+
+            return Task.FromResult(true);
         }
 
         public string DatasetGroupName
@@ -165,7 +164,7 @@ namespace gView.DataSources.EventTable
 
         public void Load(IPersistStream stream)
         {
-            this.ConnectionString = (string)stream.Load("connectionstring", String.Empty);
+            this.SetConnectionString((string)stream.Load("connectionstring", String.Empty));
             this.Open();
         }
 

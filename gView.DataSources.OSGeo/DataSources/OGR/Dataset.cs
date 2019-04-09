@@ -24,17 +24,11 @@ namespace gView.DataSources.OGR
             return Task.FromResult<IEnvelope>(new Envelope());
         }
 
-        public gView.Framework.Geometry.ISpatialReference SpatialReference
+        public Task<ISpatialReference> GetSpatialReference()
         {
-            get
-            {
-                return null;
-            }
-            set
-            {
-
-            }
+            return Task.FromResult<ISpatialReference>(null);
         }
+        public void SetSpatialReference(ISpatialReference sRef) { }
 
         #endregion
 
@@ -46,10 +40,12 @@ namespace gView.DataSources.OGR
             {
                 return _connectionString;
             }
-            set
-            {
-                _connectionString = value;
-            }
+        }
+        public Task<bool> SetConnectionString(string value)
+        {
+            _connectionString = value;
+
+            return Task.FromResult(true);
         }
 
         public string DatasetGroupName
@@ -203,11 +199,11 @@ namespace gView.DataSources.OGR
 
         #region IDataset2 Member
 
-        public IDataset2 EmptyCopy()
+        async public Task<IDataset2> EmptyCopy()
         {
             Dataset dataset = new Dataset();
-            dataset.ConnectionString = ConnectionString;
-            dataset.Open();
+            await dataset.SetConnectionString(ConnectionString);
+            await dataset.Open();
 
             return dataset;
         }

@@ -5,6 +5,7 @@ using gView.Framework.Geometry;
 using gView.Framework.Carto;
 using gView.Framework.IO;
 using gView.Framework.system;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Symbology
 {
@@ -494,20 +495,25 @@ namespace gView.Framework.Symbology
             get { return ""; }
         }
 
-        public void Load(IPersistStream stream)
+        public Task<bool> Load(IPersistStream stream)
         {
             _rotationFieldName = (string)stream.Load("RotationFieldname", "");
             _rotType = (RotationType)stream.Load("RotationType", RotationType.aritmetic);
             _rotUnit = (RotationUnit)stream.Load("RotationUnit", RotationUnit.deg);
+
+            return Task.FromResult(true);
         }
 
-        public void Save(IPersistStream stream)
+        public Task<bool> Save(IPersistStream stream)
         {
-            if (_rotationFieldName == "") return;
+            if (_rotationFieldName == "")
+                return Task.FromResult(true); ;
 
             stream.Save("RotationFieldname", _rotationFieldName);
             stream.Save("RotationType", (int)_rotType);
             stream.Save("RotationUnit", (int)_rotUnit);
+
+            return Task.FromResult(true);
         }
 
         #endregion

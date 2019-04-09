@@ -1131,7 +1131,7 @@ namespace gView.Framework.Offline
                 {
                     throw new Exception("Can't create dataset from guid");
                 }
-                parentDs.ConnectionString = connectionString;
+                await parentDs.SetConnectionString(connectionString);
                 if (!await parentDs.Open())
                 {
                     throw new Exception(parentDs.LastErrorMessage);

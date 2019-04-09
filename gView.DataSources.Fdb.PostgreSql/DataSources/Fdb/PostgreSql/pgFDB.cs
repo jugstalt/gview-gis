@@ -83,18 +83,15 @@ namespace gView.DataSources.Fdb.PostgreSql
             return true;
         }
 
-        public override IFeatureDataset this[string dsname]
+        async public override Task<IFeatureDataset> GetDataset(string dsname)
         {
-            get
+            pgDataset dataset = await pgDataset.Create(this, dsname);
+            if (dataset._dsID == -1)
             {
-                pgDataset dataset = new pgDataset(this, dsname);
-                if (dataset._dsID == -1)
-                {
-                    _errMsg = "Dataset '" + dsname + "' does not exist!";
-                    return null;
-                }
-                return dataset;
+                _errMsg = "Dataset '" + dsname + "' does not exist!";
+                return null;
             }
+            return dataset;
         }
 
         public override Task<bool> Open(string connString)
@@ -505,11 +502,11 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             }
         }
 
-        public override IFeatureClass GetFeatureclass(string dsName, string fcName)
+        async public override Task<IFeatureClass> GetFeatureclass(string dsName, string fcName)
         {
             pgDataset dataset = new pgDataset();
-            dataset.ConnectionString = _conn.ConnectionString + ";dsname=" + dsName;
-            dataset.Open();
+            await dataset.SetConnectionString(_conn.ConnectionString + ";dsname=" + dsName);
+            await dataset.Open();
 
             IDatasetElement element = dataset.Element(fcName).Result;
             if (element != null && element.Class is IFeatureClass)
@@ -1479,7 +1476,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 return false;
             }
 
-            IFeatureClass fc = GetFeatureclass(dsname, table);
+            IFeatureClass fc = await GetFeatureclass(dsname, table);
 
             if (fc == null || fc.Fields == null) return false;
 

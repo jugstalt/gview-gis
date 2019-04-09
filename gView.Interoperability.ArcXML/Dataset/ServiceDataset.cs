@@ -49,7 +49,7 @@ namespace gView.Interoperability.ArcXML.Dataset
                         string connectionString = ((IConnectionString)dlg).ConnectionString;
 
                         _dataset = new ArcIMSDataset();
-                        _dataset.ConnectionString = connectionString;
+                        _dataset.SetConnectionString(connectionString);
                         return true;
                     }
                 }
@@ -72,7 +72,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             if (connectionString != String.Empty)
             {
                 _dataset = new ArcIMSDataset();
-                _dataset.ConnectionString = connectionString;
+                _dataset.SetConnectionString(connectionString);
             }
         }
 

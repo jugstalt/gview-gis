@@ -228,26 +228,23 @@ namespace gView.DataSources.Fdb.MSSql
             return this.CreateDataset(name, sRef, null, false, "");
         }
 
-        public override IFeatureDataset this[string dsname]
+        async public override Task<IFeatureDataset> GetDataset(string dsname)
         {
-            get
+            SqlFDBDataset dataset = await SqlFDBDataset.Create(this, dsname);
+            if (dataset._dsID == -1)
             {
-                SqlFDBDataset dataset = new SqlFDBDataset(this, dsname);
-                if (dataset._dsID == -1)
-                {
-                    _errMsg = "Dataset '" + dsname + "' does not exist!";
-                    return null;
-                }
-                return dataset;
+                _errMsg = "Dataset '" + dsname + "' does not exist!";
+                return null;
             }
+            return dataset;
         }
-        private int CreateDataset(string name, ISpatialReference sRef, bool imagedataset, string imageSpace)
+        async private Task<int> CreateDataset(string name, ISpatialReference sRef, bool imagedataset, string imageSpace)
         {
             _errMsg = "";
             if (_conn == null) return -1;
             try
             {
-                int sRefID = CreateSpatialReference(sRef);
+                int sRefID = await CreateSpatialReference(sRef);
 
                 DataSet ds = new DataSet();
                 if (!_conn.SQLQuery(ds, "SELECT * FROM FDB_Datasets WHERE Name='" + name + "'", "DS", true).Result)
@@ -276,7 +273,7 @@ namespace gView.DataSources.Fdb.MSSql
                 }
                 ds.Dispose();
 
-                return DatasetID(name);
+                return await DatasetID(name);
             }
             catch (Exception ex)
             {
@@ -377,7 +374,7 @@ namespace gView.DataSources.Fdb.MSSql
                     }
                     else
                     {
-                        CheckSpatialSearchTreeVersion(fc.Name);
+                        await CheckSpatialSearchTreeVersion(fc.Name);
                         if (_spatialSearchTrees[OriginFcName(fc.Name)] == null)
                         {
                             _spatialSearchTrees[OriginFcName(fc.Name)] = this.SpatialSearchTree(fc.Name);
@@ -422,22 +419,23 @@ namespace gView.DataSources.Fdb.MSSql
         {
             string tabName = ((fc is SqlFDBFeatureClass) ? ((SqlFDBFeatureClass)fc).DbTableName : "FC_" + fc.Name);
             string sql = "SELECT " + subFields + " FROM " + tabName;
-            return await SqlFDBFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, this.GetGeometryDef(fc.Name), toSRef);
+            return await SqlFDBFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, await this.GetGeometryDef(fc.Name), toSRef);
         }
         #endregion
 
-        override public IDatasetElement DatasetElement(/*SqlFDBDataset*/IDataset dataset, string elementName)
+        async override public Task<IDatasetElement> DatasetElement(/*SqlFDBDataset*/IDataset dataset, string elementName)
         {
             SqlFDBDataset sqlDataset = dataset as SqlFDBDataset;
             if (sqlDataset == null)
                 throw new Exception("datasset is null or not an SqlFDBDataset");
 
-            ISpatialReference sRef = this.SpatialReference(sqlDataset.DatasetName);
+            ISpatialReference sRef = await this.SpatialReference(sqlDataset.DatasetName);
 
             if (sqlDataset.DatasetName == elementName)
             {
-                string imageSpace;
-                if (IsImageDataset(sqlDataset.DatasetName, out imageSpace))
+                var isImageDatasetResult = await IsImageDataset(sqlDataset.DatasetName);
+                string imageSpace=isImageDatasetResult.imageSpace;
+                if (isImageDatasetResult.isImageDataset)
                 {
                     IDatasetElement fLayer = DatasetElement(sqlDataset, elementName + "_IMAGE_POLYGONS") as IDatasetElement;
                     if (fLayer != null && fLayer.Class is IFeatureClass)
@@ -470,7 +468,7 @@ namespace gView.DataSources.Fdb.MSSql
 
             if (IsLinkedFeatureClass(row))
             {
-                IDataset linkedDs = LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
+                IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                 if (linkedDs == null)
                     return null;
                 IDatasetElement linkedElement = linkedDs.Element((string)row["Name"]).Result;
@@ -504,16 +502,16 @@ namespace gView.DataSources.Fdb.MSSql
                 geomDef = new GeometryDef((geometryType)fcRow["GeometryType"], null, true);
             }
 
-            SqlFDBDatasetElement layer = new SqlFDBDatasetElement(this, sqlDataset, row["Name"].ToString(), geomDef);
+            SqlFDBDatasetElement layer = await SqlFDBDatasetElement.Create(this, sqlDataset, row["Name"].ToString(), geomDef);
             if (layer.Class is SqlFDBFeatureClass) // kann auch SqlFDBNetworkClass sein
             {
-                ((SqlFDBFeatureClass)layer.Class).Envelope = this.FeatureClassExtent(layer.Class.Name);
+                ((SqlFDBFeatureClass)layer.Class).Envelope = await this.FeatureClassExtent(layer.Class.Name);
                 ((SqlFDBFeatureClass)layer.Class).IDFieldName = "FDB_OID";
                 ((SqlFDBFeatureClass)layer.Class).ShapeFieldName = "FDB_SHAPE";
                 //((SqlFDBFeatureClass)layer.FeatureClass).SetSpatialTreeInfo(this.SpatialTreeInfo(row["Name"].ToString()));
                 ((SqlFDBFeatureClass)layer.Class).SpatialReference = sRef;
             }
-            var fields = this.FeatureClassFields(sqlDataset._dsID, layer.Class.Name);
+            var fields = await this.FeatureClassFields(sqlDataset._dsID, layer.Class.Name);
             if (fields != null && layer.Class is ITableClass)
             {
                 foreach (IField field in fields)
@@ -540,12 +538,12 @@ namespace gView.DataSources.Fdb.MSSql
             }
         }
 
-        override public List<IDatasetElement> DatasetLayers(IDataset dataset)
+        async override public Task<List<IDatasetElement>> DatasetLayers(IDataset dataset)
         {
             _errMsg = "";
             if (_conn == null) return null;
 
-            int dsID = this.DatasetID(dataset.DatasetName);
+            int dsID = await this.DatasetID(dataset.DatasetName);
             if (dsID == -1) return null;
 
             DataSet ds = new DataSet();
@@ -556,20 +554,21 @@ namespace gView.DataSources.Fdb.MSSql
             }
 
             List<IDatasetElement> layers = new List<IDatasetElement>();
-            ISpatialReference sRef = SpatialReference(dataset.DatasetName);
+            ISpatialReference sRef = await SpatialReference(dataset.DatasetName);
 
-            string imageSpace;
-            if (IsImageDataset(dataset.DatasetName, out imageSpace))
+            var isImageDatasetResult = await IsImageDataset(dataset.DatasetName);
+            string imageSpace = isImageDatasetResult.imageSpace;
+            if (isImageDatasetResult.isImageDataset)
             {
                 if (TableExists("FC_" + dataset.DatasetName + "_IMAGE_POLYGONS"))
                 {
-                    IFeatureClass fc = new SqlFDBFeatureClass(this, dataset, new GeometryDef(geometryType.Polygon, sRef, false));
+                    IFeatureClass fc = await SqlFDBFeatureClass.Create(this, dataset, new GeometryDef(geometryType.Polygon, sRef, false));
                     ((SqlFDBFeatureClass)fc).Name = dataset.DatasetName + "_IMAGE_POLYGONS";
-                    ((SqlFDBFeatureClass)fc).Envelope = this.FeatureClassExtent(fc.Name);
+                    ((SqlFDBFeatureClass)fc).Envelope = await this.FeatureClassExtent(fc.Name);
                     ((SqlFDBFeatureClass)fc).IDFieldName = "FDB_OID";
                     ((SqlFDBFeatureClass)fc).ShapeFieldName = "FDB_SHAPE";
 
-                    var fields = this.FeatureClassFields(dataset.DatasetName, fc.Name);
+                    var fields = await this.FeatureClassFields(dataset.DatasetName, fc.Name);
                     if (fields != null)
                     {
                         foreach (IField field in fields)
@@ -601,7 +600,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                 if (IsLinkedFeatureClass(row))
                 {
-                    IDataset linkedDs = LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
+                    IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                     if (linkedDs == null)
                         continue;
                     IDatasetElement linkedElement = linkedDs.Element((string)row["Name"]).Result;
@@ -643,10 +642,10 @@ namespace gView.DataSources.Fdb.MSSql
                     geomDef = new GeometryDef((geometryType)fcRow["GeometryType"], null, true);
                 }
 
-                SqlFDBDatasetElement layer = new SqlFDBDatasetElement(this, dataset, row["Name"].ToString(), geomDef);
+                SqlFDBDatasetElement layer = await SqlFDBDatasetElement.Create(this, dataset, row["Name"].ToString(), geomDef);
                 if (layer.Class is SqlFDBFeatureClass)
                 {
-                    ((SqlFDBFeatureClass)layer.Class).Envelope = this.FeatureClassExtent(layer.Class.Name);
+                    ((SqlFDBFeatureClass)layer.Class).Envelope = await this.FeatureClassExtent(layer.Class.Name);
                     ((SqlFDBFeatureClass)layer.Class).IDFieldName = "FDB_OID";
                     ((SqlFDBFeatureClass)layer.Class).ShapeFieldName = "FDB_SHAPE";
                     if (sRef != null)
@@ -654,7 +653,7 @@ namespace gView.DataSources.Fdb.MSSql
                         ((SqlFDBFeatureClass)layer.Class).SpatialReference = (ISpatialReference)(new SpatialReference((SpatialReference)sRef));
                     }
                 }
-                var fields = this.FeatureClassFields(dataset.DatasetName, layer.Class.Name);
+                var fields = await this.FeatureClassFields(dataset.DatasetName, layer.Class.Name);
                 if (fields != null && layer.Class is ITableClass)
                 {
                     foreach (IField field in fields)
@@ -667,13 +666,13 @@ namespace gView.DataSources.Fdb.MSSql
             return layers;
         }
 
-        override public IFeatureClass GetFeatureclass(string dsName, string fcName)
+        async override public Task<IFeatureClass> GetFeatureclass(string dsName, string fcName)
         {
             SqlFDBDataset dataset = new SqlFDBDataset();
-            dataset.ConnectionString = _conn.ConnectionString + ";dsname=" + dsName;
-            dataset.Open();
+            await dataset.SetConnectionString(_conn.ConnectionString + ";dsname=" + dsName);
+            await dataset.Open();
 
-            IDatasetElement element = dataset.Element(fcName).Result;
+            IDatasetElement element = await dataset.Element(fcName);
             if (element != null && element.Class is IFeatureClass)
             {
                 return element.Class as IFeatureClass;
@@ -931,17 +930,17 @@ namespace gView.DataSources.Fdb.MSSql
             }
         }
 
-        override protected bool UpdateSpatialIndexID(string FCName, List<SpatialIndexNode> nodes)
+        async override protected Task<bool> UpdateSpatialIndexID(string FCName, List<SpatialIndexNode> nodes)
         {
             ProgressReport report = new ProgressReport();
-            report.featureMax = CountFeatures(FCName);
+            report.featureMax = await CountFeatures(FCName);
 
             try
             {
-                string dsname = DatasetNameFromFeatureClassName(FCName);
+                string dsname = await DatasetNameFromFeatureClassName(FCName);
                 if (dsname == "") return false;
                 Fields fields = new Fields();
-                foreach (IField field in FeatureClassFields(dsname, FCName))
+                foreach (IField field in await FeatureClassFields(dsname, FCName))
                 {
                     if (field.name == "FDB_OID" || field.name == "FDB_SHAPE") continue;
                     fields.Add(field);
@@ -952,7 +951,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                 string newFCName = "_TMP_" + FCName;
 
-                if (CreateFeatureClass(dsname, newFCName, GetGeometryDef(FCName), fields) == -1)
+                if (await CreateFeatureClass(dsname, newFCName, await GetGeometryDef(FCName), fields) == -1)
                 {
                     return false;
                 }
@@ -1108,10 +1107,10 @@ namespace gView.DataSources.Fdb.MSSql
                 return null;
             }
         }
-        override public bool ReorderRecords(IFeatureClass fClass)
+        async override public Task<bool> ReorderRecords(IFeatureClass fClass)
         {
             ProgressReport report = new ProgressReport();
-            report.featureMax = CountFeatures(fClass.Name);
+            report.featureMax = await CountFeatures(fClass.Name);
 
             /*
 			try 
@@ -1228,7 +1227,7 @@ namespace gView.DataSources.Fdb.MSSql
             }
             else if (_seVersion == 0)
             {
-                CheckSpatialSearchTreeVersion(fClass.Name);
+                await CheckSpatialSearchTreeVersion(fClass.Name);
                 if (_spatialSearchTrees[fClass.Name] == null)
                 {
                     _spatialSearchTrees[fClass.Name] = this.SpatialSearchTree(fClass.Name);
@@ -1236,8 +1235,9 @@ namespace gView.DataSources.Fdb.MSSql
                 tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
             }
 
-            string replicationField = null;
-            if (!Replication.AllowFeatureClassEditing(fClass, out replicationField))
+            var allowFcEditing = await Replication.AllowFeatureClassEditing(fClass);
+            string replicationField = allowFcEditing.replFieldName;
+            if (!allowFcEditing.allow)
             {
                 _errMsg = "Replication Error: can't edit checked out and released featureclass...";
                 return false;
@@ -1268,7 +1268,7 @@ namespace gView.DataSources.Fdb.MSSql
                         if (!String.IsNullOrEmpty(replicationField))
                         {
                             Replication.AllocateNewObjectGuid(feature, replicationField);
-                            if (!Replication.WriteDifferencesToTable(fClass, (System.Guid)feature[replicationField], Replication.SqlStatement.INSERT, replTrans, out _errMsg))
+                            if (!await Replication.WriteDifferencesToTable(fClass, (System.Guid)feature[replicationField], Replication.SqlStatement.INSERT, replTrans))
                             {
                                 _errMsg = "Replication Error: " + _errMsg;
                                 return false;
@@ -1423,7 +1423,6 @@ namespace gView.DataSources.Fdb.MSSql
             if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset)) return false;
             if (features.Count == 0) return true;
 
-            int counter = 0;
             BinarySearchTree2 tree = null;
 
             ISpatialIndexDef si = ((IFDBDataset)fClass.Dataset).SpatialIndexDef;
@@ -1435,7 +1434,7 @@ namespace gView.DataSources.Fdb.MSSql
             }
             else if (_seVersion == 0)
             {
-                CheckSpatialSearchTreeVersion(fClass.Name);
+                await CheckSpatialSearchTreeVersion(fClass.Name);
                 if (_spatialSearchTrees[fClass.Name] == null)
                 {
                     _spatialSearchTrees[fClass.Name] = this.SpatialSearchTree(fClass.Name);
@@ -1443,8 +1442,9 @@ namespace gView.DataSources.Fdb.MSSql
                 tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
             }
 
-            string replicationField = null;
-            if (!Replication.AllowFeatureClassEditing(fClass, out replicationField))
+            var allowFcEditing = await Replication.AllowFeatureClassEditing(fClass);
+            string replicationField = allowFcEditing.replFieldName;
+            if (!allowFcEditing.allow)
             {
                 _errMsg = "Replication Error: can't edit checked out and released featureclass...";
                 return false;
@@ -1473,9 +1473,9 @@ namespace gView.DataSources.Fdb.MSSql
                         }
                         if (!String.IsNullOrEmpty(replicationField))
                         {
-                            if (!Replication.WriteDifferencesToTable(fClass,
+                            if (!await Replication.WriteDifferencesToTable(fClass,
                                 await Replication.FeatureObjectGuid(fClass, feature, replicationField),
-                                Replication.SqlStatement.UPDATE, replTrans, out _errMsg))
+                                Replication.SqlStatement.UPDATE, replTrans))
                             {
                                 _errMsg = "Replication Error: " + _errMsg;
                                 return false;
@@ -1641,8 +1641,9 @@ namespace gView.DataSources.Fdb.MSSql
                     ReplicationTransaction replTrans = new ReplicationTransaction(connection, transaction);
                     command.Transaction = transaction;
 
-                    string replicationField = null;
-                    if (!Replication.AllowFeatureClassEditing(fClass, out replicationField))
+                    var allowFcEditing = await Replication.AllowFeatureClassEditing(fClass);
+                    string replicationField = allowFcEditing.replFieldName;
+                    if (!allowFcEditing.allow)
                     {
                         _errMsg = "Replication Error: can't edit checked out and released featureclass...";
                         return false;
@@ -1658,11 +1659,10 @@ namespace gView.DataSources.Fdb.MSSql
 
                         foreach (DataRow row in tab.Rows)
                         {
-                            if (!Replication.WriteDifferencesToTable(fClass,
+                            if (!await Replication.WriteDifferencesToTable(fClass,
                                 (System.Guid)row[replicationField],
                                 Replication.SqlStatement.DELETE,
-                                replTrans,
-                                out _errMsg))
+                                replTrans))
                             {
                                 _errMsg = "Replication Error: " + _errMsg;
                                 return false;
@@ -1703,7 +1703,7 @@ namespace gView.DataSources.Fdb.MSSql
         #endregion
 
         #region BinaryTree2
-        public override bool ShrinkSpatialIndex(string fcName)
+        async public override Task<bool> ShrinkSpatialIndex(string fcName)
         {
             if (_seVersion > 0)
             {
@@ -1712,8 +1712,8 @@ namespace gView.DataSources.Fdb.MSSql
                     using (SqlConnection connection = new SqlConnection(_conn.ConnectionString))
                     {
                         SqlCommand command = new SqlCommand("exec dbo.RebuildSIndex '" + fcName + "'", connection);
-                        connection.Open();
-                        command.ExecuteNonQuery();
+                        await connection.OpenAsync();
+                        await command.ExecuteNonQueryAsync();
                     }
                     return true;
                 }
@@ -1725,7 +1725,7 @@ namespace gView.DataSources.Fdb.MSSql
             }
             else
             {
-                return base.ShrinkSpatialIndex(fcName);
+                return await base.ShrinkSpatialIndex(fcName);
             }
         }
 
@@ -1802,7 +1802,7 @@ namespace gView.DataSources.Fdb.MSSql
         }
         #endregion
 
-        private bool SplitIndexNodes(IFeatureClass fClass, SqlConnection connection, List<long> nids)
+        async private Task<bool> SplitIndexNodes(IFeatureClass fClass, SqlConnection connection, List<long> nids)
         {
             //return true;
             if (nids == null || nids.Count == 0) return true;
@@ -1839,7 +1839,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                 foreach (DataRow row in tab.Select("NID_COUNT>200"))
                 {
-                    if (!SplitIndexNode(fClass, connection, (long)row["FDB_NID"])) return false;
+                    if (!await SplitIndexNode(fClass, connection, (long)row["FDB_NID"])) return false;
                 }
 
                 return true;
@@ -1851,7 +1851,7 @@ namespace gView.DataSources.Fdb.MSSql
             }
         }
 
-        private bool SplitIndexNode(IFeatureClass fClass, SqlConnection connection, long nid)
+        async private Task<bool> SplitIndexNode(IFeatureClass fClass, SqlConnection connection, long nid)
         {
             if (_spatialSearchTrees[fClass.Name] == null)
             {
@@ -1870,7 +1870,7 @@ namespace gView.DataSources.Fdb.MSSql
 
             SqlTransaction transaction = null;
 
-            IGeometryDef geomDef = this.GetGeometryDef(fClass.Name);
+            IGeometryDef geomDef = await this.GetGeometryDef(fClass.Name);
             try
             {
                 SqlCommand command = new SqlCommand("SELECT [FDB_OID],[FDB_SHAPE],[FDB_NID] FROM " + FcTableName(fClass) + " WHERE FDB_NID=" + nid.ToString(), connection);
@@ -1978,7 +1978,7 @@ namespace gView.DataSources.Fdb.MSSql
                         }
                     }
 
-                    return SplitIndexNodes(fClass, connection, nids);
+                    return await SplitIndexNodes(fClass, connection, nids);
                 }
             }
             catch (Exception ex)
@@ -2150,7 +2150,7 @@ namespace gView.DataSources.Fdb.MSSql
             return false;
         }
 
-        protected override bool RenameField(string table, IField oldField, IField newField)
+        async protected override Task<bool> RenameField(string table, IField oldField, IField newField)
         {
             if (oldField == null || newField == null || _conn == null) return false;
 
@@ -2256,9 +2256,9 @@ namespace gView.DataSources.Fdb.MSSql
             return CreateTable(tableName, fields, false);
         }
 
-        public override bool CreateObjectGuidColumn(string fcName, string fieldname)
+        async public override Task<bool> CreateObjectGuidColumn(string fcName, string fieldname)
         {
-            if (!AlterTable(fcName, null, new Field(fieldname, FieldType.replicationID)))
+            if (!await AlterTable(fcName, null, new Field(fieldname, FieldType.replicationID)))
             {
                 return false;
             }
@@ -3288,19 +3288,25 @@ namespace gView.DataSources.Fdb.MSSql
     {
         private ISelectionSet m_selectionset;
 
-        public SqlFDBDatasetElement(SqlFDB fdb, IDataset dataset, string name, GeometryDef geomDef)
+        private SqlFDBDatasetElement() { }
+
+        async static public Task<SqlFDBDatasetElement> Create(SqlFDB fdb, IDataset dataset, string name, GeometryDef geomDef)
         {
+            var dsElement = new SqlFDBDatasetElement();
+
             if (geomDef.GeometryType == geometryType.Network)
             {
-                _class = new SqlFDBNetworkFeatureclass(fdb, dataset, name, geomDef);
+                dsElement._class = await SqlFDBNetworkFeatureclass.Create(fdb, dataset, name, geomDef);
             }
             else
             {
-                _class = new SqlFDBFeatureClass(fdb, dataset, geomDef);
-                ((SqlFDBFeatureClass)_class).Name =
-                ((SqlFDBFeatureClass)_class).Aliasname = name;
+                dsElement._class = await SqlFDBFeatureClass.Create(fdb, dataset, geomDef);
+                ((SqlFDBFeatureClass)dsElement._class).Name =
+                ((SqlFDBFeatureClass)dsElement._class).Aliasname = name;
             }
-            this.Title = name;
+            dsElement.Title = name;
+
+            return dsElement;
         }
 
         public SqlFDBDatasetElement(LinkedFeatureClass fc)

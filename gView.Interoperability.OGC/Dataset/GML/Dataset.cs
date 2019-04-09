@@ -62,25 +62,22 @@ namespace gView.Interoperability.OGC.Dataset.GML
             }
         }
 
-        internal GMLFile GMLFile
+        async internal Task<GMLFile> GetGMLFile()
         {
-            get
+            try
             {
-                try
-                {
-                    if (_state != DatasetState.opened) return null;
+                if (_state != DatasetState.opened) return null;
 
-                    FileInfo fi = new FileInfo(_connectionString);
-                    if (fi.Exists)
-                    {
-                        return new GMLFile(_connectionString);
-                    }
-                    return null;
-                }
-                catch
+                FileInfo fi = new FileInfo(_connectionString);
+                if (fi.Exists)
                 {
-                    return null;
+                    return await GMLFile.Create(_connectionString);
                 }
+                return null;
+            }
+            catch
+            {
+                return null;
             }
         }
 
@@ -100,16 +97,13 @@ namespace gView.Interoperability.OGC.Dataset.GML
             return Task.FromResult(_envelope);
         }
 
-        public gView.Framework.Geometry.ISpatialReference SpatialReference
+        public Task<ISpatialReference> GetSpatialReference()
         {
-            get
-            {
-                return _sRef;
-            }
-            set
-            {
-                _sRef = value;
-            }
+            return Task.FromResult(_sRef);
+        }
+        public void SetSpatialReference(ISpatialReference sRef)
+        {
+            _sRef = sRef;
         }
 
         #endregion
@@ -122,12 +116,15 @@ namespace gView.Interoperability.OGC.Dataset.GML
             {
                 return _connectionString;
             }
-            set
-            {
-                _connectionString = value;
-                _database.DirectoryName = _connectionString;
-            }
         }
+        public Task<bool> SetConnectionString(string value)
+        {
+            _connectionString = value;
+            _database.DirectoryName = _connectionString;
+
+            return Task.FromResult(true);
+        }
+        
 
         public string DatasetGroupName
         {
@@ -261,7 +258,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 if (!di.Exists) return null;
 
                 Dataset ds = new Dataset();
-                ds.ConnectionString = di + @"\" + title + ".gml";
+                await ds.SetConnectionString(di + @"\" + title + ".gml");
                 if (await ds.Open())
                 {
                     return await ds.Element(title);

@@ -28,11 +28,14 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
         public WMSDataset() { }
 
-        public WMSDataset(string connectionString, string name)
+        async static public Task<WMSDataset> Create(string connectionString, string name)
         {
-            _name = name;
+            var dataset = new WMSDataset();
+            dataset._name = name;
 
-            ConnectionString = connectionString;
+            await dataset.SetConnectionString(connectionString);
+
+            return dataset;
         }
 
         internal WMSClass WebServiceClass
@@ -57,17 +60,11 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             return Task.FromResult(_envelope);
         }
 
-        public gView.Framework.Geometry.ISpatialReference SpatialReference
+        public Task<ISpatialReference> GetSpatialReference()
         {
-            get
-            {
-                return null;
-            }
-            set
-            {
-
-            }
+            return Task.FromResult<ISpatialReference>(null);
         }
+        public void SetSpatialReference(ISpatialReference sRef) { }
 
         #endregion
 
@@ -79,33 +76,34 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             {
                 return _connectionString;
             }
-            set
+        }
+        public Task<bool> SetConnectionString(string value)
+        {
+            _class = null;
+            _wfsDataset = null;
+            switch (ConfigTextStream.ExtractValue(value, "service").ToUpper())
             {
-                _class = null;
-                _wfsDataset = null;
-                switch (ConfigTextStream.ExtractValue(value, "service").ToUpper())
-                {
-                    case "WMS":
-                        _type = SERVICE_TYPE.WMS;
-                        _connection = ConfigTextStream.ExtractValue(value, "wms");
-                        _class = new WMSClass(this);
-                        break;
-                    case "WFS":
-                        _type = SERVICE_TYPE.WFS;
-                        _wfsDataset = new WFSDataset(this, ConfigTextStream.ExtractValue(value, "wfs"));
-                        break;
-                    case "WMS_WFS":
-                        _type = SERVICE_TYPE.WMS_WFS;
-                        _connection = ConfigTextStream.ExtractValue(value, "wms");
-                        _class = new WMSClass(this);
-                        _wfsDataset = new WFSDataset(this, ConfigTextStream.ExtractValue(value, "wfs"));
-                        break;
-                    default:
-                        return;
-                        break;
-                }
-                _connectionString = value;
+                case "WMS":
+                    _type = SERVICE_TYPE.WMS;
+                    _connection = ConfigTextStream.ExtractValue(value, "wms");
+                    _class = new WMSClass(this);
+                    break;
+                case "WFS":
+                    _type = SERVICE_TYPE.WFS;
+                    _wfsDataset = new WFSDataset(this, ConfigTextStream.ExtractValue(value, "wfs"));
+                    break;
+                case "WMS_WFS":
+                    _type = SERVICE_TYPE.WMS_WFS;
+                    _connection = ConfigTextStream.ExtractValue(value, "wms");
+                    _class = new WMSClass(this);
+                    _wfsDataset = new WFSDataset(this, ConfigTextStream.ExtractValue(value, "wfs"));
+                    break;
+                default:
+                    return Task.FromResult(false);
             }
+            _connectionString = value;
+
+            return Task.FromResult(true);
         }
 
         public string DatasetGroupName
@@ -268,7 +266,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
         public void Load(IPersistStream stream)
         {
-            this.ConnectionString = (string)stream.Load("ConnectionString", "");
+            this.SetConnectionString((string)stream.Load("ConnectionString", ""));
 
             //switch (_type)
             //{
