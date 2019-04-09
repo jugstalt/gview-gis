@@ -433,7 +433,7 @@ namespace gView.Framework.UI.Dialogs
 			}
 		}
 
-        private void btnImport_Click(object sender, EventArgs e)
+        async private void btnImport_Click(object sender, EventArgs e)
         {
             List<ExplorerDialogFilter> filters = new List<ExplorerDialogFilter>();
             filters.Add(new OpenDataFilter());
@@ -448,11 +448,11 @@ namespace gView.Framework.UI.Dialogs
 
                 if (exObject.Object is IFeatureDataset)
                 {
-                    _sRef = ((IFeatureDataset)exObject.Object).SpatialReference;
+                    _sRef = await ((IFeatureDataset)exObject.Object).GetSpatialReference();
                 }
                 else if (exObject.Object is IRasterDataset)
                 {
-                    _sRef = ((IRasterDataset)exObject.Object).SpatialReference;
+                    _sRef = await ((IRasterDataset)exObject.Object).GetSpatialReference();
                 }
                 else if (exObject.Object is IFeatureClass)
                 {

@@ -58,20 +58,17 @@ namespace gView.Framework.UI.Dialogs.Network
             get { return _serialized.NetworkTolerance.UseTolerance ? _serialized.NetworkTolerance.Tolerance : double.Epsilon; }
         }
 
-        private List<int> ComplexEdgeFcIds
+        async private Task<List<int>> ComplexEdgeFcIds()
         {
-            get
+            List<int> fcids = new List<int>();
+            if (_serialized.ComplexEdges.UserComplexEdges)
             {
-                List<int> fcids = new List<int>();
-                if (_serialized.ComplexEdges.UserComplexEdges)
+                foreach (var fcName in _serialized.ComplexEdges.ComplexEdgeNames)
                 {
-                    foreach(var fcName in _serialized.ComplexEdges.ComplexEdgeNames)
-                    {
-                        fcids.Add(this.FeatureDatabase.GetFeatureClassID(fcName));
-                    }
+                    fcids.Add(await this.FeatureDatabase.GetFeatureClassID(fcName));
                 }
-                return fcids;
             }
+            return fcids;
         }
 
         private GraphWeights GraphWeights
@@ -82,37 +79,31 @@ namespace gView.Framework.UI.Dialogs.Network
             }
         }
 
-        private Dictionary<int, string> SwitchNodeFcIds
+        async private Task<Dictionary<int, string>> SwitchNodeFcIds()
         {
-            get
+            Dictionary<int, string> switchNodes = new Dictionary<int, string>();
+            foreach (var switchNode in _serialized.Nodes.Rows.Where(m => m.IsSwitch))
             {
-                Dictionary<int, string> switchNodes = new Dictionary<int, string>();
-                foreach(var switchNode in _serialized.Nodes.Rows.Where(m=>m.IsSwitch))
-                {
-                    switchNodes.Add(this.FeatureDatabase.GetFeatureClassID(switchNode.FeatureclassName), switchNode.FieldName == "<none>" ? String.Empty : switchNode.FieldName);
-                }
-                return switchNodes;
+                switchNodes.Add(await this.FeatureDatabase.GetFeatureClassID(switchNode.FeatureclassName), switchNode.FieldName == "<none>" ? String.Empty : switchNode.FieldName);
             }
+            return switchNodes;
         }
 
-        private Dictionary<int, NetworkNodeType> NetworkNodeTypeFcIds
+        async private Task<Dictionary<int, NetworkNodeType>> NetworkNodeTypeFcIds()
         {
-            get
+            Dictionary<int, NetworkNodeType> nodeTypes = new Dictionary<int, NetworkNodeType>();
+            foreach (var switchNode in _serialized.Nodes.Rows)
             {
-                Dictionary<int, NetworkNodeType> nodeTypes = new Dictionary<int, NetworkNodeType>();
-                foreach(var switchNode in _serialized.Nodes.Rows)
-                {
-                    nodeTypes.Add(this.FeatureDatabase.GetFeatureClassID(switchNode.FeatureclassName), (NetworkNodeType)Enum.Parse(typeof(NetworkNodeType), switchNode.NodeType, true));
-                }
-                return nodeTypes;
+                nodeTypes.Add(await this.FeatureDatabase.GetFeatureClassID(switchNode.FeatureclassName), (NetworkNodeType)Enum.Parse(typeof(NetworkNodeType), switchNode.NodeType, true));
             }
+            return nodeTypes;
         }
 
         #endregion
 
         #region ISerializableExecute
 
-        public void DeserializeObject(string config)
+        async public Task DeserializeObject(string config)
         {
             _serialized= JsonConvert.DeserializeObject<FormNewNetworkclass.Serialized>(config);
         }
@@ -124,7 +115,7 @@ namespace gView.Framework.UI.Dialogs.Network
             return JsonConvert.SerializeObject(_serialized);
         }
 
-        public void Execute(ProgressReporterEvent reporter)
+        async public Task Execute(ProgressReporterEvent reporter)
         {
             if (_serialized == null)
                 throw new Exception("can't execute. No config!");
@@ -145,8 +136,10 @@ namespace gView.Framework.UI.Dialogs.Network
             IFeatureDataset dataset = PlugInManager.Create(new Guid(_serialized.DatasetGuid)) as IFeatureDataset;
             if (dataset == null)
                 throw new Exception("Unable to crete dataset");
-            dataset.ConnectionString = _serialized.ConnectionString;
-            dataset.Open();
+
+            await dataset.SetConnectionString(_serialized.ConnectionString);
+            await dataset.Open();
+
             this.FeatureDataset = dataset;
             this.FeatureDatabase = dataset.Database as IFeatureDatabase3;
             if (this.FeatureDatabase == null)
@@ -159,10 +152,10 @@ namespace gView.Framework.UI.Dialogs.Network
             creator.EdgeFeatureClasses = this.EdgeFeatureclasses;
             creator.NodeFeatureClasses = this.NodeFeatureclasses;
             creator.SnapTolerance = this.SnapTolerance;
-            creator.ComplexEdgeFcIds = this.ComplexEdgeFcIds;
+            creator.ComplexEdgeFcIds = await this.ComplexEdgeFcIds();
             creator.GraphWeights = this.GraphWeights;
-            creator.SwitchNodeFcIdAndFieldnames = this.SwitchNodeFcIds;
-            creator.NodeTypeFcIds = this.NetworkNodeTypeFcIds;
+            creator.SwitchNodeFcIdAndFieldnames = await this.SwitchNodeFcIds();
+            creator.NodeTypeFcIds = await this.NetworkNodeTypeFcIds();
 
             if (reporter != null && creator is IProgressReporter)
             {

@@ -213,7 +213,7 @@ namespace gView.Framework.UI.Dialogs
                 lstFeatureclasses.Items[0].Selected = true;
         }
 
-        private void btnScript_Click(object sender, EventArgs e)
+        async private void btnScript_Click(object sender, EventArgs e)
         {
             if (_fcs.Count == 0) return;
 
@@ -233,7 +233,7 @@ namespace gView.Framework.UI.Dialogs
             {
                 if (_destDataset is IDataset2)
                 {
-                    IDataset2 ds2 = ((IDataset2)_destDataset).EmptyCopy();
+                    IDataset2 ds2 = await ((IDataset2)_destDataset).EmptyCopy();
                     if (ds2 != null)
                     {
                         destConnStr = ds2.ConnectionString;
@@ -265,8 +265,8 @@ namespace gView.Framework.UI.Dialogs
                     string connStr = ds.ConnectionString;
                     if (item.FeatureClass.Dataset is IDataset2)
                     {
-                        IDataset2 ds2 = ((IDataset2)item.FeatureClass.Dataset).EmptyCopy();
-                        ds2.AppendElement(item.FeatureClass.Name);
+                        IDataset2 ds2 = await ((IDataset2)item.FeatureClass.Dataset).EmptyCopy();
+                        await ds2.AppendElement(item.FeatureClass.Name);
                         connStr = ds2.ConnectionString;
                         ds2.Dispose();
                     }

@@ -6,6 +6,7 @@ using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Symbology.UI
 {
@@ -1182,6 +1183,8 @@ namespace gView.Framework.Symbology.UI
                 Ghost.Rotation = _angle * 180.0 / Math.PI;
                 Ghost.Translation(_xOffset, _yOffset);
             }
+
+            return Task.FromResult(true);
         }
 
         virtual public Task<bool> Save(IPersistStream stream)
@@ -1201,6 +1204,8 @@ namespace gView.Framework.Symbology.UI
             stream.Save("xOffset", _xOffset);
             stream.Save("yOffset", _yOffset);
             stream.Save("Angle", _angle);
+
+            return Task.FromResult(true);
         }
 
         #endregion

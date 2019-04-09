@@ -8,6 +8,7 @@ using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Plugins.MapTools.Dialogs;
 using gView.Framework.Carto.UI;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.MapTools
 {
@@ -56,16 +57,18 @@ namespace gView.Plugins.MapTools
                 _doc = hook as IMapDocument;
         }
 
-        public void OnEvent(object element, object dataset)
+        public Task<bool> OnEvent(object element, object dataset)
         {
             if (!(element is IDatasetElement) || !(dataset is IDataset))
-                return;
+                return Task.FromResult(true); 
 
             TOC toc= _doc.FocusMap.TOC as TOC;
-            if(toc==null) return;
+            if(toc==null)
+                return Task.FromResult(true);
 
             ITOCElement tocElement = toc.GetTOCElement(((IDatasetElement)element).Class);
-            if (tocElement == null) return;
+            if (tocElement == null)
+                return Task.FromResult(true);
 
             ILayer newLayer = LayerFactory.Create(((IDatasetElement)element).Class);
             
@@ -82,12 +85,15 @@ namespace gView.Plugins.MapTools
                     ((IFeatureLayer)newLayer).FilterQuery = filter;
                 }
             }
-            if (newLayer == null) return;
+            if (newLayer == null)
+                return Task.FromResult(true);
 
             _doc.FocusMap.AddLayer(newLayer);
 
             if (_doc.Application is IMapApplication)
                 ((IMapApplication)_doc.Application).RefreshActiveMap(Framework.Carto.DrawPhase.All);
+
+            return Task.FromResult(true);
         }
 
         public object Image
@@ -135,22 +141,25 @@ namespace gView.Plugins.MapTools
                 _doc = hook as IMapDocument;
         }
 
-        public void OnEvent(object element, object dataset)
+        public Task<bool> OnEvent(object element, object dataset)
         {
             if (!(element is IDatasetElement) || !(dataset is IDataset))
-                return;
+                return Task.FromResult(true);
 
             TOC toc = _doc.FocusMap.TOC as TOC;
-            if (toc == null) return;
+            if (toc == null)
+                return Task.FromResult(true);
 
             ITOCElement tocElement = toc.GetTOCElement(((IDatasetElement)element).Class);
-            if (tocElement == null) return;
+            if (tocElement == null)
+                return Task.FromResult(true);
             ITOCElement parentTocElement = tocElement.ParentGroup;
 
             //IDatasetElement e = ((IDataset)dataset)[((IDatasetElement)element).Title];
             //if (e == null) return;
  
-            if (!(element is ILayer)) return;
+            if (!(element is ILayer))
+                return Task.FromResult(true);
             FormSplitLayerWithFilter dlg = new FormSplitLayerWithFilter(_doc, element as ILayer);
 
             if (dlg.ShowDialog() == DialogResult.OK)
@@ -180,6 +189,8 @@ namespace gView.Plugins.MapTools
                 if (_doc.Application is IMapApplication)
                     ((IMapApplication)_doc.Application).RefreshActiveMap(Framework.Carto.DrawPhase.All);
             }
+
+            return Task.FromResult(true);
         }
 
         public object Image

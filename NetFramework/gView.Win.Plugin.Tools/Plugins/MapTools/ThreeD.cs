@@ -6,6 +6,7 @@ using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Plugins.MapTools.Graphics;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.MapTools
 {
@@ -46,12 +47,12 @@ namespace gView.Plugins.MapTools
 
         public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
         {
-            
+            return Task.FromResult(true);
         }
 
         public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
         {
-            
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -93,9 +94,9 @@ namespace gView.Plugins.MapTools
             
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            
+            return Task.FromResult(true);
         }
 
         #endregion

@@ -1,6 +1,7 @@
 ﻿using System;
 using gView.Framework.UI;
 using gView.Framework.system.UI;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.Tools.MapTools
 {
@@ -39,9 +40,9 @@ namespace gView.Plugins.Tools.MapTools
             
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            
+            return Task.FromResult(true);
         }
 
         #endregion

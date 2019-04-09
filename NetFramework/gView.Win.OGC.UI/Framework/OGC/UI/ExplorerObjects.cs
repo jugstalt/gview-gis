@@ -111,10 +111,9 @@ namespace gView.Framework.OGC.UI
             public System.Drawing.Image Image
             {
                 get { return global::gView.Win.OGC.UI.Properties.Resources.earth; }
-
+            }
 
             #endregion
-            }
         }
     }
 }

@@ -5,6 +5,7 @@ using gView.Framework.Carto;
 using gView.Framework.system;
 using gView.Framework.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI
 {
@@ -83,7 +84,7 @@ namespace gView.Framework.UI
         /// <remarks>
         /// The time the framework calls the methode depands on the <c>toolType</c>.
         /// </remarks>
-        void OnEvent(object MapEvent);
+        Task<bool> OnEvent(object MapEvent);
     }
 
     public interface IExTool
@@ -122,7 +123,7 @@ namespace gView.Framework.UI
         /// <remarks>
         /// The time the framework calls the methode depands on the <c>toolType</c>.
         /// </remarks>
-        void OnEvent(object MapEvent);
+        Task<bool> OnEvent(object MapEvent);
     }
 
     public interface IToolMenu : ITool
@@ -189,7 +190,7 @@ namespace gView.Framework.UI
         /// </summary>
         /// <param name="dataset">The dataset</param>
         /// <param name="elelemt">The dataset element</param>
-        void OnEvent(object element, object parent);
+        Task<bool> OnEvent(object element, object parent);
         /// <summary>
         /// The image that is used as the icon on this command.
         /// </summary>

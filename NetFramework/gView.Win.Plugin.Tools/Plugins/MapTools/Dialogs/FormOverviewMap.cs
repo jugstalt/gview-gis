@@ -12,6 +12,7 @@ using gView.Framework.system;
 using gView.Framework.Symbology;
 using gView.Framework.UI.Events;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -287,15 +288,19 @@ namespace gView.Plugins.MapTools.Dialogs
                     _doc = (IMapDocument)hook;
             }
 
-            public void OnEvent(object MapEvent)
+            public Task<bool> OnEvent(object MapEvent)
             {
-                if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null) return;
-                if (!(MapEvent is MapEventRubberband)) return;
+                if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null)
+                    return Task.FromResult(true);
+                if (!(MapEvent is MapEventRubberband))
+                    return Task.FromResult(true);
 
                 MapEventRubberband ev = (MapEventRubberband)MapEvent;
-                if (ev.Map == null) return;
-                
-                if (!(ev.Map.Display is Display)) return;
+                if (ev.Map == null)
+                    return Task.FromResult(true);
+
+                if (!(ev.Map.Display is Display))
+                    return Task.FromResult(true);
                 Display nav = (Display)ev.Map.Display;
 
                 IEnvelope extent = new Envelope(ev.minX, ev.minY, ev.maxX, ev.maxY);
@@ -326,6 +331,8 @@ namespace gView.Plugins.MapTools.Dialogs
 
                 //ev.refreshMap = true;
                 //ev.drawPhase = DrawPhase.Graphics;
+
+                return Task.FromResult(true);
             }
 
             #endregion

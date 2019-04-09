@@ -6,6 +6,7 @@ using gView.Framework.system;
 using gView.Framework.IO;
 using gView.Framework.Globalisation;
 using gView.Framework.UI;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.MapTools
 {
@@ -74,12 +75,12 @@ namespace gView.Plugins.MapTools
 
         public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
         {
-
+            return Task.FromResult(true);
         }
 
         public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
         {
-
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -155,14 +156,16 @@ namespace gView.Plugins.MapTools
 
         #region IPersistable Member
 
-        void IPersistable.Load(IPersistStream stream)
+        Task<bool> IPersistable.Load(IPersistStream stream)
         {
             //_visible = (bool)stream.Load("visible", true);
+            return Task.FromResult(true);
         }
 
-        void IPersistable.Save(IPersistStream stream)
+        Task<bool> IPersistable.Save(IPersistStream stream)
         {
             //stream.Save("visible", _visible);
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -205,12 +208,12 @@ namespace gView.Plugins.MapTools
 
         public Task<bool> Load(IPersistStream stream)
         {
-            
+            return Task.FromResult(true);
         }
 
         public Task<bool> Save(IPersistStream stream)
         {
-            
+            return Task.FromResult(true);
         }
 
         #endregion

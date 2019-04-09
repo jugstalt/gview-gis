@@ -5,6 +5,7 @@ using gView.Framework.UI;
 using System.Windows.Forms;
 using gView.Framework.Globalisation;
 using gView.Framework.IO;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.ExTools
 {
@@ -41,10 +42,12 @@ namespace gView.Plugins.ExTools
                 _exapp = hook as IExplorerApplication;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             if (_exapp != null)
                 _exapp.RefreshContents();
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -115,7 +118,7 @@ namespace gView.Plugins.ExTools
                 _exapp = hook as IExplorerApplication;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             gView.Framework.UI.Dialogs.FormAddNetworkDirectory dlg = new gView.Framework.UI.Dialogs.FormAddNetworkDirectory();
             if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK && !String.IsNullOrEmpty(dlg.Path))
@@ -129,6 +132,8 @@ namespace gView.Plugins.ExTools
                     _exapp.RefreshContents();
                 }
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion

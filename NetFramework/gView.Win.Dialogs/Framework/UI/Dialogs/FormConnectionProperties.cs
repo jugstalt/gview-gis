@@ -34,13 +34,13 @@ namespace gView.Framework.UI.Dialogs
         {
             txtConnectionString.Text = PrepareConnectionString(_dataset.ConnectionString);
         }
-        private void btnOK_Click(object sender, EventArgs e)
+        async private void btnOK_Click(object sender, EventArgs e)
         {
             if (_dataset != null &&
                 _dataset.ConnectionString != _dsConnectionString)
             {
-                _dataset.ConnectionString = _dsConnectionString;
-                _dataset.Open();
+                await _dataset.SetConnectionString(_dsConnectionString);
+                await _dataset.Open();
 
                 int dsIndex = 0;
                 IDataset ds;

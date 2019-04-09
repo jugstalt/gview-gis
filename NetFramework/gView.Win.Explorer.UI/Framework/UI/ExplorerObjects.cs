@@ -344,7 +344,7 @@ namespace gView.Framework.UI
 
                     if (dlg.SelectedFeatureDatabase == null) return;
                     IFileFeatureDatabase fileDB = dlg.SelectedFeatureDatabase;
-                    _dataset = fileDB[this.FullName];
+                    _dataset = await fileDB.GetDataset(this.FullName);
                     if (_dataset == null) return;
 
                     //_dataset = new ImportFeatureDataset(dlg.SelectedFeatureDatabase);
@@ -443,7 +443,7 @@ namespace gView.Framework.UI
                 }
                 _import.SchemaOnly = schemaOnly;
 
-                FeatureClassImportProgressReporter reporter = new FeatureClassImportProgressReporter(_import, (IFeatureClass)datasetObject);
+                FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.Create(_import, (IFeatureClass)datasetObject);
 
                 FormProgress progress = new FormProgress(reporter, thread, datasetObject);
                 progress.Text = "Import Featureclass: " + ((IFeatureClass)datasetObject).Name;
@@ -463,7 +463,7 @@ namespace gView.Framework.UI
                 }
                 _import.SchemaOnly = schemaOnly;
 
-                FeatureClassImportProgressReporter reporter = new FeatureClassImportProgressReporter(_import, ((FeatureClassListViewItem)datasetObject).FeatureClass);
+                FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.Create(_import, ((FeatureClassListViewItem)datasetObject).FeatureClass);
 
                 FormProgress progress = new FormProgress(reporter, thread, datasetObject);
                 progress.Text = "Import Featureclass: " + ((FeatureClassListViewItem)datasetObject).Text;
@@ -510,15 +510,23 @@ namespace gView.Framework.UI
             private ProgressReport _report = new ProgressReport();
             private ICancelTracker _cancelTracker = null;
 
-            public FeatureClassImportProgressReporter(FeatureImport import, IFeatureClass source)
-            {
-                if (import == null) return;
-                _cancelTracker = import.CancelTracker;
+            private FeatureClassImportProgressReporter() { }
 
-                if (source != null) _report.featureMax = source.CountFeatures;
-                import.ReportAction += new FeatureImport.ReportActionEvent(import_ReportAction);
-                import.ReportProgress += new FeatureImport.ReportProgressEvent(import_ReportProgress);
-                import.ReportRequest += new FeatureImport.ReportRequestEvent(import_ReportRequest);
+            async static public Task<FeatureClassImportProgressReporter> Create(FeatureImport import, IFeatureClass source)
+            {
+                var reporter = new FeatureClassImportProgressReporter();
+
+                if (import == null)
+                    return reporter;
+
+                reporter._cancelTracker = import.CancelTracker;
+
+                if (source != null) reporter._report.featureMax = await source.CountFeatures();
+                import.ReportAction += new FeatureImport.ReportActionEvent(reporter.import_ReportAction);
+                import.ReportProgress += new FeatureImport.ReportProgressEvent(reporter.import_ReportProgress);
+                import.ReportRequest += new FeatureImport.ReportRequestEvent(reporter.import_ReportRequest);
+
+                return reporter;
             }
 
             void import_ReportRequest(FeatureImport sender, RequestArgs args)

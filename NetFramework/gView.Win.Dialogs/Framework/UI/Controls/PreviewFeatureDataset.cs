@@ -44,18 +44,15 @@ namespace gView.Framework.UI.Controls
             return Task.FromResult(_envelope);
         }
 
-        public gView.Framework.Geometry.ISpatialReference SpatialReference
+        public Task<ISpatialReference> GetSpatialReference()
         {
-            get
-            {
-                return _sRef;
-            }
-            set
-            {
-                _sRef = value;
-            }
+            return Task.FromResult(_sRef);
         }
-
+        public void SetSpatialReference(ISpatialReference value)
+        {
+            _sRef = value;
+        }
+        
         #endregion
 
         #region IDataset Members
@@ -71,11 +68,12 @@ namespace gView.Framework.UI.Controls
             {
                 return "";
             }
-            set
-            {
-
-            }
         }
+        public Task<bool> SetConnectionString(string value)
+        {
+            return Task.FromResult(true);
+        }
+        
 
         public string DatasetGroupName
         {

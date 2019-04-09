@@ -136,13 +136,14 @@ namespace gView.Framework.system.UI
                     }
                 }
 
-                if (destLayer != null) fdb.DeleteFeatureClass(fcname);
+                if (destLayer != null)
+                    await fdb.DeleteFeatureClass(fcname);
 
                 GeometryDef geomDef = new GeometryDef(sourceFC);
                 if (geomDef.GeometryType == geometryType.Unknown && sourceGeometryType != null)
                     geomDef.GeometryType = sourceGeometryType.Value;
 
-                int fcID = fdb.CreateFeatureClass(destDS.DatasetName,
+                int fcID = await fdb.CreateFeatureClass(destDS.DatasetName,
                                                   fcname,
                                                   geomDef,
                                                   (fieldTranslation == null) ?
@@ -186,7 +187,7 @@ namespace gView.Framework.system.UI
                     }
                     if (!result)
                     {
-                        fdb.DeleteFeatureClass(fcname);
+                        await fdb.DeleteFeatureClass(fcname);
                         destDS.Dispose();
                         return false;
                     }
@@ -211,7 +212,7 @@ namespace gView.Framework.system.UI
                 }
                 else
                 {
-                    fdb.DeleteFeatureClass(fcname);
+                    await fdb.DeleteFeatureClass(fcname);
                     _errMsg = "Import is canceled by the user...";
                     return false;
                 }

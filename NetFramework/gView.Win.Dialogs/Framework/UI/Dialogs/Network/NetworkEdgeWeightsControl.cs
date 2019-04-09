@@ -60,7 +60,7 @@ namespace gView.Framework.UI.Dialogs.Network
             }
         }
 
-        private void lstWeights_SelectedIndexChanged(object sender, EventArgs e)
+        async private void lstWeights_SelectedIndexChanged(object sender, EventArgs e)
         {
             btnRemoveWeight.Enabled = lstWeights.SelectedIndices.Count == 1;
             if (lstWeights.SelectedIndices.Count == 1)
@@ -72,7 +72,7 @@ namespace gView.Framework.UI.Dialogs.Network
 
                 foreach (IFeatureClass fc in _selected.EdgeFeatureclasses)
                 {
-                    int fcId = _database.GetFeatureClassID(fc.Name);
+                    int fcId = await _database.GetFeatureClassID(fc.Name);
 
                     DataGridViewRow row = new DataGridViewRow();
                     DataGridViewTextBoxCell idCell = new DataGridViewTextBoxCell();

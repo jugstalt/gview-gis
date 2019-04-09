@@ -7,6 +7,7 @@ using System.IO;
 using gView.Framework.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI
 {
@@ -126,6 +127,8 @@ namespace gView.Framework.UI
                 {
                     this.Add(fav);
                 }
+
+                return Task.FromResult(true);
             }
 
             public Task<bool> Save(IPersistStream stream)
@@ -134,6 +137,8 @@ namespace gView.Framework.UI
                 {
                     stream.Save("fav", fav);
                 }
+
+                return Task.FromResult(true);
             }
 
             #endregion
@@ -177,6 +182,8 @@ namespace gView.Framework.UI
                     }
                     catch { }
                 }
+
+                return Task.FromResult(true);
             }
 
             public Task<bool> Save(IPersistStream stream)
@@ -187,6 +194,8 @@ namespace gView.Framework.UI
                 {
                     stream.Save("image", MyFavorites.ImageToBase64String(_image, ImageFormat.Png));
                 }
+
+                return Task.FromResult(true);
             }
 
             #endregion

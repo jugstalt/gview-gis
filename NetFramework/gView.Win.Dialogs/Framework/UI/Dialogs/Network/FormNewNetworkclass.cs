@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using gView.Framework.system;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Dialogs.Network
 {
@@ -103,9 +104,9 @@ namespace gView.Framework.UI.Dialogs.Network
         {
             get { return _tolerance.Tolerance; }
         }
-        public List<int> ComplexEdgeFcIds
+        async public Task<List<int>> ComplexEdgeFcIds()
         {
-            get { return _complexEdges.ComplexEdgeFcIds; }
+            return await _complexEdges.ComplexEdgeFcIds();
         }
         public GraphWeights GraphWeights
         {
@@ -127,52 +128,51 @@ namespace gView.Framework.UI.Dialogs.Network
         }
         #endregion
 
-        public Serialized Serialize
+        public Serialized GetSerialize()
         {
-            get
+
+            return new Serialized()
             {
-                return new Serialized()
-                {
-                    ConnectionString = _dataset.ConnectionString,
-                    DatasetGuid = PlugInManager.PlugInID(_dataset).ToString(),
-                    DatasetName = _dataset.DatasetName,
-                    NetworkCreatorAssembly = new FileInfo(this._networkCreatorType.Assembly.Location).Name,
-                    NetworkCreatorType = this._networkCreatorType.ToString(),
+                ConnectionString = _dataset.ConnectionString,
+                DatasetGuid = PlugInManager.PlugInID(_dataset).ToString(),
+                DatasetName = _dataset.DatasetName,
+                NetworkCreatorAssembly = new FileInfo(this._networkCreatorType.Assembly.Location).Name,
+                NetworkCreatorType = this._networkCreatorType.ToString(),
 
-                    FeatureClasses = _selecteFeturesclasses.Serialize,
-                    NetworkTolerance = _tolerance.Serialize,
-                    ComplexEdges = _complexEdges.Serialize,
-                    Nodes = _switches.Serialize,
-                    EdgeWeights = _edgeWeights.Serialize
-                };
-            }
-            set
-            {
-                if (value == null)
-                    return;
-
-                if(this.FeatureDataset==null)
-                {
-                    IFeatureDataset dataset = PlugInManager.Create(new Guid(value.DatasetGuid)) as IFeatureDataset;
-                    if (dataset == null)
-                        throw new Exception("Unable to crete dataset");
-                    dataset.ConnectionString = value.ConnectionString;
-
-                    this.FeatureDataset = dataset;
-                }
-
-                _selecteFeturesclasses.Serialize = value.FeatureClasses;
-                _tolerance.Serialize = value.NetworkTolerance;
-                _complexEdges.OnShowWizardPage();
-                _complexEdges.Serialize = value.ComplexEdges;
-                _switches.OnShowWizardPage();
-                _switches.Serialize = value.Nodes;
-                _edgeWeights.Serialize = value.EdgeWeights;
-
-                var assembly = Assembly.LoadFrom(SystemVariables.ApplicationDirectory + @"\" + value.NetworkCreatorAssembly);
-                _networkCreatorType = (assembly.CreateInstance(value.NetworkCreatorType) as INetworkCreator)?.GetType(); 
-            }
+                FeatureClasses = _selecteFeturesclasses.Serialize,
+                NetworkTolerance = _tolerance.Serialize,
+                ComplexEdges = _complexEdges.Serialize,
+                Nodes = _switches.Serialize,
+                EdgeWeights = _edgeWeights.Serialize
+            };
         }
+        async public Task SetSerialize(Serialized value)
+        {
+            if (value == null)
+                return;
+
+            if (this.FeatureDataset == null)
+            {
+                IFeatureDataset dataset = PlugInManager.Create(new Guid(value.DatasetGuid)) as IFeatureDataset;
+                if (dataset == null)
+                    throw new Exception("Unable to crete dataset");
+                await dataset.SetConnectionString(value.ConnectionString);
+
+                this.FeatureDataset = dataset;
+            }
+
+            _selecteFeturesclasses.Serialize = value.FeatureClasses;
+            _tolerance.Serialize = value.NetworkTolerance;
+            await _complexEdges.OnShowWizardPage();
+            _complexEdges.Serialize = value.ComplexEdges;
+            await _switches.OnShowWizardPage();
+            _switches.Serialize = value.Nodes;
+            _edgeWeights.Serialize = value.EdgeWeights;
+
+            var assembly = Assembly.LoadFrom(SystemVariables.ApplicationDirectory + @"\" + value.NetworkCreatorAssembly);
+            _networkCreatorType = (assembly.CreateInstance(value.NetworkCreatorType) as INetworkCreator)?.GetType();
+        }
+        
 
         #region Serialze Class
 
@@ -214,30 +214,30 @@ namespace gView.Framework.UI.Dialogs.Network
             var dlg = new SaveFileDialog();
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                System.IO.File.WriteAllText(dlg.FileName, JsonConvert.SerializeObject(this.Serialize, Formatting.Indented));
+                System.IO.File.WriteAllText(dlg.FileName, JsonConvert.SerializeObject(this.GetSerialize(), Formatting.Indented));
             }
         }
 
-        private void btnLoad_Click(object sender, EventArgs e)
+        async private void btnLoad_Click(object sender, EventArgs e)
         {
             var dlg = new OpenFileDialog();
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                this.Serialize = JsonConvert.DeserializeObject<Serialized>(System.IO.File.ReadAllText(dlg.FileName));
+                await this.SetSerialize(JsonConvert.DeserializeObject<Serialized>(System.IO.File.ReadAllText(dlg.FileName)));
             }
         }
 
         #region ISerializableObject
 
 
-        public void DeserializeObject(string config)
+        async public Task DeserializeObject(string config)
         {
-            this.Serialize = JsonConvert.DeserializeObject<Serialized>(config);
+            await this.SetSerialize(JsonConvert.DeserializeObject<Serialized>(config));
         }
 
         public string SerializeObject()
         {
-            return JsonConvert.SerializeObject(this.Serialize);
+            return JsonConvert.SerializeObject(this.GetSerialize());
         }
 
         #endregion

@@ -10,6 +10,7 @@ using gView.Framework.Geometry;
 using gView.Framework.Globalisation;
 using gView.Framework.UI;
 using gView.Plugins.MapTools.Dialogs;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.MapTools
 {
@@ -132,12 +133,14 @@ namespace gView.Plugins.MapTools
             
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             PageSetupDialog dlg = new PageSetupDialog();
             dlg.Document = PrinterPage.Document;
 
             dlg.ShowDialog();
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -184,7 +187,7 @@ namespace gView.Plugins.MapTools
             
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             FormPrintPreview dlg = new FormPrintPreview();
             //PrintPreviewDialog dlg = new PrintPreviewDialog();
@@ -195,7 +198,10 @@ namespace gView.Plugins.MapTools
             PrinterPage page = new PrinterPage(map,((MapEvent)MapEvent).Map.Display.Envelope);
             //dlg.ShowDialog();
             page.Release();
+
+            return Task.FromResult(true);
         }
+
 
         #endregion
 
@@ -251,7 +257,7 @@ namespace gView.Plugins.MapTools
             
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             PrintDialog dlg = new PrintDialog();
             dlg.Document = PrinterPage.Document;
@@ -260,6 +266,8 @@ namespace gView.Plugins.MapTools
             {
                 PrinterPage.Document.Print();
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion

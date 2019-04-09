@@ -10,6 +10,7 @@ using System.Windows.Forms.DataVisualization.Charting;
 using gView.Framework.UI;
 using gView.Framework.system.UI;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -94,7 +95,7 @@ namespace gView.Plugins.MapTools.Dialogs
             {
             }
 
-            public override void OnEvent(object MapEvent)
+            public override Task<bool> OnEvent(object MapEvent)
             {
                 if (MapEvent is FormChart)
                 {
@@ -129,6 +130,8 @@ namespace gView.Plugins.MapTools.Dialogs
 
                     //chart.chart1.SaveImage();
                 }
+
+                return Task.FromResult(true);
             }
         }
 
@@ -192,7 +195,7 @@ namespace gView.Plugins.MapTools.Dialogs
                     private set;
                 }
 
-                public override void OnEvent(object MapEvent)
+                public override Task<bool> OnEvent(object MapEvent)
                 {
                     if (MapEvent is FormChart)
                     {
@@ -208,6 +211,8 @@ namespace gView.Plugins.MapTools.Dialogs
                             ((FormChart)MapEvent).ChartType = oldChartType;
                         }
                     }
+
+                    return Task.FromResult(true);
                 }
             }
 

@@ -231,7 +231,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private void btnImportDef_Click(object sender, EventArgs e)
+        async private void btnImportDef_Click(object sender, EventArgs e)
         {
             List<ExplorerDialogFilter> filters = new List<ExplorerDialogFilter>();
             filters.Add(new OpenFDBFeatureclassFilter());
@@ -255,7 +255,7 @@ namespace gView.Framework.UI.Controls
                         IFeatureClass fc = (IFeatureClass)exObject.Object;
                         IImplementsBinarayTreeDef fdb = (IImplementsBinarayTreeDef)fc.Dataset.Database;
 
-                        BinaryTreeDef def = fdb.BinaryTreeDef(fc.Name);
+                        BinaryTreeDef def = await fdb.BinaryTreeDef(fc.Name);
                         if (def != null)
                         {
                             if (bounds == null)

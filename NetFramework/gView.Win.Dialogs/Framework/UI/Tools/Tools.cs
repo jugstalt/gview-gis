@@ -6,6 +6,7 @@ using gView.Framework.Carto;
 using gView.Framework.Globalisation;
 using gView.Framework.system;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Tools
 {
@@ -57,14 +58,17 @@ namespace gView.Framework.UI.Tools
                 _doc = (IMapDocument)hook;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (_doc == null) return;
+            if (_doc == null)
+                return Task.FromResult(true);
 
             IMap map = new Map();
             map.Name = "Map" + (_doc.Maps.Count() + 1).ToString();
 
             _doc.AddMap(map);
+
+            return Task.FromResult(true);
         }
 
         #endregion

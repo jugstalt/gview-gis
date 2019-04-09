@@ -14,6 +14,7 @@ using gView.Plugins.ExTools.Dialogs;
 using gView.Framework.UI.Controls.Filter;
 using gView.Framework.UI.Dialogs;
 using gView.Framework.Sys.UI;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.MapTools
 {
@@ -90,7 +91,7 @@ namespace gView.Plugins.MapTools
                 _exapp = hook as IExplorerApplication;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             //Thread thread = new Thread(new ThreadStart(OnEvent));
             //thread.TrySetApartmentState(ApartmentState.STA);
@@ -98,6 +99,8 @@ namespace gView.Plugins.MapTools
             //thread.Join();
 
             OnEvent();
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -294,12 +297,14 @@ namespace gView.Plugins.MapTools
                 _doc = hook as IMapDocument;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             Thread thread = new Thread(new ThreadStart(OnEvent));
             thread.TrySetApartmentState(ApartmentState.STA);
             thread.Start();
             thread.Join();
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -426,13 +431,15 @@ namespace gView.Plugins.MapTools
                 _exapp = hook as IExplorerApplication;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             //Thread thread = new Thread(new ThreadStart(OnEvent));
             //thread.TrySetApartmentState(ApartmentState.STA);
             //thread.Start();
             //thread.Join();   
             OnEvent();
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -662,9 +669,11 @@ namespace gView.Plugins.MapTools
                 _exapp = hook as IExplorerApplication;
         }
 
-        void IExTool.OnEvent(object MapEvent)
+        Task<bool> IExTool.OnEvent(object MapEvent)
         {
             OnEvent();
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -861,7 +870,7 @@ namespace gView.Plugins.MapTools
                 _exapp = hook as IExplorerApplication;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             if (_doc != null && _doc.FocusMap != null && _doc.FocusMap.Display != null)
             {
@@ -903,6 +912,8 @@ namespace gView.Plugins.MapTools
 
             if (_exapp != null)
                 _exapp.RefreshContents();
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -1001,7 +1012,7 @@ namespace gView.Plugins.MapTools
                 _exapp = hook as IExplorerApplication;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             if (_context != null && _context.Count == 1)
             {
@@ -1024,6 +1035,8 @@ namespace gView.Plugins.MapTools
 
             if (_exapp != null)
                 _exapp.RefreshContents();
+
+            return Task.FromResult(true);
         }
 
         #endregion

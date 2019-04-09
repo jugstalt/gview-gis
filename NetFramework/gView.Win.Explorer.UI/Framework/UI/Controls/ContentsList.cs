@@ -522,7 +522,7 @@ namespace gView.Framework.UI.Controls
             context.Add(exObject);
             return await BuildContextMenu(exObject, context, false);
         }
-        private Task<ContextMenuStrip> BuildContextMenu(IExplorerObject exObject, List<IExplorerObject> context, bool emptyContentsClick)
+        async private Task<ContextMenuStrip> BuildContextMenu(IExplorerObject exObject, List<IExplorerObject> context, bool emptyContentsClick)
         {
             if (_strip != null && _strip.Visible == true)
             {
@@ -602,9 +602,9 @@ namespace gView.Framework.UI.Controls
                     _strip.Items.Add(new ToolStripSeparator());
                     _strip.Items.Add(_replicationMenuItem);
 
-                    _appendReplicationIDMenuItem.Enabled = !Replication.FeatureClassHasRelicationID(fc);
-                    _checkoutMenuItem.Enabled = Replication.FeatureClassCanReplicate(fc);
-                    _checkinMenuItem.Enabled = (Replication.FeatureClassGeneration(fc) > 0);
+                    _appendReplicationIDMenuItem.Enabled = !await Replication.FeatureClassHasRelicationID(fc);
+                    _checkoutMenuItem.Enabled = await Replication.FeatureClassCanReplicate(fc);
+                    _checkinMenuItem.Enabled = (await Replication.FeatureClassGeneration(fc) > 0);
                 }
             }
 
@@ -615,7 +615,7 @@ namespace gView.Framework.UI.Controls
             }
 
             _contextObject = exObject;
-            return Task.FromResult<ContextMenuStrip>(_strip);
+            return _strip;
         }
 
         private int _mX = 0, _mY = 0;
@@ -660,7 +660,7 @@ namespace gView.Framework.UI.Controls
         }
 
 
-        private void listView_DoubleClick(object sender, EventArgs e)
+        async private void listView_DoubleClick(object sender, EventArgs e)
         {
             ListViewItem item = listView.GetItemAt(_mX, _mY);
 
@@ -669,7 +669,7 @@ namespace gView.Framework.UI.Controls
             {
                 ExplorerObjectEventArgs args = new ExplorerObjectEventArgs();
                 ((IExplorerObjectDoubleClick)((ExplorerObjectListViewItem)item).ExplorerObject).ExplorerObjectDoubleClick(args);
-                CheckExplorerObjectEventArgs(args);
+                await CheckExplorerObjectEventArgs(args);
                 return;
             }
 
@@ -682,7 +682,7 @@ namespace gView.Framework.UI.Controls
             if (ItemDoubleClicked != null) ItemDoubleClicked(item);
         }
 
-        private void CheckExplorerObjectEventArgs(ExplorerObjectEventArgs args)
+        async private Task CheckExplorerObjectEventArgs(ExplorerObjectEventArgs args)
         {
             if (args.NewExplorerObject != null)
             {
@@ -692,7 +692,7 @@ namespace gView.Framework.UI.Controls
                 item.ImageIndex = imageIndex;
 
                 listView.Items.Add(item);
-                if (_tree != null) _tree.AddChildNode(args.NewExplorerObject);
+                if (_tree != null) await _tree.AddChildNode(args.NewExplorerObject);
             }
         }
 

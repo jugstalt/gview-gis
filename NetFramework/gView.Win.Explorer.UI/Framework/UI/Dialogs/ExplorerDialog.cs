@@ -9,6 +9,7 @@ using gView.Framework.UI;
 using gView.Framework.Data;
 using gView.Framework.UI.Controls.Filter;
 using gView.Framework.UI.Controls;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -71,77 +72,75 @@ namespace gView.Framework.UI.Dialogs
             get { return explorerDialogControl1.SelectedExplorerDialogFilter; }
         }
 
-        public List<IDataset> Datasets
+        async public Task<List<IDataset>> Datasets()
         {
-            get
+            List<IDataset> datasets = new List<IDataset>();
+            List<IExplorerObject> usedObjects = new List<IExplorerObject>();
+
+            foreach (IExplorerObject exObject in ExplorerObjects)
             {
-                List<IDataset> datasets = new List<IDataset>();
-                List<IExplorerObject> usedObjects = new List<IExplorerObject>();
+                if (exObject == null) continue;
+                if (usedObjects.Contains(exObject)) continue;
 
-                foreach (IExplorerObject exObject in ExplorerObjects)
+                if (exObject.Object is IDataset)
                 {
-                    if (exObject == null) continue;
-                    if (usedObjects.Contains(exObject)) continue;
-
-                    if (exObject.Object is IDataset)
-                    {
-                        datasets.Add((IDataset)exObject.Object);
-                        usedObjects.Add(exObject);
-                    }
-                    else if (exObject.Object is IFeatureClass && ((IFeatureClass)exObject.Object).Dataset is IDataset2)
-                    {
-                        IDataset2 dataset = (IDataset2)((IFeatureClass)exObject.Object).Dataset;
-                        IDataset2 datasetClone = dataset.EmptyCopy();
-                        if (datasetClone == null) continue;
-
-                        foreach (IExplorerObject exObject2 in ExplorerObjects)
-                        {
-                            if (exObject2 == null) continue;
-
-                            if (exObject2.Object is IFeatureClass && ((IFeatureClass)exObject2.Object).Dataset == dataset)
-                            {
-                                datasetClone.AppendElement(((IFeatureClass)exObject2.Object).Name);
-                                usedObjects.Add(exObject2);
-                            }
-                        }
-
-                        datasets.Add(datasetClone);
-                    }
-                    else if (exObject.Object is IRasterClass && ((IRasterClass)exObject.Object).Dataset is IDataset2)
-                    {
-                        IDataset2 dataset = (IDataset2)((IRasterClass)exObject.Object).Dataset;
-                        IDataset2 datasetClone = dataset.EmptyCopy();
-                        if (datasetClone == null) continue;
-
-                        foreach (IExplorerObject exObject2 in ExplorerObjects)
-                        {
-                            if (exObject2 == null) continue;
-
-                            if (exObject2.Object is IRasterClass && ((IRasterClass)exObject2.Object).Dataset == dataset)
-                            {
-                                datasetClone.AppendElement(((IRasterClass)exObject2.Object).Name);
-                                usedObjects.Add(exObject2);
-                            }
-                        }
-
-                        datasets.Add(datasetClone);
-                    }
-                    else if (exObject.Object is IFeatureClass && ((IFeatureClass)exObject.Object).Dataset is IDataset)
-                    {
-                        datasets.Add(((IFeatureClass)exObject.Object).Dataset);
-                    }
-                    else if (exObject.Object is IWebServiceClass && ((IWebServiceClass)exObject.Object).Dataset is IDataset)
-                    {
-                        datasets.Add(((IWebServiceClass)exObject.Object).Dataset);
-                    }
-                    else if (exObject.Object is IRasterClass && ((IRasterClass)exObject.Object).Dataset is IDataset)
-                    {
-                        datasets.Add(((IRasterClass)exObject.Object).Dataset);
-                    }
+                    datasets.Add((IDataset)exObject.Object);
+                    usedObjects.Add(exObject);
                 }
+                else if (exObject.Object is IFeatureClass && ((IFeatureClass)exObject.Object).Dataset is IDataset2)
+                {
+                    IDataset2 dataset = (IDataset2)((IFeatureClass)exObject.Object).Dataset;
+                    IDataset2 datasetClone = await dataset.EmptyCopy();
+                    if (datasetClone == null) continue;
 
-                return datasets;
+                    foreach (IExplorerObject exObject2 in ExplorerObjects)
+                    {
+                        if (exObject2 == null) continue;
+
+                        if (exObject2.Object is IFeatureClass && ((IFeatureClass)exObject2.Object).Dataset == dataset)
+                        {
+                            await datasetClone.AppendElement(((IFeatureClass)exObject2.Object).Name);
+                            usedObjects.Add(exObject2);
+                        }
+                    }
+
+                    datasets.Add(datasetClone);
+                }
+                else if (exObject.Object is IRasterClass && ((IRasterClass)exObject.Object).Dataset is IDataset2)
+                {
+                    IDataset2 dataset = (IDataset2)((IRasterClass)exObject.Object).Dataset;
+                    IDataset2 datasetClone = await dataset.EmptyCopy();
+                    if (datasetClone == null) continue;
+
+                    foreach (IExplorerObject exObject2 in ExplorerObjects)
+                    {
+                        if (exObject2 == null) continue;
+
+                        if (exObject2.Object is IRasterClass && ((IRasterClass)exObject2.Object).Dataset == dataset)
+                        {
+                            await datasetClone.AppendElement(((IRasterClass)exObject2.Object).Name);
+                            usedObjects.Add(exObject2);
+                        }
+                    }
+
+                    datasets.Add(datasetClone);
+                }
+                else if (exObject.Object is IFeatureClass && ((IFeatureClass)exObject.Object).Dataset is IDataset)
+                {
+                    datasets.Add(((IFeatureClass)exObject.Object).Dataset);
+                }
+                else if (exObject.Object is IWebServiceClass && ((IWebServiceClass)exObject.Object).Dataset is IDataset)
+                {
+                    datasets.Add(((IWebServiceClass)exObject.Object).Dataset);
+                }
+                else if (exObject.Object is IRasterClass && ((IRasterClass)exObject.Object).Dataset is IDataset)
+                {
+                    datasets.Add(((IRasterClass)exObject.Object).Dataset);
+                }
             }
+
+            return datasets;
+
         }
 
         public bool MulitSelection

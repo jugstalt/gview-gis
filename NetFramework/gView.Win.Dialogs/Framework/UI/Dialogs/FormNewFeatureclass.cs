@@ -9,6 +9,7 @@ using gView.Framework.Geometry;
 using gView.Framework.Data;
 using gView.Framework.UI.Controls;
 using gView.Framework.FDB;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -40,14 +41,21 @@ namespace gView.Framework.UI.Dialogs
             if (fc.Dataset is IFDBDataset)
                 this.SpatialIndexDef = ((IFDBDataset)fc.Dataset).SpatialIndexDef;
         }
-        public FormNewFeatureclass(IFeatureDataset dataset)
+
+        private FormNewFeatureclass()
         {
             InitializeComponent();
+        }
 
-            if (dataset == null) return;
+        async static public Task<FormNewFeatureclass> Create(IFeatureDataset dataset)
+        {
+            var dlg = new FormNewFeatureclass();
 
-            cmbGeometry.SelectedIndex = 0;
-            spatialIndexControl.SpatialReference = dataset.SpatialReference;
+            if (dataset == null)
+                return dlg;
+
+            dlg.cmbGeometry.SelectedIndex = 0;
+            dlg.spatialIndexControl.SpatialReference = await dataset.GetSpatialReference();
 
             foreach (FieldType fieldType in Enum.GetValues(typeof(FieldType)))
             {
@@ -55,14 +63,16 @@ namespace gView.Framework.UI.Dialogs
                     fieldType == FieldType.ID ||
                     fieldType == FieldType.Shape) continue;
 
-                colFieldtype.Items.Add(fieldType);
+                dlg.colFieldtype.Items.Add(fieldType);
             }
 
-            tabControl1.Invalidate();
+            dlg.tabControl1.Invalidate();
 
-            this.IndexTypeIsEditable = false;
+            dlg.IndexTypeIsEditable = false;
             if (dataset is IFDBDataset)
-                this.SpatialIndexDef = ((IFDBDataset)dataset).SpatialIndexDef;
+                dlg.SpatialIndexDef = ((IFDBDataset)dataset).SpatialIndexDef;
+
+            return dlg;
         }
 
         #region Properties

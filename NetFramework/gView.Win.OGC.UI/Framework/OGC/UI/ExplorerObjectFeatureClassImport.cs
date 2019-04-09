@@ -9,6 +9,7 @@ using gView.Framework.UI;
 using gView.Framework.Data;
 using gView.Framework.UI.Dialogs;
 using gView.Framework.Sys.UI;
+using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.UI
 {
@@ -119,7 +120,7 @@ namespace gView.Framework.OGC.UI
         private FeatureImport _import = null;
         private IFeatureDataset _dataset = null;
 
-        private void ImportDatasetObject(object datasetObject)
+        async private Task ImportDatasetObject(object datasetObject)
         {
             if (datasetObject is IFeatureDataset)
             {
@@ -128,7 +129,7 @@ namespace gView.Framework.OGC.UI
                 {
                     if (element is IFeatureLayer)
                     {
-                        ImportDatasetObject(((IFeatureLayer)element).FeatureClass);
+                        await ImportDatasetObject(((IFeatureLayer)element).FeatureClass);
                     }
                 }
             }
@@ -144,7 +145,7 @@ namespace gView.Framework.OGC.UI
                     return;
                 }
 
-                FeatureClassImportProgressReporter reporter = new FeatureClassImportProgressReporter(_import, (IFeatureClass)datasetObject);
+                FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.Create(_import, (IFeatureClass)datasetObject);
 
                 FormProgress progress = new FormProgress(reporter, thread, datasetObject);
                 progress.Text = "Import Featureclass: " + ((IFeatureClass)datasetObject).Name;
@@ -163,7 +164,7 @@ namespace gView.Framework.OGC.UI
                     return;
                 }
 
-                FeatureClassImportProgressReporter reporter = new FeatureClassImportProgressReporter(_import, ((FeatureClassListViewItem)datasetObject).FeatureClass);
+                FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.Create(_import, ((FeatureClassListViewItem)datasetObject).FeatureClass);
 
                 FormProgress progress = new FormProgress(reporter, thread, datasetObject);
                 progress.Text = "Import Featureclass: " + ((FeatureClassListViewItem)datasetObject).Text;
@@ -210,15 +211,24 @@ namespace gView.Framework.OGC.UI
             private ProgressReport _report = new ProgressReport();
             private ICancelTracker _cancelTracker = null;
 
-            public FeatureClassImportProgressReporter(FeatureImport import, IFeatureClass source)
-            {
-                if (import == null) return;
-                _cancelTracker = import.CancelTracker;
+            private FeatureClassImportProgressReporter() { }
 
-                if (source != null) _report.featureMax = source.CountFeatures;
-                import.ReportAction += new FeatureImport.ReportActionEvent(import_ReportAction);
-                import.ReportProgress += new FeatureImport.ReportProgressEvent(import_ReportProgress);
-                import.ReportRequest += new FeatureImport.ReportRequestEvent(import_ReportRequest);
+            async static public Task<FeatureClassImportProgressReporter> Create(FeatureImport import, IFeatureClass source)
+            {
+                var reporter = new FeatureClassImportProgressReporter();
+                if (import == null)
+                    return reporter;
+
+                reporter._cancelTracker = import.CancelTracker;
+
+                if (source != null)
+                    reporter._report.featureMax = await source.CountFeatures();
+
+                import.ReportAction += new FeatureImport.ReportActionEvent(reporter.import_ReportAction);
+                import.ReportProgress += new FeatureImport.ReportProgressEvent(reporter.import_ReportProgress);
+                import.ReportRequest += new FeatureImport.ReportRequestEvent(reporter.import_ReportRequest);
+
+                return reporter;
             }
 
             void import_ReportRequest(FeatureImport sender, RequestArgs args)

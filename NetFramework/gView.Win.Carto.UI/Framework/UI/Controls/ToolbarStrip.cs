@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using gView.Framework.IO;
 using gView.Framework.system;
@@ -87,10 +88,12 @@ namespace gView.Framework.UI.Controls
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        async public Task<bool> Load(IPersistStream stream)
         {
-            if (_toolbar == null) return;
-            _toolbar.Load(stream);
+            if (_toolbar == null)
+                return true;
+
+            await _toolbar.Load(stream);
 
             this.Visible = (bool)stream.Load("visible", true);
             _panel = (ToolbarPanel)stream.Load("panel", (int)ToolbarPanel.top);
@@ -112,17 +115,23 @@ namespace gView.Framework.UI.Controls
                 if (this.Parent != null) this.Parent.Controls.Remove(this);
                 toolStripPanel.Controls.Add(this);
             }
+
+            return true;
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        async public Task<bool> Save(IPersistStream stream)
         {
-            if (_toolbar == null) return;
-            _toolbar.Save(stream);
+            if (_toolbar == null)
+                return true;
+
+            await _toolbar.Save(stream);
 
             stream.Save("visible", this.Visible);
             stream.Save("panel", (int)_panel);
             stream.Save("x", this.Location.X);
             stream.Save("y", this.Location.Y);
+
+            return true;
         }
 
         #endregion

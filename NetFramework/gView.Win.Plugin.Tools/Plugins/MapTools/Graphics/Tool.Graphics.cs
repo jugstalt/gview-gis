@@ -13,6 +13,7 @@ using gView.Framework.IO;
 using gView.Framework.Globalisation;
 using gView.Framework.Symbology.UI;
 using gView.Framework.Symbology.UI.Controls;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.MapTools.Graphics
 {
@@ -76,14 +77,16 @@ namespace gView.Plugins.MapTools.Graphics
 
         #region IPersistable Member
 
-        void IPersistable.Load(IPersistStream stream)
+        Task<bool> IPersistable.Load(IPersistStream stream)
         {
             //_visible = (bool)stream.Load("visible", true);
+            return Task.FromResult(true);
         }
 
-        void IPersistable.Save(IPersistStream stream)
+        Task<bool> IPersistable.Save(IPersistStream stream)
         {
             //stream.Save("visible", _visible);
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -202,9 +205,9 @@ namespace gView.Plugins.MapTools.Graphics
                 _doc = hook as IMapDocument;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -341,16 +344,20 @@ namespace gView.Plugins.MapTools.Graphics
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (!(MapEvent is MapEvent)) return;
+            if (!(MapEvent is MapEvent))
+                return Task.FromResult(true);
 
             IMap map = ((MapEvent)MapEvent).Map;
-            if (map == null || map.Display == null || map.Display.GraphicsContainer == null) return;
+            if (map == null || map.Display == null || map.Display.GraphicsContainer == null)
+                return Task.FromResult(true);
 
             map.Display.GraphicsContainer.EditMode = GrabberMode.Pointer;
             ((MapEvent)MapEvent).drawPhase = DrawPhase.Graphics;
             ((MapEvent)MapEvent).refreshMap = true;
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -635,16 +642,20 @@ namespace gView.Plugins.MapTools.Graphics
                 _doc = hook as IMapDocument;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (!(MapEvent is MapEvent)) return;
+            if (!(MapEvent is MapEvent))
+                return Task.FromResult(true);
 
             IMap map = ((MapEvent)MapEvent).Map;
-            if (map == null || map.Display == null || map.Display.GraphicsContainer == null) return;
+            if (map == null || map.Display == null || map.Display.GraphicsContainer == null)
+                return Task.FromResult(true);
 
             map.Display.GraphicsContainer.EditMode = GrabberMode.Vertex;
             ((MapEvent)MapEvent).drawPhase = DrawPhase.Graphics;
             ((MapEvent)MapEvent).refreshMap = true;
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -878,9 +889,9 @@ namespace gView.Plugins.MapTools.Graphics
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -931,9 +942,9 @@ namespace gView.Plugins.MapTools.Graphics
                 _doc = hook as IMapDocument;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -1142,9 +1153,9 @@ namespace gView.Plugins.MapTools.Graphics
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -1241,9 +1252,9 @@ namespace gView.Plugins.MapTools.Graphics
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -1339,9 +1350,9 @@ namespace gView.Plugins.MapTools.Graphics
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -1402,9 +1413,9 @@ namespace gView.Plugins.MapTools.Graphics
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -1482,9 +1493,9 @@ namespace gView.Plugins.MapTools.Graphics
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -1585,9 +1596,9 @@ namespace gView.Plugins.MapTools.Graphics
                 _doc = hook as IMapDocument;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -1676,9 +1687,9 @@ namespace gView.Plugins.MapTools.Graphics
                 _doc = hook as IMapDocument;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            
+            return Task.FromResult(true);
         }
 
         #endregion

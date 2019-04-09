@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using gView.Framework.UI;
 
 namespace gView.Plugins.MapTools
@@ -44,9 +45,9 @@ namespace gView.Plugins.MapTools
                 _doc = (IMapDocument)hook;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            
+            return Task.FromResult(true);
         }
 
         #endregion

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using gView.Framework.Data;
 using gView.Framework.FDB;
@@ -33,17 +34,17 @@ namespace gView.Framework.UI.Dialogs.Network
 
         #region IWizardPageNotification Member
 
-        public void OnShowWizardPage()
+        async public Task OnShowWizardPage()
         {
             if (_selected != null)
             {
-                List<int> fcIds = this.ComplexEdgeFcIds;
+                List<int> fcIds = await this.ComplexEdgeFcIds();
                 lstEdges.Items.Clear();
 
                 foreach (IFeatureClass fc in _selected.EdgeFeatureclasses)
                 {
                     SelectFeatureclassesControl.FcListViewItem item = new SelectFeatureclassesControl.FcListViewItem(fc);
-                    int fcId = _database.GetFeatureClassID(fc.Name);
+                    int fcId = await _database.GetFeatureClassID(fc.Name);
                     if (fcIds.Contains(fcId))
                         item.Checked = true;
 
@@ -55,25 +56,23 @@ namespace gView.Framework.UI.Dialogs.Network
         #endregion
 
         #region Properties
-        public List<int> ComplexEdgeFcIds
-        {
-            get
-            {
-                List<int> fcIds = new List<int>();
 
-                if (chkCreateComplexEdges.Checked == true)
+        async public Task<List<int>> ComplexEdgeFcIds()
+        {
+            List<int> fcIds = new List<int>();
+
+            if (chkCreateComplexEdges.Checked == true)
+            {
+                foreach (SelectFeatureclassesControl.FcListViewItem item in lstEdges.Items)
                 {
-                    foreach (SelectFeatureclassesControl.FcListViewItem item in lstEdges.Items)
+                    if (item.Checked == true)
                     {
-                        if (item.Checked == true)
-                        {
-                            fcIds.Add(_database.GetFeatureClassID(item.Featureclass.Name));
-                        }
+                        fcIds.Add(await _database.GetFeatureClassID(item.Featureclass.Name));
                     }
                 }
-
-                return fcIds;
             }
+
+            return fcIds;
         }
 
         public Serialized Serialize

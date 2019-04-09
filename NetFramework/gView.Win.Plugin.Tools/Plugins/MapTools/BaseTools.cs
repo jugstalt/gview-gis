@@ -80,9 +80,10 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (_doc == null) return;
+            if (_doc == null)
+                return Task.FromResult(true);
 
             foreach (IMap map in _doc.Maps)
             {
@@ -94,6 +95,8 @@ namespace gView.Plugins.MapTools
 
             if (_doc.Application is IMapApplication)
                 ((IMapApplication)_doc.Application).DocumentFilename = String.Empty;
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -137,9 +140,10 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (_doc == null) return;
+            if (_doc == null)
+                return Task.FromResult(true);
 
             System.Windows.Forms.OpenFileDialog dlg = new OpenFileDialog();
             dlg.Filter = "Map Files (*.mxl)|*.mxl|Reader Files (*.rdm)|*.rdm|ArcXml Files (*.axl)|*.axl";
@@ -149,6 +153,8 @@ namespace gView.Plugins.MapTools
                 if (_doc.Application is IMapApplication)
                     ((IMapApplication)_doc.Application).LoadMapDocument(dlg.FileName);
             }
+
+            return Task.FromResult(true);
         }
 
         public gView.Framework.UI.ToolType toolType
@@ -229,10 +235,12 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (_doc == null) return;
-            if (!(_doc.Application is IMapApplication)) return;
+            if (_doc == null)
+                return Task.FromResult(true);
+            if (!(_doc.Application is IMapApplication))
+                return Task.FromResult(true);
 
             try
             {
@@ -256,7 +264,7 @@ namespace gView.Plugins.MapTools
             {
                 MessageBox.Show(ex.Message);
             }
-
+            return Task.FromResult(true);
         }
 
         public gView.Framework.UI.ToolType toolType
@@ -336,10 +344,12 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (_doc == null) return;
-            if (!(_doc.Application is IMapApplication)) return;
+            if (_doc == null)
+                return Task.FromResult(true);
+            if (!(_doc.Application is IMapApplication))
+                return Task.FromResult(true);
 
             System.Windows.Forms.SaveFileDialog dlg = new SaveFileDialog();
             dlg.Filter = "Map Files (*.mxl)|*.mxl|Reader Files (*.rdm)|*.rdm";
@@ -352,6 +362,8 @@ namespace gView.Plugins.MapTools
                     ((IMapApplication)_doc.Application).SaveMapDocument(dlg.FileName, saveEncDlg.SaveEncrypted);
                 }
             }
+
+            return Task.FromResult(true);
         }
 
         public gView.Framework.UI.ToolType toolType
@@ -419,7 +431,7 @@ namespace gView.Plugins.MapTools
                 _exapp = (IExplorerApplication)hook;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             if (_doc != null && _doc.Application != null)
             {
@@ -429,6 +441,8 @@ namespace gView.Plugins.MapTools
             {
                 _exapp.Exit();
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -475,10 +489,10 @@ namespace gView.Plugins.MapTools
                 _doc = (IMapDocument)hook;
         }
 
-        public void OnEvent(object mapEvent)
+        public Task<bool> OnEvent(object mapEvent)
         {
             if (_doc == null || _doc.FocusMap == null)
-                return;
+                return Task.FromResult(true);
 
             IMap map = _doc.FocusMap;
             if (mapEvent is MapEvent && ((MapEvent)mapEvent).Map != null)
@@ -539,9 +553,9 @@ namespace gView.Plugins.MapTools
 
                     FormToolException.Show("Publish Map", ex.Message);
                 }
-
-
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -559,13 +573,15 @@ namespace gView.Plugins.MapTools
             return true;
         }
 
-        public void OnEvent(object element, object parent)
+        async public Task<bool> OnEvent(object element, object parent)
         {
             if (!(element is IMap))
-                return;
+                return true;
 
             MapEvent mapEvent = new MapEvent(element as IMap);
-            this.OnEvent(mapEvent);
+            await this.OnEvent(mapEvent);
+
+            return true;
         }
 
         #endregion
@@ -622,16 +638,20 @@ namespace gView.Plugins.MapTools
 
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (!(MapEvent is MapEvent)) return;
+            if (!(MapEvent is MapEvent))
+                return Task.FromResult(true);
 
             MapEvent ev = (MapEvent)MapEvent;
-            if (ev.Map == null) return;
+            if (ev.Map == null)
+                return Task.FromResult(true);
 
             ev.Map.Display.mapScale /= 2.0;
 
             ev.refreshMap = true;
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -679,16 +699,20 @@ namespace gView.Plugins.MapTools
 
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (!(MapEvent is MapEvent)) return;
+            if (!(MapEvent is MapEvent))
+                return Task.FromResult(true);
 
             MapEvent ev = (MapEvent)MapEvent;
-            if (ev.Map == null) return;
+            if (ev.Map == null)
+                return Task.FromResult(true);
 
             ev.Map.Display.mapScale *= 2.0;
 
             ev.refreshMap = true;
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -740,14 +764,17 @@ namespace gView.Plugins.MapTools
 
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (!(MapEvent is MapEventRubberband)) return;
+            if (!(MapEvent is MapEventRubberband))
+                return Task.FromResult(true);
 
             MapEventRubberband ev = (MapEventRubberband)MapEvent;
-            if (ev.Map == null) return;
+            if (ev.Map == null)
+                return Task.FromResult(true);
 
-            if (!(ev.Map.Display is Display)) return;
+            if (!(ev.Map.Display is Display))
+                return Task.FromResult(true);
             Display nav = (Display)ev.Map.Display;
 
             if (Math.Abs(ev.maxX - ev.minX) < 1e-5 ||
@@ -760,6 +787,8 @@ namespace gView.Plugins.MapTools
                 nav.ZoomTo(ev.minX, ev.minY, ev.maxX, ev.maxY);
             }
             ev.refreshMap = true;
+
+            return Task.FromResult(true);
         }
         public object Image
         {
@@ -810,16 +839,20 @@ namespace gView.Plugins.MapTools
 
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (!(MapEvent is MapEvent)) return;
+            if (!(MapEvent is MapEvent))
+                return Task.FromResult(true);
 
             MapEvent ev = (MapEvent)MapEvent;
-            if (ev.Map == null || ev.Map.Display == null) return;
+            if (ev.Map == null || ev.Map.Display == null)
+                return Task.FromResult(true);
 
             ev.Map.Display.ZoomTo(ev.Map.Display.Limit);
 
             ev.refreshMap = true;
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -870,15 +903,17 @@ namespace gView.Plugins.MapTools
 
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             if (MapEvent is MapEventRubberband)
             {
 
                 MapEventRubberband ev = (MapEventRubberband)MapEvent;
-                if (ev.Map == null) return;
+                if (ev.Map == null)
+                    return Task.FromResult(true);
 
-                if (!(ev.Map.Display is Display)) return;
+                if (!(ev.Map.Display is Display))
+                    return Task.FromResult(true);
                 Display nav = (Display)ev.Map.Display;
 
                 nav.ZoomTo(new Envelope(ev.minX, ev.minY, ev.maxX, ev.maxY));
@@ -887,14 +922,20 @@ namespace gView.Plugins.MapTools
             else if (MapEvent is MapEventPan)
             {
                 MapEventPan ev = (MapEventPan)MapEvent;
-                if (ev.Map == null) return;
+                if (ev.Map == null)
+                    return Task.FromResult(true);
 
-                if (!(ev.Map.Display is Display)) return;
+                if (!(ev.Map.Display is Display))
+                    return Task.FromResult(true);
                 Display nav = (Display)ev.Map.Display;
 
                 nav.Pan(ev.dX, ev.dY);
                 ev.refreshMap = true;
+
+                return Task.FromResult(true);
             }
+
+            return Task.FromResult(true);
         }
 
         public object Image
@@ -962,14 +1003,17 @@ namespace gView.Plugins.MapTools
 
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (!(MapEvent is MapEventRubberband)) return;
+            if (!(MapEvent is MapEventRubberband))
+                return Task.FromResult(true);
 
             MapEventRubberband ev = (MapEventRubberband)MapEvent;
-            if (ev.Map == null) return;
+            if (ev.Map == null)
+                return Task.FromResult(true);
 
-            if (!(ev.Map.Display is Display)) return;
+            if (!(ev.Map.Display is Display))
+                return Task.FromResult(true);
             Display nav = (Display)ev.Map.Display;
 
             if (Math.Abs(ev.maxX - ev.minX) < 1e-5 ||
@@ -989,6 +1033,8 @@ namespace gView.Plugins.MapTools
                 nav.ZoomTo(mEnv.minx, mEnv.miny, mEnv.maxx, mEnv.maxy);
             }
             ev.refreshMap = true;
+
+            return Task.FromResult(true);
         }
         public object Image
         {
@@ -1036,9 +1082,9 @@ namespace gView.Plugins.MapTools
 
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -1207,9 +1253,9 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -1273,18 +1319,23 @@ namespace gView.Plugins.MapTools
 
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (!(MapEvent is MapEventPan)) return;
+            if (!(MapEvent is MapEventPan))
+                return Task.FromResult(true);
 
             MapEventPan ev = (MapEventPan)MapEvent;
-            if (ev.Map == null) return;
+            if (ev.Map == null)
+                return Task.FromResult(true);
 
-            if (!(ev.Map.Display is Display)) return;
+            if (!(ev.Map.Display is Display))
+                return Task.FromResult(true);
             Display nav = (Display)ev.Map.Display;
 
             nav.Pan(ev.dX, ev.dY);
             ev.refreshMap = true;
+
+            return Task.FromResult(true);
         }
         public object Image
         {
@@ -1403,12 +1454,14 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (_doc == null) return;
+            if (_doc == null)
+                return Task.FromResult(true);
             ZoomForwardStack.Push(ZoomStack.Pop());
             IEnvelope env = ZoomStack.Pop();
-            if (env == null) return;
+            if (env == null)
+                return Task.FromResult(true);
 
             _doc.MapScaleChanged -= new MapScaleChangedEvent(ZoomBack_MapScaleChanged);
             ((MapEvent)MapEvent).Map.Display.ZoomTo(new Envelope(env.minx, env.miny, env.maxx, env.maxy));
@@ -1416,6 +1469,8 @@ namespace gView.Plugins.MapTools
 
             ((MapEvent)MapEvent).refreshMap = true;
             ((MapEvent)MapEvent).drawPhase = DrawPhase.All;
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -1460,16 +1515,20 @@ namespace gView.Plugins.MapTools
 
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             MapEvent ev = (MapEvent)MapEvent;
-            if (ev.Map == null) return;
+            if (ev.Map == null)
+                return Task.FromResult(true);
 
             IEnvelope env = ZoomForwardStack.Pop();
-            if (env == null) return;
+            if (env == null)
+                return Task.FromResult(true);
             ev.Map.Display.ZoomTo(new Envelope(env.minx, env.miny, env.maxx, env.maxy));
             ev.refreshMap = true;
             ev.drawPhase = DrawPhase.All;
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -1528,11 +1587,13 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             MapEvent ev = MapEvent as MapEvent;
-            if (ev == null || ev.Map == null || ev.Map.Display == null) return;
-            if (ev.Map.SelectionEnvironment == null) return;
+            if (ev == null || ev.Map == null || ev.Map.Display == null)
+                return Task.FromResult(true);
+            if (ev.Map.SelectionEnvironment == null)
+                return Task.FromResult(true);
 
 
             if (ev is MapEventClick && _methode != gView.Plugins.MapTools.Controls.selectionMothode.Rectangle)
@@ -1541,13 +1602,14 @@ namespace gView.Plugins.MapTools
 
                 _element.AddPoint(new Point(evClick.x, evClick.y));
                 ev.Map.Display.DrawOverlay(_container, true);
-                return;
+                return Task.FromResult(true); ;
                 //if ((filter.Geometry = _element.Geometry) == null) return;
                 //filter.SpatialReference = ev.map.Display.SpatialReference;
             }
             else
             {
-                if (!(ev is MapEventRubberband)) return;
+                if (!(ev is MapEventRubberband))
+                    return Task.FromResult(true);
                 MapEventRubberband evRubberband = (MapEventRubberband)ev;
 
                 IEnvelope envelope = new gView.Framework.Geometry.Envelope(
@@ -1560,6 +1622,8 @@ namespace gView.Plugins.MapTools
                     ev.drawPhase = DrawPhase.Selection | DrawPhase.Graphics;
                 }
             }
+
+            return Task.FromResult(true);
         }
 
         public gView.Framework.UI.ToolType toolType
@@ -1806,12 +1870,14 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (!(MapEvent is MapEvent)) return;
+            if (!(MapEvent is MapEvent))
+                return Task.FromResult(true);
 
             IMap map = ((MapEvent)MapEvent).Map;
-            if (map == null) return;
+            if (map == null)
+                return Task.FromResult(true);
 
             Envelope env = null;
             IEnvelope envelope = null;
@@ -1863,46 +1929,7 @@ namespace gView.Plugins.MapTools
                 ((MapEvent)MapEvent).refreshMap = true;
             }
 
-            /*
-            if(!(MapEvent is MapEvent)) return;
-
-            Map map=((MapEvent)MapEvent).map;
-            if(map==null) return;
-
-            gView.Geometry.Envelope env=null;
-
-            IEnum layers=map.MapLayers;
-            layers.Reset();
-            ILayer layer;
-            while((layer=(ILayer)layers.Next)!=null) 
-            {
-                if(!(layer is IFeatureSelection)) continue;
-				
-                if(((IFeatureSelection)layer).SelectionSet==null) continue;
-                IQueryResult SelecionSet=((IFeatureSelection)layer).SelectionSet;
-
-                foreach(DataRow row in SelecionSet.Table.Rows) 
-                {
-                    IGeometry geom=SelecionSet.Shape(row[layer.IDFieldName]);
-                    if(geom==null) continue;
-
-                    if(env==null) 
-                    {
-                        env=new gView.Geometry.Envelope(geom.Envelope);
-                    } 
-                    else 
-                    {
-                        env.Union(geom.Envelope);
-                    }
-                }
-				
-            }
-            if(env!=null) 
-            {
-                map.setScale(env.minx,env.miny,env.maxx,env.maxy,true);
-                ((MapEvent)MapEvent).refreshMap=true;
-            }
-            */
+            return Task.FromResult(true);
         }
 
         public gView.Framework.UI.ToolType toolType
@@ -2051,17 +2078,21 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (!(MapEvent is MapEvent)) return;
+            if (!(MapEvent is MapEvent))
+                return Task.FromResult(true);
 
             IMap map = ((MapEvent)MapEvent).Map;
-            if (map == null) return;
+            if (map == null)
+                return Task.FromResult(true);
 
             map.ClearSelection();
 
             ((MapEvent)MapEvent).refreshMap = true;
             ((MapEvent)MapEvent).drawPhase = DrawPhase.Selection | DrawPhase.Graphics;
+
+            return Task.FromResult(true);
         }
 
         public gView.Framework.UI.ToolType toolType
@@ -2118,7 +2149,7 @@ namespace gView.Plugins.MapTools
 			}
 		}
 
-		public void OnEvent(object MapEvent)
+		public Task<bool> OnEvent(object MapEvent)
 		{
 			if(!(MapEvent is MapEvent)) return;
 
@@ -2183,9 +2214,10 @@ namespace gView.Plugins.MapTools
                 _doc = (IMapDocument)hook;
         }
 
-        public void OnEvent(object layer, object dataset)
+        public Task<bool> OnEvent(object layer, object dataset)
         {
-            if (dataset == null || !(layer is ILayer) || _doc == null) return;
+            if (dataset == null || !(layer is ILayer) || _doc == null)
+                return Task.FromResult(true);
 
             ITableClass table = null;
             if (layer is IFeatureLayer)
@@ -2193,25 +2225,12 @@ namespace gView.Plugins.MapTools
             else if (layer is ITableLayer)
                 table = ((ITableLayer)layer).TableClass;
 
-            if (table == null) return;
+            if (table == null)
+                return Task.FromResult(true);
 
             string Title = ((ILayer)layer).Title;
 
-            /*
-			if(_doc!=null) 
-			{
-				if(_doc.DocumentWindow!=null) 
-				{
-					Form frm=_doc.DocumentWindow.GetChildWindow(Title);
-					if(frm!=null) 
-					{
-						frm.WindowState=FormWindowState.Normal;
-						frm.Parent.Controls.SetChildIndex(frm,0);
-						return;
-					}
-				}
-			}
-            */
+            
 
             if (_doc.Application is IMapApplication)
             {
@@ -2225,7 +2244,7 @@ namespace gView.Plugins.MapTools
                         {
                             // Show The Window
                             appl.ShowDockableWindow(win);
-                            return;
+                            return Task.FromResult(true); 
                         }
                     }
                 }
@@ -2255,6 +2274,8 @@ namespace gView.Plugins.MapTools
             }
 
             _doc = null;
+
+            return Task.FromResult(true);
         }
 
         public object Image
@@ -2300,7 +2321,7 @@ namespace gView.Plugins.MapTools
                 _doc = (IMapDocument)hook;
         }
 
-        public void OnEvent(object element, object dataset)
+        public Task<bool> OnEvent(object element, object dataset)
         {
             if (element is IFeatureSelection && element is IFeatureLayer)
             {
@@ -2322,6 +2343,8 @@ namespace gView.Plugins.MapTools
                     }
                 }
             }
+
+            return Task.FromResult(true);
         }
 
         public object Image
@@ -2375,9 +2398,10 @@ namespace gView.Plugins.MapTools
             return Enable(element);
         }
 
-        public void OnEvent(object layer, object dataset)
+        public Task<bool> OnEvent(object layer, object dataset)
         {
-            if (!(layer is ILayer) || (!(dataset is IDataset) && !(layer is IGroupLayer))) return;
+            if (!(layer is ILayer) || (!(dataset is IDataset) && !(layer is IGroupLayer)))
+                return Task.FromResult(true);
 
             if (layer is ILayer)
             {
@@ -2396,6 +2420,8 @@ namespace gView.Plugins.MapTools
                     }
                 }
             }
+
+            return Task.FromResult(true);
         }
 
         public object Image
@@ -2496,9 +2522,11 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (_dlg == null || !(MapEvent is MapEvent)) return;
+            if (_dlg == null || !(MapEvent is MapEvent))
+                return Task.FromResult(true);
+
             Envelope envelope = null;
             IMap map = null;
 
@@ -2523,7 +2551,8 @@ namespace gView.Plugins.MapTools
             {
                 MapEventClick ev = (MapEventClick)MapEvent;
                 map = ev.Map;
-                if (map == null || map.Display == null) return;
+                if (map == null || map.Display == null)
+                    return Task.FromResult(true);
 
                 queryPoint = new Point(ev.x, ev.y);
                 envelope = new Envelope(ev.x - tol / 2, ev.y - tol / 2, ev.x + tol / 2, ev.y + tol / 2);
@@ -2534,7 +2563,8 @@ namespace gView.Plugins.MapTools
             {
                 MapEventRubberband ev = (MapEventRubberband)MapEvent;
                 map = ev.Map;
-                if (map == null || map.Display == null) return;
+                if (map == null || map.Display == null)
+                    return Task.FromResult(true);
 
                 envelope = new Envelope(ev.minX, ev.minY, ev.maxX, ev.maxY);
                 if (envelope.Width < tol)
@@ -2552,7 +2582,7 @@ namespace gView.Plugins.MapTools
             }
             else
             {
-                return;
+                return Task.FromResult(true); 
             }
 
             QueryThemeCombo combo = QueryCombo;
@@ -2564,7 +2594,8 @@ namespace gView.Plugins.MapTools
 
                 int counter = 0;
                 List<IDatasetElement> allQueryableElements = _dlg.AllQueryableLayers;
-                if (allQueryableElements == null) return;
+                if (allQueryableElements == null)
+                    return Task.FromResult(true);
 
                 foreach (IDatasetElement element in allQueryableElements)
                 {
@@ -2784,13 +2815,15 @@ namespace gView.Plugins.MapTools
                     if (win == _dlg)
                     {
                         appl.ShowDockableWindow(win);
-                        return;
+                        return Task.FromResult(true); ;
                     }
                 }
 
                 appl.AddDockableWindow(_dlg, null);
                 appl.ShowDockableWindow(_dlg);
             }
+
+            return Task.FromResult(true);
         }
 
         private object ICursor(IPointIdentify iPointIdentify)
@@ -2886,6 +2919,8 @@ namespace gView.Plugins.MapTools
 
             UserDefinedQueries = stream.Load("UserDefinedQueries", null, new QueryThemes(null)) as QueryThemes;
             ThemeMode = (QueryThemeMode)stream.Load("QueryMode", (int)QueryThemeMode.Default);
+
+            return Task.FromResult(true);
         }
 
         public Task<bool> Save(IPersistStream stream)
@@ -2895,6 +2930,8 @@ namespace gView.Plugins.MapTools
 
             if (UserDefinedQueries != null) stream.Save("UserDefinedQueries", UserDefinedQueries);
             stream.Save("QueryMode", (int)ThemeMode);
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -2956,7 +2993,7 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             if (_dlgIdentify != null && _doc != null && _doc.Application is IMapApplication)
             {
@@ -2971,6 +3008,8 @@ namespace gView.Plugins.MapTools
                 _dlgQuery.Visible = true;
                 _dlgQuery.BringToFront();
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -3031,9 +3070,9 @@ namespace gView.Plugins.MapTools
 
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -3361,9 +3400,9 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -3455,9 +3494,11 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (!(MapEvent is MapEventClick)) return;
+            if (!(MapEvent is MapEventClick))
+                return Task.FromResult(true);
+
             MapEventClick ev = (MapEventClick)MapEvent;
 
             if (_grElement.Stopped) RemoveGraphicFromMap();
@@ -3476,6 +3517,8 @@ namespace gView.Plugins.MapTools
             if (ShapeChanged != null) ShapeChanged(_grElement);
 
             SetStatusText();
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -4034,15 +4077,18 @@ namespace gView.Plugins.MapTools
                 _doc = hook as IMapDocument;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (_doc == null || !(_doc.Application is IMapApplication)) return;
+            if (_doc == null || !(_doc.Application is IMapApplication))
+                return Task.FromResult(true);
 
             foreach (IDockableWindow win in ((IMapApplication)_doc.Application).DockableWindows)
             {
                 if (win.Name == "TOC")
                     ((IMapApplication)_doc.Application).ShowDockableWindow(win);
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -4089,10 +4135,12 @@ namespace gView.Plugins.MapTools
                 _doc = hook as IMapDocument;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             if (_doc != null && _doc.Application is IMapApplication)
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.All);
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -4147,10 +4195,12 @@ namespace gView.Plugins.MapTools
 
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             gView.Framework.system.UI.AboutBox dlg = new gView.Framework.system.UI.AboutBox();
             dlg.ShowDialog();
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -4203,9 +4253,9 @@ namespace gView.Plugins.MapTools
             catch { }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -4275,7 +4325,7 @@ namespace gView.Plugins.MapTools
 
             }
 
-            public void OnEvent(object MapEvent)
+            public Task<bool> OnEvent(object MapEvent)
             {
                 try
                 {
@@ -4287,6 +4337,8 @@ namespace gView.Plugins.MapTools
                 {
                     MessageBox.Show(ex.Message);
                 }
+
+                return Task.FromResult(true);
             }
 
             #endregion
@@ -4343,9 +4395,10 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (_doc == null) return;
+            if (_doc == null)
+                return Task.FromResult(true);
 
             if (_dlg == null)
             {
@@ -4353,6 +4406,8 @@ namespace gView.Plugins.MapTools
                 _dlg.FormClosing += new FormClosingEventHandler(dlg_FormClosing);
             }
             _dlg.Show();
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -4440,9 +4495,10 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            if (_doc == null) return;
+            if (_doc == null)
+                return Task.FromResult(true);
 
             if (_dlg == null)
             {
@@ -4450,6 +4506,8 @@ namespace gView.Plugins.MapTools
                 _dlg.FormClosing += new FormClosingEventHandler(dlg_FormClosing);
             }
             _dlg.Show();
+
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -4509,9 +4567,9 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -4564,11 +4622,12 @@ namespace gView.Plugins.MapTools
                 _doc = (IMapDocument)hook;
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
             if (_doc == null ||
                 _doc.FocusMap == null ||
-                _doc.FocusMap.Display == null) return;
+                _doc.FocusMap.Display == null)
+                return Task.FromResult(true);
 
             FormXY dlg = new FormXY(_doc);
             if (dlg.ShowDialog() == DialogResult.OK)
@@ -4584,6 +4643,8 @@ namespace gView.Plugins.MapTools
                     ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.All);
                 }
             }
+
+            return Task.FromResult(true);
         }
 
         #endregion

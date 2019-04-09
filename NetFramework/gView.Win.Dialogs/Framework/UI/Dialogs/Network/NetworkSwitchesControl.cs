@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using gView.Framework.Data;
 using gView.Framework.FDB;
@@ -30,7 +31,7 @@ namespace gView.Framework.UI.Dialogs.Network
                 throw new ArgumentException();
         }
 
-        private void FillGrid()
+        async private Task FillGrid()
         {
             if (_selected.NodeFeatureclasses == null)
                 return;
@@ -44,7 +45,7 @@ namespace gView.Framework.UI.Dialogs.Network
                 bool found = false;
                 foreach (IFeatureClass fc in _selected.NodeFeatureclasses)
                 {
-                    if (_database.GetFeatureClassID(fc.Name) == fcId)
+                    if (await _database.GetFeatureClassID(fc.Name) == fcId)
                     {
                         found = true;
                         break;
@@ -59,14 +60,14 @@ namespace gView.Framework.UI.Dialogs.Network
 
             foreach (IFeatureClass fc in _selected.NodeFeatureclasses)
             {
-                AddGridRow(fc);
+                await AddGridRow(fc);
             }
 
         }
 
-        private void AddGridRow(IFeatureClass fc)
+        async private Task AddGridRow(IFeatureClass fc)
         {
-            int fcId = _database.GetFeatureClassID(fc.Name);
+            int fcId = await _database.GetFeatureClassID(fc.Name);
 
             foreach (DataGridViewRow r in gridFcs.Rows)
             {
@@ -224,9 +225,9 @@ namespace gView.Framework.UI.Dialogs.Network
 
         #region IWizardPageNotification Member
 
-        public void OnShowWizardPage()
+        async public Task OnShowWizardPage()
         {
-            FillGrid();
+            await FillGrid();
         }
 
         #endregion

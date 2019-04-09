@@ -21,7 +21,7 @@ namespace gView.Framework.UI
         IExplorerIcon Icon { get; }
         IExplorerObject ParentExplorerObject { get; }
 
-        object Object { get; }
+        Task<object> GetObjectAsync();
         Type ObjectType { get; }
 
         int Priority { get; }
@@ -34,13 +34,13 @@ namespace gView.Framework.UI
 
     public interface ISerializableObject
     {
-        void DeserializeObject(string config);
+        Task DeserializeObject(string config);
         string SerializeObject();
     }
 
     public interface ISerializableExecute : ISerializableObject
     {
-        void Execute(ProgressReporterEvent reporter);
+        Task Execute(ProgressReporterEvent reporter);
     }
 
     public interface ISerializableExplorerObject

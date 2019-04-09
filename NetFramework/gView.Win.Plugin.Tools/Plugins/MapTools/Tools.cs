@@ -10,6 +10,7 @@ using gView.Framework.UI.Dialogs;
 using gView.Framework.system;
 using gView.Framework.Globalisation;
 using gView.Framework.UI.Controls.Filter;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.MapTools
 {
@@ -46,9 +47,11 @@ namespace gView.Plugins.MapTools
                 _doc = hook as IMapDocument;
         }
 
-        public void OnEvent(object MapEvent)
+        async public Task<bool> OnEvent(object MapEvent)
         {
-            if (!(MapEvent is MapEvent)) return;
+            if (!(MapEvent is MapEvent))
+                return false;
+
             IMap map = ((MapEvent)MapEvent).Map;
 
             bool firstDataset = (map[0] == null);
@@ -60,7 +63,7 @@ namespace gView.Plugins.MapTools
 
             if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                List<IDataset> datasets = dlg.Datasets;
+                List<IDataset> datasets = await dlg.Datasets();
 
 
                 FormDatasetProperties datasetProps = new FormDatasetProperties(datasets);
@@ -69,12 +72,12 @@ namespace gView.Plugins.MapTools
                     if (((MapEvent)MapEvent).UserData == null)
                     {
                         if (datasetProps.ShowDialog() != System.Windows.Forms.DialogResult.OK)
-                            return;
+                            return true;
                     }
                 }
                 catch  // Kann ObjectDisposed Exception werfen...
                 {
-                    return;
+                    return true;
                 }
 
 
@@ -153,6 +156,8 @@ namespace gView.Plugins.MapTools
                 ((MapEvent)MapEvent).drawPhase = DrawPhase.All;
                 ((MapEvent)MapEvent).refreshMap = true;
             }
+
+            return true;
         }
 
         public string ToolTip
@@ -185,18 +190,20 @@ namespace gView.Plugins.MapTools
             return true;
         }
 
-        public void OnEvent(object element, object parent)
+        async public Task<bool> OnEvent(object element, object parent)
         {
             if (element is IMap)
             {
                 MapEvent mapEvent = new MapEvent((IMap)element);
-                this.OnEvent(mapEvent);
+                await this.OnEvent(mapEvent);
 
                 if (mapEvent.refreshMap && _doc != null && _doc.Application is IMapApplication)
                 {
                     ((IMapApplication)_doc.Application).RefreshActiveMap(mapEvent.drawPhase);
                 }
             }
+
+            return true;
         }
 
         #endregion

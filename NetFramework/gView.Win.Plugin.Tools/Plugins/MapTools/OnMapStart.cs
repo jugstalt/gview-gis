@@ -5,6 +5,7 @@ using System.Text;
 using gView.Plugins.MapTools.Controls;
 using System.Windows;
 using gView.Framework.UI;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.Tools.MapTools
 {
@@ -71,9 +72,9 @@ namespace gView.Plugins.Tools.MapTools
                 _dialog.Close();
         }
 
-        public void OnEvent(object MapEvent)
+        public Task<bool> OnEvent(object MapEvent)
         {
-            
+            return Task.FromResult(true);
         }
 
         #endregion
