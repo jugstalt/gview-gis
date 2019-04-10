@@ -44,7 +44,7 @@ namespace gView.DataSources.Fdb.MSSql
 
             fc._name = fc._aliasname = name;
 
-            IDatasetElement element = fc._dataset.Element(fc._name + "_Nodes").Result;
+            IDatasetElement element = await fc._dataset.Element(fc._name + "_Nodes");
             if (element != null)
                 fc._nodeFc = element.Class as IFeatureClass;
 
@@ -69,7 +69,7 @@ namespace gView.DataSources.Fdb.MSSql
                 {
                     foreach (DataRow row in tab.Rows)
                     {
-                        element = fc._dataset.Element(row["Name"].ToString()).Result;
+                        element = await fc._dataset.Element(row["Name"].ToString());
                         if (element != null && element.Class is IFeatureClass)
                             fc._edgeFcs.Add((int)row["ID"], element.Class as IFeatureClass);
                     }
@@ -775,14 +775,14 @@ namespace gView.DataSources.Fdb.MSSql
                 if (selectedFcId == -1)
                 {
                     #region Complex Edge
-                    object eidObj = _fdb._conn.QuerySingleField("SELECT EID FROM " + _fdb.TableName("FC_" + _name + "_ComplexEdges") + " WHERE FDB_OID=" + selected.OID, "EID").Result;
+                    object eidObj = await _fdb._conn.QuerySingleField("SELECT EID FROM " + _fdb.TableName("FC_" + _name + "_ComplexEdges") + " WHERE FDB_OID=" + selected.OID, "EID");
                     if (eidObj != null)
                         eid = (int)eidObj;
                     #endregion
                 }
                 else
                 {
-                    object eidObj = _fdb._conn.QuerySingleField("SELECT EID FROM " + _fdb.TableName(_name + "_EdgeIndex") + " WHERE FCID=" + selectedFcId + " AND OID=" + selected.OID, "EID").Result;
+                    object eidObj = await _fdb._conn.QuerySingleField("SELECT EID FROM " + _fdb.TableName(_name + "_EdgeIndex") + " WHERE FCID=" + selectedFcId + " AND OID=" + selected.OID, "EID");
                     if (eidObj != null)
                         eid = (int)eidObj;
                 }

@@ -1477,10 +1477,10 @@ namespace gView.Framework.Carto.UI
 
 		#region IPersistable Member
 
-		public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+		async public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
 		{
 			if(_map==null)
-                return Task.FromResult(true);
+                return true;
 
             int datasetIndex=(int)stream.Load("DatasetIndex",-1);
 
@@ -1497,24 +1497,24 @@ namespace gView.Framework.Carto.UI
                 webThemeId = (string)stream.Load("ID", "");
                 webClassName = (string)stream.Load("ClassName", "");
 
-                IDatasetElement wElement = dataset.Element(webClassName).Result;
+                IDatasetElement wElement = await dataset.Element(webClassName);
                 if (wElement == null || !(wElement.Class is IWebServiceClass))
-                    return Task.FromResult(true);
+                    return true;
 
                 IWebServiceClass wc = wElement.Class as IWebServiceClass;
                 if (wc == null || wc.Themes == null)
-                    return Task.FromResult(true);
+                    return true;
 
                 foreach (IWebServiceTheme theme in wc.Themes)
                 {
                     if (theme.LayerID == webThemeId)
                     {
                         _element = theme;
-                        return Task.FromResult(true); 
+                        return true; 
                     }
                 }
 
-                return Task.FromResult(true);
+                return true;
             }
 
             string name = (string)stream.Load("Name", "");
@@ -1527,7 +1527,7 @@ namespace gView.Framework.Carto.UI
                     if (layer.Class != null && layer.Class.Dataset == dataset && layer.Title == name)
                     {
                         _element = layer;
-                        return Task.FromResult(true);
+                        return true;
                     }
                 }
             }
@@ -1542,14 +1542,14 @@ namespace gView.Framework.Carto.UI
                         layer.Title == name)
                     {
                         _element = layer;
-                        return Task.FromResult(true);
+                        return true;
                     }
                     // Layer
                     if (layer.Class != null && layer.Class.Dataset == dataset && 
                         layer.Title == name && layer.ID==_id_)
                     {
                         _element = layer;
-                        return Task.FromResult(true);
+                        return true;
                     }
                 }
             }
@@ -1565,7 +1565,7 @@ namespace gView.Framework.Carto.UI
                 ((NullLayer)_element).Title = name;
             }
 
-            return Task.FromResult(true);
+            return true;
         }
 
 		public Task<bool> Save(gView.Framework.IO.IPersistStream stream)

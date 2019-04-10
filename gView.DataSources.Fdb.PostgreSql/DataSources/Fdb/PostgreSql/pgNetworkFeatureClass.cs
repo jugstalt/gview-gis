@@ -56,7 +56,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             if (element != null && element.Class is IFeatureClass)
                 fc._edgeFcs.Add(-1, (IFeatureClass)element.Class);
 
-            DataTable tab = fc._fdb.Select("\"FCID\"", "\"FDB_NetworkClasses\"", "\"NetworkId\"=" + fc._fcid);
+            DataTable tab = await fc._fdb.Select("\"FCID\"", "\"FDB_NetworkClasses\"", "\"NetworkId\"=" + fc._fcid);
             if (tab != null && tab.Rows.Count > 0)
             {
                 StringBuilder where = new StringBuilder();
@@ -68,7 +68,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 }
                 where.Append(")");
 
-                tab = fc._fdb.Select("\"ID\",\"Name\"", "\"FDB_FeatureClasses\"", where.ToString());
+                tab = await fc._fdb.Select("\"ID\",\"Name\"", "\"FDB_FeatureClasses\"", where.ToString());
                 if (tab != null)
                 {
                     foreach (DataRow row in tab.Rows)

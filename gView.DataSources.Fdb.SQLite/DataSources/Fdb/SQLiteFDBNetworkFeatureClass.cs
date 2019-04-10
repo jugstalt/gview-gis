@@ -45,7 +45,7 @@ namespace gView.DataSources.Fdb.SQLite
 
             fc._name = fc._aliasname = name;
 
-            IDatasetElement element = fc._dataset.Element(fc._name + "_Nodes").Result;
+            IDatasetElement element = await fc._dataset.Element(fc._name + "_Nodes");
             if (element != null)
                 fc._nodeFc = element.Class as IFeatureClass;
 
@@ -70,7 +70,7 @@ namespace gView.DataSources.Fdb.SQLite
                 {
                     foreach (DataRow row in tab.Rows)
                     {
-                        element = fc._dataset.Element(row["name"].ToString()).Result;
+                        element = await fc._dataset.Element(row["name"].ToString());
                         if (element != null && element.Class is IFeatureClass)
                             fc._edgeFcs.Add(Convert.ToInt32(row["id"]), element.Class as IFeatureClass);
                     }
@@ -787,14 +787,14 @@ namespace gView.DataSources.Fdb.SQLite
                 if (selectedFcId == -1)
                 {
                     #region Complex Edge
-                    object eidObj = _fdb._conn.QuerySingleField("SELECT eid FROM " + _fdb.TableName("FC_" + _name + "_ComplexEdges") + " WHERE " + _fdb.DbColName("FDB_OID") + "=" + selected.OID, "eid").Result;
+                    object eidObj = await _fdb._conn.QuerySingleField("SELECT eid FROM " + _fdb.TableName("FC_" + _name + "_ComplexEdges") + " WHERE " + _fdb.DbColName("FDB_OID") + "=" + selected.OID, "eid");
                     if (eidObj != null)
                         eid = Convert.ToInt32(eidObj);
                     #endregion
                 }
                 else
                 {
-                    object eidObj = _fdb._conn.QuerySingleField("SELECT eid FROM " + _fdb.TableName(_name + "_EdgeIndex") + " WHERE FCID=" + selectedFcId + " AND OID=" + selected.OID, "eid").Result;
+                    object eidObj = await _fdb._conn.QuerySingleField("SELECT eid FROM " + _fdb.TableName(_name + "_EdgeIndex") + " WHERE FCID=" + selectedFcId + " AND OID=" + selected.OID, "eid");
                     if (eidObj != null)
                         eid = Convert.ToInt32(eidObj);
                 }

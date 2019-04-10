@@ -95,7 +95,8 @@ namespace gView.Interoperability.ArcXML.Dataset
 
             if (_dataset.State != DatasetState.opened)
             {
-                if (!_dataset.Open(context).Result) return false;
+                if (!await _dataset.Open(context))
+                    return false;
             }
 
             ISpatialReference sRef = (display.SpatialReference != null) ?
@@ -329,7 +330,8 @@ namespace gView.Interoperability.ArcXML.Dataset
 
             if (_dataset.State != DatasetState.opened)
             {
-                if (!_dataset.Open(context).Result) return false;
+                if (!await _dataset.Open(context))
+                    return false;
             }
 
             try

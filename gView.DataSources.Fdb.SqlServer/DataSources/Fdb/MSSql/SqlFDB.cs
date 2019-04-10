@@ -196,7 +196,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                 await SetVersion();
 
-                DataTable tab = _conn.Select("*", "sys.Assemblies", "name='MSSqlSpatialEngine'").Result;
+                DataTable tab = await _conn.Select("*", "sys.Assemblies", "name='MSSqlSpatialEngine'");
                 if (tab != null)
                 {
                     _seVersion = (tab.Rows.Count == 0) ? 0 : 1;
@@ -247,7 +247,7 @@ namespace gView.DataSources.Fdb.MSSql
                 int sRefID = await CreateSpatialReference(sRef);
 
                 DataSet ds = new DataSet();
-                if (!_conn.SQLQuery(ds, "SELECT * FROM FDB_Datasets WHERE Name='" + name + "'", "DS", true).Result)
+                if (!await _conn.SQLQuery(ds, "SELECT * FROM FDB_Datasets WHERE Name='" + name + "'", "DS", true))
                 {
                     _errMsg = _conn.errorMessage;
                     return -1;
@@ -447,7 +447,7 @@ namespace gView.DataSources.Fdb.MSSql
                 }
             }
 
-            DataTable tab = _conn.Select("*", "FDB_FeatureClasses", "DatasetID=" + sqlDataset._dsID + " AND Name='" + elementName + "'").Result;
+            DataTable tab = await _conn.Select("*", "FDB_FeatureClasses", "DatasetID=" + sqlDataset._dsID + " AND Name='" + elementName + "'");
             if (tab == null || tab.Rows == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -471,7 +471,7 @@ namespace gView.DataSources.Fdb.MSSql
                 IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                 if (linkedDs == null)
                     return null;
-                IDatasetElement linkedElement = linkedDs.Element((string)row["Name"]).Result;
+                IDatasetElement linkedElement = await linkedDs.Element((string)row["Name"]);
 
                 LinkedFeatureClass fc = new LinkedFeatureClass(sqlDataset,
                     linkedElement != null && linkedElement.Class is IFeatureClass ? linkedElement.Class as IFeatureClass : null,
@@ -486,7 +486,7 @@ namespace gView.DataSources.Fdb.MSSql
                 string[] viewNames = row["Name"].ToString().Split('@');
                 if (viewNames.Length != 2)
                     return null;
-                DataTable tab2 = _conn.Select("*", "FDB_FeatureClasses", "DatasetID=" + sqlDataset._dsID + " AND Name='" + viewNames[0] + "'").Result;
+                DataTable tab2 = await _conn.Select("*", "FDB_FeatureClasses", "DatasetID=" + sqlDataset._dsID + " AND Name='" + viewNames[0] + "'");
                 if (tab2 == null || tab2.Rows.Count !=1)
                     return null;
                 fcRow = tab2.Rows[0];
@@ -547,7 +547,7 @@ namespace gView.DataSources.Fdb.MSSql
             if (dsID == -1) return null;
 
             DataSet ds = new DataSet();
-            if (!_conn.SQLQuery(ds, "SELECT * FROM FDB_FeatureClasses WHERE DatasetID=" + dsID, "FC").Result)
+            if (!await _conn.SQLQuery(ds, "SELECT * FROM FDB_FeatureClasses WHERE DatasetID=" + dsID, "FC"))
             {
                 _errMsg = _conn.errorMessage;
                 return null;
@@ -603,7 +603,7 @@ namespace gView.DataSources.Fdb.MSSql
                     IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                     if (linkedDs == null)
                         continue;
-                    IDatasetElement linkedElement = linkedDs.Element((string)row["Name"]).Result;
+                    IDatasetElement linkedElement = await linkedDs.Element((string)row["Name"]);
 
                     LinkedFeatureClass fc = new LinkedFeatureClass(dataset,
                         linkedElement != null && linkedElement.Class is IFeatureClass ? linkedElement.Class as IFeatureClass : null,
@@ -1650,7 +1650,7 @@ namespace gView.DataSources.Fdb.MSSql
                     }
                     if (!String.IsNullOrEmpty(replicationField))
                     {
-                        DataTable tab = _conn.Select(replicationField, FcTableName(fClass), ((where != String.Empty) ? where : "")).Result;
+                        DataTable tab = await _conn.Select(replicationField, FcTableName(fClass), ((where != String.Empty) ? where : ""));
                         if (tab == null)
                         {
                             _errMsg = "Replication Error: " + _conn.errorMessage;

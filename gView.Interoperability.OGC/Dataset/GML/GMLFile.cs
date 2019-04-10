@@ -30,7 +30,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
                 file._gmlDataset = new Dataset();
                 await file._gmlDataset.SetConnectionString (filename);
-                if (!file._gmlDataset.Open().Result)
+                if (!await file._gmlDataset.Open())
                     file._gmlDataset = null;
 
                 file._filename = filename;

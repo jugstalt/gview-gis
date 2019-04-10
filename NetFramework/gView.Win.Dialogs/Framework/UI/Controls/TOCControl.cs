@@ -2002,7 +2002,7 @@ namespace gView.Framework.UI.Controls
                         }
                         else if (instance is IDataset)
                         {
-                            foreach (IDatasetElement element in ((IDataset)instance).Elements().Result)
+                            foreach (IDatasetElement element in await ((IDataset)instance).Elements())
                             {
                                 if (element.Class is IFeatureClass || element.Class is ITableClass || element.Class is IRasterClass || element.Class is IWebServiceClass)
                                 {

@@ -177,7 +177,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 }
             }
 
-            DataTable tab = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + pgDataset._dsID + " AND " + DbColName("Name") + "='" + elementName + "'").Result;
+            DataTable tab = await _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + pgDataset._dsID + " AND " + DbColName("Name") + "='" + elementName + "'");
             if (tab == null || tab.Rows == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -201,7 +201,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                 if (linkedDs == null)
                     return null;
-                IDatasetElement linkedElement = linkedDs.Element((string)row["Name"]).Result;
+                IDatasetElement linkedElement = await linkedDs.Element((string)row["Name"]);
 
                 LinkedFeatureClass fc = new LinkedFeatureClass(pgDataset,
                     linkedElement != null && linkedElement.Class is IFeatureClass ? linkedElement.Class as IFeatureClass : null,
@@ -216,7 +216,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 string[] viewNames = row["Name"].ToString().Split('@');
                 if (viewNames.Length != 2)
                     return null;
-                DataTable tab2 = _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + pgDataset._dsID + " AND " + DbColName("Name") + "='" + viewNames[0] + "'").Result;
+                DataTable tab2 = await _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + pgDataset._dsID + " AND " + DbColName("Name") + "='" + viewNames[0] + "'");
                 if (tab2 == null || tab2.Rows.Count != 1)
                     return null;
                 fcRow = tab2.Rows[0];
@@ -282,10 +282,10 @@ namespace gView.DataSources.Fdb.PostgreSql
             catch { return String.Empty; }
         }
 
-        internal DataTable Select(string fields, string from, string where)
+        async internal Task<DataTable> Select(string fields, string from, string where)
         {
             if (_conn == null) return null;
-            return _conn.Select(fields, from, where).Result;
+            return await _conn.Select(fields, from, where);
         }
         #endregion
 
@@ -508,7 +508,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             await dataset.SetConnectionString(_conn.ConnectionString + ";dsname=" + dsName);
             await dataset.Open();
 
-            IDatasetElement element = dataset.Element(fcName).Result;
+            IDatasetElement element = await dataset.Element(fcName);
             if (element != null && element.Class is IFeatureClass)
             {
                 return element.Class as IFeatureClass;
@@ -656,7 +656,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             if (dsID == -1) return null;
 
             DataSet ds = new DataSet();
-            if (!_conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("DatasetID") + "=" + dsID, "FC").Result)
+            if (!await _conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("DatasetID") + "=" + dsID, "FC"))
             {
                 _errMsg = _conn.errorMessage;
                 return null;
@@ -713,7 +713,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                     if (linkedDs == null)
                         continue;
-                    IDatasetElement linkedElement = linkedDs.Element((string)row["Name"]).Result;
+                    IDatasetElement linkedElement = await linkedDs.Element((string)row["Name"]);
 
                     LinkedFeatureClass fc = new LinkedFeatureClass(dataset,
                         linkedElement != null && linkedElement.Class is IFeatureClass ? linkedElement.Class as IFeatureClass : null,
@@ -1101,7 +1101,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                         }
                         if (!String.IsNullOrEmpty(replicationField))
                         {
-                            DataTable tab = _conn.Select(DbColName(replicationField), FcTableName(fClass), ((where != String.Empty) ? where : "")).Result;
+                            DataTable tab = await _conn.Select(DbColName(replicationField), FcTableName(fClass), ((where != String.Empty) ? where : ""));
                             if (tab == null)
                             {
                                 _errMsg = "Replication Error: " + _conn.errorMessage;

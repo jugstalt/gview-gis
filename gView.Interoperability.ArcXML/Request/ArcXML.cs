@@ -364,7 +364,7 @@ namespace gView.Interoperability.ArcXML
             return "";
         }
 
-        void map_BeforeRenderLayers(IServiceMap sender, List<ILayer> layers)
+        async void map_BeforeRenderLayers(IServiceMap sender, List<ILayer> layers)
         {
             if (layers == null) return;
 
@@ -484,7 +484,7 @@ namespace gView.Interoperability.ArcXML
                                     IQueryFilter filter = ParseChildNodesForQueryFilter(LAYER, e.Class as ITableClass);
                                     if (filter != null)
                                     {
-                                        if (!MapServerHelper.ModifyFilter(sender, e.Class as ITableClass, filter).Result)
+                                        if (!await MapServerHelper.ModifyFilter(sender, e.Class as ITableClass, filter))
                                             continue;
 
                                         ReplaceQueryWhereClause(clonedLAYER, filter.WhereClause);
@@ -511,9 +511,9 @@ namespace gView.Interoperability.ArcXML
                                             fLayer.FeatureRenderer is SimpleRenderer)
                                         {
                                             sender.Display.GraphicsContainer.Elements.Add(
-                                                ObjectFromAXLFactory.GraphicElement(
+                                                await ObjectFromAXLFactory.GraphicElement(
                                                     ((SimpleRenderer)fLayer.FeatureRenderer).Symbol,
-                                                    (IBufferQueryFilter)fLayer.FilterQuery).Result);
+                                                    (IBufferQueryFilter)fLayer.FilterQuery));
                                         }
                                         continue;
                                     }

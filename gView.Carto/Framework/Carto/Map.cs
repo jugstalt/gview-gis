@@ -1483,7 +1483,7 @@ namespace gView.Framework.Carto
             _layers = _layers.Where(l => l.Class != null).ToList();
         }
 
-        public Task<bool> Load(IPersistStream stream)
+        async public Task<bool> Load(IPersistStream stream)
         {
             m_name = (string)stream.Load("name", "");
             m_minX = (double)stream.Load("minx", 0.0);
@@ -1546,7 +1546,7 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (fLayer.DatasetID < _datasets.Count)
                 {
-                    IDatasetElement element = _datasets[fLayer.DatasetID].Element(fLayer.Title).Result;
+                    IDatasetElement element = await _datasets[fLayer.DatasetID].Element(fLayer.Title);
                     if (element != null && element.Class is IFeatureClass)
                     {
                         fLayer = LayerFactory.Create(element.Class, fLayer) as FeatureLayer;
@@ -1577,7 +1577,7 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (rcLayer.DatasetID < _datasets.Count)
                 {
-                    IDatasetElement element = _datasets[rcLayer.DatasetID].Element(rcLayer.Title).Result;
+                    IDatasetElement element = await _datasets[rcLayer.DatasetID].Element(rcLayer.Title);
                     if (element != null && element.Class is IRasterCatalogClass)
                     {
                         rcLayer = LayerFactory.Create(element.Class, rcLayer) as RasterCatalogLayer;
@@ -1604,7 +1604,7 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (rLayer.DatasetID < _datasets.Count)
                 {
-                    IDatasetElement element = _datasets[rLayer.DatasetID].Element(rLayer.Title).Result;
+                    IDatasetElement element = await _datasets[rLayer.DatasetID].Element(rLayer.Title);
                     if (element != null && element.Class is IRasterClass)
                     {
                         rLayer.SetRasterClass(element.Class as IRasterClass);
@@ -1633,7 +1633,7 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (wLayer.DatasetID <= _datasets.Count)
                 {
-                    IDatasetElement element = _datasets[wLayer.DatasetID].Element(wLayer.Title).Result;
+                    IDatasetElement element = await _datasets[wLayer.DatasetID].Element(wLayer.Title);
                     if (element != null && element.Class is IWebServiceClass)
                     {
                         //wLayer = LayerFactory.Create(element.Class, wLayer) as WebServiceLayer;
@@ -1682,7 +1682,7 @@ namespace gView.Framework.Carto
                 }
             }
 
-            return Task.FromResult(true);
+            return true;
         }
 
         public Task<bool> Save(IPersistStream stream)
