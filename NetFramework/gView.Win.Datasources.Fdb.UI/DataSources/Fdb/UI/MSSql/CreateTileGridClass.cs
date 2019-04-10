@@ -76,6 +76,8 @@ namespace gView.DataSources.Fdb.UI.MSSql
             get { return _createLevels; }
             set { _createLevels = value; }
         }
+
+        // Thread
         private void Run()
         {
             if (_targetDataset == null || _fdb == null || _sourceDataset == null)
@@ -114,7 +116,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 }
                 ProgressReport report = new ProgressReport();
 
-                int datasetId = _fdb.DatasetID(_targetDataset.DatasetName);
+                int datasetId = _fdb.DatasetID(_targetDataset.DatasetName).Result;
                 if (datasetId == -1)
                     return;
 

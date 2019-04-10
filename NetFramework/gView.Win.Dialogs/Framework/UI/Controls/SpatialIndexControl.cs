@@ -185,7 +185,7 @@ namespace gView.Framework.UI.Controls
         }
         #endregion
 
-        private void btnImport_Click(object sender, EventArgs e)
+        async private void btnImport_Click(object sender, EventArgs e)
         {
             List<ExplorerDialogFilter> filters = new List<ExplorerDialogFilter>();
             filters.Add(new OpenDataFilter());
@@ -198,13 +198,14 @@ namespace gView.Framework.UI.Controls
                 IEnvelope bounds = null;
                 foreach (IExplorerObject exObject in dlg.ExplorerObjects)
                 {
-                    if (exObject == null || exObject.Object == null) continue;
+                    var instance = await exObject?.GetInstanceAsync();
+                    if (instance == null) continue;
 
                     IEnvelope objEnvelope = null;
 
-                    if (exObject.Object is IDataset)
+                    if (instance is IDataset)
                     {
-                        foreach (IDatasetElement element in ((IDataset)exObject.Object).Elements().Result)
+                        foreach (IDatasetElement element in ((IDataset)instance).Elements().Result)
                         {
                             if (element == null) continue;
                             objEnvelope = ClassEnvelope(element.Class);
@@ -212,7 +213,7 @@ namespace gView.Framework.UI.Controls
                     }
                     else
                     {
-                        objEnvelope = ClassEnvelope(exObject.Object as IClass);
+                        objEnvelope = ClassEnvelope(instance as IClass);
                     }
 
                     if (objEnvelope != null)
@@ -246,13 +247,14 @@ namespace gView.Framework.UI.Controls
 
                 foreach (IExplorerObject exObject in dlg.ExplorerObjects)
                 {
-                    if (exObject == null || exObject.Object == null) continue;
+                    var instance = await exObject?.GetInstanceAsync();
+                    if (instance == null) continue;
 
-                    if (exObject.Object is IFeatureClass &&
-                        ((IFeatureClass)exObject.Object).Dataset != null &&
-                        ((IFeatureClass)exObject.Object).Dataset.Database is IImplementsBinarayTreeDef)
+                    if (instance is IFeatureClass &&
+                        ((IFeatureClass)instance).Dataset != null &&
+                        ((IFeatureClass)instance).Dataset.Database is IImplementsBinarayTreeDef)
                     {
-                        IFeatureClass fc = (IFeatureClass)exObject.Object;
+                        IFeatureClass fc = (IFeatureClass)instance;
                         IImplementsBinarayTreeDef fdb = (IImplementsBinarayTreeDef)fc.Dataset.Database;
 
                         BinaryTreeDef def = await fdb.BinaryTreeDef(fc.Name);

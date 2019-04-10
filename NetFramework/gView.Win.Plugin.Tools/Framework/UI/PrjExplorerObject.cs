@@ -21,6 +21,7 @@ namespace gView.Framework.UI
         {
             _filename = filename;
         }
+
         #region IExplorerFileObject Member
 
         public string Filter
@@ -28,9 +29,9 @@ namespace gView.Framework.UI
             get { return "*.prj|*.wkt"; }
         }
 
-        public IExplorerFileObject CreateInstance(IExplorerObject parent, string filename)
+        public Task<IExplorerFileObject> CreateInstance(IExplorerObject parent, string filename)
         {
-            return new PrjExplorerObject(parent, filename);
+            return Task.FromResult<IExplorerFileObject>(new PrjExplorerObject(parent, filename));
         }
 
         #endregion
@@ -68,27 +69,26 @@ namespace gView.Framework.UI
             get { return _icon; }
         }
 
-        public new object Object
+        async public Task<object> GetInstanceAsync()
         {
-            get
-            {
-                if (_sRef != null)
-                    return null;
+            if (_sRef != null)
+                return null;
 
-                try
+            try
+            {
+                using (StreamReader sr = new StreamReader(_filename))
                 {
-                    StreamReader sr = new StreamReader(_filename);
-                    string wkt = sr.ReadToEnd();
+                    string wkt = await sr.ReadToEndAsync();
                     sr.Close();
 
                     _sRef = SpatialReference.FromWKT(wkt);
                 }
-                catch
-                {
-                    _sRef = null;
-                }
-                return _sRef;
             }
+            catch
+            {
+                _sRef = null;
+            }
+            return _sRef;
         }
 
         #endregion

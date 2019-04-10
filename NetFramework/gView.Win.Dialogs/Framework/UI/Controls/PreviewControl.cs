@@ -124,13 +124,13 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private void InkokeSetExplorerObject()
+        async private Task InkokeSetExplorerObject()
         {
-            if (this.InvokeRequired)
-            {
-                this.Invoke(new MethodInvoker(() => { InkokeSetExplorerObject(); }));
-            }
-            else
+            //if (this.InvokeRequired)
+            //{
+            //    this.Invoke(new MethodInvoker(() => { InkokeSetExplorerObject(); }));
+            //}
+            //else
             {
                 mapView1.CancelDrawing(DrawPhase.All);
                 foreach (IDatasetElement element in _map.MapElements)
@@ -140,31 +140,32 @@ namespace gView.Framework.UI.Controls
 
                 if (_exObject != null)
                 {
-                    if (_exObject.Object is IFeatureClass && ((IFeatureClass)_exObject.Object).Envelope != null)
+                    var instance = await _exObject.GetInstanceAsync();
+                    if (instance is IFeatureClass && ((IFeatureClass)instance).Envelope != null)
                     {
                         mapView1.Map = _map;
-                        _map.AddLayer(LayerFactory.Create(_exObject.Object as IClass));
-                        _map.Display.Limit = ((IFeatureClass)_exObject.Object).Envelope;
-                        _map.Display.ZoomTo(((IFeatureClass)_exObject.Object).Envelope);
+                        _map.AddLayer(LayerFactory.Create(instance as IClass));
+                        _map.Display.Limit = ((IFeatureClass)instance).Envelope;
+                        _map.Display.ZoomTo(((IFeatureClass)instance).Envelope);
                     }
-                    else if (_exObject.Object is IRasterClass && ((IRasterClass)_exObject.Object).Polygon != null)
+                    else if (instance is IRasterClass && ((IRasterClass)instance).Polygon != null)
                     {
                         mapView1.Map = _map;
-                        _map.AddLayer(LayerFactory.Create(_exObject.Object as IClass));
-                        _map.Display.Limit = ((IRasterClass)_exObject.Object).Polygon.Envelope;
-                        _map.Display.ZoomTo(((IRasterClass)_exObject.Object).Polygon.Envelope);
+                        _map.AddLayer(LayerFactory.Create(instance as IClass));
+                        _map.Display.Limit = ((IRasterClass)instance).Polygon.Envelope;
+                        _map.Display.ZoomTo(((IRasterClass)instance).Polygon.Envelope);
                     }
-                    else if (_exObject.Object is IWebServiceClass && ((IWebServiceClass)_exObject.Object).Envelope != null)
+                    else if (instance is IWebServiceClass && ((IWebServiceClass)instance).Envelope != null)
                     {
                         mapView1.Map = _map;
-                        _map.AddLayer(LayerFactory.Create(_exObject.Object as IClass));
-                        _map.Display.Limit = ((IWebServiceClass)_exObject.Object).Envelope;
-                        _map.Display.ZoomTo(((IWebServiceClass)_exObject.Object).Envelope);
+                        _map.AddLayer(LayerFactory.Create(instance as IClass));
+                        _map.Display.Limit = ((IWebServiceClass)instance).Envelope;
+                        _map.Display.ZoomTo(((IWebServiceClass)instance).Envelope);
                     }
-                    else if (_exObject.Object is IFeatureDataset)
+                    else if (instance is IFeatureDataset)
                     {
                         mapView1.Map = _map;
-                        IFeatureDataset dataset = (IFeatureDataset)_exObject.Object;
+                        IFeatureDataset dataset = (IFeatureDataset)instance;
                         foreach (IDatasetElement element in dataset.Elements().Result)
                         {
                             ILayer layer = LayerFactory.Create(element.Class) as ILayer;
@@ -174,9 +175,9 @@ namespace gView.Framework.UI.Controls
                         _map.Display.Limit = dataset.Envelope().Result;
                         _map.Display.ZoomTo(dataset.Envelope().Result);
                     }
-                    else if (_exObject.Object is Map)
+                    else if (instance is Map)
                     {
-                        Map map = (Map)_exObject.Object;
+                        Map map = (Map)instance;
 
                         map.NewBitmap -= new NewBitmapEvent(mapView1.NewBitmapCreated);
                         map.DoRefreshMapView -= new DoRefreshMapViewEvent(mapView1.MakeMapViewRefresh);
@@ -184,7 +185,7 @@ namespace gView.Framework.UI.Controls
                         map.NewBitmap += new NewBitmapEvent(mapView1.NewBitmapCreated);
                         map.DoRefreshMapView += new DoRefreshMapViewEvent(mapView1.MakeMapViewRefresh);
 
-                        mapView1.Map = (Map)_exObject.Object;
+                        mapView1.Map = (Map)instance;
                     }
                 }
             }
@@ -201,20 +202,23 @@ namespace gView.Framework.UI.Controls
                 if (_exObject == value || _map == null) return;
 
                 _exObject = value;
-                InkokeSetExplorerObject();
+                InkokeSetExplorerObject().Wait();
             }
         }
 
-        public bool ShowWith(IExplorerObject exObject)
+        public Task<bool> ShowWith(IExplorerObject exObject)
         {
-            if (exObject == null) return false;
+            if (exObject == null)
+                return Task.FromResult(false);
+
             if (TypeHelper.Match(exObject.ObjectType, typeof(IFeatureClass)) ||
                 TypeHelper.Match(exObject.ObjectType, typeof(IRasterClass)) ||
                 TypeHelper.Match(exObject.ObjectType, typeof(IWebServiceClass)) ||
                 TypeHelper.Match(exObject.ObjectType, typeof(IFeatureDataset)) ||
-                TypeHelper.Match(exObject.ObjectType, typeof(Map))) return true;
+                TypeHelper.Match(exObject.ObjectType, typeof(Map)))
+                return Task.FromResult(true);
 
-            return false;
+            return Task.FromResult(false);
         }
 
         public string Title
@@ -258,16 +262,16 @@ namespace gView.Framework.UI.Controls
             return null;
         }
 
-        public void RefreshMap()
+        async public Task RefreshMap()
         {
-            if (this.InvokeRequired)
-            {
-                this.Invoke(new MethodInvoker(() => { RefreshMap(); }));
-            }
-            else
+            //if (this.InvokeRequired)
+            //{
+            //    this.Invoke(new MethodInvoker(() => { RefreshMap(); }));
+            //}
+            //else
             {
                 if (mapView1 != null)
-                    mapView1.RefreshMap(DrawPhase.All);
+                    await mapView1.RefreshMap(DrawPhase.All);
             }
         }
 
@@ -367,9 +371,10 @@ namespace gView.Framework.UI.Controls
             if (_exObject == null)
                 return false;
 
-            if (_exObject.Object is ITableClass && _table != null)
+            var instance = await _exObject.GetInstanceAsync();
+            if (instance is ITableClass && _table != null)
             {
-                _table.TableClass = (ITableClass)_exObject.Object;
+                _table.TableClass = (ITableClass)instance;
                 _table.StartWorkerThread();
             }
 
@@ -397,18 +402,19 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public bool ShowWith(IExplorerObject exObject)
+        public Task<bool> ShowWith(IExplorerObject exObject)
         {
-            if (exObject == null) return false;
+            if (exObject == null)
+                return Task.FromResult(false);
             if (TypeHelper.Match(exObject.ObjectType, typeof(ITableClass)))
             {
                 //if (TypeHelper.Match(exObject.ObjectType, typeof(INetworkClass)) &&
                 //   ((IFeatureClass)exObject.Object).GeometryType == gView.Framework.Geometry.geometryType.Network)
                 //    return false;
 
-                return true;
+                return Task.FromResult(true);
             }
-            return false;
+            return Task.FromResult(false);
         }
 
         public string Title

@@ -236,7 +236,7 @@ namespace gView.Win.DataExplorer
                 _selected.Clear();
                 _selected.Add(_exObject = ((ExplorerObjectNode)node).ExplorerObject);
 
-                ViewTabPages(_exObject);
+                await ViewTabPages(_exObject);
 
                 if (_createNewRibbonGroupBox != null)
                 {
@@ -266,7 +266,7 @@ namespace gView.Win.DataExplorer
             else
             {
                 RemovePathButtons();
-                ViewTabPages(null);
+                await ViewTabPages(null);
             }
 
             ValidateButtons();
@@ -664,7 +664,7 @@ namespace gView.Win.DataExplorer
             }
         }
 
-        private void ViewTabPages(IExplorerObject exObject)
+        async private Task ViewTabPages(IExplorerObject exObject)
         {
             explorerDocPane.PropertyChanged -= new global::System.ComponentModel.PropertyChangedEventHandler(explorerDocPane_PropertyChanged);
             List<IOrder> pages = new List<IOrder>();
@@ -673,7 +673,7 @@ namespace gView.Win.DataExplorer
                 IExplorerTabPage exTabPage = tabPage.ExTabPage;
                 if (exTabPage == null || exTabPage.Control == null) continue;
 
-                if (exTabPage.ShowWith(exObject))
+                if (await exTabPage.ShowWith(exObject))
                 {
                     pages.Add(exTabPage);
                 }
@@ -707,7 +707,7 @@ namespace gView.Win.DataExplorer
                         this.Cursor = global::System.Windows.Input.Cursors.Wait;
                         this.Refresh();
                         _activeTabPage.ExplorerObject = _selected[0];
-                        _activeTabPage.OnShow();
+                        await _activeTabPage.OnShow();
                         this.Cursor = global::System.Windows.Input.Cursors.Arrow;
                         this.Refresh();
                     }

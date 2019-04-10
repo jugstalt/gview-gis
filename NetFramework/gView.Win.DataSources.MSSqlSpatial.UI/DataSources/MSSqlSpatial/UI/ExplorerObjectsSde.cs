@@ -54,9 +54,9 @@ namespace gView.DataSources.MSSqlSpatial.UI
             get { return "MsSql Spatial Connection"; }
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return null; }
+            return Task.FromResult<object>(null); 
         }
 
         public IExplorerObject CreateInstanceByFullName(string FullName)
@@ -152,9 +152,9 @@ namespace gView.DataSources.MSSqlSpatial.UI
 
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return null; }
+            return Task.FromResult<object>(null);
         }
 
         public IExplorerObject CreateInstanceByFullName(string FullName)
@@ -206,11 +206,11 @@ namespace gView.DataSources.MSSqlSpatial.UI
             return (parentExObject is MsSql2008SpatialSdeExplorerGroupObject);
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             ExplorerObjectEventArgs e = new ExplorerObjectEventArgs();
             ExplorerObjectDoubleClick(e);
-            return e.NewExplorerObject;
+            return Task.FromResult(e.NewExplorerObject);
         }
 
         #endregion
@@ -269,17 +269,16 @@ namespace gView.DataSources.MSSqlSpatial.UI
             }
         }
 
-        public object Object
+        async public Task<object> GetInstanceAsync()
         {
-            get
+            if (_dataset == null)
             {
-                if (_dataset != null) _dataset.Dispose();
 
                 _dataset = new SdeDataset();
-                _dataset.ConnectionString = _connectionString;
-                _dataset.Open();
-                return _dataset;
+                await _dataset.SetConnectionString(_connectionString);
+                await _dataset.Open();
             }
+            return _dataset;
         }
 
         #endregion
@@ -290,7 +289,7 @@ namespace gView.DataSources.MSSqlSpatial.UI
         {
             await base.Refresh();
             SdeDataset dataset = new SdeDataset();
-            dataset.ConnectionString = _connectionString;
+            await dataset.SetConnectionString(_connectionString);
             await dataset.Open();
 
             List<IDatasetElement> elements = await dataset.Elements();
@@ -339,13 +338,13 @@ namespace gView.DataSources.MSSqlSpatial.UI
 
         public event ExplorerObjectDeletedEvent ExplorerObjectDeleted = null;
 
-        public bool DeleteExplorerObject(ExplorerObjectEventArgs e)
+        public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
             ConfigTextStream stream = new ConfigTextStream("MsSql2008SpatialSde_connections", true, true);
             stream.Remove(this.Name, _connectionString);
             stream.Close();
             if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
-            return true;
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -354,7 +353,7 @@ namespace gView.DataSources.MSSqlSpatial.UI
 
         public event ExplorerObjectRenamedEvent ExplorerObjectRenamed = null;
 
-        public bool RenameExplorerObject(string newName)
+        public Task<bool> RenameExplorerObject(string newName)
         {
             bool ret = false;
             ConfigTextStream stream = new ConfigTextStream("MsSql2008SpatialSde_connections", true, true);
@@ -366,7 +365,7 @@ namespace gView.DataSources.MSSqlSpatial.UI
                 _server = newName;
                 if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
             }
-            return ret;
+            return Task.FromResult(ret);
         }
 
         #endregion
@@ -456,12 +455,9 @@ namespace gView.DataSources.MSSqlSpatial.UI
                 _fc = null;
             }
         }
-        public object Object
+        public Task<object> GetInstanceAsync()
         {
-            get
-            {
-                return _fc;
-            }
+            return Task.FromResult<object>(_fc);
         }
 
         #endregion
@@ -501,18 +497,19 @@ namespace gView.DataSources.MSSqlSpatial.UI
 
         public event ExplorerObjectDeletedEvent ExplorerObjectDeleted;
 
-        public bool DeleteExplorerObject(ExplorerObjectEventArgs e)
+        async public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
-            if (_parent.Object is IFeatureDatabase)
+            var instance = await this.GetInstanceAsync();
+            if (instance is IFeatureDatabase)
             {
-                if (((IFeatureDatabase)_parent.Object).DeleteFeatureClass(this.Name))
+                if (await ((IFeatureDatabase)instance).DeleteFeatureClass(this.Name))
                 {
                     if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
                     return true;
                 }
                 else
                 {
-                    MessageBox.Show("ERROR: " + ((IFeatureDatabase)_parent.Object).LastErrorMessage);
+                    MessageBox.Show("ERROR: " + ((IFeatureDatabase)instance).LastErrorMessage);
                     return false;
                 }
             }

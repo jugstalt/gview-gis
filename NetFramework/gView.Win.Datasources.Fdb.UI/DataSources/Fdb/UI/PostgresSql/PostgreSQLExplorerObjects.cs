@@ -56,9 +56,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             get { return "PostgreFDB Connections"; }
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return null; }
+            return Task.FromResult<object>(null);
         }
 
         public IExplorerObject CreateInstanceByFullName(string FullName)
@@ -155,9 +155,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return null; }
+            return Task.FromResult<object>(null);
         }
 
         #endregion
@@ -169,11 +169,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             return (parentExObject is ExplorerGroupObject);
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             FormCreatePostgreFeatureDatabase dlg = new FormCreatePostgreFeatureDatabase();
             dlg.ShowDialog();
-            return dlg.ResultExplorerObject;
+            return Task.FromResult(dlg.ResultExplorerObject);
         }
 
         #endregion
@@ -229,9 +229,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return null; }
+            return Task.FromResult<object>(null);
         }
 
         public IExplorerObject CreateInstanceByFullName(string FullName)
@@ -285,11 +285,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             return (parentExObject is ExplorerGroupObject);
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             ExplorerObjectEventArgs e = new ExplorerObjectEventArgs();
             ExplorerObjectDoubleClick(e);
-            return e.NewExplorerObject;
+            return Task.FromResult(e.NewExplorerObject);
         }
 
         #endregion
@@ -392,48 +392,50 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         }
 
         public void Dispose() { }
-        public object Object { get { return null; } }
+        public Task<object> GetInstanceAsync()
+        {
+            return Task.FromResult<object>(null);
+        }
 
         #endregion
 
-        private string[] DatasetNames
+        async private Task<string[]> DatasetNames()
         {
-            get
+
+            try
             {
-                try
+                pgFDB fdb = new pgFDB();
+                if (!await fdb.Open(_connectionString))
                 {
-                    pgFDB fdb = new pgFDB();
-                    if (!fdb.Open(_connectionString).Result)
-                    {
-                        _errMsg = fdb.LastErrorMessage;
-                        return null;
-                    }
-                    string[] ds = fdb.DatasetNames;
-                    string[] dsMod = new string[ds.Length];
-
-                    int i = 0;
-                    foreach (string dsname in ds)
-                    {
-                        string imageSpace;
-                        if (fdb.IsImageDataset(dsname, out imageSpace))
-                        {
-                            dsMod[i++] = "#" + dsname;
-                        }
-                        else
-                        {
-                            dsMod[i++] = dsname;
-                        }
-                    }
-                    if (ds == null) _errMsg = fdb.LastErrorMessage;
-                    fdb.Dispose();
-
-                    return dsMod;
-                }
-                catch (Exception ex)
-                {
-                    _errMsg = ex.Message;
+                    _errMsg = fdb.LastErrorMessage;
                     return null;
                 }
+                string[] ds = await fdb.DatasetNames();
+                string[] dsMod = new string[ds.Length];
+
+                int i = 0;
+                foreach (string dsname in ds)
+                {
+                    var isImageDatasetResult = await fdb.IsImageDataset(dsname);
+                    string imageSpace = isImageDatasetResult.imageSpace;
+                    if (isImageDatasetResult.isImageDataset)
+                    {
+                        dsMod[i++] = "#" + dsname;
+                    }
+                    else
+                    {
+                        dsMod[i++] = dsname;
+                    }
+                }
+                if (ds == null) _errMsg = fdb.LastErrorMessage;
+                fdb.Dispose();
+
+                return dsMod;
+            }
+            catch (Exception ex)
+            {
+                _errMsg = ex.Message;
+                return null;
             }
         }
 
@@ -442,7 +444,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         async public override Task<bool> Refresh()
         {
             await base.Refresh();
-            string[] ds = DatasetNames;
+            string[] ds = await DatasetNames();
             if (ds == null)
             {
                 System.Windows.Forms.MessageBox.Show(_errMsg, "ERROR");
@@ -502,7 +504,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         public event ExplorerObjectDeletedEvent ExplorerObjectDeleted = null;
 
-        public bool DeleteExplorerObject(ExplorerObjectEventArgs e)
+        public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
             if (_dbConnectionString != null)
             {
@@ -516,7 +518,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 stream.Close();
             }
             if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
-            return true;
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -525,7 +527,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         public event ExplorerObjectRenamedEvent ExplorerObjectRenamed = null;
 
-        public bool RenameExplorerObject(string newName)
+        public Task<bool> RenameExplorerObject(string newName)
         {
             bool ret = false;
             if (_dbConnectionString != null)
@@ -544,7 +546,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 _server = newName;
                 if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
             }
-            return ret;
+            return Task.FromResult(ret);
         }
 
         #endregion
@@ -590,9 +592,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
             _dsname = dsname;
 
-            _dataset = new pgDataset();
-            _dataset.ConnectionString = this.ConnectionString + ";dsname=" + _dsname;
-            _dataset.Open();
+            
 
             _contextItems = new ToolStripItem[2];
             _contextItems[0] = new ToolStripMenuItem("Spatial Reference...");
@@ -617,18 +617,18 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                int id = _fdb.CreateSpatialReference(dlg.SpatialReference);
+                int id = await _fdb.CreateSpatialReference(dlg.SpatialReference);
                 if (id == -1)
                 {
                     MessageBox.Show("Can't create Spatial Reference!\n", _fdb.LastErrorMessage);
                     return;
                 }
-                if (!_fdb.SetSpatialReferenceID(_dataset.DatasetName, id))
+                if (!await _fdb.SetSpatialReferenceID(_dataset.DatasetName, id))
                 {
                     MessageBox.Show("Can't set Spatial Reference!\n", _fdb.LastErrorMessage);
                     return;
                 }
-                _dataset.SpatialReference = dlg.SpatialReference;
+                _dataset.SetSpatialReference(dlg.SpatialReference);
             }
         }
 
@@ -700,7 +700,17 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 _dataset = null;
             }
         }
-        public object Object { get { return _dataset; } }
+        async public Task<object> GetInstanceAsync()
+        {
+            if(_dataset==null)
+            {
+                _dataset = new pgDataset();
+                await _dataset.SetConnectionString(this.ConnectionString + ";dsname=" + _dsname);
+                await _dataset.Open();
+            }
+
+            return _dataset;
+        }
 
         #endregion
 
@@ -712,7 +722,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             this.Dispose();
 
             _dataset = new pgDataset();
-            _dataset.ConnectionString = this.ConnectionString + ";dsname=" + _dsname;
+            await _dataset.SetConnectionString(this.ConnectionString + ";dsname=" + _dsname);
 
             if (await _dataset.Open())
             {
@@ -728,11 +738,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         #endregion
 
-        internal bool DeleteFeatureClass(string name)
+        async internal Task<bool> DeleteFeatureClass(string name)
         {
             if (_dataset == null || !(_dataset.Database is IFeatureDatabase)) return false;
 
-            if (!((IFeatureDatabase)_dataset.Database).DeleteFeatureClass(name))
+            if (!await ((IFeatureDatabase)_dataset.Database).DeleteFeatureClass(name))
             {
                 MessageBox.Show(_dataset.Database.LastErrorMessage);
                 return false;
@@ -740,11 +750,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             return true;
         }
 
-        internal bool DeleteDataset(string dsname)
+        async internal Task<bool> DeleteDataset(string dsname)
         {
             if (_dataset == null || !(_dataset.Database is IFeatureDatabase)) return false;
 
-            if (!((IFeatureDatabase)_dataset.Database).DeleteDataset(dsname).Result)
+            if (!await ((IFeatureDatabase)_dataset.Database).DeleteDataset(dsname))
             {
                 MessageBox.Show(_dataset.Database.LastErrorMessage);
                 return false;
@@ -791,12 +801,12 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             return false;
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             if (!CanCreate(parentExObject)) return null;
 
             pgFDB fdb = new pgFDB();
-            fdb.Open(((ExplorerObject)parentExObject).ConnectionString);
+            await fdb.Open(((ExplorerObject)parentExObject).ConnectionString);
 
             FormNewDataset dlg = new FormNewDataset();
             if (fdb.FdbVersion >= new Version(1, 2, 0))
@@ -853,9 +863,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         public event ExplorerObjectDeletedEvent ExplorerObjectDeleted = null;
 
-        public bool DeleteExplorerObject(ExplorerObjectEventArgs e)
+        async public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
-            if (DeleteDataset(_dsname))
+            if (await DeleteDataset(_dsname))
             {
                 if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
                 return true;
@@ -869,7 +879,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         public event ExplorerObjectRenamedEvent ExplorerObjectRenamed;
 
-        public bool RenameExplorerObject(string newName)
+        async public Task<bool> RenameExplorerObject(string newName)
         {
             if (newName == this.Name) return false;
 
@@ -878,7 +888,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 MessageBox.Show("Can't rename dataset...\nUncorrect dataset !!!");
                 return false;
             }
-            if (!((pgFDB)_dataset.Database).RenameDataset(this.Name, newName))
+            if (!await ((pgFDB)_dataset.Database).RenameDataset(this.Name, newName))
             {
                 MessageBox.Show("Can't rename dataset...\n" + ((pgFDB)_dataset.Database).LastErrorMessage);
                 return false;
@@ -1057,14 +1067,14 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 _rc = null;
             }
         }
-        public object Object
+        public Task<object> GetInstanceAsync()
         {
-            get
-            {
-                if (_fc != null) return _fc;
-                if (_rc != null) return _rc;
-                return null;
-            }
+            if (_fc != null)
+                return Task.FromResult<object>(_fc);
+            if (_rc != null)
+                return Task.FromResult<object>(_rc);
+
+            return Task.FromResult<object>(null);
         }
 
         #endregion
@@ -1127,7 +1137,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             _fc.Dataset.RefreshClasses();
         }
 
-        void SpatialIndexDef_Click(object sender, EventArgs e)
+        async void SpatialIndexDef_Click(object sender, EventArgs e)
         {
             if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is pgFDB))
             {
@@ -1135,7 +1145,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 return;
             }
 
-            FormRebuildSpatialIndexDef dlg = new FormRebuildSpatialIndexDef((pgFDB)_fc.Dataset.Database, _fc);
+            FormRebuildSpatialIndexDef dlg = await FormRebuildSpatialIndexDef.Create((pgFDB)_fc.Dataset.Database, _fc);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
             }
@@ -1175,10 +1185,10 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         public event ExplorerObjectDeletedEvent ExplorerObjectDeleted = null;
 
-        public bool DeleteExplorerObject(ExplorerObjectEventArgs e)
+        async public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
             if (_parent == null) return false;
-            if (_parent.DeleteFeatureClass(_fcname))
+            if (await _parent.DeleteFeatureClass(_fcname))
             {
                 if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
                 return true;
@@ -1192,7 +1202,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         public event ExplorerObjectRenamedEvent ExplorerObjectRenamed;
 
-        public bool RenameExplorerObject(string newName)
+        async public Task<bool> RenameExplorerObject(string newName)
         {
             if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is pgFDB))
             {
@@ -1200,7 +1210,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 return false;
             }
 
-            if (!((pgFDB)_fc.Dataset.Database).RenameFeatureClass(this.Name, newName))
+            if (!await ((pgFDB)_fc.Dataset.Database).RenameFeatureClass(this.Name, newName))
             {
                 MessageBox.Show("Can't rename featureclass...\n" + ((pgFDB)_fc.Dataset.Database).LastErrorMessage);
                 return false;
@@ -1223,22 +1233,23 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             return false;
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             if (!CanCreate(parentExObject)) return null;
 
-            if (!(parentExObject.Object is IFeatureDataset) || !(((IDataset)parentExObject.Object).Database is pgFDB))
+            var instance = await parentExObject.GetInstanceAsync();
+            if (!(instance is IFeatureDataset) || !(((IDataset)instance).Database is pgFDB))
             {
                 return null;
             }
-            pgFDB fdb = ((IDataset)parentExObject.Object).Database as pgFDB;
+            pgFDB fdb = ((IDataset)instance).Database as pgFDB;
 
-            FormNewFeatureclass dlg = new FormNewFeatureclass(parentExObject.Object as IFeatureDataset);
+            FormNewFeatureclass dlg = await FormNewFeatureclass.Create(instance as IFeatureDataset);
             if (dlg.ShowDialog() != DialogResult.OK) return null;
 
             IGeometryDef gDef = dlg.GeometryDef;
 
-            int FCID = fdb.CreateFeatureClass(
+            int FCID = await fdb.CreateFeatureClass(
                 parentExObject.Name,
                 dlg.FeatureclassName,
                 gDef,
@@ -1250,10 +1261,10 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 return null;
             }
 
-            ISpatialIndexDef sIndexDef = fdb.SpatialIndexDef(parentExObject.Name);
-            fdb.SetSpatialIndexBounds(dlg.FeatureclassName, "BinaryTree2", dlg.SpatialIndexExtents, 0.55, 200, dlg.SpatialIndexLevels);
+            ISpatialIndexDef sIndexDef = await fdb.SpatialIndexDef(parentExObject.Name);
+            await fdb.SetSpatialIndexBounds(dlg.FeatureclassName, "BinaryTree2", dlg.SpatialIndexExtents, 0.55, 200, dlg.SpatialIndexLevels);
 
-            IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.FeatureclassName).Result;
+            IDatasetElement element = await ((IFeatureDataset)instance).Element(dlg.FeatureclassName);
             return new FeatureClassExplorerObject(
                 parentExObject as DatasetExplorerObject,
                 parentExObject.Name,
@@ -1308,9 +1319,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             }
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return null; }
+            return Task.FromResult<object>(null);
         }
 
         #endregion
@@ -1341,12 +1352,13 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             return false;
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             if (!(parentExObject is DatasetExplorerObject))
                 return null;
 
-            IFeatureDataset dataset = ((DatasetExplorerObject)parentExObject).Object as IFeatureDataset;
+
+            IFeatureDataset dataset = await ((DatasetExplorerObject)parentExObject).GetInstanceAsync() as IFeatureDataset;
             if (dataset == null || !(dataset.Database is pgFDB))
                 return null;
 
@@ -1359,7 +1371,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 dlg.EdgeFeatureclasses,
                 dlg.NodeFeatureclasses);
             creator.SnapTolerance = dlg.SnapTolerance;
-            creator.ComplexEdgeFcIds = dlg.ComplexEdgeFcIds;
+            creator.ComplexEdgeFcIds = await dlg.ComplexEdgeFcIds();
             creator.GraphWeights = dlg.GraphWeights;
             creator.SwitchNodeFcIdAndFieldnames = dlg.SwitchNodeFcIds;
             creator.NodeTypeFcIds = dlg.NetworkNodeTypeFcIds;
@@ -1367,7 +1379,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             FormProgress progress = new FormProgress();
             progress.ShowProgressDialog(creator, null, creator.Thread);
 
-            IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.NetworkName).Result;
+            IDatasetElement element = await dataset.Element(dlg.NetworkName);
             return new FeatureClassExplorerObject(
                 parentExObject as DatasetExplorerObject,
                 parentExObject.Name,
@@ -1387,11 +1399,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             return parentExObject is DatasetExplorerObject;
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             DatasetExplorerObject parent = (DatasetExplorerObject)parentExObject;
 
-            IFeatureDataset dataset = parent.Object as IFeatureDataset;
+            IFeatureDataset dataset = await parent.GetInstanceAsync() as IFeatureDataset;
             if (dataset == null)
                 return null;
 
@@ -1399,12 +1411,12 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             if (fdb == null)
                 return null;
 
-            FormRegisterGeographicView dlg = new FormRegisterGeographicView(parent.Object as IFeatureDataset);
+            FormRegisterGeographicView dlg = new FormRegisterGeographicView(dataset);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                int fc_id = fdb.CreateSpatialView(dataset.DatasetName, dlg.SpatialViewAlias);
+                int fc_id = await fdb.CreateSpatialView(dataset.DatasetName, dlg.SpatialViewAlias);
 
-                IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.SpatialViewAlias).Result;
+                IDatasetElement element = await dataset.Element(dlg.SpatialViewAlias);
                 return new FeatureClassExplorerObject(
                     parentExObject as DatasetExplorerObject,
                     parentExObject.Name,
@@ -1442,9 +1454,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             get { return null; }
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return null; }
+            return Task.FromResult<object>(null);
         }
 
         public Type ObjectType
@@ -1485,11 +1497,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             return parentExObject is DatasetExplorerObject;
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             DatasetExplorerObject parent = (DatasetExplorerObject)parentExObject;
 
-            IFeatureDataset dataset = parent.Object as IFeatureDataset;
+            IFeatureDataset dataset = await parent.GetInstanceAsync() as IFeatureDataset;
             if (dataset == null)
                 return null;
 
@@ -1508,12 +1520,14 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             {
                 foreach (IExplorerObject exObj in dlg.ExplorerObjects)
                 {
-                    if (exObj.Object is IFeatureClass)
+                    var exObjectInstance = await exObj?.GetInstanceAsync();
+
+                    if (exObjectInstance is IFeatureClass)
                     {
-                        int fcid = fdb.CreateLinkedFeatureClass(dataset.DatasetName, (IFeatureClass)exObj.Object);
+                        int fcid = await fdb.CreateLinkedFeatureClass(dataset.DatasetName, (IFeatureClass)exObjectInstance);
                         if (ret == null)
                         {
-                            IDatasetElement element = dataset.Element(((IFeatureClass)exObj.Object).Name).Result;
+                            IDatasetElement element = dataset.Element(((IFeatureClass)exObjectInstance).Name).Result;
                             if (element != null)
                             {
                                 ret = new FeatureClassExplorerObject(
@@ -1557,9 +1571,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             get { return null; }
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return null; }
+            return Task.FromResult<object>(null);
         }
 
         public Type ObjectType
@@ -1620,9 +1634,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             }
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return null; }
+            return Task.FromResult<object>(null);
         }
 
         public int Priority { get { return 1; } }
@@ -1655,12 +1669,12 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             return false;
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             if (!(parentExObject is DatasetExplorerObject))
                 return null;
 
-            IFeatureDataset dataset = ((DatasetExplorerObject)parentExObject).Object as IFeatureDataset;
+            IFeatureDataset dataset = await ((DatasetExplorerObject)parentExObject).GetInstanceAsync() as IFeatureDataset;
             if (dataset == null || !(dataset.Database is SqlFDB))
                 return null;
 
@@ -1682,7 +1696,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             FormProgress progress = new FormProgress();
             progress.ShowProgressDialog(creator, null, creator.Thread);
 
-            IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.GridName).Result;
+            IDatasetElement element = await dataset.Element(dlg.GridName);
             return new FeatureClassExplorerObject(
                 parentExObject as DatasetExplorerObject,
                 parentExObject.Name,

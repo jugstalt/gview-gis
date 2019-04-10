@@ -123,8 +123,8 @@ namespace gView.Framework.Data
         event BeforeMapRequestEventHandler BeforeMapRequest;
         event AfterMapRequestEventHandler AfterMapRequest;
 
-        bool MapRequest(IDisplay display);
-        bool LegendRequest(IDisplay display);
+        Task<bool> MapRequest(IDisplay display);
+        Task<bool> LegendRequest(IDisplay display);
         GeorefBitmap Image { get; }
         global::System.Drawing.Bitmap Legend { get; }
 

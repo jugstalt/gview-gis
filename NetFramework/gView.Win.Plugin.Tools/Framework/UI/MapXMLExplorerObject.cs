@@ -30,14 +30,19 @@ namespace gView.Framework.UI
             get { return "*.mxl"; }
         }
 
-        public IExplorerFileObject CreateInstance(IExplorerObject parent, string filename)
+        public Task<IExplorerFileObject> CreateInstance(IExplorerObject parent, string filename)
         {
             try
             {
-                if (!(new FileInfo(filename).Exists)) return null;
+                if (!(new FileInfo(filename).Exists))
+                    return Task.FromResult<IExplorerFileObject>(null);
             }
-            catch { return null; }
-            return new MapDocumentExplorerObject(parent, filename);
+            catch
+            {
+                return Task.FromResult<IExplorerFileObject>(null); ;
+            }
+
+            return Task.FromResult<IExplorerFileObject>(new MapDocumentExplorerObject(parent, filename));
         }
 
         #endregion
@@ -75,12 +80,9 @@ namespace gView.Framework.UI
             get { return _icon; }
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get
-            {
-                return (_mapDocument != null) ? _mapDocument : new MapDocument();
-            }
+            return Task.FromResult<object>(_mapDocument != null ? _mapDocument : new MapDocument());
         }
 
         #endregion
@@ -176,9 +178,9 @@ namespace gView.Framework.UI
             get { return _icon; }
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return _map; }
+            return Task.FromResult<object>(_map);
         }
 
         public IExplorerObject CreateInstanceByFullName(string FullName)
@@ -296,9 +298,9 @@ namespace gView.Framework.UI
 
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return _layer; }
+            return Task.FromResult<object>(null);
         }
 
         #endregion
@@ -376,9 +378,9 @@ namespace gView.Framework.UI
             get { return _icon; }
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return _element; }
+            return Task.FromResult<object>(_element);
         }
 
         #endregion

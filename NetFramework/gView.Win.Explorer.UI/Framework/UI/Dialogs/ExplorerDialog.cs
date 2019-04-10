@@ -82,14 +82,15 @@ namespace gView.Framework.UI.Dialogs
                 if (exObject == null) continue;
                 if (usedObjects.Contains(exObject)) continue;
 
-                if (exObject.Object is IDataset)
+                var instance = await exObject.GetInstanceAsync();
+                if (instance is IDataset)
                 {
-                    datasets.Add((IDataset)exObject.Object);
+                    datasets.Add((IDataset)instance);
                     usedObjects.Add(exObject);
                 }
-                else if (exObject.Object is IFeatureClass && ((IFeatureClass)exObject.Object).Dataset is IDataset2)
+                else if (instance is IFeatureClass && ((IFeatureClass)instance).Dataset is IDataset2)
                 {
-                    IDataset2 dataset = (IDataset2)((IFeatureClass)exObject.Object).Dataset;
+                    IDataset2 dataset = (IDataset2)((IFeatureClass)instance).Dataset;
                     IDataset2 datasetClone = await dataset.EmptyCopy();
                     if (datasetClone == null) continue;
 
@@ -97,18 +98,19 @@ namespace gView.Framework.UI.Dialogs
                     {
                         if (exObject2 == null) continue;
 
-                        if (exObject2.Object is IFeatureClass && ((IFeatureClass)exObject2.Object).Dataset == dataset)
+                        var instance2 = await exObject2.GetInstanceAsync();
+                        if (instance2 is IFeatureClass && ((IFeatureClass)instance2).Dataset == dataset)
                         {
-                            await datasetClone.AppendElement(((IFeatureClass)exObject2.Object).Name);
+                            await datasetClone.AppendElement(((IFeatureClass)instance2).Name);
                             usedObjects.Add(exObject2);
                         }
                     }
 
                     datasets.Add(datasetClone);
                 }
-                else if (exObject.Object is IRasterClass && ((IRasterClass)exObject.Object).Dataset is IDataset2)
+                else if (instance is IRasterClass && ((IRasterClass)instance).Dataset is IDataset2)
                 {
-                    IDataset2 dataset = (IDataset2)((IRasterClass)exObject.Object).Dataset;
+                    IDataset2 dataset = (IDataset2)((IRasterClass)instance).Dataset;
                     IDataset2 datasetClone = await dataset.EmptyCopy();
                     if (datasetClone == null) continue;
 
@@ -116,26 +118,27 @@ namespace gView.Framework.UI.Dialogs
                     {
                         if (exObject2 == null) continue;
 
-                        if (exObject2.Object is IRasterClass && ((IRasterClass)exObject2.Object).Dataset == dataset)
+                        var instance2 = await exObject2.GetInstanceAsync();
+                        if (instance2 is IRasterClass && ((IRasterClass)instance2).Dataset == dataset)
                         {
-                            await datasetClone.AppendElement(((IRasterClass)exObject2.Object).Name);
+                            await datasetClone.AppendElement(((IRasterClass)instance2).Name);
                             usedObjects.Add(exObject2);
                         }
                     }
 
                     datasets.Add(datasetClone);
                 }
-                else if (exObject.Object is IFeatureClass && ((IFeatureClass)exObject.Object).Dataset is IDataset)
+                else if (instance is IFeatureClass && ((IFeatureClass)instance).Dataset is IDataset)
                 {
-                    datasets.Add(((IFeatureClass)exObject.Object).Dataset);
+                    datasets.Add(((IFeatureClass)instance).Dataset);
                 }
-                else if (exObject.Object is IWebServiceClass && ((IWebServiceClass)exObject.Object).Dataset is IDataset)
+                else if (instance is IWebServiceClass && ((IWebServiceClass)instance).Dataset is IDataset)
                 {
-                    datasets.Add(((IWebServiceClass)exObject.Object).Dataset);
+                    datasets.Add(((IWebServiceClass)instance).Dataset);
                 }
-                else if (exObject.Object is IRasterClass && ((IRasterClass)exObject.Object).Dataset is IDataset)
+                else if (instance is IRasterClass && ((IRasterClass)instance).Dataset is IDataset)
                 {
-                    datasets.Add(((IRasterClass)exObject.Object).Dataset);
+                    datasets.Add(((IRasterClass)instance).Dataset);
                 }
             }
 

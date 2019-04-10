@@ -12,6 +12,7 @@ using System.IO;
 using gView.Interoperability.OGC.SLD;
 using gView.Framework.IO;
 using gView.MapServer;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Dataset.WMS
 {
@@ -319,13 +320,14 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         public event BeforeMapRequestEventHandler BeforeMapRequest = null;
         public event AfterMapRequestEventHandler AfterMapRequest = null;
 
-        public bool MapRequest(gView.Framework.Carto.IDisplay display)
+        async public Task<bool> MapRequest(gView.Framework.Carto.IDisplay display)
         {
-            if (_srs == null) return false;
+            if (_srs == null)
+                return false;
 
             if (!_dataset.IsOpened)
             {
-                if (!_dataset.Open().Result) return false;
+                if (!await _dataset.Open()) return false;
             }
 
             List<IWebServiceTheme> themes = Themes;
@@ -510,9 +512,9 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             return _image != null;
         }
 
-        public bool LegendRequest(gView.Framework.Carto.IDisplay display)
+        public Task<bool> LegendRequest(gView.Framework.Carto.IDisplay display)
         {
-            return false;
+            return Task.FromResult(false);
         }
 
         public GeorefBitmap Image

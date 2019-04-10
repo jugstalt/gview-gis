@@ -45,7 +45,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             }
         }
 
-        private void btnOK_Click(object sender, EventArgs e)
+        async private void btnOK_Click(object sender, EventArgs e)
         {
             try
             {
@@ -56,7 +56,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 UserData parameters = _advancedSettings.ToUserData();
                 if (btnOnlyRepository.Checked) parameters.SetUserData("CreateDatabase", false);
 
-                fdb.Open(ConnectionString);
+                await fdb.Open(ConnectionString);
 
                 if (!fdb.Create(txtDatabase.Text, parameters))
                 {
@@ -65,10 +65,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 }
                 //if (chkCreateReplicationDatamodel.Checked == true)
                 {
-                    string errMsg;
-                    if (!gView.Framework.Offline.Replication.CreateRelicationModel(fdb, out errMsg))
+                    if (!gView.Framework.Offline.Replication.CreateRelicationModel(fdb))
                     {
-                        MessageBox.Show("RepliCreateRelicationModel failed:\n" + errMsg, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("RepliCreateRelicationModel failed:\n", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
 

@@ -75,9 +75,12 @@ namespace gView.DataSources.Fdb.UI.SQLite
             }
         }
 
-        public object Object { get { return null; } }
+        public Task<object> GetInstanceAsync()
+        {
+            return Task.FromResult<object>(null);
+        }
 
-        public IExplorerFileObject CreateInstance(IExplorerObject parent, string filename)
+        async public Task<IExplorerFileObject> CreateInstance(IExplorerObject parent, string filename)
         {
             string f = filename.ToLower();
             if (!f.ToLower().EndsWith(".fdb")) return null;
@@ -87,7 +90,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
                 if (!(new FileInfo(f).Exists)) return null;
                 using (SQLiteFDB fdb = new SQLiteFDB())
                 {
-                    if (!fdb.Open(f).Result || !fdb.IsValidAccessFDB)
+                    if (!await fdb.Open(f) || !fdb.IsValidAccessFDB)
                         return null;
                 }
             }
@@ -97,44 +100,42 @@ namespace gView.DataSources.Fdb.UI.SQLite
         }
         #endregion
 
-        private string[] DatasetNames
+        async private Task<string[]> DatasetNames()
         {
-            get
+            try
             {
-                try
+                SQLiteFDB fdb = new SQLiteFDB();
+                if (!fdb.Open(_filename).Result)
                 {
-                    SQLiteFDB fdb = new SQLiteFDB();
-                    if (!fdb.Open(_filename).Result)
-                    {
-                        _errMsg = fdb.LastErrorMessage;
-                        return null;
-                    }
-                    string[] ds = fdb.DatasetNames;
-                    string[] dsMod = new string[ds.Length];
-
-                    int i = 0;
-                    foreach (string dsname in ds)
-                    {
-                        string imageSpace;
-                        if (fdb.IsImageDataset(dsname, out imageSpace))
-                        {
-                            dsMod[i++] = "#" + dsname;
-                        }
-                        else
-                        {
-                            dsMod[i++] = dsname;
-                        }
-                    }
-                    if (ds == null) _errMsg = fdb.LastErrorMessage;
-                    fdb.Dispose();
-
-                    return dsMod;
-                }
-                catch (Exception ex)
-                {
-                    _errMsg = ex.Message;
+                    _errMsg = fdb.LastErrorMessage;
                     return null;
                 }
+                string[] ds = await fdb.DatasetNames();
+                string[] dsMod = new string[ds.Length];
+
+                int i = 0;
+                foreach (string dsname in ds)
+                {
+                    var isImageDatasetResult = await fdb.IsImageDataset(dsname);
+                    string imageSpace=isImageDatasetResult.imageSpace;
+                    if (isImageDatasetResult.isImageDataset)
+                    {
+                        dsMod[i++] = "#" + dsname;
+                    }
+                    else
+                    {
+                        dsMod[i++] = dsname;
+                    }
+                }
+                if (ds == null) _errMsg = fdb.LastErrorMessage;
+                fdb.Dispose();
+
+                return dsMod;
+            }
+            catch (Exception ex)
+            {
+                _errMsg = ex.Message;
+                return null;
             }
         }
 
@@ -143,7 +144,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
         async public override Task<bool> Refresh()
         {
             await base.Refresh();
-            string[] ds = DatasetNames;
+            string[] ds = await DatasetNames();
             if (ds != null)
             {
                 foreach (string dsname in ds)
@@ -174,11 +175,11 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
         #region ISerializableExplorerObject Member
 
-        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            IExplorerObject obj = (cache.Contains(FullName)) ? cache[FullName] : CreateInstance(null, FullName);
+            IExplorerObject obj = (cache.Contains(FullName)) ? cache[FullName] : await CreateInstance(null, FullName);
             cache.Append(obj);
-            return Task.FromResult<IExplorerObject>(obj);
+            return obj;
         }
 
         #endregion
@@ -191,7 +192,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
             return (PlugInManager.PlugInID(parentExObject) == KnownExplorerObjectIDs.Directory);
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             if (!CanCreate(parentExObject)) return null;
 
@@ -206,10 +207,10 @@ namespace gView.DataSources.Fdb.UI.SQLite
                 if (!fdb.Create(dlg.FileName))
                 {
                     MessageBox.Show(fdb.LastErrorMessage, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return null;
+                    return Task.FromResult<IExplorerObject>(null);
                 }
                 _filename = dlg.FileName;
-                return this;
+                return Task.FromResult<IExplorerObject>(this);
             }
             return null;
         }
@@ -220,19 +221,19 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
         public event ExplorerObjectDeletedEvent ExplorerObjectDeleted = null;
 
-        public bool DeleteExplorerObject(ExplorerObjectEventArgs e)
+        public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
             try
             {
                 FileInfo fi = new FileInfo(_filename);
                 fi.Delete();
                 if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                return false;
+                return Task.FromResult(false);
             }
         }
 
@@ -268,10 +269,6 @@ namespace gView.DataSources.Fdb.UI.SQLite
             }
             _dsname = dsname;
 
-            _dataset = new SQLiteFDBDataset();
-            _dataset.ConnectionString = "Data Source=" + _filename + ";dsname=" + _dsname;
-            _dataset.Open();
-
             _contextItems = new ToolStripItem[2];
             _contextItems[0] = new ToolStripMenuItem("Spatial Reference...");
             _contextItems[0].Click += new EventHandler(SpatialReference_Click);
@@ -279,11 +276,11 @@ namespace gView.DataSources.Fdb.UI.SQLite
             _contextItems[1].Click += new EventHandler(ShrinkSpatialIndices_Click);
         }
 
-        void SpatialReference_Click(object sender, EventArgs e)
+        async void SpatialReference_Click(object sender, EventArgs e)
         {
             if (_dataset == null || _fdb == null)
             {
-                Refresh();
+                await Refresh();
                 if (_dataset == null || _fdb == null)
                 {
                     MessageBox.Show("Can't open dataset...");
@@ -291,31 +288,31 @@ namespace gView.DataSources.Fdb.UI.SQLite
                 }
             }
 
-            FormSpatialReference dlg = new FormSpatialReference(_dataset.SpatialReference);
+            FormSpatialReference dlg = new FormSpatialReference(await _dataset.GetSpatialReference());
 
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                int id = _fdb.CreateSpatialReference(dlg.SpatialReference);
+                int id = await _fdb.CreateSpatialReference(dlg.SpatialReference);
                 if (id == -1)
                 {
                     MessageBox.Show("Can't create Spatial Reference!\n", _fdb.LastErrorMessage);
                     return;
                 }
-                if (!_fdb.SetSpatialReferenceID(_dataset.DatasetName, id))
+                if (!await _fdb.SetSpatialReferenceID(_dataset.DatasetName, id))
                 {
                     MessageBox.Show("Can't set Spatial Reference!\n", _fdb.LastErrorMessage);
                     return;
                 }
-                _dataset.SpatialReference = dlg.SpatialReference;
+                _dataset.SetSpatialReference(dlg.SpatialReference);
             }
         }
 
-        void ShrinkSpatialIndices_Click(object sender, EventArgs e)
+        async void ShrinkSpatialIndices_Click(object sender, EventArgs e)
         {
             if (_dataset == null) return;
 
             List<IClass> classes = new List<IClass>();
-            foreach (IDatasetElement element in _dataset.Elements().Result)
+            foreach (IDatasetElement element in await _dataset.Elements())
             {
                 if (element == null || element.Class == null) continue;
                 classes.Add(element.Class);
@@ -368,7 +365,17 @@ namespace gView.DataSources.Fdb.UI.SQLite
                 _dataset = null;
             }
         }
-        public object Object { get { return _dataset; } }
+        async public Task<object> GetInstanceAsync()
+        {
+            if(_dataset==null)
+            {
+                _dataset = new SQLiteFDBDataset();
+                await _dataset.SetConnectionString("Data Source=" + _filename + ";dsname=" + _dsname);
+                await _dataset.Open();
+            }
+
+            return _dataset;
+        }
 
         #endregion
 
@@ -380,7 +387,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
             this.Dispose();
 
             _dataset = new SQLiteFDBDataset();
-            _dataset.ConnectionString = "Data Source=" + _filename + ";dsname=" + _dsname;
+            await _dataset.SetConnectionString("Data Source=" + _filename + ";dsname=" + _dsname);
             
             if (await _dataset.Open())
             {
@@ -441,11 +448,12 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
         #endregion
 
-        internal bool DeleteFeatureClass(string name)
+        async internal Task<bool> DeleteFeatureClass(string name)
         {
-            if (_dataset == null || !(_dataset.Database is IFeatureDatabase)) return false;
+            if (_dataset == null || !(_dataset.Database is IFeatureDatabase))
+                return false;
 
-            if (!((IFeatureDatabase)_dataset.Database).DeleteFeatureClass(name))
+            if (!await ((IFeatureDatabase)_dataset.Database).DeleteFeatureClass(name))
             {
                 MessageBox.Show(_dataset.Database.LastErrorMessage);
                 return false;
@@ -453,11 +461,11 @@ namespace gView.DataSources.Fdb.UI.SQLite
             return true;
         }
 
-        internal bool DeleteDataset(string dsname)
+        async internal Task<bool> DeleteDataset(string dsname)
         {
             if (_dataset == null || !(_dataset.Database is IFeatureDatabase)) return false;
 
-            if (!((IFeatureDatabase)_dataset.Database).DeleteDataset(dsname).Result)
+            if (!await ((IFeatureDatabase)_dataset.Database).DeleteDataset(dsname))
             {
                 MessageBox.Show(_dataset.Database.LastErrorMessage);
                 return false;
@@ -474,7 +482,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
             return false;
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             if (!CanCreate(parentExObject)) return null;
 
@@ -483,17 +491,17 @@ namespace gView.DataSources.Fdb.UI.SQLite
             if (dlg.ShowDialog() != DialogResult.OK) return null;
 
             SQLiteFDB fdb = new SQLiteFDB();
-            fdb.Open(parentExObject.FullName);
+            await fdb.Open(parentExObject.FullName);
             int dsID = -1;
 
             string datasetName = dlg.DatasetName;
             switch (dlg.DatasetType)
             {
                 case FormNewDataset.datasetType.FeatureDataset:
-                    dsID = fdb.CreateDataset(datasetName, dlg.SpatialReferene).Result;
+                    dsID = await fdb.CreateDataset(datasetName, dlg.SpatialReferene);
                     break;
                 case FormNewDataset.datasetType.ImageDataset:
-                    dsID = fdb.CreateImageDataset(datasetName, dlg.SpatialReferene, null, dlg.ImageSpace, dlg.AdditionalFields).Result;
+                    dsID = await fdb.CreateImageDataset(datasetName, dlg.SpatialReferene, null, dlg.ImageSpace, dlg.AdditionalFields);
                     datasetName = "#" + datasetName;
                     break;
             }
@@ -522,9 +530,9 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
         public event ExplorerObjectDeletedEvent ExplorerObjectDeleted = null;
 
-        public bool DeleteExplorerObject(ExplorerObjectEventArgs e)
+        async public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
-            if (DeleteDataset(_dsname))
+            if (await DeleteDataset(_dsname))
             {
                 if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
                 return true;
@@ -538,7 +546,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
         public event ExplorerObjectRenamedEvent ExplorerObjectRenamed;
 
-        public bool RenameExplorerObject(string newName)
+        async public Task<bool> RenameExplorerObject(string newName)
         {
             if (newName == this.Name) return false;
 
@@ -547,7 +555,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
                 MessageBox.Show("Can't rename dataset...\nUncorrect dataset !!!");
                 return false;
             }
-            if (!((SQLiteFDB)_dataset.Database).RenameDataset(this.Name, newName))
+            if (!await ((SQLiteFDB)_dataset.Database).RenameDataset(this.Name, newName))
             {
                 MessageBox.Show("Can't rename dataset...\n" + ((SQLiteFDB)_dataset.Database).LastErrorMessage);
                 return false;
@@ -717,14 +725,14 @@ namespace gView.DataSources.Fdb.UI.SQLite
                 _rc = null;
             }
         }
-        public object Object
+        public Task<object> GetInstanceAsync()
         {
-            get
-            {
-                if (_fc != null) return _fc;
-                if (_rc != null) return _rc;
-                return null;
-            }
+            if (_fc != null)
+                return Task.FromResult<object>(_fc);
+            if (_rc != null)
+                return Task.FromResult<object>(_rc);
+
+            return Task.FromResult<object>(null);
         }
         #endregion
 
@@ -785,7 +793,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
             rebuilder.RebuildIndices(classes);
         }
 
-        void SpatialIndexDef_Click(object sender, EventArgs e)
+        async void SpatialIndexDef_Click(object sender, EventArgs e)
         {
             if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is SQLiteFDB))
             {
@@ -793,7 +801,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
                 return;
             }
 
-            FormRebuildSpatialIndexDef dlg = new FormRebuildSpatialIndexDef((SQLiteFDB)_fc.Dataset.Database, _fc);
+            FormRebuildSpatialIndexDef dlg = await FormRebuildSpatialIndexDef.Create((SQLiteFDB)_fc.Dataset.Database, _fc);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
             }
@@ -828,10 +836,10 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
         public event ExplorerObjectDeletedEvent ExplorerObjectDeleted = null;
 
-        public bool DeleteExplorerObject(ExplorerObjectEventArgs e)
+        async public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
             if (_parent == null) return false;
-            if (_parent.DeleteFeatureClass(_fcname))
+            if (await _parent.DeleteFeatureClass(_fcname))
             {
                 if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
                 return true;
@@ -845,7 +853,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
 
         public event ExplorerObjectRenamedEvent ExplorerObjectRenamed;
 
-        public bool RenameExplorerObject(string newName)
+        async public Task<bool> RenameExplorerObject(string newName)
         {
             if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is SQLiteFDB))
             {
@@ -853,7 +861,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
                 return false;
             }
 
-            if (!((SQLiteFDB)_fc.Dataset.Database).RenameFeatureClass(this.Name, newName))
+            if (!await ((SQLiteFDB)_fc.Dataset.Database).RenameFeatureClass(this.Name, newName))
             {
                 MessageBox.Show("Can't rename featureclass...\n" + ((SQLiteFDB)_fc.Dataset.Database).LastErrorMessage);
                 return false;
@@ -876,22 +884,23 @@ namespace gView.DataSources.Fdb.UI.SQLite
             return false;
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             if (!CanCreate(parentExObject)) return null;
 
-            if (!(parentExObject.Object is IFeatureDataset) || !(((IDataset)parentExObject.Object).Database is SQLiteFDB))
+            var instance = await parentExObject.GetInstanceAsync();
+            if (!(instance is IFeatureDataset) || !(((IDataset)instance).Database is SQLiteFDB))
             {
                 return null;
             }
-            SQLiteFDB fdb = ((IDataset)parentExObject.Object).Database as SQLiteFDB;
+            SQLiteFDB fdb = ((IDataset)instance).Database as SQLiteFDB;
 
-            FormNewFeatureclass dlg = new FormNewFeatureclass(parentExObject.Object as IFeatureDataset);
+            FormNewFeatureclass dlg = await FormNewFeatureclass.Create(instance as IFeatureDataset);
             if (dlg.ShowDialog() != DialogResult.OK) return null;
 
             IGeometryDef gDef = dlg.GeometryDef;
 
-            int FCID = fdb.CreateFeatureClass(
+            int FCID = await fdb.CreateFeatureClass(
                 parentExObject.Name,
                 dlg.FeatureclassName,
                 gDef,
@@ -903,10 +912,10 @@ namespace gView.DataSources.Fdb.UI.SQLite
                 return null;
             }
 
-            ISpatialIndexDef sIndexDef = fdb.SpatialIndexDef(parentExObject.Name);
-            fdb.SetSpatialIndexBounds(dlg.FeatureclassName, "BinaryTree2", dlg.SpatialIndexExtents, 0.55, 200, dlg.SpatialIndexLevels);
+            ISpatialIndexDef sIndexDef = await fdb.SpatialIndexDef(parentExObject.Name);
+            await fdb.SetSpatialIndexBounds(dlg.FeatureclassName, "BinaryTree2", dlg.SpatialIndexExtents, 0.55, 200, dlg.SpatialIndexLevels);
 
-            IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.FeatureclassName).Result;
+            IDatasetElement element = await ((IFeatureDataset)instance).Element(dlg.FeatureclassName);
             return new SQLiteFDBFeatureClassExplorerObject(
                 parentExObject as SQLiteFDBDatasetExplorerObject,
                 _filename,
@@ -927,11 +936,11 @@ namespace gView.DataSources.Fdb.UI.SQLite
             return parentExObject is SQLiteFDBDatasetExplorerObject;
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             SQLiteFDBDatasetExplorerObject parent = (SQLiteFDBDatasetExplorerObject)parentExObject;
 
-            IFeatureDataset dataset = parent.Object as IFeatureDataset;
+            IFeatureDataset dataset = await parent.GetInstanceAsync() as IFeatureDataset;
             if (dataset == null)
                 return null;
 
@@ -950,12 +959,13 @@ namespace gView.DataSources.Fdb.UI.SQLite
             {
                 foreach (IExplorerObject exObj in dlg.ExplorerObjects)
                 {
-                    if (exObj.Object is IFeatureClass)
+                    var exObjectInstance = await exObj?.GetInstanceAsync();
+                    if (exObjectInstance is IFeatureClass)
                     {
-                        int fcid = fdb.CreateLinkedFeatureClass(dataset.DatasetName, (IFeatureClass)exObj.Object);
+                        int fcid = await fdb.CreateLinkedFeatureClass(dataset.DatasetName, (IFeatureClass)exObjectInstance);
                         if (ret == null)
                         {
-                            IDatasetElement element=dataset.Element(((IFeatureClass)exObj.Object).Name).Result;
+                            IDatasetElement element=dataset.Element(((IFeatureClass)exObjectInstance).Name).Result;
                             if (element != null)
                             {
                                 ret = new SQLiteFDBFeatureClassExplorerObject(
@@ -1001,9 +1011,9 @@ namespace gView.DataSources.Fdb.UI.SQLite
             get { return null; }
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return null; }
+            return Task.FromResult<object>(null);
         }
 
         public Type ObjectType
@@ -1061,9 +1071,9 @@ namespace gView.DataSources.Fdb.UI.SQLite
             get { return new AccessFDBNetworkIcon(); }
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return null; }
+            return Task.FromResult<object>(null);
         }
 
         #endregion
@@ -1094,14 +1104,14 @@ namespace gView.DataSources.Fdb.UI.SQLite
             return false;
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             if (!(parentExObject is SQLiteFDBDatasetExplorerObject))
                 return null;
 
             SQLiteFDBDatasetExplorerObject parent = (SQLiteFDBDatasetExplorerObject)parentExObject;
 
-            IFeatureDataset dataset = ((SQLiteFDBDatasetExplorerObject)parentExObject).Object as IFeatureDataset;
+            IFeatureDataset dataset = await ((SQLiteFDBDatasetExplorerObject)parentExObject).GetInstanceAsync() as IFeatureDataset;
             if (dataset == null || !(dataset.Database is SQLiteFDB))
                 return null;
 
@@ -1114,7 +1124,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
                 dlg.EdgeFeatureclasses,
                 dlg.NodeFeatureclasses);
             creator.SnapTolerance = dlg.SnapTolerance;
-            creator.ComplexEdgeFcIds = dlg.ComplexEdgeFcIds;
+            creator.ComplexEdgeFcIds = await dlg.ComplexEdgeFcIds();
             creator.GraphWeights = dlg.GraphWeights;
             creator.SwitchNodeFcIdAndFieldnames = dlg.SwitchNodeFcIds;
             creator.NodeTypeFcIds = dlg.NetworkNodeTypeFcIds;
@@ -1122,7 +1132,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
             FormProgress progress = new FormProgress();
             progress.ShowProgressDialog(creator, null, creator.Thread);
 
-            IDatasetElement element = ((IFeatureDataset)parentExObject.Object).Element(dlg.NetworkName).Result;
+            IDatasetElement element = await dataset.Element(dlg.NetworkName);
             return new SQLiteFDBFeatureClassExplorerObject(
                                     parent,
                                     parent.FileName,

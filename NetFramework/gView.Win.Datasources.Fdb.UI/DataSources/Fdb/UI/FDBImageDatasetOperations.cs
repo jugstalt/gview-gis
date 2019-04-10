@@ -13,6 +13,7 @@ using gView.Framework.system;
 using System.Xml;
 using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.MSAccess;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.UI
 {
@@ -180,12 +181,13 @@ namespace gView.DataSources.Fdb.UI
             return false;
         }
 
-        public bool DeleteImageDatasetItem(int image_id, bool bitmapOnly)
+        async public Task<bool> DeleteImageDatasetItem(int image_id, bool bitmapOnly)
         {
             if (image_id == -1) return false;
 
-            string imageSpace;
-            if (!_fdb.IsImageDataset(_dsname, out imageSpace))
+            var isImageDatasetResult = await _fdb.IsImageDataset(_dsname);
+            string imageSpace = isImageDatasetResult.imageSpace;
+            if (!isImageDatasetResult.isImageDataset)
             {
                 return false;
             }
@@ -279,7 +281,7 @@ namespace gView.DataSources.Fdb.UI
         private int _levels = 4;
         private bool _managed = false;
 
-        public bool Import(string path, Dictionary<string,Guid> providers)
+        async public Task<bool> Import(string path, Dictionary<string,Guid> providers)
         {
             //_cancelTracker.Reset();
             if (!_cancelTracker.Continue)
@@ -297,7 +299,7 @@ namespace gView.DataSources.Fdb.UI
             AccessFDB fdb = (AccessFDB)_fdb;
 
             if (ReportAction != null) ReportAction(this, "Open Raster Polygon Class...");
-            IFeatureClass rasterFC = fdb.GetFeatureclass(_dsname, _dsname + "_IMAGE_POLYGONS");
+            IFeatureClass rasterFC = await fdb.GetFeatureclass(_dsname, _dsname + "_IMAGE_POLYGONS");
             if (rasterFC == null)
             {
                 if (rasterFC == null)
@@ -611,10 +613,10 @@ namespace gView.DataSources.Fdb.UI
         #endregion
 
         #region Remove Unexisting
-        public bool RemoveUnexisting()
+        async public Task<bool> RemoveUnexisting()
         {
             if (!(_fdb is AccessFDB)) return false;
-            IFeatureClass rasterFC = ((AccessFDB)_fdb).GetFeatureclass(_dsname, _dsname + "_IMAGE_POLYGONS");
+            IFeatureClass rasterFC = await ((AccessFDB)_fdb).GetFeatureclass(_dsname, _dsname + "_IMAGE_POLYGONS");
             if (rasterFC == null)
             {
                 if (rasterFC == null)

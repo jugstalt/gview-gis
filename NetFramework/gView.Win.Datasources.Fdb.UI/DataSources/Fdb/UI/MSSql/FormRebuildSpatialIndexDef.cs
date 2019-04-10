@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using gView.Framework.Data;
 using gView.DataSources.Fdb.MSAccess;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.UI.MSSql
 {
@@ -15,23 +16,30 @@ namespace gView.DataSources.Fdb.UI.MSSql
         private gView.DataSources.Fdb.MSAccess.AccessFDB _fdb;
         private IFeatureClass _fc;
         
-        public FormRebuildSpatialIndexDef(AccessFDB fdb, IFeatureClass fc)
+        private FormRebuildSpatialIndexDef()
         {
             InitializeComponent();
+        }
 
-            _fdb = fdb;
-            _fc = fc;
+        async static public Task<FormRebuildSpatialIndexDef> Create(AccessFDB fdb, IFeatureClass fc)
+        {
+            var dlg = new FormRebuildSpatialIndexDef();
 
-            if (_fdb != null && _fc != null)
+            dlg._fdb = fdb;
+            dlg._fc = fc;
+
+            if (dlg._fdb != null && dlg._fc != null)
             {
-                BinaryTreeDef def = _fdb.BinaryTreeDef(_fc.Name);
+                BinaryTreeDef def = await dlg._fdb.BinaryTreeDef(dlg._fc.Name);
 
                 if (def != null)
                 {
-                    spatialIndexControl1.Extent = def.Bounds;
-                    spatialIndexControl1.Levels = def.MaxLevel;
+                    dlg.spatialIndexControl1.Extent = def.Bounds;
+                    dlg.spatialIndexControl1.Levels = def.MaxLevel;
                 }
             }
+
+            return dlg;
         }
 
         private void btnOK_Click(object sender, EventArgs e)

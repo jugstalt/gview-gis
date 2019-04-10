@@ -84,7 +84,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             get { return txtFilename.Text; }
         }
 
-        private void btnOK_Click(object sender, EventArgs e)
+        async private void btnOK_Click(object sender, EventArgs e)
         {
             try
             {
@@ -94,7 +94,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                 if (CreateFromMDF && MdfFilename != String.Empty)
                 {
-                    fdb.Open(ConnectionString);
+                    await fdb.Open(ConnectionString);
                     if (!fdb.Create(txtDatabase.Text, MdfFilename))
                     {
                         MessageBox.Show(fdb.LastErrorMessage, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -103,7 +103,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 }
                 else
                 {
-                    fdb.Open(ConnectionString);
+                    await fdb.Open(ConnectionString);
 
                     UserData parameters = _advancedSettings.ToUserData();
                     if (btnOnlyRepository.Checked) parameters.SetUserData("CreateDatabase", false);
@@ -115,10 +115,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     }
                     if (chkCreateReplicationDatamodel.Checked == true)
                     {
-                        string errMsg;
-                        if (!gView.Framework.Offline.Replication.CreateRelicationModel(fdb, out errMsg))
+                        if (!gView.Framework.Offline.Replication.CreateRelicationModel(fdb))
                         {
-                            MessageBox.Show("RepliCreateRelicationModel failed:\n" + errMsg, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("RepliCreateRelicationModel failed:\n", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }

@@ -71,7 +71,10 @@ namespace gView.Framework.UI
             }
         }
 
-        public object Object { get { return null; } }
+        public Task<object> GetInstanceAsync()
+        {
+            return Task.FromResult<object>(null);
+        }
 
         public IExplorerObject CreateInstanceByFullName(string FullName)
         {
@@ -105,7 +108,7 @@ namespace gView.Framework.UI
         async public override Task<bool> Refresh()
         {
             await base.Refresh();
-            List<IExplorerObject> childs = DirectoryObject.Refresh(this, this.FullName);
+            List<IExplorerObject> childs = await DirectoryObject.Refresh(this, this.FullName);
             if (childs == null)
                 return false;
 
@@ -119,7 +122,7 @@ namespace gView.Framework.UI
 
         #endregion
 
-        internal static List<IExplorerObject> Refresh(IExplorerObject parent, string FullName)
+        async internal static Task<List<IExplorerObject>> Refresh(IExplorerObject parent, string FullName)
         {
             List<IExplorerObject> childs = new List<IExplorerObject>();
 
@@ -149,7 +152,7 @@ namespace gView.Framework.UI
                     foreach (string file in Directory.GetFiles(FullName, filter))
                     {
                         FileInfo fi = new FileInfo(file);
-                        IExplorerFileObject obj = ((IExplorerFileObject)exObj).CreateInstance(parent, fi.FullName);
+                        IExplorerFileObject obj = await ((IExplorerFileObject)exObj).CreateInstance(parent, fi.FullName);
                         if (obj == null) continue;
 
                         childs.Add(obj);
@@ -188,19 +191,19 @@ namespace gView.Framework.UI
 
         public event ExplorerObjectDeletedEvent ExplorerObjectDeleted;
 
-        public bool DeleteExplorerObject(ExplorerObjectEventArgs e)
+        public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
             try
             {
                 DirectoryInfo di = new DirectoryInfo(_path);
                 di.Delete();
                 if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 System.Windows.Forms.MessageBox.Show("ERROR: " + ex.Message);
-                return false;
+                return Task.FromResult(false);
             }
         }
 
@@ -210,7 +213,7 @@ namespace gView.Framework.UI
 
         public event ExplorerObjectRenamedEvent ExplorerObjectRenamed;
 
-        public bool RenameExplorerObject(string newName)
+        public Task<bool> RenameExplorerObject(string newName)
         {
             try
             {
@@ -221,12 +224,12 @@ namespace gView.Framework.UI
                 _path = newPath;
 
                 if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 System.Windows.Forms.MessageBox.Show("ERROR: " + ex.Message);
-                return false;
+                return Task.FromResult(false);
             }
         }
 
@@ -243,7 +246,7 @@ namespace gView.Framework.UI
             return false;
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             string newName = Microsoft.VisualBasic.Interaction.InputBox("New Directory", "Create", "New Directory", 200, 300);
             if (newName.Trim().Equals(String.Empty)) return null;
@@ -253,12 +256,12 @@ namespace gView.Framework.UI
                 DirectoryInfo di = new DirectoryInfo(parentExObject.FullName + @"\" + newName);
                 di.Create();
 
-                return new DirectoryObject(parentExObject, di.FullName);
+                return Task.FromResult<IExplorerObject>( new DirectoryObject(parentExObject, di.FullName));
             }
             catch (Exception ex)
             {
                 System.Windows.Forms.MessageBox.Show("ERROR: " + ex.Message);
-                return null;
+                return Task.FromResult<IExplorerObject>(null);
             }
         }
 
@@ -333,12 +336,12 @@ namespace gView.Framework.UI
 
                     foreach (IExplorerObject exObject in ListOperations<IExplorerObject>.Clone(exObjects))
                     {
-                        IFeatureClass fc = exObject.Object as IFeatureClass;
+                        IFeatureClass fc = await exObject.GetInstanceAsync() as IFeatureClass;
                         if (fc == null) continue;
                     }
                     if (exObjects.Count == 0) return;
 
-                    FormFeatureclassCopy dlg = new FormFeatureclassCopy(exObjects, databases, this.FullName);
+                    FormFeatureclassCopy dlg = await FormFeatureclassCopy.Create(exObjects, databases, this.FullName);
                     dlg.SchemaOnly = schemaOnly;
                     if (dlg.ShowDialog() != DialogResult.OK) continue;
 
@@ -657,7 +660,10 @@ namespace gView.Framework.UI
             }
         }
 
-        public object Object { get { return null; } }
+        public Task<object> GetInstanceAsync()
+        {
+            return Task.FromResult<object>(null);
+        }
 
         public IExplorerObject CreateInstanceByFullName(string FullName)
         {
@@ -671,7 +677,7 @@ namespace gView.Framework.UI
         async public override Task<bool> Refresh()
         {
             await base.Refresh();
-            List<IExplorerObject> childs = DirectoryObject.Refresh(this, this.FullName);
+            List<IExplorerObject> childs = await DirectoryObject.Refresh(this, this.FullName);
             if (childs == null)
                 return false;
 
@@ -708,7 +714,7 @@ namespace gView.Framework.UI
         #region IExplorerObjectDeletable
         public event ExplorerObjectDeletedEvent ExplorerObjectDeleted;
 
-        public bool DeleteExplorerObject(ExplorerObjectEventArgs e)
+        public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
             ConfigConnections configStream = new ConfigConnections("directories");
             configStream.Remove(this.Name);
@@ -716,7 +722,7 @@ namespace gView.Framework.UI
             if (ExplorerObjectDeleted != null)
                 ExplorerObjectDeleted(this);
 
-            return true;
+            return Task.FromResult(true);
         }
         #endregion
     }
@@ -782,9 +788,9 @@ namespace gView.Framework.UI
             get { return new ObjectIcon(0); }
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return null; }
+            return Task.FromResult<object>(null);
         }
 
         #endregion

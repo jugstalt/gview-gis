@@ -5,6 +5,7 @@ using gView.Framework.UI;
 using gView.Interoperability.OGC.Dataset.WMS;
 using System.Windows.Forms;
 using gView.Framework.Data;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.UI.Dataset.WMS
 {
@@ -38,10 +39,10 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
                 _doc = hook as IMapDocument;
         }
 
-        public void OnEvent(object element,object dataset)
+        public Task<bool> OnEvent(object element,object dataset)
         {
             if (!this.Enable(element))
-                return;
+                return Task.FromResult(true);
 
             FormWMSCoordinateSystem dlg = new FormWMSCoordinateSystem(((IDatasetElement)element).Class as WMSClass);
             if (dlg.ShowDialog() == DialogResult.OK)
@@ -66,6 +67,8 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
                         ((IMapApplication)_doc.Application).RefreshActiveMap(gView.Framework.Carto.DrawPhase.All);
                 }
             }
+
+            return Task.FromResult(true);
         }
 
         public object Image

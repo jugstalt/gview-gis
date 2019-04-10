@@ -446,29 +446,31 @@ namespace gView.Framework.UI.Dialogs
             {
                 IExplorerObject exObject = dlg.ExplorerObjects[0];
 
-                if (exObject.Object is IFeatureDataset)
+                var instatnce = await exObject?.GetInstanceAsync();
+
+                if (instatnce is IFeatureDataset)
                 {
-                    _sRef = await ((IFeatureDataset)exObject.Object).GetSpatialReference();
+                    _sRef = await ((IFeatureDataset)instatnce).GetSpatialReference();
                 }
-                else if (exObject.Object is IRasterDataset)
+                else if (instatnce is IRasterDataset)
                 {
-                    _sRef = await ((IRasterDataset)exObject.Object).GetSpatialReference();
+                    _sRef = await ((IRasterDataset)instatnce).GetSpatialReference();
                 }
-                else if (exObject.Object is IFeatureClass)
+                else if (instatnce is IFeatureClass)
                 {
-                    _sRef = ((IFeatureClass)exObject.Object).SpatialReference;
+                    _sRef = ((IFeatureClass)instatnce).SpatialReference;
                 }
-                else if (exObject.Object is IRasterClass)
+                else if (instatnce is IRasterClass)
                 {
-                    _sRef = ((IRasterClass)exObject.Object).SpatialReference;
+                    _sRef = ((IRasterClass)instatnce).SpatialReference;
                 }
-                else if (exObject.Object is IWebServiceClass)
+                else if (instatnce is IWebServiceClass)
                 {
-                    _sRef = ((IWebServiceClass)exObject.Object).SpatialReference;
+                    _sRef = ((IWebServiceClass)instatnce).SpatialReference;
                 }
-                else if (exObject.Object is ISpatialReference)
+                else if (instatnce is ISpatialReference)
                 {
-                    _sRef = exObject.Object as ISpatialReference;
+                    _sRef = instatnce as ISpatialReference;
                 }
                 else
                 {

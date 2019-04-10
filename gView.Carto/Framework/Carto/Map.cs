@@ -2782,6 +2782,8 @@ namespace gView.Framework.Carto
         {
             get { return _layer; }
         }
+
+        // Thread
         public void ImageRequest()
         {
             _startTime = DateTime.Now;
@@ -2793,7 +2795,7 @@ namespace gView.Framework.Carto
                 return;
             }
 
-            if (_layer.WebServiceClass.MapRequest(_map.Display))
+            if (_layer.WebServiceClass.MapRequest(_map.Display).Result)
             {
                 _finishTime = DateTime.Now;
                 if (finish != null) finish(this, true, _layer.WebServiceClass.Image, _order);

@@ -10,6 +10,7 @@ using System.Xml;
 using gView.Framework.FDB;
 using gView.Explorer.UI;
 using gView.Framework.GeoProcessing;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Controls.Filter
 {
@@ -38,9 +39,9 @@ namespace gView.Framework.UI.Controls.Filter
             return Name;
         }
 
-        public virtual bool Match(IExplorerObject exObject)
+        public virtual Task<bool> Match(IExplorerObject exObject)
         {
-            if (exObject == null) return false;
+            if (exObject == null) return Task.FromResult(false);
 
             bool found = false;
             foreach (Guid guid in ExplorerObjectGUIDs)
@@ -51,7 +52,7 @@ namespace gView.Framework.UI.Controls.Filter
                     break;
                 }
             }
-            return found;
+            return Task.FromResult(found);
         }
 
         public virtual object FilterObject
@@ -70,7 +71,7 @@ namespace gView.Framework.UI.Controls.Filter
         
         public List<Type> ObjectTypes { get { return _types; } }
 
-        public override bool Match(IExplorerObject exObject)
+        async public override Task<bool> Match(IExplorerObject exObject)
         {
             Type objType = exObject.ObjectType;
             if (exObject == null) return false;
@@ -98,7 +99,7 @@ namespace gView.Framework.UI.Controls.Filter
                     if (found) break;
                 }
             }
-            if (!found) found = base.Match(exObject);
+            if (!found) found = await base.Match(exObject);
             return found;
         }
     }
@@ -262,14 +263,14 @@ namespace gView.Framework.UI.Controls.Filter
             _geomType = geomType;
         }
 
-        public override bool Match(IExplorerObject exObject)
+        async public override Task<bool> Match(IExplorerObject exObject)
         {
-            bool match = base.Match(exObject);
+            bool match = await base.Match(exObject);
 
-            
-            if (match && _geomType!=geometryType.Unknown && exObject.Object is IFeatureLayer && ((IFeatureLayer)exObject.Object).FeatureClass != null)
+            var instatnce = await exObject.GetInstanceAsync();
+            if (match && _geomType!=geometryType.Unknown && instatnce is IFeatureLayer && ((IFeatureLayer)instatnce).FeatureClass != null)
             {
-                return ((IFeatureLayer)exObject.Object).FeatureClass.GeometryType == _geomType;
+                return ((IFeatureLayer)instatnce).FeatureClass.GeometryType == _geomType;
             }
             
             return match;
@@ -395,12 +396,13 @@ namespace gView.Framework.UI.Controls.Filter
             {
             }
 
-            public override bool Match(IExplorerObject exObject)
+            async public override Task<bool> Match(IExplorerObject exObject)
             {
                 if (exObject == null) return false;
 
-                if (exObject.Object is IDataset &&
-                   ((IDataset)exObject.Object).Database is IFeatureUpdater)
+                var instance = await exObject.GetInstanceAsync();
+                if (instance is IDataset &&
+                   ((IDataset)instance).Database is IFeatureUpdater)
                     return true;
 
                 return false;
@@ -416,9 +418,9 @@ namespace gView.Framework.UI.Controls.Filter
                 _ds = ds;
             }
 
-            public override bool Match(IExplorerObject exObject)
+            public override Task<bool> Match(IExplorerObject exObject)
             {
-                return (exObject is DirectoryObject);
+                return Task.FromResult(exObject is DirectoryObject);
             }
 
             public override object FilterObject
@@ -441,15 +443,17 @@ namespace gView.Framework.UI.Controls.Filter
             _aData = aData;
         }
 
-        public override bool Match(IExplorerObject exObject)
+        async public override Task<bool> Match(IExplorerObject exObject)
         {
             if (exObject == null) return false;
-            if (exObject.Object is IDatasetElement)
-                return _aData.ProcessAble((IDatasetElement)exObject.Object);
 
-            if (exObject.Object is IClass)
+            var instatnce = await exObject.GetInstanceAsync();
+            if (instatnce is IDatasetElement)
+                return _aData.ProcessAble((IDatasetElement)instatnce);
+
+            if (instatnce is IClass)
             {
-                DatasetElement element = new DatasetElement((IClass)exObject.Object);
+                DatasetElement element = new DatasetElement((IClass)instatnce);
                 return _aData.ProcessAble(element);
             }
 

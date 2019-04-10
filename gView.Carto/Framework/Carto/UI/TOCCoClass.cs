@@ -219,7 +219,7 @@ namespace gView.Framework.Carto.UI
                     if (layer is IWebServiceLayer && layer.Class is IWebServiceClass)
                     {
                         IWebServiceClass wClass = layer.Class as IWebServiceClass;
-                        if (wClass.LegendRequest(_map.Display))
+                        if (wClass.LegendRequest(_map.Display).Result)
                         {
                             System.Drawing.Bitmap lBm = wClass.Legend;
                             if (lBm == null) continue;
@@ -330,7 +330,7 @@ namespace gView.Framework.Carto.UI
                     if (layer is IWebServiceLayer && layer.Class is IWebServiceClass)
                     {
                         IWebServiceClass wClass = layer.Class as IWebServiceClass;
-                        if (wClass.LegendRequest(_map.Display))
+                        if (wClass.LegendRequest(_map.Display).Result)
                         {
                             System.Drawing.Bitmap lBm = wClass.Legend;
 

@@ -39,11 +39,11 @@ namespace gView.Framework.OGC.UI
                         List<IExplorerObject> exObjects = await exObjectManager.DeserializeExplorerObject((IEnumerable<IExplorerObjectSerialization>)ob);
                         if (exObjects == null) return;
 
-                        _dataset = ((IExplorerObject)this).Object as IFeatureDataset;
+                        _dataset = await ((IExplorerObject)this).GetInstanceAsync() as IFeatureDataset;
 
                         foreach (IExplorerObject exObject in ListOperations<IExplorerObject>.Clone(exObjects))
                         {
-                            IFeatureClass fc = exObject.Object as IFeatureClass;
+                            IFeatureClass fc = await exObject.GetInstanceAsync() as IFeatureClass;
                             if (fc == null) continue;
 
                             if (fc.Dataset != null && fc.Dataset.ConnectionString.ToLower() == _dataset.ConnectionString.ToLower())
@@ -53,18 +53,18 @@ namespace gView.Framework.OGC.UI
                         }
                         if (exObjects.Count == 0) return;
 
-                        FormFeatureclassCopy dlg = new FormFeatureclassCopy(exObjects, _dataset);
+                        FormFeatureclassCopy dlg = await FormFeatureclassCopy.Create(exObjects, _dataset);
                         if (dlg.ShowDialog() != DialogResult.OK) continue;
 
                         foreach (FeatureClassListViewItem fcItem in dlg.FeatureClassItems)
                         {
-                            ImportDatasetObject(fcItem);
+                            await ImportDatasetObject(fcItem);
                         }
                         exObjectManager.Dispose(); // alle ExplorerObjects wieder löschen...
                     }
                 }
             }
-            this.Refresh();
+            await this.Refresh();
         }
 
         public void Content_DragEnter(System.Windows.Forms.DragEventArgs e)

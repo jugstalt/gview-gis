@@ -5,6 +5,7 @@ using gView.Framework.Data;
 using gView.Framework.UI;
 using gView.Framework.Geometry;
 using gView.Framework.UI.Controls.Filter;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.MapTools
 {
@@ -23,16 +24,18 @@ namespace gView.Plugins.MapTools
             _geomType = geomType;
         }
 
-        public override bool Match(IExplorerObject exObject)
+        async public override Task<bool> Match(IExplorerObject exObject)
         {
-            bool match = base.Match(exObject);
+            bool match = await base.Match(exObject);
 
             // Grouplayer nicht...
             if (exObject is IExplorerParentObject) return false;
 
-            if (match && exObject != null && exObject.Object is ITOCElement && _geomType != geometryType.Unknown)
+            var instance = await exObject?.GetInstanceAsync();
+
+            if (match && instance is ITOCElement && _geomType != geometryType.Unknown)
             {
-                ITOCElement tocElement = exObject.Object as ITOCElement;
+                ITOCElement tocElement = instance as ITOCElement;
                 if (tocElement.Layers != null)
                 {
                     foreach (ILayer layer in tocElement.Layers)

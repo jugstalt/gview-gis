@@ -58,14 +58,16 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 return;
             }
 
-            string[] dsnames=fdb.DatasetNames;
-            string imageSpace;
+            string[] dsnames=await fdb.DatasetNames();
             if (dsnames != null)
             {
                 foreach (string dsname in dsnames)
                 {
+                    var isImageDatasetResult = await fdb.IsImageDataset(dsname);
+
                     ListViewItem item = new ListViewItem(
-                        dsname, fdb.IsImageDataset(dsname, out imageSpace) ? 1 : 0);
+                        dsname, isImageDatasetResult.isImageDataset ? 1 : 0);
+
                     lstDatasets.Items.Add(item);
 
                     if (item.Text == _dsname)

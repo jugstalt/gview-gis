@@ -96,7 +96,7 @@ namespace gView.DataSources.Fdb.UI
 
                         foreach (IExplorerObject exObject in ListOperations<IExplorerObject>.Clone(exObjects))
                         {
-                            IFeatureClass fc = exObject.Object as IFeatureClass;
+                            IFeatureClass fc = await exObject?.GetInstanceAsync() as IFeatureClass;
                             if (fc == null) continue;
 
                             if (fc.Dataset != null && fc.Dataset.DatasetName == _dsname &&
@@ -110,13 +110,13 @@ namespace gView.DataSources.Fdb.UI
                         }
                         if (exObjects.Count == 0) return;
 
-                        FormFeatureclassCopy dlg = new FormFeatureclassCopy(exObjects, _dataset);
+                        FormFeatureclassCopy dlg = await FormFeatureclassCopy.Create(exObjects, _dataset);
                         dlg.SchemaOnly = schemaOnly;
                         if (dlg.ShowDialog() != DialogResult.OK) continue;
 
                         foreach (FeatureClassListViewItem fcItem in dlg.FeatureClassItems)
                         {
-                            ImportDatasetObject(fcItem, schemaOnly);
+                            await ImportDatasetObject(fcItem, schemaOnly);
                         }
                         /*
                         foreach (IExplorerObject exObject in exObjects)
@@ -129,7 +129,7 @@ namespace gView.DataSources.Fdb.UI
                 }
             }
             //_dataset.RefreshClasses();
-            this.Refresh();
+            await this.Refresh();
         }
 
         public void Content_DragEnter(DragEventArgs e, IUserData userdata)
@@ -215,7 +215,7 @@ namespace gView.DataSources.Fdb.UI
 
         #endregion
 
-        private void ImportDatasetObject(object datasetObject, bool schemaOnly)
+        async private Task ImportDatasetObject(object datasetObject, bool schemaOnly)
         {
             if (datasetObject is IFeatureDataset)
             {
@@ -224,7 +224,7 @@ namespace gView.DataSources.Fdb.UI
                 {
                     if (element is IFeatureLayer)
                     {
-                        ImportDatasetObject(((IFeatureLayer)element).FeatureClass, schemaOnly);
+                        await ImportDatasetObject(((IFeatureLayer)element).FeatureClass, schemaOnly);
                     }
                 }
             }
@@ -240,7 +240,7 @@ namespace gView.DataSources.Fdb.UI
                     return;
                 }
                 _import.SchemaOnly = schemaOnly;
-                FeatureClassImportProgressReporter reporter = new FeatureClassImportProgressReporter(_import, (IFeatureClass)datasetObject);
+                FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.Create(_import, (IFeatureClass)datasetObject);
 
                 FormProgress progress = new FormProgress(reporter, thread, datasetObject);
                 progress.Text = "Import Featureclass: " + ((IFeatureClass)datasetObject).Name;
@@ -259,7 +259,7 @@ namespace gView.DataSources.Fdb.UI
                     return;
                 }
                 _import.SchemaOnly = schemaOnly;
-                FeatureClassImportProgressReporter reporter = new FeatureClassImportProgressReporter(_import, ((FeatureClassListViewItem)datasetObject).FeatureClass);
+                FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.Create(_import, ((FeatureClassListViewItem)datasetObject).FeatureClass);
 
                 FormProgress progress = new FormProgress(reporter, thread, datasetObject);
                 progress.Text = "Import Featureclass: " + ((FeatureClassListViewItem)datasetObject).Text;
@@ -272,17 +272,10 @@ namespace gView.DataSources.Fdb.UI
         {
             if (_fdb == null || _import == null) return;
 
-            int maxPerNode = 256;
-            int maxLevels = 30;
-            if (_fdb is SqlFDB)
-            {
-                maxLevels = 62;
-            }
-
             ISpatialIndexDef sIndexDef = null;
             if (_fdb is AccessFDB)
             {
-                sIndexDef = ((AccessFDB)_fdb).SpatialIndexDef(_dsname);
+                sIndexDef = ((AccessFDB)_fdb).SpatialIndexDef(_dsname).Result;
             }
 
             if (element is IFeatureClass)
@@ -331,15 +324,22 @@ namespace gView.DataSources.Fdb.UI
         private ProgressReport _report=new ProgressReport();
         private ICancelTracker _cancelTracker = null;
 
-        public FeatureClassImportProgressReporter(FDBImport import,IFeatureClass source)
-        {
-            if (import == null) return;
-            _cancelTracker = import.CancelTracker;
+        private FeatureClassImportProgressReporter() { }
 
-            if (source != null) _report.featureMax = source.CountFeatures;
-            import.ReportAction += new FDBImport.ReportActionEvent(import_ReportAction);
-            import.ReportProgress += new FDBImport.ReportProgressEvent(import_ReportProgress);
-            import.ReportRequest += new FDBImport.ReportRequestEvent(import_ReportRequest);
+        async static public Task<FeatureClassImportProgressReporter> Create(FDBImport import,IFeatureClass source)
+        {
+            var reporter = new FeatureClassImportProgressReporter();
+
+            if (import == null)
+                return reporter;
+            reporter._cancelTracker = import.CancelTracker;
+
+            if (source != null) reporter._report.featureMax = await source.CountFeatures();
+            import.ReportAction += new FDBImport.ReportActionEvent(reporter.import_ReportAction);
+            import.ReportProgress += new FDBImport.ReportProgressEvent(reporter.import_ReportProgress);
+            import.ReportRequest += new FDBImport.ReportRequestEvent(reporter.import_ReportRequest);
+
+            return reporter;
         }
 
         void import_ReportRequest(FDBImport sender, RequestArgs args)

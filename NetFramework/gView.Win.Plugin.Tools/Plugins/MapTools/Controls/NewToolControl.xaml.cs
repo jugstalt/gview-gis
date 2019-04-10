@@ -65,7 +65,7 @@ namespace gView.Plugins.MapTools.Controls
 
         }
 
-        private void btnAddData_Click(object sender, RoutedEventArgs e)
+        async private void btnAddData_Click(object sender, RoutedEventArgs e)
         {
             if (_mapDocument == null)
                 return;
@@ -75,7 +75,7 @@ namespace gView.Plugins.MapTools.Controls
             AddData tool = new AddData();
             tool.OnCreate(_mapDocument);
 
-            tool.OnEvent(new MapEvent(_mapDocument.FocusMap));
+            await tool.OnEvent(new MapEvent(_mapDocument.FocusMap));
         }
 
         private void HideBackstageMenu()

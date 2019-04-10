@@ -10,6 +10,7 @@ using gView.Framework.UI;
 using gView.Framework.Globalisation;
 using gView.Framework.UI.Controls.Filter;
 using gView.Framework.UI.Dialogs;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Controls
 {
@@ -124,7 +125,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        void contentsList1_ItemSelected(List<IExplorerObject> exObjects)
+        async void contentsList1_ItemSelected(List<IExplorerObject> exObjects)
         {
             _selectedObjects.Clear();
             if (_open)
@@ -133,7 +134,7 @@ namespace gView.Framework.UI.Controls
 
                 foreach (IExplorerObject exObject in exObjects)
                 {
-                    if (contentsList1.Filter != null && contentsList1.Filter.Match(exObject))
+                    if (contentsList1.Filter != null && await contentsList1.Filter.Match(exObject))
                     {
                         _selectedObjects.Add(exObject);
 
@@ -150,7 +151,7 @@ namespace gView.Framework.UI.Controls
             if (ItemSelected != null) ItemSelected(_selectedObjects);
         }
 
-        void contentsList1_ItemDoubleClicked(ListViewItem node)
+        async void contentsList1_ItemDoubleClicked(ListViewItem node)
         {
             if (node is ExplorerObjectListViewItem)
             {
@@ -160,7 +161,7 @@ namespace gView.Framework.UI.Controls
                     //contentsList1.ExplorerObject = n.ExplorerObject;
                     if (_open)
                     {
-                        if (contentsList1.Filter != null && (!contentsList1.Filter.Match(n.ExplorerObject) || 
+                        if (contentsList1.Filter != null && (!await contentsList1.Filter.Match(n.ExplorerObject) || 
                             contentsList1.Filter.BrowseAll ||
                             n.ExplorerObject is DirectoryObject   // Bei Directory immer weiter hineinbrowsen
                             ))
@@ -177,7 +178,7 @@ namespace gView.Framework.UI.Controls
                         catalogComboBox1.AddChildNode(n.ExplorerObject);
                         Cursor = Cursors.Default;
 
-                        txtElement.Enabled = contentsList1.Filter != null && contentsList1.Filter.Match(n.ExplorerObject);
+                        txtElement.Enabled = contentsList1.Filter != null && await contentsList1.Filter.Match(n.ExplorerObject);
                         if (ElementTextStatusChanged != null) ElementTextStatusChanged(txtElement);
                     }
 
@@ -213,12 +214,12 @@ namespace gView.Framework.UI.Controls
             contentsList1.ExplorerObject = contentsList1.ExplorerObject;
             Cursor = Cursors.Default;
 
-            SetElementTextBoxVisibility();
+            await SetElementTextBoxVisibility();
         }
 
-        private void catalogComboBox1_SelectedItemChanged(CatalogComboItem item)
+        async private void catalogComboBox1_SelectedItemChanged(CatalogComboItem item)
         {
-            if (contentsList1.ShowWith(item.ExplorerObject))
+            if (await contentsList1.ShowWith(item.ExplorerObject))
             {
                 contentsList1.ExplorerObject = item.ExplorerObject;
             }
@@ -227,7 +228,7 @@ namespace gView.Framework.UI.Controls
                 contentsList1.ExplorerObject = null;
             }
 
-            SetElementTextBoxVisibility();
+            await SetElementTextBoxVisibility();
 
             if (ItemSelected != null)
             {
@@ -236,13 +237,13 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private void SetElementTextBoxVisibility()
+        async private Task SetElementTextBoxVisibility()
         {
             bool changed = false;
             if (!_open)
             {
                 //if (contentsList1.Filter is ExplorerSaveDialogFilter && ((ExplorerSaveDialogFilter)contentsList1.Filter).MatchParent(catalogComboBox1.SelectedExplorerObject))
-                if(contentsList1.Filter!=null && contentsList1.Filter.Match(catalogComboBox1.SelectedExplorerObject))
+                if(contentsList1.Filter!=null && await contentsList1.Filter.Match(catalogComboBox1.SelectedExplorerObject))
                 {
                     if (txtElement.Enabled == false) changed = true;
                     txtElement.Enabled = true;
@@ -261,13 +262,13 @@ namespace gView.Framework.UI.Controls
             if (changed && ElementTextStatusChanged != null) ElementTextStatusChanged(txtElement);
         }
 
-        private void btnMoveUp_Click(object sender, EventArgs e)
+        async private void btnMoveUp_Click(object sender, EventArgs e)
         {
             catalogComboBox1.MoveUp();
 
             if (!_open)
             {
-                txtElement.Enabled = contentsList1.Filter.Match(catalogComboBox1.SelectedExplorerObject);
+                txtElement.Enabled = await contentsList1.Filter.Match(catalogComboBox1.SelectedExplorerObject);
                 if (ElementTextStatusChanged != null) ElementTextStatusChanged(txtElement);
             }
         }

@@ -59,11 +59,11 @@ namespace gView.Plugins.ExTools.Dialogs
         }
         #endregion
 
-        private void btnOk_Click(object sender, EventArgs e)
+        async private void btnOk_Click(object sender, EventArgs e)
         {
             if (_exObject != null && _oldName != txtName.Text)
             {
-                if (!_exObject.RenameExplorerObject(txtName.Text))
+                if (!await _exObject.RenameExplorerObject(txtName.Text))
                 {
                     MessageBox.Show("Can't rename object", "ERROR");
                 }

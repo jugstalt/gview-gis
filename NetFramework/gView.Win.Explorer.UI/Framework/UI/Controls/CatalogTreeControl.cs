@@ -61,7 +61,7 @@ namespace gView.Framework.UI.Controls
             set { _contentsList = value; }
         }
 
-        void _deleteMenuItem_Click(object sender, EventArgs e)
+        async void _deleteMenuItem_Click(object sender, EventArgs e)
         {
             if (_contextNode is ExplorerObjectNode)
             {
@@ -72,7 +72,7 @@ namespace gView.Framework.UI.Controls
                 {
                     ExplorerObjectEventArgs args = new ExplorerObjectEventArgs();
                     //args.Node = _contextNode;
-                    if (((IExplorerObjectDeletable)exObject).DeleteExplorerObject(args))
+                    if (await ((IExplorerObjectDeletable)exObject).DeleteExplorerObject(args))
                     {
                         int pos = -1;
                         if (parent != null)
@@ -460,7 +460,7 @@ namespace gView.Framework.UI.Controls
 
                         if (_filter != null)
                         {
-                            if (_filter.Match(exObj))
+                            if (await _filter.Match(exObj))
                                 continue;
                             else if (!(exObj is IExplorerParentObject)) continue;
                         }
@@ -670,7 +670,7 @@ namespace gView.Framework.UI.Controls
             treeView.SelectedNode = treeView.SelectedNode.Parent;
         }
 
-        private void treeView_DragDrop(object sender, DragEventArgs e)
+        async private void treeView_DragDrop(object sender, DragEventArgs e)
         {
             TreeNode node = treeView.GetNodeAt(treeView.PointToClient(new Point(e.X, e.Y)));
 
@@ -688,7 +688,7 @@ namespace gView.Framework.UI.Controls
             }
             ((IExplorerObjectContentDragDropEvents)exObject).Content_DragDrop(e);
 
-            InsertNodeElements(node);
+            await InsertNodeElements(node);
         }
 
         private void treeView_DragEnter(object sender, DragEventArgs e)

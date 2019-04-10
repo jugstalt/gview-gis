@@ -317,14 +317,15 @@ namespace gView.Framework.UI.Controls
                 ((IMapApplication)_application).LoadMapDocument(filename);
         }
 
-        public void RefreshActiveMap(DrawPhase drawPhase)
+        async public Task RefreshActiveMap(DrawPhase drawPhase)
         {
             if (_application is IMapApplication)
-                ((IMapApplication)_application).RefreshActiveMap(drawPhase);
-
+            {
+                await ((IMapApplication)_application).RefreshActiveMap(drawPhase);
+            }
             else if (_control != null)
             {
-                _control.RefreshMap();
+                await _control.RefreshMap();
             }
         }
 

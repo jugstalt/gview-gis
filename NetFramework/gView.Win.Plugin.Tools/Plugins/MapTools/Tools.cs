@@ -199,7 +199,7 @@ namespace gView.Plugins.MapTools
 
                 if (mapEvent.refreshMap && _doc != null && _doc.Application is IMapApplication)
                 {
-                    ((IMapApplication)_doc.Application).RefreshActiveMap(mapEvent.drawPhase);
+                    await ((IMapApplication)_doc.Application).RefreshActiveMap(mapEvent.drawPhase);
                 }
             }
 

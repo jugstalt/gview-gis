@@ -21,7 +21,7 @@ namespace gView.Framework.UI
         IExplorerIcon Icon { get; }
         IExplorerObject ParentExplorerObject { get; }
 
-        Task<object> GetObjectAsync();
+        Task<object> GetInstanceAsync();
         Type ObjectType { get; }
 
         int Priority { get; }
@@ -66,7 +66,7 @@ namespace gView.Framework.UI
     public interface IExplorerFileObject : IExplorerObject
     {
         string Filter { get; }
-        IExplorerFileObject CreateInstance(IExplorerObject parent, string filename);
+        Task<IExplorerFileObject> CreateInstance(IExplorerObject parent, string filename);
     }
 
     public interface IExplorerSimpleObject : IExplorerObject
@@ -134,14 +134,14 @@ namespace gView.Framework.UI
     public interface IExplorerObjectRenamable
     {
         event ExplorerObjectRenamedEvent ExplorerObjectRenamed;
-        bool RenameExplorerObject(string newName);
+        Task<bool> RenameExplorerObject(string newName);
     }
 
     public delegate void ExplorerObjectDeletedEvent(IExplorerObject exObject);
     public interface IExplorerObjectDeletable
     {
         event ExplorerObjectDeletedEvent ExplorerObjectDeleted;
-        bool DeleteExplorerObject(ExplorerObjectEventArgs e);
+        Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e);
     }
 
     public delegate void ExplorerObjectCreatedEvent(IExplorerObject exObject);
@@ -149,7 +149,7 @@ namespace gView.Framework.UI
     {
         //event ExplorerObjectCreatedEvent ExplorerObjectCreated;
         bool CanCreate(IExplorerObject parentExObject);
-        IExplorerObject CreateExplorerObject(IExplorerObject parentExObject);
+        Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject);
     }
 
 

@@ -252,7 +252,7 @@ namespace gView.Framework.UI
             set;
         }
         
-        void RefreshActiveMap(DrawPhase drawPhase);
+        Task RefreshActiveMap(DrawPhase drawPhase);
         void RefreshTOC();
         void RefreshTOCElement(IDatasetElement element);
 
@@ -326,7 +326,7 @@ namespace gView.Framework.UI
             set;
         }
 
-        bool ShowWith(IExplorerObject exObject);
+        Task<bool> ShowWith(IExplorerObject exObject);
         string Title { get; }
 
         Task<bool> RefreshContents();

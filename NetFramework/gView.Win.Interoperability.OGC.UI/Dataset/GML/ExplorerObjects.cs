@@ -24,9 +24,6 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
             _filename = filename;
 
             _dataset = new gView.Interoperability.OGC.Dataset.GML.Dataset();
-            _dataset.ConnectionString = filename;
-
-            _dataset.Open();
         }
         internal GMLExplorerObject(IExplorerObject parent, GMLExplorerObject exObject)
             : base(parent, typeof(OGC.Dataset.GML.Dataset), 2)
@@ -34,6 +31,7 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
             _filename = exObject._filename;
             _dataset = exObject._dataset;
         }
+
         #region IExplorerFileObject Member
 
         public string Filter
@@ -41,13 +39,13 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
             get { return "*.gml|*.xml"; }
         }
 
-        public IExplorerFileObject CreateInstance(IExplorerObject parent, string filename)
+        public Task<IExplorerFileObject> CreateInstance(IExplorerObject parent, string filename)
         {
             GMLExplorerObject exObject = new GMLExplorerObject(null, filename);
             if (exObject._dataset.State == DatasetState.opened)
-                return new GMLExplorerObject(null, exObject);
+                return Task.FromResult<IExplorerFileObject>(new GMLExplorerObject(null, exObject));
 
-            return null;
+            return Task.FromResult<IExplorerFileObject>(null);
         }
 
         #endregion
@@ -85,9 +83,12 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
             get { return _icon; }
         }
 
-        public new object Object
+        async public Task<object> GetInstanceAsync()
         {
-            get { return _dataset; }
+            await _dataset.SetConnectionString(_filename);
+            await _dataset.Open();
+
+            return Task.FromResult<object>(_dataset); 
         }
 
         #endregion
@@ -103,24 +104,24 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
 
         #region ISerializableExplorerObject Member
 
-        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
-                return Task.FromResult(cache[FullName]);
+                return cache[FullName];
 
             try
             {
                 GMLExplorerObject exObject = new GMLExplorerObject();
-                exObject = exObject.CreateInstance(null, FullName) as GMLExplorerObject;
+                exObject = await exObject.CreateInstance(null, FullName) as GMLExplorerObject;
                 if (exObject != null)
                 {
                     cache.Append(exObject);
                 }
-                return Task.FromResult<IExplorerObject>(exObject);
+                return exObject;
             }
             catch
             {
-                return Task.FromResult<IExplorerObject>(null);
+                return null;
             }
         }
 
@@ -131,6 +132,7 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
         async public override Task<bool> Refresh()
         {
             await base.Refresh();
+
             if (_dataset == null)
                 return false;
 
@@ -148,17 +150,17 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
 
         public event ExplorerObjectDeletedEvent ExplorerObjectDeleted;
 
-        public bool DeleteExplorerObject(ExplorerObjectEventArgs e)
+        public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
             if (_dataset != null)
             {
                 if (_dataset.Delete())
                 {
                     if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
-                    return true;
+                    return Task.FromResult(true);
                 }
             }
-            return false;
+            return Task.FromResult(false);
         }
 
         #endregion
@@ -177,22 +179,16 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
             _parent = parent;
             _fcName = fcName;
 
-            if (this.Dataset != null)
-            {
-                IDatasetElement element = this.Dataset.Element(fcName).Result;
-                if (element != null) _fc = element.Class as IFeatureClass;
-            }
+            
         }
 
-        private gView.Interoperability.OGC.Dataset.GML.Dataset Dataset
+        async private Task<gView.Interoperability.OGC.Dataset.GML.Dataset> Dataset()
         {
-            get
-            {
-                if (_parent == null || !(_parent.Object is gView.Interoperability.OGC.Dataset.GML.Dataset))
-                    return null;
+            var instance = await _parent.GetInstanceAsync();
+            if (_parent == null || !(instance is gView.Interoperability.OGC.Dataset.GML.Dataset))
+                return null;
 
-                return _parent.Object as gView.Interoperability.OGC.Dataset.GML.Dataset;
-            }
+            return instance as gView.Interoperability.OGC.Dataset.GML.Dataset;
         }
 
         #region IExplorerObject Member
@@ -217,9 +213,20 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
             get { return _icon; }
         }
 
-        public new object Object
+        async public Task<object> GetInstanceAsync()
         {
-            get { return _fc; }
+            if (_fc != null)
+                return _fc;
+
+            var datdaset = await this.Dataset();
+            if (this.Dataset() != null)
+            {
+                IDatasetElement element = await datdaset.Element(_fcName);
+                if (element != null)
+                    _fc = element.Class as IFeatureClass;
+            }
+
+            return _fc; 
         }
 
         #endregion

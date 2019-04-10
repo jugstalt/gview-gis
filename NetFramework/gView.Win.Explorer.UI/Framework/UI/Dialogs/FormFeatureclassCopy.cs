@@ -11,6 +11,7 @@ using gView.Framework.UI;
 using gView.Framework.Geometry;
 using gView.Framework.FDB;
 using gView.Framework.system;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -35,33 +36,38 @@ namespace gView.Framework.UI.Dialogs
             _destDataset = destDataset;
         }
 
-        public FormFeatureclassCopy(List<IExplorerObject> exObjects, IDataset destDataset)
-            : this()
+        async static public Task<FormFeatureclassCopy> Create(List<IExplorerObject> exObjects, IDataset destDataset)
         {
-            if (exObjects == null) return;
-            _fcs = new List<IFeatureClass>();
+            var dlg = new FormFeatureclassCopy();
+
+            if (exObjects == null)
+                return dlg;
+            dlg._fcs = new List<IFeatureClass>();
 
             foreach (IExplorerObject exObject in exObjects)
             {
-                if (exObject.Object is IFeatureClass)
+                var instanace = await exObject?.GetInstanceAsync();
+                if (instanace is IFeatureClass)
                 {
-                    _fcs.Add((IFeatureClass)exObject.Object);
+                    dlg._fcs.Add((IFeatureClass)instanace);
                 }
-                else if (exObject.Object is IFeatureDataset)
+                else if (instanace is IFeatureDataset)
                 {
-                    List<IDatasetElement> elements = (((IFeatureDataset)exObject.Object).Elements().Result);
+                    List<IDatasetElement> elements = await (((IFeatureDataset)instanace).Elements());
                     if (elements == null) continue;
 
                     foreach (IDatasetElement element in elements)
                     {
                         if (element != null && element.Class is IFeatureClass)
                         {
-                            _fcs.Add(element.Class as IFeatureClass);
+                            dlg._fcs.Add(element.Class as IFeatureClass);
                         }
                     }
                 }
             }
-            _destDataset = destDataset;
+            dlg._destDataset = destDataset;
+
+            return dlg;
         }
 
         public FormFeatureclassCopy(List<IFeatureClass> featureClasses, List<IFileFeatureDatabase> destDatabases, string directory)
@@ -72,35 +78,40 @@ namespace gView.Framework.UI.Dialogs
             _directory = directory;
         }
 
-        public FormFeatureclassCopy(List<IExplorerObject> exObjects, List<IFileFeatureDatabase> destDatabases, string directory)
-            : this()
+        async static public Task<FormFeatureclassCopy> Create(List<IExplorerObject> exObjects, List<IFileFeatureDatabase> destDatabases, string directory)
         {
-            _destDatabases = destDatabases;
-            _directory = directory;
+            var dlg = new FormFeatureclassCopy();
 
-            if (exObjects == null) return;
-            _fcs = new List<IFeatureClass>();
+            dlg._destDatabases = destDatabases;
+            dlg._directory = directory;
+
+            if (exObjects == null)
+                return dlg;
+            dlg._fcs = new List<IFeatureClass>();
 
             foreach (IExplorerObject exObject in exObjects)
             {
-                if (exObject.Object is IFeatureClass)
+                var instance = await exObject?.GetInstanceAsync();
+                if (instance is IFeatureClass)
                 {
-                    _fcs.Add((IFeatureClass)exObject.Object);
+                    dlg._fcs.Add((IFeatureClass)instance);
                 }
-                else if (exObject.Object is IFeatureDataset)
+                else if (instance is IFeatureDataset)
                 {
-                    List<IDatasetElement> elements = (((IFeatureDataset)exObject.Object).Elements().Result);
+                    List<IDatasetElement> elements = await (((IFeatureDataset)instance).Elements());
                     if (elements == null) continue;
 
                     foreach (IDatasetElement element in elements)
                     {
                         if (element != null && element.Class is IFeatureClass)
                         {
-                            _fcs.Add(element.Class as IFeatureClass);
+                            dlg._fcs.Add(element.Class as IFeatureClass);
                         }
                     }
                 }
             }
+
+            return dlg;
         }
 
         public bool SchemaOnly

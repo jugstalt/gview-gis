@@ -152,17 +152,18 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public Task<bool> OnShow()
+        async public Task<bool> OnShow()
         {
-            return Task.FromResult(true);
+            await BuildList();
+            return true;
         }
         public void OnHide()
         {
         }
 
-        public bool ShowWith(IExplorerObject exObject)
+        public Task<bool> ShowWith(IExplorerObject exObject)
         {
-            return (exObject is IExplorerParentObject);
+            return Task.FromResult(exObject is IExplorerParentObject);
         }
 
         public string Title { get { return "Contents"; } }
@@ -204,7 +205,7 @@ namespace gView.Framework.UI.Controls
                 _exObject = value;
                 if (_exObject == null) return;
 
-                BuildList();
+                //BuildList();
             }
         }
         #endregion
@@ -265,7 +266,7 @@ namespace gView.Framework.UI.Controls
                             !(exObject is IExplorerObjectDoubleClick) &&
                             _open)
                         {
-                            if (!_filter.Match(exObject)) continue;
+                            if (!await _filter.Match(exObject)) continue;
                         }
                         int imageIndex = gView.Explorer.UI.Framework.UI.ExplorerIcons.ImageIndex(exObject);
                         if (imageIndex == -1) continue;
@@ -400,7 +401,7 @@ namespace gView.Framework.UI.Controls
         }
 
         #region DragDrop
-        private void listView_DragDrop(object sender, DragEventArgs e)
+        async private void listView_DragDrop(object sender, DragEventArgs e)
         {
             if (_exObject is IExplorerObjectContentDragDropEvents)
             {
@@ -408,7 +409,7 @@ namespace gView.Framework.UI.Controls
                 ((IExplorerObjectContentDragDropEvents)_exObject).Content_DragDrop(e);
                 Cursor = Cursors.Default;
 
-                BuildList(true);
+                await BuildList(true);
             }
         }
 
@@ -594,9 +595,10 @@ namespace gView.Framework.UI.Controls
                 }
             }
 
-            if (exObject != null && exObject.Object is IFeatureClass)
+            var exObjectInstance = await exObject.GetInstanceAsync();
+            if (exObject != null && exObjectInstance is IFeatureClass)
             {
-                IFeatureClass fc = (IFeatureClass)exObject.Object;
+                IFeatureClass fc = (IFeatureClass)exObjectInstance;
                 if (fc.Dataset != null && fc.Dataset.Database is IFeatureDatabaseReplication)
                 {
                     _strip.Items.Add(new ToolStripSeparator());
@@ -640,7 +642,7 @@ namespace gView.Framework.UI.Controls
         {
             if (!(exObject is IExplorerObjectCreatable)) return;
 
-            IExplorerObject newExObj = ((IExplorerObjectCreatable)exObject).CreateExplorerObject(_exObject);
+            IExplorerObject newExObj = await ((IExplorerObjectCreatable)exObject).CreateExplorerObject(_exObject);
             if (newExObj == null) return;
 
             if (_tree != null)
@@ -766,7 +768,7 @@ namespace gView.Framework.UI.Controls
             //BeginRename();
         }
 
-        void _metadataMenuItem_Click(object sender, EventArgs e)
+        async void _metadataMenuItem_Click(object sender, EventArgs e)
         {
             //if (_contextItem is ExplorerObjectListViewItem)
             if (_contextObject != null)
@@ -777,7 +779,8 @@ namespace gView.Framework.UI.Controls
                     XmlStream xmlStream = new XmlStream(String.Empty);
                     ((IMetadata)exObject).ReadMetadata(xmlStream);
 
-                    FormMetadata dlg = new FormMetadata(xmlStream, exObject.Object);
+                    var exObjectInstance = await exObject.GetInstanceAsync();
+                    FormMetadata dlg = new FormMetadata(xmlStream, exObjectInstance);
                     if (dlg.ShowDialog() == DialogResult.OK)
                     {
                         ((IMetadata)exObject).WriteMetadata(dlg.Stream);
@@ -787,63 +790,66 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        void _appendReplicationIDMenuItem_Click(object sender, EventArgs e)
+        async void _appendReplicationIDMenuItem_Click(object sender, EventArgs e)
         {
             //if (_contextItem is ExplorerObjectListViewItem && listView.SelectedItems.Count == 1 && _contextItem == listView.SelectedItems[0])
             if (_contextObject != null)
             {
                 IExplorerObject exObject = _contextObject; //_contextItem.ExplorerObject;
 
-                if (exObject != null &&
-                    exObject.Object is IFeatureClass &&
-                    ((IFeatureClass)exObject.Object).Dataset != null)
+                var exObjectInstance = await exObject?.GetInstanceAsync();
+
+                if (exObjectInstance is IFeatureClass &&
+                    ((IFeatureClass)exObjectInstance).Dataset != null)
                 {
-                    IFeatureDatabase fdb = ((IFeatureClass)exObject.Object).Dataset.Database as IFeatureDatabase;
+                    IFeatureDatabase fdb = ((IFeatureClass)exObjectInstance).Dataset.Database as IFeatureDatabase;
                     if (fdb is IFeatureDatabaseReplication)
                     {
-                        ReplicationUI.ShowAddReplicationIDDialog((IFeatureClass)exObject.Object);
+                        ReplicationUI.ShowAddReplicationIDDialog((IFeatureClass)exObjectInstance);
                     }
                 }
                 _contextObject = null;
             }
         }
 
-        void _checkoutMenuItem_Click(object sender, EventArgs e)
+        async void _checkoutMenuItem_Click(object sender, EventArgs e)
         {
             //if (_contextItem is ExplorerObjectListViewItem && listView.SelectedItems.Count == 1 && _contextItem == listView.SelectedItems[0])
             if (_contextObject != null)
             {
                 IExplorerObject exObject = _contextObject; // _contextItem.ExplorerObject;
 
-                if (exObject != null &&
-                    exObject.Object is IFeatureClass &&
-                    ((IFeatureClass)exObject.Object).Dataset != null)
+                var exObjectInstance = await exObject?.GetInstanceAsync();
+
+                if (exObjectInstance is IFeatureClass &&
+                    ((IFeatureClass)exObjectInstance).Dataset != null)
                 {
-                    IFeatureDatabase fdb = ((IFeatureClass)exObject.Object).Dataset.Database as IFeatureDatabase;
+                    IFeatureDatabase fdb = ((IFeatureClass)exObjectInstance).Dataset.Database as IFeatureDatabase;
                     if (fdb is IFeatureDatabaseReplication)
                     {
-                        ReplicationUI.ShowCheckoutDialog((IFeatureClass)exObject.Object);
+                        ReplicationUI.ShowCheckoutDialog((IFeatureClass)exObjectInstance);
                     }
                 }
                 _contextObject = null;
             }
         }
 
-        void _checkinMenuItem_Click(object sender, EventArgs e)
+        async void _checkinMenuItem_Click(object sender, EventArgs e)
         {
             //if (_contextItem is ExplorerObjectListViewItem && listView.SelectedItems.Count == 1 && _contextItem == listView.SelectedItems[0])
             if (_contextObject != null)
             {
                 IExplorerObject exObject = _contextObject; // _contextItem.ExplorerObject;
 
-                if (exObject != null &&
-                    exObject.Object is IFeatureClass &&
-                    ((IFeatureClass)exObject.Object).Dataset != null)
+                var exObjectInstance = await exObject?.GetInstanceAsync();
+
+                if (exObjectInstance is IFeatureClass &&
+                    ((IFeatureClass)exObjectInstance).Dataset != null)
                 {
-                    IFeatureDatabase fdb = ((IFeatureClass)exObject.Object).Dataset.Database as IFeatureDatabase;
+                    IFeatureDatabase fdb = ((IFeatureClass)exObjectInstance).Dataset.Database as IFeatureDatabase;
                     if (fdb is IFeatureDatabaseReplication)
                     {
-                        ReplicationUI.ShowCheckinDialog((IFeatureClass)exObject.Object);
+                        ReplicationUI.ShowCheckinDialog((IFeatureClass)exObjectInstance);
                     }
                 }
                 _contextObject = null;
@@ -923,9 +929,9 @@ namespace gView.Framework.UI.Controls
              * */
         }
 
-        private void toolStripMenuItemRefresh_Click(object sender, EventArgs e)
+        async private void toolStripMenuItemRefresh_Click(object sender, EventArgs e)
         {
-            this.RefreshContents();
+            await this.RefreshContents();
         }
 
         #region RenameNode

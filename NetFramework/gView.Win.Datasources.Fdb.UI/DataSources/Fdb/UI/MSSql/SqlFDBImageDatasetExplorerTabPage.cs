@@ -81,16 +81,18 @@ namespace gView.DataSources.Fdb.UI.MSSql
             }
         }
 
-        public bool ShowWith(IExplorerObject exObject)
+        async public Task<bool> ShowWith(IExplorerObject exObject)
         {
             if (exObject == null) return false;
             if (TypeHelper.Match(exObject.ObjectType, typeof(gView.DataSources.Fdb.MSSql.SqlFDBImageCatalogClass))) return true;
             if (TypeHelper.Match(exObject.ObjectType, typeof(gView.DataSources.Fdb.PostgreSql.pgImageCatalogClass))) return true;
             if (TypeHelper.Match(exObject.ObjectType, typeof(gView.DataSources.Fdb.SQLite.SQLiteFDBImageCatalogClass))) return true;
 
-            if (exObject.Object is gView.DataSources.Fdb.MSSql.SqlFDBImageCatalogClass) return true;
-            if (exObject.Object is gView.DataSources.Fdb.PostgreSql.pgImageCatalogClass) return true;
-            if (exObject.Object is gView.DataSources.Fdb.SQLite.SQLiteFDBImageCatalogClass) return true;
+            var instance = await exObject?.GetInstanceAsync();
+
+            if (instance is gView.DataSources.Fdb.MSSql.SqlFDBImageCatalogClass) return true;
+            if (instance is gView.DataSources.Fdb.PostgreSql.pgImageCatalogClass) return true;
+            if (instance is gView.DataSources.Fdb.SQLite.SQLiteFDBImageCatalogClass) return true;
 
             return false;
         }
@@ -128,16 +130,19 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                 if (_exObject == null)
                     return;
-                if (_exObject.Object is SqlFDBImageCatalogClass)
+
+                var instatnce = await _exObject.GetInstanceAsync();
+
+                if (instatnce is SqlFDBImageCatalogClass)
                 {
-                    SqlFDBImageCatalogClass layer = (SqlFDBImageCatalogClass)_exObject.Object;
+                    SqlFDBImageCatalogClass layer = (SqlFDBImageCatalogClass)instatnce;
 
                     _cancelWorker = false;
                     _gui_worker.RunWorkerAsync(await layer.ImageList());
                 }
-                else if (_exObject.Object is IRasterCatalogClass)
+                else if (instatnce is IRasterCatalogClass)
                 {
-                    IRasterCatalogClass layer = (IRasterCatalogClass)_exObject.Object;
+                    IRasterCatalogClass layer = (IRasterCatalogClass)instatnce;
 
                     _cancelWorker = false;
                     //_gui_worker.RunWorkerAsync(layer.ImageList);
@@ -148,16 +153,16 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     //
                     worker_DoWork(_gui_worker, new DoWorkEventArgs(await layer.ImageList()));
                 }
-                else if (_exObject.Object is pgImageCatalogClass)
+                else if (instatnce is pgImageCatalogClass)
                 {
-                    pgImageCatalogClass layer = (pgImageCatalogClass)_exObject.Object;
+                    pgImageCatalogClass layer = (pgImageCatalogClass)instatnce;
 
                     _cancelWorker = false;
                     _gui_worker.RunWorkerAsync(await layer.ImageList());
                 }
-                else if (_exObject.Object is SQLiteFDBImageCatalogClass)
+                else if (instatnce is SQLiteFDBImageCatalogClass)
                 {
-                    SQLiteFDBImageCatalogClass layer = (SQLiteFDBImageCatalogClass)_exObject.Object;
+                    SQLiteFDBImageCatalogClass layer = (SQLiteFDBImageCatalogClass)instatnce;
 
                     _cancelWorker = false;
                     _gui_worker.RunWorkerAsync(await layer.ImageList());
@@ -293,18 +298,18 @@ namespace gView.DataSources.Fdb.UI.MSSql
         }
         #endregion
 
-        private void listView_DragDrop(object sender, DragEventArgs e)
+        async private void listView_DragDrop(object sender, DragEventArgs e)
         {
-            if (e.Data == null || _exObject == null || _exObject.Object == null) return;
+            if (e.Data == null || _exObject == null || await _exObject.GetInstanceAsync() == null) return;
             string[] data = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (data == null || data.Length == 0) return;
 
-            ImportFiles(data, true, null);
+            await ImportFiles(data, true, null);
         }
 
         async private Task<bool> ImportFiles(string[] data, bool refreshList, Dictionary<string,Guid> providers)
         {
-            IRasterClass rc = _exObject.Object as IRasterClass;
+            IRasterClass rc = await _exObject.GetInstanceAsync() as IRasterClass;
             if (rc == null) return false;
             IRasterDataset rDS = rc.Dataset as IRasterDataset;
             if (rDS == null || rDS.Database == null) return false;
@@ -339,10 +344,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 return false;
             }
 
-            rDS.RefreshClasses();
+            await rDS.RefreshClasses();
             return true;
         }
 
+        // Thread
         void Import(object arg)
         {
             if (!(arg is ImportArguments)) return;
@@ -352,16 +358,17 @@ namespace gView.DataSources.Fdb.UI.MSSql
             bool succeeded = true;
             foreach (string filename in args.Data)
             {
-                succeeded = args.Operator.Import(filename, args.Providers);
+                succeeded = args.Operator.Import(filename, args.Providers).Result;
                 if (!succeeded) break;
             }
 
             AccessFDB fdb = args.dataset.Database as AccessFDB;
             if (fdb != null)
             {
-                IFeatureClass fc = fdb.GetFeatureclass(args.dataset.DatasetName, args.dataset.DatasetName + "_IMAGE_POLYGONS");
-                if (fc != null) fdb.CalculateExtent(fc);
-                fdb.ShrinkSpatialIndex(args.dataset.DatasetName + "_IMAGE_POLYGONS");
+                IFeatureClass fc = fdb.GetFeatureclass(args.dataset.DatasetName, args.dataset.DatasetName + "_IMAGE_POLYGONS").Result;
+                if (fc != null)
+                    fdb.CalculateExtent(fc).Wait();
+                fdb.ShrinkSpatialIndex(args.dataset.DatasetName + "_IMAGE_POLYGONS").Wait();
                 //if (!fdb.CalculateSpatialIndex(fdb.GetFeatureclass(args.dataset.DatasetName, args.dataset.DatasetName + "_IMAGE_POLYGONS"), 10, 0))
                 //{
                 //    MessageBox.Show("ERROR: CalculateSpatialIndex - " + fdb.lastErrorMsg);
@@ -379,7 +386,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             e.Effect = DragDropEffects.Copy;
         }
 
-        private void Script(DragEventArgs e)
+        async private Task Script(DragEventArgs e)
         {
             try
             {
@@ -393,9 +400,12 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 foreach (string filename in data)
                 {
                     DirectoryInfo di = new DirectoryInfo(filename);
-                    if (_exObject.Object is SqlFDBImageCatalogClass)
+
+                    var instance = await _exObject?.GetInstanceAsync();
+
+                    if (instance is SqlFDBImageCatalogClass)
                     {
-                        SqlFDBImageCatalogClass layer = (SqlFDBImageCatalogClass)_exObject.Object;
+                        SqlFDBImageCatalogClass layer = (SqlFDBImageCatalogClass)instance;
                         if (layer._fdb == null) return;
 
                         if (di.Exists)
@@ -414,9 +424,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
                             }
                         }
                     }
-                    else if (_exObject.Object is IRasterCatalogClass)
+                    else if (instance is IRasterCatalogClass)
                     {
-                        IRasterCatalogClass layer = (IRasterCatalogClass)_exObject.Object;
+                        IRasterCatalogClass layer = (IRasterCatalogClass)instance;
                         if (layer.Dataset == null) return;
 
                         if (di.Exists)
@@ -439,7 +449,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 if (sb.ToString() != "")
                 {
                     sb.Append(" -recalcspatialindex\r\n");
-                    _exAppl.ExecuteBatch(sb.ToString(), new ExplorerExecuteBatchCallback(this.RefreshList));
+                    await _exAppl.ExecuteBatch(sb.ToString(), new ExplorerExecuteBatchCallback(this.RefreshList));
                 }
             }
             catch (Exception ex)
@@ -448,19 +458,22 @@ namespace gView.DataSources.Fdb.UI.MSSql
             }
         }
         #region contextMenu
-        private void removeImageFromDatasetToolStripMenuItem_Click(object sender, EventArgs e)
+        async private void removeImageFromDatasetToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (_exObject == null || _contextItem == null) return;
 
             FDBImageDataset iDataset = null;
-            if (_exObject.Object is SqlFDBImageCatalogClass)
+
+            var instatnce = await _exObject.GetInstanceAsync();
+
+            if (instatnce is SqlFDBImageCatalogClass)
             {
-                SqlFDBImageCatalogClass layer = (SqlFDBImageCatalogClass)_exObject.Object;
+                SqlFDBImageCatalogClass layer = (SqlFDBImageCatalogClass)instatnce;
                 iDataset = new FDBImageDataset(layer._fdb, layer.Name);
             }
-            else if (_exObject.Object is IRasterCatalogClass)
+            else if (instatnce is IRasterCatalogClass)
             {
-                IRasterCatalogClass layer = (IRasterCatalogClass)_exObject.Object;
+                IRasterCatalogClass layer = (IRasterCatalogClass)instatnce;
                 iDataset = new FDBImageDataset((IImageDB)layer.Dataset.Database, layer.Name);
             }
             if (iDataset == null) return;
@@ -475,7 +488,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                         MessageBox.Show(iDataset.lastErrorMessage, "ERROR");
                         return;
                     }
-                    if (!iDataset.DeleteImageDatasetItem(ID, false))
+                    if (!await iDataset.DeleteImageDatasetItem(ID, false))
                     {
                         MessageBox.Show(iDataset.lastErrorMessage, "ERROR");
                         return;
@@ -491,7 +504,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     MessageBox.Show(iDataset.lastErrorMessage, "ERROR");
                     return;
                 }
-                if (!iDataset.DeleteImageDatasetItem(ID, false))
+                if (!await iDataset.DeleteImageDatasetItem(ID, false))
                 {
                     MessageBox.Show(iDataset.lastErrorMessage, "ERROR");
                     return;
@@ -501,18 +514,21 @@ namespace gView.DataSources.Fdb.UI.MSSql
             SetStatusLabel1Text(listView.Items.Count + " Items...");
         }
 
-        private void updateImageToolStripMenuItem_Click(object sender, EventArgs e)
+        async private void updateImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (_exObject == null || _contextItem == null) return;
             FDBImageDataset iDataset = null;
-            if (_exObject.Object is SqlFDBImageCatalogClass)
+
+            var instance = await _exObject?.GetInstanceAsync();
+
+            if (instance is SqlFDBImageCatalogClass)
             {
-                SqlFDBImageCatalogClass layer = (SqlFDBImageCatalogClass)_exObject.Object;
+                SqlFDBImageCatalogClass layer = (SqlFDBImageCatalogClass)instance;
                 iDataset = new FDBImageDataset(layer._fdb, layer.Name);
             }
-            else if (_exObject.Object is IRasterCatalogClass)
+            else if (instance is IRasterCatalogClass)
             {
-                IRasterCatalogClass layer = (IRasterCatalogClass)_exObject.Object;
+                IRasterCatalogClass layer = (IRasterCatalogClass)instance;
                 iDataset = new FDBImageDataset((IImageDB)layer.Dataset.Database, layer.Name);
             }
             if (iDataset == null) return;
@@ -581,19 +597,19 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         #endregion
 
-        private void toolStripButtonAdd_Click(object sender, EventArgs e)
+        async private void toolStripButtonAdd_Click(object sender, EventArgs e)
         {
             if (openImageFiles.ShowDialog() == DialogResult.OK)
             {
-                ImportFiles(openImageFiles.FileNames, true, null);
+                await ImportFiles(openImageFiles.FileNames, true, null);
             }
 
-            IRasterClass rc = _exObject.Object as IRasterClass;
+            IRasterClass rc = await _exObject.GetInstanceAsync() as IRasterClass;
             if (rc == null) return;
             IRasterDataset rDS = rc.Dataset as IRasterDataset;
             if (rDS == null) return;
 
-            rDS.RefreshClasses();
+            await rDS.RefreshClasses();
         }
 
         async private void btnImportDirectory_Click(object sender, EventArgs e)
@@ -623,12 +639,12 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 }
             }
 
-            IRasterClass rc = _exObject.Object as IRasterClass;
+            IRasterClass rc = await _exObject.GetInstanceAsync() as IRasterClass;
             if (rc == null) return;
             IRasterDataset rDS = rc.Dataset as IRasterDataset;
             if (rDS == null) return;
 
-            rDS.RefreshClasses();
+            await rDS.RefreshClasses();
         }
 
         async private Task<(bool success, int dirCount)> ImportDirectory(DirectoryInfo di, string[] filters, Dictionary<string,Guid> providers)

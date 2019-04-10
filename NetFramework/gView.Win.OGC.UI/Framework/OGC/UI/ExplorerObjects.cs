@@ -48,9 +48,9 @@ namespace gView.Framework.OGC.UI
             get { return "OGC Connections"; }
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return null; }
+            return Task.FromResult<object>(null);
         }
 
         public IExplorerObject CreateInstanceByFullName(string FullName)

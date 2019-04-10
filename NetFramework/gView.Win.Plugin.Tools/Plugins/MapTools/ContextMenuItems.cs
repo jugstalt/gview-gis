@@ -52,17 +52,17 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public Task<bool> OnEvent(object element, object dataset)
+        async public Task<bool> OnEvent(object element, object dataset)
         {
             if (!(element is IFeatureLayer))
             {
                 MessageBox.Show("Item is not a featurelayer");
-                return Task.FromResult(true);
+                return true;
             }
             if (((IFeatureLayer)element).FeatureClass == null)
             {
                 MessageBox.Show("Item has not a valid featureclass!");
-                return Task.FromResult(true);
+                return true;
             }
 
             List<ExplorerDialogFilter> filters = new List<ExplorerDialogFilter>();
@@ -74,12 +74,15 @@ namespace gView.Plugins.MapTools
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 IExplorerObject exObject = dlg.ExplorerObjects[0];
-                if (!(exObject.Object is ITOCElement))
-                    return Task.FromResult(true);
 
-                IFeatureLayer source = ((ITOCElement)exObject.Object).Layers[0] as IFeatureLayer;
+                var instatnce = await exObject?.GetInstanceAsync();
+
+                if (!(instatnce is ITOCElement))
+                    return true;
+
+                IFeatureLayer source = ((ITOCElement)instatnce).Layers[0] as IFeatureLayer;
                 if (source == null)
-                    return Task.FromResult(true);
+                    return true;
 
                 IFeatureLayer dest = (IFeatureLayer)element;
 
@@ -92,7 +95,7 @@ namespace gView.Plugins.MapTools
                 }
 
             }
-            return Task.FromResult(true);
+            return true;
         }
 
         public object Image

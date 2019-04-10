@@ -45,9 +45,9 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
             get { return _icon; }
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return null; }
+            return Task.FromResult<object>(null);
         }
 
         public IExplorerObject CreateInstanceByFullName(string FullName)
@@ -140,9 +140,9 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
 
         }
 
-        public new object Object
+        public Task<object> GetInstanceAsync()
         {
-            get { return null; }
+            return Task.FromResult<object>(null);
         }
 
         public IExplorerObject CreateInstanceByFullName(string FullName)
@@ -209,11 +209,11 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
             return (parentExObject is WMSExplorerObject);
         }
 
-        public IExplorerObject CreateExplorerObject(IExplorerObject parentExObject)
+        public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             ExplorerObjectEventArgs e = new ExplorerObjectEventArgs();
             ExplorerObjectDoubleClick(e);
-            return e.NewExplorerObject;
+            return Task.FromResult(e.NewExplorerObject);
         }
 
         #endregion
@@ -285,33 +285,30 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
 
         }
 
-        public new object Object
+        async public Task<object> GetInstanceAsync()
         {
-            get
+            if (_class == null)
             {
-                if (_class == null)
+                WMSDataset dataset = await WMSDataset.Create(_connectionString, _name);
+                //dataset.Open(); // kein open, weil sonst ein GET_SERVICE_INFO durchgeführt wird...
+                switch (ConfigTextStream.ExtractValue(_connectionString, "service").ToUpper())
                 {
-                    WMSDataset dataset = new WMSDataset(_connectionString, _name);
-                    //dataset.Open(); // kein open, weil sonst ein GET_SERVICE_INFO durchgeführt wird...
-                    switch (ConfigTextStream.ExtractValue(_connectionString, "service").ToUpper())
-                    {
-                        case "WMS":
-                        case "WMS_WFS":
-                            if (dataset.Elements().Result.Count == 0)
-                            {
-                                dataset.Dispose();
-                                return null;
-                            }
-                            return _class = dataset.Elements().Result.First().Class as WMSClass;
-                        case "WFS":
-                            return dataset;
-                        default:
+                    case "WMS":
+                    case "WMS_WFS":
+                        if (dataset.Elements().Result.Count == 0)
+                        {
+                            dataset.Dispose();
                             return null;
-                    }
+                        }
+                        return _class = (await dataset.Elements()).First().Class as WMSClass;
+                    case "WFS":
+                        return dataset;
+                    default:
+                        return null;
                 }
-
-                return _class;
             }
+
+            return _class;
         }
 
         public IExplorerObject CreateInstanceByFullName(string FullName)
@@ -355,13 +352,13 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
 
         public event ExplorerObjectDeletedEvent ExplorerObjectDeleted;
 
-        public bool DeleteExplorerObject(ExplorerObjectEventArgs e)
+        public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
             ConfigTextStream stream = new ConfigTextStream("ogc_connections", true, true);
             stream.Remove(this.Name, _connectionString);
             stream.Close();
             if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
-            return true;
+            return Task.FromResult(true);
         }
 
         #endregion
@@ -370,7 +367,7 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
 
         public event ExplorerObjectRenamedEvent ExplorerObjectRenamed;
 
-        public bool RenameExplorerObject(string newName)
+        public Task<bool> RenameExplorerObject(string newName)
         {
             bool ret = false;
             ConfigTextStream stream = new ConfigTextStream("ogc_connections", true, true);
@@ -382,7 +379,7 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
                 _name = newName;
                 if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
             }
-            return ret;
+            return Task.FromResult(ret);
         }
 
         #endregion

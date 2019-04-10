@@ -74,7 +74,7 @@ namespace gView.DataSources.Fdb.UI
 
             if (fdb is AccessFDB)
             {
-                ISpatialIndexDef dsSpatialIndexDef = ((AccessFDB)fdb).SpatialIndexDef(dsname);
+                ISpatialIndexDef dsSpatialIndexDef = await ((AccessFDB)fdb).SpatialIndexDef(dsname);
                 if (sIndexDef == null)
                 {
                     sIndexDef = dsSpatialIndexDef;
@@ -113,7 +113,7 @@ namespace gView.DataSources.Fdb.UI
             {
                 fcname = fcname.Replace(".", "_");
 
-                IFeatureDataset destDS = fdb[dsname];
+                IFeatureDataset destDS = await fdb.GetDataset(dsname);
                 if (destDS == null)
                 {
                     _errMsg = fdb.LastErrorMessage;
@@ -150,7 +150,7 @@ namespace gView.DataSources.Fdb.UI
                 {
                     if (fdb is AccessFDB)
                     {
-                        fcID = ((AccessFDB)fdb).ReplaceFeatureClass(destDS.DatasetName,
+                        fcID = await ((AccessFDB)fdb).ReplaceFeatureClass(destDS.DatasetName,
                                                       fcname,
                                                       geomDef,
                                                       (fieldTranslation == null) ?
@@ -165,12 +165,12 @@ namespace gView.DataSources.Fdb.UI
                     }
                     else
                     {
-                        fdb.DeleteFeatureClass(fcname);
+                        await fdb.DeleteFeatureClass(fcname);
                     }
                 }
                 if (fcID < 0)
                 {
-                    fcID = fdb.CreateFeatureClass(destDS.DatasetName,
+                    fcID = await fdb.CreateFeatureClass(destDS.DatasetName,
                                                       fcname,
                                                       geomDef,
                                                       (fieldTranslation == null) ?
@@ -219,7 +219,7 @@ namespace gView.DataSources.Fdb.UI
                 if (msSpatial)
                 {
                     ((SqlFDB)fdb).SetMSSpatialIndex((MSSpatialIndex)sIndexDef, destFC.Name);
-                    ((SqlFDB)fdb).SetFeatureclassExtent(destFC.Name, sIndexDef.SpatialIndexBounds);
+                    await ((SqlFDB)fdb).SetFeatureclassExtent(destFC.Name, sIndexDef.SpatialIndexBounds);
                 }
                 else
                 {
@@ -232,7 +232,7 @@ namespace gView.DataSources.Fdb.UI
                     {
                         if (_schemaOnly && sourceFC.Dataset.Database is IImplementsBinarayTreeDef)
                         {
-                            BinaryTreeDef tDef = ((IImplementsBinarayTreeDef)sourceFC.Dataset.Database).BinaryTreeDef(sourceFC.Name);
+                            BinaryTreeDef tDef = await ((IImplementsBinarayTreeDef)sourceFC.Dataset.Database).BinaryTreeDef(sourceFC.Name);
                             tree2 = new BinaryTree2Builder(tDef.Bounds, tDef.MaxLevel, tDef.MaxPerNode, tDef.SplitRatio);
                         }
                         else
@@ -252,12 +252,12 @@ namespace gView.DataSources.Fdb.UI
                         {
                             nids.Add(node.Number);
                         }
-                        ((AccessFDB)fdb).ShrinkSpatialIndex(fcname, nids);
+                        await ((AccessFDB)fdb).ShrinkSpatialIndex(fcname, nids);
 
                         if (ReportAction != null) ReportAction(this, "Set spatial index bounds");
                         //((AccessFDB)fdb).SetSpatialIndexBounds(fcname, "BinaryTree2", tree2.Bounds, sIndexDef.SplitRatio, sIndexDef.MaxPerNode, tree2.maxLevels);
-                        ((AccessFDB)fdb).SetSpatialIndexBounds(fcname, "BinaryTree2", tree2.Bounds, tree2.SplitRatio, tree2.MaxPerNode, tree2.maxLevels);
-                        ((AccessFDB)fdb).SetFeatureclassExtent(fcname, tree2.Bounds);
+                        await ((AccessFDB)fdb).SetSpatialIndexBounds(fcname, "BinaryTree2", tree2.Bounds, tree2.SplitRatio, tree2.MaxPerNode, tree2.maxLevels);
+                        await ((AccessFDB)fdb).SetFeatureclassExtent(fcname, tree2.Bounds);
                     }
                 }
                 if (_cancelTracker.Continue)
@@ -285,7 +285,7 @@ namespace gView.DataSources.Fdb.UI
                         }
                         if (!result)
                         {
-                            fdb.DeleteFeatureClass(fcname);
+                            await fdb.DeleteFeatureClass(fcname);
                             destDS.Dispose();
                             return false;
                         }
@@ -304,17 +304,17 @@ namespace gView.DataSources.Fdb.UI
                         if (_treeVersion == TreeVersion.BinaryTree)
                         {
                             if (ReportAction != null) ReportAction(this, "Set spatial index bounds");
-                            ((AccessFDB)fdb).SetSpatialIndexBounds(fcname, "BinaryTree", tree.Bounds, sIndexDef.SplitRatio, sIndexDef.MaxPerNode, 0);
+                            await ((AccessFDB)fdb).SetSpatialIndexBounds(fcname, "BinaryTree", tree.Bounds, sIndexDef.SplitRatio, sIndexDef.MaxPerNode, 0);
 
                             if (ReportAction != null) ReportAction(this, "Insert spatial index nodes");
-                            ((AccessFDB)fdb).__intInsertSpatialIndexNodes2(fcname, tree.Nodes);
+                            await ((AccessFDB)fdb).__intInsertSpatialIndexNodes2(fcname, tree.Nodes);
                         }
                     }
                     return true;
                 }
                 else
                 {
-                    fdb.DeleteFeatureClass(fcname);
+                    await fdb.DeleteFeatureClass(fcname);
                     _errMsg = "Import is canceled by the user...";
                     return false;
                 }

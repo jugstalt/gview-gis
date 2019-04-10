@@ -184,7 +184,7 @@ namespace gView.DataSources.Fdb.MSSql
         }
 
         //private SqlConnection _connection=null;
-        override public Task<bool> Open(string connString)
+        async override public Task<bool> Open(string connString)
         {
             try
             {
@@ -194,7 +194,7 @@ namespace gView.DataSources.Fdb.MSSql
                 _conn.ConnectionString = parseConnectionString(connString);
                 _conn.dbType = gView.Framework.Db.DBType.sql;
 
-                SetVersion();
+                await SetVersion();
 
                 DataTable tab = _conn.Select("*", "sys.Assemblies", "name='MSSqlSpatialEngine'").Result;
                 if (tab != null)
@@ -215,11 +215,11 @@ namespace gView.DataSources.Fdb.MSSql
                 _connection=new SqlConnection(parseConnectionString(connString));
                 _connection.Open();
                 */
-                return Task.FromResult(true);
+                return true;
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
-                return Task.FromResult(false);
+                return false;
             }
         }
 

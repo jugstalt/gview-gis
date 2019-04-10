@@ -11,7 +11,7 @@ using gView.MapServer;
 using gView.Framework.XML;
 using gView.Framework.Carto;
 using gView.Framework.system;
-
+using System.Threading.Tasks;
 
 [assembly: InternalsVisibleTo("gView.Interoperability.ArcXML.UI, PublicKey=0024000004800000940000000602000000240000525341310004000001000100ad6b16ba6c0a7a8717a5945266036366beaed6fccb2f87802f0efe09e2a59e5554056ab439042410b35708e13362eadb16e89d183a7518a8c426a6f6cee0c64a93b3e39e2dd52948410c7bfc5b70a77d173105861e5875a75471b7fb2f833e0157cbd1b6a5d9b23bb1e093e4049083fbbd5b60fb41f84220ff3d0692bc2683bd")]
 
@@ -38,11 +38,12 @@ namespace gView.Interoperability.ArcXML.Dataset
         public event BeforeMapRequestEventHandler BeforeMapRequest = null;
         public event AfterMapRequestEventHandler AfterMapRequest = null;
 
-        public bool MapRequest(gView.Framework.Carto.IDisplay display)
+        async public Task<bool> MapRequest(gView.Framework.Carto.IDisplay display)
         {
-            if (_dataset == null || Themes == null) return false;
+            if (_dataset == null) return false;
 
             List<IWebServiceTheme> themes = Themes;
+            if (themes == null) return false;
 
             #region Check for visible Layers
             bool visFound = false;
@@ -271,7 +272,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             }
         }
 
-        public bool LegendRequest(gView.Framework.Carto.IDisplay display)
+        async public Task<bool> LegendRequest(gView.Framework.Carto.IDisplay display)
         {
             if (_dataset == null) return false;
 
@@ -421,7 +422,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             {
                 if (_dataset == null) return null;
                 if (_dataset.State != DatasetState.opened)
-                    _dataset.Open();
+                    _dataset.Open().Wait();
                 return _dataset.Envelope().Result;
             }
         }
@@ -434,7 +435,7 @@ namespace gView.Interoperability.ArcXML.Dataset
                 if (_dataset != null)
                 {
                     if (_dataset.State != DatasetState.opened)
-                        _dataset.Open();
+                        _dataset.Open().Wait();
                     return _dataset._themes;
                 }
                 return new List<IWebServiceTheme>();
@@ -485,7 +486,9 @@ namespace gView.Interoperability.ArcXML.Dataset
             ArcIMSClass clone = new ArcIMSClass(_dataset);
             clone._clonedThemes = new List<IWebServiceTheme>();
 
-            foreach (IWebServiceTheme theme in Themes)
+            var themes = (_clonedThemes != null) ? _clonedThemes : (_dataset?._themes ?? new List<IWebServiceTheme>());
+
+            foreach (IWebServiceTheme theme in themes)
             {
                 if (theme == null || theme.Class == null) continue;
                 clone._clonedThemes.Add(LayerFactory.Create(theme.Class, theme as ILayer, clone) as IWebServiceTheme);

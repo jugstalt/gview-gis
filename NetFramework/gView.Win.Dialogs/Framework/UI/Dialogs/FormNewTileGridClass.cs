@@ -28,7 +28,7 @@ namespace gView.Framework.UI.Dialogs
             _createLevels.Add(0);
         }
 
-        private void btnGetGridDataset_Click(object sender, EventArgs e)
+        async private void btnGetGridDataset_Click(object sender, EventArgs e)
         {
             List<ExplorerDialogFilter> filters = new List<ExplorerDialogFilter>();
             filters.Add(new OpenRasterDatasetFiler());
@@ -40,9 +40,10 @@ namespace gView.Framework.UI.Dialogs
             {
                 foreach (IExplorerObject exObject in dlg.ExplorerObjects)
                 {
-                    if (exObject == null || exObject.Object == null) continue;
+                    var instance = await exObject?.GetInstanceAsync();
+                    if (instance == null) continue;
 
-                    _ds = exObject.Object as IRasterDataset;
+                    _ds = instance as IRasterDataset;
                     if (_ds != null)
                     {
                         txtGridDataset.Text = _ds.DatasetName;

@@ -38,16 +38,19 @@ namespace gView.DataSources.Fdb.UI
             
         }
 
-        public Task<bool> OnShow()
+        async public Task<bool> OnShow()
         {
             listView1.Items.Clear();
-            if (_exObject == null || !(_exObject.Object is IFeatureClass))
-                return Task.FromResult(false);
 
-            IFeatureClass fc = (IFeatureClass)_exObject.Object;
+            var instance = await _exObject.GetInstanceAsync();
+
+            if (instance is IFeatureClass)
+                return false;
+
+            IFeatureClass fc = (IFeatureClass)instance;
 
             if (fc.Fields == null)
-                return Task.FromResult(false);
+                return false;
 
             foreach (IField field in fc.Fields.ToEnumerable())
             {
@@ -77,7 +80,7 @@ namespace gView.DataSources.Fdb.UI
                 listView1.Items.Add(new FieldListViewItem(new Field(field), iIndex));
             }
 
-            return Task.FromResult(true);
+            return true;
         }
 
         public void OnHide()
@@ -93,7 +96,7 @@ namespace gView.DataSources.Fdb.UI
             }
             set
             {
-                if (value != null || value.Object is IFeatureClass)
+                if (value != null)
                 {
                     _exObject = value;
                 }
@@ -104,11 +107,12 @@ namespace gView.DataSources.Fdb.UI
             }
         }
 
-        public bool ShowWith(IExplorerObject exObject)
+        public Task<bool> ShowWith(IExplorerObject exObject)
         {
-            if (exObject == null) return false;
+            if (exObject == null)
+                return Task.FromResult(false);
             //return exObject.Object is IFeatureClass;
-            return TypeHelper.Match(exObject.ObjectType, typeof(IFeatureClass));
+            return Task.FromResult(TypeHelper.Match(exObject.ObjectType, typeof(IFeatureClass)));
         }
 
         public string Title
@@ -169,7 +173,7 @@ namespace gView.DataSources.Fdb.UI
         }
         #endregion
 
-        private void contextItem_AddField_Click(object sender, EventArgs e)
+        async private void contextItem_AddField_Click(object sender, EventArgs e)
         {
             Field nField = new Field("NewField", FieldType.String);
             FormPropertyGrid dlg = new FormPropertyGrid(nField);
@@ -178,30 +182,34 @@ namespace gView.DataSources.Fdb.UI
             {
                 nField = dlg.SelectedObject as Field;
 
-                if (AlterTable == null)
+                var alterTable = await GetAlterTable();
+                if (alterTable == null)
                 {
                     MessageBox.Show("Change properties is not implemented for this feature...");
                     return;
                 }
 
-                if (!AlterTable.AlterTable(_exObject.Name, null, nField))
+                if (!await alterTable.AlterTable(_exObject.Name, null, nField))
                 {
-                    MessageBox.Show("ERROR: " + ((AlterTable is IDatabase) ? ((IDatabase)AlterTable).LastErrorMessage : ""));
+                    MessageBox.Show("ERROR: " + ((alterTable is IDatabase) ? ((IDatabase)alterTable).LastErrorMessage : ""));
                     return;
                 }
 
-                this.OnShow();
+                await this.OnShow();
             }
         }
 
-        private void contextItem_ImportFields_Click(object sender, EventArgs e)
+        async private void contextItem_ImportFields_Click(object sender, EventArgs e)
         {
-            if (AlterTable == null)
+            var alterTable = await GetAlterTable();
+            if (alterTable == null)
             {
                 MessageBox.Show("Change properties is not implemented for this feature...");
                 return;
             }
-            if (_exObject == null || !(_exObject.Object is ITableClass)) return;
+
+            var tableClass = await _exObject?.GetInstanceAsync() as ITableClass;
+            if (tableClass==null) return;
 
             List<ExplorerDialogFilter> filters=new List<ExplorerDialogFilter>();
             filters.Add(new OpenFeatureclassFilter());
@@ -211,31 +219,35 @@ namespace gView.DataSources.Fdb.UI
 
             if (dlg.ShowDialog() == DialogResult.OK &&
                 dlg.ExplorerObjects != null &&
-                dlg.ExplorerObjects.Count == 1 &&
-                dlg.ExplorerObjects[0].Object is ITableClass)
+                dlg.ExplorerObjects.Count == 1)
             {
-                ITableClass tcFrom = dlg.ExplorerObjects[0].Object as ITableClass;
-                ITableClass tcTo = _exObject.Object as ITableClass;
-
-                FormSelectFields selDlg = new FormSelectFields(tcFrom, tcTo);
-                if (selDlg.ShowDialog() == DialogResult.OK)
+                var dlgTableClass = await dlg.ExplorerObjects[0].GetInstanceAsync() as ITableClass;
+                if (dlgTableClass != null)
                 {
-                    foreach (IField field in selDlg.SelectedFields)
+                    ITableClass tcFrom = dlgTableClass;
+                    ITableClass tcTo = tableClass;
+
+                    FormSelectFields selDlg = new FormSelectFields(tcFrom, tcTo);
+                    if (selDlg.ShowDialog() == DialogResult.OK)
                     {
-                        if (!AlterTable.AlterTable(_exObject.Name, null, new Field(field)))
+                        foreach (IField field in selDlg.SelectedFields)
                         {
-                            MessageBox.Show("ERROR :" + ((AlterTable is IDatabase) ? ((IDatabase)AlterTable).LastErrorMessage : ""));
-                            break;
+                            if (!await alterTable.AlterTable(_exObject.Name, null, new Field(field)))
+                            {
+                                MessageBox.Show("ERROR :" + ((alterTable is IDatabase) ? ((IDatabase)alterTable).LastErrorMessage : ""));
+                                break;
+                            }
                         }
+                        await this.OnShow();
                     }
-                    this.OnShow();
                 }
             }
         }
 
-        private void contextItem_Remove_Click(object sender, EventArgs e)
+        async private void contextItem_Remove_Click(object sender, EventArgs e)
         {
-            if (AlterTable == null)
+            var alterTable = await GetAlterTable();
+            if (alterTable == null)
             {
                 MessageBox.Show("Change properties is not implemented for this feature...");
                 return;
@@ -246,16 +258,16 @@ namespace gView.DataSources.Fdb.UI
                 if (!(item is FieldListViewItem)) continue;
                 Field oField = ((FieldListViewItem)item).Field;
 
-                if (!AlterTable.AlterTable(_exObject.Name, oField, null))
+                if (!await alterTable.AlterTable(_exObject.Name, oField, null))
                 {
-                    MessageBox.Show("ERROR :" + ((AlterTable is IDatabase) ? ((IDatabase)AlterTable).LastErrorMessage : ""));
+                    MessageBox.Show("ERROR :" + ((alterTable is IDatabase) ? ((IDatabase)alterTable).LastErrorMessage : ""));
                     break;
                 }
             }
-            this.OnShow();
+            await this.OnShow();
         }
 
-        private void contextItem_Properties_Click(object sender, EventArgs e)
+        async private void contextItem_Properties_Click(object sender, EventArgs e)
         {
             
             if (_contextItem is FieldListViewItem)
@@ -269,36 +281,35 @@ namespace gView.DataSources.Fdb.UI
                     Field nField = dlg.SelectedObject as Field;
                     if (!oField.Equals(nField))
                     {
-                        if (AlterTable == null)
+                        var alterTable = await GetAlterTable();
+                        if (alterTable == null)
                         {
                             MessageBox.Show("Change properties is not implemented for this feature...");
                             return;
                         }
 
-                        if (!AlterTable.AlterTable(_exObject.Name, oField, nField))
+                        if (!await alterTable.AlterTable(_exObject.Name, oField, nField))
                         {
-                            MessageBox.Show("ERROR: " + ((AlterTable is IDatabase) ? ((IDatabase)AlterTable).LastErrorMessage : ""));
+                            MessageBox.Show("ERROR: " + ((alterTable is IDatabase) ? ((IDatabase)alterTable).LastErrorMessage : ""));
                             return;
                         }
 
-                        this.OnShow();
+                        await this.OnShow();
                     }
                 }
             }
         }
 
-        private gView.Framework.FDB.IAltertable AlterTable
+        async private Task<gView.Framework.FDB.IAltertable> GetAlterTable()
         {
-            get
-            {
-                if (_exObject == null) return null;
-                if (!(_exObject.Object is ITableClass)) return null;
+            var tc = await _exObject?.GetInstanceAsync() as ITableClass;
+            if (_exObject == null) return null;
+            if (tc==null)
+                return null;
 
-                ITableClass tc = _exObject.Object as ITableClass;
-                if (tc.Dataset == null || tc.Dataset.Database == null) return null;
+            if (tc.Dataset == null || tc.Dataset.Database == null) return null;
 
-                return tc.Dataset.Database as gView.Framework.FDB.IAltertable;
-            }
+            return tc.Dataset.Database as gView.Framework.FDB.IAltertable;
         }
     }
 

@@ -32,6 +32,7 @@ namespace gView.DataSources.Fdb.UI
             return true;
         }
 
+        // Thread
         private void RebuildIndecesAsync(object argument)
         {
             if (!(argument is List<IClass>)) return;
@@ -55,7 +56,7 @@ namespace gView.DataSources.Fdb.UI
                 }
                 
                 AccessFDB fdb = cl.Dataset.Database as AccessFDB;
-                if (!fdb.ShrinkSpatialIndex(cl.Name))
+                if (!fdb.ShrinkSpatialIndex(cl.Name).Result)
                 {
                     MessageBox.Show("Error rebuilding " + cl.Name + " index:\n" + fdb.LastErrorMessage);
                     return;

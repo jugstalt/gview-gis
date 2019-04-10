@@ -139,6 +139,7 @@ namespace gView.Framework.UI.Controls
                 ((IMapApplication)_iMapDocument.Application).RefreshActiveMap(DrawPhase.All);
             }
         }
+
         private void RemoveDatasetElement(object item)
         {
             if (item is LayerItem)
@@ -375,16 +376,16 @@ namespace gView.Framework.UI.Controls
 
         #region List
         private delegate void RefreshListCallback();
-        public void RefreshList()
+        async public Task RefreshList()
         {
-            if (list.InvokeRequired)
+            //if (list.InvokeRequired)
+            //{
+            //    RefreshListCallback d = new RefreshListCallback(RefreshList);
+            //    list.Invoke(d);
+            //}
+            //else
             {
-                RefreshListCallback d = new RefreshListCallback(RefreshList);
-                list.Invoke(d);
-            }
-            else
-            {
-                BuildList(null);
+                await BuildList(null);
             }
         }
         public void RefreshTOCElement(IDatasetElement element)
@@ -1986,17 +1987,22 @@ namespace gView.Framework.UI.Controls
                     foreach (IExplorerObject exObject in exObjects)
                     {
                         bool firstLayer = _iMapDocument.FocusMap.MapElements.Count == 0;
-                        if (exObject.Object is IClass)
+
+                        var instance = await exObject?.GetInstanceAsync();
+                        if (instance == null)
+                            continue;
+
+                        if (instance is IClass)
                         {
-                            ILayer layer = LayerFactory.Create((IClass)exObject.Object);
+                            ILayer layer = LayerFactory.Create((IClass)instance);
                             _iMapDocument.FocusMap.AddLayer(layer);
                             added = true;
 
-                            if (firstLayer) Append2Envelope(ref newMapEnvelope, (IClass)exObject.Object);
+                            if (firstLayer) Append2Envelope(ref newMapEnvelope, (IClass)instance);
                         }
-                        else if (exObject.Object is IDataset)
+                        else if (instance is IDataset)
                         {
-                            foreach (IDatasetElement element in ((IDataset)exObject.Object).Elements().Result)
+                            foreach (IDatasetElement element in ((IDataset)instance).Elements().Result)
                             {
                                 if (element.Class is IFeatureClass || element.Class is ITableClass || element.Class is IRasterClass || element.Class is IWebServiceClass)
                                 {
@@ -2008,13 +2014,13 @@ namespace gView.Framework.UI.Controls
                                 }
                             }
                         }
-                        else if (exObject.Object is ITOCElement && ((ITOCElement)exObject.Object).Layers != null)
+                        else if (instance is ITOCElement && ((ITOCElement)instance).Layers != null)
                         {
-                            foreach (ILayer layer in ((ITOCElement)exObject.Object).Layers)
+                            foreach (ILayer layer in ((ITOCElement)instance).Layers)
                             {
                                 if (layer is IGroupLayer)
                                 {
-                                    AddGroupLayer(layer as IGroupLayer, ((ITOCElement)exObject.Object).TOC);
+                                    AddGroupLayer(layer as IGroupLayer, ((ITOCElement)instance).TOC);
                                 }
                                 else
                                 {
@@ -2028,7 +2034,7 @@ namespace gView.Framework.UI.Controls
 
                                     _iMapDocument.FocusMap.AddLayer(layer);
 
-                                    ITOC toc = ((ITOCElement)exObject.Object).TOC;
+                                    ITOC toc = ((ITOCElement)instance).TOC;
                                     if (_iMapDocument.FocusMap.TOC != null && toc != null)
                                     {
                                         ITOCElement newTOCElement = _iMapDocument.FocusMap.TOC.GetTOCElement(layer);
@@ -2047,11 +2053,11 @@ namespace gView.Framework.UI.Controls
                                 }
                             }
                         }
-                        else if (exObject.Object is IMap)
+                        else if (instance is IMap)
                         {
-                            _iMapDocument.AddMap(exObject.Object as IMap);
+                            _iMapDocument.AddMap(instance as IMap);
                         }
-                        else if (exObject.Object is IMapDocument &&
+                        else if (instance is IMapDocument &&
                             _iMapDocument.Application is IMapApplication)
                         {
                             ((IMapApplication)_iMapDocument.Application).LoadMapDocument(exObject.FullName);
@@ -2066,7 +2072,7 @@ namespace gView.Framework.UI.Controls
                             _iMapDocument.FocusMap.Display.ZoomTo(newMapEnvelope);
                         }
                         if (_iMapDocument.Application is IMapApplication)
-                            ((IMapApplication)_iMapDocument.Application).RefreshActiveMap(DrawPhase.All);
+                            await ((IMapApplication)_iMapDocument.Application).RefreshActiveMap(DrawPhase.All);
                     }
                 }
             }

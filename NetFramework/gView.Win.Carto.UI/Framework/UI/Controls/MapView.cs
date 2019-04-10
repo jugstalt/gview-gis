@@ -182,7 +182,7 @@ namespace gView.Framework.UI.Controls
             if (this.Visible)
             {
                 if (mapDocument.Application is IMapApplication)
-                    ((IMapApplication)mapDocument.Application).RefreshActiveMap(DrawPhase.All);
+                    await ((IMapApplication)mapDocument.Application).RefreshActiveMap(DrawPhase.All);
                 else
                     await RefreshMap(DrawPhase.All);
             }
@@ -1062,7 +1062,7 @@ namespace gView.Framework.UI.Controls
                             _map,
                             _X,
                             _Y);
-                        _actTool.OnEvent(ev0);
+                        await _actTool.OnEvent(ev0);
                         refresh = ev0.refreshMap;
                         phase = ev0.drawPhase;
                         break;
@@ -1099,7 +1099,7 @@ namespace gView.Framework.UI.Controls
                             Math.Max(x2, x1),
                             Math.Max(y2, y1));
 
-                        _actTool.OnEvent(ev1);
+                        await _actTool.OnEvent(ev1);
                         refresh = ev1.refreshMap;
                         phase = ev1.drawPhase;
                         break;
@@ -1116,7 +1116,7 @@ namespace gView.Framework.UI.Controls
                                     _map,
                                     extent.minx, extent.miny, extent.maxx, extent.maxy);
 
-                                _actTool.OnEvent(ev3);
+                                await _actTool.OnEvent(ev3);
                                 refresh = ev3.refreshMap;
                                 phase = ev3.drawPhase;
                             }
@@ -1144,7 +1144,7 @@ namespace gView.Framework.UI.Controls
                                     _map,
                                     x1 - x2, y1 - y2);
 
-                                _actTool.OnEvent(ev2);
+                                await _actTool.OnEvent(ev2);
                                 refresh = ev2.refreshMap;
                                 phase = ev2.drawPhase;
                             }
@@ -1166,7 +1166,7 @@ namespace gView.Framework.UI.Controls
             {
                 if (_mapDoc != null && _mapDoc.Application is IMapApplication)
                 {
-                    ((IMapApplication)_mapDoc.Application).RefreshActiveMap(phase);
+                    await ((IMapApplication)_mapDoc.Application).RefreshActiveMap(phase);
                 }
                 else
                 {
@@ -1352,7 +1352,7 @@ namespace gView.Framework.UI.Controls
             _image = null;
 
             if (_mapDoc != null && _mapDoc.Application is IMapApplication)
-                ((IMapApplication)_mapDoc.Application).RefreshActiveMap(DrawPhase.All);
+                await ((IMapApplication)_mapDoc.Application).RefreshActiveMap(DrawPhase.All);
             else
                 await RefreshMap(DrawPhase.All);
         }
@@ -1365,7 +1365,7 @@ namespace gView.Framework.UI.Controls
             _wheelImageStartEnv = null;
 
             if (_mapDoc != null && _mapDoc.Application is IMapApplication)
-                ((IMapApplication)_mapDoc.Application).RefreshActiveMap(DrawPhase.All);
+                await ((IMapApplication)_mapDoc.Application).RefreshActiveMap(DrawPhase.All);
             else
                 await RefreshMap(DrawPhase.All);
         }
