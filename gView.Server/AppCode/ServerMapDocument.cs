@@ -280,7 +280,7 @@ namespace gView.Server.AppCode
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        async public Task<bool> Load(IPersistStream stream)
         {
             try
             {
@@ -288,24 +288,24 @@ namespace gView.Server.AppCode
                 _module = (IMapApplicationModule)PlugInManager.Create(guid);
 
                 if (!(_module is IPersistable))
-                    return Task.FromResult(true);
+                    return true;
 
-                ((IPersistable)_module).Load(stream);
+                await ((IPersistable)_module).Load(stream);
             }
             catch { }
 
-            return Task.FromResult(true);
+            return true;
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        async public Task<bool> Save(IPersistStream stream)
         {
             if (_module == null || !(_module is IPersistable))
-                return Task.FromResult(true);
+                return true;
 
             stream.Save("GUID", PlugInManager.PlugInID(_module).ToString());
-            ((IPersistable)_module).Save(stream);
+            await ((IPersistable)_module).Save(stream);
 
-            return Task.FromResult(true);
+            return true;
         }
 
         #endregion

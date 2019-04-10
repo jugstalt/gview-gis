@@ -3716,26 +3716,26 @@ namespace gView.Framework.Symbology
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        async public Task<bool> Load(IPersistStream stream)
         {
-            base.Load(stream);
+            await base.Load(stream);
 
             _gradient = (ColorGradient)stream.Load("gradient", _gradient, _gradient);
             _rectType = (GradientRectType)stream.Load("recttype", (int)GradientRectType.Feature);
             _outlineSymbol = (ISymbol)stream.Load("outlinesymbol");
 
-            return Task.FromResult(true);
+            return true;
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        async public Task<bool> Save(IPersistStream stream)
         {
-            base.Save(stream);
+            await base.Save(stream);
 
             stream.Save("gradient", _gradient);
             stream.Save("recttype", (int)_rectType);
             if (_outlineSymbol != null) stream.Save("outlinesymbol", _outlineSymbol);
 
-            return Task.FromResult(true);
+            return true;
         }
 
         #endregion

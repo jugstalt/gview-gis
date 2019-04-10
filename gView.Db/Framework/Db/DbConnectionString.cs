@@ -179,7 +179,7 @@ namespace gView.Framework.Db
         public override string ToString()
         {
             XmlStream stream = new XmlStream("DbConnectionString");
-            Save(stream);
+            Save(stream).Wait();
 
             return stream.ToString();
         }
@@ -189,7 +189,7 @@ namespace gView.Framework.Db
             StringReader sr=new StringReader(connection);
             stream.ReadStream(sr);
 
-            Load(stream);
+            Load(stream).Wait();
         }
 
         public bool TryFromConnectionString(string providerId, string connectionString)

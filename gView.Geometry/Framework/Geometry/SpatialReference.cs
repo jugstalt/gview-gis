@@ -842,7 +842,7 @@ namespace gView.Framework.Geometry
         public string ToXmlString()
         {
             XmlStream xmlStream = new XmlStream("SpatialReference");
-            this.Save(xmlStream);
+            this.Save(xmlStream).Wait();
             return xmlStream.ToString();
         }
 
@@ -852,7 +852,7 @@ namespace gView.Framework.Geometry
             StringReader sr = new StringReader(xml);
             stream.ReadStream(sr);
 
-            this.Load(stream);
+            this.Load(stream).Wait();
         }
 
         #region IBase64String Member

@@ -297,13 +297,13 @@ namespace gView.Framework.OGC.DB
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        async public Task<bool> Load(IPersistStream stream)
         {
             if (_layers != null) _layers.Clear();
-            this.SetConnectionString((string)stream.Load("connectionstring", ""));
-            this.Open();
+            await this.SetConnectionString((string)stream.Load("connectionstring", ""));
+            await this.Open();
 
-            return Task.FromResult(true);
+            return true;
         }
 
         public Task<bool> Save(IPersistStream stream)

@@ -100,7 +100,7 @@ namespace gView.DataSources.EventTable
         public string ToXmlString()
         {
             XmlStream xmlStream = new XmlStream("EventTableConnection");
-            this.Save(xmlStream);
+            this.Save(xmlStream).Wait();
 
             return xmlStream.ToString();
         }
@@ -111,7 +111,7 @@ namespace gView.DataSources.EventTable
             StringReader sr = new StringReader(xml);
             stream.ReadStream(sr);
 
-            Load(stream);
+            Load(stream).Wait();
         }
 
         #endregion

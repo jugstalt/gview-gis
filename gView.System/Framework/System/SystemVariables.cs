@@ -189,8 +189,8 @@ namespace gView.Framework.system
                 if (clone == null) return null;
 
                 XmlStream stream = new XmlStream("root");
-                ((IPersistable)this).Save(stream);
-                ((IPersistable)clone).Load(stream);
+                ((IPersistable)this).Save(stream).Wait();
+                ((IPersistable)clone).Load(stream).Wait();
 
                 return clone;
             }

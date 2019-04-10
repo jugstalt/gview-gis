@@ -44,7 +44,7 @@ namespace gView.DataSources.Fdb.UI
 
             var instance = await _exObject.GetInstanceAsync();
 
-            if (instance is IFeatureClass)
+            if (!(instance is IFeatureClass))
                 return false;
 
             IFeatureClass fc = (IFeatureClass)instance;

@@ -267,7 +267,7 @@ namespace gView.Framework.IO
                 {
                     XmlNodePlus parent = _parent;
                     _parent = new XmlNodePlus(xmlnode, _parent.NumberFormat);
-                    ((IPersistable)comp).Load(this);
+                    ((IPersistable)comp).Load(this).Wait();
                     _parent = parent;
                 }
 
@@ -279,7 +279,7 @@ namespace gView.Framework.IO
 				{
 					XmlNodePlus parent=_parent;
 					_parent=new XmlNodePlus(xmlnode,_parent.NumberFormat);
-					((IPersistable)objectInstance).Load(this);
+					((IPersistable)objectInstance).Load(this).Wait();
 					_parent=parent;
 					return objectInstance;
 				} 
@@ -383,7 +383,7 @@ namespace gView.Framework.IO
                 {
                     XmlNodePlus parent = _parent;
                     _parent = new XmlNodePlus(xmlnode, _parent.NumberFormat);
-                    ((IPersistable)comp).Load(this);
+                    ((IPersistable)comp).Load(this).Wait();
                     _parent = parent;
                 }
 
@@ -415,7 +415,7 @@ namespace gView.Framework.IO
 			if(val is IPersistable) 
 			{
 				_parent.Node=node;
-				((IPersistable)val).Save(this);
+				((IPersistable)val).Save(this).Wait();
 				_parent.Node=node.ParentNode;
 				return;
 			}
