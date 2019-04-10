@@ -252,7 +252,11 @@ namespace gView.Framework.OGC.DB
             {
                 if (_envelope == null)
                 {
-                    _envelope = _dataset.FeatureClassEnvelope(this).Result;
+                    //var task = Task.Run(() => _dataset.FeatureClassEnvelope(this));
+                    //task.Wait();
+                    //_envelope = task.Result;
+
+                    _envelope = Task.Run(() => _dataset.FeatureClassEnvelope(this)).Result;
                 }
                 return _envelope;
             }

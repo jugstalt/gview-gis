@@ -504,7 +504,7 @@ namespace gView.DataSources.MSSqlSpatial
             foreach (DataRow row in tables.Rows)
             {
                 string tableName = row["tabName"].ToString();
-                if (EqualsTableName(tableName, title, false).Result)
+                if (await EqualsTableName(tableName, title, false))
                     return new DatasetElement(await Featureclass.Create(this,
                         tableName,
                         IDFieldName(title),
@@ -514,7 +514,7 @@ namespace gView.DataSources.MSSqlSpatial
             foreach (DataRow row in views.Rows)
             {
                 string tableName = row["tabName"].ToString();
-                if (EqualsTableName(tableName, title, true).Result)
+                if (await EqualsTableName(tableName, title, true))
                     return new DatasetElement(await Featureclass.Create(this,
                         tableName,
                         IDFieldName(title),
@@ -1043,7 +1043,7 @@ namespace gView.DataSources.MSSqlSpatial
             foreach (DataRow row in tables.Rows)
             {
                 string tableName = row["tabName"].ToString();
-                if (EqualsTableName(tableName, title, false).Result)
+                if (await EqualsTableName(tableName, title, false))
                     return new DatasetElement(await Featureclass.Create(this,
                         tableName,
                         IDFieldName(title),
@@ -1052,7 +1052,7 @@ namespace gView.DataSources.MSSqlSpatial
             foreach (DataRow row in views.Rows)
             {
                 string tableName = row["tabName"].ToString();
-                if (EqualsTableName(tableName, title, true).Result)
+                if (await EqualsTableName(tableName, title, true))
                     return new DatasetElement(await Featureclass.Create(this,
                         tableName,
                         IDFieldName(title),
@@ -1115,7 +1115,7 @@ namespace gView.DataSources.MSSqlSpatial
         {
             var featureClass = new Featureclass(dataset, name, idFieldName, shapeFieldName, isView);
 
-            featureClass._name = dataset.TableNamePlusSchema(name, isView).Result;
+            featureClass._name =await dataset.TableNamePlusSchema(name, isView);
             featureClass._idfield = idFieldName;
             featureClass._shapefield = shapeFieldName;
             featureClass._geomType = geometryType.Unknown;
