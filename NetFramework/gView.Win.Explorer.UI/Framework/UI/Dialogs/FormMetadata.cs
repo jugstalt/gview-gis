@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using gView.Framework.IO;
 using gView.Framework.Data;
 using gView.Framework.UI;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -26,11 +27,11 @@ namespace gView.Framework.UI.Dialogs
             _metadataObject = metadataObject;
         }
 
-        private void FormMetadata_Load(object sender, EventArgs e)
+        async private void FormMetadata_Load(object sender, EventArgs e)
         {
-            if (_metadata.Providers == null) return;
+            if (await _metadata.GetProviders() == null) return;
 
-            foreach (IMetadataProvider provider in _metadata.Providers)
+            foreach (IMetadataProvider provider in await _metadata.GetProviders())
             {
                 if (provider == null) continue;
                 TabPage page = new TabPage(provider.Name);
@@ -50,18 +51,13 @@ namespace gView.Framework.UI.Dialogs
             }
         }
 
-        public XmlStream Stream
+        async public Task<XmlStream> GetStream()
         {
-            get
-            {
-                XmlStream stream = new XmlStream("Metadata");
-                if (_metadata != null)
-                    _metadata.WriteMetadata(stream);
+            XmlStream stream = new XmlStream("Metadata");
+            if (_metadata != null)
+                await _metadata.WriteMetadata(stream);
 
-                return stream;
-            }
+            return stream;
         }
-
-        
     }
 }

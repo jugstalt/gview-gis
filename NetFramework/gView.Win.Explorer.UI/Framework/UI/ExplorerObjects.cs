@@ -475,6 +475,7 @@ namespace gView.Framework.UI
             }
         }
 
+        // Thread
         private void ImportAsync(object element)
         {
             if (_import == null) return;

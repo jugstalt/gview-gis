@@ -783,7 +783,7 @@ namespace gView.Framework.UI.Controls
                     FormMetadata dlg = new FormMetadata(xmlStream, exObjectInstance);
                     if (dlg.ShowDialog() == DialogResult.OK)
                     {
-                        ((IMetadata)exObject).WriteMetadata(dlg.Stream);
+                        await ((IMetadata)exObject).WriteMetadata(await dlg.GetStream());
                     }
                 }
                 _contextObject = null;

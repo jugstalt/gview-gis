@@ -11,7 +11,7 @@ namespace gView.MapServer
 {
     public interface IMapServer
     {
-        IEnumerable<IMapService> Maps(IIdentity identity);
+        Task<IEnumerable<IMapService>> Maps(IIdentity identity);
         Task<IServiceMap> GetServiceMapAsync(string name, string folder);
         Task<IServiceMap> GetServiceMapAsync(IMapService service);
         Task<IServiceMap> GetServiceMapAsync(IServiceRequestContext context);

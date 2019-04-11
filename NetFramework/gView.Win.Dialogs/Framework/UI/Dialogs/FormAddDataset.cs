@@ -131,7 +131,7 @@ namespace gView.Framework.UI.Dialogs
 			}
 		}
 
-		private void ButtonDatasetOK_Click(object sender, System.EventArgs e)
+		async private void ButtonDatasetOK_Click(object sender, System.EventArgs e)
 		{
 			_datasets.Reset();
 			IDataset dataset;
@@ -143,7 +143,7 @@ namespace gView.Framework.UI.Dialogs
 
             while ((dataset = _datasets.Next) != null)
             {
-                FormDatasetProperties datasetProps = new FormDatasetProperties(dataset);
+                FormDatasetProperties datasetProps = await FormDatasetProperties.CreateAsync(dataset);
                 if (datasetProps.ShowDialog() != DialogResult.OK) continue;
 
                 _map.AddDataset(dataset, 0);
@@ -151,53 +151,59 @@ namespace gView.Framework.UI.Dialogs
                 {
                     IFeatureDataset fDS = (IFeatureDataset)dataset;
                     IEnvelope mapLimit = ((IDisplay)_map).Limit;
-                    mapLimit.minx = Math.Min(mapLimit.minx, fDS.Envelope().Result.minx);
-                    mapLimit.miny = Math.Min(mapLimit.miny, fDS.Envelope().Result.miny);
-                    mapLimit.maxx = Math.Max(mapLimit.maxx, fDS.Envelope().Result.maxx);
-                    mapLimit.maxy = Math.Max(mapLimit.maxy, fDS.Envelope().Result.maxy);
+
+                    var fDsEnvelope = await fDS.Envelope();
+
+                    mapLimit.minx = Math.Min(mapLimit.minx, fDsEnvelope.minx);
+                    mapLimit.miny = Math.Min(mapLimit.miny, fDsEnvelope.miny);
+                    mapLimit.maxx = Math.Max(mapLimit.maxx, fDsEnvelope.maxx);
+                    mapLimit.maxy = Math.Max(mapLimit.maxy, fDsEnvelope.maxy);
                     ((IDisplay)_map).Limit = mapLimit;
 
                     if (first)
                     {
-                        minx = fDS.Envelope().Result.minx;
-                        miny = fDS.Envelope().Result.miny;
-                        maxx = fDS.Envelope().Result.maxx;
-                        maxy = fDS.Envelope().Result.maxy;
+                        minx = fDsEnvelope.minx;
+                        miny = fDsEnvelope.miny;
+                        maxx = fDsEnvelope.maxx;
+                        maxy = fDsEnvelope.maxy;
                         first = false;
                     }
                     else
                     {
-                        minx = Math.Min(fDS.Envelope().Result.minx, minx);
-                        miny = Math.Min(fDS.Envelope().Result.miny, miny);
-                        maxx = Math.Max(fDS.Envelope().Result.maxx, maxx);
-                        maxy = Math.Max(fDS.Envelope().Result.maxy, maxy);
+                        minx = Math.Min(fDsEnvelope.minx, minx);
+                        miny = Math.Min(fDsEnvelope.miny, miny);
+                        maxx = Math.Max(fDsEnvelope.maxx, maxx);
+                        maxy = Math.Max(fDsEnvelope.maxy, maxy);
                     }
                 }
                 else if (dataset is IRasterDataset && _map is Map && _map is IDisplay)
                 {
                     IRasterDataset fDS = (IRasterDataset)dataset;
                     IEnvelope mapLimit = ((IDisplay)_map).Limit;
-                    if (fDS.Envelope().Result == null) continue;
-                    mapLimit.minx = Math.Min(mapLimit.minx, fDS.Envelope().Result.minx);
-                    mapLimit.miny = Math.Min(mapLimit.miny, fDS.Envelope().Result.miny);
-                    mapLimit.maxx = Math.Max(mapLimit.maxx, fDS.Envelope().Result.maxx);
-                    mapLimit.maxy = Math.Max(mapLimit.maxy, fDS.Envelope().Result.maxy);
+
+                    var fDsEnvelope = await fDS.Envelope();
+                    if (fDsEnvelope == null) continue;
+
+                    mapLimit.minx = Math.Min(mapLimit.minx, fDsEnvelope.minx);
+                    mapLimit.miny = Math.Min(mapLimit.miny, fDsEnvelope.miny);
+                    mapLimit.maxx = Math.Max(mapLimit.maxx, fDsEnvelope.maxx);
+                    mapLimit.maxy = Math.Max(mapLimit.maxy, fDsEnvelope.maxy);
                     ((IDisplay)_map).Limit = mapLimit;
 
                     if (first)
                     {
-                        minx = fDS.Envelope().Result.minx;
-                        miny = fDS.Envelope().Result.miny;
-                        maxx = fDS.Envelope().Result.maxx;
-                        maxy = fDS.Envelope().Result.maxy;
+                        minx = fDsEnvelope.minx;
+                        miny = fDsEnvelope.miny;
+                        maxx = fDsEnvelope.maxx;
+                        maxy = fDsEnvelope.maxy;
                         first = false;
                     }
                     else
                     {
-                        minx = Math.Min(fDS.Envelope().Result.minx, minx);
-                        miny = Math.Min(fDS.Envelope().Result.miny, miny);
-                        maxx = Math.Max(fDS.Envelope().Result.maxx, maxx);
-                        maxy = Math.Max(fDS.Envelope().Result.maxy, maxy);
+                        minx = Math.Min(fDsEnvelope.minx, minx);
+                        miny = Math.Min(fDsEnvelope.miny, miny);
+                        maxx = Math.Max(fDsEnvelope.maxx, maxx);
+                        maxy = Math.Max(fDsEnvelope.maxy, maxy);
                     }
                 }
             }

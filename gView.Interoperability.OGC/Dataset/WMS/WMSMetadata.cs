@@ -56,12 +56,12 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
         #region IMetadataProvider Member
 
-        public bool ApplyTo(object Object)
+        async public Task<bool> ApplyTo(object Object)
         {
             if (Object is IServiceMap)
             {
                 _map = (IServiceMap)Object;
-                if (ServiceMapIsSVC(_map.MapServer, _map))
+                if (await ServiceMapIsSVC(_map.MapServer, _map))
                 {
                     foreach (IDatasetElement element in _map.MapElements)
                     {
@@ -149,11 +149,11 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         #endregion
 
         #region Helper
-        private bool ServiceMapIsSVC(IMapServer server, IServiceMap map)
+        async private Task<bool> ServiceMapIsSVC(IMapServer server, IServiceMap map)
         {
             if (server == null || map == null) return false;
 
-            foreach (IMapService service in server.Maps(null))
+            foreach (IMapService service in await server.Maps(null))
             {
                 if (service == null) continue;
                 if (service.Name == map.Name && service.Type == MapServiceType.SVC)

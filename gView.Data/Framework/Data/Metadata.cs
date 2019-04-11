@@ -25,7 +25,7 @@ namespace gView.Framework.Data
             }
         }
 
-        virtual public void WriteMetadata(IPersistStream stream)
+        async virtual public Task WriteMetadata(IPersistStream stream)
         {
             PlugInManager plugins = new PlugInManager();
 
@@ -37,7 +37,7 @@ namespace gView.Framework.Data
 
                     // mit ApplyTo noch einmal das this Objekt auf den Provider 
                     // setzen, damit beim speichern immer das aktuelle Object gesetzt wird...
-                    provider.ApplyTo(this);
+                    await provider.ApplyTo(this);
                     stream.Save("IMetadataProvider", provider);
                 }
             }
@@ -56,7 +56,7 @@ namespace gView.Framework.Data
                 if (provider2 != null)
                     continue;
 
-                if (provider.ApplyTo(this))
+                if (await provider.ApplyTo(this))
                 {
                     stream.Save("IMetadataProvider", provider);
                     _providers.Add(provider);
@@ -76,26 +76,26 @@ namespace gView.Framework.Data
             return null;
         }
 
-        public List<IMetadataProvider> Providers
+        public Task<List<IMetadataProvider>> GetProviders()
         {
-            get
-            {
-                if (_providers == null) return new List<IMetadataProvider>();
 
-                return ListOperations<IMetadataProvider>.Clone(_providers);
+                if (_providers == null)
+                    return Task.FromResult(new List<IMetadataProvider>());
+
+                return Task.FromResult(ListOperations<IMetadataProvider>.Clone(_providers));
             }
 
-            set
-            {
-                if (value == null)
-                    _providers = null;
-                _providers = ListOperations<IMetadataProvider>.Clone(value);
+        async public Task SetProviders(List<IMetadataProvider> value)
+        {
+            if (value == null)
+                _providers = null;
+            _providers = ListOperations<IMetadataProvider>.Clone(value);
 
-                foreach (IMetadataProvider provider in _providers)
-                    if (provider != null)
-                        provider.ApplyTo(this); 
-            }
+            foreach (IMetadataProvider provider in _providers)
+                if (provider != null)
+                    await provider.ApplyTo(this);
         }
+        
         #endregion
     }
 
@@ -114,12 +114,12 @@ namespace gView.Framework.Data
             //}
         }
 
-        public override void WriteMetadata(IPersistStream stream)
+        async public override Task WriteMetadata(IPersistStream stream)
         {
             if (!(this is IMap)) return;
             IMap map = (IMap)this;
 
-            base.WriteMetadata(stream);
+            await base.WriteMetadata(stream);
 
             //int index = 0;
             //while (true)

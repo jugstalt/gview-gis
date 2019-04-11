@@ -416,7 +416,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                         //}
                         //else
                         {
-                            sldRenderer = new SLDRenderer(theme);
+                            sldRenderer = await SLDRenderer.CreateAync(theme);
                             if (display.SpatialReference != null)
                                 sldRenderer.SetDefaultSrsName(display.SpatialReference.Name);
                         }

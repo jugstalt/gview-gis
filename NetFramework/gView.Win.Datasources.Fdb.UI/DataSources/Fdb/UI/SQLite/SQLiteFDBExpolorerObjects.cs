@@ -90,7 +90,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
                 if (!(new FileInfo(f).Exists)) return null;
                 using (SQLiteFDB fdb = new SQLiteFDB())
                 {
-                    if (!await fdb.Open(f) || !fdb.IsValidAccessFDB)
+                    if (!await fdb.Open(f) || !await fdb.IsValidAccessFDB())
                         return null;
                 }
             }
@@ -105,7 +105,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
             try
             {
                 SQLiteFDB fdb = new SQLiteFDB();
-                if (!fdb.Open(_filename).Result)
+                if (!await fdb.Open(_filename))
                 {
                     _errMsg = fdb.LastErrorMessage;
                     return null;
@@ -965,7 +965,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
                         int fcid = await fdb.CreateLinkedFeatureClass(dataset.DatasetName, (IFeatureClass)exObjectInstance);
                         if (ret == null)
                         {
-                            IDatasetElement element=dataset.Element(((IFeatureClass)exObjectInstance).Name).Result;
+                            IDatasetElement element=await dataset.Element(((IFeatureClass)exObjectInstance).Name);
                             if (element != null)
                             {
                                 ret = new SQLiteFDBFeatureClassExplorerObject(

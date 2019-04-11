@@ -53,7 +53,7 @@ namespace gView.DataSources.Fdb.UI
         }
 
         #region ImageDataset
-        public bool InsertImageDatasetBitmap(int image_id, IRasterLayer layer, int levels, System.Drawing.Imaging.ImageFormat format)
+        async public Task<bool> InsertImageDatasetBitmap(int image_id, IRasterLayer layer, int levels, System.Drawing.Imaging.ImageFormat format)
         {
             if (_conn == null)
             {
@@ -66,7 +66,7 @@ namespace gView.DataSources.Fdb.UI
                 return false;
             }
 
-            DataTable tab = _conn.Select("*", "FDB_Datasets", "Name='" + _dsname + "' AND ImageDataset=1").Result;
+            DataTable tab = await _conn.Select("*", "FDB_Datasets", "Name='" + _dsname + "' AND ImageDataset=1");
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -194,7 +194,7 @@ namespace gView.DataSources.Fdb.UI
 
             if (imageSpace.Equals(System.DBNull.Value)) imageSpace = "database";
 
-            DataTable tab = _conn.Select("*", "FC_" + _dsname + "_IMAGE_POLYGONS", "FDB_OID=" + image_id, "", ((bitmapOnly) ? false : true)).Result;
+            DataTable tab = await _conn.Select("*", "FC_" + _dsname + "_IMAGE_POLYGONS", "FDB_OID=" + image_id, "", ((bitmapOnly) ? false : true));
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -225,7 +225,7 @@ namespace gView.DataSources.Fdb.UI
             {
                 case "":
                 case "database":
-                    DataTable images = _conn.Select("ID", _dsname + "_IMAGE_DATA", "IMAGE_ID=" + image_id, "", true).Result;
+                    DataTable images = await _conn.Select("ID", _dsname + "_IMAGE_DATA", "IMAGE_ID=" + image_id, "", true);
                     if (images == null)
                     {
                         _errMsg = _conn.errorMessage;
@@ -313,12 +313,12 @@ namespace gView.DataSources.Fdb.UI
             FileInfo fi = new FileInfo(path);
             if (di.Exists)
             {
-                SearchImages(fdb, rasterFC, di, providers);
+                await SearchImages(fdb, rasterFC, di, providers);
                 //if (_recalculateExtent) fdb.CalculateSpatialIndex(rasterFC, 100);
             }
             else if (fi.Exists)
             {
-                if (!InsertImage(fdb, rasterFC, fi, providers)) 
+                if (!await InsertImage(fdb, rasterFC, fi, providers)) 
                     return false;
                 //if (_recalculateExtent) fdb.CalculateSpatialIndex(rasterFC, 100);
             }
@@ -332,7 +332,7 @@ namespace gView.DataSources.Fdb.UI
             return true;
         }
 
-        private void SearchImages(IFeatureUpdater fdb, IFeatureClass rasterFC, DirectoryInfo di, Dictionary<string,Guid> providers)
+        async private Task SearchImages(IFeatureUpdater fdb, IFeatureClass rasterFC, DirectoryInfo di, Dictionary<string,Guid> providers)
         {
             if (!_cancelTracker.Continue)
             {
@@ -346,7 +346,7 @@ namespace gView.DataSources.Fdb.UI
                 foreach (FileInfo fi in di.GetFiles("*." + filter))
                 {
                     if (_cancelTracker != null && !_cancelTracker.Continue) return;
-                    if (InsertImage(fdb, rasterFC, fi, providers))
+                    if (await InsertImage(fdb, rasterFC, fi, providers))
                         count++;
 
                     if (!_cancelTracker.Continue)
@@ -357,11 +357,11 @@ namespace gView.DataSources.Fdb.UI
             }
             foreach (DirectoryInfo sub in di.GetDirectories())
             {
-                SearchImages(fdb, rasterFC, sub, providers);
+                await SearchImages(fdb, rasterFC, sub, providers);
             }
         }
 
-        private bool InsertImage(IFeatureUpdater fdb, IFeatureClass rasterFC, FileInfo fi, Dictionary<string, Guid> providers)
+        async private Task<bool> InsertImage(IFeatureUpdater fdb, IFeatureClass rasterFC, FileInfo fi, Dictionary<string, Guid> providers)
         {
             if (!_cancelTracker.Continue)
             {
@@ -416,12 +416,12 @@ namespace gView.DataSources.Fdb.UI
             {
                 rfd.AddRasterFile(fi.FullName);
 
-                if (rfd.Elements().Result.Count == 0)
+                if ((await rfd.Elements()).Count == 0)
                 {
                     //Console.WriteLine(_errMsg = fi.FullName + " is not a valid Raster File...");
                     continue;
                 }
-                IDatasetElement element = rfd.Elements().Result[0];
+                IDatasetElement element = (await rfd.Elements())[0];
                 if (!(element is IRasterLayer))
                 {
                     //Console.WriteLine(_errMsg = fi.FullName + " is not a valid Raster Layer...");
@@ -517,9 +517,9 @@ namespace gView.DataSources.Fdb.UI
             else
                 filter.WhereClause = "PATH='" + fullName + "'";
             int deleteOID = -1;
-            using (IFeatureCursor cursor = rasterFC.GetFeatures(filter).Result)
+            using (IFeatureCursor cursor = await rasterFC.GetFeatures(filter))
             {
-                IFeature existingFeature = cursor.NextFeature().Result;
+                IFeature existingFeature = await cursor.NextFeature();
                 if (existingFeature != null)
                 {
                     DateTime dt1 = (DateTime)existingFeature["LAST_MODIFIED"];
@@ -547,7 +547,7 @@ namespace gView.DataSources.Fdb.UI
             }
             if (deleteOID != -1)
             {
-                if (!fdb.Delete(rasterFC, deleteOID).Result)
+                if (!await fdb.Delete(rasterFC, deleteOID))
                 {
                     Console.WriteLine(_errMsg = "Can't delete old record " + fi.FullName + "\n" + fdb.LastErrorMessage);
                     return false;
@@ -578,7 +578,7 @@ namespace gView.DataSources.Fdb.UI
             feature.Fields.Add(new FieldValue("CELLY", cellY));
             feature.Fields.Add(new FieldValue("LEVELS", (_managed) ? Math.Max(_levels, 1) : 0));
 
-            if (!fdb.Insert(rasterFC, feature).Result)
+            if (!await fdb.Insert(rasterFC, feature))
             {
                 Console.WriteLine("\nERROR@" + fi.FullName + ": " + fdb.LastErrorMessage);
             }
@@ -592,13 +592,13 @@ namespace gView.DataSources.Fdb.UI
                         filter.WhereClause = ((AccessFDB)_fdb).DbColName("PATH") + "='" + fi.FullName + "'";
                     else
                         qfilter.WhereClause = "PATH='" + fi.FullName + "'";
-                    IFeatureCursor cursor = ((SqlFDB)fdb).Query(rasterFC, qfilter).Result;
+                    IFeatureCursor cursor = await ((SqlFDB)fdb).Query(rasterFC, qfilter);
                     if (cursor != null)
                     {
-                        IFeature feat = cursor.NextFeature().Result;
+                        IFeature feat = await cursor.NextFeature();
                         if (feat != null)
                         {
-                            InsertImageDatasetBitmap(feat.OID, rasterLayer, _levels, format);
+                            await InsertImageDatasetBitmap(feat.OID, rasterLayer, _levels, format);
                         }
                         cursor.Dispose();
                     }
@@ -637,7 +637,7 @@ namespace gView.DataSources.Fdb.UI
             filter.AddField("LAST_MODIFIED2");
 
             List<int> Oids = new List<int>();
-            using (IFeatureCursor cursor = rasterFC.GetFeatures(filter).Result)
+            using (IFeatureCursor cursor = await rasterFC.GetFeatures(filter))
             {
                 IFeature feature;
                 while ((feature = cursor.NextFeature().Result) != null)
@@ -676,7 +676,7 @@ namespace gView.DataSources.Fdb.UI
 
                 foreach (int oid in Oids)
                 {
-                    if (!((AccessFDB)_fdb).Delete(rasterFC, oid).Result)
+                    if (!await ((AccessFDB)_fdb).Delete(rasterFC, oid))
                     {
                         Console.WriteLine(_errMsg = "Can't delete record OID=" + oid);
                         return false;

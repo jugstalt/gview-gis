@@ -55,9 +55,12 @@ namespace gView.Interoperability.OGC.SLD
             }
             catch { }
         }
-        public SLDRenderer(IFeatureLayer featureLayer)
+        async static public Task<SLDRenderer> CreateAync(IFeatureLayer featureLayer)
         {
-            if (featureLayer == null) return;
+            var renderer = new SLDRenderer();
+
+            if (featureLayer == null)
+                return renderer;
 
             if (featureLayer.FeatureRenderer is SimpleRenderer)
             {
@@ -67,12 +70,13 @@ namespace gView.Interoperability.OGC.SLD
                 Rule.FilterType filterType = Rule.FilterType.None;
                 if (featureLayer.FilterQuery != null)
                 {
-                    filter = new gView.Framework.OGC.WFS.Filter(featureLayer.FeatureClass, featureLayer.FilterQuery, _gmlVersion);
+                    filter = await gView.Framework.OGC.WFS.Filter.CreataAsync(featureLayer.FeatureClass, featureLayer.FilterQuery, renderer._gmlVersion);
                     filterType = (filter != null) ? Rule.FilterType.OgcFilter : Rule.FilterType.None;
                 }
                 Rule rule = new Rule(filter, sRenderer.Symbol);
                 rule.filterType = filterType;
-                _rules.Add(rule);
+
+                renderer._rules.Add(rule);
             }
             else if (featureLayer.FeatureRenderer is ValueMapRenderer)
             {
@@ -83,6 +87,8 @@ namespace gView.Interoperability.OGC.SLD
             else if (featureLayer.FeatureRenderer is ScaleDependentLabelRenderer)
             {
             }
+
+            return renderer;
         }
         private void FromXmlNodes(XmlNodeList rules, XmlNamespaceManager ns)
         {

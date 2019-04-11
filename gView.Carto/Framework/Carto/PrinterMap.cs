@@ -10,6 +10,7 @@ using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Framework.Carto.UI;
+using System.Threading.Tasks;
 
 [assembly: InternalsVisibleTo("gView.UI, PublicKey=002400000480000094000000060200000024000052534131000400000100010027d158e4f3030aadf57ddda2411853dec8352ea7e7c0149397393c35543c045619e02342cf7d9dff459c3a830ec2507659a8a058ef166ed1d06e679a7ded94a5b8454475e6330728784ffa18eb70beb35d92b736e0adca8124f61b6c232c222cd9efdb65e3bb407be4b568a1b1539e93cb73111dd95b9edc19227cb81fe63fd3")]
 [assembly: InternalsVisibleTo("gView.Plugins.Tools, PublicKey=0024000004800000940000000602000000240000525341310004000001000100cd0164638c075bd9b7732f3f3fe1ee7e2c8bde2602441fc5cb85782a15ce73f69b46d6551e233d6d9001faa181d158a80c4f04508f445c74ee51210313d434c2183ab2244921c10840fef30b4462a0ef79e079279098c304451c870d880858d4e89a71e8c8c67f636b15d7f827315286fb7410bae9fe7c54a030fd0de24605ee")]
@@ -314,7 +315,7 @@ namespace gView.Framework.Carto
             }
         }
 
-        public void Render()
+        async public Task Render()
         {
             try
             {
@@ -341,7 +342,7 @@ namespace gView.Framework.Carto
                 }
                 */
 
-                _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker);
+                await _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker);
                 if (_layer.RasterClass.Bitmap == null) return;
 
                 //System.Windows.Forms.MessageBox.Show("begin");
@@ -469,7 +470,7 @@ namespace gView.Framework.Carto
             {
             }
         }
-        public void Render3()
+        async public Task Render3()
         {
             if (_layer == null || _layer.RasterClass==null || _map == null || _cancelTracker == null)  return;
             if (_layer.RasterClass.Polygon == null) return;
@@ -485,7 +486,7 @@ namespace gView.Framework.Carto
             int max_y = Math.Min(iHeight = _map.iHeight, (int)Math.Max(miny, maxy) + 1);
 
             
-            _layer.RasterClass.BeginPaint(_map.Display,_cancelTracker);
+            await _layer.RasterClass.BeginPaint(_map.Display,_cancelTracker);
             //System.Windows.Forms.MessageBox.Show("begin");
 
             double W = (_map.Envelope.maxx - _map.Envelope.minx);

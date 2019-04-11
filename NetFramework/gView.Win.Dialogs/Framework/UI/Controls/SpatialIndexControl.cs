@@ -205,7 +205,7 @@ namespace gView.Framework.UI.Controls
 
                     if (instance is IDataset)
                     {
-                        foreach (IDatasetElement element in ((IDataset)instance).Elements().Result)
+                        foreach (IDatasetElement element in await ((IDataset)instance).Elements())
                         {
                             if (element == null) continue;
                             objEnvelope = ClassEnvelope(element.Class);

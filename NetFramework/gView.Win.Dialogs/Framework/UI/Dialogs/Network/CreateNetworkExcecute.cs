@@ -25,32 +25,26 @@ namespace gView.Framework.UI.Dialogs.Network
 
         private IFeatureDatabase3 FeatureDatabase { get; set; }
 
-        private List<IFeatureClass> EdgeFeatureclasses
+        async private Task<List<IFeatureClass>> EdgeFeatureclasses()
         {
-            get
+            List<IFeatureClass> edges = new List<IFeatureClass>();
+            foreach (var datasetElement in await this.FeatureDataset.Elements())
             {
-                List<IFeatureClass> edges = new List<IFeatureClass>();
-                foreach(var datasetElement in this.FeatureDataset.Elements().Result)
-                {
-                    if (datasetElement.Class is IFeatureClass && _serialized.FeatureClasses.EdgeFeatureclasses.Contains(datasetElement.Class.Name))
-                        edges.Add((IFeatureClass)datasetElement.Class);
-                }
-                return edges;
+                if (datasetElement.Class is IFeatureClass && _serialized.FeatureClasses.EdgeFeatureclasses.Contains(datasetElement.Class.Name))
+                    edges.Add((IFeatureClass)datasetElement.Class);
             }
+            return edges;
         }
 
-        private List<IFeatureClass> NodeFeatureclasses
+        async private Task<List<IFeatureClass>> NodeFeatureclasses()
         {
-            get
+            List<IFeatureClass> edges = new List<IFeatureClass>();
+            foreach (var datasetElement in await this.FeatureDataset.Elements())
             {
-                List<IFeatureClass> edges = new List<IFeatureClass>();
-                foreach (var datasetElement in this.FeatureDataset.Elements().Result)
-                {
-                    if (datasetElement.Class is IFeatureClass && _serialized.FeatureClasses.NodeFeatureclasses.Contains(datasetElement.Class.Name))
-                        edges.Add((IFeatureClass)datasetElement.Class);
-                }
-                return edges;
+                if (datasetElement.Class is IFeatureClass && _serialized.FeatureClasses.NodeFeatureclasses.Contains(datasetElement.Class.Name))
+                    edges.Add((IFeatureClass)datasetElement.Class);
             }
+            return edges;
         }
 
         private double SnapTolerance
@@ -149,8 +143,8 @@ namespace gView.Framework.UI.Dialogs.Network
 
             creator.NetworkName = _serialized.FeatureClasses.NetworkName;
             creator.FeatureDataset = this.FeatureDataset;
-            creator.EdgeFeatureClasses = this.EdgeFeatureclasses;
-            creator.NodeFeatureClasses = this.NodeFeatureclasses;
+            creator.EdgeFeatureClasses = await this.EdgeFeatureclasses();
+            creator.NodeFeatureClasses = await this.NodeFeatureclasses();
             creator.SnapTolerance = this.SnapTolerance;
             creator.ComplexEdgeFcIds = await this.ComplexEdgeFcIds();
             creator.GraphWeights = this.GraphWeights;

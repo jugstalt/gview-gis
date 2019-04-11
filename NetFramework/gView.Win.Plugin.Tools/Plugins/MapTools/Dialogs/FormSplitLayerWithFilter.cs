@@ -124,7 +124,7 @@ namespace gView.Plugins.MapTools.Dialogs
             }
         }
         
-        private void btnApply_Click(object sender, EventArgs e)
+        async private void btnApply_Click(object sender, EventArgs e)
         {
             if (!txtTemplate.Text.Contains("[VALUE]"))
             {
@@ -135,12 +135,12 @@ namespace gView.Plugins.MapTools.Dialogs
             string fieldName = cmbFilterField.Text.Replace("[", String.Empty).Replace("]", String.Empty); // Joined fields [...]. Dont need brackets in Distinctfilter...
             DistinctFilter filter = new DistinctFilter(fieldName);
             filter.OrderBy = fieldName;
-            using (IFeatureCursor cursor = ((IFeatureClass)_layer.Class).Search(filter) as IFeatureCursor)
+            using (IFeatureCursor cursor = await ((IFeatureClass)_layer.Class).Search(filter) as IFeatureCursor)
             {
                 if (cursor == null) return;
 
                 IFeature feature;
-                while ((feature = cursor.NextFeature().Result) != null)
+                while ((feature = await cursor.NextFeature()) != null)
                 {
                     object oobj;
                     object obj = oobj = feature[fieldName];

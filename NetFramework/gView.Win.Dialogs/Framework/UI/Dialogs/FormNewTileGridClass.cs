@@ -48,7 +48,7 @@ namespace gView.Framework.UI.Dialogs
                     {
                         txtGridDataset.Text = _ds.DatasetName;
                         IEnvelope env = null;
-                        foreach (IDatasetElement element in _ds.Elements().Result)
+                        foreach (IDatasetElement element in await _ds.Elements())
                         {
                             if (element != null && element.Class is IFeatureClass)
                             {

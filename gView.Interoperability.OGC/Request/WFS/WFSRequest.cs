@@ -908,14 +908,14 @@ namespace gView.Interoperability.OGC
 
         #region IMetadataProvider Member
 
-        public bool ApplyTo(object Object)
+        public Task<bool> ApplyTo(object Object)
         {
             if (Object is IServiceMap)
             {
                 _map = (IServiceMap)Object;
-                return true;
+                return Task.FromResult(true);
             }
-            return false;
+            return Task.FromResult(false);
         }
 
         public string Name

@@ -115,7 +115,7 @@ namespace gView.DataSources.Fdb.SQLite
             string imageSpace = isImageDatasetResult.imageSpace;
             if (isImageDatasetResult.isImageDataset)
             {
-                if (TableExists("FC_" + dataset.DatasetName + "_IMAGE_POLYGONS"))
+                if (await TableExists("FC_" + dataset.DatasetName + "_IMAGE_POLYGONS"))
                 {
                     IFeatureClass fc = await SQLiteFDBFeatureClass.Create(this, dataset, new GeometryDef(geometryType.Polygon, sRef, false));
                     ((SQLiteFDBFeatureClass)fc).Name = dataset.DatasetName + "_IMAGE_POLYGONS";
@@ -181,7 +181,7 @@ namespace gView.DataSources.Fdb.SQLite
                     fcRow = fcRows[0];
                 }
 
-                if (!TableExists("FC_" + fcRow["Name"].ToString()))
+                if (!await TableExists("FC_" + fcRow["Name"].ToString()))
                     continue;
                 //if (_seVersion != 0)
                 //{
@@ -821,13 +821,13 @@ namespace gView.DataSources.Fdb.SQLite
         }
         async private Task AddTreeNodes()
         {
-            lock (thisLock)
+            //lock (thisLock)
             {
                 foreach (string fcName in _addTreeNodes.Keys)
                 {
                     foreach (long nid in _addTreeNodes[fcName])
                     {
-                        base.AddTreeNode(fcName, nid).Wait();
+                        await base.AddTreeNode(fcName, nid);
                     }
                 }
                 _addTreeNodes.Clear();
@@ -1089,13 +1089,13 @@ namespace gView.DataSources.Fdb.SQLite
             }
         }
 
-        protected override bool TableExists(string tableName)
+        async protected override Task<bool> TableExists(string tableName)
         {
             if (_conn == null) return false;
 
             using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
             {
-                connection.Open();
+                await connection.OpenAsync();
                 DataTable tables = connection.GetSchema("Tables");
                 return tables.Select("TABLE_NAME='" + tableName + "'").Length == 1;
             }

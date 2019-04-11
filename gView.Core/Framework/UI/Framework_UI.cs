@@ -280,10 +280,10 @@ namespace gView.Framework.UI
         List<ITOCElement> Elements { get; }
         List<IWebServiceLayer> VisibleWebServiceLayers { get; }
 
-        global::System.Drawing.Bitmap Legend();
-        global::System.Drawing.Bitmap Legend(ITOCElement element);
-        global::System.Drawing.Bitmap Legend(List<ITOCElement> elements);
-        TocLegendItems LegendSymbol(ITOCElement element);
+        Task<global::System.Drawing.Bitmap> Legend();
+        Task<global::System.Drawing.Bitmap> Legend(ITOCElement element);
+        Task<global::System.Drawing.Bitmap> Legend(List<ITOCElement> elements);
+        Task<TocLegendItems> LegendSymbol(ITOCElement element);
     }
 
     public enum TOCElementType { Layer, Legend, OpenedGroup, ClosedGroup }

@@ -127,7 +127,7 @@ namespace gView.Framework.Carto
 
         void Release();
         Task<bool> Render();
-        global::System.Drawing.Bitmap Legend();
+        Task<global::System.Drawing.Bitmap> Legend();
         global::System.Drawing.Bitmap MapImage { get; }
         bool SaveImage(string path, global::System.Drawing.Imaging.ImageFormat format);
         bool SaveImage(Stream ms, global::System.Drawing.Imaging.ImageFormat format);

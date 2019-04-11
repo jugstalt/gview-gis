@@ -321,7 +321,7 @@ namespace gView.Interoperability.ArcXML
             }
         }
 
-        public string LegendRequest(IServiceMap map, IMapServer mapServer, bool useTOC)
+        async public Task<string> LegendRequest(IServiceMap map, IMapServer mapServer, bool useTOC)
         {
             string ret = "";
             try
@@ -334,7 +334,7 @@ namespace gView.Interoperability.ArcXML
                 map.Display.Limit = Envelope;
                 map.Display.ZoomTo(Envelope);
                 map.BeforeRenderLayers += new BeforeRenderLayersEvent(map_BeforeRenderLayers);
-                System.Drawing.Bitmap legend = map.Legend();
+                System.Drawing.Bitmap legend = await map.Legend();
                 if (legend != null)
                 {
                     string title = map.Name.Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + ".png";
@@ -1109,7 +1109,7 @@ namespace gView.Interoperability.ArcXML
         //    return server[serviceName];
         //}
 
-        public string GETCLIENTSERVICES(IMapServer server, IIdentity identity)
+        async public Task<string> GETCLIENTSERVICES(IMapServer server, IIdentity identity)
         {
             StringBuilder axl = new StringBuilder();
             MemoryStream ms = new MemoryStream();
@@ -1122,7 +1122,7 @@ namespace gView.Interoperability.ArcXML
             xWriter.WriteStartElement("RESPONSE");
             xWriter.WriteStartElement("SERVICES");
 
-            foreach (IMapService map in server.Maps(identity))
+            foreach (IMapService map in await server.Maps(identity))
             {
                 xWriter.WriteStartElement("SERVICE");
                 xWriter.WriteAttributeString("access", "PUBLIC");

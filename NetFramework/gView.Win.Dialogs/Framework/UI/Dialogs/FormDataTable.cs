@@ -11,6 +11,7 @@ using gView.Framework.Data;
 using gView.Framework.system;
 using gView.Framework.Carto;
 using gView.Framework.Geometry;
+using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -765,22 +766,22 @@ namespace gView.Framework.UI.Dialogs
             }
         }
 
-        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        async private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
             if (_dsElement is IFeatureLayer && _dsElement is IFeatureSelection)
             {
-                FormQueryBuilder dlg = new FormQueryBuilder((IFeatureLayer)_dsElement);
+                FormQueryBuilder dlg = await FormQueryBuilder.CreateAsync((IFeatureLayer)_dsElement);
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
                     QueryFilter filter = new QueryFilter();
                     filter.WhereClause = dlg.whereClause;
 
-                    ((IFeatureSelection)_dsElement).Select(filter, dlg.combinationMethod);
+                    await ((IFeatureSelection)_dsElement).Select(filter, dlg.combinationMethod);
                     ((IFeatureSelection)_dsElement).FireSelectionChangedEvent();
 
                     if (_doc != null)
                     {
-                        _doc.FocusMap.RefreshMap(DrawPhase.Selection, null);
+                        await _doc.FocusMap.RefreshMap(DrawPhase.Selection, null);
                     }
                 }
             }
@@ -819,7 +820,7 @@ namespace gView.Framework.UI.Dialogs
 
             #region Events
 
-            private void RelationTreeNode_Click(object sender, EventArgs e)
+            async private void RelationTreeNode_Click(object sender, EventArgs e)
             {
                 IFeatureSelection target = (this.TableRelation.LeftTable == this.DatasetElement ? this.TableRelation.RightTable : this.TableRelation.LeftTable) as IFeatureSelection;
                 if (target == null)
@@ -837,16 +838,16 @@ namespace gView.Framework.UI.Dialogs
                         RowIDFilter filter = new RowIDFilter(((ITableClass)this.DatasetElement.Class).IDFieldName);
                         filter.IDs = selSet.IDs;
                         filter.SubFields = relationField;
-                        ICursor cursor = ((ITableClass)this.DatasetElement.Class).Search(filter).Result;
+                        ICursor cursor = await ((ITableClass)this.DatasetElement.Class).Search(filter);
 
                         IRow row = null;
-                        while ((row = Next(cursor)) != null)
+                        while ((row = await Next(cursor)) != null)
                         {
                             object val = row[relationField];
                             if (val == null) continue;
 
                             IQueryFilter selFilter = this.TableRelation.LeftTable == this.DatasetElement ? this.TableRelation.GetRightFilter("*", val) : this.TableRelation.GetLeftFilter("*", val);
-                            target.Select(selFilter, CombinationMethod.Union);
+                            await target.Select(selFilter, CombinationMethod.Union);
                         }
                     }
                 }
@@ -855,7 +856,7 @@ namespace gView.Framework.UI.Dialogs
 
                 if (_mapDocument != null && _mapDocument.Application is IMapApplication)
                 {
-                    ((IMapApplication)_mapDocument.Application).RefreshActiveMap(DrawPhase.Selection);
+                    await ((IMapApplication)_mapDocument.Application).RefreshActiveMap(DrawPhase.Selection);
                 }
             }
 
@@ -863,12 +864,12 @@ namespace gView.Framework.UI.Dialogs
 
             #region Helper
 
-            private IRow Next(ICursor cursor)
+            async private Task<IRow> Next(ICursor cursor)
             {
                 if (cursor is IFeatureCursor)
-                    return ((IFeatureCursor)cursor).NextFeature().Result;
+                    return await ((IFeatureCursor)cursor).NextFeature();
                 if (cursor is IRowCursor)
-                    return ((IRowCursor)cursor).NextRow().Result;
+                    return await ((IRowCursor)cursor).NextRow();
 
                 return null;
             }
@@ -932,6 +933,7 @@ namespace gView.Framework.UI.Dialogs
             get { return _fTab != null ? _fTab.Table : null; }
         }
 
+        // Thread
         public void Start(object filter)
         {
             CleanUp();
@@ -939,9 +941,9 @@ namespace gView.Framework.UI.Dialogs
             if (_class is IFeatureClass)
             {
                 if (filter is List<int>)
-                    ProcessFeatureClassByID(_class as IFeatureClass, filter as List<int>);
+                    ProcessFeatureClassByID(_class as IFeatureClass, filter as List<int>).Wait();
                 else
-                    ProcessFeatureClass(_class as IFeatureClass, filter as IQueryFilter);
+                    ProcessFeatureClass(_class as IFeatureClass, filter as IQueryFilter).Wait();
             }
             else if (_class is ITableClass)
                 ProcessTableClass(_class as ITableClass, filter as IQueryFilter); ;
@@ -973,7 +975,7 @@ namespace gView.Framework.UI.Dialogs
             }
         }
 
-        private void ProcessFeatureClassByID(IFeatureClass fc, List<int> ids)
+        async private Task ProcessFeatureClassByID(IFeatureClass fc, List<int> ids)
         {
             CleanUp();
             if (fc != null)
@@ -981,7 +983,7 @@ namespace gView.Framework.UI.Dialogs
                 _fTab = new FeatureTable(null, fc.Fields, fc);
 
                 //if (Progress != null) Progress();
-                _fTab.Fill(ids, _cancelTracker);
+                await _fTab.Fill(ids, _cancelTracker);
 
                 if (!_fTab.hasMore ||
                     (_cancelTracker != null && !_cancelTracker.Continue && !_cancelTracker.Paused))
@@ -1001,12 +1003,12 @@ namespace gView.Framework.UI.Dialogs
             }
         }
 
-        private void ProcessFeatureClass(IFeatureClass fc,IQueryFilter filter)
+        async private Task ProcessFeatureClass(IFeatureClass fc,IQueryFilter filter)
         {
             CleanUp();
             if (fc != null)
             {
-                _cursor = fc.Search(filter).Result;
+                _cursor = await fc.Search(filter);
                 if (_cursor == null) return;
 
                 _fTab = new FeatureTable(_cursor as IFeatureCursor, fc.Fields, fc);
@@ -1014,7 +1016,7 @@ namespace gView.Framework.UI.Dialogs
 
                 try
                 {
-                    _fTab.Fill(_firstFillMaximum, _cancelTracker);
+                    await _fTab.Fill(_firstFillMaximum, _cancelTracker);
                 }
                 catch (System.Threading.ThreadAbortException)
                 {

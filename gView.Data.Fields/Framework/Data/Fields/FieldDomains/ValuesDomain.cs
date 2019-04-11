@@ -18,21 +18,21 @@ namespace gView.Framework.Data.Fields.FieldDomains
 
         #region IValuesFieldDomain Member
 
-        public object[] Values
+        public Task<object[]> ValuesAsync()
         {
-            get { return _values.ToArray(); }
-            set
-            {
-                _values.Clear();
-                if (value == null) return;
+            return Task.FromResult<object[]>(_values.ToArray());
+        }
+        public void SetValues(object[] value)
+        {
+            _values.Clear();
+            if (value == null) return;
 
-                foreach (object o in value)
-                {
-                    _values.Add(o);
-                }
+            foreach (object o in value)
+            {
+                _values.Add(o);
             }
         }
-
+        
         #endregion
 
         #region IFieldDomain Member
@@ -115,38 +115,35 @@ namespace gView.Framework.Data.Fields.FieldDomains
 
         #region IValuesFieldDomain Member
 
-        public object[] Values
+        async public Task<object[]> ValuesAsync()
         {
-            get
+            if (String.IsNullOrEmpty(_connString))
+                return null;
+
+            try
             {
-                if(String.IsNullOrEmpty(_connString))
-                    return null;
-
-                try
+                using (CommonDbConnection connection = new CommonDbConnection())
                 {
-                    using (CommonDbConnection connection = new CommonDbConnection())
+                    connection.ConnectionString2 = _connString;
+
+                    DataSet ds = new DataSet();
+                    if (!await connection.SQLQuery(ds, _sql, "QUERY"))
                     {
-                        connection.ConnectionString2 = _connString;
-
-                        DataSet ds = new DataSet();
-                        if (!connection.SQLQuery(ds, _sql, "QUERY").Result)
-                        {
-                            return null;
-                        } 
-                        DataTable tab = ds.Tables["QUERY"];
-
-                        object[] values = new object[tab.Rows.Count];
-                        int i=0;
-                        foreach (DataRow row in tab.Rows)
-                            values[i++] = row[0];
-
-                        return values;
+                        return null;
                     }
+                    DataTable tab = ds.Tables["QUERY"];
+
+                    object[] values = new object[tab.Rows.Count];
+                    int i = 0;
+                    foreach (DataRow row in tab.Rows)
+                        values[i++] = row[0];
+
+                    return values;
                 }
-                catch
-                {
-                    return null;
-                }
+            }
+            catch
+            {
+                return null;
             }
         }
 

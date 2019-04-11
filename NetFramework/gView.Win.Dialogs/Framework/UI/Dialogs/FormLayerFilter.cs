@@ -61,11 +61,11 @@ namespace gView.Framework.UI.Dialogs
 
         #endregion
 
-        private void btnQueryBuilder_Click(object sender, EventArgs e)
+        async private void btnQueryBuilder_Click(object sender, EventArgs e)
         {
             if (_layer == null) return;
 
-            FormQueryBuilder dlg = new FormQueryBuilder(_layer);
+            FormQueryBuilder dlg = await FormQueryBuilder.CreateAsync(_layer);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 txtExpression.Text = dlg.whereClause;

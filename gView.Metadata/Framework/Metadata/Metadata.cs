@@ -66,9 +66,9 @@ namespace gView.Framework.Metadata
 
         #region IMetadataProvider Member
 
-        public bool ApplyTo(object Object)
+        public Task<bool> ApplyTo(object Object)
         {
-            return true;
+            return Task.FromResult(true);
         }
 
         public string Name

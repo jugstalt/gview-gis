@@ -174,12 +174,12 @@ namespace gView.Framework.Metadata
 
         #region IMetadataProvider Member
 
-        public bool ApplyTo(object Object)
+        public Task<bool> ApplyTo(object Object)
         {
             if (Object == null)
-                return false;
+                return Task.FromResult(false);
 
-            return Object.GetType().ToString() == "gView.Server.AppCode.ServiceMap";
+            return Task.FromResult(Object.GetType().ToString() == "gView.Server.AppCode.ServiceMap");
         }
 
         public string Name

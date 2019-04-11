@@ -52,13 +52,10 @@ namespace gView.Framework.IO
     public interface IMetadata
     {
         void ReadMetadata(IPersistStream stream);
-        void WriteMetadata(IPersistStream stream);
+        Task WriteMetadata(IPersistStream stream);
 
         IMetadataProvider MetadataProvider(Guid guid);
-        List<IMetadataProvider> Providers
-        {
-            get;
-        }
+        Task<List<IMetadataProvider>> GetProviders();
     }
 
     

@@ -1133,23 +1133,23 @@ namespace gView.Plugins.MapTools.Controls
             _clickNode = null;
         }
 
-        private void toolStripMenuItemSelectByAttributes_Click(object sender, EventArgs e)
+        async private void toolStripMenuItemSelectByAttributes_Click(object sender, EventArgs e)
         {
             if (_contextNode == null) return;
             if (!(_contextNode.Element.Layers[0] is IFeatureLayer)) return;
 
-            FormQueryBuilder dlg = new FormQueryBuilder((IFeatureLayer)_contextNode.Element.Layers[0]);
+            FormQueryBuilder dlg = await FormQueryBuilder.CreateAsync((IFeatureLayer)_contextNode.Element.Layers[0]);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 QueryFilter filter = new QueryFilter();
                 filter.WhereClause = dlg.whereClause;
 
-                ((IFeatureSelection)_contextNode.Element.Layers[0]).Select(filter, dlg.combinationMethod);
+                await ((IFeatureSelection)_contextNode.Element.Layers[0]).Select(filter, dlg.combinationMethod);
                 ((IFeatureSelection)_contextNode.Element.Layers[0]).FireSelectionChangedEvent();
 
                 if (_doc != null)
                 {
-                    _doc.FocusMap.RefreshMap(DrawPhase.Selection, null);
+                    await _doc.FocusMap.RefreshMap(DrawPhase.Selection, null);
                 }
             }
         }
@@ -1174,7 +1174,7 @@ namespace gView.Plugins.MapTools.Controls
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Selection | DrawPhase.Graphics);
         }
 
-        private void toolStripMenuItemZoomToSelection_Click(object sender, EventArgs e)
+        async private void toolStripMenuItemZoomToSelection_Click(object sender, EventArgs e)
         {
             if (_doc == null || _doc.FocusMap == null || _doc.Application == null) return;
 
@@ -1216,11 +1216,11 @@ namespace gView.Plugins.MapTools.Controls
 
                 filter.AddField(fc.ShapeFieldName);
 
-                using (IFeatureCursor cursor = fc.GetFeatures(filter).Result)
+                using (IFeatureCursor cursor = await fc.GetFeatures(filter))
                 {
                     if (cursor == null) continue;
                     IFeature feat;
-                    while ((feat = cursor.NextFeature().Result) != null)
+                    while ((feat = await cursor.NextFeature()) != null)
                     {
                         if (feat.Shape == null) continue;
 
@@ -1249,7 +1249,7 @@ namespace gView.Plugins.MapTools.Controls
                 env.Raise(110.0);
                 _doc.FocusMap.Display.ZoomTo(env);
                 if (_doc.Application is IMapApplication)
-                    ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.All);
+                    await ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.All);
             }
         }
 
@@ -1438,7 +1438,7 @@ namespace gView.Plugins.MapTools.Controls
             chkSelByLoc_AppendBuffer.Enabled = chkSelByLoc_ApplyBuffer.Checked;
         }
 
-        private void btnApplySelByLocation_Click(object sender, EventArgs e)
+        async private void btnApplySelByLocation_Click(object sender, EventArgs e)
         {
             if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null) return;
 
@@ -1471,19 +1471,19 @@ namespace gView.Plugins.MapTools.Controls
                     }
                     filter.AddField(layer.FeatureClass.ShapeFieldName);
                     filter.FeatureSpatialReference = _doc.FocusMap.Display.SpatialReference;
-                    cursor = layer.FeatureClass.GetFeatures(filter).Result;
+                    cursor = await layer.FeatureClass.GetFeatures(filter);
                 }
                 else
                 {
                     QueryFilter filter=new QueryFilter();
                     filter.AddField(layer.FeatureClass.ShapeFieldName);
                     filter.FeatureSpatialReference = _doc.FocusMap.Display.SpatialReference;
-                    cursor = layer.FeatureClass.GetFeatures(filter).Result;
+                    cursor = await layer.FeatureClass.GetFeatures(filter);
                 }
 
                 AggregateGeometry aGeometry = new AggregateGeometry();
                 IFeature feature;
-                while ((feature = cursor.NextFeature().Result) != null)
+                while ((feature = await cursor.NextFeature()) != null)
                 {
                     if (feature.Shape == null) continue;
 
@@ -1510,7 +1510,7 @@ namespace gView.Plugins.MapTools.Controls
                 _tool.SelectByGeometry(_doc.FocusMap, geometry);
 
                 if (_doc.Application is IMapApplication)
-                    ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics | DrawPhase.Selection);
+                    await ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics | DrawPhase.Selection);
             }
             finally
             {

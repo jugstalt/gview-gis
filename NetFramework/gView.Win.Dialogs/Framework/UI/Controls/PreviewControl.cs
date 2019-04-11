@@ -166,14 +166,14 @@ namespace gView.Framework.UI.Controls
                     {
                         mapView1.Map = _map;
                         IFeatureDataset dataset = (IFeatureDataset)instance;
-                        foreach (IDatasetElement element in dataset.Elements().Result)
+                        foreach (IDatasetElement element in await dataset.Elements())
                         {
                             ILayer layer = LayerFactory.Create(element.Class) as ILayer;
                             if (layer == null) continue;
                             _map.AddLayer(layer);
                         }
-                        _map.Display.Limit = dataset.Envelope().Result;
-                        _map.Display.ZoomTo(dataset.Envelope().Result);
+                        _map.Display.Limit = await dataset.Envelope();
+                        _map.Display.ZoomTo(await dataset.Envelope());
                     }
                     else if (instance is Map)
                     {

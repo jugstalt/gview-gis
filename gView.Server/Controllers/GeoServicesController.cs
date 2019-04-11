@@ -47,31 +47,33 @@ namespace gView.Server.Controllers
 
         async public Task<IActionResult> Folder(string id)
         {
-            return await SecureMethodHandler((identity) =>
+            return await SecureMethodHandler(async (identity) =>
             {
                 InternetMapServer.ReloadServices(id, true);
 
-                return Task.FromResult(Result(new JsonServices()
+                List<AgsService> services = new List<AgsService>();
+                foreach (var s in InternetMapServer.mapServices)
+                {
+                    if (s.Type != MapServiceType.Folder &&
+                       s.Folder == id &&
+                       (await s.GetSettingsAsync()).Status == MapServiceStatus.Running &&
+                        await s.HasAnyAccess(identity))
+                    {
+                        services.AddRange(await AgsServices(identity, s));
+                    }
+                }
+
+                return Result(new JsonServices()
                 {
                     CurrentVersion = Version,
                     Folders = InternetMapServer.mapServices
                         .Where(s => s.Type == MapServiceType.Folder && s.Folder == id)
                         .Select(s => s.Name)
                         .Distinct()
-                        .OrderBy(s=>s)
+                        .OrderBy(s => s)
                         .ToArray(),
-                    Services = InternetMapServer.mapServices
-                        .Where(s =>
-                        {
-                            return
-                                s.Type != MapServiceType.Folder &&
-                                s.Folder == id &&
-                                (s.GetSettingsAsync().Result).Status == MapServiceStatus.Running &&
-                                s.HasAnyAccess(identity).Result;
-                        })
-                        .SelectMany((s) => AgsServices(identity, s).Result)
-                        .ToArray()
-                }));
+                    Services = services.ToArray()
+                });
             });
         }
 

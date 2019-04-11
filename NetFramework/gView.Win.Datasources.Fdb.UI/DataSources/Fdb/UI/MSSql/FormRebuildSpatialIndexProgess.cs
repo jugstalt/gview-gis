@@ -40,6 +40,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 this.Close();
         }
 
+        // Thread
         private void Process()
         {
             if (!_fdb.RebuildSpatialIndexDef(_fc.Name, _def, new EventHandler(ProcessEventHandler)).Result)

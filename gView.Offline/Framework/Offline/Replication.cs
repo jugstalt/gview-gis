@@ -21,7 +21,7 @@ namespace gView.Framework.Offline
         public delegate void ReplicationGuidsAppendedEventHandler(Replication sender, int count_appended);
         public event ReplicationGuidsAppendedEventHandler ReplicationGuidsAppended;
 
-        static public bool CreateRelicationModel(IFeatureDatabaseReplication db)
+        async static public Task<bool> CreateRelicationModel(IFeatureDatabaseReplication db)
         {
             if (db == null)
             {
@@ -33,7 +33,7 @@ namespace gView.Framework.Offline
             fields.Add(new Field("FC_ID", FieldType.integer));
             fields.Add(new Field("OBJECT_GUID_FIELDNAME", FieldType.String, 255));
             fields.Add(new Field("PARENT_SESSION_GUID", FieldType.guid));
-            if (!db.CreateIfNotExists("GV_CHECKOUT_OBJECT_GUID", fields))
+            if (!await db.CreateIfNotExists("GV_CHECKOUT_OBJECT_GUID", fields))
             {
                 throw new Exception(db.LastErrorMessage);
             }
@@ -55,7 +55,7 @@ namespace gView.Framework.Offline
             fields.Add(new Field("GENERATION", FieldType.integer));
             fields.Add(new Field("REPLICATION_LOCKSTATE", FieldType.integer));
             fields.Add(new Field("REPLICATION_STATE", FieldType.integer));
-            if (!db.CreateIfNotExists("GV_CHECKOUT_SESSIONS", fields))
+            if (!await db.CreateIfNotExists("GV_CHECKOUT_SESSIONS", fields))
             {
                 throw new Exception(db.LastErrorMessage);
             }
@@ -69,7 +69,7 @@ namespace gView.Framework.Offline
             fields.Add(new Field("SQL_STATEMENT", FieldType.integer));
             fields.Add(new Field("REPLICATION_STATE", FieldType.integer));
             fields.Add(new Field("TRANSACTION_ID", FieldType.guid));
-            if (!db.CreateIfNotExists("GV_CHECKOUT_DIFFERENCE", fields))
+            if (!await db.CreateIfNotExists("GV_CHECKOUT_DIFFERENCE", fields))
             {
                 throw new Exception(db.LastErrorMessage);
             }
@@ -86,7 +86,7 @@ namespace gView.Framework.Offline
             fields.Add(new Field("CONFLICT_USER", FieldType.String, 255));
             fields.Add(new Field("CONFLICT_CHECKOUT_NAME", FieldType.String, 255));
             fields.Add(new Field("CONFLICT_SQL_STATEMENT", FieldType.integer));
-            if (!db.CreateIfNotExists("GV_CHECKOUT_CONFLICTS", fields))
+            if (!await db.CreateIfNotExists("GV_CHECKOUT_CONFLICTS", fields))
             {
                 throw new Exception(db.LastErrorMessage);
             }
@@ -98,7 +98,7 @@ namespace gView.Framework.Offline
             fields.Add(new Field("REPLICATION_LOCK", FieldType.integer));
             fields.Add(new Field("CHECKOUT_GUID", FieldType.guid));
             fields.Add(new Field("REPLICATION_STATE", FieldType.integer));
-            if (!db.CreateIfNotExists("GV_CHECKOUT_LOCKS", fields))
+            if (!await db.CreateIfNotExists("GV_CHECKOUT_LOCKS", fields))
             {
                 throw new Exception(db.LastErrorMessage);
             }
@@ -112,7 +112,7 @@ namespace gView.Framework.Offline
             try
             {
                 int fc_id = await db.GetFeatureClassID(fc.Name);
-                if (!CreateRelicationModel(db))
+                if (!await CreateRelicationModel(db))
                     return (false, errMsg);
 
                 if (!await db.CreateObjectGuidColumn(fc.Name, fieldName))
@@ -294,9 +294,9 @@ namespace gView.Framework.Offline
                 throw new Exception("Can't determine source featureclass generation...");
             }
 
-            if (!CreateRelicationModel(sourceDB))
+            if (!await CreateRelicationModel(sourceDB))
                 return false;
-            if (!CreateRelicationModel(destDB))
+            if (!await CreateRelicationModel(destDB))
                 return false;
 
             int sourceFc_id = await sourceDB.GetFeatureClassID(sourceFC.Name);
@@ -373,7 +373,7 @@ namespace gView.Framework.Offline
                 !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-            if (!CreateRelicationModel(db))
+            if (!await CreateRelicationModel(db))
             {
                 return false;
             }
@@ -415,9 +415,9 @@ namespace gView.Framework.Offline
                     throw new Exception("Can't determine source featureclass generation...");
                 }
 
-                if (!CreateRelicationModel(sourceDB))
+                if (!await CreateRelicationModel(sourceDB))
                     return false;
-                if (!CreateRelicationModel(destDB))
+                if (!await CreateRelicationModel(destDB))
                     return false;
 
                 int sourceFc_id = await sourceDB.GetFeatureClassID(sourceFC.Name);
@@ -1937,7 +1937,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 {
                     throw new Exception("Can't checkin to parent database...");
                 }
-                if (!CreateRelicationModel(parentDb))
+                if (!await CreateRelicationModel(parentDb))
                 {
                     return false;
                 }

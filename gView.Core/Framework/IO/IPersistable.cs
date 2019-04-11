@@ -8,7 +8,7 @@ namespace gView.Framework.IO
 {
     public interface IMetadataProvider : IPersistable
     {
-        bool ApplyTo(object Object);
+       Task<bool> ApplyTo(object Object);
         string Name { get; }
     }
 }

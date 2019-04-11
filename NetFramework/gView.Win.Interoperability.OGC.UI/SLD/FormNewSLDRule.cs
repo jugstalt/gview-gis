@@ -76,11 +76,11 @@ namespace gView.Interoperability.OGC.UI.SLD
         }
 
         #region Tab Filter
-        private void btnQueryBuilder_Click(object sender, EventArgs e)
+        async private void btnQueryBuilder_Click(object sender, EventArgs e)
         {
             if (_rule == null || _layer == null) return;
 
-            FormQueryBuilder dlg = new FormQueryBuilder(_layer);
+            FormQueryBuilder dlg = await FormQueryBuilder.CreateAsync(_layer);
 
             if (dlg.ShowDialog() == DialogResult.OK)
             {
@@ -132,7 +132,7 @@ namespace gView.Interoperability.OGC.UI.SLD
             get { return _rule; }
         }
 
-        private void btnOK_Click(object sender, EventArgs e)
+        async private void btnOK_Click(object sender, EventArgs e)
         {
             if (_rule != null)
             {
@@ -150,12 +150,12 @@ namespace gView.Interoperability.OGC.UI.SLD
                     if (_queryFilter == null)
                         _queryFilter = new QueryFilter();
                     _queryFilter.WhereClause = txtQuery.Text;
-                    _rule.Filter = new gView.Framework.OGC.WFS.Filter(_layer.FeatureClass, _queryFilter, Framework.Geometry.GmlVersion.v1);
+                    _rule.Filter = await gView.Framework.OGC.WFS.Filter.CreataAsync(_layer.FeatureClass, _queryFilter, Framework.Geometry.GmlVersion.v1);
                 }
                 else if (_queryFilter != null)
                 {
                     _queryFilter.WhereClause = txtQuery.Text;
-                    _rule.Filter = new gView.Framework.OGC.WFS.Filter(_layer.FeatureClass, _queryFilter, Framework.Geometry.GmlVersion.v1);
+                    _rule.Filter = await gView.Framework.OGC.WFS.Filter.CreataAsync(_layer.FeatureClass, _queryFilter, Framework.Geometry.GmlVersion.v1);
                 }
 
                 _rule.MinScale = (double)txtMinScale.Value;

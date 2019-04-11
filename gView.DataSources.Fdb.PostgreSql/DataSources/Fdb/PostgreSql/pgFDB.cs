@@ -395,7 +395,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
-        protected override bool TableExists(string tableName)
+        async protected override Task<bool> TableExists(string tableName)
         {
             if (_conn == null) return false;
 
@@ -422,7 +422,7 @@ AND pg_catalog.pg_table_is_visible(c.oid)
 FROM pg_catalog.pg_class c
 WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
-                int exists = Convert.ToInt32(_conn.QuerySingleField(sql, "colcount").Result);
+                int exists = Convert.ToInt32(await _conn.QuerySingleField(sql, "colcount"));
 
                 return exists > 0;
             }
@@ -432,13 +432,13 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             }
         }
 
-        public override List<string> DatabaseTables()
+        async public override Task<List<string>> DatabaseTables()
         {
             if (_conn == null) return new List<string>();
 
             try
             {
-                DataTable tab = _conn.Select("relname", "pg_catalog.pg_class", "relkind='r'").Result;
+                DataTable tab = await _conn.Select("relname", "pg_catalog.pg_class", "relkind='r'");
                 if (tab != null)
                 {
                     List<string> tables = new List<string>();
@@ -461,13 +461,13 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
         private List<string> _systemViews = new List<string>(new string[] { "pg_roles", "pg_shadow", "pg_group", "pg_user", "pg_rules", "pg_views", "pg_tables", "pg_indexes", "pg_stats", "pg_locks", "pg_cursors", "pg_available_extensions", "pg_available_extension_versions", "pg_prepared_xacts", "pg_prepared_statements", "pg_settings", "pg_timezone_abbrevs", "pg_timezone_names", "pg_stat_all_tables", "pg_stat_xact_all_tables", "pg_stat_sys_tables", "pg_stat_xact_sys_tables", "pg_stat_user_tables", "pg_stat_xact_user_tables", "pg_statio_all_tables", "pg_statio_sys_tables", "pg_statio_user_tables", "pg_stat_all_indexes", "pg_stat_sys_indexes", "pg_stat_user_indexes", "pg_statio_all_indexes", "pg_statio_sys_indexes", "pg_statio_user_indexes", "pg_statio_all_sequences", "pg_statio_sys_sequences", "pg_statio_user_sequences", "pg_stat_database_conflicts", "pg_stat_user_functions", "pg_stat_xact_user_functions", "pg_stat_bgwriter", "pg_user_mappings", "pg_seclabels", "pg_stat_activity", "pg_stat_replication", "pg_stat_database", "information_schema_catalog_name", "applicable_roles", "administrable_role_authorizations", "attributes", "character_sets", "check_constraint_routine_usage", "check_constraints", "collations", "collation_character_set_applicability", "column_domain_usage", "column_privileges", "column_udt_usage", "columns", "constraint_column_usage", "constraint_table_usage", "domain_constraints", "domain_udt_usage", "domains", "enabled_roles", "key_column_usage", "parameters", "referential_constraints", "role_column_grants", "routine_privileges", "role_routine_grants", "routines", "schemata", "sequences", "table_constraints", "table_privileges", "role_table_grants", "tables", "triggered_update_columns", "triggers", "usage_privileges", "role_usage_grants", "view_column_usage", "view_routine_usage", "view_table_usage", "views", "data_type_privileges", "element_types", "_pg_foreign_data_wrappers", "foreign_data_wrapper_options", "foreign_data_wrappers", "_pg_foreign_servers", "foreign_server_options", "foreign_servers", "_pg_foreign_tables", "foreign_table_options", "foreign_tables", "_pg_user_mappings", "user_mapping_options", "user_mappings" });
         #endregion
 
-        public override List<string> DatabaseViews()
+        async public override Task<List<string>> DatabaseViews()
         {
             if (_conn == null) return new List<string>();
 
             try
             {
-                DataTable tab = _conn.Select("relname", "pg_catalog.pg_class", "relkind='v'").Result;
+                DataTable tab = await _conn.Select("relname", "pg_catalog.pg_class", "relkind='v'");
                 if (tab != null)
                 {
                     List<string> views = new List<string>();
@@ -487,14 +487,14 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             return new List<string>();
         }
 
-        protected bool CheckTablePrivilege(string tableName)
+        async protected Task<bool> CheckTablePrivilege(string tableName)
         {
             if (_conn == null) return false;
 
             try
             {
                 string sql = "SELECT has_table_privilege('" + tableName + "', 'select') as p";
-                return Convert.ToBoolean(_conn.QuerySingleField(sql, "p").Result);
+                return Convert.ToBoolean(await _conn.QuerySingleField(sql, "p"));
             }
             catch
             {
@@ -669,8 +669,8 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             string imageSpace = isDatasetImageResult.imageSpace;
             if (isDatasetImageResult.isImageDataset)
             {
-                if (TableExists("FC_" + dataset.DatasetName + "_IMAGE_POLYGONS") &&
-                    CheckTablePrivilege(FcTableName(dataset.DatasetName + "_IMAGE_POLYGONS")))
+                if (await TableExists("FC_" + dataset.DatasetName + "_IMAGE_POLYGONS") &&
+                    await CheckTablePrivilege(FcTableName(dataset.DatasetName + "_IMAGE_POLYGONS")))
                 {
                     IFeatureClass fc = await pgFeatureClass.Create(this, dataset, new GeometryDef(geometryType.Polygon, sRef, false));
                     ((pgFeatureClass)fc).Name = dataset.DatasetName + "_IMAGE_POLYGONS";
@@ -736,8 +736,8 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     fcRow = fcRows[0];
                 }
 
-                if (!TableExists(FcTableName(fcRow["name"].ToString())) ||
-                    !CheckTablePrivilege(FcTableName(fcRow["name"].ToString())))
+                if (!await TableExists(FcTableName(fcRow["name"].ToString())) ||
+                    !await CheckTablePrivilege(FcTableName(fcRow["name"].ToString())))
                     continue;
                 //if (_seVersion != 0)
                 //{

@@ -6,12 +6,13 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb
 {
     public class FdbDataModel
     {
-        static public bool UpdateLinkedFcDatatables(AccessFDB fdb)
+        async static public Task<bool> UpdateLinkedFcDatatables(AccessFDB fdb)
         {
             try
             {
@@ -44,7 +45,7 @@ namespace gView.DataSources.Fdb
                     fields.Add(new Field("Plugin", FieldType.guid));
                     fields.Add(new Field("Connection", FieldType.String, 4000));
 
-                    if (!fdb.CreateIfNotExists("FDB_LinkedConnections", fields))
+                    if (!await fdb.CreateIfNotExists("FDB_LinkedConnections", fields))
                         throw new Exception("Can't create 'FDB_LinkedConnections':" + fdb.LastErrorMessage);
                     #endregion
                 }

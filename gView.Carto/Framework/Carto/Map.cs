@@ -856,9 +856,10 @@ namespace gView.Framework.Carto
                         if (!element.Visible) continue;
                         ServiceRequestThread srt = new ServiceRequestThread(this, element, webServiceOrder++);
                         srt.finish += new ServiceRequestThread.RequestThreadFinished(MapRequestThread_finished);
-                        Thread thread = new Thread(new ThreadStart(srt.ImageRequest));
+                        //Thread thread = new Thread(new ThreadStart(srt.ImageRequest));
                         m_imageMerger.max++;
-                        thread.Start();
+                        //thread.Start();
+                        var task = srt.ImageRequest();  // start the task...
                     }
                     #endregion
 
@@ -1010,12 +1011,13 @@ namespace gView.Framework.Carto
                     #endregion
 
                     #region Waiting for Webservices
+
                     if (cancelTracker.Continue)
                     {
                         if (DrawingLayer != null && m_imageMerger.max > 0) DrawingLayer("...Waiting for WebServices...");
                         while (m_imageMerger.Count < m_imageMerger.max)
                         {
-                            Thread.Sleep(100);
+                            await Task.Delay(100);
                         }
                     }
                     if (_drawScaleBar)
@@ -1033,11 +1035,11 @@ namespace gView.Framework.Carto
                             (this is IServiceMap) &&
                             ((IServiceMap)this).MapServer != null)
                         {
-                            ((IServiceMap)this).MapServer.LogAsync(
+                            await ((IServiceMap)this).MapServer.LogAsync(
                                 this.Name,
                                 "Image Merger:",
                                 loggingMethod.error,
-                                m_imageMerger.LastErrorMessage).Wait();
+                                m_imageMerger.LastErrorMessage);
                         }
                         m_imageMerger.Clear();
                     }
@@ -1350,11 +1352,11 @@ namespace gView.Framework.Carto
         {
             if (rLayer is ILayer && ((ILayer)rLayer).Class is IRasterClass)
             {
-                ((IRasterClass)((ILayer)rLayer).Class).BeginPaint(this.Display, cancelTracker);
+                await ((IRasterClass)((ILayer)rLayer).Class).BeginPaint(this.Display, cancelTracker);
             }
             else if (rLayer is IRasterClass)
             {
-                ((IRasterClass)rLayer).BeginPaint(this.Display, cancelTracker);
+                await ((IRasterClass)rLayer).BeginPaint(this.Display, cancelTracker);
             }
             string filterClause = String.Empty;
             if (rootLayer is IRasterCatalogLayer)
@@ -1521,7 +1523,7 @@ namespace gView.Framework.Carto
             {
                 if (dataset.State != DatasetState.opened)
                 {
-                    dataset.Open().Wait();
+                    await dataset.Open();
                 }
                 if(!String.IsNullOrWhiteSpace(dataset.LastErrorMessage))
                 {
@@ -2784,7 +2786,7 @@ namespace gView.Framework.Carto
         }
 
         // Thread
-        public void ImageRequest()
+        async public Task ImageRequest()
         {
             _startTime = DateTime.Now;
 
@@ -2795,7 +2797,7 @@ namespace gView.Framework.Carto
                 return;
             }
 
-            if (_layer.WebServiceClass.MapRequest(_map.Display).Result)
+            if (await _layer.WebServiceClass.MapRequest(_map.Display))
             {
                 _finishTime = DateTime.Now;
                 if (finish != null) finish(this, true, _layer.WebServiceClass.Image, _order);
@@ -3146,6 +3148,7 @@ namespace gView.Framework.Carto
             }
         }
 
+        // Thread
         public void Render()
         {
             try
@@ -3173,7 +3176,7 @@ namespace gView.Framework.Carto
                 }
                 */
 
-                _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker);
+                _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker).Wait();
                 if (_layer.RasterClass.Bitmap == null) return;
 
                 //System.Windows.Forms.MessageBox.Show("begin");

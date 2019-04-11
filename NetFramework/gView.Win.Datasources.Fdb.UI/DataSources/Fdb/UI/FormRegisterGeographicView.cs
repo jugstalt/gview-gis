@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using gView.Framework.Data;
 using gView.DataSources.Fdb.MSAccess;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.UI
 {
@@ -15,17 +16,24 @@ namespace gView.DataSources.Fdb.UI
     {
         private IFeatureDataset _dataset;
 
-        public FormRegisterGeographicView(IFeatureDataset dataset)
+        private FormRegisterGeographicView()
         {
             InitializeComponent();
+        }
 
-            _dataset = dataset;
-            MakeGui();
+        async static public Task<FormRegisterGeographicView> CreateAsync(IFeatureDataset dataset)
+        {
+            var dlg = new FormRegisterGeographicView();
+
+            dlg._dataset = dataset;
+            await dlg.MakeGui();
+
+            return dlg;
         }
 
         #region Gui
 
-        private void MakeGui()
+        async private Task MakeGui()
         {
             cmbDatabaseViews.Items.Clear();
             cmbRefFeatureClass.Items.Clear();
@@ -33,7 +41,7 @@ namespace gView.DataSources.Fdb.UI
             if (_dataset == null)
                 return;
 
-            foreach (IDatasetElement element in _dataset.Elements().Result)
+            foreach (IDatasetElement element in await _dataset.Elements())
             {
                 if (element.Class is IFeatureClass)
                 {
@@ -46,7 +54,7 @@ namespace gView.DataSources.Fdb.UI
             AccessFDB fdb = _dataset.Database as AccessFDB;
             if (fdb != null)
             {
-                foreach (string view in fdb.DatabaseViews())
+                foreach (string view in await fdb.DatabaseViews())
                 {
                     IFields fields = fdb.TableFields(view);
                     if (fields == null ||

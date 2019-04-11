@@ -785,7 +785,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 return -1;
             }
 
-            FdbDataModel.UpdateLinkedFcDatatables(this);
+            await FdbDataModel.UpdateLinkedFcDatatables(this);
 
             IDataset linkedDs = linkedFc.Dataset;
 
@@ -881,12 +881,12 @@ namespace gView.DataSources.Fdb.MSAccess
             }
             if (!_conn.dropTable(FcsiTableName(fcName)))
             {
-                if (TableExists(TableName("FCSI_" + fcName))) // event. war Tab. schon gelöscht!!! Hier nicht DBSchema vor Tabelle angeben
+                if (await TableExists(TableName("FCSI_" + fcName))) // event. war Tab. schon gelöscht!!! Hier nicht DBSchema vor Tabelle angeben
                     _errMsg = _conn.errorMessage;
             }
             if (!_conn.dropTable(FcTableName(fcName)))
             {
-                if (TableExists(TableName("FC_" + fcName))) // event. war Tab. schon gelöscht!!! Hier nicht DBSchema vor Tabelle angeben
+                if (await TableExists(TableName("FC_" + fcName))) // event. war Tab. schon gelöscht!!! Hier nicht DBSchema vor Tabelle angeben
                 {
                     _errMsg += "\n" + _conn.errorMessage;
                     return false;
@@ -1282,7 +1282,7 @@ namespace gView.DataSources.Fdb.MSAccess
             bool isNetwork = ((geometryType)tab.Rows[0]["GeometryType"] == geometryType.Network);
             int fcId = Convert.ToInt32(tab.Rows[0]["ID"]);
             // Beim Umbennenen Schema für Datenbank nicht zum Tabellennamen hinzufügen
-            if (TableExists("FCSI_" + FCName))  // Gibts zB nicht bei Sql2008 GEOMETRY; TableExists...DbSchema nicht angeben
+            if (await TableExists("FCSI_" + FCName))  // Gibts zB nicht bei Sql2008 GEOMETRY; TableExists...DbSchema nicht angeben
             {
                 if (!_conn.RenameTable(FcsiTableName(FCName), "FCSI_" + newFCName))
                 {
@@ -3427,12 +3427,9 @@ namespace gView.DataSources.Fdb.MSAccess
             catch { }
         }
 
-        public bool IsValidAccessFDB
+        async public Task<bool> IsValidAccessFDB()
         {
-            get
-            {
-                return TableExists("FDB_Datasets");
-            }
+            return await TableExists("FDB_Datasets");
         }
 
         /*
@@ -3766,23 +3763,23 @@ namespace gView.DataSources.Fdb.MSAccess
             if (TableAltered != null) TableAltered(table);
         }
 
-        abstract protected bool TableExists(string tableName);
+        abstract protected Task<bool> TableExists(string tableName);
 
-        virtual public List<string> DatabaseTables()
+        virtual public Task<List<string>> DatabaseTables()
         {
-            return new List<string>();
+            return Task.FromResult(new List<string>());
         }
-        virtual public List<string> DatabaseViews()
+        virtual public Task<List<string>> DatabaseViews()
         {
-            return new List<string>();
+            return Task.FromResult(new List<string>());
         }
 
 
         #region ICheckoutableDatabase Member
 
-        virtual public bool CreateIfNotExists(string tableName, IFields fields)
+        async virtual public Task<bool> CreateIfNotExists(string tableName, IFields fields)
         {
-            if (TableExists(tableName)) return true;
+            if (await TableExists(tableName)) return true;
 
             return CreateTable(tableName, fields, false);
         }

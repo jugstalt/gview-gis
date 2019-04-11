@@ -295,7 +295,7 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
                 {
                     case "WMS":
                     case "WMS_WFS":
-                        if (dataset.Elements().Result.Count == 0)
+                        if ((await dataset.Elements()).Count == 0)
                         {
                             dataset.Dispose();
                             return null;

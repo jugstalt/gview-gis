@@ -35,7 +35,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             _gui_worker = new BackgroundWorker();
             _gui_worker.WorkerSupportsCancellation = true;
 
-            _gui_worker.DoWork += new DoWorkEventHandler(worker_DoWork);
+            _gui_worker.DoWork += new DoWorkEventHandler(worker_DoWorkRun);
             //_gui_worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(worker_RunWorkerCompleted);
         }
 
@@ -151,7 +151,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     // Workerthread ausgeführt wird...
                     // funzt nur bei SQL Server!!
                     //
-                    worker_DoWork(_gui_worker, new DoWorkEventArgs(await layer.ImageList()));
+                    await worker_DoWork(_gui_worker, new DoWorkEventArgs(await layer.ImageList()));
                 }
                 else if (instatnce is pgImageCatalogClass)
                 {
@@ -187,13 +187,17 @@ namespace gView.DataSources.Fdb.UI.MSSql
         }
 
         private bool _cancelWorker = false;
-        private void worker_DoWork(object sender, DoWorkEventArgs e)
+        async private void worker_DoWorkRun(object sender, DoWorkEventArgs e)
+        {
+            await worker_DoWork(sender, e);
+        }
+        async private Task worker_DoWork(object sender, DoWorkEventArgs e)
         {
             if (!(e.Argument is IFeatureCursor)) return;
 
             _cursor = (IFeatureCursor)e.Argument;
             IFeature row;
-            while ((row = _cursor.NextFeature().Result) != null)
+            while ((row = await _cursor.NextFeature()) != null)
             {
                 row.CaseSensitivFieldnameMatching = false;  // sollte auch pgSQL funktionieren
 

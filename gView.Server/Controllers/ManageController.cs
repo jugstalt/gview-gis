@@ -82,7 +82,7 @@ namespace gView.Server.Controllers
             });
         }
 
-        public IActionResult Services(string folder)
+        async public Task<IActionResult> Services(string folder)
         {
             folder = folder ?? String.Empty;
             InternetMapServer.ReloadServices(folder, true);
@@ -96,7 +96,7 @@ namespace gView.Server.Controllers
                         .Where(s => s.Type != MapServiceType.Folder &&
                                     s.Folder == folder)
                         .Select(async s => MapService2Json(s, await s.GetSettingsAsync()))
-                        .Select(t => t.Result)
+                        .Select(async t => await t)
                         .ToArray()
                 });
             });

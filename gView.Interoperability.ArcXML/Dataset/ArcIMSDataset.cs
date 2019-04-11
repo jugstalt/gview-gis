@@ -176,7 +176,7 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         #region IRequestDependentDataset Member
 
-        public Task<bool> Open(IServiceRequestContext context)
+        async public Task<bool> Open(IServiceRequestContext context)
         {
             if (_class == null) _class = new ArcIMSClass(this);
 
@@ -257,7 +257,7 @@ namespace gView.Interoperability.ArcXML.Dataset
                     IWebServiceTheme theme;
                     if (layerNode.Attributes["type"] != null && layerNode.Attributes["type"].Value == "featureclass")
                     {
-                        themeClass = new ArcIMSThemeFeatureClass(this, layerNode.Attributes["id"].Value);
+                        themeClass = await ArcIMSThemeFeatureClass.CreateAsync(this, layerNode.Attributes["id"].Value);
                         ((ArcIMSThemeFeatureClass)themeClass).Name = layerNode.Attributes["name"] != null ? layerNode.Attributes["name"].Value : layerNode.Attributes["id"].Value;
                         ((ArcIMSThemeFeatureClass)themeClass).fieldsFromAXL = layerNode.InnerXml;
                         ((ArcIMSThemeFeatureClass)themeClass).SpatialReference = _sRef;
@@ -315,14 +315,14 @@ namespace gView.Interoperability.ArcXML.Dataset
                     _themes.Add(theme);
                 }
                 _state = DatasetState.opened;
-                return Task.FromResult(true);
+                return true;
             }
             catch (Exception ex)
             {
                 _state = DatasetState.unknown;
                 _errMsg = ex.Message;
                 ArcIMSClass.ErrorLog(context, "Open Dataset", server, service, ex);
-                return Task.FromResult(false);
+                return false;
             }
         }
 

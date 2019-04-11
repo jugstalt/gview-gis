@@ -129,7 +129,7 @@ namespace gView.DataSources.Fdb.MSSql
             }
         }
 
-        public void BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
 
         }
@@ -783,7 +783,7 @@ namespace gView.DataSources.Fdb.MSSql
                         }
                         if (level == 0 && levels > 0) level = 1;
 
-                        DataTable tab = _layer._fdb.Select("ID,SHAPE", _layer._dsname + "_IMAGE_DATA", "IMAGE_ID=" + feature.OID + " AND LEV=" + level);
+                        DataTable tab = await _layer._fdb.Select("ID,SHAPE", _layer._dsname + "_IMAGE_DATA", "IMAGE_ID=" + feature.OID + " AND LEV=" + level);
                         if (tab == null) continue;
 
                         foreach (DataRow row in tab.Rows)
@@ -891,12 +891,12 @@ namespace gView.DataSources.Fdb.MSSql
         }
 
         System.Drawing.Bitmap _bm = null;
-        public void BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
             if (_fdb == null) return;
             try
             {
-                DataTable tab = _fdb._conn.Select("IMAGE,X,Y,dx1,dx2,dy1,dy2", _dsname + "_IMAGE_DATA", "ID=" + _ID).Result;
+                DataTable tab = await _fdb._conn.Select("IMAGE,X,Y,dx1,dx2,dy1,dy2", _dsname + "_IMAGE_DATA", "ID=" + _ID);
                 if (tab == null) return;
                 if (tab.Rows.Count != 1) return;
                 DataRow row = tab.Rows[0];

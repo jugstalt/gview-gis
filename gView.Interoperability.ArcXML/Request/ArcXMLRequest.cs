@@ -63,7 +63,7 @@ namespace gView.Interoperability.ArcXML
                     await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request, "AXL REQUEST: GETCLIENTSERVICES");
                     AXL response = new AXL("ARCXML", "1.1");
 
-                    context.ServiceRequest.Response = response.GETCLIENTSERVICES(_mapServer, context.ServiceRequest.Identity);
+                    context.ServiceRequest.Response = await response.GETCLIENTSERVICES(_mapServer, context.ServiceRequest.Identity);
                     await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request_detail, context.ServiceRequest.Response);
 
                     return;
@@ -326,7 +326,7 @@ namespace gView.Interoperability.ArcXML
                     XmlNode legend = properties.SelectSingleNode("LEGEND");
                     if (legend == null) return;
 
-                    serviceRequest.Response = getImage.LegendRequest(map, _mapServer, _useTOC);
+                    serviceRequest.Response = await getImage.LegendRequest(map, _mapServer, _useTOC);
                 }
                 else
                 {

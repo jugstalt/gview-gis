@@ -418,7 +418,7 @@ namespace gView.Framework.Data
 
         ISpatialReference SpatialReference { get; set; }
 
-        void BeginPaint(IDisplay display, ICancelTracker cancelTracker);
+        Task BeginPaint(IDisplay display, ICancelTracker cancelTracker);
         void EndPaint(ICancelTracker cancelTracker);
     }
 

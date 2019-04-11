@@ -10,7 +10,7 @@ namespace gView.Framework.Offline
 {
     public interface IFeatureDatabaseReplication : IFeatureDatabase, IFeatureUpdater, IDatabaseNames
     {
-        bool CreateIfNotExists(string tableName, IFields fields);
+        Task<bool> CreateIfNotExists(string tableName, IFields fields);
         Task<bool> CreateObjectGuidColumn(string fcName, string fieldname);
         Task<int> GetFeatureClassID(string fcName);
         Task<string> GetFeatureClassName(int fcID);

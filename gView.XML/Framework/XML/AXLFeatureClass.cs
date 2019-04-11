@@ -89,7 +89,7 @@ namespace gView.Framework.XML
             }
             else
             {
-                return new QueryFilteredSelectionSet(this, filter);
+                return await QueryFilteredSelectionSet.CreateAsync(this, filter);
             }
         }
 

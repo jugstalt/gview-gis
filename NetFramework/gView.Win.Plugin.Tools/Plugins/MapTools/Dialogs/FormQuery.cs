@@ -79,7 +79,7 @@ namespace gView.Plugins.MapTools.Dialogs
         private bool _useWildcards = false;
         private IMap _focusMap = null;
 
-        private void worker_DoWork(object sender, DoWorkEventArgs e)
+        async private void worker_DoWork(object sender, DoWorkEventArgs e)
         {
             try
             {
@@ -183,7 +183,7 @@ namespace gView.Plugins.MapTools.Dialogs
                         int counter = 0;
                         IFeature feature;
                         List<IFeature> features = new List<IFeature>();
-                        while ((feature = cursor.NextFeature().Result) != null)
+                        while ((feature = await cursor.NextFeature()) != null)
                         {
                             if (!_cancelTracker.Continue)
                             {
@@ -233,7 +233,7 @@ namespace gView.Plugins.MapTools.Dialogs
         private Dictionary<int, string> _userdefValues = null;
         private QueryTheme _theme = null;
 
-        void worker2_DoWork(object sender, DoWorkEventArgs e)
+        async void worker2_DoWork(object sender, DoWorkEventArgs e)
         {
             if (_theme == null || _theme.Nodes == null || _theme.Nodes.Count == 0 || _userdefValues == null) return;
 
@@ -373,14 +373,14 @@ namespace gView.Plugins.MapTools.Dialogs
                     SetMsgText("", 2);
 
                     #region Query
-                    using (IFeatureCursor cursor = fc.Search(filter) as IFeatureCursor)
+                    using (IFeatureCursor cursor = await fc.Search(filter) as IFeatureCursor)
                     {
                         if (cursor == null) continue;
 
                         int counter = 0;
                         IFeature feature;
                         List<IFeature> features = new List<IFeature>();
-                        while ((feature = cursor.NextFeature().Result) != null)
+                        while ((feature = await cursor.NextFeature()) != null)
                         {
                             if (!_cancelTracker.Continue)
                             {

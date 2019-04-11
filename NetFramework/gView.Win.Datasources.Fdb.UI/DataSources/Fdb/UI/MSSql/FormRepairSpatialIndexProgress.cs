@@ -48,6 +48,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 e.Cancel = true;
         }
 
+        // Thread
         private void Process()
         {
             if (!_fdb.RepairSpatialIndex(_fc.Name, new EventHandler(ProcessEventHandler)).Result)

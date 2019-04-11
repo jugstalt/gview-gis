@@ -442,61 +442,55 @@ namespace gView.Framework.UI.Dialogs
 		}
 		#endregion
 
-		private void FormDataTable_Load(object sender, System.EventArgs e)
+		async private void FormDataTable_Load(object sender, System.EventArgs e)
 		{
-            Table = _tableClass;
-		}
+            var value = _tableClass;
 
-        public ITableClass Table
-        {
-            set
-            {   
-                _maxNewSelectedRows = 200;
-                _selectedRowIndices = new List<int>();
-                grid.DataSource = null;
+            _maxNewSelectedRows = 200;
+            _selectedRowIndices = new List<int>();
+            grid.DataSource = null;
 
-                _tableClass = value;
-                if (_tableClass == null) return;
+            _tableClass = value;
+            if (_tableClass == null) return;
 
-                grid.DefaultCellStyle.BackColor = Color.White;
+            grid.DefaultCellStyle.BackColor = Color.White;
 
-                gView.Framework.Data.QueryFilter filter = new gView.Framework.Data.QueryFilter();
-                foreach (IField field in _tableClass.Fields.ToEnumerable())
-                {
-                    if (field.type == FieldType.binary || field.type == FieldType.Shape) continue;
-                    filter.AddField(field.name);
-                }
-                //filter.SubFields="*";
-
-                ICursor cursor = _tableClass.Search(filter).Result;
-                if (cursor is IFeatureCursor)
-                {
-                    _result = new FeatureTable((IFeatureCursor)cursor, _tableClass.Fields, _tableClass);
-                }
-                else if (cursor is IRowCursor)
-                {
-                    _result = new RowTable((IRowCursor)cursor, _tableClass.Fields);
-                }
-                else
-                {
-                    return;
-                }
-
-                _result.RowsAddedToTable -= new RowsAddedToTableEvent(RowsAddedToTable);
-
-                progress1.Minimum = 0;
-                progress1.Visible = true;
-                progress1.Value = 0;
-                _result.Fill(progress1.Maximum = 200);
-
-                _result.RowsAddedToTable += new RowsAddedToTableEvent(RowsAddedToTable);
-
-                _viewTable = null; // in PrepareDataView neu anlegen...
-                PrepareDataView(_result.Table);
-                cmbShow.SelectedIndex = 0;  // hier wird auch MarkSelected durchgeführt
-                progress1.Visible = false;
+            gView.Framework.Data.QueryFilter filter = new gView.Framework.Data.QueryFilter();
+            foreach (IField field in _tableClass.Fields.ToEnumerable())
+            {
+                if (field.type == FieldType.binary || field.type == FieldType.Shape) continue;
+                filter.AddField(field.name);
             }
-        }
+            //filter.SubFields="*";
+
+            ICursor cursor = await _tableClass.Search(filter);
+            if (cursor is IFeatureCursor)
+            {
+                _result = new FeatureTable((IFeatureCursor)cursor, _tableClass.Fields, _tableClass);
+            }
+            else if (cursor is IRowCursor)
+            {
+                _result = new RowTable((IRowCursor)cursor, _tableClass.Fields);
+            }
+            else
+            {
+                return;
+            }
+
+            _result.RowsAddedToTable -= new RowsAddedToTableEvent(RowsAddedToTable);
+
+            progress1.Minimum = 0;
+            progress1.Visible = true;
+            progress1.Value = 0;
+            await _result.Fill(progress1.Maximum = 200);
+
+            _result.RowsAddedToTable += new RowsAddedToTableEvent(RowsAddedToTable);
+
+            _viewTable = null; // in PrepareDataView neu anlegen...
+            PrepareDataView(_result.Table);
+            cmbShow.SelectedIndex = 0;  // hier wird auch MarkSelected durchgeführt
+            progress1.Visible = false;
+		}
 
 		private void FeatureSelectionChanged(IFeatureSelection sender) 
 		{
@@ -1037,22 +1031,22 @@ namespace gView.Framework.UI.Dialogs
 
         #endregion
 
-        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        async private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
             if (_dsElement is IFeatureLayer && _dsElement is IFeatureSelection)
             {
-                FormQueryBuilder dlg = new FormQueryBuilder((IFeatureLayer)_dsElement);
+                FormQueryBuilder dlg = await FormQueryBuilder.CreateAsync((IFeatureLayer)_dsElement);
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
                     QueryFilter filter = new QueryFilter();
                     filter.WhereClause = dlg.whereClause;
 
-                    ((IFeatureSelection)_dsElement).Select(filter, dlg.combinationMethod);
+                    await ((IFeatureSelection)_dsElement).Select(filter, dlg.combinationMethod);
                     ((IFeatureSelection)_dsElement).FireSelectionChangedEvent();
 
                     if (_doc != null)
                     {
-                        _doc.FocusMap.RefreshMap(DrawPhase.Selection, null);
+                        await _doc.FocusMap.RefreshMap(DrawPhase.Selection, null);
                     }
                 }
             }

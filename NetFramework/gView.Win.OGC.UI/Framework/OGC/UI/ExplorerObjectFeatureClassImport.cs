@@ -125,7 +125,7 @@ namespace gView.Framework.OGC.UI
             if (datasetObject is IFeatureDataset)
             {
                 IFeatureDataset dataset = (IFeatureDataset)datasetObject;
-                foreach (IDatasetElement element in dataset.Elements().Result)
+                foreach (IDatasetElement element in await dataset.Elements())
                 {
                     if (element is IFeatureLayer)
                     {
@@ -173,6 +173,7 @@ namespace gView.Framework.OGC.UI
             }
         }
 
+        // Thread
         private void ImportAsync(object element)
         {
             if (_import == null) return;

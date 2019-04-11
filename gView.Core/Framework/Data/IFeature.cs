@@ -118,7 +118,7 @@ namespace gView.Framework.Data
     }
     public interface IValuesFieldDomain : IFieldDomain
     {
-        object[] Values { get; }
+        Task<object[]> ValuesAsync();
     }
     public interface IDictionaryFieldDomain : IFieldDomain
     {

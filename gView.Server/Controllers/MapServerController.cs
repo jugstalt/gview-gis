@@ -21,7 +21,7 @@ namespace gView.Server.Controllers
             return View();
         }
 
-        public IActionResult Catalog(string format)
+        async public Task<IActionResult> Catalog(string format)
         {
             try
             {
@@ -32,7 +32,7 @@ namespace gView.Server.Controllers
                 {
                     StringBuilder sb = new StringBuilder();
                     sb.Append("<RESPONSE><SERVICES>");
-                    foreach (var service in InternetMapServer.Instance.Maps(null))
+                    foreach (var service in await InternetMapServer.Instance.Maps(null))
                     {
                         if (service.Type == MapServiceType.Folder)  // if accessable for current user... => ToDo!!!
                         {
@@ -184,7 +184,7 @@ namespace gView.Server.Controllers
         }
 
         [HttpPost]
-        public IActionResult RemoveMap(string name, string folder)
+        async public Task<IActionResult> RemoveMap(string name, string folder)
         {
             try
             {
@@ -193,7 +193,7 @@ namespace gView.Server.Controllers
 
                 name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
-                bool ret = InternetMapServer.RemoveMap(name, user, pwd);
+                bool ret = await InternetMapServer.RemoveMap(name, user, pwd);
 
                 return Result(ret.ToString(), "text/plain");
             }

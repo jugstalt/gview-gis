@@ -523,10 +523,10 @@ namespace gView.DataSources.Fdb.MSSql
             return layer;
         }
 
-        internal DataTable Select(string fields, string from, string where)
+        async internal Task<DataTable> Select(string fields, string from, string where)
         {
             if (_conn == null) return null;
-            return _conn.Select(fields, from, where).Result;
+            return await _conn.Select(fields, from, where);
         }
 
         public override string ConnectionString
@@ -560,7 +560,7 @@ namespace gView.DataSources.Fdb.MSSql
             string imageSpace = isImageDatasetResult.imageSpace;
             if (isImageDatasetResult.isImageDataset)
             {
-                if (TableExists("FC_" + dataset.DatasetName + "_IMAGE_POLYGONS"))
+                if (await TableExists("FC_" + dataset.DatasetName + "_IMAGE_POLYGONS"))
                 {
                     IFeatureClass fc = await SqlFDBFeatureClass.Create(this, dataset, new GeometryDef(geometryType.Polygon, sRef, false));
                     ((SqlFDBFeatureClass)fc).Name = dataset.DatasetName + "_IMAGE_POLYGONS";
@@ -626,7 +626,7 @@ namespace gView.DataSources.Fdb.MSSql
                     fcRow = fcRows[0];
                 }
 
-                if (!TableExists("FC_" + fcRow["Name"].ToString()))
+                if (!await TableExists("FC_" + fcRow["Name"].ToString()))
                     continue;
                 //if (_seVersion != 0)
                 //{
@@ -991,7 +991,7 @@ namespace gView.DataSources.Fdb.MSSql
                             Report(report);
                             report.featurePos += counter;
 
-                            if (!UpdateSpatialIndexID(FCName, newFCName, node.NID, sb.ToString(), command))
+                            if (!await UpdateSpatialIndexID(FCName, newFCName, node.NID, sb.ToString(), command))
                             {
                                 command.Dispose();
                                 _conn.CloseConnection();
@@ -1007,7 +1007,7 @@ namespace gView.DataSources.Fdb.MSSql
                         Report(report);
                         report.featurePos += counter;
 
-                        if (!UpdateSpatialIndexID(FCName, newFCName, node.NID, sb.ToString(), command))
+                        if (!await UpdateSpatialIndexID(FCName, newFCName, node.NID, sb.ToString(), command))
                         {
                             command.Dispose();
                             _conn.CloseConnection();
@@ -1045,13 +1045,13 @@ namespace gView.DataSources.Fdb.MSSql
             }
         }
 
-        private bool UpdateSpatialIndexID(string FCName, string tmpFCName, int NID, string ids, SqlCommand command)
+        async private Task<bool> UpdateSpatialIndexID(string FCName, string tmpFCName, int NID, string ids, SqlCommand command)
         {
             try
             {
                 string where = "FDB_OID IN (" + ids + ")";
 
-                DataTable source = _conn.Select("*", FcTableName(FCName), where, "FDB_OID").Result;
+                DataTable source = await _conn.Select("*", FcTableName(FCName), where, "FDB_OID");
                 if (source == null)
                 {
                     _errMsg = _conn.errorMessage;
@@ -2165,14 +2165,14 @@ namespace gView.DataSources.Fdb.MSSql
             return true;
         }
 
-        protected override bool TableExists(string tableName)
+        async protected override Task<bool> TableExists(string tableName)
         {
             if (_conn == null) return false;
 
             try
             {
                 string sql = "IF EXISTS (SELECT 1 FROM sysobjects WHERE xtype='u' AND name='" + tableName + "') SELECT 1 as TAB_EXISTS ELSE SELECT 0 as TAB_EXISTS";
-                int exists = (int)_conn.QuerySingleField(sql, "TAB_EXISTS").Result;
+                int exists = (int)await _conn.QuerySingleField(sql, "TAB_EXISTS");
 
                 return exists != 0;
             }
@@ -2182,13 +2182,13 @@ namespace gView.DataSources.Fdb.MSSql
             }
         }
 
-        public override List<string> DatabaseTables()
+        async public override Task<List<string>> DatabaseTables()
         {
             if (_conn == null) return new List<string>();
 
             try
             {
-                DataTable tab = _conn.Select("name", "sysobjects", "xtype='u'").Result;
+                DataTable tab = await _conn.Select("name", "sysobjects", "xtype='u'");
                 if (tab != null)
                 {
                     List<string> tables = new List<string>();
@@ -2203,13 +2203,13 @@ namespace gView.DataSources.Fdb.MSSql
             return new List<string>();
         }
 
-        public override List<string> DatabaseViews()
+        async public override Task<List<string>> DatabaseViews()
         {
             if (_conn == null) return new List<string>();
 
             try
             {
-                DataTable tab = _conn.Select("name", "sysobjects", "xtype='v'").Result;
+                DataTable tab = await _conn.Select("name", "sysobjects", "xtype='v'");
                 if (tab != null)
                 {
                     List<string> views = new List<string>();
@@ -2249,9 +2249,9 @@ namespace gView.DataSources.Fdb.MSSql
 
         #region ICheckoutableDatabase Member
 
-        public override bool CreateIfNotExists(string tableName, IFields fields)
+        async public override Task<bool> CreateIfNotExists(string tableName, IFields fields)
         {
-            if (TableExists(tableName)) return true;
+            if (await TableExists(tableName)) return true;
 
             return CreateTable(tableName, fields, false);
         }

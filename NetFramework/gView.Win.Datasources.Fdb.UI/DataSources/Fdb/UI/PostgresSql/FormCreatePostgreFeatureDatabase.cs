@@ -65,7 +65,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 }
                 //if (chkCreateReplicationDatamodel.Checked == true)
                 {
-                    if (!gView.Framework.Offline.Replication.CreateRelicationModel(fdb))
+                    if (!await gView.Framework.Offline.Replication.CreateRelicationModel(fdb))
                     {
                         MessageBox.Show("RepliCreateRelicationModel failed:\n", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }

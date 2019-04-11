@@ -285,7 +285,7 @@ namespace gView.Plugins.MapTools.Dialogs
             seriesListView.RemoveSelected();
         }
 
-        private void btnOK_Click(object sender, EventArgs e)
+        async private void btnOK_Click(object sender, EventArgs e)
         {
             ExportMethodItem filterItem = (ExportMethodItem)cmbFeatures.SelectedItem;
             IQueryFilter filter = filterItem.QueryFilter;
@@ -308,10 +308,10 @@ namespace gView.Plugins.MapTools.Dialogs
                 tab.Columns.Add(new SeriesDataColumn(item.Text) { Color = col, SeriesName = item.SubItems[1].Text });
             }
 
-            using (ICursor cursor = ((ITableClass)_layer.Class).Search(filterItem.QueryFilter).Result)
+            using (ICursor cursor = await ((ITableClass)_layer.Class).Search(filterItem.QueryFilter))
             {
                 IRow row = null;
-                while ((row = NextRow(cursor).Result) != null)
+                while ((row = await NextRow(cursor)) != null)
                 {
                     object dataValue = row[dataField.name];
                     if (dataValue == System.DBNull.Value) continue;

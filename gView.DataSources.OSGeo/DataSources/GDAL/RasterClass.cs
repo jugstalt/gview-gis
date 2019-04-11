@@ -226,7 +226,7 @@ namespace gView.DataSources.GDAL
             }
         }
 
-        public void BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
             EndPaint(cancelTracker);
             try

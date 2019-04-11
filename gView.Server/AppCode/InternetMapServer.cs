@@ -86,7 +86,7 @@ namespace gView.Server.AppCode
             TaskQueue = new TaskQueue<IServiceRequestContext>(Globals.MaxThreads, Globals.QueueLength);
         }
 
-        private static void AddServices(string folder)
+        async private static Task AddServices(string folder)
         {
 
             foreach (var mapFileInfo in new DirectoryInfo((ServicesPath + "/" + folder).ToPlattformPath()).GetFiles("*.mxl"))
@@ -99,7 +99,7 @@ namespace gView.Server.AppCode
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogAsync(mapName, loggingMethod.error, "LoadConfig - " + mapFileInfo.Name + ": " + ex.Message).Wait();
+                    await Logger.LogAsync(mapName, loggingMethod.error, "LoadConfig - " + mapFileInfo.Name + ": " + ex.Message);
                 }
             }
 
@@ -203,7 +203,7 @@ namespace gView.Server.AppCode
                             map.Name = name.Split('/')[0] + "/" + map.Name;
                         }
 
-                        ApplyMetadata(map as Map);
+                        await ApplyMetadata(map as Map);
 
                         if (!MapDocument.AddMap(map))
                             return null;
@@ -235,7 +235,7 @@ namespace gView.Server.AppCode
 
             return null;
         }
-        private static void ApplyMetadata(Map map)
+        async private static Task ApplyMetadata(Map map)
         {
             try
             {
@@ -248,7 +248,7 @@ namespace gView.Server.AppCode
                     modules = ((IMapDocumentModules)InternetMapServer.MapDocument).GetMapModules(map);
                 }
 
-                IServiceMap sMap = new ServiceMap(map, Instance, modules);
+                IServiceMap sMap = await ServiceMap.CreateAsync(map, Instance, modules);
                 XmlStream xmlStream;
                 // 1. Bestehende Metadaten auf sds anwenden
                 if (fi.Exists)
@@ -259,10 +259,12 @@ namespace gView.Server.AppCode
                 }
                 // 2. Metadaten neu schreiben...
                 xmlStream = new XmlStream("Metadata");
-                sMap.WriteMetadata(xmlStream);
+                await sMap.WriteMetadata(xmlStream);
 
                 if (map is Metadata)
-                    ((Metadata)map).Providers = sMap.Providers;
+                {
+                    await ((Metadata)map).SetProviders(await sMap.GetProviders());
+                }
 
                 // Overriding: no good idea -> problem, if multiple instances do this -> killing the metadata file!!!
                 fi.Refresh();
@@ -273,10 +275,10 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Logger.LogAsync(map.Name, loggingMethod.error, "LoadConfig: " + ex.Message).Wait();
+                await Logger.LogAsync(map.Name, loggingMethod.error, "LoadConfig: " + ex.Message);
             }
         }
-        static public void SaveConfig(ServerMapDocument mapDocument/*IMap map*/)
+        async static public Task SaveConfig(ServerMapDocument mapDocument/*IMap map*/)
         {
             try
             {
@@ -296,15 +298,15 @@ namespace gView.Server.AppCode
                 stream.WriteStream(ServicesPath + @"\" + map.Name + ".mxl");
 
                 if (map is Map)
-                    ApplyMetadata((Map)map);
+                    await ApplyMetadata((Map)map);
             }
             catch (Exception ex)
             {
-                Logger.LogAsync(mapDocument?.Maps?.First()?.Name, loggingMethod.error, "LoadConfig: " + ex.Message).Wait();
+                await Logger.LogAsync(mapDocument?.Maps?.First()?.Name, loggingMethod.error, "LoadConfig: " + ex.Message);
             }
         }
 
-        static public void SaveServiceableDataset(IServiceableDataset sds, string name)
+        async static public Task SaveServiceableDataset(IServiceableDataset sds, string name)
         {
             try
             {
@@ -325,7 +327,7 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Logger.LogAsync(name, loggingMethod.error, "LoadConfig: " + ex.Message).Wait();
+                await Logger.LogAsync(name, loggingMethod.error, "LoadConfig: " + ex.Message);
             }
         }
 
@@ -334,7 +336,7 @@ namespace gView.Server.AppCode
             stream.WriteStream(ServicesPath + @"\" + name + ".scl");
         }
 
-        static public bool RemoveConfig(string mapName)
+        async static public Task<bool> RemoveConfig(string mapName)
         {
             try
             {
@@ -347,12 +349,12 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Logger.LogAsync(mapName, loggingMethod.error, "LoadConfig: " + ex.Message).Wait();
+                Logger.LogAsync(mapName, loggingMethod.error, "LoadConfig: " + ex.Message);
                 return false;
             }
         }
 
-        static internal void mapDocument_MapAdded(IMap map)
+        async static internal void mapDocument_MapAdded(IMap map)
         {
             try
             {
@@ -365,10 +367,10 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Logger.LogAsync(map?.Name, loggingMethod.error, "LoadConfig: " + ex.Message).Wait();
+                await Logger.LogAsync(map?.Name, loggingMethod.error, "LoadConfig: " + ex.Message);
             }
         }
-        static internal void mapDocument_MapDeleted(IMap map)
+        async static internal void mapDocument_MapDeleted(IMap map)
         {
             try
             {
@@ -376,7 +378,7 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Logger.LogAsync(map?.Name, loggingMethod.error, "LoadConfig: " + ex.Message).Wait();
+                await Logger.LogAsync(map?.Name, loggingMethod.error, "LoadConfig: " + ex.Message);
             }
         }
 
@@ -419,12 +421,12 @@ namespace gView.Server.AppCode
             if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, "admin_addmap"))
                 return false;
 
-            if (InternetMapServer.Instance.Maps(null).Count() >= InternetMapServer.Instance.MaxServices)
+            if ((await InternetMapServer.Instance.Maps(null)).Count() >= InternetMapServer.Instance.MaxServices)
             {
                 // Überprüfen, ob schon eine Service mit gleiche Namen gibt...
                 // wenn ja, ist es nur einem Refresh eines bestehenden Services
                 bool found = false;
-                foreach (IMapService existingMap in InternetMapServer.Instance.Maps(null))
+                foreach (IMapService existingMap in await InternetMapServer.Instance.Maps(null))
                 {
                     if (existingMap.Name == mapName)
                     {
@@ -494,11 +496,11 @@ namespace gView.Server.AppCode
             //if (!_doc.AddMap(map)) return false;
             AddMapService(mapName, MapServiceType.MXL);
 
-            InternetMapServer.SaveConfig(mapDocument);
+            await InternetMapServer.SaveConfig(mapDocument);
 
             return await ReloadMap(mapName, usr, pwd);
         }
-        static public bool RemoveMap(string mapName, string usr, string pwd)
+        async static public Task<bool> RemoveMap(string mapName, string usr, string pwd)
         {
             if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, "admin_removemap"))
                 return false;
@@ -514,7 +516,7 @@ namespace gView.Server.AppCode
                 }
             }
 
-            foreach (IMapService m in ListOperations<IMapService>.Clone(InternetMapServer.Instance.Maps(null).ToList()))
+            foreach (IMapService m in ListOperations<IMapService>.Clone((await InternetMapServer.Instance.Maps(null)).ToList()))
             {
                 if (m.Name == mapName)
                 {

@@ -129,7 +129,7 @@ namespace gView.DataSources.Fdb.SQLite
             }
         }
 
-        public void BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
 
         }
@@ -867,7 +867,7 @@ namespace gView.DataSources.Fdb.SQLite
         }
 
         System.Drawing.Bitmap _bm = null;
-        public void BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
             throw new NotImplementedException();
             //if (_fdb == null) return;

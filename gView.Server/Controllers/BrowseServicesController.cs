@@ -17,9 +17,21 @@ namespace gView.Server.Controllers
         {
             folder = folder ?? String.Empty;
 
-            return await SecureMethodHandler((identity) =>
+            return await SecureMethodHandler(async (identity) =>
             {
                 InternetMapServer.ReloadServices(folder, true);
+
+                List<IMapService> services = new List<IMapService>();
+                foreach(var s in InternetMapServer.mapServices)
+                {
+                    if (s.Type != MapServiceType.Folder &&
+                        s.Folder == folder &&
+                        (await s.GetSettingsAsync()).Status == MapServiceStatus.Running &&
+                         await s.HasAnyAccess(identity))
+                    {
+                        services.Add(s);
+                    }
+                }
 
                 var model = new BrowseServicesIndexModel()
                 {
@@ -29,19 +41,10 @@ namespace gView.Server.Controllers
                         .Select(s => s.Name).Distinct()
                         .OrderBy(s=>s)
                         .ToArray(),
-                    Services = InternetMapServer.mapServices
-                        .Where(s =>
-                        {
-                            return
-                                s.Type != MapServiceType.Folder &&
-                                s.Folder == folder &&
-                                (s.GetSettingsAsync().Result).Status == MapServiceStatus.Running &&
-                                s.HasAnyAccess(identity).Result;
-                        })
-                        .ToArray()
+                    Services = services.ToArray()
                 };
 
-                return Task.FromResult<IActionResult>(View(model));
+                return View(model);
             });
         }
 

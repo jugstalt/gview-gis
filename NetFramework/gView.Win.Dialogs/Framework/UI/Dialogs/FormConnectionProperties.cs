@@ -58,7 +58,7 @@ namespace gView.Framework.UI.Dialogs
 
                     if (element.DatasetID == dsIndex)
                     {
-                        IDatasetElement el = _dataset.Element(element.Title).Result;
+                        IDatasetElement el = await _dataset.Element(element.Title);
                         if (el == null)
                             ((DatasetElement)element).Class2 = null;
                         else

@@ -252,7 +252,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         }
 
-        private void treeObjects_BeforeExpand(object sender, TreeViewCancelEventArgs e)
+        async private void treeObjects_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
             if (e.Node is RelationTreeNode)
             {
@@ -285,7 +285,7 @@ namespace gView.Plugins.MapTools.Dialogs
                         primaryDisplayField=((IFeatureLayer)target).Fields.PrimaryDisplayField.name;
 
                     IFeature feature = null;
-                    while ((feature = cursor.NextFeature().Result) != null)
+                    while ((feature = await cursor.NextFeature()) != null)
                     {
                         rtn.Nodes.Add(new FeatureTreeNode(_doc, feature, 
                             _doc.FocusMap.Display.SpatialReference, 

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using gView.Framework.Data;
 using gView.Framework.system;
@@ -17,45 +18,54 @@ namespace gView.Framework.UI.Dialogs
         private CancelTracker _cancelTracker = new CancelTracker();
         private Dictionary<string, List<string>> _values = new Dictionary<string, List<string>>();
 
-        public FormQueryBuilder(IFeatureLayer layer) : this((layer!=null) ? layer.FeatureClass : null)
+        private FormQueryBuilder()
         {
-            
-        }
-        public FormQueryBuilder(ITableClass tc)
-        {
-            _tc = tc;
-
             InitializeComponent();
-            if (_tc == null) return;
+        }
+
+        static public Task<FormQueryBuilder> CreateAsync(IFeatureLayer layer) 
+        {
+            return CreateAsync((layer != null) ? layer.FeatureClass : (ITableClass)null);
+        }
+        async static public Task<FormQueryBuilder> CreateAsync(ITableClass tc)
+        {
+            var dlg = new FormQueryBuilder();
+            dlg._tc = tc;
+
+            
+            if (dlg._tc == null)
+                return dlg;
 
             gView.Framework.Data.QueryFilter filter = new gView.Framework.Data.QueryFilter();
             filter.SubFields = "*";
 
-            using (ICursor cursor = _tc.Search(filter).Result)
+            using (ICursor cursor = await dlg._tc.Search(filter))
             {
                 if (cursor is IFeatureCursor)
                 {
-                    _table = new FeatureTable((IFeatureCursor)cursor, _tc.Fields, _tc);
+                    dlg._table = new FeatureTable((IFeatureCursor)cursor, dlg._tc.Fields, dlg._tc);
                 }
                 else if (cursor is IRowCursor)
                 {
-                    _table = new RowTable((IRowCursor)cursor, _tc.Fields);
+                    dlg._table = new RowTable((IRowCursor)cursor, dlg._tc.Fields);
                 }
                 else
                 {
-                    return;
+                    return dlg;
                 }
-                _table.Fill(2000);
+                await dlg._table.Fill(2000);
             }
 
-            cmbMethod.SelectedIndex = 0;
-            foreach (IField field in _tc.Fields.ToEnumerable())
+            dlg.cmbMethod.SelectedIndex = 0;
+            foreach (IField field in dlg._tc.Fields.ToEnumerable())
             {
                 if (field.type == FieldType.binary ||
                     field.type == FieldType.Shape) continue;
 
-                lstFields.Items.Add(Field.WhereClauseFieldName(field.name));
+                dlg.lstFields.Items.Add(Field.WhereClauseFieldName(field.name));
             }
+
+            return dlg;
         }
 
         public string whereClause
@@ -180,7 +190,7 @@ namespace gView.Framework.UI.Dialogs
             insertText2WhereClause(lstUniqueValues.SelectedItem.ToString());
         }
 
-        private void btnCompleteList_Click(object sender, EventArgs e)
+        async private void btnCompleteList_Click(object sender, EventArgs e)
         {
             if (_tc == null || lstFields.SelectedItems == null) return;
             string fieldName = lstFields.SelectedItem.ToString().Replace("[", String.Empty).Replace("]", String.Empty); // Joined Fields [...]
@@ -192,7 +202,7 @@ namespace gView.Framework.UI.Dialogs
 
             this.Cursor = Cursors.WaitCursor;
 
-            ICursor cursor = _tc.Search(filter).Result;
+            ICursor cursor = await _tc.Search(filter);
             if(cursor==null) return;
 
             _cancelTracker.Reset();
@@ -208,7 +218,7 @@ namespace gView.Framework.UI.Dialogs
             this.Cursor = Cursors.Default;
         }
 
-        void CompleteList_DoWork(object sender, DoWorkEventArgs e)
+        async void CompleteList_DoWork(object sender, DoWorkEventArgs e)
         {
             ICursor cursor = e.Argument as ICursor;
             if (cursor == null) return;
@@ -217,8 +227,8 @@ namespace gView.Framework.UI.Dialogs
             try
             {
                 IRow row;
-                while ((row = (cursor is IFeatureCursor) ? ((IFeatureCursor)cursor).NextFeature().Result :
-                           (cursor is IRowCursor) ? ((IRowCursor)cursor).NextRow().Result : null) != null)
+                while ((row = (cursor is IFeatureCursor) ? await ((IFeatureCursor)cursor).NextFeature() :
+                              (cursor is IRowCursor)     ? await ((IRowCursor)cursor).NextRow() : null) != null)
                 {
                     if (list == null)
                     {

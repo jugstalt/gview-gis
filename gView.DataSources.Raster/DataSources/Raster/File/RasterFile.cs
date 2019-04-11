@@ -406,7 +406,7 @@ namespace gView.DataSources.Raster.File
         Bitmap _bm;
         BitmapData _bmData;
 
-        public void BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
             if (_bm != null)
             {
@@ -752,7 +752,7 @@ namespace gView.DataSources.Raster.File
             }
         }
 
-        public void BeginPaint2(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        async public Task BeginPaint2(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
             IntPtr hbmp = (IntPtr)0;
             //IntPtr bufferData = (IntPtr)0;
@@ -845,7 +845,7 @@ namespace gView.DataSources.Raster.File
                 if (display is IServiceMap && ((IServiceMap)display).MapServer != null)
                 {
                     IMapServer mapServer = ((IServiceMap)display).MapServer;
-                    mapServer.LogAsync(
+                    await mapServer.LogAsync(
                         ((IServiceMap)display).Name,
                         "RenderRasterLayerThread", loggingMethod.error,
                         ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace + "\n" +
@@ -854,7 +854,7 @@ namespace gView.DataSources.Raster.File
                         "y=" + y.ToString() + "\n" +
                         "iWidth=" + iWidth.ToString() + "\n" +
                         "iHeight=" + iHeight.ToString() + "\n" +
-                        "mag=" + mag.ToString() + "\n").Wait();        
+                        "mag=" + mag.ToString() + "\n");        
                 }
                 else
                 {
@@ -868,7 +868,7 @@ namespace gView.DataSources.Raster.File
             }
         }
 
-        public void BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
             
 
@@ -970,7 +970,7 @@ namespace gView.DataSources.Raster.File
                 if (display is IServiceMap && ((IServiceMap)display).MapServer != null)
                 {
                     IMapServer mapServer = ((IServiceMap)display).MapServer;
-                    mapServer.LogAsync(
+                    await mapServer.LogAsync(
                     ((IServiceMap)display).Name,
                     "RenderRasterLayerThread", loggingMethod.error,
                         ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace + "\n" +
@@ -979,7 +979,7 @@ namespace gView.DataSources.Raster.File
                         "y=" + y.ToString() + "\n" +
                         "iWidth=" + iWidth.ToString() + "\n" +
                         "iHeight=" + iHeight.ToString() + "\n" +
-                        "mag=" + mag.ToString() + "\n").Wait();
+                        "mag=" + mag.ToString() + "\n");
                 }
                 else
                 {

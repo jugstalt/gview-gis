@@ -220,7 +220,7 @@ namespace gView.DataSources.Fdb.UI
             if (datasetObject is IFeatureDataset)
             {
                 IFeatureDataset dataset = (IFeatureDataset)datasetObject;
-                foreach (IDatasetElement element in dataset.Elements().Result)
+                foreach (IDatasetElement element in await dataset.Elements())
                 {
                     if (element is IFeatureLayer)
                     {
@@ -268,6 +268,7 @@ namespace gView.DataSources.Fdb.UI
             }
         }
 
+        // Thread
         private void ImportAsync(object element)
         {
             if (_fdb == null || _import == null) return;

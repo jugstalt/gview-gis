@@ -632,12 +632,12 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             }
         }
 
-        void ShrinkSpatialIndices_Click(object sender, EventArgs e)
+        async void ShrinkSpatialIndices_Click(object sender, EventArgs e)
         {
             if (_dataset == null) return;
 
             List<IClass> classes = new List<IClass>();
-            foreach (IDatasetElement element in _dataset.Elements().Result)
+            foreach (IDatasetElement element in await _dataset.Elements())
             {
                 if (element == null || element.Class == null) continue;
                 classes.Add(element.Class);
@@ -828,10 +828,10 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             switch (dlg.DatasetType)
             {
                 case FormNewDataset.datasetType.FeatureDataset:
-                    dsID = fdb.CreateDataset(datasetName, sRef, sIndexDef).Result;
+                    dsID = await fdb.CreateDataset(datasetName, sRef, sIndexDef);
                     break;
                 case FormNewDataset.datasetType.ImageDataset:
-                    dsID = fdb.CreateImageDataset(datasetName, sRef, sIndexDef, dlg.ImageSpace, dlg.AdditionalFields).Result;
+                    dsID = await fdb.CreateImageDataset(datasetName, sRef, sIndexDef, dlg.ImageSpace, dlg.AdditionalFields);
                     datasetName = "#" + datasetName;
                     break;
             }
@@ -1411,7 +1411,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             if (fdb == null)
                 return null;
 
-            FormRegisterGeographicView dlg = new FormRegisterGeographicView(dataset);
+            FormRegisterGeographicView dlg = await FormRegisterGeographicView.CreateAsync(dataset);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 int fc_id = await fdb.CreateSpatialView(dataset.DatasetName, dlg.SpatialViewAlias);
@@ -1527,7 +1527,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                         int fcid = await fdb.CreateLinkedFeatureClass(dataset.DatasetName, (IFeatureClass)exObjectInstance);
                         if (ret == null)
                         {
-                            IDatasetElement element = dataset.Element(((IFeatureClass)exObjectInstance).Name).Result;
+                            IDatasetElement element = await dataset.Element(((IFeatureClass)exObjectInstance).Name);
                             if (element != null)
                             {
                                 ret = new FeatureClassExplorerObject(

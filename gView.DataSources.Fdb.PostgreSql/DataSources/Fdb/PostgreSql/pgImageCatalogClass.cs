@@ -128,7 +128,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
-        public void BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
 
         }
@@ -850,12 +850,12 @@ namespace gView.DataSources.Fdb.PostgreSql
         }
 
         System.Drawing.Bitmap _bm = null;
-        public void BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
             if (_fdb == null) return;
             try
             {
-                DataTable tab = _fdb._conn.Select("IMAGE,X,Y,dx1,dx2,dy1,dy2", _dsname + "_IMAGE_DATA", "ID=" + _ID).Result;
+                DataTable tab = await _fdb._conn.Select("IMAGE,X,Y,dx1,dx2,dy1,dy2", _dsname + "_IMAGE_DATA", "ID=" + _ID);
                 if (tab == null) return;
                 if (tab.Rows.Count != 1) return;
                 DataRow row = tab.Rows[0];

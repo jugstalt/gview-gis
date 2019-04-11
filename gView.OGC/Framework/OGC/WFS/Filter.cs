@@ -33,18 +33,21 @@ namespace gView.Framework.OGC.WFS
         {
             GenerateFromString(ogcFilter, null);
         }
-        public Filter(IFeatureClass fc, IQueryFilter filter, GmlVersion version)
-            : this(fc, filter, null, version)
+        static public Task<Filter> CreataAsync(IFeatureClass fc, IQueryFilter filter, GmlVersion version)
         {
+            return CreateAsync(fc, filter, null, version);
         }
-        public Filter(IFeatureClass fc, IQueryFilter filter, Filter_Capabilities filter_cabs, GmlVersion version)
-            : this(version)
+        async static public Task<Filter> CreateAsync(IFeatureClass fc, IQueryFilter filter, Filter_Capabilities filter_cabs, GmlVersion version)
         {
+            var result = new Filter(version);
+
             if (filter_cabs == null)  // Default erstellen
                 filter_cabs = new Filter_Capabilities();
 
-            string ogcFilter = Filter.ToWFS(fc, filter, filter_cabs, version).Result;
-            GenerateFromString(ogcFilter, fc);
+            string ogcFilter = await Filter.ToWFS(fc, filter, filter_cabs, version);
+            result.GenerateFromString(ogcFilter, fc);
+
+            return result;
         }
 
         private void GenerateFromString(string ogcFilter, IFeatureClass fc)

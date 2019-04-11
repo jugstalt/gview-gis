@@ -6,19 +6,27 @@ using gView.Framework.IO;
 using System.Xml;
 using gView.Framework.system;
 using gView.MapServer;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.ArcXML.Dataset
 {
     internal class ArcIMSThemeFeatureClass : gView.Framework.XML.AXLFeatureClass
     {
-        public ArcIMSThemeFeatureClass(IDataset dataset, string id)
-            : base(dataset, id)
+        private ArcIMSThemeFeatureClass(IDataset dataset, string id)
+         :base(dataset, id)
+        { }
+
+        async static public Task<ArcIMSThemeFeatureClass> CreateAsync(IDataset dataset, string id)
         {
+            var fc = new ArcIMSThemeFeatureClass(dataset, id);
+
             if (dataset is IFeatureDataset)
             {
-                this.Envelope = ((IFeatureDataset)dataset).Envelope().Result;
-                this.SpatialReference = ((IFeatureDataset)dataset).GetSpatialReference().Result;
+                fc.Envelope = await ((IFeatureDataset)dataset).Envelope();
+                fc.SpatialReference = await ((IFeatureDataset)dataset).GetSpatialReference();
             }
+
+            return fc;
         }
 
         protected override string SendRequest(IUserData userData, string axlRequest)

@@ -19,11 +19,11 @@ namespace gView.Framework.UI.Dialogs.Network
         }
 
         #region Events
-        private void SelectFeatureclassesControl_Load(object sender, EventArgs e)
+        async private void SelectFeatureclassesControl_Load(object sender, EventArgs e)
         {
             if (_dataset != null)
             {
-                foreach (IDatasetElement element in _dataset.Elements().Result)
+                foreach (IDatasetElement element in await _dataset.Elements())
                 {
                     if (element == null || !(element.Class is IFeatureClass))
                         continue;

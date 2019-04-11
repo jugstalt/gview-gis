@@ -1870,14 +1870,14 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public Task<bool> OnEvent(object MapEvent)
+        async public Task<bool> OnEvent(object MapEvent)
         {
             if (!(MapEvent is MapEvent))
-                return Task.FromResult(true);
+                return true;
 
             IMap map = ((MapEvent)MapEvent).Map;
             if (map == null)
-                return Task.FromResult(true);
+                return true;
 
             Envelope env = null;
             IEnvelope envelope = null;
@@ -1890,7 +1890,7 @@ namespace gView.Plugins.MapTools
                 {
                     foreach (IWebServiceTheme theme in ((IWebServiceLayer)layer).WebServiceClass.Themes)
                     {
-                        envelope = SelectionEnvelope(map, theme as IFeatureLayer).Result;
+                        envelope = await SelectionEnvelope(map, theme as IFeatureLayer);
                         if (envelope == null) continue;
                         if (env == null)
                             env = new Envelope(envelope);
@@ -1904,7 +1904,7 @@ namespace gView.Plugins.MapTools
                     }
                 }
 
-                envelope = SelectionEnvelope(map, layer as IFeatureLayer).Result;
+                envelope = await SelectionEnvelope(map, layer as IFeatureLayer);
                 if (envelope == null) continue;
                 if (env == null)
                     env = new Envelope(envelope);
@@ -1929,7 +1929,7 @@ namespace gView.Plugins.MapTools
                 ((MapEvent)MapEvent).refreshMap = true;
             }
 
-            return Task.FromResult(true);
+            return true;
         }
 
         public gView.Framework.UI.ToolType toolType
@@ -2321,30 +2321,30 @@ namespace gView.Plugins.MapTools
                 _doc = (IMapDocument)hook;
         }
 
-        public Task<bool> OnEvent(object element, object dataset)
+        async public Task<bool> OnEvent(object element, object dataset)
         {
             if (element is IFeatureSelection && element is IFeatureLayer)
             {
-                FormQueryBuilder dlg = new FormQueryBuilder((IFeatureLayer)element);
+                FormQueryBuilder dlg = await FormQueryBuilder.CreateAsync((IFeatureLayer)element);
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
                     QueryFilter filter = new QueryFilter();
                     filter.WhereClause = dlg.whereClause;
 
-                    ((IFeatureSelection)element).Select(filter, dlg.combinationMethod);
+                    await ((IFeatureSelection)element).Select(filter, dlg.combinationMethod);
                     ((IFeatureSelection)element).FireSelectionChangedEvent();
 
                     if (_doc != null)
                     {
                         if (_doc.Application is IMapApplication)
                         {
-                            ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Selection);
+                            await ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Selection);
                         }
                     }
                 }
             }
 
-            return Task.FromResult(true);
+            return true;
         }
 
         public object Image
@@ -2522,10 +2522,10 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public Task<bool> OnEvent(object MapEvent)
+        async public Task<bool> OnEvent(object MapEvent)
         {
             if (_dlg == null || !(MapEvent is MapEvent))
-                return Task.FromResult(true);
+                return true;
 
             Envelope envelope = null;
             IMap map = null;
@@ -2552,7 +2552,7 @@ namespace gView.Plugins.MapTools
                 MapEventClick ev = (MapEventClick)MapEvent;
                 map = ev.Map;
                 if (map == null || map.Display == null)
-                    return Task.FromResult(true);
+                    return true;
 
                 queryPoint = new Point(ev.x, ev.y);
                 envelope = new Envelope(ev.x - tol / 2, ev.y - tol / 2, ev.x + tol / 2, ev.y + tol / 2);
@@ -2564,7 +2564,7 @@ namespace gView.Plugins.MapTools
                 MapEventRubberband ev = (MapEventRubberband)MapEvent;
                 map = ev.Map;
                 if (map == null || map.Display == null)
-                    return Task.FromResult(true);
+                    return true;
 
                 envelope = new Envelope(ev.minX, ev.minY, ev.maxX, ev.maxY);
                 if (envelope.Width < tol)
@@ -2582,7 +2582,7 @@ namespace gView.Plugins.MapTools
             }
             else
             {
-                return Task.FromResult(true); 
+                return true; 
             }
 
             QueryThemeCombo combo = QueryCombo;
@@ -2595,7 +2595,7 @@ namespace gView.Plugins.MapTools
                 int counter = 0;
                 List<IDatasetElement> allQueryableElements = _dlg.AllQueryableLayers;
                 if (allQueryableElements == null)
-                    return Task.FromResult(true);
+                    return true;
 
                 foreach (IDatasetElement element in allQueryableElements)
                 {
@@ -2617,12 +2617,12 @@ namespace gView.Plugins.MapTools
 
                         if (iPoint != null)
                         {
-                            using (ICursor cursor = ((IPointIdentify)element.Class).PointQuery(map.Display, queryPoint, map.Display.SpatialReference, new UserData()).Result)
+                            using (ICursor cursor = await ((IPointIdentify)element.Class).PointQuery(map.Display, queryPoint, map.Display.SpatialReference, new UserData()))
                             {
                                 if (cursor is IRowCursor)
                                 {
                                     IRow row;
-                                    while ((row = ((IRowCursor)cursor).NextRow().Result) != null)
+                                    while ((row = await ((IRowCursor)cursor).NextRow()) != null)
                                     {
                                         _dlg.AddFeature(new Feature(row), mapSR, null, element.Title);
                                         counter++;
@@ -2692,7 +2692,7 @@ namespace gView.Plugins.MapTools
                         if (cursor != null)
                         {
                             IFeature feature;
-                            while ((feature = cursor.NextFeature().Result) != null)
+                            while ((feature = await cursor.NextFeature()) != null)
                             {
                                 _dlg.AddFeature(feature, mapSR, layer, title);
                                 counter++;
@@ -2790,7 +2790,7 @@ namespace gView.Plugins.MapTools
                             using (IFeatureCursor cursor = (IFeatureCursor)fc.Search(filter))
                             {
                                 IFeature feature;
-                                while ((feature = cursor.NextFeature().Result) != null)
+                                while ((feature = await cursor.NextFeature()) != null)
                                 {
                                     _dlg.AddFeature(feature, mapSR, layer, title, fields, primaryDisplayField);
                                 }
@@ -2815,7 +2815,7 @@ namespace gView.Plugins.MapTools
                     if (win == _dlg)
                     {
                         appl.ShowDockableWindow(win);
-                        return Task.FromResult(true); ;
+                        return true;
                     }
                 }
 
@@ -2823,7 +2823,7 @@ namespace gView.Plugins.MapTools
                 appl.ShowDockableWindow(_dlg);
             }
 
-            return Task.FromResult(true);
+            return true;
         }
 
         private object ICursor(IPointIdentify iPointIdentify)
@@ -4412,44 +4412,44 @@ namespace gView.Plugins.MapTools
 
         #endregion
 
-        private void RefreshLegend()
+        async private Task RefreshLegend()
         {
             if (_dlg == null) return;
-            _dlg.RefreshLegend();
+            await _dlg.RefreshLegend();
         }
         void dlg_FormClosing(object sender, FormClosingEventArgs e)
         {
             _dlg = null;
         }
 
-        void _doc_MapScaleChanged(IDisplay sender)
+        async void _doc_MapScaleChanged(IDisplay sender)
         {
-            RefreshLegend();
+            await RefreshLegend();
         }
 
-        void _doc_MapDeleted(IMap map)
+        async void _doc_MapDeleted(IMap map)
         {
-            RefreshLegend();
+            await RefreshLegend();
         }
 
-        void _doc_MapAdded(IMap map)
+        async void _doc_MapAdded(IMap map)
         {
-            RefreshLegend();
+            await RefreshLegend();
         }
 
-        void _doc_LayerRemoved(IMap sender, ILayer layer)
+        async void _doc_LayerRemoved(IMap sender, ILayer layer)
         {
-            RefreshLegend();
+            await RefreshLegend();
         }
 
-        void _doc_LayerAdded(IMap sender, ILayer layer)
+        async void _doc_LayerAdded(IMap sender, ILayer layer)
         {
-            RefreshLegend();
+            await RefreshLegend();
         }
 
-        void _doc_AfterSetFocusMap(IMap map)
+        async void _doc_AfterSetFocusMap(IMap map)
         {
-            RefreshLegend();
+            await RefreshLegend();
         }
     }
 

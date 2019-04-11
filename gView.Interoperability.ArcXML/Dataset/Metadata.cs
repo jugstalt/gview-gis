@@ -24,14 +24,14 @@ namespace gView.Interoperability.ArcXML.Dataset
  
         #region IMetadataProvider Member
 
-        public bool ApplyTo(object Object)
+        async public Task<bool> ApplyTo(object Object)
         {
             if (Object is IServiceMap)
             {
                 IServiceMap map = (IServiceMap)Object;
                 IMapServer server = map.MapServer;
 
-                if (ServiceMapIsSVC(server, map))
+                if (await ServiceMapIsSVC(server, map))
                 {
                     ArcIMSClass cls = ArcIMSServiceClass(map);
                     if (cls != null)
@@ -189,11 +189,11 @@ namespace gView.Interoperability.ArcXML.Dataset
             }
             return null;
         }
-        private bool ServiceMapIsSVC(IMapServer server, IServiceMap map)
+        async private Task<bool> ServiceMapIsSVC(IMapServer server, IServiceMap map)
         {
             if (server == null || map == null) return false;
 
-            foreach (IMapService service in server.Maps(null))
+            foreach (IMapService service in await server.Maps(null))
             {
                 if (service == null) continue;
                 if (service.Name == map.Name && service.Type == MapServiceType.SVC)

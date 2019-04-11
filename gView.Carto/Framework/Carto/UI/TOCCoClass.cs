@@ -125,7 +125,7 @@ namespace gView.Framework.Carto.UI
             }
         }
 
-        public System.Drawing.Bitmap Legend()
+        public Task<System.Drawing.Bitmap> Legend()
         {
             List<ITOCElement> list = new List<ITOCElement>();
             foreach (ITOCElement element in _elements)
@@ -150,7 +150,7 @@ namespace gView.Framework.Carto.UI
 
             return Legend(list);
         }
-        public System.Drawing.Bitmap Legend(List<ITOCElement> elements)
+        async public Task<System.Drawing.Bitmap> Legend(List<ITOCElement> elements)
         {
             List<System.Drawing.Bitmap> bitmaps = new List<System.Drawing.Bitmap>();
             System.Drawing.Bitmap bitmap = null;
@@ -159,7 +159,7 @@ namespace gView.Framework.Carto.UI
             {
                 foreach (ITOCElement element in elements)
                 {
-                    System.Drawing.Bitmap bm = Legend(element);
+                    System.Drawing.Bitmap bm = await Legend(element);
                     if (bm != null) bitmaps.Add(bm);
                 }
 
@@ -201,7 +201,7 @@ namespace gView.Framework.Carto.UI
                 bitmaps.Clear();
             }
         }
-        public System.Drawing.Bitmap Legend(ITOCElement element)
+        async public Task<System.Drawing.Bitmap> Legend(ITOCElement element)
         {
             if (element==null || element.Layers==null || !_elements.Contains(element)) return null;
 
@@ -219,7 +219,7 @@ namespace gView.Framework.Carto.UI
                     if (layer is IWebServiceLayer && layer.Class is IWebServiceClass)
                     {
                         IWebServiceClass wClass = layer.Class as IWebServiceClass;
-                        if (wClass.LegendRequest(_map.Display).Result)
+                        if (await wClass.LegendRequest(_map.Display))
                         {
                             System.Drawing.Bitmap lBm = wClass.Legend;
                             if (lBm == null) continue;
@@ -317,8 +317,7 @@ namespace gView.Framework.Carto.UI
 
             return bm;
         }
-
-        public TocLegendItems LegendSymbol(ITOCElement element)
+        async public Task<TocLegendItems> LegendSymbol(ITOCElement element)
         {
             var items = new List<TocLegendItem>();
             if (element == null || element.Layers == null || !_elements.Contains(element)) return null;
@@ -330,7 +329,7 @@ namespace gView.Framework.Carto.UI
                     if (layer is IWebServiceLayer && layer.Class is IWebServiceClass)
                     {
                         IWebServiceClass wClass = layer.Class as IWebServiceClass;
-                        if (wClass.LegendRequest(_map.Display).Result)
+                        if (await wClass.LegendRequest(_map.Display))
                         {
                             System.Drawing.Bitmap lBm = wClass.Legend;
 

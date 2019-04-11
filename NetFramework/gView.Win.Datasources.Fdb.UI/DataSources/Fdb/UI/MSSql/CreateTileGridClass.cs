@@ -11,6 +11,7 @@ using gView.Framework.system;
 using System.IO;
 using gView.Framework.Carto;
 using gView.DataSources.Fdb.MSSql;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.UI.MSSql
 {
@@ -162,7 +163,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     }
                     else
                     {
-                        _fdb.DeleteFeatureClass(_name);
+                        _fdb.DeleteFeatureClass(_name).Wait();
                         fc = null;
                     }
                 }
@@ -177,11 +178,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                     _fdb.CreateFeatureClass(_targetDataset.DatasetName, _name,
                         new GeometryDef(geometryType.Polygon),
-                        fields);
+                        fields).Wait();
                     element = _targetDataset.Element(_name).Result;
                     if (element == null || !(element.Class is IFeatureClass))
                         return;
-                    _fdb.SetSpatialIndexBounds(_name, "BinaryTree2", iBounds, _spatialIndexDef.SplitRatio, _spatialIndexDef.MaxPerNode, _spatialIndexDef.Levels);
+                    _fdb.SetSpatialIndexBounds(_name, "BinaryTree2", iBounds, _spatialIndexDef.SplitRatio, _spatialIndexDef.MaxPerNode, _spatialIndexDef.Levels).Wait();
                     fc = (IFeatureClass)element.Class;
                 }
                 #endregion
@@ -288,7 +289,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                                     else if (map != null)
                                     {
                                         map.ZoomTo(new Envelope(x, y, x + _tileSizeX, y + _tileSizeY));
-                                        map.RefreshMap(DrawPhase.All, _cancelTracker);
+                                        map.RefreshMap(DrawPhase.All, _cancelTracker).Wait();
                                         if (_gridType == TileGridType.image_png)
                                             map.Bitmap.Save(filename + ".png", System.Drawing.Imaging.ImageFormat.Png);
                                         else if (_gridType == TileGridType.image_jpg)

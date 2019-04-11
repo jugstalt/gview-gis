@@ -58,7 +58,7 @@ namespace gView.Server.AppCode
                     InternetMapServer.MapDocument.RemoveMap(mapService.Fullname);
                 }
 
-                lock (locker)
+                //lock (locker)
                 {
                     string alias = name;
 
@@ -70,7 +70,7 @@ namespace gView.Server.AppCode
                     if (!String.IsNullOrWhiteSpace(folder))
                         name = folder + "/" + name;
 
-                    return FindServiceMap(name, alias, context).Result;
+                    return await FindServiceMap(name, alias, context);
                 }
             }
             catch(MapServerException mse)
@@ -86,14 +86,26 @@ namespace gView.Server.AppCode
 
         #region IMapServer Member
 
-        public IEnumerable<IMapService> Maps(IIdentity identity)
+        async public Task<IEnumerable<IMapService>> Maps(IIdentity identity)
         {
             try
             {
                 if (identity == null)
                     return InternetMapServer.mapServices.ToArray();
 
-                return InternetMapServer.mapServices.Where(s => s.HasAnyAccess(identity).Result);
+                List<IMapService> services = new List<IMapService>();
+                foreach(var service in InternetMapServer.mapServices)
+                {
+                    if(await service.HasAnyAccess(identity))
+                    {
+                        services.Add(service);
+                    }
+                }
+
+                return services;
+                //return  await
+                //    InternetMapServer.mapServices
+                //    .Where(async s => true == await s.HasAnyAccess(identity));
             }
             catch (MapServerException mse)
             {
@@ -101,7 +113,7 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                LogAsync(String.Empty, "MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace).Wait();
+                await LogAsync(String.Empty, "MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace);
                 //return new List<IMapService>();
                 throw new MapServerException("unknown error");
             }
@@ -246,7 +258,7 @@ namespace gView.Server.AppCode
                 {
                     modules = ((IMapDocumentModules)InternetMapServer.MapDocument).GetMapModules(map);
                 }
-                return new ServiceMap(map, this, modules);
+                return await ServiceMap.CreateAsync(map, this, modules);
             }
 
             if (name.Contains(",") /* && _serverLicType == ServerLicType.gdi*/)
@@ -344,7 +356,7 @@ namespace gView.Server.AppCode
                         InternetMapServer.mapServices.Add(new MapService(name, String.Empty, MapServiceType.GDI));
                     }
 
-                    return new ServiceMap(newMap, this, null);
+                    return await ServiceMap.CreateAsync(newMap, this, null);
                 }
             }
 

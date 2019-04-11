@@ -877,13 +877,13 @@ namespace gView.Interoperability.OGC
                 int imageWidth, imageHeight;
                 using(var dummy=new Bitmap(1,1))
                 {
-                    var size = DrawLegend(serviceMap, parameters, dummy);
+                    var size = await DrawLegend(serviceMap, parameters, dummy);
                     imageWidth = size.Width;
                     imageHeight = size.Height;
                 }
                 using(var legendBitmap = new Bitmap(imageWidth, imageHeight))
                 {
-                    DrawLegend(serviceMap, parameters, legendBitmap);
+                    await DrawLegend(serviceMap, parameters, legendBitmap);
 
                     MemoryStream ms = new MemoryStream();
                     legendBitmap.Save(ms, parameters.GetImageFormat());
@@ -892,7 +892,7 @@ namespace gView.Interoperability.OGC
             }
         }
 
-        private Size DrawLegend(IServiceMap serviceMap, WMSParameterDescriptor parameters, Bitmap image)
+        async private Task<Size> DrawLegend(IServiceMap serviceMap, WMSParameterDescriptor parameters, Bitmap image)
         {
             if (serviceMap?.TOC == null)
                 throw new MapServerException("Map has not table of content (TOC)");
@@ -934,7 +934,7 @@ namespace gView.Interoperability.OGC
                         if (defaultLayerVisibility == true && tocElement.LayerVisible == false)
                             continue;
 
-                        using (var tocLegendItems = serviceMap.TOC.LegendSymbol(tocElement))
+                        using (var tocLegendItems = await serviceMap.TOC.LegendSymbol(tocElement))
                         {
                             if (tocLegendItems.Items == null || tocLegendItems.Items.Count() == 0)
                                 continue;
@@ -1590,14 +1590,14 @@ namespace gView.Interoperability.OGC
 
         #region IMetadataProvider Member
 
-        public bool ApplyTo(object Object)
+        public Task<bool> ApplyTo(object Object)
         {
             if (Object is IServiceMap)
             {
                 _map = (IServiceMap)Object;
-                return true;
+                return Task.FromResult(true);
             }
-            return false;
+            return Task.FromResult(false);
         }
 
         public string Name

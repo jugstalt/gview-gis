@@ -1673,28 +1673,37 @@ namespace gView.Framework.Data
         private IQueryFilter _filter = null;
         private int _count = 0;
 
-        public QueryFilteredSelectionSet(IFeatureClass fClass, IQueryFilter filter)
-        {
-            if (fClass == null) return;
+        private QueryFilteredSelectionSet() { }
 
-            _filter = filter.Clone() as IQueryFilter;
-            if (_filter == null) return;
+        async static public Task<QueryFilteredSelectionSet> CreateAsync(IFeatureClass fClass, IQueryFilter filter)
+        {
+            var set = new QueryFilteredSelectionSet();
+
+            if (fClass == null)
+                return set;
+
+            set._filter = filter.Clone() as IQueryFilter;
+            if (set._filter == null)
+                return set;
 
             try
             {
-                using (IFeatureCursor cursor = fClass.GetFeatures(filter).Result)
+                using (IFeatureCursor cursor = await fClass.GetFeatures(filter))
                 {
-                    if (cursor == null) return;
+                    if (cursor == null)
+                        return set;
 
                     IFeature feature;
-                    while ((feature = cursor.NextFeature().Result) != null)
-                        _count++;
+                    while ((feature = await cursor.NextFeature()) != null)
+                        set._count++;
                 }
             }
             catch
             {
-                Clear();
+                set.Clear();
             }
+
+            return set;
         }
 
         public QueryFilteredSelectionSet(IQueryFilter filter, int count)

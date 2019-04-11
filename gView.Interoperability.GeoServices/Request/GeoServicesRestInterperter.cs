@@ -558,7 +558,7 @@ namespace gView.Interoperability.GeoServices.Request
                         if (tocElement == null)
                             continue;
 
-                        using (var tocLegendItems = serviceMap.TOC.LegendSymbol(tocElement))
+                        using (var tocLegendItems = await serviceMap.TOC.LegendSymbol(tocElement))
                         {
                             if (tocLegendItems.Items == null || tocLegendItems.Items.Count() == 0)
                                 continue;

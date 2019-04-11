@@ -26,30 +26,36 @@ namespace gView.Server.AppCode
 
         //private bool _ceckLayerVisibilityBeforeDrawing;
 
-        public ServiceMap(Map original, IMapServer mapServer, IEnumerable<IMapApplicationModule> modules)
+        private ServiceMap() { }
+
+        async static public Task<ServiceMap> CreateAsync(Map original, IMapServer mapServer, IEnumerable<IMapApplicationModule> modules)
         {
-            _mapServer = mapServer;
-            _modules = modules;
-            _layers = original._layers;
-            _datasets = original._datasets;
+            var serviceMap = new ServiceMap();
 
-            m_imageMerger = new ImageMerger2();
+            serviceMap._mapServer = mapServer;
+            serviceMap._modules = modules;
+            serviceMap._layers = original._layers;
+            serviceMap._datasets = original._datasets;
 
-            m_name = original.Name;
-            _toc = original._toc;
-            //_ceckLayerVisibilityBeforeDrawing = true;
-            _mapUnits = original.MapUnits;
-            _displayUnits = original.DisplayUnits;
-            this.refScale = original.refScale;
+            serviceMap.m_imageMerger = new ImageMerger2();
 
-            this.SpatialReference = original.Display.SpatialReference;
-            this.LayerDefaultSpatialReference = original.LayerDefaultSpatialReference != null ? original.LayerDefaultSpatialReference.Clone() as ISpatialReference : null;
+            serviceMap.m_name = original.Name;
+            serviceMap._toc = original._toc;
+            //serviceMap._ceckLayerVisibilityBeforeDrawing = true;
+            serviceMap._mapUnits = original.MapUnits;
+            serviceMap._displayUnits = original.DisplayUnits;
+            serviceMap.refScale = original.refScale;
 
-            _drawScaleBar = false;
+            serviceMap.SpatialReference = original.Display.SpatialReference;
+            serviceMap.LayerDefaultSpatialReference = original.LayerDefaultSpatialReference != null ? original.LayerDefaultSpatialReference.Clone() as ISpatialReference : null;
+
+            serviceMap._drawScaleBar = false;
 
             // Metadata
-            this.Providers = original.Providers;
-            base._debug = false;
+            await serviceMap.SetProviders(await original.GetProviders());
+            serviceMap._debug = false;
+
+            return serviceMap;
         }
 
         public XmlNode LayerDefs
@@ -166,7 +172,7 @@ namespace gView.Server.AppCode
         {
             get { return _image; }
         }
-        public System.Drawing.Bitmap Legend()
+        async public Task<System.Drawing.Bitmap> Legend()
         {
             ITOC toc = _toc.Clone(this) as ITOC;
 
@@ -267,7 +273,7 @@ namespace gView.Server.AppCode
                 layers = modLayers;
             }
 
-            return toc.Legend();
+            return await toc.Legend();
         }
 
         async override public Task<bool> RefreshMap(DrawPhase phase, ICancelTracker cancelTracker)
@@ -354,9 +360,10 @@ namespace gView.Server.AppCode
 
                     ServiceRequestThread srt = new ServiceRequestThread(this, wsLayer, webServiceOrder++);
                     srt.finish += new ServiceRequestThread.RequestThreadFinished(MapRequestThread_finished);
-                    Thread thread = new Thread(new ThreadStart(srt.ImageRequest));
+                    //Thread thread = new Thread(new ThreadStart(srt.ImageRequest));
                     m_imageMerger.max++;
-                    thread.Start();
+                    //thread.Start();
+                    var task = srt.ImageRequest(); // start Task and continue...
 
 
                     foreach (IWebServiceClass additionalWebService in additionalWebServices)
@@ -367,9 +374,10 @@ namespace gView.Server.AppCode
 
                         srt = new ServiceRequestThread(this, wsLayer, (++webServiceOrder2) + webServices.Count);
                         srt.finish += new ServiceRequestThread.RequestThreadFinished(MapRequestThread_finished);
-                        thread = new Thread(new ThreadStart(srt.ImageRequest));
+                        //thread = new Thread(new ThreadStart(srt.ImageRequest));
                         m_imageMerger.max++;
-                        thread.Start();
+                        //thread.Start();
+                        var additionalTask = srt.ImageRequest(); // start task and continue...
                     }
                 }
                 #endregion
@@ -517,7 +525,7 @@ namespace gView.Server.AppCode
                 {
                     while (m_imageMerger.Count < m_imageMerger.max)
                     {
-                        Thread.Sleep(10);
+                        await Task.Delay(10);
                     }
                 }
                 if (_drawScaleBar)
@@ -561,11 +569,11 @@ namespace gView.Server.AppCode
         {
             if (rLayer is ILayer && ((ILayer)rLayer).Class is IRasterClass)
             {
-                ((IRasterClass)((ILayer)rLayer).Class).BeginPaint(this.Display, cancelTracker);
+                await ((IRasterClass)((ILayer)rLayer).Class).BeginPaint(this.Display, cancelTracker);
             }
             else if (rLayer is IRasterClass)
             {
-                ((IRasterClass)rLayer).BeginPaint(this.Display, cancelTracker);
+                await ((IRasterClass)rLayer).BeginPaint(this.Display, cancelTracker);
             }
             string filterClause = String.Empty;
             if (rootLayer is IRasterCatalogLayer)
