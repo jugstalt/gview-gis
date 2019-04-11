@@ -181,7 +181,7 @@ namespace gView.Framework.Data.Joins
 
         #region IPersistable Member
 
-        public Task<bool> Load(IO.IPersistStream stream)
+        public void Load(IO.IPersistStream stream)
         {
             this.JoinName = (string)stream.Load("joinname", "Join");
             this.Field = (string)stream.Load("field", String.Empty);
@@ -191,11 +191,9 @@ namespace gView.Framework.Data.Joins
             this.JoinField = (string)stream.Load("joinfield", String.Empty);
             _fields = stream.Load("Fields", null, new Fields()) as Fields;
             _joinType = (joinType)stream.Load("jointype", (int)joinType.LeftOuterJoin);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IO.IPersistStream stream)
+        public void Save(IO.IPersistStream stream)
         {
             stream.Save("joinname", this.JoinName);
             stream.Save("field", this.Field);
@@ -206,8 +204,6 @@ namespace gView.Framework.Data.Joins
             if (_fields != null)
                 stream.Save("Fields", _fields);
             stream.Save("jointype", (int)_joinType);
-
-            return Task.FromResult(true);
         }
 
         #endregion

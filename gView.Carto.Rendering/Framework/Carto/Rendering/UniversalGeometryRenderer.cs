@@ -124,23 +124,19 @@ namespace gView.Framework.Carto.Rendering
 
         #region IPersistable Member
 
-        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(gView.Framework.IO.IPersistStream stream)
         {
             _symbol = (UniversalGeometrySymbol)stream.Load("Symbol", new UniversalGeometrySymbol(UniversalGeometrySymbol.SymbolType.normal), new UniversalGeometrySymbol(UniversalGeometrySymbol.SymbolType.normal));
             _symbolRotation = (SymbolRotation)stream.Load("SymbolRotation", _symbolRotation, _symbolRotation);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("Symbol", _symbol);
             if (_symbolRotation.RotationFieldName != "")
             {
                 stream.Save("SymbolRotation", _symbolRotation);
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -407,7 +403,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _usePointSymbol = (bool)stream.Load("UsePointSymbol", true);
             _useLineSymbol = (bool)stream.Load("UseLineSymbol", true);
@@ -416,11 +412,9 @@ namespace gView.Framework.Carto.Rendering
             _pointSymbol = (ISymbol)stream.Load("PointSymbol");
             _lineSymbol = (ISymbol)stream.Load("LineSymbol");
             _polygonSymbol = (ISymbol)stream.Load("PolygonSymbol");
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("UsePointSymbol", _usePointSymbol);
             stream.Save("UseLineSymbol", _useLineSymbol);
@@ -429,8 +423,6 @@ namespace gView.Framework.Carto.Rendering
             stream.Save("PointSymbol", _pointSymbol);
             stream.Save("LineSymbol", _lineSymbol);
             stream.Save("PolygonSymbol", _polygonSymbol);
-
-            return Task.FromResult(true);
         }
 
         #endregion

@@ -120,25 +120,21 @@ namespace gView.Framework.UI
 
             #region IPersistable Member
 
-            public Task<bool> Load(IPersistStream stream)
+            public void Load(IPersistStream stream)
             {
                 Favorite fav;
                 while ((fav = (Favorite)stream.Load("fav", null, new Favorite())) != null)
                 {
                     this.Add(fav);
                 }
-
-                return Task.FromResult(true);
             }
 
-            public Task<bool> Save(IPersistStream stream)
+            public void Save(IPersistStream stream)
             {
                 foreach (Favorite fav in this)
                 {
                     stream.Save("fav", fav);
                 }
-
-                return Task.FromResult(true);
             }
 
             #endregion
@@ -163,7 +159,7 @@ namespace gView.Framework.UI
 
             #region IPersistable Member
 
-            public Task<bool> Load(IPersistStream stream)
+            public void Load(IPersistStream stream)
             {
                 _name = (string)stream.Load("name", String.Empty);
                 _path = (string)stream.Load("path", String.Empty);
@@ -182,11 +178,9 @@ namespace gView.Framework.UI
                     }
                     catch { }
                 }
-
-                return Task.FromResult(true);
             }
 
-            public Task<bool> Save(IPersistStream stream)
+            public void Save(IPersistStream stream)
             {
                 stream.Save("name", _name);
                 stream.Save("path", _path);
@@ -194,8 +188,6 @@ namespace gView.Framework.UI
                 {
                     stream.Save("image", MyFavorites.ImageToBase64String(_image, ImageFormat.Png));
                 }
-
-                return Task.FromResult(true);
             }
 
             #endregion

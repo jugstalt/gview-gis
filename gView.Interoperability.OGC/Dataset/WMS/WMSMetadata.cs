@@ -116,7 +116,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _srsCode = (string)stream.Load("SrsCode", String.Empty);
             _getMapInfo = (string)stream.Load("GetMapFormat", String.Empty);
@@ -129,11 +129,9 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             if (arr != null) _getMapInfos = (string[])arr.Value;
             arr = (XmlStreamStringArray)stream.Load("GetFeatureInfoFormat", null, new XmlStreamStringArray());
             if (arr != null) _getFeatureInfos = (string[])arr.Value;
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("SrsCode", _srsCode);
             stream.Save("GetMapFormat", _getMapInfo);
@@ -142,8 +140,6 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             stream.Save("SrsCodes", new XmlStreamStringArray(_srsCodes));
             stream.Save("GetMapFormats", new XmlStreamStringArray(_getMapInfos));
             stream.Save("GetFeatureInfoFormat", new XmlStreamStringArray(_getFeatureInfos));
-
-            return Task.FromResult(true);
         }
 
         #endregion

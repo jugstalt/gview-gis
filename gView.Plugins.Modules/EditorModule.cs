@@ -40,25 +40,21 @@ namespace gView.Plugins.Modules
 
         #region IPersistable
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _editLayers.Clear();
             if (stream == null)
-                return Task.FromResult(true); ;
+                return;
 
             MapEditLayerPersist mapEditLayers;
             while ((mapEditLayers = (MapEditLayerPersist)stream.Load("MapEditLayers", null, new MapEditLayerPersist(this))) != null)
             {
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("MapEditLayers", new MapEditLayerPersist(this));
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -78,26 +74,24 @@ namespace gView.Plugins.Modules
 
             #region IPersistable Member
 
-            public Task<bool> Load(IPersistStream stream)
+            public void Load(IPersistStream stream)
             {
                 if (stream == null ||
                     _module == null)
-                    return Task.FromResult(true);
+                    return;
 
                 EditLayer eLayer;
                 while ((eLayer = (EditLayer)stream.Load("EditLayer", null, new EditLayer())) != null)
                 {
                     _module.AddEditLayer(eLayer);
                 }
-
-                return Task.FromResult(true);
             }
 
-            public Task<bool> Save(IPersistStream stream)
+            public void Save(IPersistStream stream)
             {
                 if (stream == null ||
                     _module == null)
-                    return Task.FromResult(true);
+                    return;
 
                 stream.Save("index", 0);
                 foreach (IEditLayer editLayer in _module.EditLayers)
@@ -105,8 +99,6 @@ namespace gView.Plugins.Modules
                     if (editLayer == null) continue;
                     stream.Save("EditLayer", editLayer);
                 }
-
-                return Task.FromResult(true);
             }
 
             #endregion
@@ -132,22 +124,18 @@ namespace gView.Plugins.Modules
 
             #region IPersistable
 
-            public Task<bool> Load(IPersistStream stream)
+            public void Load(IPersistStream stream)
             {
                 LayerId = (int)stream.Load("id", -1);
                 ClassName = (string)stream.Load("class", String.Empty);
                 Statements = (EditStatements)stream.Load("statement", (int)EditStatements.NONE);
-
-                return Task.FromResult(true);
             }
 
-            public Task<bool> Save(IPersistStream stream)
+            public void Save(IPersistStream stream)
             {
                 stream.Save("id", LayerId);
                 stream.Save("class", ClassName);
                 stream.Save("statement", (int)Statements);
-
-                return Task.FromResult(true);
             }
 
             #endregion

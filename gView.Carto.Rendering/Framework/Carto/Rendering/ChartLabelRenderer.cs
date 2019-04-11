@@ -574,7 +574,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IPersistable Member
 
-        public Task<bool> Load(IO.IPersistStream stream)
+        public void Load(IO.IPersistStream stream)
         {
             _type = (chartType)stream.Load("Type", (int)chartType.Pie);
             _sizeType = (sizeType)stream.Load("SizeType", (int)sizeType.ConstantSize);
@@ -588,11 +588,9 @@ namespace gView.Framework.Carto.Rendering
                 this.SetSymbol(sym._key, sym._symbol);
             }
             _outlineSymbol = stream.Load("Outline", null) as ILineSymbol;
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IO.IPersistStream stream)
+        public void Save(IO.IPersistStream stream)
         {
             stream.Save("Type", (int)_type);
             stream.Save("SizeType", (int)_sizeType);
@@ -607,8 +605,6 @@ namespace gView.Framework.Carto.Rendering
             }
             if (_outlineSymbol != null)
                 stream.Save("Outline", _outlineSymbol);
-
-            return Task.FromResult(true);
         }
 
         #endregion

@@ -684,7 +684,7 @@ namespace gView.DataSources.Fdb.SQLite
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _colorClasses = null;
             List<GridColorClass> classes = new List<GridColorClass>();
@@ -703,11 +703,9 @@ namespace gView.DataSources.Fdb.SQLite
             _useNoDataValue = (bool)stream.Load("UseIgnoreData", 0);
             _noDataValue = (double)stream.Load("IgnoreData", 0.0);
             _renderRawGridValues = (bool)stream.Load("RenderRawGridValues", false);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_colorClasses != null)
             {
@@ -724,8 +722,6 @@ namespace gView.DataSources.Fdb.SQLite
             stream.Save("UseIgnoreData", _useNoDataValue);
             stream.Save("IgnoreData", _noDataValue);
             stream.Save("RenderRawGridValues", _renderRawGridValues);
-
-            return Task.FromResult(true);
         }
 
         #endregion

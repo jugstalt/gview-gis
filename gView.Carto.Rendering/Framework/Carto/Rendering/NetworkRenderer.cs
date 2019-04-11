@@ -195,7 +195,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _useRefScale = (bool)stream.Load("useRefScale", true);
 
@@ -205,11 +205,9 @@ namespace gView.Framework.Carto.Rendering
             {
                 _renderers.Add(renderer);
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("useRefScale", _useRefScale);
 
@@ -218,8 +216,6 @@ namespace gView.Framework.Carto.Rendering
                 if (renderer == null) continue;
                 stream.Save("FeatureRenderer", renderer);
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion

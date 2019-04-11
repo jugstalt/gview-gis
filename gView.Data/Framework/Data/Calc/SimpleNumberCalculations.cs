@@ -53,20 +53,16 @@ namespace gView.Framework.Data.Calc
 
         #region IPersistable Member
 
-        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(gView.Framework.IO.IPersistStream stream)
         {
             _multiplicator = (double)stream.Load("multiplicator", 1.0);
             _zeroValue = (double)stream.Load("zvr", (double)1.0);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("multiplicator", _multiplicator);
             stream.Save("zvr", _zeroValue);
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -113,18 +109,14 @@ namespace gView.Framework.Data.Calc
 
         #region IPersistable Member
 
-        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(gView.Framework.IO.IPersistStream stream)
         {
             _zeroValue = (double)stream.Load("zvr", (double)1.0);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("zvr", _zeroValue);
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -181,20 +173,16 @@ namespace gView.Framework.Data.Calc
 
         #region IPersistable Member
 
-        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(gView.Framework.IO.IPersistStream stream)
         {
             _numerator = (double)stream.Load("numerator", (double)1.0);
             _zeroValue = (double)stream.Load("zvr", (double)1.0);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("numerator", _numerator);
             stream.Save("zvr", _zeroValue);
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -242,18 +230,14 @@ namespace gView.Framework.Data.Calc
 
         #region IPersistable Member
 
-        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(gView.Framework.IO.IPersistStream stream)
         {
             _function = (string)stream.Load("func", "x");
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("func", _function);
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -296,18 +280,14 @@ namespace gView.Framework.Data.Calc
 
         #region IPersistable Member
 
-        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(gView.Framework.IO.IPersistStream stream)
         {
             _constValue = (double)stream.Load("constvalue", (double)1.0);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("constvalue", _constValue);
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -354,18 +334,14 @@ namespace gView.Framework.Data.Calc
 
         #region IPersistable Member
 
-        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(gView.Framework.IO.IPersistStream stream)
         {
             _zeroValue = (double)stream.Load("zvr", (double)1.0);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("zvr", _zeroValue);
-
-            return Task.FromResult(true);
         }
 
         #endregion

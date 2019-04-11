@@ -326,7 +326,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             if (_queries == null) _queries = new List<QueryTheme>();
 
@@ -338,21 +338,17 @@ namespace gView.Plugins.MapTools.Dialogs
 
                 _queries.Add(theme);
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_queries == null)
-                return Task.FromResult(true);
+                return;
 
             foreach (QueryTheme theme in _queries)
             {
                 stream.Save("Query", theme);
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -391,7 +387,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _type = (NodeType)stream.Load("Type", (int)NodeType.query);
 
@@ -416,11 +412,9 @@ namespace gView.Plugins.MapTools.Dialogs
                 base.ImageIndex = base.SelectedImageIndex = 1;
             }
 
-            return Task.FromResult(true);
-
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("Type", (int)_type);
 
@@ -435,8 +429,6 @@ namespace gView.Plugins.MapTools.Dialogs
                     stream.Save("Table", node);
                 }
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -456,7 +448,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             Rows.Clear();
 
@@ -468,19 +460,15 @@ namespace gView.Plugins.MapTools.Dialogs
 
                 Rows.Add(row);
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             foreach (DataRow row in Rows)
             {
                 QueryThemeTableRowPersist per = new QueryThemeTableRowPersist(row);
                 stream.Save("PromptDef", per);
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -547,7 +535,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             base.Text = (string)stream.Load("Text","");
             _layerID = (int)stream.Load("LayerID", -1);
@@ -557,11 +545,9 @@ namespace gView.Plugins.MapTools.Dialogs
             if (_queryFields == null) _queryFields = new QueryThemeQueryFieldDef();
             _visFields = stream.Load("VisibleFieldDefs", null, new QueryThemeVisibleFieldDef()) as QueryThemeVisibleFieldDef;
             if (_visFields == null) _visFields = new QueryThemeVisibleFieldDef();
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("Text", base.Text);
             stream.Save("LayerID", _layerID);
@@ -569,8 +555,6 @@ namespace gView.Plugins.MapTools.Dialogs
 
             stream.Save("FieldDefs", _queryFields);
             stream.Save("VisibleFieldDefs", _visFields);
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -588,7 +572,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             Rows.Clear();
 
@@ -600,19 +584,15 @@ namespace gView.Plugins.MapTools.Dialogs
 
                 Rows.Add(row);
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             foreach (DataRow row in Rows)
             {
                 QueryThemeTableRowPersist per = new QueryThemeTableRowPersist(row);
                 stream.Save("FieldDef", per);
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -642,7 +622,7 @@ namespace gView.Plugins.MapTools.Dialogs
         }
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _useDefault = (bool)stream.Load("UseDefault", true);
             _primaryField = (string)stream.Load("PrimaryField", "");
@@ -657,11 +637,9 @@ namespace gView.Plugins.MapTools.Dialogs
 
                 Rows.Add(row);
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("UseDefault", _useDefault);
             stream.Save("PrimaryField", _primaryField);
@@ -670,8 +648,6 @@ namespace gView.Plugins.MapTools.Dialogs
                 QueryThemeTableRowPersist per = new QueryThemeTableRowPersist(row);
                 stream.Save("FieldDef", per);
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -687,10 +663,10 @@ namespace gView.Plugins.MapTools.Dialogs
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             if (_row == null || _row.Table == null || _row.Table.Columns == null)
-                return Task.FromResult(true);
+                return;
 
             foreach (DataColumn col in _row.Table.Columns)
             {
@@ -700,21 +676,17 @@ namespace gView.Plugins.MapTools.Dialogs
                 }
                 catch { }
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_row == null || _row.Table == null || _row.Table.Columns == null)
-                return Task.FromResult(true);
+                return;
 
             foreach (DataColumn col in _row.Table.Columns)
             {
                 stream.Save(col.ColumnName, _row[col.ColumnName]);
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion

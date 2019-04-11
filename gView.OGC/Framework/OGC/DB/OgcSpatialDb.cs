@@ -297,20 +297,16 @@ namespace gView.Framework.OGC.DB
 
         #region IPersistable Member
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             if (_layers != null) _layers.Clear();
-            await this.SetConnectionString((string)stream.Load("connectionstring", ""));
-            await this.Open();
-
-            return true;
+            this.SetConnectionString((string)stream.Load("connectionstring", ""));
+            this.Open();
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.SaveEncrypted("connectionstring", this.ConnectionString);
-
-            return Task.FromResult(true);
         }
 
         #endregion

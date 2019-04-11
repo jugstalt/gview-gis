@@ -382,18 +382,16 @@ namespace gView.Framework.Carto.Rendering
             }
         }
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _symbol = (ISymbol)stream.Load("Symbol");
             _symbolRotation = (SymbolRotation)stream.Load("SymbolRotation", _symbolRotation, _symbolRotation);
 
             _rotate = ((_symbol is ISymbolRotation) && _symbolRotation != null && _symbolRotation.RotationFieldName != "");
             _cartoMethod = (CartographicMethod)stream.Load("CartographicMethod", (int)CartographicMethod.Simple);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("Symbol", _symbol);
             if (_symbolRotation.RotationFieldName != "")
@@ -401,8 +399,6 @@ namespace gView.Framework.Carto.Rendering
                 stream.Save("SymbolRotation", _symbolRotation);
             }
             stream.Save("CartographicMethod", (int)_cartoMethod);
-
-            return Task.FromResult(true);
         }
 
         #endregion

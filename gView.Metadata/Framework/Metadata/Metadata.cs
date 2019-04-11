@@ -80,7 +80,7 @@ namespace gView.Framework.Metadata
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _abstract = (string)stream.Load("Abstract", String.Empty);
             _purpose = (string)stream.Load("Purpose", String.Empty);
@@ -90,11 +90,9 @@ namespace gView.Framework.Metadata
             _use_constraints = (string)stream.Load("Use_Constraints", String.Empty);
             _contact = (string)stream.Load("Contact", String.Empty);
             _credits = (string)stream.Load("Credits", String.Empty);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("Abstract", _abstract);
             stream.Save("Purpose", _purpose);
@@ -104,8 +102,6 @@ namespace gView.Framework.Metadata
             stream.Save("Use_Constraints", _use_constraints);
             stream.Save("Contact", _contact);
             stream.Save("Credits", _credits);
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -153,12 +149,12 @@ namespace gView.Framework.Metadata
 
     //    #region IPersistable Member
 
-    //    public Task<bool> Load(IPersistStream stream)
+    //    public void Load(IPersistStream stream)
     //    {
             
     //    }
 
-    //    public Task<bool> Save(IPersistStream stream)
+    //    public void Save(IPersistStream stream)
     //    {
             
     //    }

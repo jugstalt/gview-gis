@@ -13,7 +13,7 @@ using System.Xml;
 
 namespace gView.Server.AppCode
 {
-    public class ServerMapDocument : IMapDocument, IMapDocumentModules, IPersistable
+    public class ServerMapDocument : IMapDocument, IMapDocumentModules, IPersistableAsync
     {
         private ConcurrentBag<IMap> _maps = new ConcurrentBag<IMap>();
         // ToDo: ThreadSafe
@@ -147,7 +147,7 @@ namespace gView.Server.AppCode
             }
         }
 
-        public Task<bool> Load(IPersistStream stream)
+        async public Task<bool> LoadAsync(IPersistStream stream)
         {
             while (_maps.Count > 0)
             {
@@ -164,10 +164,10 @@ namespace gView.Server.AppCode
                 _mapModules.TryAdd(map, modules.Modules);
             }
 
-            return Task.FromResult(true);
+            return true;
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public Task<bool> SaveAsync(IPersistStream stream)
         {
             foreach (IMap map in _maps)
             {
@@ -226,10 +226,10 @@ namespace gView.Server.AppCode
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             if (_map == null)
-                return Task.FromResult(true);
+                return;
 
             while (true)
             {
@@ -240,14 +240,12 @@ namespace gView.Server.AppCode
                 if (module.Module != null)
                     _modules.Add(module.Module);
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_map == null)
-                return Task.FromResult(true);
+                return;
 
             PlugInManager pluginManager = new PlugInManager();
             foreach(IMapApplicationModule module in _modules)
@@ -257,8 +255,6 @@ namespace gView.Server.AppCode
                     stream.Save("Module", new ModulePersist(module));
                 }
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -280,7 +276,7 @@ namespace gView.Server.AppCode
 
         #region IPersistable Member
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             try
             {
@@ -288,24 +284,20 @@ namespace gView.Server.AppCode
                 _module = (IMapApplicationModule)PlugInManager.Create(guid);
 
                 if (!(_module is IPersistable))
-                    return true;
+                    return;
 
-                await ((IPersistable)_module).Load(stream);
+                ((IPersistable)_module).Load(stream);
             }
             catch { }
-
-            return true;
         }
 
-        async public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_module == null || !(_module is IPersistable))
-                return true;
+                return;
 
             stream.Save("GUID", PlugInManager.PlugInID(_module).ToString());
-            await ((IPersistable)_module).Save(stream);
-
-            return true;
+            ((IPersistable)_module).Save(stream);
         }
 
         #endregion

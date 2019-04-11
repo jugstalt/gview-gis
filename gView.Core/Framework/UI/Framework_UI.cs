@@ -308,7 +308,7 @@ namespace gView.Framework.UI
     public delegate void MapDeletedEvent(IMap map);
     public delegate void AfterSetFocusMapEvent(IMap map);
 
-    public interface IMapDocument   // IMxDocument
+    public interface IMapDocument  // IMxDocument
     {
         event LayerAddedEvent LayerAdded;
         event LayerRemovedEvent LayerRemoved;

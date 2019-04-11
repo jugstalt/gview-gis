@@ -435,7 +435,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             this.ValueField1 = (string)stream.Load("field1", "");
             this.ValueField2 = (string)stream.Load("field2", "");
@@ -453,11 +453,9 @@ namespace gView.Framework.Carto.Rendering
                 this[sym._key] = sym._symbol;
             }
             _symbolRotation = (SymbolRotation)stream.Load("SymbolRotation", _symbolRotation, _symbolRotation);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("field1", _valueField1);
             stream.Save("field2", _valueField2);
@@ -474,8 +472,6 @@ namespace gView.Framework.Carto.Rendering
             {
                 stream.Save("SymbolRotation", _symbolRotation);
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion

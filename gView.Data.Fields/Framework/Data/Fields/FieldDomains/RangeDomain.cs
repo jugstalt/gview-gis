@@ -41,20 +41,16 @@ namespace gView.Framework.Data.Fields.FieldDomains
 
         #region IPersistable Member
 
-        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(gView.Framework.IO.IPersistStream stream)
         {
             _minValue = (double)stream.Load("minValue", double.MinValue);
             _maxValue = (double)stream.Load("maxValue", double.MaxValue);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("minValue", _minValue);
             stream.Save("maxValue", _maxValue);
-
-            return Task.FromResult(true);
         }
 
         #endregion

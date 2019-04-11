@@ -23,7 +23,7 @@ namespace gView.Framework.Carto
     /// <summary>
     /// Zusammenfassung für Map.
     /// </summary>
-    public class Map : Display, IMap, IPersistable, IMetadata, IDebugging
+    public class Map : Display, IMap, IPersistableAsync, IMetadata, IDebugging
     {
         public virtual event LayerAddedEvent LayerAdded;
         public virtual event LayerRemovedEvent LayerRemoved;
@@ -1485,7 +1485,7 @@ namespace gView.Framework.Carto
             _layers = _layers.Where(l => l.Class != null).ToList();
         }
 
-        async public Task<bool> Load(IPersistStream stream)
+        async public Task<bool> LoadAsync(IPersistStream stream)
         {
             m_name = (string)stream.Load("name", "");
             m_minX = (double)stream.Load("minx", 0.0);
@@ -1523,9 +1523,9 @@ namespace gView.Framework.Carto
             {
                 if (dataset.State != DatasetState.opened)
                 {
-                    await dataset.Open();
+                    dataset.Open();
                 }
-                if(!String.IsNullOrWhiteSpace(dataset.LastErrorMessage))
+                if (!String.IsNullOrWhiteSpace(dataset.LastErrorMessage))
                 {
                     _errorMessages.Add(dataset.LastErrorMessage);
                 }
@@ -1548,7 +1548,7 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (fLayer.DatasetID < _datasets.Count)
                 {
-                    IDatasetElement element = await _datasets[fLayer.DatasetID].Element(fLayer.Title);
+                    IDatasetElement element = _datasets[fLayer.DatasetID].Element(fLayer.Title).Result;
                     if (element != null && element.Class is IFeatureClass)
                     {
                         fLayer = LayerFactory.Create(element.Class, fLayer) as FeatureLayer;
@@ -1563,7 +1563,7 @@ namespace gView.Framework.Carto
                 while (LayerIDExists(fLayer.ID))
                     fLayer.ID = _layerIDSequece.Number;
 
-                if(fLayer.Class==null)
+                if (fLayer.Class == null)
                 {
                     _errorMessages.Add("Invalid layer: " + fLayer.Title + "\n" + errorMessage);
                 }
@@ -1579,7 +1579,7 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (rcLayer.DatasetID < _datasets.Count)
                 {
-                    IDatasetElement element = await _datasets[rcLayer.DatasetID].Element(rcLayer.Title);
+                    IDatasetElement element = _datasets[rcLayer.DatasetID].Element(rcLayer.Title).Result;
                     if (element != null && element.Class is IRasterCatalogClass)
                     {
                         rcLayer = LayerFactory.Create(element.Class, rcLayer) as RasterCatalogLayer;
@@ -1606,7 +1606,7 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (rLayer.DatasetID < _datasets.Count)
                 {
-                    IDatasetElement element = await _datasets[rLayer.DatasetID].Element(rLayer.Title);
+                    IDatasetElement element = _datasets[rLayer.DatasetID].Element(rLayer.Title).Result;
                     if (element != null && element.Class is IRasterClass)
                     {
                         rLayer.SetRasterClass(element.Class as IRasterClass);
@@ -1635,7 +1635,7 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (wLayer.DatasetID <= _datasets.Count)
                 {
-                    IDatasetElement element = await _datasets[wLayer.DatasetID].Element(wLayer.Title);
+                    IDatasetElement element = _datasets[wLayer.DatasetID].Element(wLayer.Title).Result;
                     if (element != null && element.Class is IWebServiceClass)
                     {
                         //wLayer = LayerFactory.Create(element.Class, wLayer) as WebServiceLayer;
@@ -1687,7 +1687,7 @@ namespace gView.Framework.Carto
             return true;
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public Task<bool> SaveAsync(IPersistStream stream)
         {
             stream.Save("name", m_name);
             stream.Save("minx", m_minX);
@@ -1757,17 +1757,16 @@ namespace gView.Framework.Carto
 
             #region IPersistable Member
 
-            public Task<bool> Load(IPersistStream stream)
+            public void Load(IPersistStream stream)
             {
                 PersistableClass pClass;
                 while ((pClass = (PersistableClass)stream.Load("IClass", null, new PersistableClass(_layers))) != null)
                 {
                 }
 
-                return Task.FromResult(true);
             }
 
-            public Task<bool> Save(IPersistStream stream)
+            public void Save(IPersistStream stream)
             {
                 foreach (ILayer layer in _layers)
                 {
@@ -1776,8 +1775,6 @@ namespace gView.Framework.Carto
                         stream.Save("IClass", new PersistableClass(layer));
                     }
                 }
-
-                return Task.FromResult(true);
             }
 
             #endregion
@@ -1797,10 +1794,10 @@ namespace gView.Framework.Carto
 
             #region IPersistable Member
 
-            public Task<bool> Load(IPersistStream stream)
+            public void Load(IPersistStream stream)
             {
                 if (_layers == null)
-                    return Task.FromResult(true);
+                    return;
 
                 int layerID = (int)stream.Load("LayerID", -99);
                 foreach (ILayer layer in _layers)
@@ -1811,18 +1808,15 @@ namespace gView.Framework.Carto
                         stream.Load("Stream", null, layer.Class);
                     }
                 }
-                return Task.FromResult(true);
             }
 
-            public Task<bool> Save(IPersistStream stream)
+            public void Save(IPersistStream stream)
             {
                 if (_layer == null || !(_layer.Class is IPersistable))
-                    return Task.FromResult(true); 
+                    return; 
 
                 stream.Save("LayerID", _layer.ID);
                 stream.Save("Stream", _layer.Class);
-
-                return Task.FromResult(true);
             }
 
             #endregion

@@ -77,16 +77,14 @@ namespace gView.Plugins.MapTools.Graphics
 
         #region IPersistable Member
 
-        Task<bool> IPersistable.Load(IPersistStream stream)
+        void IPersistable.Load(IPersistStream stream)
         {
             //_visible = (bool)stream.Load("visible", true);
-            return Task.FromResult(true);
         }
 
-        Task<bool> IPersistable.Save(IPersistStream stream)
+        void IPersistable.Save(IPersistStream stream)
         {
             //stream.Save("visible", _visible);
-            return Task.FromResult(true);
         }
 
         #endregion

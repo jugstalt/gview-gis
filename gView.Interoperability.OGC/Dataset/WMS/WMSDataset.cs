@@ -264,9 +264,9 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
         #region IPersistable Member
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
-            await this.SetConnectionString((string)stream.Load("ConnectionString", ""));
+            this.SetConnectionString((string)stream.Load("ConnectionString", "")).Wait();
 
             //switch (_type)
             //{
@@ -282,7 +282,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             //        break;
             //}
 
-            await Open();
+            Open().Wait();
 
             if (_class != null)
             {
@@ -291,11 +291,9 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 _class.FeatureInfoFormat = (string)stream.Load("WMS_InfoFormat", String.Empty);
                 _class.UseSLD_BODY = (bool)stream.Load("UseSLD_BODY", _class.UseSLD_BODY);
             }
-
-            return true;
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("ConnectionString", this.ConnectionString);
             stream.Save("Type", (int)_type);
@@ -307,8 +305,6 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 stream.Save("WMS_InfoFormat", _class.FeatureInfoFormat);
                 stream.Save("UseSLD_BODY", _class.UseSLD_BODY);
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion

@@ -319,7 +319,7 @@ namespace gView.DataSources.Raster.File
             get { return null; }
         }
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _title = (string)stream.Load("title");
             _filename = (string)stream.Load("filename");
@@ -345,7 +345,7 @@ namespace gView.DataSources.Raster.File
             }
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("title", _title);
             stream.Save("filename", _filename);

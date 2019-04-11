@@ -73,14 +73,12 @@ namespace gView.Plugins.MapTools
             get { return ""; }
         }
 
-        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(gView.Framework.IO.IPersistStream stream)
         {
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(gView.Framework.IO.IPersistStream stream)
         {
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -156,16 +154,14 @@ namespace gView.Plugins.MapTools
 
         #region IPersistable Member
 
-        Task<bool> IPersistable.Load(IPersistStream stream)
+        void IPersistable.Load(IPersistStream stream)
         {
             //_visible = (bool)stream.Load("visible", true);
-            return Task.FromResult(true);
         }
 
-        Task<bool> IPersistable.Save(IPersistStream stream)
+        void IPersistable.Save(IPersistStream stream)
         {
             //stream.Save("visible", _visible);
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -206,14 +202,12 @@ namespace gView.Plugins.MapTools
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
-            return Task.FromResult(true);
         }
 
         #endregion

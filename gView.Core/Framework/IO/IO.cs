@@ -21,9 +21,15 @@ namespace gView.Framework.IO
 
     public interface IPersistable 
 	{
-        Task<bool> Load(IPersistStream stream);
-		Task<bool> Save(IPersistStream stream);
+        void Load(IPersistStream stream);
+		void Save(IPersistStream stream);
 	}
+
+    public interface IPersistableAsync
+    {
+        Task<bool> LoadAsync(IPersistStream stream);
+        Task<bool> SaveAsync(IPersistStream stream);
+    }
 
     public interface IPersistableDictionary : IPersistable
     {

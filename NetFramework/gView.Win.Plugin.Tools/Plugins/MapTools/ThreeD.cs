@@ -45,14 +45,12 @@ namespace gView.Plugins.MapTools
 
         #region IPersistable Member
 
-        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(gView.Framework.IO.IPersistStream stream)
         {
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(gView.Framework.IO.IPersistStream stream)
         {
-            return Task.FromResult(true);
         }
 
         #endregion

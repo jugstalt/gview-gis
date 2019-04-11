@@ -342,7 +342,7 @@ namespace gView.DataSources.Fdb.MSSql
             }
         }
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             string connectionString = (string)stream.Load("connectionstring", "");
             if (_fdb != null)
@@ -351,17 +351,13 @@ namespace gView.DataSources.Fdb.MSSql
                 _fdb = null;
             }
 
-            await this.SetConnectionString(connectionString);
-            await this.Open();
-
-            return true;
+            this.SetConnectionString(connectionString).Wait();
+            this.Open().Wait();
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.SaveEncrypted("connectionstring", this.ConnectionString);
-
-            return Task.FromResult(true);
         }
 
         #endregion

@@ -238,7 +238,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IPersistable Member
 
-        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(gView.Framework.IO.IPersistStream stream)
         {
             this.Release();
 
@@ -246,18 +246,14 @@ namespace gView.Framework.Carto.Rendering
             _lineSymbol = stream.Load("lineSymbol", null) as ILineSymbol;
             _capType = (lineCapType)stream.Load("capType", lineCapType.ArrowLine);
             _format = (string)stream.Load("format", String.Empty);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("textSymbol", _textSymbol);
             stream.Save("lineSymbol", _lineSymbol);
             stream.Save("capType", _capType);
             stream.Save("format", _format);
-
-            return Task.FromResult(true);
         }
 
         #endregion

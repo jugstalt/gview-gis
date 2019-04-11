@@ -61,22 +61,18 @@ namespace gView.Framework.Symbology
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             this.Color1 = Color.FromArgb((int)stream.Load("color1", Color.Red.ToArgb()));
             this.Color2 = Color.FromArgb((int)stream.Load("color2", Color.Blue.ToArgb()));
             this.Angle = (float)stream.Load("angle", 0f);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("color1", this.Color1.ToArgb());
             stream.Save("color2", this.Color2.ToArgb());
             stream.Save("angle", this.Angle);
-
-            return Task.FromResult(true);
         }
 
         #endregion

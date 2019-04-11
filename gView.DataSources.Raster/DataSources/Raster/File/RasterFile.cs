@@ -262,19 +262,15 @@ namespace gView.DataSources.Raster.File
             get { return ""; }
         }
 
-        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(gView.Framework.IO.IPersistStream stream)
         {
             _directory=(string)stream.Load("Directory");
             if (_directory == null) _directory = "";
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("Directory", _directory);
-
-            return Task.FromResult(true);
         }
 
         #endregion

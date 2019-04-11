@@ -444,7 +444,7 @@ namespace gView.Server.AppCode
                 if (!xmlStream.ReadStream(sr)) return false;
 
             ServerMapDocument mapDocument = new ServerMapDocument();
-            await mapDocument.Load(xmlStream);
+            await mapDocument.LoadAsync(xmlStream);
 
             if (mapDocument.Maps.Count() == 0)
                 throw new MapServerException("No maps found in document");
@@ -486,7 +486,7 @@ namespace gView.Server.AppCode
                 if (!xmlStream.ReadStream(sr)) return false;
 
             ModulesPersists modules = new ModulesPersists(map);
-            await modules.Load(pluginStream);
+            modules.Load(pluginStream);
 
             //foreach (IMap m in ListOperations<IMap>.Clone(_doc.Maps))
             //{

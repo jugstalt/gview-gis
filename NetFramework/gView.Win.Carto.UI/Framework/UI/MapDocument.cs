@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.UI
 {
-	public class MapDocument : IMapDocument,IPersistable
+	public class MapDocument : IMapDocument,IPersistableAsync
 	{
 		List<IMap> _maps;
 		private int _focusMapIndex=-1;
@@ -228,7 +228,7 @@ namespace gView.Framework.UI
 			}
 		}
 
-		public Task<bool> Load(IPersistStream stream)
+		async public Task<bool> LoadAsync(IPersistStream stream)
 		{
             while (_maps.Count > 0)
             {
@@ -256,10 +256,10 @@ namespace gView.Framework.UI
             }
             _tableRelations = (TableRelations)stream.Load("TableRelations", new TableRelations(this), new TableRelations(this));
 
-            return Task.FromResult(true);
+            return true;
 		}
 
-		public Task<bool> Save(IPersistStream stream)
+		public Task<bool> SaveAsync(IPersistStream stream)
 		{
 			stream.Save("focusMapIndex",_focusMapIndex);
 
@@ -294,24 +294,22 @@ namespace gView.Framework.UI
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             if (_application == null)
-                return Task.FromResult(true);
+                return;
 
             while (true)
             {
                 ToolPersist toolper = stream.Load("Tool", null, new ToolPersist(_application)) as ToolPersist;
                 if (toolper == null) break;
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_application == null)
-                return Task.FromResult(true);
+                return;
 
             foreach (ITool tool in _application.Tools)
             {
@@ -319,8 +317,6 @@ namespace gView.Framework.UI
 
                 stream.Save("Tool", new ToolPersist(tool));
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -341,10 +337,10 @@ namespace gView.Framework.UI
         }
         #region IPersistable Member
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             if (_app == null)
-                return true;
+                return;
 
             try
             {
@@ -352,23 +348,19 @@ namespace gView.Framework.UI
                 ITool tool = _app.Tool(guid);
 
                 if (!(tool is IPersistable))
-                    return true;
-                await ((IPersistable)tool).Load(stream);
+                    return;
+                ((IPersistable)tool).Load(stream);
             }
             catch { }
-
-            return true;
         }
 
-        async public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_tool == null || !(_tool is IPersistable))
-                return true;
+                return;
 
             stream.Save("GUID", PlugInManager.PlugInID(_tool).ToString());
-            await ((IPersistable)_tool).Save(stream);
-
-            return true;
+            ((IPersistable)_tool).Save(stream);
         }
 
         #endregion
@@ -385,10 +377,10 @@ namespace gView.Framework.UI
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             if (_application == null)
-                return Task.FromResult(true);
+                return;
 
             while (true)
             {
@@ -396,13 +388,13 @@ namespace gView.Framework.UI
                 if (toolbarper == null) break;
             }
 
-            return Task.FromResult(true);
+            return;
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_application == null)
-                return Task.FromResult(true);
+                return;
 
             List<IToolbar> toolbars=_application.Toolbars;
             toolbars.Sort(new ToolbarPositionComparer());
@@ -414,7 +406,7 @@ namespace gView.Framework.UI
                 stream.Save("Toolbar", new ToolbarPersist(toolbar));
             }
 
-            return Task.FromResult(true);
+            return;
         }
 
         #endregion
@@ -468,10 +460,10 @@ namespace gView.Framework.UI
 
         #region IPersistable Member
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             if (_app == null)
-                return true;
+                return;
 
             try
             {
@@ -479,23 +471,19 @@ namespace gView.Framework.UI
                 IToolbar toolbar = _app.Toolbar(guid);
 
                 if (!(toolbar is IPersistable))
-                    return true;
-                await ((IPersistable)toolbar).Load(stream);
+                    return;
+                ((IPersistable)toolbar).Load(stream);
             }
             catch { }
-
-            return true;
         }
 
-        async public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_toolbar == null || !(_toolbar is IPersistable))
-                return true;
+                return;
 
             stream.Save("GUID", PlugInManager.PlugInID(_toolbar).ToString());
-            await ((IPersistable)_toolbar).Save(stream);
-
-            return true;
+            ((IPersistable)_toolbar).Save(stream);
         }
 
         #endregion
@@ -512,27 +500,25 @@ namespace gView.Framework.UI
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             if (_application == null)
-                return Task.FromResult(true);
+                return;
 
             if (_application == null)
-                return Task.FromResult(true);
+                return;
 
             while (true)
             {
                 ModulePersist moduleper = stream.Load("Module", null, new ModulePersist(_application)) as ModulePersist;
                 if (moduleper == null) break;
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_application == null)
-                return Task.FromResult(true);
+                return;
 
             PlugInManager compMan=new PlugInManager();
             foreach (Type compType in compMan.GetPlugins(Plugins.Type.IMapApplicationModule))
@@ -544,7 +530,6 @@ namespace gView.Framework.UI
                 }
             }
 
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -566,10 +551,10 @@ namespace gView.Framework.UI
 
         #region IPersistable Member
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             if (_app == null)
-                return true;
+                return;
 
             try
             {
@@ -577,23 +562,19 @@ namespace gView.Framework.UI
                 IMapApplicationModule module = _app.IMapApplicationModule(guid);
 
                 if (!(module is IPersistable))
-                    return true;
-                await ((IPersistable)module).Load(stream);
+                    return;
+                ((IPersistable)module).Load(stream);
             }
             catch { }
-
-            return true;
         }
 
-        async public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_module == null || !(_module is IPersistable))
-                return true;
+                return;
 
             stream.Save("GUID", PlugInManager.PlugInID(_module).ToString());
-            await ((IPersistable)_module).Save(stream);
-
-            return true;
+            ((IPersistable)_module).Save(stream);
         }
 
         #endregion

@@ -495,25 +495,21 @@ namespace gView.Framework.Symbology
             get { return ""; }
         }
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _rotationFieldName = (string)stream.Load("RotationFieldname", "");
             _rotType = (RotationType)stream.Load("RotationType", RotationType.aritmetic);
             _rotUnit = (RotationUnit)stream.Load("RotationUnit", RotationUnit.deg);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_rotationFieldName == "")
-                return Task.FromResult(true); ;
+                return;
 
             stream.Save("RotationFieldname", _rotationFieldName);
             stream.Save("RotationType", (int)_rotType);
             stream.Save("RotationUnit", (int)_rotUnit);
-
-            return Task.FromResult(true);
         }
 
         #endregion

@@ -191,7 +191,7 @@ namespace gView.Framework.Geometry
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _name = (string)stream.Load("name", "");
             _X = (double)stream.Load("X", 0.0);
@@ -201,11 +201,9 @@ namespace gView.Framework.Geometry
             _rY = (double)stream.Load("rY", 0.0);
             _rZ = (double)stream.Load("rZ", 0.0);
             _scale = (double)stream.Load("scale", 0.0);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("name", _name);
             stream.Save("X", _X);
@@ -215,8 +213,6 @@ namespace gView.Framework.Geometry
             stream.Save("rY", _rY);
             stream.Save("rZ", _rZ);
             stream.Save("scale", _scale);
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -554,7 +550,7 @@ namespace gView.Framework.Geometry
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _ID = (string)stream.Load("id", "custom");
             _description = (string)stream.Load("description", "");
@@ -563,19 +559,15 @@ namespace gView.Framework.Geometry
             _datum = stream.Load("GeodeticDatum", null, new GeodeticDatum()) as GeodeticDatum;
 
             _sParams.SetMembers(this.Parameters);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("id", _ID);
             stream.Save("description", _description);
             stream.Save("params", _params);
 
             if (_datum != null) stream.Save("GeodeticDatum", _datum);
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -842,7 +834,7 @@ namespace gView.Framework.Geometry
         public string ToXmlString()
         {
             XmlStream xmlStream = new XmlStream("SpatialReference");
-            this.Save(xmlStream).Wait();
+            this.Save(xmlStream);
             return xmlStream.ToString();
         }
 
@@ -852,7 +844,7 @@ namespace gView.Framework.Geometry
             StringReader sr = new StringReader(xml);
             stream.ReadStream(sr);
 
-            this.Load(stream).Wait();
+            this.Load(stream);
         }
 
         #region IBase64String Member
@@ -1089,14 +1081,12 @@ namespace gView.Framework.Geometry
 			}
 		}
 
-		public Task<bool> Load(IPersistStream stream)
+		public void Load(IPersistStream stream)
 		{
-            return Task.FromResult(true);
         }
 
-		public Task<bool> Save(IPersistStream stream)
+		public void Save(IPersistStream stream)
 		{
-            return Task.FromResult(true);
         }
 
 		#endregion

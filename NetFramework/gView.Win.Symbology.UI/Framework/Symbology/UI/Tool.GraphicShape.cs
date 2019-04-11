@@ -1162,7 +1162,7 @@ namespace gView.Framework.Symbology.UI
 
         #region IPersistable Member
 
-        virtual public Task<bool> Load(IPersistStream stream)
+        virtual public void Load(IPersistStream stream)
         {
             _scaleX = (double)stream.Load("scaleX", 1.0);
             _scaleY = (double)stream.Load("scaleY", 1.0);
@@ -1184,10 +1184,9 @@ namespace gView.Framework.Symbology.UI
                 Ghost.Translation(_xOffset, _yOffset);
             }
 
-            return Task.FromResult(true);
         }
 
-        virtual public Task<bool> Save(IPersistStream stream)
+        virtual public void Save(IPersistStream stream)
         {
             if (this is IConstructable && ((IConstructable)this).hasVertices && _template!=null)
             {
@@ -1204,8 +1203,6 @@ namespace gView.Framework.Symbology.UI
             stream.Save("xOffset", _xOffset);
             stream.Save("yOffset", _yOffset);
             stream.Save("Angle", _angle);
-
-            return Task.FromResult(true);
         }
 
         #endregion

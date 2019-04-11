@@ -65,7 +65,7 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         #region IPersistable Member
 
-        async public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(gView.Framework.IO.IPersistStream stream)
         {
             _dataset = null;
             string connectionString = (string)stream.Load("ConnectionString", String.Empty);
@@ -73,20 +73,16 @@ namespace gView.Interoperability.ArcXML.Dataset
             if (connectionString != String.Empty)
             {
                 _dataset = new ArcIMSDataset();
-                await _dataset.SetConnectionString(connectionString);
+                _dataset.SetConnectionString(connectionString).Wait();
             }
-
-            return true;
         }
 
-        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(gView.Framework.IO.IPersistStream stream)
         {
             if (_dataset == null)
-                return Task.FromResult(true);
+                return;
 
             stream.Save("ConnectionString", _dataset.ConnectionString);
-
-            return Task.FromResult(true);
         }
 
         #endregion

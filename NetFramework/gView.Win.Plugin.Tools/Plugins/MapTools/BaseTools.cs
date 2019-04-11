@@ -2912,26 +2912,22 @@ namespace gView.Plugins.MapTools
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _type = (ToolType)stream.Load("ToolType", (int)ToolType.click);
             _tolerance = (double)stream.Load("Tolerance", (double)3.0);
 
             UserDefinedQueries = stream.Load("UserDefinedQueries", null, new QueryThemes(null)) as QueryThemes;
             ThemeMode = (QueryThemeMode)stream.Load("QueryMode", (int)QueryThemeMode.Default);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("ToolType", (int)_type);
             stream.Save("Tolerance", _tolerance);
 
             if (UserDefinedQueries != null) stream.Save("UserDefinedQueries", UserDefinedQueries);
             stream.Save("QueryMode", (int)ThemeMode);
-
-            return Task.FromResult(true);
         }
 
         #endregion

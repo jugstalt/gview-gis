@@ -73,7 +73,7 @@ namespace gView.Framework.Db
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             foreach (String key in this.UserDataTypes)
             {
@@ -89,11 +89,9 @@ namespace gView.Framework.Db
             {
                 this.SetUserData(kv.Key, kv.Value);
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("ProviderID", _providerID);
             stream.Save("SchemaName", _schemaName);
@@ -110,8 +108,6 @@ namespace gView.Framework.Db
                     stream.Save("KeyValue", new KeyValue(key, this.GetUserData(key).ToString()));
                 }
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -142,7 +138,7 @@ namespace gView.Framework.Db
 
             #region IPersistable Member
 
-            public Task<bool> Load(IPersistStream stream)
+            public void Load(IPersistStream stream)
             {
                 _key = (string)stream.Load("Key", String.Empty);
                 if (_key.ToLower() == "password")
@@ -153,11 +149,9 @@ namespace gView.Framework.Db
                 {
                     _value = (string)stream.Load("Val", String.Empty);
                 }
-
-                return Task.FromResult(true);
             }
 
-            public Task<bool> Save(IPersistStream stream)
+            public void Save(IPersistStream stream)
             {
                 stream.Save("Key", _key);
                 if (_key.ToLower() == "password")
@@ -168,8 +162,6 @@ namespace gView.Framework.Db
                 {
                     stream.Save("Val", _value);
                 }
-
-                return Task.FromResult(true);
             }
 
             #endregion
@@ -179,7 +171,7 @@ namespace gView.Framework.Db
         public override string ToString()
         {
             XmlStream stream = new XmlStream("DbConnectionString");
-            Save(stream).Wait();
+            Save(stream);
 
             return stream.ToString();
         }
@@ -189,7 +181,7 @@ namespace gView.Framework.Db
             StringReader sr=new StringReader(connection);
             stream.ReadStream(sr);
 
-            Load(stream).Wait();
+            Load(stream);
         }
 
         public bool TryFromConnectionString(string providerId, string connectionString)

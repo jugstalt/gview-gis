@@ -162,19 +162,15 @@ namespace gView.DataSources.EventTable
 
         #region IPersistable Member
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
-            await this.SetConnectionString((string)stream.Load("connectionstring", String.Empty));
-            await this.Open();
-
-            return true;
+            this.SetConnectionString((string)stream.Load("connectionstring", String.Empty)).Wait();
+            this.Open().Wait();
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.SaveEncrypted("connectionstring", this.ConnectionString);
-
-            return Task.FromResult(true);
         }
 
         #endregion

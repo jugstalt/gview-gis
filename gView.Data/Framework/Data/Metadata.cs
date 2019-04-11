@@ -172,10 +172,10 @@ namespace gView.Framework.Data
             }
             #region IPersistable Member
 
-            public Task<bool> Load(IPersistStream stream)
+            public void Load(IPersistStream stream)
             {
                 if (_datasets == null)
-                    return Task.FromResult(true); 
+                    return; 
 
                 string ConnectionString = (string)stream.Load("ConnectionString","");
                 int datasetID = (int)stream.Load("DatasetID", -1);
@@ -185,13 +185,10 @@ namespace gView.Framework.Data
                 {
                     _datasets[datasetID].ReadMetadata(stream);
                 }
-
-                return Task.FromResult(true);
             }
 
-            public Task<bool> Save(IPersistStream stream)
+            public void Save(IPersistStream stream)
             {
-                return Task.FromResult(true);
             }
 
             #endregion
@@ -209,21 +206,20 @@ namespace gView.Framework.Data
 
             #region IPersistable Member
 
-            public Task<bool> Load(IPersistStream stream)
+            public void Load(IPersistStream stream)
             {
-                return Task.FromResult(true);
             }
-            public Task<bool> Save(IPersistStream stream)
+            public void Save(IPersistStream stream)
             {
                 if (_dataset == null)
-                    return Task.FromResult(true); 
+                    return; 
 
                 stream.Save("ConnectionString", _dataset.ConnectionString);
                 stream.Save("DatasetID", _datasetID);
 
                 _dataset.WriteMetadata(stream);
 
-                return Task.FromResult(true);
+                return;
             }
 
             #endregion

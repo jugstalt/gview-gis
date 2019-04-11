@@ -464,24 +464,20 @@ namespace gView.Framework.Data
 
         #region IPersistable Member
 
-        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(gView.Framework.IO.IPersistStream stream)
         {
             MinValue = (double)stream.Load("MinValue", 0.0);
             MaxValue = (double)stream.Load("MaxValue", 0.0);
             Color = Color.FromArgb((int)stream.Load("Color", Color.White.ToArgb()));
             Legend = (string)stream.Load("Legend", String.Empty);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("MinValue", MinValue);
             stream.Save("MaxValue", MaxValue);
             stream.Save("Color", Color.ToArgb());
             stream.Save("Legend", Legend);
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -620,25 +616,21 @@ namespace gView.Framework.Data
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             IFeatureLayerJoin join;
             while ((join = stream.Load("Join", null) as IFeatureLayerJoin) != null)
             {
                 this.Add(join);
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             foreach (IFeatureLayerJoin join in this)
             {
                 stream.Save("Join", join);
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion

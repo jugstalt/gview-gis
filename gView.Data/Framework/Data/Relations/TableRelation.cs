@@ -110,7 +110,7 @@ namespace gView.Framework.Data.Relations
 
         #region IPersistable Member
 
-        public Task<bool> Load(IO.IPersistStream stream)
+        public void Load(IO.IPersistStream stream)
         {
             this.RelationName = (string)stream.Load("RelationName");
 
@@ -121,11 +121,9 @@ namespace gView.Framework.Data.Relations
             this.RightTableField = (string)stream.Load("RightTableField");
 
             this.LogicalOperator = (string)stream.Load("LogicalOperator", "=");
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IO.IPersistStream stream)
+        public void Save(IO.IPersistStream stream)
         {
             stream.Save("RelationName", this.RelationName);
             
@@ -145,8 +143,6 @@ namespace gView.Framework.Data.Relations
             }
 
             stream.Save("LogicalOperator", this.LogicalOperator);
-
-            return Task.FromResult(true);
         }
         
         #endregion

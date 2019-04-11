@@ -191,7 +191,7 @@ namespace gView.Framework.Metadata
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _use = (bool)stream.Load("use", false);
 
@@ -248,11 +248,9 @@ namespace gView.Framework.Metadata
                     (double)stream.Load("origin_ll_y" + i, GetOriginLowerLeft(epsg)?.Y ?? 0D)
                     ));
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("use", _use);
 
@@ -309,8 +307,6 @@ namespace gView.Framework.Metadata
 
                 counter++;
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion

@@ -735,9 +735,9 @@ namespace gView.Framework.Symbology
 
         #region IPersistable Members
 
-        async virtual public Task<bool> Load(IPersistStream stream)
+        virtual public void Load(IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
 
             string err = "";
             try
@@ -779,13 +779,11 @@ namespace gView.Framework.Symbology
             Angle = (float)stream.Load("Angle", (float)0);
             _align = (TextSymbolAlignment)stream.Load("Alignment", (int)TextSymbolAlignment.Center);
             this.IncludesSuperScript = (bool)stream.Load("includessuperscript", false);
-
-            return true;
         }
 
-        async virtual public Task<bool> Save(IPersistStream stream)
+        virtual public void Save(IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
 
             try
             {
@@ -811,8 +809,6 @@ namespace gView.Framework.Symbology
             stream.Save("maxfontsize", this.MaxFontSize);
             stream.Save("minfontsize", this.MinFontSize);
             stream.Save("includessuperscript", this.IncludesSuperScript);
-
-            return true;
         }
 
         #endregion
@@ -1102,26 +1098,22 @@ namespace gView.Framework.Symbology
 
         #region IPersistable Members
 
-        async override public Task<bool> Load(IPersistStream stream)
+        override public void Load(IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
 
             this.GlowingColor = Color.FromArgb((int)stream.Load("outlinecolor", Color.Yellow.ToArgb()));
             this.GlowingSmoothingmode = (SymbolSmoothing)stream.Load("outlinesmoothing", (int)this.Smoothingmode);
             this.GlowingWidth = (int)stream.Load("outlinewidth", 1);
-
-            return true;
         }
 
-        async override public Task<bool> Save(IPersistStream stream)
+        override public void Save(IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
 
             stream.Save("outlinecolor", this.GlowingColor.ToArgb());
             stream.Save("outlinesmoothing", (int)this.GlowingSmoothingmode);
             stream.Save("outlinewidth", this.GlowingWidth);
-
-            return true;
         }
 
         #endregion
@@ -1250,22 +1242,18 @@ namespace gView.Framework.Symbology
 
         #region IPersistable Members
 
-        async override public Task<bool> Load(IPersistStream stream)
+        override public void Load(IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
 
             this.ColorOutline = Color.FromArgb((int)stream.Load("outlinecolor", Color.Yellow.ToArgb()));
-
-            return true;
         }
 
-        async override public Task<bool> Save(IPersistStream stream)
+        override public void Save(IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
 
             stream.Save("outlinecolor", this.ColorOutline.ToArgb());
-
-            return true;
         }
 
         #endregion

@@ -38,20 +38,16 @@ namespace gView.Framework.system
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _number = (int)stream.Load("number", 0);
             _inc = (int)stream.Load("increment", 0);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("number", _number);
             stream.Save("increment", _inc);
-
-            return Task.FromResult(true);
         }
 
         #endregion

@@ -88,12 +88,12 @@ namespace gView.Framework.UI.Controls
 
         #region IPersistable Member
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             if (_toolbar == null)
-                return true;
+                return;
 
-            await _toolbar.Load(stream);
+            _toolbar.Load(stream);
 
             this.Visible = (bool)stream.Load("visible", true);
             _panel = (ToolbarPanel)stream.Load("panel", (int)ToolbarPanel.top);
@@ -116,22 +116,19 @@ namespace gView.Framework.UI.Controls
                 toolStripPanel.Controls.Add(this);
             }
 
-            return true;
         }
 
-        async public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_toolbar == null)
-                return true;
+                return; 
 
-            await _toolbar.Save(stream);
+            _toolbar.Save(stream);
 
             stream.Save("visible", this.Visible);
             stream.Save("panel", (int)_panel);
             stream.Save("x", this.Location.X);
             stream.Save("y", this.Location.Y);
-
-            return true;
         }
 
         #endregion

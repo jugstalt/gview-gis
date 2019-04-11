@@ -167,7 +167,7 @@ namespace gView.Framework.Network.Build
             if (weight != null)
             {
                 XmlStream stream = new XmlStream("weight");
-                weight.Save(stream).Wait();
+                weight.Save(stream);
 
                 MemoryStream ms = new MemoryStream();
                 stream.WriteStream(ms);
@@ -184,7 +184,7 @@ namespace gView.Framework.Network.Build
                 stream.ReadStream(ms);
 
                 GraphWeight weight = new GraphWeight();
-                weight.Load(stream).Wait();
+                weight.Load(stream);
                 return weight;
             }
             return null;

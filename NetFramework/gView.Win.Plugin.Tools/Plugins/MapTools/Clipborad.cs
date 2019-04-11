@@ -1126,7 +1126,7 @@ namespace gView.Plugins.MapTools
                     ms.Position = 0;
 
                     stream.ReadStream(ms);
-                    ((IPersistable)extension).Load(stream).Wait();
+                    ((IPersistable)extension).Load(stream);
                     return extension;
                 }
                 catch

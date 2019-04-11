@@ -58,7 +58,7 @@ namespace gView.DataSources.EventTable
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _dbConn = new DbConnectionString();
             _dbConn.FromString((string)stream.Load("dbconn", String.Empty));
@@ -76,11 +76,9 @@ namespace gView.DataSources.EventTable
                 _sRef = new SpatialReference();
                 _sRef.FromXmlString(sr);
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("dbconn", _dbConn.ToString());
             stream.Save("table", _table);
@@ -89,8 +87,6 @@ namespace gView.DataSources.EventTable
             stream.Save("yfield", _yField);
             if (_sRef != null)
                 stream.Save("sref", _sRef.ToXmlString());
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -100,7 +96,7 @@ namespace gView.DataSources.EventTable
         public string ToXmlString()
         {
             XmlStream xmlStream = new XmlStream("EventTableConnection");
-            this.Save(xmlStream).Wait();
+            this.Save(xmlStream);
 
             return xmlStream.ToString();
         }
@@ -111,7 +107,7 @@ namespace gView.DataSources.EventTable
             StringReader sr = new StringReader(xml);
             stream.ReadStream(sr);
 
-            Load(stream).Wait();
+            Load(stream);
         }
 
         #endregion

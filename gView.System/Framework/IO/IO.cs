@@ -267,7 +267,7 @@ namespace gView.Framework.IO
                 {
                     XmlNodePlus parent = _parent;
                     _parent = new XmlNodePlus(xmlnode, _parent.NumberFormat);
-                    ((IPersistable)comp).Load(this).Wait();
+                    ((IPersistable)comp).Load(this);
                     _parent = parent;
                 }
 
@@ -279,7 +279,7 @@ namespace gView.Framework.IO
 				{
 					XmlNodePlus parent=_parent;
 					_parent=new XmlNodePlus(xmlnode,_parent.NumberFormat);
-					((IPersistable)objectInstance).Load(this).Wait();
+					((IPersistable)objectInstance).Load(this);
 					_parent=parent;
 					return objectInstance;
 				} 
@@ -383,7 +383,7 @@ namespace gView.Framework.IO
                 {
                     XmlNodePlus parent = _parent;
                     _parent = new XmlNodePlus(xmlnode, _parent.NumberFormat);
-                    ((IPersistable)comp).Load(this).Wait();
+                    ((IPersistable)comp).Load(this);
                     _parent = parent;
                 }
 
@@ -415,7 +415,7 @@ namespace gView.Framework.IO
 			if(val is IPersistable) 
 			{
 				_parent.Node=node;
-				((IPersistable)val).Save(this).Wait();
+				((IPersistable)val).Save(this);
 				_parent.Node=node.ParentNode;
 				return;
 			}
@@ -1067,12 +1067,12 @@ namespace gView.Framework.IO
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             throw new Exception("The method or operation is not implemented.");
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             PropertyInfo[] props_of_class = this.GetType().GetProperties();
 
@@ -1092,8 +1092,6 @@ namespace gView.Framework.IO
             {
                 stream.Save(child.Name, child);
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion

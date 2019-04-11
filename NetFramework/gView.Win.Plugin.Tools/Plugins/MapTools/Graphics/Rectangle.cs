@@ -49,19 +49,15 @@ namespace gView.Plugins.MapTools.Graphics
         #endregion
 
         #region IPersistable
-        async public override Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public override void Load(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
             this.Symbol = (ISymbol)stream.Load("ISymbol", this.Symbol);
-
-            return true;
         }
-        async public override Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public override void Save(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
             stream.Save("ISymbol", this.Symbol);
-
-            return true;
         }
         #endregion
     }
@@ -102,19 +98,15 @@ namespace gView.Plugins.MapTools.Graphics
         #endregion
 
         #region IPersistable
-        async public override Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public override void Load(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
             this.Symbol = (ISymbol)stream.Load("ISymbol", this.Symbol);
-
-            return true;
         }
-        async public override Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public override void Save(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
             stream.Save("ISymbol", this.Symbol);
-
-            return true;
         }
         #endregion
     }
@@ -158,19 +150,15 @@ namespace gView.Plugins.MapTools.Graphics
         #endregion
 
         #region IPersistable
-        async public override Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public override void Load(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
             this.Symbol = (ISymbol)stream.Load("ISymbol", this.Symbol);
-
-            return true;
         }
-        async public override Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public override void Save(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
             stream.Save("ISymbol", this.Symbol);
-
-            return true;
         }
         #endregion
     }
@@ -211,19 +199,15 @@ namespace gView.Plugins.MapTools.Graphics
         #endregion
 
         #region IPersistable
-        async public override Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public override void Load(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
             this.Symbol = (ISymbol)stream.Load("ISymbol", this.Symbol);
-
-            return true;
         }
-        async public override Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public override void Save(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
             stream.Save("ISymbol", this.Symbol);
-
-            return true;
         }
         #endregion
     }
@@ -258,19 +242,15 @@ namespace gView.Plugins.MapTools.Graphics
         #endregion
 
         #region IPersistable
-        async public override Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public override void Load(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
             this.Symbol = (ISymbol)stream.Load("ISymbol", this.Symbol);
-
-            return true;
         }
-        async public override Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public override void Save(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
             stream.Save("ISymbol", this.Symbol);
-
-            return true;
         }
         #endregion
     }
@@ -470,9 +450,9 @@ namespace gView.Plugins.MapTools.Graphics
         #endregion
 
         #region IPersistable
-        async public override Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public override void Load(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
             _text = (string)stream.Load("Text", "Text");
             SimpleTextSymbol sym = stream.Load("ISymbol", null) as SimpleTextSymbol;
             if (sym != null)
@@ -480,16 +460,12 @@ namespace gView.Plugins.MapTools.Graphics
                 _symbol.Release();
                 _symbol = sym;
             }
-
-            return true;
         }
-        async public override Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public override void Save(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
             stream.Save("Text", _text);
             stream.Save("ISymbol", _symbol);
-
-            return true;
         }
         #endregion
 
@@ -629,19 +605,15 @@ namespace gView.Plugins.MapTools.Graphics
         #endregion
 
         #region IPersistable
-        async public override Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public override void Load(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
             this.Symbol = _symbol = (ISymbol)stream.Load("ISymbol", this.Symbol);
-
-            return true;
         }
-        async public override Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public override void Save(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
             stream.Save("ISymbol", this.Symbol);
-
-            return true;
         }
         #endregion
 
@@ -803,19 +775,15 @@ namespace gView.Plugins.MapTools.Graphics
         #endregion
 
         #region IPersistable
-        async public override Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public override void Load(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
             this.Symbol = _symbol = (ISymbol)stream.Load("ISymbol", this.Symbol);
-
-            return true;
         }
-        async public override Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public override void Save(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
             stream.Save("ISymbol", this.Symbol);
-
-            return true;
         }
         #endregion
 
@@ -991,19 +959,15 @@ namespace gView.Plugins.MapTools.Graphics
         #endregion
 
         #region IPersistable
-        async public override Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public override void Load(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
             this.Symbol = _symbol = (ISymbol)stream.Load("ISymbol", this.Symbol);
-
-            return true;
         }
-        async public override Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public override void Save(gView.Framework.IO.IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
             stream.Save("ISymbol", this.Symbol);
-
-            return true;
         }
         #endregion
 

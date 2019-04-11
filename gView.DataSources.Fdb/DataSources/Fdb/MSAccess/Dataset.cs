@@ -403,7 +403,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
         }
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             string connectionString = (string)stream.Load("connectionstring", "");
             if (_fdb != null)
@@ -412,41 +412,11 @@ namespace gView.DataSources.Fdb.MSAccess
                 _fdb = null;
             }
 
-            await this.SetConnectionString(connectionString);
-            await this.Open();
-
-            /*
-            if (_layers == null) _layers = new List<IDatasetElement>();
-
-            IFeatureLayer layer;
-            while ((layer = (IFeatureLayer)stream.Load("IFeatureLayer", null, new AccessFDBDatasetElement(_fdb,this, null))) != null)
-            {
-                IDatasetElement e = this[layer.Title];
-                if (e is IFeatureLayer)
-                {
-                    IFeatureLayer l = (IFeatureLayer)e;
-
-                    l.MinimumScale = layer.MinimumScale;
-                    l.MaximumScale = layer.MaximumScale;
-                    l.Visible = layer.Visible;
-
-                    l.FeatureRenderer = layer.FeatureRenderer;
-                    l.LabelRenderer = layer.LabelRenderer;
-
-                    _layers.Add(l);
-                }
-                if (e == null && layer is AccessFDBDatasetElement)
-                {
-                    ((AccessFDBDatasetElement)layer).SetEmpty();
-                    _layers.Add(layer);
-                }
-            }
-             * */
-
-            return true;
+            this.SetConnectionString(connectionString).Wait();
+            this.Open().Wait();
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.SaveEncrypted("connectionstring", this.ConnectionString);
 
@@ -457,8 +427,6 @@ namespace gView.DataSources.Fdb.MSAccess
                     stream.Save("IFeatureLayer",element);
             }
              * */
-
-            return Task.FromResult(true);
         }
 
         #endregion

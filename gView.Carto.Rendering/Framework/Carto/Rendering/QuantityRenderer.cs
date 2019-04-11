@@ -216,7 +216,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IPersistable Member
 
-        public Task<bool> Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(gView.Framework.IO.IPersistStream stream)
         {
             this.Release();
 
@@ -228,11 +228,9 @@ namespace gView.Framework.Carto.Rendering
             {
                 _quantityClasses.Add(qClass);
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(gView.Framework.IO.IPersistStream stream)
         {
             stream.Save("field", _valueField);
             stream.Save("default", _defaultSymbol);
@@ -245,8 +243,6 @@ namespace gView.Framework.Carto.Rendering
                         stream.Save("qClass", qClass);
                 }
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -435,23 +431,19 @@ namespace gView.Framework.Carto.Rendering
 
             #region IPersistable Member
 
-            public Task<bool> Load(IPersistStream stream)
+            public void Load(IPersistStream stream)
             {
                 _min = (double)stream.Load("min", (double)0);
                 _max = (double)stream.Load("max", (double)0);
                 _symbol = (ISymbol)stream.Load("symbol", null);
-
-                return Task.FromResult(true);
             }
 
-            public Task<bool> Save(IPersistStream stream)
+            public void Save(IPersistStream stream)
             {
                 stream.Save("min", _min);
                 stream.Save("max", _max);
                 if (_symbol != null)
                     stream.Save("symbol", _symbol);
-
-                return Task.FromResult(true);
             }
 
             #endregion

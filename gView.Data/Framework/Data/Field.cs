@@ -226,7 +226,7 @@ namespace gView.Framework.Data
 
 		#region IPersistable Member
 
-		public Task<bool> Load(IPersistStream stream)
+		public void Load(IPersistStream stream)
 		{
             m_name = (string)stream.Load("Name", "");
             m_aliasname = (string)stream.Load("Alias", "");
@@ -241,11 +241,9 @@ namespace gView.Framework.Data
 
             _domain = stream.Load("Domain", null) as IFieldDomain;
             _priority = (int)stream.Load("Priority", (int)-1);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("Name", m_name);
             stream.Save("Alias", m_aliasname);
@@ -264,8 +262,6 @@ namespace gView.Framework.Data
             }
 
             stream.Save("Priority", _priority);
-
-            return Task.FromResult(true);
         }
 
 		#endregion

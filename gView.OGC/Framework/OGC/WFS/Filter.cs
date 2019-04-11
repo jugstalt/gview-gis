@@ -673,19 +673,15 @@ namespace gView.Framework.OGC.WFS
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             string ogcFilter = (string)stream.Load("OGCFilter", String.Empty);
             GenerateFromString(ogcFilter, null);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("OGCFilter", this.ToXmlString());
-
-            return Task.FromResult(true);
         }
         #endregion
 

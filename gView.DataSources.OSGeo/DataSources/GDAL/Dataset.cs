@@ -224,7 +224,7 @@ namespace gView.DataSources.GDAL
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             SetConnectionString((string)stream.Load("filename", String.Empty));
 
@@ -232,11 +232,9 @@ namespace gView.DataSources.GDAL
             //{
             //    stream.Load("RasterClass", null, _layers[0].Class);
             //}
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("filename", ConnectionString);
 
@@ -244,8 +242,6 @@ namespace gView.DataSources.GDAL
             //{
             //    stream.Save("RasterClass", _layers[0].Class);
             //}
-
-            return Task.FromResult(true);
         }
 
         #endregion

@@ -113,7 +113,7 @@ namespace gView.Framework.XML
         }
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             string outerXml = (string)stream.Load("xml", "");
             if (outerXml != "")
@@ -129,15 +129,11 @@ namespace gView.Framework.XML
                 {
                 }
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("xml", _doc.OuterXml);
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -153,12 +149,12 @@ namespace gView.Framework.XML
 
     //    #region IPersistable Member
 
-    //    public Task<bool> Load(IPersistStream stream)
+    //    public void Load(IPersistStream stream)
     //    {
             
     //    }
 
-    //    public Task<bool> Save(IPersistStream stream)
+    //    public void Save(IPersistStream stream)
     //    {
     //        if (_node == null) return;
 

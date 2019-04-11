@@ -1064,7 +1064,7 @@ namespace gView.DataSources.GDAL
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             if (_type == RasterType.grid)
             {
@@ -1086,11 +1086,9 @@ namespace gView.DataSources.GDAL
                 _ignoreValue = (double)stream.Load("IgnoreData", 0.0);
                 _renderRawGridValues = (bool)stream.Load("RenderRawGridValues", false);
             }
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_type == RasterType.grid)
             {
@@ -1110,8 +1108,6 @@ namespace gView.DataSources.GDAL
                 stream.Save("IgnoreData", _ignoreValue);
                 stream.Save("RenderRawGridValues", _renderRawGridValues);
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion

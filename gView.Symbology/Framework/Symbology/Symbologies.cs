@@ -249,20 +249,16 @@ namespace gView.Framework.Symbology
 
         #region IPersistable Member
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _legendLabel = (string)stream.Load("legendLabel", "");
             _showInTOC = (bool)stream.Load("showInTOC", true);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("legendLabel", _legendLabel);
             stream.Save("showInTOC", _showInTOC);
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -281,22 +277,18 @@ namespace gView.Framework.Symbology
             set { _smothingMode = value; }
         }
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
 
             this.Smoothingmode = (SymbolSmoothing)stream.Load("smoothing", (int)SymbolSmoothing.None);
-
-            return true;
         }
 
-        async public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
 
             stream.Save("smoothing", (int)this.Smoothingmode);
-
-            return true;
         }
     }
 
@@ -324,18 +316,14 @@ namespace gView.Framework.Symbology
             get { return "Null Symbol"; }
         }
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _geomType = (geometryType)stream.Load("geomtype", (int)geometryType.Unknown);
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("geomtype", (int)_geomType);
-
-            return Task.FromResult(true);
         }
 
         public object Clone()
@@ -620,9 +608,9 @@ namespace gView.Framework.Symbology
             }
         }
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
             _symbols.Clear();
 
             SymbolCollectionItem item;
@@ -630,19 +618,15 @@ namespace gView.Framework.Symbology
             {
                 _symbols.Add(item);
             }
-
-            return true;
         }
 
-        async public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
             foreach (SymbolCollectionItem item in _symbols)
             {
                 stream.Save("Item", item);
             }
-
-            return true;
         }
 
         #endregion
@@ -869,20 +853,16 @@ namespace gView.Framework.Symbology
             }
         }
 
-        public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             Visible = (bool)stream.Load("visible");
             Symbol = (ISymbol)stream.Load("ISymbol");
-
-            return Task.FromResult(true);
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("visible", Visible);
             stream.Save("ISymbol", Symbol);
-
-            return Task.FromResult(true);
         }
 
         #endregion
@@ -1162,9 +1142,9 @@ namespace gView.Framework.Symbology
             }
         }
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
 
             HorizontalOffset = (float)stream.Load("xOffset", (float)0);
             VerticalOffset = (float)stream.Load("yOffset", (float)0);
@@ -1181,13 +1161,11 @@ namespace gView.Framework.Symbology
 
             this.MaxSymbolSize = (float)stream.Load("maxsymbolsize", 0f);
             this.MinSymbolSize = (float)stream.Load("minsymbolsize", 0f);
-
-            return true;
         }
 
-        async public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
 
             stream.Save("color", this.Color.ToArgb());
             stream.Save("xOffset", HorizontalOffset);
@@ -1204,8 +1182,6 @@ namespace gView.Framework.Symbology
 
             stream.Save("maxsymbolsize", this.MaxSymbolSize);
             stream.Save("minsymbolsize", this.MinSymbolSize);
-
-            return true;
         }
 
         #endregion
@@ -1577,9 +1553,9 @@ namespace gView.Framework.Symbology
 
         #region IPersistable Member
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
 
             try
             {
@@ -1615,13 +1591,11 @@ namespace gView.Framework.Symbology
 
             this.MaxSymbolSize = (float)stream.Load("maxsymbolsize", 0f);
             this.MinSymbolSize = (float)stream.Load("minsymbolsize", 0f);
-
-            return true;
         }
 
-        async public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
 
             try
             {
@@ -1645,8 +1619,6 @@ namespace gView.Framework.Symbology
 
             stream.Save("maxsymbolsize", this.MaxSymbolSize);
             stream.Save("minsymbolsize", this.MinSymbolSize);
-
-            return true;
         }
 
         #endregion
@@ -1985,9 +1957,9 @@ namespace gView.Framework.Symbology
 
         #region IPersistable Member
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
 
             Filename = (string)stream.Load("fn", String.Empty);
             HorizontalOffset = (float)stream.Load("x");
@@ -1995,13 +1967,11 @@ namespace gView.Framework.Symbology
             Angle = (float)stream.Load("a");
             SizeX = (float)stream.Load("sx", 10f);
             SizeY = (float)stream.Load("sy", 10f);
-
-            return true;
         }
 
-        async public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
 
             stream.Save("fn", Filename);
             stream.Save("x", HorizontalOffset);
@@ -2009,8 +1979,6 @@ namespace gView.Framework.Symbology
             stream.Save("a", Angle);
             stream.Save("sx", _sizeX);
             stream.Save("sy", _sizeY);
-
-            return true;
         }
 
         #endregion
@@ -2277,9 +2245,9 @@ namespace gView.Framework.Symbology
             }
         }
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
 
             this.Color = Color.FromArgb((int)stream.Load("color", Color.Black.ToArgb()));
             this.Width = (float)stream.Load("width", (float)1);
@@ -2296,13 +2264,11 @@ namespace gView.Framework.Symbology
 
             this.MaxPenWidth= (float)stream.Load("maxwidth", 0f);
             this.MinPenWidth = (float)stream.Load("minwidth", 0f);
-
-            return true;
         }
 
-        async public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
 
             stream.Save("color", this.Color.ToArgb());
             stream.Save("width", this.Width);
@@ -2312,8 +2278,6 @@ namespace gView.Framework.Symbology
 
             stream.Save("maxwidth", (float)this.MaxPenWidth);
             stream.Save("minwidth", (float)this.MinPenWidth);
-
-            return true;
         }
 
         #endregion
@@ -2640,24 +2604,20 @@ namespace gView.Framework.Symbology
 
         #region IPersistable Member
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
 
             this.Color = Color.FromArgb((int)stream.Load("color", Color.Red.ToArgb()));
             _outlineSymbol = (ISymbol)stream.Load("outlinesymbol");
-
-            return true;
         }
 
-        async public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
 
             stream.Save("color", this.Color.ToArgb());
             if (_outlineSymbol != null) stream.Save("outlinesymbol", _outlineSymbol);
-
-            return true;
         }
 
         #endregion
@@ -3086,28 +3046,24 @@ namespace gView.Framework.Symbology
             }
         }
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
 
             this.ForeColor = Color.FromArgb((int)stream.Load("forecolor", Color.Red.ToArgb()));
             this.BackColor = Color.FromArgb((int)stream.Load("backcolor", Color.Transparent.ToArgb()));
             this.HatchStyle = (HatchStyle)stream.Load("hatchstyle", HatchStyle.Cross);
             _outlineSymbol = (ISymbol)stream.Load("outlinesymbol");
-
-            return true;
         }
 
-        async public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
 
             stream.Save("forecolor", _forecolor.ToArgb());
             stream.Save("backcolor", _backcolor.ToArgb());
             stream.Save("hatchstyle", (int)_brush.HatchStyle);
             if (_outlineSymbol != null) stream.Save("outlinesymbol", _outlineSymbol);
-
-            return true;
         }
 
         #endregion
@@ -3716,26 +3672,22 @@ namespace gView.Framework.Symbology
 
         #region IPersistable Member
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
-            await base.Load(stream);
+            base.Load(stream);
 
             _gradient = (ColorGradient)stream.Load("gradient", _gradient, _gradient);
             _rectType = (GradientRectType)stream.Load("recttype", (int)GradientRectType.Feature);
             _outlineSymbol = (ISymbol)stream.Load("outlinesymbol");
-
-            return true;
         }
 
-        async public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
-            await base.Save(stream);
+            base.Save(stream);
 
             stream.Save("gradient", _gradient);
             stream.Save("recttype", (int)_rectType);
             if (_outlineSymbol != null) stream.Save("outlinesymbol", _outlineSymbol);
-
-            return true;
         }
 
         #endregion

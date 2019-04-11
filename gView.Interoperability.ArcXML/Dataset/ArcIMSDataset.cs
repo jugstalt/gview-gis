@@ -333,23 +333,20 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         #region IPersistable Member
 
-        async public Task<bool> Load(IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
-            await this.SetConnectionString((string)stream.Load("ConnectionString", ""));
+            this.SetConnectionString((string)stream.Load("ConnectionString", "")).Wait();
             _properties = stream.Load("Properties", new ArcXMLProperties(), new ArcXMLProperties()) as ArcXMLProperties;
 
             _class = new ArcIMSClass(this);
-            await Open();
+            Open().Wait();
 
-            return true;
         }
 
-        public Task<bool> Save(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("ConnectionString", this.ConnectionString);
             stream.Save("Properties", _properties);
-
-            return Task.FromResult(true);
         }
 
         #endregion
