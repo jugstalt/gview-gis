@@ -93,9 +93,9 @@ namespace gView.Interoperability.OGC.Dataset.GML
             return Task.FromResult<int>(Create(name) ? 0 : -1);
         }
 
-        public Task<int> CreateFeatureClass(string dsname, string fcname, gView.Framework.Geometry.IGeometryDef geomDef, IFields fields)
+        async public Task<int> CreateFeatureClass(string dsname, string fcname, gView.Framework.Geometry.IGeometryDef geomDef, IFields fields)
         {
-            if (geomDef == null || fields == null) return Task.FromResult(-1);
+            if (geomDef == null || fields == null) return -1;
 
             string filename = _directoryName + @"\" + fcname + ".gml";
             Fields f = new Fields();
@@ -103,10 +103,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
             foreach (IField field in fields.ToEnumerable())
                 f.Add(field);
 
-            if (!GMLFile.Create(filename, geomDef, f, _gmlVersion))
-                return Task.FromResult(-1);
+            if (!await GMLFile.Create(filename, geomDef, f, _gmlVersion))
+                return -1;
 
-            return Task.FromResult(0);
+            return 0;
         }
 
         async public Task<IFeatureDataset> GetDataset(string name)

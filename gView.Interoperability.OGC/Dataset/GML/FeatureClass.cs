@@ -17,11 +17,20 @@ namespace gView.Interoperability.OGC.Dataset.GML
         private geometryType _geomType = geometryType.Unknown;
         private GmlVersion _gmlVersion = GmlVersion.v1;
 
-        public FeatureClass(Dataset dataset, string name, Fields fields)
+        private FeatureClass(Dataset dataset, string name, Fields fields)
         {
             _dataset = dataset;
             _name = name;
             _fields = fields;
+        }
+
+        async static public Task<FeatureClass> CreateAsync(Dataset dataset, string name, Fields fields)
+        {
+            var fc = new FeatureClass(dataset, name, fields);
+            fc.SpatialReference = await dataset.GetSpatialReference();
+            fc.Envelope = await dataset.Envelope();
+
+            return fc;
         }
 
         #region IFeatureClass Member
@@ -34,7 +43,8 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         public gView.Framework.Geometry.IEnvelope Envelope
         {
-            get { return _dataset.Envelope().Result; }
+            get;
+            private set;
         }
 
         public Task<int> CountFeatures()
@@ -128,7 +138,8 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         public gView.Framework.Geometry.ISpatialReference SpatialReference
         {
-            get { return _dataset.GetSpatialReference().Result; }
+            get;
+            private set;
         }
 
         public gView.Framework.Geometry.geometryType GeometryType

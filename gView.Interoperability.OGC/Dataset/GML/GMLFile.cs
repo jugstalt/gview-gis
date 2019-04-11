@@ -60,7 +60,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             return false;
         }
 
-        public static bool Create(string filename, IGeometryDef geomDef, Fields fields, GmlVersion gmlVersion)
+        async public static Task<bool> Create(string filename, IGeometryDef geomDef, Fields fields, GmlVersion gmlVersion)
         {
             try
             {
@@ -70,7 +70,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 string gml_filename = fi.FullName.Substring(0, fi.FullName.Length - fi.Extension.Length) + ".gml";
                 string xsd_filename = fi.FullName.Substring(0, fi.FullName.Length - fi.Extension.Length) + ".xsd";
 
-                FeatureClass featureClass = new FeatureClass(null, name, fields);
+                FeatureClass featureClass = await FeatureClass.CreateAsync(null, name, fields);
                 XmlSchemaWriter schemaWriter = new XmlSchemaWriter(featureClass);
                 string schema = schemaWriter.Write();
 

@@ -46,7 +46,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             if (_dataset != null) _name = _dataset._name;
         }
 
-        internal void Init(string CapabilitiesString, WFSDataset wfsDataset)
+        async internal Task Init(string CapabilitiesString, WFSDataset wfsDataset)
         {
             try
             {
@@ -531,11 +531,6 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         {
             get
             {
-                if (!_dataset.IsOpened)
-                {
-                    if (!_dataset.Open().Result) return null;
-                }
-
                 IEnvelope ret = null;
                 if (_srs != null &&
                     _srs.SRSIndex >= 0 && _srs.SRSIndex < _srs.Srs.Count)
@@ -576,11 +571,6 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         {
             get 
             {
-                if (!_dataset.IsOpened)
-                {
-                    if (!_dataset.Open().Result) return null;
-                }
-
                 if (_clonedThemes != null) return _clonedThemes;
                 return _themes;
             }

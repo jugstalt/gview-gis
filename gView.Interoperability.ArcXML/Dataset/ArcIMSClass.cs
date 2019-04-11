@@ -34,7 +34,7 @@ namespace gView.Interoperability.ArcXML.Dataset
         }
 
         #region IWebServiceClass Member
-
+        
         public event BeforeMapRequestEventHandler BeforeMapRequest = null;
         public event AfterMapRequestEventHandler AfterMapRequest = null;
 
@@ -420,13 +420,8 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         public IEnvelope Envelope
         {
-            get
-            {
-                if (_dataset == null) return null;
-                if (_dataset.State != DatasetState.opened)
-                    _dataset.Open().Wait();
-                return _dataset.Envelope().Result;
-            }
+            get;
+            private set;
         }
 
         public List<IWebServiceTheme> Themes
@@ -436,25 +431,19 @@ namespace gView.Interoperability.ArcXML.Dataset
                 if (_clonedThemes != null) return _clonedThemes;
                 if (_dataset != null)
                 {
-                    if (_dataset.State != DatasetState.opened)
-                        _dataset.Open().Wait();
                     return _dataset._themes;
                 }
                 return new List<IWebServiceTheme>();
             }
         }
 
+        internal ISpatialReference _sptatialReference;
         public ISpatialReference SpatialReference
         {
-            get
-            {
-                if (_dataset != null) 
-                    return _dataset.GetSpatialReference().Result;
-
-                return null;
-            }
+            get { return _sptatialReference; }
             set
             {
+                _sptatialReference = value;
                 if (_dataset != null)
                     _dataset.SetSpatialReference(value);
             }

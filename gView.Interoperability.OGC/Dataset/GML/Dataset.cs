@@ -146,7 +146,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             get { return _state; }
         }
 
-        public Task<bool> Open()
+        async public Task<bool> Open()
         {
             try
             {
@@ -154,9 +154,9 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 _elements.Clear();
 
                 FileInfo fi_gml = new FileInfo(_connectionString);
-                if (!fi_gml.Exists) return Task.FromResult(false);
+                if (!fi_gml.Exists) return false;
                 FileInfo fi_xsd = new FileInfo(fi_gml.FullName.Substring(0, fi_gml.FullName.Length - fi_gml.Extension.Length) + ".xsd");
-                if (!fi_xsd.Exists) return Task.FromResult(false);
+                if (!fi_xsd.Exists) return false;
 
                 _gml_file = fi_gml.FullName;
                 _xsd_file = fi_xsd.FullName;
@@ -165,7 +165,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 schema.Load(fi_xsd.FullName);
                 XmlSchemaReader schemaReader = new XmlSchemaReader(schema);
                 string targetNamespace = schemaReader.TargetNamespaceURI;
-                if (targetNamespace == String.Empty) return Task.FromResult(false);
+                if (targetNamespace == String.Empty) return false;
 
                 PlugInManager compMan = new PlugInManager();
                 foreach (string elementName in schemaReader.ElementNames)
@@ -173,7 +173,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                     string shapeFieldName;
                     geometryType geomType;
                     Fields fields = schemaReader.ElementFields(elementName, out shapeFieldName, out geomType);
-                    FeatureClass fc = new FeatureClass(this, elementName, fields);
+                    FeatureClass fc = await FeatureClass.CreateAsync(this, elementName, fields);
                     fc.ShapeFieldName = shapeFieldName;
                     fc.GeometryType = geomType;
                     IFeatureLayer layer = LayerFactory.Create(fc) as IFeatureLayer;
@@ -211,12 +211,12 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 }
 
                 _state = DatasetState.opened;
-                return Task.FromResult(true);
+                return true;
             }
             catch(Exception ex)
             {
                 _errMsg = ex.Message;
-                return Task.FromResult(false);
+                return false;
             }
         }
 
