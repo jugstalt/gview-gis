@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<MapApplication>
+  <Menubar>
+    <Menu name="File">      
+      <MenuItem guid="d0da246e-89a1-40ba-9e6b-c4d0b97640a1" />
+      
+      <MenuItem />
+      <MenuItem guid="FCA2C303-A0B6-4f36-BD21-E1C119EB9C8E" />
+      <MenuItem guid="17D0A3C1-5EE9-4ddd-9402-E6E9EAB1CD06" />
+      <MenuItem />
+
+      <MenuItem guid="968B39BA-F35D-4ffd-B576-913B81E89EEF" />
+      
+      <MenuItem guid="1a5381bb-95ed-4f92-90b7-c9ec947c9fec" />
+      
+      <MenuItem guid="97F8675C-E01F-451e-AAE0-DC29CD547EB5" />
+    </Menu>
+
+    <Menu name="QuickAccess">
+      <MenuItem guid="CEACE261-ECE4-4622-A892-58A5B32E5295" />
+      <MenuItem guid="FCA2C303-A0B6-4f36-BD21-E1C119EB9C8E" />
+      <MenuItem guid="3E2E9F8C-24FB-48f6-B80E-1B0A54E8C309" />
+      <MenuItem guid="7219766E-55AB-4f64-B65E-C2DBC70E5786" />
+    </Menu>
+    <!--
+    <Menu name="Edit">
+      <MenuItem guid="F4F7F60D-B560-4233-96F7-89012FD856A8" />
+      <MenuItem />
+      <MenuItem guid="3E36C2AD-2C58-42ca-A662-EE0C2DC1369D" />
+      <MenuItem guid="97F70651-C96C-4b6e-A6AD-E9D3A22BFD45" />
+      <MenuItem guid="0F8673B3-F1C9-4f5f-86C4-2B41FCBE535B" />
+      <MenuItem guid="4F54D455-1C22-469e-9DBB-78DBBEF6078D" />
+      <MenuItem />
+      <MenuItem guid="ED5B0B59-2F5D-4b1a-BAD2-3CABEF073A6A" />   
+    </Menu>
+    <Menu name="View" type="view" />
+    <Menu name="Insert">
+      <MenuItem guid="468EBDBB-CB41-447b-8D2A-7B32373928CD" />
+      <MenuItem guid="8874DF04-1B5D-4c22-9913-D1F45B9DC958" />
+      <MenuItem guid="61301C1E-BC8E-4081-A8BB-65BCC13C89EC" />
+    </Menu>
+    <Menu name="Options" type="options">
+      <MenuItem />
+      <MenuItem guid="F1B1602A-DD53-40a2-A504-61DC47A7B261" />
+      <MenuItem />
+      <MenuItem guid="AD24DF4B-A03F-4022-A671-FAE1BEF4D302" />
+    </Menu>
+    <Menu name="Help" type="help">
+      <MenuItem guid="6782B011-83C8-420B-9158-9267EB9C70D0" />
+      <MenuItem />
+      <MenuItem guid="7219766E-55AB-4f64-B65E-C2DBC70E5786" />
+    </Menu>
+    -->
+  </Menubar>
+</MapApplication>
