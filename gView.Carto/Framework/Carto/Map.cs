@@ -23,7 +23,7 @@ namespace gView.Framework.Carto
     /// <summary>
     /// Zusammenfassung für Map.
     /// </summary>
-    public class Map : Display, IMap, IPersistableAsync, IMetadata, IDebugging
+    public class Map : Display, IMap, IPersistableLoadAsync, IMetadata, IDebugging
     {
         public virtual event LayerAddedEvent LayerAdded;
         public virtual event LayerRemovedEvent LayerRemoved;
@@ -952,9 +952,10 @@ namespace gView.Framework.Carto
                                 else
                                 {
                                     RenderRasterLayerThread rlt = new RenderRasterLayerThread(this, rLayer, rLayer, cancelTracker);
+                                    await rlt.Render();
 
-                                    thread = new Thread(new ThreadStart(rlt.Render));
-                                    thread.Start();
+                                    //thread = new Thread(new ThreadStart(rlt.Render));
+                                    //thread.Start();
 
                                     if (DrawingLayer != null && cancelTracker.Continue) DrawingLayer(layer.Title);
                                 }
@@ -1382,23 +1383,26 @@ namespace gView.Framework.Carto
                     IRasterLayer cLayer = (IRasterLayer)child;
 
                     RenderRasterLayerThread rlt = new RenderRasterLayerThread(this, cLayer, rootLayer, cancelTracker);
-
-                    Thread thread = new Thread(new ThreadStart(rlt.Render));
-                    thread.Start();
+                    
+                    //Thread thread = new Thread(new ThreadStart(rlt.Render));
+                    //thread.Start();
 
                     if (DrawingLayer != null && cancelTracker.Continue)
                     {
                         if (rLayer is ILayer) DrawingLayer(((ILayer)rLayer).Title);
                     }
-                    // WarteSchleife
-                    int counter = 0;
 
-                    while (thread.IsAlive)
-                    {
-                        Thread.Sleep(100);
-                        if (DoRefreshMapView != null && (counter % 10) == 0 && cancelTracker.Continue) DoRefreshMapView();
-                        counter++;
-                    }
+                    await rlt.Render();
+
+                    // WarteSchleife
+                    //int counter = 0;
+
+                    //while (thread.IsAlive)
+                    //{
+                    //    Thread.Sleep(100);
+                    //    if (DoRefreshMapView != null && (counter % 10) == 0 && cancelTracker.Continue) DoRefreshMapView();
+                    //    counter++;
+                    //}
                     if (DoRefreshMapView != null && cancelTracker.Continue) DoRefreshMapView();
 
                     if (child.Class is IDisposable)
@@ -1518,12 +1522,11 @@ namespace gView.Framework.Carto
             _layerIDSequece = (IntegerSequence)stream.Load("layerIDSequence", new IntegerSequence(), new IntegerSequence());
 
             IDataset dataset;
-            //while ((dataset = (IDataset)stream.Load("IDataset", /*new gView.Carto.Framework.Carto.UnknownDataset()*/ null)) != null)
-            while ((dataset = stream.LoadPlugin<IDataset>("IDataset", new gView.Carto.Framework.Carto.UnknownDataset()/* null*/)) != null)
+            while ((dataset = await stream.LoadPluginAsync<IDataset>("IDataset", new gView.Carto.Framework.Carto.UnknownDataset())) != null)
             {
                 if (dataset.State != DatasetState.opened)
                 {
-                    dataset.Open();
+                    await dataset.Open();
                 }
                 if (!String.IsNullOrWhiteSpace(dataset.LastErrorMessage))
                 {
@@ -1548,7 +1551,7 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (fLayer.DatasetID < _datasets.Count)
                 {
-                    IDatasetElement element = _datasets[fLayer.DatasetID].Element(fLayer.Title).Result;
+                    IDatasetElement element = await _datasets[fLayer.DatasetID].Element(fLayer.Title);
                     if (element != null && element.Class is IFeatureClass)
                     {
                         fLayer = LayerFactory.Create(element.Class, fLayer) as FeatureLayer;
@@ -1579,7 +1582,7 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (rcLayer.DatasetID < _datasets.Count)
                 {
-                    IDatasetElement element = _datasets[rcLayer.DatasetID].Element(rcLayer.Title).Result;
+                    IDatasetElement element = await _datasets[rcLayer.DatasetID].Element(rcLayer.Title);
                     if (element != null && element.Class is IRasterCatalogClass)
                     {
                         rcLayer = LayerFactory.Create(element.Class, rcLayer) as RasterCatalogLayer;
@@ -1606,7 +1609,7 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (rLayer.DatasetID < _datasets.Count)
                 {
-                    IDatasetElement element = _datasets[rLayer.DatasetID].Element(rLayer.Title).Result;
+                    IDatasetElement element = await _datasets[rLayer.DatasetID].Element(rLayer.Title);
                     if (element != null && element.Class is IRasterClass)
                     {
                         rLayer.SetRasterClass(element.Class as IRasterClass);
@@ -1635,7 +1638,7 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (wLayer.DatasetID <= _datasets.Count)
                 {
-                    IDatasetElement element = _datasets[wLayer.DatasetID].Element(wLayer.Title).Result;
+                    IDatasetElement element = await _datasets[wLayer.DatasetID].Element(wLayer.Title);
                     if (element != null && element.Class is IWebServiceClass)
                     {
                         //wLayer = LayerFactory.Create(element.Class, wLayer) as WebServiceLayer;
@@ -1669,7 +1672,8 @@ namespace gView.Framework.Carto
             }
 
             stream.Load("IClasses", null, new PersistableClasses(_layers));
-            _toc = (TOC)stream.Load("ITOC", null, new TOC(this));
+            _toc = (TOC)await stream.LoadAsync<ITOC>("ITOC", new TOC(this));
+
             stream.Load("IGraphicsContainer", null, this.GraphicsContainer);
 
             foreach (ILayer layer in _layers)
@@ -1687,7 +1691,7 @@ namespace gView.Framework.Carto
             return true;
         }
 
-        public Task<bool> SaveAsync(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("name", m_name);
             stream.Save("minx", m_minX);
@@ -1743,8 +1747,6 @@ namespace gView.Framework.Carto
             stream.Save("IClasses", new PersistableClasses(_layers));
             stream.Save("ITOC", _toc);
             stream.Save("IGraphicsContainer", Display.GraphicsContainer);
-
-            return Task.FromResult(true);
         }
 
         private class PersistableClasses : IPersistable
@@ -3143,7 +3145,7 @@ namespace gView.Framework.Carto
         }
 
         // Thread
-        public void Render()
+        async public Task Render()
         {
             try
             {
@@ -3170,7 +3172,7 @@ namespace gView.Framework.Carto
                 }
                 */
 
-                _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker).Wait();
+                await _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker);
                 if (_layer.RasterClass.Bitmap == null) return;
 
                 //System.Windows.Forms.MessageBox.Show("begin");
@@ -3274,11 +3276,11 @@ namespace gView.Framework.Carto
                     {
                         if (_map is IServiceMap && ((IServiceMap)_map).MapServer != null)
                         {
-                            ((IServiceMap)_map).MapServer.LogAsync(
+                            await ((IServiceMap)_map).MapServer.LogAsync(
                                 ((IServiceMap)_map).Name,
                                 "RenderRasterLayerThread: " + ((_layer != null) ? _layer.Title : String.Empty),
                                 loggingMethod.error,
-                                ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace).Wait();
+                                ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                         }
                         if (_map != null)
                             if (_map != null) _map.AddException(new Exception("RenderRasterLayerThread: " + ((_layer != null) ? _layer.Title : String.Empty) + "\n" + ex.Message, ex));
@@ -3319,10 +3321,10 @@ namespace gView.Framework.Carto
             {
                 if (_map is IServiceMap && ((IServiceMap)_map).MapServer != null)
                 {
-                    ((IServiceMap)_map).MapServer.LogAsync(
+                    await ((IServiceMap)_map).MapServer.LogAsync(
                         ((IServiceMap)_map).Name,
                         "RenderRasterLayerThread:" + ((_layer != null) ? _layer.Title : String.Empty), loggingMethod.error,
-                        ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace).Wait();
+                        ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                 }
                 if (_map != null)
                     if (_map != null) _map.AddException(new Exception("RenderRasterLayerThread: " + ((_layer != null) ? _layer.Title : String.Empty) + "\n" + ex.Message, ex));

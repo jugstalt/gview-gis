@@ -89,7 +89,6 @@ namespace gView.Framework.Db
                             _errMsg = ex.Message;
                             return false;
                         }
-                        break;
                     default:
                         _errMsg = "Test Connection is not supported for '" + type + "'";
                         return false;

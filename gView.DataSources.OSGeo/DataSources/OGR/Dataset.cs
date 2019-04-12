@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace gView.DataSources.OGR
 {
     [gView.Framework.system.RegisterPlugIn("7a972c29-4955-4899-b142-98f6e05bb063")]
-    public class Dataset : DatasetMetadata, IFeatureDataset, IDisposable, IDataset2, IPersistable, IPlugInDependencies
+    public class Dataset : DatasetMetadata, IFeatureDataset, IDisposable, IDataset2, IPlugInDependencies
     {
         private string _connectionString, _lastErrMsg = "";
         private OSGeo.OGR.DataSource _dataSource = null;
@@ -247,9 +247,11 @@ namespace gView.DataSources.OGR
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public Task<bool> LoadAsync(IPersistStream stream)
         {
             _connectionString = (string)stream.Load("connectionstring", String.Empty);
+
+            return Task.FromResult(true);
         }
 
         public void Save(IPersistStream stream)

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace gView.DataSources.EventTable
 {
     [gView.Framework.system.RegisterPlugIn("8EF4C53A-EE74-4c4a-B733-95D7CD23BE11")]
-    public class Dataset : DatasetMetadata, IFeatureDataset, IPersistable, gView.Framework.UI.IConnectionStringDialog
+    public class Dataset : DatasetMetadata, IFeatureDataset, gView.Framework.UI.IConnectionStringDialog
     {
         private EventTableConnection _etcon = null;
         private DatasetState _state = DatasetState.unknown;
@@ -160,12 +160,12 @@ namespace gView.DataSources.EventTable
 
         #endregion
 
-        #region IPersistable Member
+        #region IPersistableLoadAsync Member
 
-        public void Load(IPersistStream stream)
+        async public Task<bool> LoadAsync(IPersistStream stream)
         {
-            this.SetConnectionString((string)stream.Load("connectionstring", String.Empty)).Wait();
-            this.Open().Wait();
+            await this.SetConnectionString((string)stream.Load("connectionstring", String.Empty));
+            return await this.Open();
         }
 
         public void Save(IPersistStream stream)

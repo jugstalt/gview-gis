@@ -199,9 +199,9 @@ namespace gView.Interoperability.ArcXML.Dataset
 #if(DEBUG)
                 gView.Framework.system.Logger.LogDebug("Start ArcXML SendRequest");
 #endif
-                ArcIMSClass.Log(display as IServiceRequestContext, "GetImage Request", server, service, sb);
+                await ArcIMSClass.LogAsync(display as IServiceRequestContext, "GetImage Request", server, service, sb);
                 string resp = connector.SendRequest(sb, server, service);
-                ArcIMSClass.Log(display as IServiceRequestContext, "GetImage Response", server, service, resp);
+                await ArcIMSClass.LogAsync(display as IServiceRequestContext, "GetImage Response", server, service, resp);
 #if(DEBUG)
                 gView.Framework.system.Logger.LogDebug("ArcXML SendRequest Finished");
 #endif
@@ -268,7 +268,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             }
             catch (Exception ex)
             {
-                ArcIMSClass.ErrorLog(context, "MapRequest", server, service, ex);
+                await ArcIMSClass.ErrorLog(context, "MapRequest", server, service, ex);
                 return false;
             }
         }
@@ -381,9 +381,9 @@ namespace gView.Interoperability.ArcXML.Dataset
                 sb.Append("</REQUEST>");
                 sb.Append("</ARCXML>");
 
-                ArcIMSClass.Log(display as IServiceRequestContext, "GetLegend Request", server, service, sb);
+                await ArcIMSClass.LogAsync(display as IServiceRequestContext, "GetLegend Request", server, service, sb);
                 string resp = connector.SendRequest(sb, server, service);
-                ArcIMSClass.Log(display as IServiceRequestContext, "GetLegend Response", server, service, resp);
+                await ArcIMSClass.LogAsync(display as IServiceRequestContext, "GetLegend Response", server, service, resp);
 
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(resp);
@@ -403,7 +403,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             }
             catch (Exception ex)
             {
-                ArcIMSClass.ErrorLog(context, "LegendRequest", server, service, ex);
+                await ArcIMSClass.ErrorLog(context, "LegendRequest", server, service, ex);
                 return false;
             }
         }
@@ -509,7 +509,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             get { return _layerRenderer; }
         }
 
-        public static void Log(IServiceRequestContext context, string header, string server, string service, string axl)
+        async public static Task LogAsync(IServiceRequestContext context, string header, string server, string service, string axl)
         {
             if (context == null ||
                 context.MapServer == null ||
@@ -523,17 +523,17 @@ namespace gView.Interoperability.ArcXML.Dataset
             sb.Append("\n");
             sb.Append(axl);
 
-            context.MapServer.LogAsync(context, "gView.Interoperability.ArcXML", loggingMethod.request_detail_pro, sb.ToString()).Wait();
+            await context.MapServer.LogAsync(context, "gView.Interoperability.ArcXML", loggingMethod.request_detail_pro, sb.ToString());
         }
-        public static void Log(IServiceRequestContext context, string header, string server, string service, StringBuilder axl)
+        async public static Task LogAsync(IServiceRequestContext context, string header, string server, string service, StringBuilder axl)
         {
             if (context == null ||
                 context.MapServer == null ||
                 context.MapServer.LoggingEnabled(loggingMethod.request_detail_pro) == false) return;
 
-            Log(context, header, server, service, axl.ToString());
+           await LogAsync(context, header, server, service, axl.ToString());
         }
-        public static void ErrorLog(IServiceRequestContext context, string header, string server, string service, Exception ex)
+        async public static Task ErrorLog(IServiceRequestContext context, string header, string server, string service, Exception ex)
         {
             if (context == null ||
                 context.MapServer == null ||
@@ -550,10 +550,10 @@ namespace gView.Interoperability.ArcXML.Dataset
                 }
             }
 
-            context.MapServer.LogAsync(context, server + "-" + service + ": " + header, loggingMethod.error,
+            await context.MapServer.LogAsync(context, server + "-" + service + ": " + header, loggingMethod.error,
                 msg.ToString() +
                 ex.Source + "\n" +
-                ex.StackTrace + "\n").Wait();
+                ex.StackTrace + "\n");
         }
     }
 

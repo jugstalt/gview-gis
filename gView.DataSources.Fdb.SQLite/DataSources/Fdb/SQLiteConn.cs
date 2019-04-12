@@ -546,7 +546,6 @@ namespace gView.DataSources.Fdb.Sqlite
                 _lastException = e;
                 return null;
             }
-            return schema;
         }
 
         async public Task<bool> createTable(System.Data.DataTable tab, bool data)

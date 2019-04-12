@@ -10,6 +10,7 @@ using gView.Framework.Carto;
 using gView.Framework.OGC.GML;
 using gView.Framework.FDB;
 using System.Threading.Tasks;
+using gView.Framework.IO;
 
 namespace gView.Interoperability.OGC.Dataset.GML
 {
@@ -279,6 +280,19 @@ namespace gView.Interoperability.OGC.Dataset.GML
         public void Dispose()
         {
             
+        }
+
+        #endregion
+
+        #region IPersistableLoadAsync
+
+        public Task<bool> LoadAsync(IPersistStream stream)
+        {
+            return Task.FromResult(true);
+        }
+
+        public void Save(IPersistStream stream)
+        {
         }
 
         #endregion

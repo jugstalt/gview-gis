@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 namespace gView.DataSources.Raster.File
 {
     [gView.Framework.system.RegisterPlugIn("D4812641-3F53-48eb-A66C-FC0203980C79")]
-    public class RasterFileDataset : DatasetMetadata, IRasterFileDataset, gView.Framework.IO.IPersistable
+    public class RasterFileDataset : DatasetMetadata, IRasterFileDataset
     {
         private List<IDatasetElement> _layers = new List<IDatasetElement>();
         private string _directory = "";
@@ -255,17 +255,19 @@ namespace gView.DataSources.Raster.File
 
         #endregion
 
-        #region IPersistable Members
+        #region IPersistableLoadAsync Members
 
         public string PersistID
         {
             get { return ""; }
         }
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> LoadAsync(gView.Framework.IO.IPersistStream stream)
         {
             _directory=(string)stream.Load("Directory");
             if (_directory == null) _directory = "";
+
+            return Task.FromResult(true);
         }
 
         public void Save(gView.Framework.IO.IPersistStream stream)

@@ -19,7 +19,7 @@ namespace gView.DataSources.Fdb.MSSql
     /// Zusammenfassung für SqlFDBDataset.
     /// </summary>
     [gView.Framework.system.RegisterPlugIn("3B870AB5-8BE0-4a00-911D-ECC6C83DD6B4")]
-    public class SqlFDBDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset, IPersistable, gView.Framework.UI.IConnectionStringDialog
+    public class SqlFDBDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset, gView.Framework.UI.IConnectionStringDialog
     {
         private int _order = 0;
         internal int _dsID = -1;
@@ -332,7 +332,7 @@ namespace gView.DataSources.Fdb.MSSql
         }
         #endregion
 
-        #region IPersistable Member
+        #region IPersistableLoadAsync Member
 
         public string PersistID
         {
@@ -342,7 +342,7 @@ namespace gView.DataSources.Fdb.MSSql
             }
         }
 
-        public void Load(IPersistStream stream)
+        async public Task<bool> LoadAsync(IPersistStream stream)
         {
             string connectionString = (string)stream.Load("connectionstring", "");
             if (_fdb != null)
@@ -351,8 +351,8 @@ namespace gView.DataSources.Fdb.MSSql
                 _fdb = null;
             }
 
-            this.SetConnectionString(connectionString).Wait();
-            this.Open().Wait();
+            await this.SetConnectionString(connectionString);
+            return await this.Open();
         }
 
         public void Save(IPersistStream stream)

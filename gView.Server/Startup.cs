@@ -297,7 +297,7 @@ namespace gView.Server
 
             PlugInManager.Init();
             
-            InternetMapServer.Init(env.ContentRootPath);
+            InternetMapServer.Init(env.ContentRootPath).Wait();
             //InternetMapServer.Init(@"C:\Development_OpenSource\GeoDaten\MXL\8050");
         }
     }

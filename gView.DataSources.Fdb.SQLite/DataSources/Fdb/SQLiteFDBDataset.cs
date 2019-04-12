@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace gView.DataSources.Fdb.SQLite
 {
     [gView.Framework.system.RegisterPlugIn("36DEB6AC-EA0C-4B37-91F1-B2E397351555")]
-    public class SQLiteFDBDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset, IPersistable
+    public class SQLiteFDBDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset
     {
         internal int _dsID = -1;
         private List<IDatasetElement> _layers;
@@ -349,7 +349,7 @@ namespace gView.DataSources.Fdb.SQLite
             }
         }
 
-        public void Load(IPersistStream stream)
+        async public Task<bool> LoadAsync(IPersistStream stream)
         {
             string connectionString = (string)stream.Load("connectionstring", "");
             if (_fdb != null)
@@ -358,8 +358,8 @@ namespace gView.DataSources.Fdb.SQLite
                 _fdb = null;
             }
 
-            this.SetConnectionString(connectionString).Wait();
-            this.Open().Wait();
+            await this.SetConnectionString(connectionString);
+            return await this.Open();
         }
 
         public void Save(IPersistStream stream)

@@ -29,7 +29,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             return fc;
         }
 
-        protected override string SendRequest(IUserData userData, string axlRequest)
+        async protected override Task<string> SendRequest(IUserData userData, string axlRequest)
         {
             if (!(_dataset is ArcIMSDataset)) return "";
             string server = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "server");
@@ -59,17 +59,17 @@ namespace gView.Interoperability.ArcXML.Dataset
                 connector.setAuthentification(user, pwd);
 
             string resp = String.Empty;
-            ArcIMSClass.Log(context, "GetFeature Request", server, service, axlRequest);
+            await ArcIMSClass.LogAsync(context, "GetFeature Request", server, service, axlRequest);
             try
             {
                 resp = connector.SendRequest(axlRequest, server, service, "Query");
             }
             catch (Exception ex)
             {
-                ArcIMSClass.ErrorLog(context, "Query", server, service, ex);
+                await ArcIMSClass.ErrorLog(context, "Query", server, service, ex);
                 return String.Empty;
             }
-            ArcIMSClass.Log(context, "GetFeature Response", server, service, resp);
+            await ArcIMSClass.LogAsync(context, "GetFeature Response", server, service, resp);
 
             return resp;
         }
@@ -120,7 +120,7 @@ namespace gView.Interoperability.ArcXML.Dataset
         {
         }
 
-        protected override string SendRequest(IUserData userData, string axlRequest)
+        async protected override Task<string> SendRequest(IUserData userData, string axlRequest)
         {
             if (!(_dataset is ArcIMSDataset)) return "";
             string server = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "server");
@@ -150,17 +150,17 @@ namespace gView.Interoperability.ArcXML.Dataset
                 connector.setAuthentification(user, pwd);
 
             string resp = String.Empty;
-            ArcIMSClass.Log(context, "GetRasterInfo Request", server, service, axlRequest);
+            await ArcIMSClass.LogAsync(context, "GetRasterInfo Request", server, service, axlRequest);
             try
             {
                 resp = connector.SendRequest(axlRequest, server, service);
             }
             catch (Exception ex)
             {
-                ArcIMSClass.ErrorLog(context, "Query", server, service, ex);
+                await ArcIMSClass.ErrorLog(context, "Query", server, service, ex);
                 return String.Empty;
             }
-            ArcIMSClass.Log(context, "GetRasterInfo Response", server, service, resp);
+            await ArcIMSClass.LogAsync(context, "GetRasterInfo Response", server, service, resp);
 
             return resp;
         }

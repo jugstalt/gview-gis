@@ -1322,7 +1322,6 @@ namespace gView.Interoperability.ArcXML
             //        }
             //    }
             //}
-            return null;
         }
 
         private List<IClass> FindClass(IServiceMap map, string id)

@@ -53,7 +53,7 @@ namespace gView.DataSources.Shape
     [UseDatasetNameCase(DatasetNameCase.fieldNamesUpper)]
     [MaximumFieldnameLength(10)]
     [gView.Framework.system.RegisterPlugIn("80F48262-D412-41fb-BF43-2D611A2ABF42")]
-    public class ShapeDataset : DatasetMetadata, IFeatureDataset, IPersistable
+    public class ShapeDataset : DatasetMetadata, IFeatureDataset
 	{
 		private string _connectionString="",_errMsg="";
 		private IntPtr _hTree=(IntPtr)null;
@@ -369,12 +369,12 @@ namespace gView.DataSources.Shape
         }
 		#endregion
 
-        #region IPersistable Member
+        #region IPersistableLoadAsync Member
 
-        public void Load(IPersistStream stream)
+        async public Task<bool> LoadAsync(IPersistStream stream)
         {
             _connectionString = (string)stream.Load("connectionstring", "");
-            this.Open().Wait();
+            return await this.Open();
         }
 
         public void Save(IPersistStream stream)

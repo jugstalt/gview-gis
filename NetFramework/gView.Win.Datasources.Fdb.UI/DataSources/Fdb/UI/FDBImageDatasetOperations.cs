@@ -640,7 +640,7 @@ namespace gView.DataSources.Fdb.UI
             using (IFeatureCursor cursor = await rasterFC.GetFeatures(filter))
             {
                 IFeature feature;
-                while ((feature = cursor.NextFeature().Result) != null)
+                while ((feature = await cursor.NextFeature()) != null)
                 {
                     string path = (string)feature["PATH"];
                     string path2 = (string)feature["PATH2"];

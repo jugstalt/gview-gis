@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace gView.Framework.IO
 {
 	/// <summary>
-	/// Zusammenfassung f�r IO.
+	/// Zusammenfassung für IO.
 	/// </summary>
 	public class XmlStream : IPersistStream
 	{
@@ -270,6 +270,10 @@ namespace gView.Framework.IO
                     ((IPersistable)comp).Load(this);
                     _parent = parent;
                 }
+                else if (comp is IPersistableLoadAsync)
+                {
+                    throw new Exception("Can't laod async in this context (" + comp.GetType().ToString() + ")");
+                }
 
 				return comp;
 			}
@@ -282,8 +286,12 @@ namespace gView.Framework.IO
 					((IPersistable)objectInstance).Load(this);
 					_parent=parent;
 					return objectInstance;
-				} 
-				else 
+				}
+                else if (objectInstance is IPersistableLoadAsync)
+                {
+                    throw new Exception("Can't laod async in this context (" + objectInstance.GetType().ToString() + ")");
+                }
+                else 
 				{
 					return defValue;
 				}
@@ -362,7 +370,32 @@ namespace gView.Framework.IO
 			}
 		}
 
-        public T LoadPlugin<T>(string key, T unknownPlugin = default(T))
+        async public Task<T> LoadAsync<T>(string key, T objectInstance, T defaultValue = default(T))
+            where T : IPersistableLoadAsync
+        {
+            if (_parent == null)
+                return default(T);
+
+            XmlNode xmlnode = _parent.Next(key);
+            if (xmlnode == null) return defaultValue;
+
+            if (xmlnode.Attributes["type"] == null)
+            {
+                if (objectInstance != null)
+                {
+                    XmlNodePlus parent = _parent;
+                    _parent = new XmlNodePlus(xmlnode, _parent.NumberFormat);
+                    await objectInstance.LoadAsync(this);
+                    _parent = parent;
+                    return objectInstance;
+                }
+            }
+
+            return defaultValue;
+        }
+
+        async public Task<T> LoadPluginAsync<T>(string key, T unknownPlugin = default(T))
+            where T : IPersistableLoadAsync
         {
             if (_parent == null) return default(T);
             XmlNode xmlnode = _parent.Next(key);
@@ -378,12 +411,13 @@ namespace gView.Framework.IO
                         ((IErrorMessage)unknownPlugin).LastErrorMessage = "Unknown plugin type: "+ xmlnode.Attributes["GUID"].Value;
                     return unknownPlugin;
                 }
-
-                if (comp is IPersistable)
+                
+                //if (comp is IPersistableLoad)
                 {
                     XmlNodePlus parent = _parent;
                     _parent = new XmlNodePlus(xmlnode, _parent.NumberFormat);
-                    ((IPersistable)comp).Load(this);
+                    //((IPersistable)comp).Load(this);
+                    await comp.LoadAsync(this);
                     _parent = parent;
                 }
 

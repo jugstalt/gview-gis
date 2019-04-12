@@ -14,7 +14,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
     public enum SERVICE_TYPE { WMS = 0, WFS = 1, WMS_WFS = 2 };
 
     [gView.Framework.system.RegisterPlugIn("538F0731-31FE-493a-B063-10A2D37D6E6D")]
-    public class WMSDataset : DatasetMetadata, IFeatureDataset, IPersistable, IRequestDependentDataset
+    public class WMSDataset : DatasetMetadata, IFeatureDataset, IRequestDependentDataset
     {
         internal string _connection = "", _connectionString;
         private IEnvelope _envelope = null;
@@ -234,7 +234,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
                     response = RemoveDOCTYPE(response);
 
-                    await _class.Init(response, _wfsDataset);
+                    _class.Init(response, _wfsDataset);
                 }
 
                 _state = (ret) ? DatasetState.opened : DatasetState.unknown;
@@ -243,7 +243,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             }
             catch (Exception ex)
             {
-                WMSClass.ErrorLog(context, "GetCapabilities", url, ex);
+                await WMSClass.ErrorLogAsync(context, "GetCapabilities", url, ex);
                 _class = null;
                 _wfsDataset = null;
 
@@ -262,11 +262,11 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
         #endregion
 
-        #region IPersistable Member
+        #region IPersistableLoadAsync Member
 
-        public void Load(IPersistStream stream)
+        async public Task<bool> LoadAsync(IPersistStream stream)
         {
-            this.SetConnectionString((string)stream.Load("ConnectionString", "")).Wait();
+            await this.SetConnectionString((string)stream.Load("ConnectionString", ""));
 
             //switch (_type)
             //{
@@ -282,15 +282,21 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             //        break;
             //}
 
-            Open().Wait();
-
-            if (_class != null)
+            if (await Open())
             {
-                _class.SRSCode = (string)stream.Load("WMS_SRS", String.Empty); ;
-                _class.GetMapFormat = (string)stream.Load("WMS_GetMapFormat", String.Empty);
-                _class.FeatureInfoFormat = (string)stream.Load("WMS_InfoFormat", String.Empty);
-                _class.UseSLD_BODY = (bool)stream.Load("UseSLD_BODY", _class.UseSLD_BODY);
+
+                if (_class != null)
+                {
+                    _class.SRSCode = (string)stream.Load("WMS_SRS", String.Empty); ;
+                    _class.GetMapFormat = (string)stream.Load("WMS_GetMapFormat", String.Empty);
+                    _class.FeatureInfoFormat = (string)stream.Load("WMS_InfoFormat", String.Empty);
+                    _class.UseSLD_BODY = (bool)stream.Load("UseSLD_BODY", _class.UseSLD_BODY);
+                }
+
+                return true;
             }
+
+            return false;
         }
 
         public void Save(IPersistStream stream)

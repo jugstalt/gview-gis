@@ -110,13 +110,13 @@ namespace gView.Framework.UI.Controls
             this.list.CalcFontScaleFactor();
         }
 
-        void LockLayer_Click(object sender, EventArgs e)
+        async void LockLayer_Click(object sender, EventArgs e)
         {
             if (!(_contextItem is LayerItem)) return;
 
             ((LayerItem)_contextItem).TOCElement.LayerLocked = true;
 
-            BuildList(list.Items[list.Items.IndexOf(_contextItem) - 1]).Wait();
+            await BuildList(list.Items[list.Items.IndexOf(_contextItem) - 1]);
         }
 
         private void RemoveDatasetElement_Click(object sender, EventArgs e)
@@ -158,7 +158,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private void clickInsertGroup(object sender, System.EventArgs e)
+        async private void clickInsertGroup(object sender, System.EventArgs e)
         {
             if (_mode != TOCViewMode.Groups || _iMapDocument == null) return;
             if (_iMapDocument.FocusMap == null) return;
@@ -189,10 +189,10 @@ namespace gView.Framework.UI.Controls
 
             _iMapDocument.FocusMap.AddLayer(gLayer);
 
-            this.BuildList(null).Wait();
+            await this.BuildList(null);
         }
 
-        private void clickMoveToGroup(object sender, System.EventArgs e)
+        async private void clickMoveToGroup(object sender, System.EventArgs e)
         {
             if (!(sender is GroupMenuItem)) return;
 
@@ -210,15 +210,15 @@ namespace gView.Framework.UI.Controls
                 }
             }
 
-            this.BuildList(null).Wait();
+            await this.BuildList(null);
         }
-        private void clickSplitMultiLayer(object sender, System.EventArgs e)
+        async private void clickSplitMultiLayer(object sender, System.EventArgs e)
         {
             if (!(_contextItem is LayerItem)) return;
 
             _iMapDocument.FocusMap.TOC.SplitMultiLayer(((LayerItem)_contextItem).TOCElement);
 
-            this.BuildList(null).Wait();
+            await this.BuildList(null);
         }
         private void clickLayerContextItem(object sender, System.EventArgs e)
         {
@@ -249,7 +249,7 @@ namespace gView.Framework.UI.Controls
             ((MapContextMenuItem)sender).Item.OnCreate(_iMapDocument);
             ((MapContextMenuItem)sender).Item.OnEvent(((MapContextMenuItem)sender).Map, _iMapDocument);
         }
-        private void connectionPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
+        async private void connectionPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (_iMapDocument != null &&
                 _iMapDocument.FocusMap != null &&
@@ -258,7 +258,7 @@ namespace gView.Framework.UI.Controls
                 FormConnectionProperties dlg = new FormConnectionProperties(_iMapDocument.FocusMap, ((DatasetItem)_contextItem).Dataset);
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    this.BuildList(null).Wait();
+                    await this.BuildList(null);
                 }
             }
         }
@@ -269,44 +269,44 @@ namespace gView.Framework.UI.Controls
         private System.Windows.Forms.ImageList iList;
         private TOCViewMode _mode = TOCViewMode.Groups;
 
-        public IMapDocument MapDocument
+        public IMapDocument GetMapDocument()
         {
-            get { return _iMapDocument; }
-            set
-            {
-                if (_iMapDocument == value) return;
-
-                _iMapDocument = value;
-                if (value == null) return;
-
-                _iMapDocument.LayerAdded += new LayerAddedEvent(_iMapDocument_LayerAdded);
-                _iMapDocument.LayerRemoved += new LayerRemovedEvent(_iMapDocument_LayerRemoved);
-                _iMapDocument.MapAdded += new MapAddedEvent(_iMapDocument_MapAdded);
-                _iMapDocument.MapDeleted += new MapDeletedEvent(_iMapDocument_MapDeleted);
-
-                //LicenseTypes lt = _iMapDocument.Application.ComponentLicenseType("gview.desktop;gview.map");
-                //if (lt == LicenseTypes.Express || lt == LicenseTypes.Licensed)
-                //{
-                //    _readonly = false;
-                //    _fullversion = true;
-                //}
-                //else
-                //{
-                //    _readonly = true;
-                //    _fullversion = false;
-                //}
-
-                if (_iMapDocument.Application is IMapApplication)
-                {
-                    ((IMapApplication)_iMapDocument.Application).AfterLoadMapDocument += new AfterLoadMapDocumentEvent(_iMapDocument_AfterLoadMapDocument);
-                    _readonly = ((IMapApplication)_iMapDocument.Application).ReadOnly;
-                }
-                _iMapDocument.AfterSetFocusMap += new AfterSetFocusMapEvent(_iMapDocument_AfterSetFocusMap);
-
-
-                BuildList(null).Wait();
-            }
+            return _iMapDocument;
         }
+        async public Task SetMapDocumentAsync(IMapDocument value)
+        {
+            if (_iMapDocument == value) return;
+
+            _iMapDocument = value;
+            if (value == null) return;
+
+            _iMapDocument.LayerAdded += new LayerAddedEvent(_iMapDocument_LayerAdded);
+            _iMapDocument.LayerRemoved += new LayerRemovedEvent(_iMapDocument_LayerRemoved);
+            _iMapDocument.MapAdded += new MapAddedEvent(_iMapDocument_MapAdded);
+            _iMapDocument.MapDeleted += new MapDeletedEvent(_iMapDocument_MapDeleted);
+
+            //LicenseTypes lt = _iMapDocument.Application.ComponentLicenseType("gview.desktop;gview.map");
+            //if (lt == LicenseTypes.Express || lt == LicenseTypes.Licensed)
+            //{
+            //    _readonly = false;
+            //    _fullversion = true;
+            //}
+            //else
+            //{
+            //    _readonly = true;
+            //    _fullversion = false;
+            //}
+
+            if (_iMapDocument.Application is IMapApplication)
+            {
+                ((IMapApplication)_iMapDocument.Application).AfterLoadMapDocument += new AfterLoadMapDocumentEvent(_iMapDocument_AfterLoadMapDocument);
+                _readonly = ((IMapApplication)_iMapDocument.Application).ReadOnly;
+            }
+            _iMapDocument.AfterSetFocusMap += new AfterSetFocusMapEvent(_iMapDocument_AfterSetFocusMap);
+
+            await BuildList(null);
+        }
+        
 
         public TOCViewMode TocViewMode
         {
@@ -341,23 +341,23 @@ namespace gView.Framework.UI.Controls
 
         #endregion
 
-        private void _iMapDocument_LayerAdded(IMap sender, ILayer Layer)
+        async private void _iMapDocument_LayerAdded(IMap sender, ILayer Layer)
         {
-            BuildList(null).Wait();
+            await BuildList(null);
         }
-        void _iMapDocument_LayerRemoved(IMap sender, ILayer layer)
+        async void _iMapDocument_LayerRemoved(IMap sender, ILayer layer)
         {
-            BuildList(null).Wait();
+            await BuildList(null);
         }
-        private void _iMapDocument_MapAdded(IMap map)
+        async private void _iMapDocument_MapAdded(IMap map)
         {
-            BuildList(null).Wait();
+            await BuildList(null);
         }
-        private void _iMapDocument_MapDeleted(IMap map)
+        async private void _iMapDocument_MapDeleted(IMap map)
         {
-            BuildList(null).Wait();
+            await BuildList(null);
         }
-        private void _iMapDocument_AfterLoadMapDocument(IMapDocument mapDocument)
+        async private void _iMapDocument_AfterLoadMapDocument(IMapDocument mapDocument)
         {
             if (mapDocument != null && mapDocument.Application is IMapApplication &&
                 _fullversion == true)
@@ -365,11 +365,11 @@ namespace gView.Framework.UI.Controls
                 _readonly = ((IMapApplication)mapDocument.Application).ReadOnly;
                 this.TocViewMode = _mode;
             }
-            BuildList(null).Wait();
+            await BuildList(null);
         }
-        void _iMapDocument_AfterSetFocusMap(IMap map)
+        async void _iMapDocument_AfterSetFocusMap(IMap map)
         {
-            BuildList(null).Wait();
+            await BuildList(null);
             if (SelectionChanged != null)
                 SelectionChanged(this, new EventArgs());
         }
@@ -1122,7 +1122,7 @@ namespace gView.Framework.UI.Controls
         }
 
         #region MouseEvents
-        private void list_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
+        async private void list_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             if (_mouseOverItem != null &&
                 _mouseDownItem != null &&
@@ -1156,11 +1156,11 @@ namespace gView.Framework.UI.Controls
                     _iMapDocument.FocusMap.TOC.MoveElement(elem, insertBefore, true);
                 }
 
-                this.BuildList(null).Wait();
-                RefreshMap();
+                await this.BuildList(null);
+                await RefreshMap();
             }
         }
-        private void list_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
+        async private void list_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             _rect = new Rectangle(-1, -1, -1, -1);
             _mouseOverItem = _mouseDownItem = null;
@@ -1378,7 +1378,7 @@ namespace gView.Framework.UI.Controls
                 if (X >= 1 && X <= 10)
                 {
                     ((DatasetItem)item).isEncapsed = !((DatasetItem)item).isEncapsed;
-                    ShowDatasetLayers((DatasetItem)item).Wait();
+                    await ShowDatasetLayers((DatasetItem)item);
                 }
             }
             if (item is DatasetLayerItem)
@@ -1406,7 +1406,7 @@ namespace gView.Framework.UI.Controls
                     ((LayerItem)item).Visible = !((LayerItem)item).Visible;
                     list.Refresh();
 
-                    RefreshMap();
+                    await RefreshMap();
 
                     return;
                 }
@@ -1665,16 +1665,16 @@ namespace gView.Framework.UI.Controls
             return path;
         }
 
-        private void renameBoxLeave(object sender, System.EventArgs e)
+        async private void renameBoxLeave(object sender, System.EventArgs e)
         {
             _renameBox.Visible = false;
             if (!(_renameItem is IRenamable)) return;
             ((IRenamable)_renameItem).rename(_renameBox.Text);
             _renameItem = null;
-            this.BuildList(null).Wait();
+            await this.BuildList(null);
         }
 
-        private void renameBoxKeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
+        async private void renameBoxKeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
         {
             if (e.KeyChar == 13)
             {
@@ -1682,15 +1682,17 @@ namespace gView.Framework.UI.Controls
                 if (!(_renameItem is IRenamable)) return;
                 ((IRenamable)_renameItem).rename(_renameBox.Text);
                 _renameItem = null;
-                this.BuildList(null).Wait();
+                await this.BuildList(null);
             }
         }
 
-        private void RefreshMap()
+        async private Task RefreshMap()
         {
             if (_iMapDocument != null &&
                             _iMapDocument.Application is IMapApplication)
-                ((IMapApplication)_iMapDocument.Application).RefreshActiveMap(DrawPhase.All);
+            {
+                await ((IMapApplication)_iMapDocument.Application).RefreshActiveMap(DrawPhase.All);
+            }
         }
 
         public object[] SelectedItems
@@ -1816,7 +1818,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private void MapProperties_Click(object sender, EventArgs e)
+        async private void MapProperties_Click(object sender, EventArgs e)
         {
             if (!(_contextItem is MapItem)) return;
 
@@ -1836,16 +1838,16 @@ namespace gView.Framework.UI.Controls
             ISpatialReference oldSRef = map.Display.SpatialReference;
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                this.BuildList(null).Wait();
+                await this.BuildList(null);
 
                 if (_iMapDocument != null && _iMapDocument.Application is IMapApplication)
                 {
-                    ((IMapApplication)_iMapDocument.Application).RefreshActiveMap(DrawPhase.All);
+                    await ((IMapApplication)_iMapDocument.Application).RefreshActiveMap(DrawPhase.All);
                 }
             }
         }
 
-        private void toolStripMapActivate_Click(object sender, EventArgs e)
+        async private void toolStripMapActivate_Click(object sender, EventArgs e)
         {
             if (_iMapDocument == null || !(_contextItem is MapItem)) return;
 
@@ -1861,7 +1863,7 @@ namespace gView.Framework.UI.Controls
             if (map == null) return;
 
             _iMapDocument.FocusMap = map;
-            this.BuildList(null).Wait();
+            await this.BuildList(null);
         }
 
         private void toolStripMapNewMap_Click(object sender, EventArgs e)
@@ -2065,7 +2067,7 @@ namespace gView.Framework.UI.Controls
                     }
                     if (added)
                     {
-                        BuildList(null).Wait();
+                        await BuildList(null);
                         if (newMapEnvelope != null && _iMapDocument.FocusMap.Display != null)
                         {
                             _iMapDocument.FocusMap.Display.Limit = newMapEnvelope;

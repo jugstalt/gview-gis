@@ -476,11 +476,11 @@ namespace gView.Framework.XML
             }
             return filter;
         }
-        private IFeatureTable Query(IQueryFilter filter)
+        async private Task<IFeatureTable> Query(IQueryFilter filter)
         {
-            return this.CreateQueryResult(filter, AXLQuery(filter));
+            return this.CreateQueryResult(filter, await AXLQuery(filter));
         }
-        private string AXLQuery(IQueryFilter filter)
+        async private Task<string> AXLQuery(IQueryFilter filter)
         {
             AXLWriter axl = new AXLWriter();
             axl.WriteStartRequest("GET_FEATURES");
@@ -565,15 +565,15 @@ namespace gView.Framework.XML
             string req = axl.Request;
 
             //string resp = m_parent.Connector.SendRequest(req, m_parent.server, m_parent.service, "Query");
-            string resp = this.SendRequest(filter, req);
+            string resp = await this.SendRequest(filter, req);
             return resp;
         }
 
-        private IFeatureTable SpatialQuery(ISpatialFilter filter)
+        async private Task<IFeatureTable> SpatialQuery(ISpatialFilter filter)
         {
-            return this.CreateQueryResult(filter, AXLSpatialQuery(filter));
+            return this.CreateQueryResult(filter, await AXLSpatialQuery(filter));
         }
-        private string AXLSpatialQuery(ISpatialFilter filter)
+        async private Task<string> AXLSpatialQuery(ISpatialFilter filter)
         {
             AXLWriter axl = new AXLWriter();
             axl.WriteStartRequest("GET_FEATURES");
@@ -699,7 +699,7 @@ namespace gView.Framework.XML
             string req = axl.Request;
 
             //string resp = m_parent.Connector.SendRequest(req, m_parent.server, m_parent.service, "Query");
-            string resp = this.SendRequest(filter, req);
+            string resp = await this.SendRequest(filter, req);
             return resp;
         }
 
@@ -796,9 +796,9 @@ namespace gView.Framework.XML
                 if (filter == null) return "";
             }
             if (filter is ISpatialFilter)
-                return AXLSpatialQuery((ISpatialFilter)filter);
+                return await AXLSpatialQuery((ISpatialFilter)filter);
             else
-                return AXLQuery(filter);
+                return await AXLQuery(filter);
         }
 
         #region IGeometryDef Member
@@ -839,9 +839,9 @@ namespace gView.Framework.XML
         }
         #endregion
 
-        protected virtual string SendRequest(IUserData userData, string axlRequest)
+        protected virtual Task<string> SendRequest(IUserData userData, string axlRequest)
         {
-            return "";
+            return Task.FromResult("");
         }
 
         #region IWebFeatureClass Member
@@ -918,12 +918,10 @@ namespace gView.Framework.XML
 
             if (_attributes == null)
                 _filter.BeginRecord = 1;
-
-            PerformQuery().Wait();
         }
 
         private XmlDocument _doc;
-        async private Task PerformQuery()
+        async private Task<bool> PerformQuery()
         {
             try
             {
@@ -941,6 +939,8 @@ namespace gView.Framework.XML
                 if (_filter.HasMore) _filter.BeginRecord += _filter.LastQueryFeatureCount;
 
                 _features = null; // _doc.SelectNodes("//FEATURE");
+
+                return true;
             }
             catch (Exception ex)
             {
@@ -971,7 +971,8 @@ namespace gView.Framework.XML
                 if (_filter.BeginRecord > 1 || _features == null)
                 {
                     _filter.BeginRecord = 1;
-                    PerformQuery().Wait();
+                    _features = null;
+                    _doc = null;
                 }
             }
         }
@@ -985,7 +986,12 @@ namespace gView.Framework.XML
         {
             if (_features == null)  // First Call (XPath for features)
             {
-                if (_doc == null) return null;
+                if (_doc == null)
+                {
+                    if (!await PerformQuery())
+                        return null;
+                }
+
                 _features = _doc.SelectNodes("//FEATURE");
             }
 
@@ -1075,9 +1081,10 @@ namespace gView.Framework.XML
 
         #region IPointIdentify Member
 
-        public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata)
+        async public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata)
         {
-            if(point==null) return Task.FromResult<ICursor>(null);
+            if (point == null)
+                return null;
 
             FireBeforePointIdentify(display, ref point, ref sRef, userdata);
 
@@ -1110,7 +1117,7 @@ namespace gView.Framework.XML
                 }
                 string req = axl.Request;
 
-                string resp = this.SendRequest(userdata, req);
+                string resp = await this.SendRequest(userdata, req);
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(resp);
 
@@ -1121,26 +1128,26 @@ namespace gView.Framework.XML
                 switch (respNode.ChildNodes[0].Name)
                 {
                     case "RASTER_INFO":
-                        return Task.FromResult<ICursor>(new AXLRasterInfoRowCursor(respNode.SelectNodes("RASTER_INFO")));
+                        return new AXLRasterInfoRowCursor(respNode.SelectNodes("RASTER_INFO"));
                     case "gv_url_info":
                         if (infoNode.Attributes["url"] != null)
-                            return Task.FromResult<ICursor>(new AXLUrlCursor(infoNode.Attributes["url"].Value));
+                            return new AXLUrlCursor(infoNode.Attributes["url"].Value);
                         break;
                     case "gv_text_info":
                         if (infoNode.Attributes["text"] != null)
-                            return Task.FromResult<ICursor>(new AXLTextCursur(infoNode.Attributes["text"].Value.Replace("\\n", "\n")));
+                            return new AXLTextCursur(infoNode.Attributes["text"].Value.Replace("\\n", "\n"));
                         break;
                 }
             }
             catch { }
-            return Task.FromResult<ICursor>(null);
+            return null;
         }
 
         #endregion
 
-        protected virtual string SendRequest(IUserData userData, string axlRequest)
+        protected virtual Task<string> SendRequest(IUserData userData, string axlRequest)
         {
-            return "";
+            return Task.FromResult("");
         }
 
         #region IBeforePointIdentifyEventHandler Member

@@ -130,5 +130,15 @@ namespace gView.Carto.Framework.Carto
         {
            
         }
+
+        public Task<bool> LoadAsync(IPersistStream stream)
+        {
+            return Task.FromResult(true);
+        }
+
+        public void Save(IPersistStream stream)
+        {
+            
+        }
     }
 }

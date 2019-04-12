@@ -49,7 +49,7 @@ namespace gView.Framework.system.UI
                 typeof(IGraphicElement2),
                 typeof(IAutoField),
                 typeof(IFieldDomain),
-                typeof(IServiceableDataset),
+                //typeof(IServiceableDataset),
                 typeof(IFileFeatureDatabase),
                 typeof(IMetadataProvider),
                 typeof(IPersistable),

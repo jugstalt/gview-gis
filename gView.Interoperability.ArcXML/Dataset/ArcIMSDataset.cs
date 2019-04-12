@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace gView.Interoperability.ArcXML.Dataset
 {
     [gView.Framework.system.RegisterPlugIn("3B26682C-BF6E-4fe8-BE80-762260ABA581")]
-    public class ArcIMSDataset : DatasetMetadata, IFeatureDataset, IRequestDependentDataset, IPersistable
+    public class ArcIMSDataset : DatasetMetadata, IFeatureDataset, IRequestDependentDataset
     {
         internal string _connection = "";
         internal string _name = "";
@@ -212,9 +212,9 @@ namespace gView.Interoperability.ArcXML.Dataset
                 string axl = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ARCXML version=\"1.1\"><REQUEST><GET_SERVICE_INFO fields=\"true\" envelope=\"true\" renderer=\"true\" extensions=\"true\" /></REQUEST></ARCXML>";
                 //string axl = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ARCXML version=\"1.1\"><REQUEST><GET_SERVICE_INFO dpi=\"96\" toc=\"true\" /></REQUEST></ARCXML>";
 
-                ArcIMSClass.Log(context, "GetServiceInfo Response", server, service, axl);
+                await ArcIMSClass.LogAsync(context, "GetServiceInfo Response", server, service, axl);
                 axl = connector.SendRequest(axl, server, service);
-                ArcIMSClass.Log(context, "GetServiceInfo Response", server, service, axl);
+                await ArcIMSClass.LogAsync(context, "GetServiceInfo Response", server, service, axl);
 
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(axl);
@@ -324,23 +324,22 @@ namespace gView.Interoperability.ArcXML.Dataset
             {
                 _state = DatasetState.unknown;
                 _errMsg = ex.Message;
-                ArcIMSClass.ErrorLog(context, "Open Dataset", server, service, ex);
+                await ArcIMSClass.ErrorLog(context, "Open Dataset", server, service, ex);
                 return false;
             }
         }
 
         #endregion
 
-        #region IPersistable Member
+        #region IPersistableAsync Member
 
-        public void Load(IPersistStream stream)
+        async public Task<bool> LoadAsync(IPersistStream stream)
         {
-            this.SetConnectionString((string)stream.Load("ConnectionString", "")).Wait();
+            await this.SetConnectionString((string)stream.Load("ConnectionString", ""));
             _properties = stream.Load("Properties", new ArcXMLProperties(), new ArcXMLProperties()) as ArcXMLProperties;
 
             _class = new ArcIMSClass(this);
-            Open().Wait();
-
+            return await Open();
         }
 
         public void Save(IPersistStream stream)

@@ -22,6 +22,7 @@ namespace gView.Framework.UI.Controls
         private MapDocument _mapDocument;
         private IMap _map;
         private List<ITool> _tools = new List<ITool>();
+        private bool _exObjectInvokeRequired = false;
 
         public PreviewControl()
         {
@@ -100,6 +101,8 @@ namespace gView.Framework.UI.Controls
 
         async public Task<bool> OnShow()
         {
+            if (_exObjectInvokeRequired)
+                await InkokeSetExplorerObject();
             //if (this.InvokeRequired)
             //{
             //    this.Invoke(new MethodInvoker(() => { OnShow(); }));
@@ -126,6 +129,8 @@ namespace gView.Framework.UI.Controls
 
         async private Task InkokeSetExplorerObject()
         {
+            _exObjectInvokeRequired = false;
+
             //if (this.InvokeRequired)
             //{
             //    this.Invoke(new MethodInvoker(() => { InkokeSetExplorerObject(); }));
@@ -202,7 +207,7 @@ namespace gView.Framework.UI.Controls
                 if (_exObject == value || _map == null) return;
 
                 _exObject = value;
-                InkokeSetExplorerObject().Wait();
+                _exObjectInvokeRequired = true;
             }
         }
 
@@ -228,6 +233,9 @@ namespace gView.Framework.UI.Controls
 
         async public Task<bool> RefreshContents()
         {
+            if (_exObjectInvokeRequired)
+                await InkokeSetExplorerObject();
+
             //if (this.InvokeRequired)
             //{
             //    this.Invoke(new MethodInvoker(() => { RefreshContents(); }));

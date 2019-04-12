@@ -46,7 +46,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             if (_dataset != null) _name = _dataset._name;
         }
 
-        async internal Task Init(string CapabilitiesString, WFSDataset wfsDataset)
+        internal void Init(string CapabilitiesString, WFSDataset wfsDataset)
         {
             try
             {
@@ -493,7 +493,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 }
                 catch (Exception ex)
                 {
-                    WMSClass.ErrorLog(display.Map as IServiceRequestContext, "MapRequest", url, ex);
+                    await WMSClass.ErrorLogAsync(display.Map as IServiceRequestContext, "MapRequest", url, ex);
                     return false;
                 }
 #if(DEBUG)
@@ -874,7 +874,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         }
         #endregion
 
-        public static void Log(IServiceRequestContext context, string header, string server, string service, string axl)
+        async public static Task LogAsync(IServiceRequestContext context, string header, string server, string service, string axl)
         {
             if (context == null ||
                 context.MapServer == null ||
@@ -888,17 +888,17 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             sb.Append("\n");
             sb.Append(axl);
 
-            context.MapServer.LogAsync(context, "gView.Interoperability.ArcXML", loggingMethod.request_detail_pro, sb.ToString()).Wait();
+            await context.MapServer.LogAsync(context, "gView.Interoperability.ArcXML", loggingMethod.request_detail_pro, sb.ToString());
         }
-        public static void Log(IServiceRequestContext context, string header, string server, string service, StringBuilder axl)
+        async public static Task Log(IServiceRequestContext context, string header, string server, string service, StringBuilder axl)
         {
             if (context == null ||
                 context.MapServer == null ||
                 context.MapServer.LoggingEnabled(loggingMethod.request_detail_pro) == false) return;
 
-            Log(context, header, server, service, axl.ToString());
+            await LogAsync(context, header, server, service, axl.ToString());
         }
-        public static void ErrorLog(IServiceRequestContext context, string header, string url, Exception ex)
+        async public static Task ErrorLogAsync(IServiceRequestContext context, string header, string url, Exception ex)
         {
             if (context == null ||
                 context.MapServer == null ||
@@ -914,10 +914,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                     msg.Append(inner.Message + "\n");
                 }
             }
-            context.MapServer.LogAsync(context, header + ": " + url, loggingMethod.error,
+            await context.MapServer.LogAsync(context, header + ": " + url, loggingMethod.error,
                 msg.ToString() +
                 ex.Source + "\n" +
-                ex.StackTrace + "\n").Wait();
+                ex.StackTrace + "\n");
         }
 
         /*

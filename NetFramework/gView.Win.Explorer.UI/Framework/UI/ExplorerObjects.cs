@@ -354,7 +354,7 @@ namespace gView.Framework.UI
 
                     foreach (FeatureClassListViewItem fcItem in dlg.FeatureClassItems)
                     {
-                        ImportDatasetObject(fcItem, schemaOnly).Wait();
+                        await ImportDatasetObject(fcItem, schemaOnly);
                     }
 
                     exObjectManager.Dispose(); // alle ExplorerObjects wieder löschen...

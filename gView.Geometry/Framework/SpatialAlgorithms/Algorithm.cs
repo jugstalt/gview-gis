@@ -2182,7 +2182,6 @@ namespace gView.Framework.SpatialAlgorithms
                     double l = Math.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
                     double dx = (x2 - x1) / l, dy = (y2 - y1) / l;
                     return new Point(x1 + dx * t, y1 + dy * t);
-                    break;
                 }
                 x1 = x2; y1 = y2;
             }

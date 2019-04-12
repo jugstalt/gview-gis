@@ -281,7 +281,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     bool maketrans = map.Display.MakeTransparent;
                     map.Display.MakeTransparent = true;
                     MemoryStream ms = new MemoryStream();
-                    map.SaveImage(ms, format == ".jpg" ? System.Drawing.Imaging.ImageFormat.Jpeg : System.Drawing.Imaging.ImageFormat.Png);
+                    await map.SaveImage(ms, format == ".jpg" ? System.Drawing.Imaging.ImageFormat.Jpeg : System.Drawing.Imaging.ImageFormat.Png);
                     map.Display.MakeTransparent = maketrans;
 
                     return ms.ToArray();

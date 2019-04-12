@@ -18,7 +18,7 @@ namespace gView.Framework.Carto.UI
 	/// <summary>
 	/// Zusammenfassung für TOCCoClass.
 	/// </summary>
-	public class TOC : ITOC, IPersistable
+	public class TOC : ITOC
 	{
         public event EventHandler TocChanged = null;
 
@@ -986,15 +986,17 @@ namespace gView.Framework.Carto.UI
 
 		#region IPersistable Member
 
-		public void Load(gView.Framework.IO.IPersistStream stream)
+		async public Task<bool> LoadAsync(gView.Framework.IO.IPersistStream stream)
 		{
 			_elements.Clear();
 
 			TOCElement element=null;
-			while((element=(TOCElement)stream.Load("ITOCElement",null,new TOCElement(this)))!=null) 
+			while((element=(TOCElement)await stream.LoadAsync("ITOCElement",new TOCElement(this)))!=null) 
 			{
 				_elements.Add(element);
 			}
+
+            return true;
         }
 
 		public void Save(gView.Framework.IO.IPersistStream stream)
@@ -1037,7 +1039,7 @@ namespace gView.Framework.Carto.UI
         #endregion
     }
 
-	internal class TOCElement : gView.Framework.UI.ITOCElement,gView.Framework.IO.IPersistable
+	internal class TOCElement : gView.Framework.UI.ITOCElement
 	{
 		private string _name;
 		private TOCElementType _type;
@@ -1337,7 +1339,7 @@ namespace gView.Framework.Carto.UI
 
 		#region IPersistable Member
 
-		public void Load(gView.Framework.IO.IPersistStream stream)
+		async public Task<bool> LoadAsync(gView.Framework.IO.IPersistStream stream)
 		{
 			_name=(string)stream.Load("Name");
 			_type=(TOCElementType)stream.Load("Type");
@@ -1374,7 +1376,7 @@ namespace gView.Framework.Carto.UI
             {
                 PersistLayer pElement = null;
 
-                pElement = (PersistLayer)stream.Load("DatasetElement", null, new PersistLayer(_toc._map));
+                pElement = (PersistLayer)await stream.LoadAsync("DatasetElement", new PersistLayer(_toc._map));
 
                 if (pElement != null && pElement.DatasetElement != null)
                 {
@@ -1413,13 +1415,15 @@ namespace gView.Framework.Carto.UI
             {
                 PersistLayer pElement = null;
 
-                while ((pElement = (PersistLayer)stream.Load("DatasetElement", null, new PersistLayer(_toc._map))) != null)
+                while ((pElement = (PersistLayer)await stream.LoadAsync("DatasetElement", new PersistLayer(_toc._map))) != null)
                 {
                     _layers.Add(pElement.DatasetElement);  // DatasetElement kann auch null sein, wenn (vorübergehend) nicht mehr im Dataset...
                     if (_parent != null && _parent.Layers.Count == 1 && _parent.Layers[0] is GroupLayer)
                         ((GroupLayer)_parent.Layers[0]).Add(pElement.DatasetElement as Layer);
                 }
             }
+
+            return true;
         }
 
 		public void Save(gView.Framework.IO.IPersistStream stream)
@@ -1447,7 +1451,7 @@ namespace gView.Framework.Carto.UI
 		#endregion
     }
 
-	internal class PersistLayer : gView.Framework.IO.IPersistable
+	internal class PersistLayer : gView.Framework.IO.IPersistableLoadAsync
 	{
         private IMap _map = null;
         private IDatasetElement _element = new NullLayer();
@@ -1468,10 +1472,10 @@ namespace gView.Framework.Carto.UI
 
 		#region IPersistable Member
 
-		public void Load(gView.Framework.IO.IPersistStream stream)
+		async public Task<bool> LoadAsync(gView.Framework.IO.IPersistStream stream)
 		{
 			if(_map==null)
-                return;
+                return true;
 
             int datasetIndex=(int)stream.Load("DatasetIndex",-1);
 
@@ -1488,24 +1492,24 @@ namespace gView.Framework.Carto.UI
                 webThemeId = (string)stream.Load("ID", "");
                 webClassName = (string)stream.Load("ClassName", "");
 
-                IDatasetElement wElement = dataset.Element(webClassName).Result;
+                IDatasetElement wElement = await dataset.Element(webClassName);
                 if (wElement == null || !(wElement.Class is IWebServiceClass))
-                    return;
+                    return true;
 
                 IWebServiceClass wc = wElement.Class as IWebServiceClass;
                 if (wc == null || wc.Themes == null)
-                    return;
+                    return true;
 
                 foreach (IWebServiceTheme theme in wc.Themes)
                 {
                     if (theme.LayerID == webThemeId)
                     {
                         _element = theme;
-                        return; 
+                        return true; 
                     }
                 }
 
-                return;
+                return true;
             }
 
             string name = (string)stream.Load("Name", "");
@@ -1518,7 +1522,7 @@ namespace gView.Framework.Carto.UI
                     if (layer.Class != null && layer.Class.Dataset == dataset && layer.Title == name)
                     {
                         _element = layer;
-                        return;
+                        return true;
                     }
                 }
             }
@@ -1533,14 +1537,14 @@ namespace gView.Framework.Carto.UI
                         layer.Title == name)
                     {
                         _element = layer;
-                        return;
+                        return true;
                     }
                     // Layer
                     if (layer.Class != null && layer.Class.Dataset == dataset && 
                         layer.Title == name && layer.ID==_id_)
                     {
                         _element = layer;
-                        return;
+                        return true;
                     }
                 }
             }
@@ -1555,6 +1559,8 @@ namespace gView.Framework.Carto.UI
                 ((NullLayer)_element).PersistClassName = webClassName;
                 ((NullLayer)_element).Title = name;
             }
+
+            return true;
         }
 
 		public void Save(gView.Framework.IO.IPersistStream stream)

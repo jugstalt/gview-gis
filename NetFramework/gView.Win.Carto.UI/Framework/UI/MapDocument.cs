@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.UI
 {
-	public class MapDocument : IMapDocument,IPersistableAsync
+	public class MapDocument : IMapDocument,IPersistableLoadAsync
 	{
 		List<IMap> _maps;
 		private int _focusMapIndex=-1;
@@ -259,7 +259,7 @@ namespace gView.Framework.UI
             return true;
 		}
 
-		public Task<bool> SaveAsync(IPersistStream stream)
+		public void Save(IPersistStream stream)
 		{
 			stream.Save("focusMapIndex",_focusMapIndex);
 
@@ -276,8 +276,6 @@ namespace gView.Framework.UI
             }
             if (_tableRelations != null)
                 stream.Save("TableRelations", _tableRelations);
-
-            return Task.FromResult(true);
 		}
 
 		#endregion

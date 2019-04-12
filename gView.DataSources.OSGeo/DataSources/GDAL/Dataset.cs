@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace gView.DataSources.GDAL
 {
     [gView.Framework.system.RegisterPlugIn("43DFABF1-3D19-438c-84DA-F8BA0B266592")]
-    public class Dataset : DatasetMetadata, IRasterFileDataset, IPersistable, IPlugInDependencies
+    public class Dataset : DatasetMetadata, IRasterFileDataset, IPlugInDependencies
     {
         private string _connectionString = "";
         private string _errMsg = "";
@@ -224,24 +224,16 @@ namespace gView.DataSources.GDAL
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        async public Task<bool> LoadAsync(IPersistStream stream)
         {
-            SetConnectionString((string)stream.Load("filename", String.Empty));
+            await SetConnectionString((string)stream.Load("filename", String.Empty));
 
-            //if (_layers.Count == 1 && _layers[0].Class is IPersistable)
-            //{
-            //    stream.Load("RasterClass", null, _layers[0].Class);
-            //}
+            return true;
         }
 
         public void Save(IPersistStream stream)
         {
             stream.Save("filename", ConnectionString);
-
-            //if (_layers.Count == 1 && _layers[0].Class is IPersistable)
-            //{
-            //    stream.Save("RasterClass", _layers[0].Class);
-            //}
         }
 
         #endregion

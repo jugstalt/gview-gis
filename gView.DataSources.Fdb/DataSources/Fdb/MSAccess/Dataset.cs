@@ -18,7 +18,7 @@ namespace gView.DataSources.Fdb.MSAccess
     /// Zusammenfassung für AccessFDBDataset.
     /// </summary>
     [gView.Framework.system.RegisterPlugIn("6F540340-74C9-4b1a-BD4D-B1C5FE946CA1")]
-    public class AccessFDBDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset, IPersistable
+    public class AccessFDBDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset
     {
         internal int _dsID = -1;
         private List<IDatasetElement> _layers;
@@ -403,7 +403,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
         }
 
-        public void Load(IPersistStream stream)
+        async public Task<bool> LoadAsync(IPersistStream stream)
         {
             string connectionString = (string)stream.Load("connectionstring", "");
             if (_fdb != null)
@@ -412,21 +412,13 @@ namespace gView.DataSources.Fdb.MSAccess
                 _fdb = null;
             }
 
-            this.SetConnectionString(connectionString).Wait();
-            this.Open().Wait();
+            await this.SetConnectionString(connectionString);
+            return await this.Open();
         }
 
         public void Save(IPersistStream stream)
         {
             stream.SaveEncrypted("connectionstring", this.ConnectionString);
-
-            /*
-            foreach(IDatasetElement element in _layers) 
-            {
-                if(element is IFeatureLayer)
-                    stream.Save("IFeatureLayer",element);
-            }
-             * */
         }
 
         #endregion

@@ -176,7 +176,7 @@ namespace gView.Interoperability.GeoServices.Request
                                 .Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + "." + iFormat.ToString().ToLower();
 
                             string path = (_mapServer.OutputPath + @"/" + fileName).ToPlattformPath();
-                            serviceMap.SaveImage(path, iFormat);
+                            await serviceMap.SaveImage(path, iFormat);
 
                             context.ServiceRequest.Succeeded = true;
                             context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonExportResponse()

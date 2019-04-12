@@ -67,7 +67,7 @@ namespace gView.Server.AppCode
             set { _LAYERS = value; }
         }
 
-        public bool SaveImage(string path, System.Drawing.Imaging.ImageFormat format)
+        async public Task<bool> SaveImage(string path, System.Drawing.Imaging.ImageFormat format)
         {
             if (_image == null) return false;
             try
@@ -85,11 +85,11 @@ namespace gView.Server.AppCode
                 {
                     if (this.MapServer != null)
                     {
-                        this.MapServer.LogAsync(
+                        await this.MapServer.LogAsync(
                             this.Name,
                             "RenderRasterLayerThread", loggingMethod.error,
                             "Image.MakeTransparent\nPath='" + path + "'\nFormat=" + format.ToString() + "\n" +
-                            ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace).Wait();
+                            ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                     }
                 }
                 _image.Save(path, format);
@@ -101,17 +101,17 @@ namespace gView.Server.AppCode
             {
                 if (this.MapServer != null)
                 {
-                    this.MapServer.LogAsync(
+                    await this.MapServer.LogAsync(
                         this.Name,
                         "RenderRasterLayerThread", loggingMethod.error,
                         "Image.Save\nPath='" + path + "'\nFormat=" + format.ToString() + "\n" +
-                        ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace).Wait();
+                        ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                 }
                 return false;
             }
         }
 
-        public bool SaveImage(Stream ms, System.Drawing.Imaging.ImageFormat format)
+        async public Task<bool> SaveImage(Stream ms, System.Drawing.Imaging.ImageFormat format)
         {
             if (_image == null) return false;
             try
@@ -129,11 +129,11 @@ namespace gView.Server.AppCode
                 {
                     if (this.MapServer != null)
                     {
-                        this.MapServer.LogAsync(
+                        await this.MapServer.LogAsync(
                             this.Name,
                             "RenderRasterLayerThread", loggingMethod.error,
                             "Image.MakeTransparent\n'\nFormat=" + format.ToString() + "\n" +
-                            ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace).Wait();
+                            ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                     }
                 }
                 _image.Save(ms, format);
@@ -145,11 +145,11 @@ namespace gView.Server.AppCode
             {
                 if (this.MapServer != null)
                 {
-                    this.MapServer.LogAsync(
+                    await this.MapServer.LogAsync(
                         this.Name,
                         "RenderRasterLayerThread", loggingMethod.error,
                         "Image.Save\n'\nFormat=" + format.ToString() + "\n" +
-                        ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace).Wait();
+                        ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                 }
                 return false;
             }
@@ -491,7 +491,7 @@ namespace gView.Server.AppCode
                             else
                             {
                                 RenderRasterLayerThread rlt = new RenderRasterLayerThread(this, rLayer, rLayer, cancelTracker);
-                                rlt.Render();
+                                await rlt.Render();
 
                                 //thread = new Thread(new ThreadStart(rlt.Render));
                                 //thread.Start();
@@ -599,7 +599,7 @@ namespace gView.Server.AppCode
                     IRasterLayer cLayer = (IRasterLayer)child;
 
                     RenderRasterLayerThread rlt = new RenderRasterLayerThread(this, cLayer, rootLayer, cancelTracker);
-                    rlt.Render();
+                    await rlt.Render();
 
                     if (child.Class is IDisposable)
                         ((IDisposable)child.Class).Dispose();

@@ -335,7 +335,6 @@ namespace gView.Interoperability.OGC.Dataset.GML
                         case FieldType.integer:
                             sb.Append(@"type=""integer""/>");
                             break;
-                            break;
                         case FieldType.Date:
                             sb.Append(@"type=""datetime""/>");
                             break;

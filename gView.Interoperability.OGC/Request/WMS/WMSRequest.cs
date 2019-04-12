@@ -705,7 +705,7 @@ namespace gView.Interoperability.OGC
                         else
                         {
                             MemoryStream ms = new MemoryStream();
-                            if (map.SaveImage(ms, _parameters.GetImageFormat()))
+                            if (await map.SaveImage(ms, _parameters.GetImageFormat()))
                             {
                                 return "base64:" + _parameters.GetContentType() + ":" + Convert.ToBase64String(ms.ToArray());
                             }
@@ -1153,10 +1153,10 @@ namespace gView.Interoperability.OGC
                     switch (parameters.Format)
                     {
                         case WMSImageFormat.png:
-                            map.SaveImage(fi.FullName, System.Drawing.Imaging.ImageFormat.Png);
+                            await map.SaveImage(fi.FullName, System.Drawing.Imaging.ImageFormat.Png);
                             break;
                         case WMSImageFormat.jpeg:
-                            map.SaveImage(fi.FullName, System.Drawing.Imaging.ImageFormat.Jpeg);
+                            await map.SaveImage(fi.FullName, System.Drawing.Imaging.ImageFormat.Jpeg);
                             break;
                     }
                     map.Display.MakeTransparent = maketrans;

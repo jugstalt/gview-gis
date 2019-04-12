@@ -81,7 +81,6 @@ namespace gView.Framework.OGC.GML
                     default:
                         return null;
                 }
-                return null;
             }
             catch (Exception ex)
             {

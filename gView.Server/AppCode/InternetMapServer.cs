@@ -37,7 +37,7 @@ namespace gView.Server.AppCode
         static internal MapServerInstance Instance = null;
         static internal Acl acl = null;
 
-        static public void Init(string rootPath, int port = 80)
+        async static public Task Init(string rootPath, int port = 80)
         {
             Globals.AppRootPath = rootPath;
            
@@ -73,7 +73,7 @@ namespace gView.Server.AppCode
                 }
             }
 
-            AddServices(String.Empty);
+            await AddServices(String.Empty);
             
 
             var pluginMananger = new PlugInManager();
@@ -169,14 +169,27 @@ namespace gView.Server.AppCode
         }
 
         private static object _reloadServicesLocker = new object();
-        public static void ReloadServices(string folder, bool forceRefresh = false)
+        private static object _reloadServicesLockerKey = null;
+        async public static Task ReloadServices(string folder, bool forceRefresh = false)
         {
             lock (_reloadServicesLocker)
             {
+                while (_reloadServicesLockerKey != null)
+                {
+                    Thread.Sleep(100);
+                }
+                _reloadServicesLockerKey = new object();
+            }
+            try
+            {
                 if (forceRefresh == true || InternetMapServer.mapServices.Where(s => s.Type != MapServiceType.Folder && s.Folder == folder).Count() == 0)
                 {
-                    InternetMapServer.AddServices(folder);
+                    await InternetMapServer.AddServices(folder);
                 }
+            }
+            finally
+            {
+                _reloadServicesLockerKey = null;
             }
         }
 
@@ -191,7 +204,7 @@ namespace gView.Server.AppCode
                 if (fi.Exists)
                 {
                     ServerMapDocument doc = new ServerMapDocument();
-                    doc.LoadMapDocument(fi.FullName);
+                    await doc.LoadMapDocumentAsync(fi.FullName);
 
                     if (doc.Maps.Count() == 1)
                     {
@@ -306,30 +319,30 @@ namespace gView.Server.AppCode
             }
         }
 
-        async static public Task SaveServiceableDataset(IServiceableDataset sds, string name)
-        {
-            try
-            {
-                if (sds != null)
-                {
-                    XmlStream stream = new XmlStream("MapServer");
-                    stream.Save("IServiceableDataset", sds);
+        //async static public Task SaveServiceableDataset(IServiceableDataset sds, string name)
+        //{
+        //    try
+        //    {
+        //        if (sds != null)
+        //        {
+        //            XmlStream stream = new XmlStream("MapServer");
+        //            stream.Save("IServiceableDataset", sds);
 
-                    stream.WriteStream(ServicesPath + @"\" + name + ".svc");
+        //            stream.WriteStream(ServicesPath + @"\" + name + ".svc");
 
-                    if (sds is IMetadata)
-                    {
-                        stream = new XmlStream("Metadata");
-                        ((IMetadata)sds).WriteMetadata(stream);
-                        stream.WriteStream(ServicesPath + @"\" + name + ".svc.meta");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                await Logger.LogAsync(name, loggingMethod.error, "LoadConfig: " + ex.Message);
-            }
-        }
+        //            if (sds is IMetadata)
+        //            {
+        //                stream = new XmlStream("Metadata");
+        //                ((IMetadata)sds).WriteMetadata(stream);
+        //                stream.WriteStream(ServicesPath + @"\" + name + ".svc.meta");
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await Logger.LogAsync(name, loggingMethod.error, "LoadConfig: " + ex.Message);
+        //    }
+        //}
 
         static public void SaveServiceCollection(string name, XmlStream stream)
         {
@@ -349,7 +362,7 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                Logger.LogAsync(mapName, loggingMethod.error, "LoadConfig: " + ex.Message);
+                await Logger.LogAsync(mapName, loggingMethod.error, "LoadConfig: " + ex.Message);
                 return false;
             }
         }
@@ -524,7 +537,7 @@ namespace gView.Server.AppCode
                     found = true;
                 }
             }
-            InternetMapServer.RemoveConfig(mapName);
+            await InternetMapServer.RemoveConfig(mapName);
 
             return found;
         }

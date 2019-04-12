@@ -13,7 +13,7 @@ using System.Xml;
 
 namespace gView.Server.AppCode
 {
-    public class ServerMapDocument : IMapDocument, IMapDocumentModules, IPersistableAsync
+    public class ServerMapDocument : IMapDocument, IMapDocumentModules, IPersistableLoadAsync
     {
         private ConcurrentBag<IMap> _maps = new ConcurrentBag<IMap>();
         // ToDo: ThreadSafe
@@ -121,7 +121,7 @@ namespace gView.Server.AppCode
 
         #endregion
 
-        public bool LoadMapDocument(string path)
+        async public Task<bool> LoadMapDocumentAsync(string path)
         {
             XmlStream stream = new XmlStream("");
             if (stream.ReadStream(path))
@@ -131,13 +131,12 @@ namespace gView.Server.AppCode
                     this.RemoveMap((IMap)_maps.First());
                 }
 
-                stream.Load("MapDocument", null, this);
-                return true;
+                return await stream.LoadAsync("MapDocument", this) != null;
             }
             return false;
         }
 
-        #region IPersistable Member
+        #region IPersistableLoadAsync Member
 
         public string PersistID
         {
@@ -155,7 +154,7 @@ namespace gView.Server.AppCode
             }
 
             IMap map;
-            while ((map = (IMap)stream.Load("IMap", null, new gView.Framework.Carto.Map())) != null)
+            while ((map = (await stream.LoadAsync<IMap>("IMap", new gView.Framework.Carto.Map()))) != null)
             {
                 this.AddMap(map);
 
@@ -167,7 +166,7 @@ namespace gView.Server.AppCode
             return true;
         }
 
-        public Task<bool> SaveAsync(IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             foreach (IMap map in _maps)
             {
@@ -181,8 +180,6 @@ namespace gView.Server.AppCode
                     stream.Save("Moduls", new ModulesPersists(map) { Modules = _mapModules[map] });
                 }
             }
-
-            return Task.FromResult(true);
         }
 
         #endregion

@@ -32,7 +32,7 @@ namespace gView.Framework.Carto
     public delegate void NewExtentRenderedEvent(IMap sender, IEnvelope extent);
     public delegate void DrawingLayerFinishedEvent(IMap sender, ITimeEvent timeEvent);
 
-    public interface IMap : IDisposable, IClone, IMetadata, IDataCopyright
+    public interface IMap : IDisposable, IClone, IMetadata, IDataCopyright, IPersistableLoadAsync
     {
         event LayerAddedEvent LayerAdded;
         event LayerRemovedEvent LayerRemoved;
@@ -129,8 +129,8 @@ namespace gView.Framework.Carto
         Task<bool> Render();
         Task<global::System.Drawing.Bitmap> Legend();
         global::System.Drawing.Bitmap MapImage { get; }
-        bool SaveImage(string path, global::System.Drawing.Imaging.ImageFormat format);
-        bool SaveImage(Stream ms, global::System.Drawing.Imaging.ImageFormat format);
+        Task<bool> SaveImage(string path, global::System.Drawing.Imaging.ImageFormat format);
+        Task<bool> SaveImage(Stream ms, global::System.Drawing.Imaging.ImageFormat format);
         void ReleaseImage();
 
         float ScaleSymbolFactor { get; set; }

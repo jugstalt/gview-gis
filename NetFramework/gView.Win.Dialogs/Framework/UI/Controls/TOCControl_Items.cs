@@ -532,10 +532,10 @@ namespace gView.Framework.UI.Controls
             this.Click += new EventHandler(UnlockLayerMenuItem_Click);
         }
 
-        void UnlockLayerMenuItem_Click(object sender, EventArgs e)
+        async void UnlockLayerMenuItem_Click(object sender, EventArgs e)
         {
             _element.LayerLocked = false;
-            _control.BuildList(null).Wait();
+            await _control.BuildList(null);
         }
     }
 

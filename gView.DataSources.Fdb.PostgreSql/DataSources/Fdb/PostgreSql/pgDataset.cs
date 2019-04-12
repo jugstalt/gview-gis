@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace gView.DataSources.Fdb.PostgreSql
 {
     [gView.Framework.system.RegisterPlugIn("33254063-133D-4b17-AAE2-46AF7A7DA733")]
-    public class pgDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset, IPersistable, gView.Framework.UI.IConnectionStringDialog
+    public class pgDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset, gView.Framework.UI.IConnectionStringDialog
     {
         private int _order = 0;
         internal int _dsID = -1;
@@ -338,7 +338,7 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         #endregion
 
-        #region IPersistable Member
+        #region IPersistableLoadAsync Member
 
         public string PersistID
         {
@@ -348,7 +348,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
-        public void Load(IPersistStream stream)
+        async public Task<bool> LoadAsync(IPersistStream stream)
         {
             string connectionString = (string)stream.Load("connectionstring", "");
             if (_fdb != null)
@@ -357,8 +357,8 @@ namespace gView.DataSources.Fdb.PostgreSql
                 _fdb = null;
             }
 
-            this.SetConnectionString(connectionString).Wait();
-            this.Open().Wait();
+            await this.SetConnectionString(connectionString);
+            return await this.Open();
         }
 
         public void Save(IPersistStream stream)

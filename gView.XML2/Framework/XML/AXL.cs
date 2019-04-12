@@ -1736,8 +1736,6 @@ namespace gView.Framework.XML
                 return SpatialQueryToAXL((ISpatialFilter)filter);
             else
                 return QueryToAXL(filter);
-
-            return "";
         }
         private static string QueryToAXL(IQueryFilter filter)
         {

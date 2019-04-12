@@ -338,9 +338,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 if (features.Count > 0)
                 {
                     if (ReportProgress != null) ReportProgress(report);
-                    _fdb.Insert(fc, features);
+                    _fdb.Insert(fc, features).Wait();
                 }
-                _fdb.CalculateExtent(fc);
+                _fdb.CalculateExtent(fc).Wait();
                 #endregion
 
                 succeeded = true;
@@ -353,7 +353,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             {
                 if (!succeeded)
                 {
-                    _fdb.DeleteFeatureClass(_name);
+                    _fdb.DeleteFeatureClass(_name).Wait();
                 }
             }
         }

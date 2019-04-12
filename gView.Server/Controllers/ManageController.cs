@@ -85,7 +85,7 @@ namespace gView.Server.Controllers
         async public Task<IActionResult> Services(string folder)
         {
             folder = folder ?? String.Empty;
-            InternetMapServer.ReloadServices(folder, true);
+            await InternetMapServer.ReloadServices(folder, true);
 
             return SecureApiCall(() =>
             {

@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace gView.Framework.OGC.DB
 {
-    public abstract class OgcSpatialDataset : DatasetMetadata, IFeatureDataset2, IPersistable, IFeatureDatabase, IEditableDatabase
+    public abstract class OgcSpatialDataset : DatasetMetadata, IFeatureDataset2, IFeatureDatabase, IEditableDatabase
     {
         protected string _connectionString = "", _errMsg = "";
         protected List<IDatasetElement> _layers;
@@ -295,13 +295,13 @@ namespace gView.Framework.OGC.DB
 
         #endregion
 
-        #region IPersistable Member
+        #region IPersistableLoadAsync Member
 
-        public void Load(IPersistStream stream)
+        async public Task<bool> LoadAsync(IPersistStream stream)
         {
             if (_layers != null) _layers.Clear();
-            this.SetConnectionString((string)stream.Load("connectionstring", ""));
-            this.Open();
+            await this.SetConnectionString((string)stream.Load("connectionstring", ""));
+            return await this.Open();
         }
 
         public void Save(IPersistStream stream)

@@ -10,7 +10,12 @@ namespace gView.Framework.IO
 		object Load(string key);
 		object Load(string key,object defVal);
 		object Load(string key,object defVal,object objectInstance);
-        T LoadPlugin<T>(string key, T unknownPlugin=default(T));
+
+        Task<T> LoadAsync<T>(string key, T objectInstance, T defaultValue = default(T))
+            where T : IPersistableLoadAsync;
+
+        Task<T> LoadPluginAsync<T>(string key, T unknownPlugin=default(T))
+            where T : IPersistableLoadAsync;
 
 		void Save(string key,object val);
         void SaveEncrypted(string key, string val);
@@ -25,10 +30,10 @@ namespace gView.Framework.IO
 		void Save(IPersistStream stream);
 	}
 
-    public interface IPersistableAsync
+    public interface IPersistableLoadAsync
     {
         Task<bool> LoadAsync(IPersistStream stream);
-        Task<bool> SaveAsync(IPersistStream stream);
+        void Save(IPersistStream stream);
     }
 
     public interface IPersistableDictionary : IPersistable

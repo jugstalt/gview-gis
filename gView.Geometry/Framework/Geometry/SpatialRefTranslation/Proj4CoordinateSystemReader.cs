@@ -35,8 +35,6 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
                 default:
                     throw new NotSupportedException(String.Format("projection {0} is not implemented.", (ParameterValue(parameters, "+proj") != null ? ParameterValue(parameters, "+proj") : "none")));
             }
-
-            return null;
         }
 
         public static string ParameterValue(string [] parameters, string parameter)

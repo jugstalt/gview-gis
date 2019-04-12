@@ -49,7 +49,7 @@ namespace gView.Server.Controllers
         {
             return await SecureMethodHandler(async (identity) =>
             {
-                InternetMapServer.ReloadServices(id, true);
+                await InternetMapServer.ReloadServices(id, true);
 
                 List<AgsService> services = new List<AgsService>();
                 foreach (var s in InternetMapServer.mapServices)

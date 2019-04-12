@@ -246,7 +246,7 @@ namespace gView.Framework.UI
         }
     }
 
-    public interface ITOC : IClone, IClone3
+    public interface ITOC : IClone, IClone3, IPersistableLoadAsync
     {
         event EventHandler TocChanged;
 
@@ -288,7 +288,7 @@ namespace gView.Framework.UI
 
     public enum TOCElementType { Layer, Legend, OpenedGroup, ClosedGroup }
 
-    public interface ITOCElement
+    public interface ITOCElement : IPersistableLoadAsync
     {
         string Name { get; set; }
         TOCElementType ElementType { get; }

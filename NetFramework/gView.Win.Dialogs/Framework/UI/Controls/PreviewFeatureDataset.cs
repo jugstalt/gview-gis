@@ -11,6 +11,7 @@ using gView.Framework.Symbology;
 using gView.Framework.system.UI;
 using System.Threading.Tasks;
 using gView.Framework.Sys.UI;
+using gView.Framework.IO;
 
 namespace gView.Framework.UI.Controls
 {
@@ -158,6 +159,19 @@ namespace gView.Framework.UI.Controls
         }
 
         async public Task RefreshClasses()
+        {
+        }
+
+        #endregion
+
+        #region IPersistableLoadAsync
+
+        public Task<bool> LoadAsync(IPersistStream stream)
+        {
+            return Task.FromResult(true);
+        }
+
+        public void Save(IPersistStream stream)
         {
         }
         #endregion

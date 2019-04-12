@@ -626,8 +626,8 @@ namespace gView.Framework.Data
 			
 			if ( Box1.maxx < Box2.minx ) return false;
 			if ( Box1.maxy < Box2.miny ) return false;
-			*/
-			return true;
+			
+			return true;*/
 		}
 
 		public bool AddShape(SHPObject sObject) 
@@ -659,7 +659,6 @@ namespace gView.Framework.Data
 				}
 				return true;
 			}
-			return false;
 		}
 
 		public void Thin() 

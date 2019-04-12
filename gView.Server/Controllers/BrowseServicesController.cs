@@ -19,7 +19,7 @@ namespace gView.Server.Controllers
 
             return await SecureMethodHandler(async (identity) =>
             {
-                InternetMapServer.ReloadServices(folder, true);
+                await InternetMapServer.ReloadServices(folder, true);
 
                 List<IMapService> services = new List<IMapService>();
                 foreach(var s in InternetMapServer.mapServices)
