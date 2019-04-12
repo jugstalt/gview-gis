@@ -345,7 +345,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public void RefreshTOC()
+        async public Task RefreshTOC()
         {
         }
         public void RefreshTOCElement(IDatasetElement element)

@@ -664,10 +664,10 @@ namespace gView.Win.Carto
             _refreshing = false;
         }
 
-        public void RefreshTOC()
+        async public Task RefreshTOC()
         {
             if (_appWindow != null)
-                _appWindow.RefreshTOC();
+                await _appWindow.RefreshTOC();
         }
 
         public void RefreshTOCElement(IDatasetElement element)

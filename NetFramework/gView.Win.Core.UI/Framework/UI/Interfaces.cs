@@ -253,7 +253,7 @@ namespace gView.Framework.UI
         }
         
         Task RefreshActiveMap(DrawPhase drawPhase);
-        void RefreshTOC();
+        Task RefreshTOC();
         void RefreshTOCElement(IDatasetElement element);
 
         IDocumentWindow DocumentWindow

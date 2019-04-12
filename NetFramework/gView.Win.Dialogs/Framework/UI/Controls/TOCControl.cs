@@ -2062,7 +2062,7 @@ namespace gView.Framework.UI.Controls
                         else if (instance is IMapDocument &&
                             _iMapDocument.Application is IMapApplication)
                         {
-                            ((IMapApplication)_iMapDocument.Application).LoadMapDocument(exObject.FullName);
+                            await ((IMapApplication)_iMapDocument.Application).LoadMapDocument(exObject.FullName);
                         }
                     }
                     if (added)

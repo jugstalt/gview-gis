@@ -385,7 +385,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="menu.carto.xml" />
+    <Content Include="menu.carto.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="map.ico" />

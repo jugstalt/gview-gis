@@ -278,7 +278,7 @@ namespace gView.Win.Carto
             mapApplication_OnShowDockableWindow(((WpfViewToolStripItem)sender).DockableToolWindow);
         }
 
-        private void ToolButton_Click(object sender, EventArgs e)
+        async private void ToolButton_Click(object sender, EventArgs e)
         {
             DataView dataView = _mapApplication.ActiveDataView;
             if (dataView == null) return;
@@ -304,12 +304,12 @@ namespace gView.Win.Carto
             {
                 case ToolType.command:
                     MapEvent ev = new MapEvent((Map)_mapDocument.FocusMap);
-                    tool.OnEvent(ev);
+                    await tool.OnEvent(ev);
                     if (ev.refreshMap && _mapDocument.FocusMap != null)
                     {
                         //dataView.MapView.RefreshMap(ev.drawPhase);
                         //_mapDocument.FocusMap.RefreshMap(ev.drawPhase, null);
-                        _mapApplication.RefreshActiveMap(ev.drawPhase);
+                        await _mapApplication.RefreshActiveMap(ev.drawPhase);
                     }
                     ValidateButtons();
                     break;
@@ -329,11 +329,11 @@ namespace gView.Win.Carto
                     if (tool.toolType == ToolType.userdefined)
                     {
                         MapEvent ev2 = new MapEvent((Map)_mapDocument.FocusMap);
-                        tool.OnEvent(ev2);
+                        await tool.OnEvent(ev2);
                         if (ev2.refreshMap && _mapDocument.FocusMap != null)
                         {
                             //dataView.MapView.RefreshMap(ev2.drawPhase);
-                            _mapApplication.RefreshActiveMap(ev2.drawPhase);
+                            await _mapApplication.RefreshActiveMap(ev2.drawPhase);
                         }
                     }
                     break;
@@ -449,14 +449,14 @@ namespace gView.Win.Carto
 
         #region Scale Combo/Slider
 
-        private void cmbScale_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        async private void cmbScale_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 if (e.AddedItems.Count > 0 && e.AddedItems[0] is ComboBoxItem)
                 {
                     int scale = int.Parse(((ComboBoxItem)e.AddedItems[0]).Content.ToString().Replace(".", "").Replace(",", ""));
-                    SetMapScale(scale);
+                    await SetMapScale(scale);
                 }
             }
             catch (Exception ex)
@@ -466,7 +466,7 @@ namespace gView.Win.Carto
             }
         }
 
-        private void cmbScale_KeyDown(object sender, KeyEventArgs e)
+        async private void cmbScale_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
@@ -487,7 +487,7 @@ namespace gView.Win.Carto
                     }
                     index++;
                 }
-                SetMapScale(scale);
+                await SetMapScale(scale);
             }
         }
 
@@ -531,13 +531,13 @@ namespace gView.Win.Carto
             }
         }
 
-        private void SetMapScale(int scale)
+        async private Task SetMapScale(int scale)
         {
             if (_mapDocument == null || _mapDocument.FocusMap == null || _mapApplication == null) return;
             if (scale <= 0 || scale == (int)((IDisplay)_mapDocument.FocusMap).mapScale) return;
 
             _mapDocument.FocusMap.Display.mapScale = scale;
-            _mapApplication.RefreshActiveMap(DrawPhase.All);
+            await _mapApplication.RefreshActiveMap(DrawPhase.All);
         }
 
         private double _lastSliderValue;
@@ -786,9 +786,10 @@ namespace gView.Win.Carto
             return null;
         }
 
-        internal void RefreshTOC()
+        async internal Task RefreshTOC()
         {
-            if (_toc != null) _toc.RefreshList();
+            if (_toc != null)
+                await _toc.RefreshList();
         }
 
         internal void RefreshTOCElement(IDatasetElement element)
