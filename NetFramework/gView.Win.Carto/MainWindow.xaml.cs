@@ -1,4 +1,6 @@
-﻿using gView.Desktop.Wpf.Carto;
+﻿using gView.Desktop.Wpf;
+using gView.Desktop.Wpf.Carto;
+using gView.Desktop.Wpf.Controls;
 using gView.Desktop.Wpf.Items;
 using gView.Framework.Carto;
 using gView.Framework.Data;
@@ -67,28 +69,28 @@ namespace gView.Win.Carto
                 // Erst alle Tools erzeugen
                 PlugInManager pm = new PlugInManager();
 
-                foreach (XmlNode toolNode in pm.GetPluginNodes(Plugins.Type.ITool))
+                foreach (var toolType in pm.GetPlugins(Framework.system.Plugins.Type.ITool))
                 {
                     try
                     {
-                        _mapApplication.AddTool(pm.CreateInstance(toolNode) as ITool);
+                        _mapApplication.AddTool(pm.CreateInstance<ITool>(toolType));
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error creating Instance: " + toolNode.Attributes["fullname"] + "\n" + ex.Message);
+                        MessageBox.Show("Error creating Instance: " + toolType.ToString() + "\n" + ex.Message);
                     }
                 }
 
                 //AddDataView("DataView1", new Map());
                 //_mapDocument.FocusMap = _mapApplication.ActiveDataView.Map;
                 _mapDocument.AddMap(new Map());
-                _mapDocument.FocusMap = _mapDocument.Maps[0];
+                _mapDocument.FocusMap = _mapDocument.Maps.First();
 
                 #region Create Modules
                 PlugInManager compMan = new PlugInManager();
-                foreach (XmlNode moduleNode in compMan.GetPluginNodes(Plugins.Type.IMapApplicationModule))
+                foreach (var moduleType in compMan.GetPlugins(Framework.system.Plugins.Type.IMapApplicationModule))
                 {
-                    IMapApplicationModule module = compMan.CreateInstance(moduleNode) as IMapApplicationModule;
+                    IMapApplicationModule module = compMan.CreateInstance<IMapApplicationModule>(moduleType);
                     if (module != null)
                     {
                         _modules.Add(module);
@@ -117,7 +119,7 @@ namespace gView.Win.Carto
                 ValidateButtons();
 
                 #region Create Toc
-                FormTOC toc = new FormTOC(_mapDocument);
+                FormTOC toc = FormTOC.CreateAsync(_mapDocument).Result;
                 _mapApplication.AddDockableWindow(_toc = toc.TOC, DockWindowState.left);
                 //_mapApplication.AddDockableWindow(toc.Source, DockWindowState.left);
 
@@ -822,7 +824,7 @@ namespace gView.Win.Carto
 
             PlugInManager pm = new PlugInManager();
 
-            foreach (ICartoRibbonTab cartoRibbonTab in OrderedPluginList<ICartoRibbonTab>.Sort(pm.GetPluginNodes(Plugins.Type.ICartoRibbonTab)))
+            foreach (ICartoRibbonTab cartoRibbonTab in OrderedPluginList<ICartoRibbonTab>.Sort(pm.GetPlugins(Framework.system.Plugins.Type.ICartoRibbonTab)))
             {
                 CartoRibbonTab tabItem = new CartoRibbonTab(cartoRibbonTab) { Header = cartoRibbonTab.Header };
                 ribbon.Tabs.Add(tabItem);
@@ -949,9 +951,9 @@ namespace gView.Win.Carto
             Fluent.RibbonGroupBox optionsBox = new Fluent.RibbonGroupBox() { Header = String.Empty };
             optionsTab.Groups.Add(optionsBox);
 
-            foreach (XmlNode pageNode in pm.GetPluginNodes(Plugins.Type.IMapOptionPage))
+            foreach (var pageType in pm.GetPlugins(Framework.system.Plugins.Type.IMapOptionPage))
             {
-                IMapOptionPage page = pm.CreateInstance(pageNode) as IMapOptionPage;
+                IMapOptionPage page = pm.CreateInstance<IMapOptionPage>(pageType);
                 if (page == null) continue;
 
                 OptionsButton button = new OptionsButton(page);
@@ -1473,7 +1475,7 @@ namespace gView.Win.Carto
             anchorPaneBottom.Children[0].Hide();
             anchorPaneTop.Children[0].Hide();
 
-            App.CloseSplash();
+            //App.CloseSplash();
 
             foreach (var item in ribbon.QuickAccessItems)
             {

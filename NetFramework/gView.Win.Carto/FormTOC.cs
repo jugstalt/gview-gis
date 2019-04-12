@@ -21,7 +21,7 @@ namespace gView.Win.Carto
             InitializeComponent();
         }
 
-		async public Task<FormTOC> CreateAsync(gView.Framework.UI.MapDocument doc)
+		async static public Task<FormTOC> CreateAsync(gView.Framework.UI.MapDocument doc)
 		{
             var toc = new FormTOC();
 

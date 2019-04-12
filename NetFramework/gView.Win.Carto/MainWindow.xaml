@@ -29,7 +29,7 @@
         <avalonDock:DockingManager Grid.Row="1" x:Name="dockManager" AllowMixedOrientation="True" Loaded="dockManager_Loaded">
 
             <avalonDock:DockingManager.Theme>
-                <avalonDock:AeroTheme/>
+                <avalonDock:Vs2013BlueTheme/>
             </avalonDock:DockingManager.Theme>
 
             <avalonDock:LayoutRoot>

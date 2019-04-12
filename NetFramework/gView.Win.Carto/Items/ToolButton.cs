@@ -174,7 +174,7 @@ namespace gView.Win.Carto.Items
 
             base.Header = page.Title;
             base.Icon = base.LargeIcon = ImageFactory.FromBitmap(
-                page.Image == null ? global::gView.Desktop.Wpf.Carto.Properties.Resources.options : page.Image as System.Drawing.Image
+                page.Image == null ? global::gView.Win.Carto.Properties.Resources.options : page.Image as System.Drawing.Image
                 );
         }
 
@@ -188,7 +188,7 @@ namespace gView.Win.Carto.Items
             this.PdfFile = pdf;
 
             base.Header = pdf.Name.Substring(0, pdf.Name.Length - pdf.Extension.Length);
-            base.Icon = base.LargeIcon = ImageFactory.FromBitmap(global::gView.Desktop.Wpf.Carto.Properties.Resources.pdf);
+            base.Icon = base.LargeIcon = ImageFactory.FromBitmap(global::gView.Win.Carto.Properties.Resources.pdf);
             base.Click += new RoutedEventHandler(PdfLinkButton_Click);
         }
 

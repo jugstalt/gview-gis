@@ -21,6 +21,8 @@ using Xceed.Wpf.AvalonDock.Layout;
 using System.Windows.Forms.Integration;
 using gView.Framework.Sys.UI;
 using gView.Desktop.Wpf.Carto;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace gView.Win.Carto
 {
@@ -54,7 +56,7 @@ namespace gView.Win.Carto
             _dataViewContainer.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(_dataViewContainer_PropertyChanged);
         }
 
-        void _dataViewContainer_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        async void _dataViewContainer_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "SelectedContent" && _doc!=null)
             {
@@ -65,7 +67,7 @@ namespace gView.Win.Carto
                     if (dv != null)
                     {
                         _doc.FocusMap = dv.Map;
-                        this.RefreshActiveMap(DrawPhase.All);
+                        await this.RefreshActiveMap(DrawPhase.All);
                     }
                 }
             }
@@ -463,7 +465,7 @@ namespace gView.Win.Carto
             }
         }
 
-        public void LoadMapDocument(string filename)
+        async public Task LoadMapDocument(string filename)
         {
             if (_doc == null || filename == "") return;
             _docFilename = filename;
@@ -496,151 +498,16 @@ namespace gView.Win.Carto
                 stream.ReadStream(ms);
                 ms.Close();
             }
-            else if (fi.Extension.ToLower() == ".axl")
-            {
-                IMap map = _doc.Maps[0];
-                PlugInManager pman = new PlugInManager();
-
-                #region AXL
-                XmlDocument axl = new XmlDocument();
-                axl.Load(fi.FullName);
-
-                #region Extent
-                XmlNode envNode = axl.SelectSingleNode("ARCXML/CONFIG/MAP/PROPERTIES/ENVELOPE[@minx and @maxx and @miny and @miny]");
-                if (envNode != null)
-                {
-                    Envelope env = new Envelope(envNode);
-                    map.Display.Limit = new Envelope(env);
-                    map.Display.ZoomTo(env);
-                }
-                #endregion
-
-                #region Workspaces
-                Dictionary<string, IDataset> _workspaces = new Dictionary<string, IDataset>();
-                foreach (XmlNode workspaceNode in axl.SelectNodes("ARCXML/CONFIG/MAP/WORKSPACES/*"))
-                {
-                    switch (workspaceNode.Name)
-                    {
-                        case "SDEWORKSPACE":
-                            string connectionString = "server=" + workspaceNode.Attributes["server"].Value;
-                            if (workspaceNode.Attributes["instance"] != null)
-                                connectionString += ";instance=" + workspaceNode.Attributes["instance"].Value;
-                            if (workspaceNode.Attributes["database"] != null)
-                                connectionString += ";database=" + workspaceNode.Attributes["database"].Value;
-                            if (workspaceNode.Attributes["user"] != null)
-                                connectionString += ";user=" + workspaceNode.Attributes["user"].Value;
-                            if (workspaceNode.Attributes["password"] != null)
-                                connectionString += ";password=" + workspaceNode.Attributes["password"].Value;
-
-                            IDataset sdeDataset = pman.CreateInstance(new Guid("CE42218B-6962-48c9-9BAC-39E4C5003AE5")) as IDataset;
-                            if (sdeDataset == null)
-                                continue;
-                            sdeDataset.ConnectionString = connectionString;
-                            if (!sdeDataset.Open())
-                                continue;
-
-                            _workspaces.Add(workspaceNode.Attributes["name"].Value, sdeDataset);
-                            break;
-                        case "SHAPEWORKSPACE":
-                            IDataset shapeDataset = pman.CreateInstance(new Guid("80F48262-D412-41fb-BF43-2D611A2ABF42")) as IDataset;
-                            if (shapeDataset == null)
-                                continue;
-                            shapeDataset.ConnectionString = workspaceNode.Attributes["directory"].Value;
-                            if (!shapeDataset.Open())
-                                continue;
-
-                            _workspaces.Add(workspaceNode.Attributes["name"].Value, shapeDataset);
-                            break;
-                        case "IMAGEWORKSPACE":
-                            IDataset rasterDataset = pman.CreateInstance(new Guid("43DFABF1-3D19-438c-84DA-F8BA0B266592")) as IDataset;
-                            _workspaces.Add(workspaceNode.Attributes["name"].Value, rasterDataset);
-                            break;
-                    }
-                }
-                #endregion
-
-                #region Layers
-                XmlNodeList layerNodes = axl.SelectNodes("ARCXML/CONFIG/MAP/LAYER[@name and @id and @type]");
-                if (layerNodes == null)
-                    return;
-                for (int i = layerNodes.Count - 1; i >= 0; i--)
-                {
-                    XmlNode layerNode = layerNodes[i];
-                    if (layerNode.Attributes["type"].Value == "featureclass")
-                    {
-                        XmlNode datasetNode = layerNode.SelectSingleNode("DATASET[@name and @workspace]");
-                        if (datasetNode == null)
-                            continue;
-                        if (!_workspaces.ContainsKey(datasetNode.Attributes["workspace"].Value))
-                            continue;
-                        IDataset dataset = _workspaces[datasetNode.Attributes["workspace"].Value];
-                        IDatasetElement dsElement = dataset[datasetNode.Attributes["name"].Value];
-                        if (dsElement == null || dsElement.Class == null)
-                            continue;
-
-                        IFeatureLayer layer = (IFeatureLayer)LayerFactory.Create(dsElement.Class);
-                        if (layerNode.Attributes["visible"] != null)
-                            layer.Visible = layerNode.Attributes["visible"].Value == "true";
-                        layer.SID = layerNode.Attributes["id"].Value;
-
-                        map.AddLayer(layer);
-
-                        SetLayernameAndScales(layerNode, layer);
-                        SetRenderers(layerNode, layer);
-                        XmlNode queryNode = layerNode.SelectSingleNode("QUERY[@where]");
-                        if (queryNode != null)
-                        {
-                            layer.FilterQuery = new QueryFilter();
-                            layer.FilterQuery.WhereClause = queryNode.Attributes["where"].Value;
-                        }
-                    }
-                    else if (layerNode.Attributes["type"].Value == "image")
-                    {
-                        XmlNode datasetNode = layerNode.SelectSingleNode("DATASET[@name and @workspace]");
-                        if (datasetNode == null)
-                            continue;
-                        if (!_workspaces.ContainsKey(datasetNode.Attributes["workspace"].Value))
-                            continue;
-                        IRasterFileDataset dataset = _workspaces[datasetNode.Attributes["workspace"].Value] as IRasterFileDataset;
-                        if (dataset == null)
-                            continue;
-
-                        XmlNode workspaceNode = axl.SelectSingleNode("ARCXML/CONFIG/MAP/WORKSPACES/IMAGEWORKSPACE[@name='" + datasetNode.Attributes["workspace"].Value + "' and @directory]");
-                        if (workspaceNode == null) continue;
-
-                        IRasterLayer rLayer = dataset.AddRasterFile(workspaceNode.Attributes["directory"].Value + @"\" + datasetNode.Attributes["name"].Value);
-                        if (rLayer == null) continue;
-
-                        if (layerNode.Attributes["visible"] != null)
-                            rLayer.Visible = layerNode.Attributes["visible"].Value == "true";
-                        rLayer.SID = layerNode.Attributes["id"].Value;
-
-                        map.AddLayer(rLayer);
-
-                        SetLayernameAndScales(layerNode, rLayer);
-                    }
-                }
-                #endregion
-
-                ValidateUI();
-                IsDirty = false;
-                _appWindow.Title = "gView.Carto " + fi.Name;
-                if (AfterLoadMapDocument != null) AfterLoadMapDocument(_doc);
-
-                return;
-                #endregion
-            }
             else
             {
                 stream.ReadStream(filename);
             }
 
-            while (_doc.Maps.Count > 0)
-                _doc.RemoveMap(_doc.Maps[0]);
+            while (_doc.Maps.Count() > 0)
+                _doc.RemoveMap(_doc.Maps.First());
             _dataViews.Clear();
 
-            stream.Load("MapDocument", null, _doc);
-
+            await stream.LoadAsync("MapDocument", _doc);
 
             // Load DataViews...
             DataView dv;
@@ -657,7 +524,7 @@ namespace gView.Win.Carto
                 if (_activeDataView == null) _activeDataView = dataView;
             }
 
-            if (_dataViews.Count == 0 && _doc.Maps.Count > 0)
+            if (_dataViews.Count == 0 && _doc.Maps.Count() > 0)
             {
                 //_appWindow.AddDataView((Map)_doc.Maps[0]);
                 _activeDataView = _dataViews[0];
@@ -768,7 +635,7 @@ namespace gView.Win.Carto
 
         DateTime _lastRefresh = DateTime.Now;
         bool _refreshing = false;
-        public void RefreshActiveMap(DrawPhase drawPhase)
+        async public Task RefreshActiveMap(DrawPhase drawPhase)
         {
             if (_activeDataView == null) return;
             if (_activeDataView.MapView == null ||
@@ -788,8 +655,12 @@ namespace gView.Win.Carto
 
             _activeDataView.MapView.RefreshCopyrightVisibility();
             _lastRefresh = DateTime.Now;
-            Thread thread = new Thread(new ParameterizedThreadStart(this.RefreshActiveMapThread));
-            thread.Start(drawPhase);
+
+            //Thread thread = new Thread(new ParameterizedThreadStart(this.RefreshActiveMapThread));
+            //thread.Start(drawPhase);
+
+            await this.RefreshActiveMapThread(drawPhase);
+
             _refreshing = false;
         }
 
@@ -828,12 +699,12 @@ namespace gView.Win.Carto
         }
         #endregion
 
-        private void RefreshActiveMapThread(object drawPhase)
+        async private Task RefreshActiveMapThread(object drawPhase)
         {
             if (_activeDataView == null) return;
             if (_activeDataView.MapView == null) return;
 
-            _activeDataView.MapView.RefreshMap((DrawPhase)drawPhase);
+            await _activeDataView.MapView.RefreshMap((DrawPhase)drawPhase);
         }
 
         public IDocumentWindow DocumentWindow

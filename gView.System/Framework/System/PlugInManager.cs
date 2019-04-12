@@ -359,10 +359,10 @@ namespace gView.Framework.system
     public class OrderedPluginList<T> 
        // where T : IOrder
     {
-        public static List<T> Sort(IEnumerable<XmlNode> pluginNodes)
+        public static List<T> Sort(IEnumerable<Type> pluginNodes)
         {
             List<T> ret = new List<T>();
-            foreach (XmlNode node in pluginNodes)
+            foreach (var node in pluginNodes)
             {
                 try
                 {

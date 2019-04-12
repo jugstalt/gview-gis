@@ -67,9 +67,9 @@ namespace gView.Desktop.Wpf.Carto
         }
 
         // Zum Laden einens DataViews
-        public DataView(List<IMap> maps)
+        public DataView(IEnumerable<IMap> maps)
         {
-            _maps = maps;
+            _maps = new List<IMap>(maps);
         }
         #region IDataView Members
 

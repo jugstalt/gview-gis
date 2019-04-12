@@ -242,7 +242,7 @@ namespace gView.Framework.UI
         event ActiveMapToolChangedEvent ActiveMapToolChanged;
         event OnCursorPosChangedEvent OnCursorPosChanged;
 
-        void LoadMapDocument(string filename);
+        Task LoadMapDocument(string filename);
         void SaveMapDocument();
         void SaveMapDocument(string filename, bool performEncryption);
 

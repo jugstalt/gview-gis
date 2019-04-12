@@ -325,10 +325,12 @@ namespace gView.Framework.UI.Controls
         public event ActiveMapToolChangedEvent ActiveMapToolChanged;
         public event OnCursorPosChangedEvent OnCursorPosChanged;
 
-        public void LoadMapDocument(string filename)
+        async public Task LoadMapDocument(string filename)
         {
             if (_application is IMapApplication)
-                ((IMapApplication)_application).LoadMapDocument(filename);
+            {
+                await ((IMapApplication)_application).LoadMapDocument(filename);
+            }
         }
 
         async public Task RefreshActiveMap(DrawPhase drawPhase)
