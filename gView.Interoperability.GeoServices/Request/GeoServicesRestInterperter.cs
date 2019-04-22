@@ -355,6 +355,11 @@ namespace gView.Interoperability.GeoServices.Request
                         throw new Exception("FeatureService can't be used with aggregated feature classes");
                     }
 
+                    if(!String.IsNullOrWhiteSpace(query.Where))
+                    {
+                        query.Where.CheckWhereClauseForSqlInjection();
+                    }
+
                     foreach (var tableClass in tableClasses)
                     {
                         objectIdFieldName = tableClass.IDFieldName;
@@ -423,10 +428,12 @@ namespace gView.Interoperability.GeoServices.Request
                             catch { }
                         }
 
-                        if (filterQuery != String.Empty)
-                            filter.WhereClause = (filter.WhereClause != String.Empty) ?
-                                "(" + filter.WhereClause + ") AND " + filterQuery :
+                        if (!String.IsNullOrWhiteSpace(filterQuery))
+                        {
+                            filter.WhereClause = (!String.IsNullOrWhiteSpace(filter.WhereClause)) ?
+                                "(" + filter.WhereClause + ") AND (" + filterQuery + ")" :
                                 filterQuery;
+                        }
 
                         #region Feature Spatial Reference
 
@@ -949,13 +956,13 @@ namespace gView.Interoperability.GeoServices.Request
                     if (((IFeatureLayer)element).FilterQuery != null)
                     {
                         string fquery = ((IFeatureLayer)element).FilterQuery.WhereClause;
-                        if (filterQuery == String.Empty)
+                        if (String.IsNullOrWhiteSpace(filterQuery))
                         {
                             filterQuery = fquery;
                         }
-                        else if (filterQuery != fquery && fquery.Trim() != String.Empty)
+                        else if (filterQuery != fquery)
                         {
-                            filterQuery += " AND " + fquery;
+                            filterQuery = "(" + filterQuery + ") AND (" + fquery + ")";
                         }
                     }
                 }

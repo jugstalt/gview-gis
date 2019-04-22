@@ -1,11 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Framework\" />
+    <PackageReference Include="Microsoft.SqlServer.SqlParser" Version="150.18097.0-xplat" />
   </ItemGroup>
 
   <ItemGroup>

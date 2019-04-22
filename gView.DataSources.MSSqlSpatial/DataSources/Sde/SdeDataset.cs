@@ -9,6 +9,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using gView.Framework.SpatialAlgorithms;
 
 namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 {
@@ -167,6 +168,11 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "'," + srid + ")";
             return geometryString;
             //return "geometry::STGeomFromText('" + geometryString + "',0)";
+        }
+
+        protected override IGeometry ValidateGeometry(IFeatureClass fc, IGeometry geometry)
+        {
+            return geometry.MakeValid(geometryType: fc.GeometryType);
         }
 
         public override DbCommand SelectCommand(gView.Framework.OGC.DB.OgcSpatialFeatureclass fc, IQueryFilter filter, out string shapeFieldName, string functionName = "", string functionField = "", string functionAlias = "")

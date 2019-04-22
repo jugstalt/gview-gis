@@ -564,10 +564,13 @@ namespace gView.Framework.OGC.DB
                         command.Parameters.Clear();
                         if (feature.Shape != null)
                         {
+                            var shape = ValidateGeometry(fClass, feature.Shape);
+
                             bool asParameter;
-                            object shapeObject = this.ShapeParameterValue((OgcSpatialFeatureclass)fClass, feature.Shape,
-                                feature.Shape.Srs != null && feature.Shape.Srs > 0 ? (int)feature.Shape.Srs : srid,
+                            object shapeObject = this.ShapeParameterValue((OgcSpatialFeatureclass)fClass, shape,
+                                shape.Srs != null && shape.Srs > 0 ? (int)shape.Srs : srid,
                                 out asParameter);
+
                             if (asParameter == true)
                             {
                                 DbParameter parameter = this.ProviderFactory.CreateParameter();
@@ -575,7 +578,7 @@ namespace gView.Framework.OGC.DB
                                 parameter.Value = shapeObject != null ? shapeObject : DBNull.Value;
                                 fields.Append(this.DbColumnName(fClass.ShapeFieldName));
 
-                                string paramExpresssion = InsertShapeParameterExpression((OgcSpatialFeatureclass)fClass, feature.Shape);
+                                string paramExpresssion = InsertShapeParameterExpression((OgcSpatialFeatureclass)fClass, shape);
                                 if (!String.IsNullOrWhiteSpace(paramExpresssion))
                                     paramExpresssion = String.Format(paramExpresssion, this.DbParameterName(fClass.ShapeFieldName));
                                 else
@@ -724,9 +727,11 @@ namespace gView.Framework.OGC.DB
                         command.Parameters.Clear();
                         if (feature.Shape != null)
                         {
+                            var shape = ValidateGeometry(fClass, feature.Shape);
+
                             bool asParameter;
-                            object shapeObject = this.ShapeParameterValue((OgcSpatialFeatureclass)fClass, feature.Shape,
-                                feature.Shape.Srs != null && feature.Shape.Srs > 0 ? (int)feature.Shape.Srs : srid, 
+                            object shapeObject = this.ShapeParameterValue((OgcSpatialFeatureclass)fClass, shape,
+                                shape.Srs != null && shape.Srs > 0 ? (int)shape.Srs : srid, 
                                 out asParameter);
                             if (asParameter == true)
                             {
@@ -900,6 +905,11 @@ namespace gView.Framework.OGC.DB
             byte[] geometry = gView.Framework.OGC.OGC.GeometryToWKB(shape, 0, gView.Framework.OGC.OGC.WkbByteOrder.Ndr);
             string geometryString = gView.Framework.OGC.OGC.BytesToHexString(geometry);
             return geometryString;
+        }
+
+        virtual protected IGeometry ValidateGeometry(IFeatureClass fc, IGeometry geometry)
+        {
+            return geometry;
         }
 
         virtual protected string InsertShapeParameterExpression(OgcSpatialFeatureclass featureClass, IGeometry shape)

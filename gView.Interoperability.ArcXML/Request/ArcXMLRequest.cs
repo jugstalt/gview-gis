@@ -389,8 +389,12 @@ namespace gView.Interoperability.ArcXML
                         else
                             filter = new ArcXMLSpatialFilter();
 
-                        if (query.Attributes["where"] != null)
+                        if (query.Attributes["where"] != null && !String.IsNullOrWhiteSpace(query.Attributes["where"].Value))
+                        {
+                            query.Attributes["where"].Value.CheckWhereClauseForSqlInjection();
+
                             filter.WhereClause = query.Attributes["where"].Value;
+                        }
                         if (query.Attributes["subfields"] != null)
                         {
                             foreach (string field in query.Attributes["subfields"].Value.Split(' '))
@@ -1285,13 +1289,13 @@ namespace gView.Interoperability.ArcXML
                     if (((IFeatureLayer)element).FilterQuery != null)
                     {
                         string fquery = ((IFeatureLayer)element).FilterQuery.WhereClause;
-                        if (filterQuery == String.Empty)
+                        if (String.IsNullOrWhiteSpace(filterQuery))
                         {
                             filterQuery = fquery;
                         }
-                        else if (filterQuery != fquery && fquery.Trim() != String.Empty)
+                        else if (filterQuery != fquery)
                         {
-                            filterQuery += " AND " + fquery;
+                            filterQuery = "(" + filterQuery + ") AND (" + fquery + ")";
                         }
                     }
                 }
