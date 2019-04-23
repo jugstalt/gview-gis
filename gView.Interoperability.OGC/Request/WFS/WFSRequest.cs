@@ -680,13 +680,33 @@ namespace gView.Interoperability.OGC
                         if (!(layer.Class is IFeatureClass)) continue;
                         IFeatureClass fc = (IFeatureClass)layer.Class;
 
-                        if (fc == null) continue;
+                        if (fc == null)
+                            continue;
 
                         IQueryFilter filter = Filter.FromWFS(fc, parameters.Filter, gmlVersion);
                         Filter.AppendSortBy(filter, parameters.SortBy);
 
-                        if (filter == null) continue;
+                        if (filter == null)
+                            continue;
                         filter.SubFields = parameters.SubFields;
+
+                        if(layer is IFeatureLayer)
+                        {
+                            var featureLayer = (IFeatureLayer)layer;
+
+                            #region Append Filter Query
+
+                            if (featureLayer.FilterQuery != null && !String.IsNullOrWhiteSpace(featureLayer.FilterQuery?.WhereClause))
+                            {
+                                var filterQuery = featureLayer.FilterQuery.WhereClause;
+
+                                filter.WhereClause = (!String.IsNullOrWhiteSpace(filter.WhereClause)) ?
+                                "(" + filter.WhereClause + ") AND (" + filterQuery + ")" :
+                                filterQuery;
+                            }
+
+                            #endregion
+                        }
 
                         GeometricTransformer transformer = null;
                         string srsName = parameters.SrsName;

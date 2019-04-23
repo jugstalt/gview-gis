@@ -453,6 +453,13 @@ namespace gView.Framework.IO
 				_parent.Node=node.ParentNode;
 				return;
 			}
+            if(val is IPersistableLoadAsync)
+            {
+                _parent.Node = node;
+                ((IPersistableLoadAsync)val).Save(this);
+                _parent.Node = node.ParentNode;
+                return;
+            }
             if (val is XmlStreamObject )
             {
                 if (((XmlStreamObject)val).Value == null) return;

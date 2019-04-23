@@ -852,7 +852,7 @@ namespace gView.DataSources.Fdb.SQLite
                 string imageSpace = isImageDatasetResult.imageSpace;
                 if (isImageDatasetResult.isImageDataset)
                 {
-                    IDatasetElement fLayer = DatasetElement(dataset, elementName + "_IMAGE_POLYGONS") as IDatasetElement;
+                    IDatasetElement fLayer = (await DatasetElement(dataset, elementName + "_IMAGE_POLYGONS")) as IDatasetElement;
                     if (fLayer != null && fLayer.Class is IFeatureClass)
                     {
                         SQLiteFDBImageCatalogClass iClass = new SQLiteFDBImageCatalogClass(dataset, this, fLayer.Class as IFeatureClass, sRef, imageSpace);

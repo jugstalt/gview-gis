@@ -437,7 +437,7 @@ namespace gView.DataSources.Fdb.MSSql
                 string imageSpace=isImageDatasetResult.imageSpace;
                 if (isImageDatasetResult.isImageDataset)
                 {
-                    IDatasetElement fLayer = DatasetElement(sqlDataset, elementName + "_IMAGE_POLYGONS") as IDatasetElement;
+                    IDatasetElement fLayer = (await DatasetElement(sqlDataset, elementName + "_IMAGE_POLYGONS")) as IDatasetElement;
                     if (fLayer != null && fLayer.Class is IFeatureClass)
                     {
                         SqlFDBImageCatalogClass iClass = new SqlFDBImageCatalogClass(sqlDataset, this, fLayer.Class as IFeatureClass, sRef, imageSpace);

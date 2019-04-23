@@ -592,10 +592,12 @@ namespace gView.Interoperability.ArcXML
                         filter.ContextLayerDefaultSpatialReference = map2 is IMap ? ((IMap)map2).LayerDefaultSpatialReference : null;
                         getFeatures.Filter = filter;
 
-                        if (filterQuery != String.Empty)
-                            filter.WhereClause = (filter.WhereClause != String.Empty) ?
+                        if (!String.IsNullOrWhiteSpace(filterQuery))
+                        {
+                            filter.WhereClause = (!String.IsNullOrWhiteSpace(filter.WhereClause)) ?
                                 "(" + filter.WhereClause + ") AND " + filterQuery :
                                 filterQuery;
+                        }
 
                         ISpatialReference sRef2 = this.SpatialReferenceFromNode(query, SpatialreferenceType.Filter);
                         if (sRef2 != null)

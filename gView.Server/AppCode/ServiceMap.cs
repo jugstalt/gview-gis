@@ -223,7 +223,7 @@ namespace gView.Server.AppCode
             List<ILayer> layers = new List<ILayer>();
             if (this.TOC != null)
             {
-                if (this.ToString() == "gView.MapServer.Instance.ServiceMap")
+                if (this.GetType().Equals(typeof(ServiceMap)))
                     layers = ListOperations<ILayer>.Swap(this.TOC.Layers);
                 else
                     layers = ListOperations<ILayer>.Swap(this.TOC.VisibleLayers);
@@ -385,7 +385,7 @@ namespace gView.Server.AppCode
                 List<ILayer> layers = new List<ILayer>();
                 if (this.TOC != null)
                 {
-                    if (this.ToString() == "gView.MapServer.Instance.ServiceMap")
+                    if (this.GetType().Equals(typeof(ServiceMap)))
                         layers = ListOperations<ILayer>.Swap(this.TOC.Layers);
                     else
                         layers = ListOperations<ILayer>.Swap(this.TOC.VisibleLayers);
@@ -395,7 +395,8 @@ namespace gView.Server.AppCode
                     layers = new List<ILayer>();
                     foreach (IDatasetElement layer in this.MapElements)
                     {
-                        if (!(layer is ILayer)) continue;
+                        if (!(layer is ILayer))
+                            continue;
                         if (((ILayer)layer).Visible)
                             layers.Add((ILayer)layer);
                     }

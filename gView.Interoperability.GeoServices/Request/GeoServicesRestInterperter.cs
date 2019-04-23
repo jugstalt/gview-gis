@@ -389,7 +389,19 @@ namespace gView.Interoperability.GeoServices.Request
                         {
                             filter = new QueryFilter();
                         }
+
+                        #region Prepare Where Clause
+
                         filter.WhereClause = query.Where;
+
+                        if (!String.IsNullOrWhiteSpace(filterQuery))
+                        {
+                            filter.WhereClause = (!String.IsNullOrWhiteSpace(filter.WhereClause)) ?
+                                "(" + filter.WhereClause + ") AND (" + filterQuery + ")" :
+                                filterQuery;
+                        }
+
+                        #endregion
 
                         if (query.ReturnCountOnly == true)
                         {
@@ -426,13 +438,6 @@ namespace gView.Interoperability.GeoServices.Request
                                 };
                             }
                             catch { }
-                        }
-
-                        if (!String.IsNullOrWhiteSpace(filterQuery))
-                        {
-                            filter.WhereClause = (!String.IsNullOrWhiteSpace(filter.WhereClause)) ?
-                                "(" + filter.WhereClause + ") AND (" + filterQuery + ")" :
-                                filterQuery;
                         }
 
                         #region Feature Spatial Reference

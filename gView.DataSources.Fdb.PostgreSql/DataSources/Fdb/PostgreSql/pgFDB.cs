@@ -167,7 +167,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 string imageSpace=isImageDatasetResult.imageSpace;
                 if (isImageDatasetResult.isImageDataset)
                 {
-                    IDatasetElement fLayer = DatasetElement(pgDataset, elementName + "_IMAGE_POLYGONS") as IDatasetElement;
+                    IDatasetElement fLayer = (await DatasetElement(pgDataset, elementName + "_IMAGE_POLYGONS")) as IDatasetElement;
                     if (fLayer != null && fLayer.Class is IFeatureClass)
                     {
                         pgImageCatalogClass iClass = new pgImageCatalogClass(pgDataset, this, fLayer.Class as IFeatureClass, sRef, imageSpace);
