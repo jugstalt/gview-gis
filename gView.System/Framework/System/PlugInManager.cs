@@ -60,54 +60,69 @@ namespace gView.Framework.system
             Init();
         }
 
-        public static void Init()
+        public delegate void ParseAssemblyDelegate(string assemblyName);
+
+        private static object initLocker = new object();
+        public static void Init(ParseAssemblyDelegate parseAssemblyDelegate = null)
         {
-            if (_pluginTypes != null)
-                return;
-
-            string currentDll = String.Empty;
-            var error = new StringBuilder();
-
-            try
+            //lock (initLocker)
             {
-                _pluginTypes = new Dictionary<Guid, Type>();
-                FileInfo entryAssembly = new FileInfo(Assembly.GetEntryAssembly().Location);
+                if (_pluginTypes != null)
+                    return;
 
-                foreach (FileInfo dll in entryAssembly.Directory.GetFiles("*.dll").Where(f => f.Name.ToLower().StartsWith("gview.")))
+                string currentDll = String.Empty;
+                var error = new StringBuilder();
+
+                try
                 {
-                    currentDll = dll.Name;
+                    _pluginTypes = new Dictionary<Guid, Type>();
+                    FileInfo entryAssembly = new FileInfo(Assembly.GetEntryAssembly().Location);
 
-                    try
+                    foreach (FileInfo dll in entryAssembly.Directory.GetFiles("*.dll").Where(f => f.Name.ToLower().StartsWith("gview.")))
                     {
-                        Assembly assembly = Assembly.LoadFrom(dll.FullName);
-                        foreach (var pluginType in assembly.GetTypes())
-                        {
-                            var registerPluginAttribute = pluginType.GetCustomAttribute<RegisterPlugIn>();
-                            if (registerPluginAttribute == null)
-                                continue;
+                        currentDll = dll.Name;
 
-                            _pluginTypes.Add(registerPluginAttribute.Value, pluginType);
+                        if (parseAssemblyDelegate != null)
+                        {
+                            parseAssemblyDelegate(dll.Name);
+                        }
+                        try
+                        {
+                            Assembly assembly = Assembly.LoadFrom(dll.FullName);
+                            foreach (var pluginType in assembly.GetTypes())
+                            {
+                                var registerPluginAttribute = pluginType.GetCustomAttribute<RegisterPlugIn>();
+                                if (registerPluginAttribute == null)
+                                    continue;
+
+                                _pluginTypes.Add(registerPluginAttribute.Value, pluginType);
+                            }
+                        }
+                        catch (BadImageFormatException)
+                        {
+                        }
+                        catch (Exception ex)
+                        {
+                            error.Append(currentDll + ": " + ex.Message);
+                            error.Append(Environment.NewLine);
                         }
                     }
-                    catch (BadImageFormatException)
-                    {
-                    }
-                    catch (Exception ex)
-                    {
-                        error.Append(currentDll + ": " + ex.Message);
-                        error.Append(Environment.NewLine);
-                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                error.Append(currentDll + ": " + ex.Message);
-                error.Append(Environment.NewLine);
-            }
+                catch (Exception ex)
+                {
+                    error.Append(currentDll + ": " + ex.Message);
+                    error.Append(Environment.NewLine);
+                }
 
-            if(error.Length>0)
-            {
-                //throw new Exception("PluginMananger.Init() " + Environment.NewLine + error.ToString());
+                if (error.Length > 0)
+                {
+                    //throw new Exception("PluginMananger.Init() " + Environment.NewLine + error.ToString());
+                }
+
+                if (parseAssemblyDelegate != null)
+                {
+                    parseAssemblyDelegate(null);
+                }
             }
         }
 
@@ -128,8 +143,6 @@ namespace gView.Framework.system
 
         public IEnumerable<Type> GetPlugins(Plugins.Type type)
         {
-            Init();
-
             Init();
 
             List<Type> pluginTypes = new List<Type>();

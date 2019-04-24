@@ -182,5 +182,8 @@
   <ItemGroup>
     <None Include="Resources\Warning_notification.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\gview5_100x100-w.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

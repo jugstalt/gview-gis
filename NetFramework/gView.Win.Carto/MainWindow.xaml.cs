@@ -47,97 +47,104 @@ namespace gView.Win.Carto
         {
             try
             {
-                InitializeComponent();
-
-                #region Create Application
-                _mapApplication = new MapApplication(this, cartoDocPane);
-                _mapApplication.DockWindowAdded += new DockWindowAddedEvent(mapApplication_DockWindowAdded);
-                _mapApplication.OnShowDockableWindow += new OnShowDockableWindowEvent(mapApplication_OnShowDockableWindow);
-                #endregion
-
-                #region Create Document
-                _mapDocument = new gView.Framework.UI.MapDocument(_mapApplication);
-                _mapDocument.DocumentWindow = this;
-                _mapDocument.MapAdded += new MapAddedEvent(_mapApplication.MapAddedToDocument);
-                _mapDocument.MapScaleChanged += new MapScaleChangedEvent(_mapDocument_MapScaleChanged);
-
-                #endregion
-
-                _mapApplication.mapDocument = _mapDocument;
-                _mapApplication.DocumentFilename = String.Empty;
-
-                // Erst alle Tools erzeugen
-                PlugInManager pm = new PlugInManager();
-
-                foreach (var toolType in pm.GetPlugins(Framework.system.Plugins.Type.ITool))
+                App.SplashScreen.SetOnPluginsLoadedHandler((sender, args) =>
                 {
+                    InitializeComponent();
+
+                    #region Create Application
+
+                    _mapApplication = new MapApplication(this, cartoDocPane);
+                    _mapApplication.DockWindowAdded += new DockWindowAddedEvent(mapApplication_DockWindowAdded);
+                    _mapApplication.OnShowDockableWindow += new OnShowDockableWindowEvent(mapApplication_OnShowDockableWindow);
+
+                    #endregion
+
+                    #region Create Document
+
+                    _mapDocument = new gView.Framework.UI.MapDocument(_mapApplication);
+                    _mapDocument.DocumentWindow = this;
+                    _mapDocument.MapAdded += new MapAddedEvent(_mapApplication.MapAddedToDocument);
+                    _mapDocument.MapScaleChanged += new MapScaleChangedEvent(_mapDocument_MapScaleChanged);
+
+                    #endregion
+
+
+                    _mapApplication.mapDocument = _mapDocument;
+                    _mapApplication.DocumentFilename = String.Empty;
+
+                    // Erst alle Tools erzeugen
+                    PlugInManager pm = new PlugInManager();
+
+                    foreach (var toolType in pm.GetPlugins(Framework.system.Plugins.Type.ITool))
+                    {
+                        try
+                        {
+                            _mapApplication.AddTool(pm.CreateInstance<ITool>(toolType));
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Error creating Instance: " + toolType.ToString() + "\n" + ex.Message);
+                        }
+                    }
+
+                    //AddDataView("DataView1", new Map());
+                    //_mapDocument.FocusMap = _mapApplication.ActiveDataView.Map;
+                    _mapDocument.AddMap(new Map());
+                    _mapDocument.FocusMap = _mapDocument.Maps.First();
+
+                    #region Create Modules
+                    PlugInManager compMan = new PlugInManager();
+                    foreach (var moduleType in compMan.GetPlugins(Framework.system.Plugins.Type.IMapApplicationModule))
+                    {
+                        IMapApplicationModule module = compMan.CreateInstance<IMapApplicationModule>(moduleType);
+                        if (module != null)
+                        {
+                            _modules.Add(module);
+                            module.OnCreate(_mapDocument);
+                        }
+                    }
+                    #endregion
+
+                    _mapApplication.SendOnCreate2Tools(_mapDocument);
+                    backstageTabControl.SelectionChanged += new SelectionChangedEventHandler(backstageTabControl_SelectionChanged);
+                    ribbon.SelectedTabChanged += new SelectionChangedEventHandler(ribbon_SelectedTabChanged);
+
+                    _contextMenuStripMapView = new System.Windows.Forms.ContextMenuStrip();
                     try
                     {
-                        _mapApplication.AddTool(pm.CreateInstance<ITool>(toolType));
+                        XmlDocument doc = new XmlDocument();
+                        doc.Load(SystemVariables.ApplicationDirectory + @"\menu.carto.xml");
+
+                        MakeMainMenuBar(doc.SelectSingleNode("//Menubar"));
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error creating Instance: " + toolType.ToString() + "\n" + ex.Message);
+                        //MessageBox.Show(ex.Message);
                     }
-                }
+                    MakeRibbon();
+                    ValidateButtons();
 
-                //AddDataView("DataView1", new Map());
-                //_mapDocument.FocusMap = _mapApplication.ActiveDataView.Map;
-                _mapDocument.AddMap(new Map());
-                _mapDocument.FocusMap = _mapDocument.Maps.First();
+                    #region Create Toc
+                    FormTOC toc = FormTOC.CreateAsync(_mapDocument).Result;
+                    _mapApplication.AddDockableWindow(_toc = toc.TOC, DockWindowState.left);
+                    //_mapApplication.AddDockableWindow(toc.Source, DockWindowState.left);
 
-                #region Create Modules
-                PlugInManager compMan = new PlugInManager();
-                foreach (var moduleType in compMan.GetPlugins(Framework.system.Plugins.Type.IMapApplicationModule))
-                {
-                    IMapApplicationModule module = compMan.CreateInstance<IMapApplicationModule>(moduleType);
-                    if (module != null)
+                    _toc.SelectionChanged += new EventHandler(_toc_SelectionChanged);
+                    #endregion
+
+                    ShowBackstageMenu();
+
+                    this.Closing += new System.ComponentModel.CancelEventHandler(MainWindow_Closing);
+
+                    this.Activated += delegate
                     {
-                        _modules.Add(module);
-                        module.OnCreate(_mapDocument);
-                    }
-                }
-                #endregion
-
-                _mapApplication.SendOnCreate2Tools(_mapDocument);
-                backstageTabControl.SelectionChanged += new SelectionChangedEventHandler(backstageTabControl_SelectionChanged);
-                ribbon.SelectedTabChanged += new SelectionChangedEventHandler(ribbon_SelectedTabChanged);
-
-                _contextMenuStripMapView = new System.Windows.Forms.ContextMenuStrip();
-                try
-                {
-                    XmlDocument doc = new XmlDocument();
-                    doc.Load(SystemVariables.ApplicationDirectory + @"\menu.carto.xml");
-
-                    MakeMainMenuBar(doc.SelectSingleNode("//Menubar"));
-                }
-                catch (Exception ex)
-                {
-                    //MessageBox.Show(ex.Message);
-                }
-                MakeRibbon();
-                ValidateButtons();
-
-                #region Create Toc
-                FormTOC toc = FormTOC.CreateAsync(_mapDocument).Result;
-                _mapApplication.AddDockableWindow(_toc = toc.TOC, DockWindowState.left);
-                //_mapApplication.AddDockableWindow(toc.Source, DockWindowState.left);
-
-                _toc.SelectionChanged += new EventHandler(_toc_SelectionChanged);
-                #endregion
-
-                ShowBackstageMenu();
-
-                this.Closing += new System.ComponentModel.CancelEventHandler(MainWindow_Closing);
-
-                this.Activated += delegate
-                {
-                    foreach (var item in ribbon.QuickAccessItems)
-                    {
-                        if (item is Fluent.QuickAccessMenuItem)
-                            ((Fluent.QuickAccessMenuItem)item).IsChecked = true;
-                    }
-                };
+                        foreach (var item in ribbon.QuickAccessItems)
+                        {
+                            if (item is Fluent.QuickAccessMenuItem)
+                                ((Fluent.QuickAccessMenuItem)item).IsChecked = true;
+                        }
+                    };
+                });
             }
             catch (Exception ex)
             {
