@@ -314,9 +314,17 @@
       <Project>{cdf0e058-d35b-4efe-9bbd-e1e355a4bd6b}</Project>
       <Name>gView.XML</Name>
     </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Carto.Rendering.UI\gView.Win.Carto.Rendering.UI.csproj">
+      <Project>{20c2dcd8-4b3b-4864-99c8-5f9ec045cd8f}</Project>
+      <Name>gView.Win.Carto.Rendering.UI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\gView.Win.Carto.UI\gView.Win.Carto.UI.csproj">
       <Project>{77538348-8321-4978-842d-2d97cdedeca6}</Project>
       <Name>gView.Win.Carto.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Carto\gView.Win.Carto.csproj">
+      <Project>{c8b966f0-9fa2-4f1a-bcba-f2137d33d62c}</Project>
+      <Name>gView.Win.Carto</Name>
     </ProjectReference>
     <ProjectReference Include="..\gView.Win.Core.UI\gView.Win.Core.UI.csproj">
       <Project>{3c8ffd95-66e8-41e5-b891-4b13d44942c3}</Project>
@@ -389,6 +397,14 @@
     <ProjectReference Include="..\gView.Win.Plugin.Tools\gView.Win.Plugins.Tools.csproj">
       <Project>{10bc8626-1d94-4740-9ed3-9d1bd71857b7}</Project>
       <Name>gView.Win.Plugins.Tools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Plugins.DbTools\gView.Win.Plugins.DbTools.csproj">
+      <Project>{6240b9d4-40bc-4356-b32c-aa77905b9e7e}</Project>
+      <Name>gView.Win.Plugins.DbTools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Plugins.Editor\gView.Win.Plugins.Editor.csproj">
+      <Project>{cb46f0d0-c5cf-4b22-b112-33a14ab200dd}</Project>
+      <Name>gView.Win.Plugins.Editor</Name>
     </ProjectReference>
     <ProjectReference Include="..\gView.Win.Snapping.Core\gView.Win.Snapping.Core.csproj">
       <Project>{1075bb0d-7dfc-440c-a790-51001bcf0725}</Project>

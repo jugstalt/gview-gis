@@ -371,6 +371,22 @@
       <Project>{10bc8626-1d94-4740-9ed3-9d1bd71857b7}</Project>
       <Name>gView.Win.Plugins.Tools</Name>
     </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Plugins.DbTools\gView.Win.Plugins.DbTools.csproj">
+      <Project>{6240b9d4-40bc-4356-b32c-aa77905b9e7e}</Project>
+      <Name>gView.Win.Plugins.DbTools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Plugins.Editor\gView.Win.Plugins.Editor.csproj">
+      <Project>{cb46f0d0-c5cf-4b22-b112-33a14ab200dd}</Project>
+      <Name>gView.Win.Plugins.Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Plugins.Network\gView.Win.Plugins.Network.csproj">
+      <Project>{ea8997fb-1150-4222-8bf5-2c98c71a2b47}</Project>
+      <Name>gView.Win.Plugins.Network</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Plugins.Snapping\gView.Win.Plugins.Snapping.csproj">
+      <Project>{6fd6118a-19b7-4675-bf34-7972f8399d71}</Project>
+      <Name>gView.Win.Plugins.Snapping</Name>
+    </ProjectReference>
     <ProjectReference Include="..\gView.Win.Snapping.Core\gView.Win.Snapping.Core.csproj">
       <Project>{1075bb0d-7dfc-440c-a790-51001bcf0725}</Project>
       <Name>gView.Win.Snapping.Core</Name>

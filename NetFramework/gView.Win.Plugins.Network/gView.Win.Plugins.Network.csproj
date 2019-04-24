@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{EA8997FB-1150-4222-8BF5-2C98C71A2B47}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>gView.Win.Plugins.Network</RootNamespace>
+    <AssemblyName>gView.Win.Plugins.Network</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Common, Version=4.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Drawing.Common.4.5.1\lib\net461\System.Drawing.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="EndPoint.cs" />
+    <Compile Include="FormMaxDistance.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormMaxDistance.Designer.cs">
+      <DependentUpon>FormMaxDistance.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormRoadBook.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormRoadBook.Designer.cs">
+      <DependentUpon>FormRoadBook.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormTracerProperties.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormTracerProperties.Designer.cs">
+      <DependentUpon>FormTracerProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Graphic\GraphicHotspotPoint.cs" />
+    <Compile Include="Graphic\GraphicNetworkPathEdge.cs" />
+    <Compile Include="Module.cs" />
+    <Compile Include="NetworkProgressReporter.cs" />
+    <Compile Include="NetworkRibbonTab.cs" />
+    <Compile Include="NetworkSelector.cs" />
+    <Compile Include="NetworkTracerSelector.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="RemoveNetworkElements.cs" />
+    <Compile Include="StartEdge.cs" />
+    <Compile Include="StartPoint.cs" />
+    <Compile Include="Toolbar.cs" />
+    <Compile Include="TraceNetwork.cs" />
+    <Compile Include="WeightSelector.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\gView.Core\gView.Core.csproj">
+      <Project>{5a66d185-6e2c-4da4-97d7-00616a182bd8}</Project>
+      <Name>gView.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Data\gView.Data.csproj">
+      <Project>{9b556868-8431-4d6c-b002-3fef15df0498}</Project>
+      <Name>gView.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Geometry\gView.Geometry.csproj">
+      <Project>{82012e45-2efc-498e-9bb1-f3deba4b87c5}</Project>
+      <Name>gView.Geometry</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Network\gView.Network.csproj">
+      <Project>{f47ea9df-e750-4afe-bdff-8644403e17bb}</Project>
+      <Name>gView.Network</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Symbology\gView.Symbology.csproj">
+      <Project>{c37d6d4b-5670-49b9-8592-48e9dcc0aa3c}</Project>
+      <Name>gView.Symbology</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.System\gView.System.csproj">
+      <Project>{e50d8014-0fb8-4b67-8291-0abee04a1403}</Project>
+      <Name>gView.System</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Carto.UI\gView.Win.Carto.UI.csproj">
+      <Project>{77538348-8321-4978-842d-2d97cdedeca6}</Project>
+      <Name>gView.Win.Carto.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Core.UI\gView.Win.Core.UI.csproj">
+      <Project>{3c8ffd95-66e8-41e5-b891-4b13d44942c3}</Project>
+      <Name>gView.Win.Core.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Explorer.UI\gView.Win.Explorer.UI.csproj">
+      <Project>{fec5f35a-cf6e-4f6b-b910-72949954be82}</Project>
+      <Name>gView.Win.Explorer.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Globalisation\gView.Win.Globalisation.csproj">
+      <Project>{68ff06ec-cebd-4ba4-a536-6c09d9714066}</Project>
+      <Name>gView.Win.Globalisation</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="FormMaxDistance.resx">
+      <DependentUpon>FormMaxDistance.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormRoadBook.resx">
+      <DependentUpon>FormRoadBook.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormTracerProperties.resx">
+      <DependentUpon>FormTracerProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\delete_16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\gps_point.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\path.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\path2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\path3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\start_point.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\target_point.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

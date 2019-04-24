@@ -122,6 +122,8 @@ namespace gView.Plugins.Modules
             public string ClassName { get; private set; }
             public EditStatements Statements { get; private set; }
 
+            public Framework.Data.IFeatureLayer FeatureLayer { get { return null; } }
+
             #region IPersistable
 
             public void Load(IPersistStream stream)
