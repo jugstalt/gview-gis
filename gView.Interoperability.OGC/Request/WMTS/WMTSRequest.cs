@@ -397,7 +397,21 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
             #endregion
 
-            string restFulUrl = context.ServiceRequest.OnlineResource.ToLower().Replace("/ogc/" + context.ServiceRequest.Service, "/tilewmts/" + context.ServiceRequest.Service);
+            string restFulUrl;
+
+            if (String.IsNullOrWhiteSpace(context.ServiceRequest.Folder))
+            {
+                restFulUrl = context.ServiceRequest.OnlineResource.ToLower()
+                    .Replace("/ogc/" + context.ServiceRequest.Service, "/tilewmts/" + context.ServiceRequest.Service);
+            }
+            else
+            {
+                string fromServiceFullname = context.ServiceRequest.Folder + "@" + context.ServiceRequest.Service;
+                string toServiceFullname = context.ServiceRequest.Folder + "/" + context.ServiceRequest.Service;
+
+                restFulUrl = context.ServiceRequest.OnlineResource.ToLower()
+                    .Replace("/ogc/" + fromServiceFullname.ToLower(), "/tilewmts/" + toServiceFullname.ToLower());
+            }
 
             #region OperationsMetadata
 

@@ -71,9 +71,9 @@ namespace gView.Framework.system
             try
             {
                 _pluginTypes = new Dictionary<Guid, Type>();
-                FileInfo entryAssembly = new FileInfo(Assembly.GetEntryAssembly().Location);    
+                FileInfo entryAssembly = new FileInfo(Assembly.GetEntryAssembly().Location);
 
-                foreach(FileInfo dll in entryAssembly.Directory.GetFiles("*.dll"))
+                foreach (FileInfo dll in entryAssembly.Directory.GetFiles("*.dll").Where(f => f.Name.ToLower().StartsWith("gview.")))
                 {
                     currentDll = dll.Name;
 
@@ -92,14 +92,14 @@ namespace gView.Framework.system
                     catch (BadImageFormatException)
                     {
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         error.Append(currentDll + ": " + ex.Message);
                         error.Append(Environment.NewLine);
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 error.Append(currentDll + ": " + ex.Message);
                 error.Append(Environment.NewLine);

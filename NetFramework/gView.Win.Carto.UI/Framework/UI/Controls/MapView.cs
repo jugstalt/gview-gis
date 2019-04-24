@@ -84,7 +84,7 @@ namespace gView.Framework.UI.Controls
             base.Dispose();
         }
         
-        private bool hasMap
+        private bool HasMap
         {
             get
             {
@@ -102,7 +102,7 @@ namespace gView.Framework.UI.Controls
             set
             {
                 m_limit = value;
-                if (!hasMap) return;
+                if (!HasMap) return;
             }
         }
 
@@ -344,7 +344,7 @@ namespace gView.Framework.UI.Controls
             _canceled = _cancelling = true;
             try
             {
-                if (!hasMap) return;
+                if (!HasMap) return;
                 if (!_cancelTracker.Continue) return;
                 //lock (lockThis)
                 {
@@ -368,28 +368,32 @@ namespace gView.Framework.UI.Controls
 
         async public Task<bool> RefreshMap(DrawPhase phase)
         {
-            if (!hasMap) return false;
+            if (!HasMap) return false;
 
             if (DesignMode) return true;
             try
             {
-                if (_cancelTracker.Continue)
+                Task.Run(async () =>
                 {
-                    CancelDrawing(phase);
-                }
-                if (BeforeRefreshMap != null) BeforeRefreshMap();
 
-                _map.Display.iWidth = this.Width;
-                _map.Display.iHeight = this.Height;
+                    if (_cancelTracker.Continue)
+                    {
+                        CancelDrawing(phase);
+                    }
+                    if (BeforeRefreshMap != null) BeforeRefreshMap();
 
-                _phase = phase;
-                _canceled = false;
+                    _map.Display.iWidth = this.Width;
+                    _map.Display.iHeight = this.Height;
 
-                if (StartRequest != null) StartRequest();
+                    _phase = phase;
+                    _canceled = false;
 
-                _cancelTracker.Reset();
-                await _map.RefreshMap(_phase, _cancelTracker);
-                MakeMapViewRefresh();
+                    if (StartRequest != null) StartRequest();
+
+                    _cancelTracker.Reset();
+                    await _map.RefreshMap(_phase, _cancelTracker);
+                    MakeMapViewRefresh();
+                });
             }
             catch (Exception ex)
             {
@@ -807,7 +811,7 @@ namespace gView.Framework.UI.Controls
             if (_cancelling) return;
 
             if (_actTool == null || _map == null || _map.Display == null) return;
-            if (!hasMap) return;
+            if (!HasMap) return;
 
             _X = e.X; _Y = e.Y;
             _map.Display.Image2World(ref _X, ref _Y);
