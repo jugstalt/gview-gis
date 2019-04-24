@@ -314,6 +314,21 @@ namespace gView.Framework.SpatialAlgorithms
             {
                 IPoint p00 = pColl[i], p01 = pColl[i + 1];
 
+                #region Check if next is parallel with opposite direction
+
+                if (i < pColl.PointCount - 2)
+                {
+                    IPoint p02 = pColl[i + 2];
+
+                    double x1 = p01.X - p00.X, y1 = p01.Y - p00.Y;
+                    double x2 = p02.X - p01.X, y2 = p02.Y - p01.Y;
+
+                    if (IsParallel(x1, y1, x2, y2) == -1)
+                        return true;
+                }
+
+                #endregion
+
                 for (int j = i + 2; j < to; j++)  // i+2 -> direkt anschließende Line nicht checken, die kann maximal paralell zurück verlaufen und brauch einen anderen Test...
                 {
                     IPoint p10 = pColl[j], p11 = pColl[j + 1];
@@ -329,6 +344,29 @@ namespace gView.Framework.SpatialAlgorithms
 
             return false;
         }
+
+        public static int IsParallel(double x1,double y1, double x2,double y2, double epsi = 1e-7)
+        {
+            var len1 = Math.Sqrt(x1 * x1 + y1 * y1);
+            var len2 = Math.Sqrt(x2 * x2 + y2 * y2);
+
+            if (len1 == 0 || len2 == 0)  // ??
+                return 0;  // NaN ??
+
+            x1 /= len1;
+            y1 /= len1;
+            x2 /= len2;
+            y2 /= len2;
+
+            if (Math.Abs(x2 - x1) < epsi && Math.Abs(y2 - y1) < epsi)   // Parallel with same direction
+                return 1;
+
+            if (Math.Abs(x1 + x2) < epsi && Math.Abs(y1 + y2) < epsi)   // Paralell with opposite direction 
+                return -1;
+
+            return 0;
+        }
+
         #endregion
 
         #region Contains

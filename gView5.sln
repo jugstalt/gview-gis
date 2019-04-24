@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.106
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.System", "gView.System\gView.System.csproj", "{E50D8014-0FB8-4B67-8291-0ABEE04A1403}"
 EndProject
@@ -128,6 +128,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Data.Fields.UI", "NetFramework\gView.Win.Data.Fields.UI\gView.Win.Data.Fields.UI.csproj", "{4DF95582-C3B4-412A-A845-79CD9DF5C87A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Carto", "NetFramework\gView.Win.Carto\gView.Win.Carto.csproj", "{C8B966F0-9FA2-4F1A-BCBA-F2137D33D62C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Carto.Rendering.UI", "NetFramework\gView.Win.Carto.Rendering.UI\gView.Win.Carto.Rendering.UI.csproj", "{20C2DCD8-4B3B-4864-99C8-5F9EC045CD8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -641,6 +643,14 @@ Global
 		{C8B966F0-9FA2-4F1A-BCBA-F2137D33D62C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C8B966F0-9FA2-4F1A-BCBA-F2137D33D62C}.Release|x64.ActiveCfg = Release|Any CPU
 		{C8B966F0-9FA2-4F1A-BCBA-F2137D33D62C}.Release|x64.Build.0 = Release|Any CPU
+		{20C2DCD8-4B3B-4864-99C8-5F9EC045CD8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20C2DCD8-4B3B-4864-99C8-5F9EC045CD8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20C2DCD8-4B3B-4864-99C8-5F9EC045CD8F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{20C2DCD8-4B3B-4864-99C8-5F9EC045CD8F}.Debug|x64.Build.0 = Debug|Any CPU
+		{20C2DCD8-4B3B-4864-99C8-5F9EC045CD8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20C2DCD8-4B3B-4864-99C8-5F9EC045CD8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20C2DCD8-4B3B-4864-99C8-5F9EC045CD8F}.Release|x64.ActiveCfg = Release|Any CPU
+		{20C2DCD8-4B3B-4864-99C8-5F9EC045CD8F}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

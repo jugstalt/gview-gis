@@ -494,7 +494,7 @@ namespace gView.Framework.Carto.Rendering
                     this[null] = RendererFunctions.CreateStandardSymbol(layer.LayerGeometryType/*layer.FeatureClass.GeometryType*/);
 
                 string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.Carto.Rendering.UI.dll");
+                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.Win.Carto.Rendering.UI.dll");
 
                 IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Carto.Rendering.UI.PropertyPage_ManyValueMapRenderer") as IPropertyPanel;
                 if (p != null)

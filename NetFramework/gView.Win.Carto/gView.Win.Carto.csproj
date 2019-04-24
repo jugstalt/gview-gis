@@ -291,6 +291,10 @@
       <Project>{cdf0e058-d35b-4efe-9bbd-e1e355a4bd6b}</Project>
       <Name>gView.XML</Name>
     </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Carto.Rendering.UI\gView.Win.Carto.Rendering.UI.csproj">
+      <Project>{20c2dcd8-4b3b-4864-99c8-5f9ec045cd8f}</Project>
+      <Name>gView.Win.Carto.Rendering.UI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\gView.Win.Carto.UI\gView.Win.Carto.UI.csproj">
       <Project>{77538348-8321-4978-842d-2d97cdedeca6}</Project>
       <Name>gView.Win.Carto.UI</Name>

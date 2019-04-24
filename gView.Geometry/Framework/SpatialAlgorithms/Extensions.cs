@@ -42,9 +42,60 @@ namespace gView.Framework.SpatialAlgorithms
 
             #endregion
 
+            if(geometry is IPolyline)
+            {
+                var polyline = (IPolyline)geometry;
+
+                #region Remove Zero Length Paths 
+
+                int removePath = -1;
+                do
+                {
+                    for (int p = 0, to = polyline.PathCount; p < to; p++)
+                    {
+                        if (polyline[p] == null || polyline[p].Length == 0.0)
+                        {
+                            removePath = p;
+                            break;
+                        }
+                    }
+
+                    if (removePath >= 0)
+                    {
+                        polyline.RemovePath(removePath);
+                    }
+                }
+                while (removePath >= 0);
+
+                #endregion
+            }
+
             if (geometry is IPolygon)
             {
                 var polygon = (IPolygon)geometry;
+
+                #region Remove Zero Area Rings
+
+                int removeRing = -1;
+                do
+                {
+                    for (int p = 0, to = polygon.RingCount; p < to; p++)
+                    {
+                        if(polygon[p]==null || polygon[p].Area==0.0)
+                        {
+                            removeRing = p;
+                            break;
+                        }
+                    }
+
+                    if(removeRing>=0)
+                    {
+                        polygon.RemoveRing(removeRing);
+                    }
+                }
+                while (removeRing >= 0);
+
+                #endregion
 
                 #region Check rings
 

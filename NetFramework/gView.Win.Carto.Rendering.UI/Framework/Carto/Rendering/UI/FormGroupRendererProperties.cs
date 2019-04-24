@@ -6,13 +6,16 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-namespace gView.Framework.OGC.UI
+namespace gView.Framework.Carto.Rendering.UI
 {
-    public partial class Form1 : Form
+    public partial class FormGroupRendererProperties : Form
     {
-        public Form1()
+        public FormGroupRendererProperties(Control panel)
         {
             InitializeComponent();
+
+            Controls.Add(panel);
+            panel.BringToFront();
         }
     }
 }
