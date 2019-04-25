@@ -88,22 +88,19 @@ namespace gView.DataSources.Fdb.UI
             
         }
 
-        public IExplorerObject ExplorerObject
+        public IExplorerObject GetExplorerObject()
         {
-            get
+            return _exObject;
+        }
+        async public Task SetExplorerObjectAsync(IExplorerObject value)
+        {
+            if (value != null)
             {
-                return _exObject;
+                _exObject = value;
             }
-            set
+            else
             {
-                if (value != null)
-                {
-                    _exObject = value;
-                }
-                else
-                {
-                    _exObject = null;
-                }
+                _exObject = null;
             }
         }
 

@@ -196,19 +196,16 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public IExplorerObject ExplorerObject
+        public IExplorerObject GetExplorerObject()
         {
-            get
-            {
-                return _exObject;
-            }
-            set
-            {
-                if (_exObject == value || _map == null) return;
+            return _exObject;
+        }
+        async public Task SetExplorerObjectAsync(IExplorerObject value)
+        {
+            if (_exObject == value || _map == null) return;
 
-                _exObject = value;
-                _exObjectInvokeRequired = true;
-            }
+            _exObject = value;
+            _exObjectInvokeRequired = true;
         }
 
         public Task<bool> ShowWith(IExplorerObject exObject)
@@ -397,18 +394,17 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public IExplorerObject ExplorerObject
+        public IExplorerObject GetExplorerObject()
         {
-            get
-            {
-                return _exObject;
-            }
-            set
-            {
-                _exObject = value;
-                //OnShow();
-            }
+            return _exObject;
         }
+
+        async public Task SetExplorerObjectAsync(IExplorerObject value)
+        {
+            _exObject = value;
+            await OnShow();
+        }
+        
 
         public Task<bool> ShowWith(IExplorerObject exObject)
         {

@@ -320,11 +320,8 @@ namespace gView.Framework.UI
         Task<bool> OnShow();
         void OnHide();
 
-        IExplorerObject ExplorerObject
-        {
-            get;
-            set;
-        }
+        IExplorerObject GetExplorerObject();
+        Task SetExplorerObjectAsync(IExplorerObject value);
 
         Task<bool> ShowWith(IExplorerObject exObject);
         string Title { get; }

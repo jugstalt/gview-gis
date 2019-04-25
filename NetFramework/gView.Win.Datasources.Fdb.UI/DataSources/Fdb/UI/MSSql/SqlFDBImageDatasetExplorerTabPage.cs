@@ -66,19 +66,16 @@ namespace gView.DataSources.Fdb.UI.MSSql
             //CancelRefreshList();
         }
 
-        public IExplorerObject ExplorerObject
+        public IExplorerObject GetExplorerObject()
         {
-            get
-            {
-                return _exObject;
-            }
-            set
-            {
-                if (_exObject == value) return;
-                listView.Items.Clear();
-                _exObject = value;
-                CancelRefreshList();
-            }
+            return _exObject;
+        }
+        async public Task SetExplorerObjectAsync(IExplorerObject value)
+        {
+            if (_exObject == value) return;
+            listView.Items.Clear();
+            _exObject = value;
+            CancelRefreshList();
         }
 
         async public Task<bool> ShowWith(IExplorerObject exObject)

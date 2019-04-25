@@ -18,6 +18,7 @@ namespace gView.Win.Carto
         protected override void OnStartup(StartupEventArgs e)
         {
             SplashScreen.Show();
+            SplashScreen.Refresh();
 
             base.OnStartup(e);
         }

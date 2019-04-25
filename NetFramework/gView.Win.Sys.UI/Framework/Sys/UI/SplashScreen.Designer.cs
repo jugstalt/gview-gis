@@ -39,6 +39,7 @@ namespace gView.Framework.system.UI
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.lblProductName = new System.Windows.Forms.Label();
             this.lblParseAssembly = new System.Windows.Forms.Label();
+            this.lblAddPluginType = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -102,7 +103,7 @@ namespace gView.Framework.system.UI
             this.lblDemo.BackColor = System.Drawing.Color.White;
             this.lblDemo.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblDemo.ForeColor = System.Drawing.Color.Red;
-            this.lblDemo.Location = new System.Drawing.Point(486, 9);
+            this.lblDemo.Location = new System.Drawing.Point(685, 9);
             this.lblDemo.Name = "lblDemo";
             this.lblDemo.Size = new System.Drawing.Size(144, 46);
             this.lblDemo.TabIndex = 2;
@@ -119,7 +120,7 @@ namespace gView.Framework.system.UI
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel1.Location = new System.Drawing.Point(0, 335);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(642, 64);
+            this.panel1.Size = new System.Drawing.Size(841, 64);
             this.panel1.TabIndex = 8;
             // 
             // pictureBox1
@@ -133,8 +134,6 @@ namespace gView.Framework.system.UI
             this.pictureBox1.Size = new System.Drawing.Size(113, 101);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
-            this.pictureBox1.Click += new System.EventHandler(this.PictureBox1_Click);
-            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
             // 
             // lblProductName
             // 
@@ -151,16 +150,27 @@ namespace gView.Framework.system.UI
             // 
             this.lblParseAssembly.AutoSize = true;
             this.lblParseAssembly.ForeColor = System.Drawing.Color.White;
-            this.lblParseAssembly.Location = new System.Drawing.Point(14, 301);
+            this.lblParseAssembly.Location = new System.Drawing.Point(14, 272);
             this.lblParseAssembly.Name = "lblParseAssembly";
             this.lblParseAssembly.Size = new System.Drawing.Size(54, 20);
             this.lblParseAssembly.TabIndex = 10;
             this.lblParseAssembly.Text = "Parse:";
             // 
+            // lblAddPluginType
+            // 
+            this.lblAddPluginType.AutoSize = true;
+            this.lblAddPluginType.ForeColor = System.Drawing.Color.White;
+            this.lblAddPluginType.Location = new System.Drawing.Point(12, 303);
+            this.lblAddPluginType.Name = "lblAddPluginType";
+            this.lblAddPluginType.Size = new System.Drawing.Size(46, 20);
+            this.lblAddPluginType.TabIndex = 11;
+            this.lblAddPluginType.Text = "Add: ";
+            // 
             // SplashScreen
             // 
             this.BackColor = System.Drawing.Color.Black;
-            this.ClientSize = new System.Drawing.Size(642, 399);
+            this.ClientSize = new System.Drawing.Size(841, 399);
+            this.Controls.Add(this.lblAddPluginType);
             this.Controls.Add(this.lblParseAssembly);
             this.Controls.Add(this.lblProductName);
             this.Controls.Add(this.panel1);
@@ -193,6 +203,7 @@ namespace gView.Framework.system.UI
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label lblProductName;
         private System.Windows.Forms.Label lblParseAssembly;
+        private System.Windows.Forms.Label lblAddPluginType;
     }
 }
 

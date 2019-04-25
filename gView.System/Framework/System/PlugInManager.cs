@@ -62,68 +62,64 @@ namespace gView.Framework.system
 
         public delegate void ParseAssemblyDelegate(string assemblyName);
 
-        private static object initLocker = new object();
-        public static void Init(ParseAssemblyDelegate parseAssemblyDelegate = null)
+        public static event ParseAssemblyDelegate OnParseAssembly = null;
+        public static event ParseAssemblyDelegate OnAddPluginType = null;
+
+        public static void Init()
         {
-            //lock (initLocker)
+            if (_pluginTypes != null)
+                return;
+
+            string currentDll = String.Empty;
+            var error = new StringBuilder();
+
+            try
             {
-                if (_pluginTypes != null)
-                    return;
+                _pluginTypes = new Dictionary<Guid, Type>();
+                FileInfo entryAssembly = new FileInfo(Assembly.GetEntryAssembly().Location);
 
-                string currentDll = String.Empty;
-                var error = new StringBuilder();
-
-                try
+                foreach (FileInfo dll in entryAssembly.Directory.GetFiles("*.dll").Where(f => f.Name.ToLower().StartsWith("gview.")))
                 {
-                    _pluginTypes = new Dictionary<Guid, Type>();
-                    FileInfo entryAssembly = new FileInfo(Assembly.GetEntryAssembly().Location);
+                    currentDll = dll.Name;
 
-                    foreach (FileInfo dll in entryAssembly.Directory.GetFiles("*.dll").Where(f => f.Name.ToLower().StartsWith("gview.")))
+                    OnParseAssembly?.Invoke(dll.Name);
+
+                    try
                     {
-                        currentDll = dll.Name;
+                        Assembly assembly = Assembly.LoadFrom(dll.FullName);
+                        foreach (var pluginType in assembly.GetTypes())
+                        {
+                            var registerPluginAttribute = pluginType.GetCustomAttribute<RegisterPlugIn>();
+                            if (registerPluginAttribute == null)
+                                continue;
 
-                        if (parseAssemblyDelegate != null)
-                        {
-                            parseAssemblyDelegate(dll.Name);
-                        }
-                        try
-                        {
-                            Assembly assembly = Assembly.LoadFrom(dll.FullName);
-                            foreach (var pluginType in assembly.GetTypes())
-                            {
-                                var registerPluginAttribute = pluginType.GetCustomAttribute<RegisterPlugIn>();
-                                if (registerPluginAttribute == null)
-                                    continue;
+                            _pluginTypes.Add(registerPluginAttribute.Value, pluginType);
 
-                                _pluginTypes.Add(registerPluginAttribute.Value, pluginType);
-                            }
-                        }
-                        catch (BadImageFormatException)
-                        {
-                        }
-                        catch (Exception ex)
-                        {
-                            error.Append(currentDll + ": " + ex.Message);
-                            error.Append(Environment.NewLine);
+                            OnAddPluginType?.Invoke(pluginType.ToString());
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    error.Append(currentDll + ": " + ex.Message);
-                    error.Append(Environment.NewLine);
-                }
-
-                if (error.Length > 0)
-                {
-                    //throw new Exception("PluginMananger.Init() " + Environment.NewLine + error.ToString());
-                }
-
-                if (parseAssemblyDelegate != null)
-                {
-                    parseAssemblyDelegate(null);
+                    catch (BadImageFormatException)
+                    {
+                    }
+                    catch (Exception ex)
+                    {
+                        error.Append(currentDll + ": " + ex.Message);
+                        error.Append(Environment.NewLine);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                error.Append(currentDll + ": " + ex.Message);
+                error.Append(Environment.NewLine);
+            }
+
+            if (error.Length > 0)
+            {
+                //throw new Exception("PluginMananger.Init() " + Environment.NewLine + error.ToString());
+            }
+
+            OnParseAssembly?.Invoke(null);
         }
 
         public IEnumerable<Type> GetPlugins(Type interfaceType)

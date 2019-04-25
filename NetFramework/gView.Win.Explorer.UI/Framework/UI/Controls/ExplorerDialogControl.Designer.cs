@@ -118,7 +118,7 @@
             // 
             resources.ApplyResources(this.contentsList1, "contentsList1");
             this.contentsList1.AllowContextMenu = true;
-            this.contentsList1.ExplorerObject = null;
+            //this.contentsList1.ExplorerObject = null;
             this.contentsList1.Filter = null;
             this.contentsList1.IsOpenDialog = true;
             this.contentsList1.MultiSelection = true;
