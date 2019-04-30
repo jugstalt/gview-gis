@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Geometry;
 using gView.Framework.SpatialAlgorithms.Clipper;
 
@@ -10,7 +7,11 @@ namespace gView.Framework.SpatialAlgorithms
     {
         public static IGeometry PerformClip(IGeometry clipper, IGeometry clippee)
         {
-            if (clipper == null || clippee == null) return null;
+            if (clipper == null || clippee == null)
+            {
+                return null;
+            }
+
             if (clipper is IEnvelope)
             {
                 return ClipEnvelope(new Envelope(clipper.Envelope), clippee);
@@ -24,13 +25,23 @@ namespace gView.Framework.SpatialAlgorithms
 
         private static IGeometry ClipEnvelope(Envelope envelope, IGeometry clippee)
         {
-            if (envelope == null || clippee == null) return null;
+            if (envelope == null || clippee == null)
+            {
+                return null;
+            }
+
             if (double.IsInfinity(envelope.Width) ||
-               double.IsInfinity(envelope.Height)) return clippee;
+               double.IsInfinity(envelope.Height))
+            {
+                return clippee;
+            }
 
             IEnvelope geomEnv = clippee.Envelope;
 
-            if (!envelope.Intersects(geomEnv)) return null;
+            if (!envelope.Intersects(geomEnv))
+            {
+                return null;
+            }
 
             if (geomEnv.minx >= envelope.minx && geomEnv.maxx <= envelope.maxx &&
                 geomEnv.miny >= envelope.miny && geomEnv.maxy <= envelope.maxy)
@@ -117,13 +128,16 @@ namespace gView.Framework.SpatialAlgorithms
             for (int pathIndex = 0; pathIndex < line.PathCount; pathIndex++)
             {
                 IPath path = line[pathIndex];
-                if (path.PointCount < 2) continue;
+                if (path.PointCount < 2)
+                {
+                    continue;
+                }
 
                 IPoint p1 = path[0];
                 Path newPath = null;
                 for (int i = 1; i < path.PointCount; i++)
                 {
-                    IPoint p2=path[i];
+                    IPoint p2 = path[i];
                     LineClipType type;
                     IPoint[] points = LiamBarsky(envelope, p1, p2, out type);
 
@@ -160,10 +174,16 @@ namespace gView.Framework.SpatialAlgorithms
                     p1 = p2;
                 }
                 if (newPath != null)
+                {
                     newLine.AddPath(newPath);
+                }
             }
 
-            if (newLine.PathCount > 0) return newLine;
+            if (newLine.PathCount > 0)
+            {
+                return newLine;
+            }
+
             return null;
         }
         private enum LineClipType { entering, leaving, outside, inside }
@@ -187,8 +207,8 @@ namespace gView.Framework.SpatialAlgorithms
                 return null;
             }
 
-            double[] pdiff ={ p2.X - p1.X, p2.Y - p1.Y };
-            double[] p0 ={ p1.X, p1.Y };
+            double[] pdiff = { p2.X - p1.X, p2.Y - p1.Y };
+            double[] p0 = { p1.X, p1.Y };
             double tpe = 1e10; //0.0;
             double tpl = 1e10; //1.0;
 
@@ -220,9 +240,13 @@ namespace gView.Framework.SpatialAlgorithms
                 if (t >= 0 && t <= 1.0)
                 {
                     if (type == LineClipType.entering && (t > tpe || tpe == 1e10))
+                    {
                         tpe = t;
+                    }
                     else if (type == LineClipType.leaving && (t < tpl || tpl == 1e10))
+                    {
                         tpl = t;
+                    }
                 }
             }
 
@@ -260,16 +284,23 @@ namespace gView.Framework.SpatialAlgorithms
             return null;
         }
 
-        private static double SolveLineFactorT(double[] N, double[] pe, double[] p0, double [] pdiff,out LineClipType type)
+        private static double SolveLineFactorT(double[] N, double[] pe, double[] p0, double[] pdiff, out LineClipType type)
         {
             double dominator = N[0] * pdiff[0] + N[1] * pdiff[1];
 
             if (dominator < 0.0)
+            {
                 type = LineClipType.entering;
+            }
             else
+            {
                 type = LineClipType.leaving;
+            }
 
-            if (dominator == 0.0) return 1e10; // paralell lines...
+            if (dominator == 0.0)
+            {
+                return 1e10; // paralell lines...
+            }
 
             return (N[0] * (pe[0] - p0[0]) + N[1] * (pe[1] - p0[1])) / dominator;
         }
@@ -281,10 +312,25 @@ namespace gView.Framework.SpatialAlgorithms
             //   1010   0010   0110
 
             int code = 0;
-            if (p.X < env.minx) code = code | 0x1000;
-            if (p.X > env.maxx) code = code | 0x0100;
-            if (p.Y < env.miny) code = code | 0x0010;
-            if (p.Y > env.maxy) code = code | 0x0001;
+            if (p.X < env.minx)
+            {
+                code = code | 0x1000;
+            }
+
+            if (p.X > env.maxx)
+            {
+                code = code | 0x0100;
+            }
+
+            if (p.Y < env.miny)
+            {
+                code = code | 0x0010;
+            }
+
+            if (p.Y > env.maxy)
+            {
+                code = code | 0x0001;
+            }
 
             return code;
         }

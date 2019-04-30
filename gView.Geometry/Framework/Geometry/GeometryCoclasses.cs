@@ -1,19 +1,14 @@
+using gView.Framework.SpatialAlgorithms;
+using gView.Framework.SpatialAlgorithms.Clipper;
+using gView.Framework.system;
+using Proj4Net;
 using System;
-using System.Xml;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using gView.Framework;
 using System.IO;
-using gView.Framework.Geometry;
-using System.Text;
-using System.Runtime.CompilerServices;
-using gView.Framework.system;
-using gView.Framework.SpatialAlgorithms;
-using gView.Framework.Proj;
-using Proj4Net;
-using gView.Framework.SpatialAlgorithms.Clipper;
 using System.Linq;
+using System.Text;
+using System.Xml;
 
 //[assembly: InternalsVisibleTo("gView.OGC, PublicKey=0024000004800000940000000602000000240000525341310004000001000100916d0be3f662c2d3589fbe93479f3215e23fd195db9a20e77f42dc1d2942bd48cad3ea36b797f57880e6c31af0c238d2e445898c8ecce990aacbb70ae05a10aff73ab65c7db86366697f934b780238ed8fd1b2e28ba679a97e060b53fce66118e129b91d24f392d4dd3d482fa4173e61f18c74cda9f35721a97e77afbbc96dd2")]
 
@@ -42,7 +37,10 @@ namespace gView.Framework.Geometry
 
         public Envelope(IEnvelope env)
         {
-            if (env == null) return;
+            if (env == null)
+            {
+                return;
+            }
 
             m_minx = env.minx;
             m_miny = env.miny;
@@ -52,7 +50,10 @@ namespace gView.Framework.Geometry
 
         public Envelope(XmlNode env)
         {
-            if (env == null) return;
+            if (env == null)
+            {
+                return;
+            }
 
             minx = Convert.ToDouble(env.Attributes["minx"].Value.Replace(".", ","));
             miny = Convert.ToDouble(env.Attributes["miny"].Value.Replace(".", ","));
@@ -112,7 +113,11 @@ namespace gView.Framework.Geometry
             get { return new Point(minx, miny); }
             set
             {
-                if (value == null) return;
+                if (value == null)
+                {
+                    return;
+                }
+
                 m_minx = value.X;
                 m_miny = value.Y;
             }
@@ -122,7 +127,11 @@ namespace gView.Framework.Geometry
             get { return new Point(maxx, miny); }
             set
             {
-                if (value == null) return;
+                if (value == null)
+                {
+                    return;
+                }
+
                 m_maxx = value.X;
                 m_miny = value.Y;
             }
@@ -132,7 +141,11 @@ namespace gView.Framework.Geometry
             get { return new Point(maxx, maxy); }
             set
             {
-                if (value == null) return;
+                if (value == null)
+                {
+                    return;
+                }
+
                 m_maxx = value.X;
                 m_maxy = value.Y;
             }
@@ -142,7 +155,11 @@ namespace gView.Framework.Geometry
             get { return new Point(minx, maxy); }
             set
             {
-                if (value == null) return;
+                if (value == null)
+                {
+                    return;
+                }
+
                 m_minx = value.X;
                 m_maxy = value.Y;
             }
@@ -155,7 +172,11 @@ namespace gView.Framework.Geometry
             }
             set
             {
-                if (value == null) return;
+                if (value == null)
+                {
+                    return;
+                }
+
                 IPoint c = this.Center;
                 double dx = value.X - c.X;
                 double dy = value.Y - c.Y;
@@ -185,25 +206,35 @@ namespace gView.Framework.Geometry
                !double.IsInfinity(m_miny) &&
                !double.IsInfinity(m_maxx) &&
                !double.IsInfinity(m_maxy))
+            {
                 return this;
+            }
 
             double minx = m_minx, miny = m_miny, maxx = m_maxx, maxy = m_maxy;
 
             if ((double.IsNaN(minx) || double.IsInfinity(minx)) &&
                 !(double.IsNaN(maxx) && double.IsInfinity(maxx)))
+            {
                 minx = maxx - 0.1;
+            }
 
             if ((double.IsNaN(miny) || double.IsInfinity(miny)) &&
                 !(double.IsNaN(maxy) && double.IsInfinity(maxy)))
+            {
                 miny = maxy - 0.1;
+            }
 
             if ((double.IsNaN(maxx) || double.IsInfinity(maxx)) &&
                 !(double.IsNaN(minx) && double.IsInfinity(minx)))
+            {
                 maxx = minx + 0.1;
+            }
 
             if ((double.IsNaN(maxy) || double.IsInfinity(maxy)) &&
                 !(double.IsNaN(miny) && double.IsInfinity(miny)))
+            {
                 maxy = miny + 0.1;
+            }
 
             if (!double.IsNaN(minx) &&
                !double.IsNaN(miny) &&
@@ -213,7 +244,9 @@ namespace gView.Framework.Geometry
                !double.IsInfinity(miny) &&
                !double.IsInfinity(maxx) &&
                !double.IsInfinity(maxy))
+            {
                 return new Envelope(minx, miny, maxx, maxy);
+            }
 
             return null;
         }
@@ -224,7 +257,10 @@ namespace gView.Framework.Geometry
         /// <param name="envelope">An object that implements <c>IEnvelope</c></param>
         public void Union(IEnvelope envelope)
         {
-            if (envelope == null) return;
+            if (envelope == null)
+            {
+                return;
+            }
 
             m_minx = Math.Min(m_minx, envelope.minx);
             m_miny = Math.Min(m_miny, envelope.miny);
@@ -249,7 +285,10 @@ namespace gView.Framework.Geometry
 
         public void Raise(IPoint point, double percent)
         {
-            if (point == null) return;
+            if (point == null)
+            {
+                return;
+            }
 
             percent /= 100;
             double w1 = point.X - minx, w2 = maxx - point.X;
@@ -269,7 +308,11 @@ namespace gView.Framework.Geometry
             if (envelope.maxx >= m_minx &&
                 envelope.minx <= m_maxx &&
                 envelope.maxy >= m_miny &&
-                envelope.miny <= m_maxy) return true;
+                envelope.miny <= m_maxy)
+            {
+                return true;
+            }
+
             return false;
         }
 
@@ -277,11 +320,15 @@ namespace gView.Framework.Geometry
         {
             if (envelope.minx < m_minx
                 || envelope.maxx > m_maxx)
+            {
                 return false;
+            }
 
             if (envelope.miny < m_miny
                 || envelope.maxy > m_maxy)
+            {
                 return false;
+            }
 
             return true;
         }
@@ -322,9 +369,13 @@ namespace gView.Framework.Geometry
 
         #endregion
 
-        public IPolygon ToPolygon(int accuracy=0)
+        public IPolygon ToPolygon(int accuracy = 0)
         {
-            if (accuracy < 0) accuracy = 0;
+            if (accuracy < 0)
+            {
+                accuracy = 0;
+            }
+
             double stepx = this.Width / (accuracy + 1);
             double stepy = this.Height / (accuracy + 1);
 
@@ -333,19 +384,27 @@ namespace gView.Framework.Geometry
 
             polygon[0].AddPoint(new Point(m_minx, m_miny));
             for (int i = 0; i < accuracy; i++)
+            {
                 polygon[0].AddPoint(new Point(m_minx, m_miny + stepy * (i + 1)));
+            }
 
             polygon[0].AddPoint(new Point(m_minx, m_maxy));
             for (int i = 0; i < accuracy; i++)
+            {
                 polygon[0].AddPoint(new Point(m_minx + stepx * (i + 1), m_maxy));
+            }
 
             polygon[0].AddPoint(new Point(m_maxx, m_maxy));
             for (int i = 0; i < accuracy; i++)
+            {
                 polygon[0].AddPoint(new Point(m_maxx, m_maxy - stepy * (i + 1)));
+            }
 
             polygon[0].AddPoint(new Point(m_maxx, m_miny));
             for (int i = 0; i < accuracy; i++)
+            {
                 polygon[0].AddPoint(new Point(m_maxx - stepx * (i + 1), m_miny));
+            }
 
             polygon[0].AddPoint(new Point(m_minx, m_miny));
 
@@ -354,7 +413,11 @@ namespace gView.Framework.Geometry
 
         public IPointCollection ToPointCollection(int accuracy)
         {
-            if (accuracy < 0) accuracy = 0;
+            if (accuracy < 0)
+            {
+                accuracy = 0;
+            }
+
             double stepx = this.Width / (accuracy + 1);
             double stepy = this.Height / (accuracy + 1);
 
@@ -439,7 +502,10 @@ namespace gView.Framework.Geometry
         }
         public bool Equals(object obj, double epsi)
         {
-            if (!(obj is IEnvelope)) return false;
+            if (!(obj is IEnvelope))
+            {
+                return false;
+            }
 
             IEnvelope env2 = (IEnvelope)obj;
             return
@@ -468,7 +534,10 @@ namespace gView.Framework.Geometry
             w.Write(m_miny);
             w.Write(m_maxx);
             w.Write(m_maxy);
-            if (geomDef.HasZ) w.Write(0);
+            if (geomDef.HasZ)
+            {
+                w.Write(0);
+            }
         }
         /// <summary>
         /// For the internal use of the framework
@@ -480,25 +549,35 @@ namespace gView.Framework.Geometry
             m_miny = r.ReadDouble();
             m_maxx = r.ReadDouble();
             m_maxy = r.ReadDouble();
-            if (geomDef.HasZ) r.ReadDouble();
+            if (geomDef.HasZ)
+            {
+                r.ReadDouble();
+            }
         }
 
         #region Static Members
         public static bool IsNull(IEnvelope envelope)
         {
-            if (envelope == null) return true;
+            if (envelope == null)
+            {
+                return true;
+            }
 
             if (Math.Abs(envelope.minx) < double.Epsilon &&
                 Math.Abs(envelope.miny) < double.Epsilon &&
                 Math.Abs(envelope.maxx) < double.Epsilon &&
                 Math.Abs(envelope.maxy) < double.Epsilon)
+            {
                 return true;
+            }
 
             if (double.IsNaN(envelope.minx) ||
                 double.IsNaN(envelope.miny) ||
                 double.IsNaN(envelope.maxx) ||
                 double.IsNaN(envelope.maxy))
+            {
                 return true;
+            }
 
             return false;
         }
@@ -598,7 +677,9 @@ namespace gView.Framework.Geometry
         public double Distance(IPoint p)
         {
             if (p == null)
+            {
                 return double.MaxValue;
+            }
 
             return Math.Sqrt((p.X - m_x) * (p.X - m_x) + (p.Y - m_y) * (p.Y - m_y));
         }
@@ -606,7 +687,9 @@ namespace gView.Framework.Geometry
         public double Distance2(IPoint p)
         {
             if (p == null)
+            {
                 return double.MaxValue;
+            }
 
             return (p.X - m_x) * (p.X - m_x) + (p.Y - m_y) * (p.Y - m_y);
         }
@@ -619,8 +702,15 @@ namespace gView.Framework.Geometry
         {
             w.Write(m_x);
             w.Write(m_y);
-            if (geomDef.HasZ) w.Write(m_z);
-            if (geomDef.HasM) w.Write(m_m);
+            if (geomDef.HasZ)
+            {
+                w.Write(m_z);
+            }
+
+            if (geomDef.HasM)
+            {
+                w.Write(m_m);
+            }
         }
         /// <summary>
         /// For the internal use of the framework
@@ -630,8 +720,15 @@ namespace gView.Framework.Geometry
         {
             m_x = r.ReadDouble();
             m_y = r.ReadDouble();
-            if (geomDef.HasZ) m_z = r.ReadDouble();
-            if (geomDef.HasM) m_m = r.ReadDouble();
+            if (geomDef.HasZ)
+            {
+                m_z = r.ReadDouble();
+            }
+
+            if (geomDef.HasM)
+            {
+                m_m = r.ReadDouble();
+            }
         }
         #endregion
 
@@ -767,7 +864,11 @@ namespace gView.Framework.Geometry
             m_points = new List<IPoint>();
             foreach (IPoint point in points)
             {
-                if (point == null) continue;
+                if (point == null)
+                {
+                    continue;
+                }
+
                 m_points.Add(new Point(point.X, point.Y));
             }
         }
@@ -779,19 +880,30 @@ namespace gView.Framework.Geometry
         {
             m_points = new List<IPoint>();
             if (xy == null)
+            {
                 return;
+            }
 
             for (int i = 0; i < xy.Length - 1; i += 2)
+            {
                 m_points.Add(new Point(xy[i], xy[i + 1]));
+            }
         }
         public PointCollection(IPointCollection pColl)
         {
-            if (pColl == null) return;
+            if (pColl == null)
+            {
+                return;
+            }
 
             m_points = new List<IPoint>();
             for (int i = 0; i < pColl.PointCount; i++)
             {
-                if (pColl[i] == null) continue;
+                if (pColl[i] == null)
+                {
+                    continue;
+                }
+
                 m_points.Add(new Point(pColl[i].X, pColl[i].Y, pColl[i].Z));
             }
         }
@@ -893,19 +1005,33 @@ namespace gView.Framework.Geometry
         public void InsertPoint(IPoint point, int pos)
         {
             _cacheEnv = null;
-            if (pos > m_points.Count) pos = m_points.Count;
-            if (pos < 0) pos = 0;
+            if (pos > m_points.Count)
+            {
+                pos = m_points.Count;
+            }
+
+            if (pos < 0)
+            {
+                pos = 0;
+            }
+
             m_points.Insert(pos, point);
         }
 
         public void AddPoints(IPointCollection pColl)
         {
             if (pColl == null)
-                return;
-
-            for (int i = 0,to=pColl.PointCount; i < to; i++)
             {
-                if (pColl[i] == null) continue;
+                return;
+            }
+
+            for (int i = 0, to = pColl.PointCount; i < to; i++)
+            {
+                if (pColl[i] == null)
+                {
+                    continue;
+                }
+
                 m_points.Add(pColl[i]);
             }
 
@@ -919,7 +1045,11 @@ namespace gView.Framework.Geometry
         public void RemovePoint(int pos)
         {
             _cacheEnv = null;
-            if (pos < 0 || pos >= m_points.Count) return;
+            if (pos < 0 || pos >= m_points.Count)
+            {
+                return;
+            }
+
             m_points.RemoveAt(pos);
         }
 
@@ -947,7 +1077,11 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                if (pointIndex < 0 || pointIndex >= m_points.Count) return null;
+                if (pointIndex < 0 || pointIndex >= m_points.Count)
+                {
+                    return null;
+                }
+
                 return (IPoint)m_points[pointIndex];
             }
         }
@@ -960,9 +1094,14 @@ namespace gView.Framework.Geometry
             get
             {
                 if (_cacheEnv != null)
+                {
                     return _cacheEnv;
+                }
 
-                if (PointCount == 0) return null;
+                if (PointCount == 0)
+                {
+                    return null;
+                }
 
                 bool first = true;
                 double minx = 0, miny = 0, maxx = 0, maxy = 0;
@@ -1026,16 +1165,16 @@ namespace gView.Framework.Geometry
         {
             m_points.Clear();
             int points = r.ReadInt32();
-            
+
             //if (points >= 0)
             //{
 
-                for (int i = 0; i < points; i++)
-                {
-                    Point p = new Point();
-                    p.Deserialize(r, geomDef);
-                    m_points.Add(p);
-                }
+            for (int i = 0; i < points; i++)
+            {
+                Point p = new Point();
+                p.Deserialize(r, geomDef);
+                m_points.Add(p);
+            }
 
             //}
             //else
@@ -1068,17 +1207,26 @@ namespace gView.Framework.Geometry
         }
         public bool Equals(object obj, double epsi)
         {
-            if (!(obj is IPointCollection)) return false;
+            if (!(obj is IPointCollection))
+            {
+                return false;
+            }
 
             IPointCollection pColl = (IPointCollection)obj;
-            if (pColl.PointCount != this.PointCount) return false;
+            if (pColl.PointCount != this.PointCount)
+            {
+                return false;
+            }
 
             for (int i = 0; i < this.PointCount; i++)
             {
                 IPoint p1 = this[i];
                 IPoint p2 = pColl[i];
 
-                if (!p1.Equals(p2, epsi)) return false;
+                if (!p1.Equals(p2, epsi))
+                {
+                    return false;
+                }
             }
 
             return true;
@@ -1150,13 +1298,21 @@ namespace gView.Framework.Geometry
 
         public IPolygon Buffer(double distance)
         {
-            if (distance <= 0.0) return null;
+            if (distance <= 0.0)
+            {
+                return null;
+            }
+
             List<IPolygon> polygons = new List<IPolygon>();
 
             for (int i = 0; i < this.PointCount; i++)
             {
                 IPolygon buffer = gView.Framework.SpatialAlgorithms.Algorithm.PointBuffer(this[i], distance);
-                if (buffer == null) continue;
+                if (buffer == null)
+                {
+                    continue;
+                }
+
                 polygons.Add(buffer);
             }
             //return gView.Framework.SpatialAlgorithms.Algorithm.MergePolygons(polygons);
@@ -1243,7 +1399,10 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                if (m_points.Count < 2) return 0.0;
+                if (m_points.Count < 2)
+                {
+                    return 0.0;
+                }
 
                 double len = 0.0;
                 for (int i = 1; i < m_points.Count; i++)
@@ -1258,13 +1417,19 @@ namespace gView.Framework.Geometry
 
         public void ClosePath()
         {
-            if (this.PointCount < 3) return;
+            if (this.PointCount < 3)
+            {
+                return;
+            }
 
             IPoint ps = this[0];
             IPoint pe = this[this.PointCount - 1];
 
             if (ps == null || pe == null ||
-                ps.Equals(pe, 1e-10)) return;
+                ps.Equals(pe, 1e-10))
+            {
+                return;
+            }
 
             this.AddPoint(new Point(ps));
         }
@@ -1277,7 +1442,9 @@ namespace gView.Framework.Geometry
         {
             Path trim = new Path();
             if (m_points.Count == 0)
+            {
                 return trim;
+            }
 
             IPoint prePoint = new Point(m_points[0]);
             trim.AddPoint(prePoint);
@@ -1320,9 +1487,15 @@ namespace gView.Framework.Geometry
 
         public void Close()
         {
-            if (m_points.Count < 3) return;
+            if (m_points.Count < 3)
+            {
+                return;
+            }
+
             if (!m_points[0].Equals(m_points[m_points.Count - 1]))
+            {
                 m_points.Add(new Point(m_points[0]));
+            }
         }
     }
 
@@ -1381,7 +1554,11 @@ namespace gView.Framework.Geometry
 			            F+=0.5*shape_vertexX[i]*(y1-y2);	
 		        }
                  * */
-                if (PointCount < 3) return 0.0;
+                if (PointCount < 3)
+                {
+                    return 0.0;
+                }
+
                 int max = PointCount;
 
                 double A = 0.0;
@@ -1400,7 +1577,10 @@ namespace gView.Framework.Geometry
             get
             {
                 double cx = 0, cy = 0, A = RealArea;
-                if (A == 0.0) return null;
+                if (A == 0.0)
+                {
+                    return null;
+                }
 
                 int to = PointCount;
                 if (this[0].X != this[to - 1].X ||
@@ -1474,19 +1654,27 @@ namespace gView.Framework.Geometry
                 foreach (Path path in paths)
                 {
                     if (path != null)
+                    {
                         _paths.Add(path);
+                    }
                 }
             }
         }
         public Polyline(IPolygon polygon)
             : this()
         {
-            if (polygon == null) return;
+            if (polygon == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < polygon.RingCount; i++)
             {
                 IRing ring = polygon[i];
-                if (ring == null) continue;
+                if (ring == null)
+                {
+                    continue;
+                }
 
                 Path path = new Path(ring);
                 path.Close();
@@ -1502,7 +1690,10 @@ namespace gView.Framework.Geometry
         /// <param name="path"></param>
         public void AddPath(IPath path)
         {
-            if (path == null) return;
+            if (path == null)
+            {
+                return;
+            }
 
             _paths.Add(path);
         }
@@ -1514,10 +1705,21 @@ namespace gView.Framework.Geometry
         /// <param name="pos"></param>
         public void InsertPath(IPath path, int pos)
         {
-            if (path == null) return;
+            if (path == null)
+            {
+                return;
+            }
 
-            if (pos > _paths.Count) pos = _paths.Count;
-            if (pos < 0) pos = 0;
+            if (pos > _paths.Count)
+            {
+                pos = _paths.Count;
+            }
+
+            if (pos < 0)
+            {
+                pos = 0;
+            }
+
             _paths.Insert(pos, path);
         }
 
@@ -1527,7 +1729,11 @@ namespace gView.Framework.Geometry
         /// <param name="pos"></param>
         public void RemovePath(int pos)
         {
-            if (pos < 0 || pos >= _paths.Count) return;
+            if (pos < 0 || pos >= _paths.Count)
+            {
+                return;
+            }
+
             _paths.RemoveAt(pos);
         }
 
@@ -1549,7 +1755,11 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                if (pathIndex < 0 || pathIndex >= _paths.Count) return null;
+                if (pathIndex < 0 || pathIndex >= _paths.Count)
+                {
+                    return null;
+                }
+
                 return (IPath)_paths[pathIndex];
             }
         }
@@ -1559,13 +1769,17 @@ namespace gView.Framework.Geometry
             get
             {
                 if (_paths == null || _paths.Count == 0)
+                {
                     return 0D;
+                }
 
                 double len = 0D;
-                foreach(var path in _paths)
+                foreach (var path in _paths)
                 {
                     if (path != null)
+                    {
                         len += path.Length;
+                    }
                 }
 
                 return len;
@@ -1595,7 +1809,10 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                if (PathCount == 0) return null;
+                if (PathCount == 0)
+                {
+                    return null;
+                }
 
                 IEnvelope env = this[0].Envelope;
                 for (int i = 1; i < PathCount; i++)
@@ -1640,7 +1857,11 @@ namespace gView.Framework.Geometry
 
         private void CopyGeometry(IPolyline polyline)
         {
-            if (polyline == null) return;
+            if (polyline == null)
+            {
+                return;
+            }
+
             _paths.Clear();
 
             for (int i = 0; i < polyline.PathCount; i++)
@@ -1687,7 +1908,11 @@ namespace gView.Framework.Geometry
         public void Clip(IEnvelope clipper, out IGeometry result)
         {
             IGeometry polyline = gView.Framework.SpatialAlgorithms.Clip.PerformClip(clipper, this);
-            if (!(polyline is IPolyline)) polyline = null;
+            if (!(polyline is IPolyline))
+            {
+                polyline = null;
+            }
+
             result = polyline;
         }
 
@@ -1720,7 +1945,11 @@ namespace gView.Framework.Geometry
             Polyline pLine = new Polyline();
             foreach (IPath path in _paths)
             {
-                if (path == null) continue;
+                if (path == null)
+                {
+                    continue;
+                }
+
                 pLine.AddPath(path.Clone() as IPath);
             }
             return pLine;
@@ -1737,14 +1966,20 @@ namespace gView.Framework.Geometry
             if (obj is IPolyline)
             {
                 IPolyline polyline = (IPolyline)obj;
-                if (polyline.PathCount != this.PathCount) return false;
+                if (polyline.PathCount != this.PathCount)
+                {
+                    return false;
+                }
 
                 for (int i = 0; i < this.PathCount; i++)
                 {
                     IPath p1 = this[i];
                     IPath p2 = polyline[i];
 
-                    if (!p1.Equals(p2, epsi)) return false;
+                    if (!p1.Equals(p2, epsi))
+                    {
+                        return false;
+                    }
                 }
 
                 return true;
@@ -1788,11 +2023,18 @@ namespace gView.Framework.Geometry
         public Polygon(IPolygon polygon)
             : this()
         {
-            if (polygon == null) return;
+            if (polygon == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < polygon.RingCount; i++)
             {
-                if (polygon[i] == null) continue;
+                if (polygon[i] == null)
+                {
+                    continue;
+                }
+
                 this.AddRing(new Ring(polygon[i]));
             }
         }
@@ -1804,7 +2046,11 @@ namespace gView.Framework.Geometry
         /// <param name="ring"></param>
         public void AddRing(IRing ring)
         {
-            if (ring == null) return;
+            if (ring == null)
+            {
+                return;
+            }
+
             _rings.Add(ring);
 
             _ringsChecked = -1;
@@ -1817,9 +2063,21 @@ namespace gView.Framework.Geometry
         /// <param name="pos"></param>
         public void InsertRing(IRing ring, int pos)
         {
-            if (ring == null) return;
-            if (pos > _rings.Count) pos = _rings.Count;
-            if (pos < 0) pos = 0;
+            if (ring == null)
+            {
+                return;
+            }
+
+            if (pos > _rings.Count)
+            {
+                pos = _rings.Count;
+            }
+
+            if (pos < 0)
+            {
+                pos = 0;
+            }
+
             _rings.Insert(pos, ring);
         }
 
@@ -1829,7 +2087,11 @@ namespace gView.Framework.Geometry
         /// <param name="pos"></param>
         public void RemoveRing(int pos)
         {
-            if (pos < 0 || pos >= _rings.Count) return;
+            if (pos < 0 || pos >= _rings.Count)
+            {
+                return;
+            }
+
             _rings.RemoveAt(pos);
         }
 
@@ -1851,7 +2113,11 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                if (ringIndex < 0 || ringIndex >= _rings.Count) return null;
+                if (ringIndex < 0 || ringIndex >= _rings.Count)
+                {
+                    return null;
+                }
+
                 return (IRing)_rings[ringIndex];
             }
         }
@@ -1870,15 +2136,19 @@ namespace gView.Framework.Geometry
                 {
                     double a = this[i].Area;
                     if (this[i] is IHole)
+                    {
                         A -= a;
+                    }
                     else
+                    {
                         A += a;
+                    }
                 }
                 return A;
             }
         }
 
-        
+
 
         #endregion
 
@@ -1902,7 +2172,10 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                if (RingCount == 0) return null;
+                if (RingCount == 0)
+                {
+                    return null;
+                }
 
                 IEnvelope env = this[0].Envelope;
                 for (int i = 1; i < RingCount; i++)
@@ -1951,7 +2224,11 @@ namespace gView.Framework.Geometry
         //
         private void CopyGeometry(IPolygon polygon)
         {
-            if (polygon == null) return;
+            if (polygon == null)
+            {
+                return;
+            }
+
             _rings.Clear();
 
             for (int i = 0; i < polygon.RingCount; i++)
@@ -1970,7 +2247,10 @@ namespace gView.Framework.Geometry
         }
         public void VerifyHoles()
         {
-            if (_ringsChecked == _rings.Count) return;
+            if (_ringsChecked == _rings.Count)
+            {
+                return;
+            }
 
             if (_rings.Count == 0 || _rings.Count == 1)
             {
@@ -1995,16 +2275,24 @@ namespace gView.Framework.Geometry
                 if (!hole)
                 {
                     if (ring is IHole)
+                    {
                         _rings.Add(new Ring(ring));
+                    }
                     else
+                    {
                         _rings.Add(ring);
+                    }
                 }
                 else
                 {
                     if (ring is IHole)
+                    {
                         _rings.Add(ring);
+                    }
                     else
+                    {
                         _rings.Add(new Hole(ring));
+                    }
                 }
             }
 
@@ -2021,7 +2309,11 @@ namespace gView.Framework.Geometry
                 for (int i = 0; i < this.RingCount; i++)
                 {
                     IRing r = this[i];
-                    if (r == null || r is IHole) continue;
+                    if (r == null || r is IHole)
+                    {
+                        continue;
+                    }
+
                     counter++;
                 }
                 return counter;
@@ -2037,7 +2329,11 @@ namespace gView.Framework.Geometry
                 for (int i = 0; i < this.RingCount; i++)
                 {
                     IRing r = this[i];
-                    if (r == null || !(r is IHole)) continue;
+                    if (r == null || !(r is IHole))
+                    {
+                        continue;
+                    }
+
                     counter++;
                 }
                 return counter;
@@ -2051,7 +2347,10 @@ namespace gView.Framework.Geometry
             double area = 0.0;
             foreach (IRing ring in _rings)
             {
-                if (ring == null) continue;
+                if (ring == null)
+                {
+                    continue;
+                }
 
                 if (ring is IHole)
                 {
@@ -2104,7 +2403,7 @@ namespace gView.Framework.Geometry
 
         public void Union(IGeometry geometry)
         {
-            if(geometry is IPolygon)
+            if (geometry is IPolygon)
             {
                 CopyGeometry(new List<IPolygon>(new IPolygon[] { this, (IPolygon)geometry }).Merge());
             }
@@ -2114,7 +2413,11 @@ namespace gView.Framework.Geometry
         {
             VerifyHoles();
             IGeometry polygon = gView.Framework.SpatialAlgorithms.Clip.PerformClip(clipper, this);
-            if (!(polygon is IPolygon)) polygon = null;
+            if (!(polygon is IPolygon))
+            {
+                polygon = null;
+            }
+
             result = polygon;
         }
 
@@ -2122,7 +2425,11 @@ namespace gView.Framework.Geometry
         {
             VerifyHoles();
             IGeometry polygon = gView.Framework.SpatialAlgorithms.Clip.PerformClip(geometry, this);
-            if (!(polygon is IPolygon)) polygon = null;
+            if (!(polygon is IPolygon))
+            {
+                polygon = null;
+            }
+
             result = polygon;
         }
 
@@ -2205,7 +2512,11 @@ namespace gView.Framework.Geometry
             Polygon poly = new Polygon();
             foreach (IRing ring in _rings)
             {
-                if (ring == null) continue;
+                if (ring == null)
+                {
+                    continue;
+                }
+
                 poly.AddRing(ring.Clone() as IRing);
             }
             return poly;
@@ -2222,14 +2533,20 @@ namespace gView.Framework.Geometry
             if (obj is IPolygon)
             {
                 IPolygon polygon = (IPolygon)obj;
-                if (polygon.RingCount != this.RingCount) return false;
+                if (polygon.RingCount != this.RingCount)
+                {
+                    return false;
+                }
 
                 for (int i = 0; i < this.RingCount; i++)
                 {
                     IRing r1 = this[i];
                     IRing r2 = polygon[i];
 
-                    if (!r1.Equals(r2, epsi)) return false;
+                    if (!r1.Equals(r2, epsi))
+                    {
+                        return false;
+                    }
                 }
 
                 return true;
@@ -2272,7 +2589,11 @@ namespace gView.Framework.Geometry
         /// <param name="geometry"></param>
         public void AddGeometry(IGeometry geometry)
         {
-            if (geometry == null) return;
+            if (geometry == null)
+            {
+                return;
+            }
+
             m_geoms.Add(geometry);
         }
 
@@ -2283,10 +2604,21 @@ namespace gView.Framework.Geometry
         /// <param name="pos"></param>
         public void InsertGeometry(IGeometry geometry, int pos)
         {
-            if (geometry == null) return;
+            if (geometry == null)
+            {
+                return;
+            }
 
-            if (pos > m_geoms.Count) pos = m_geoms.Count;
-            if (pos < 0) pos = 0;
+            if (pos > m_geoms.Count)
+            {
+                pos = m_geoms.Count;
+            }
+
+            if (pos < 0)
+            {
+                pos = 0;
+            }
+
             m_geoms.Insert(pos, geometry);
         }
 
@@ -2296,7 +2628,11 @@ namespace gView.Framework.Geometry
         /// <param name="pos"></param>
         public void RemoveGeometry(int pos)
         {
-            if (pos < 0 || pos >= m_geoms.Count) return;
+            if (pos < 0 || pos >= m_geoms.Count)
+            {
+                return;
+            }
+
             m_geoms.RemoveAt(pos);
         }
 
@@ -2318,7 +2654,11 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                if (geometryIndex < 0 || geometryIndex >= m_geoms.Count) return null;
+                if (geometryIndex < 0 || geometryIndex >= m_geoms.Count)
+                {
+                    return null;
+                }
+
                 return (IGeometry)m_geoms[geometryIndex];
             }
         }
@@ -2339,14 +2679,20 @@ namespace gView.Framework.Geometry
                     {
                         for (int i = 0; i < ((IMultiPoint)geom).PointCount; i++)
                         {
-                            if (((IMultiPoint)geom)[i] == null) continue;
+                            if (((IMultiPoint)geom)[i] == null)
+                            {
+                                continue;
+                            }
+
                             points.Add(((IMultiPoint)geom)[i]);
                         }
                     }
                     else if (geom is IAggregateGeometry)
                     {
                         foreach (IPoint point in ((IAggregateGeometry)geom).PointGeometries)
+                        {
                             points.Add(point);
+                        }
                     }
                 }
                 return points;
@@ -2360,7 +2706,9 @@ namespace gView.Framework.Geometry
                 MultiPoint mPoint = new MultiPoint();
 
                 foreach (IPoint point in this.PointGeometries)
+                {
                     mPoint.AddPoint(point);
+                }
 
                 return mPoint;
             }
@@ -2374,11 +2722,15 @@ namespace gView.Framework.Geometry
                 foreach (IGeometry geom in m_geoms)
                 {
                     if (geom is IPolyline)
+                    {
                         polylines.Add(geom as IPolyline);
+                    }
                     else if (geom is IAggregateGeometry)
                     {
                         foreach (IPolyline polyline in ((IAggregateGeometry)geom).PolylineGeometries)
+                        {
                             polylines.Add(polyline);
+                        }
                     }
                 }
                 return polylines;
@@ -2390,14 +2742,21 @@ namespace gView.Framework.Geometry
             get
             {
                 List<IPolyline> polylines = this.PolylineGeometries;
-                if (polylines == null || polylines.Count == 0) return null;
+                if (polylines == null || polylines.Count == 0)
+                {
+                    return null;
+                }
 
                 Polyline mPolyline = new Polyline();
                 foreach (IPolyline polyline in polylines)
                 {
                     for (int i = 0; i < polyline.PathCount; i++)
                     {
-                        if (polyline[i] == null) continue;
+                        if (polyline[i] == null)
+                        {
+                            continue;
+                        }
+
                         mPolyline.AddPath(polyline[i]);
                     }
                 }
@@ -2414,11 +2773,15 @@ namespace gView.Framework.Geometry
                 foreach (IGeometry geom in m_geoms)
                 {
                     if (geom is IPolygon)
+                    {
                         polygons.Add(geom as IPolygon);
+                    }
                     else if (geom is IAggregateGeometry)
                     {
                         foreach (IPolygon polygon in ((IAggregateGeometry)geom).PolygonGeometries)
+                        {
                             polygons.Add(polygon);
+                        }
                     }
                 }
                 return polygons;
@@ -2429,7 +2792,10 @@ namespace gView.Framework.Geometry
             get
             {
                 List<IPolygon> polygons = this.PolygonGeometries;
-                if (polygons == null || polygons.Count == 0) return null;
+                if (polygons == null || polygons.Count == 0)
+                {
+                    return null;
+                }
 
                 return SpatialAlgorithms.Algorithm.MergePolygons(polygons);
             }
@@ -2456,7 +2822,10 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                if (GeometryCount == 0) return null;
+                if (GeometryCount == 0)
+                {
+                    return null;
+                }
 
                 IEnvelope env = this[0].Envelope;
                 for (int i = 1; i < GeometryCount; i++)
@@ -2520,7 +2889,9 @@ namespace gView.Framework.Geometry
                     m_geoms.Add(geom);
                 }
                 else
+                {
                     break;
+                }
             }
         }
 
@@ -2536,7 +2907,11 @@ namespace gView.Framework.Geometry
             AggregateGeometry aggregate = new AggregateGeometry();
             foreach (IGeometry geom in m_geoms)
             {
-                if (geom == null) continue;
+                if (geom == null)
+                {
+                    continue;
+                }
+
                 aggregate.AddGeometry(geom.Clone() as IGeometry);
             }
             return aggregate;
@@ -2554,14 +2929,29 @@ namespace gView.Framework.Geometry
 
             List<IPolygon> polygons = new List<IPolygon>();
             if (mPoint != null)
+            {
                 polygons.Add(((ITopologicalOperation)mPoint).Buffer(distance));
-            if (mPolyline != null)
-                polygons.Add(((ITopologicalOperation)mPolyline).Buffer(distance));
-            if (mPolygon != null)
-                polygons.Add(((ITopologicalOperation)mPolygon).Buffer(distance));
+            }
 
-            if (polygons.Count == 0) return null;
-            if (polygons.Count == 1) return polygons[0];
+            if (mPolyline != null)
+            {
+                polygons.Add(((ITopologicalOperation)mPolyline).Buffer(distance));
+            }
+
+            if (mPolygon != null)
+            {
+                polygons.Add(((ITopologicalOperation)mPolygon).Buffer(distance));
+            }
+
+            if (polygons.Count == 0)
+            {
+                return null;
+            }
+
+            if (polygons.Count == 1)
+            {
+                return polygons[0];
+            }
 
             return SpatialAlgorithms.Algorithm.MergePolygons(polygons);
         }
@@ -2627,14 +3017,20 @@ namespace gView.Framework.Geometry
             if (obj is IAggregateGeometry)
             {
                 IAggregateGeometry aGeometry = (IAggregateGeometry)obj;
-                if (aGeometry.GeometryCount != this.GeometryCount) return false;
+                if (aGeometry.GeometryCount != this.GeometryCount)
+                {
+                    return false;
+                }
 
                 for (int i = 0; i < this.GeometryCount; i++)
                 {
                     IGeometry g1 = this[i];
                     IGeometry g2 = aGeometry[i];
 
-                    if (!g1.Equals(g2, epsi)) return false;
+                    if (!g1.Equals(g2, epsi))
+                    {
+                        return false;
+                    }
                 }
 
                 return true;
@@ -2678,7 +3074,7 @@ namespace gView.Framework.Geometry
         //static private object lockThis = new object();
 
         private CoordinateReferenceSystemFactory _factory = new CoordinateReferenceSystemFactory();
-        private ISpatialReference _fromSRef=null, _toSRef=null;
+        private ISpatialReference _fromSRef = null, _toSRef = null;
 
         #region IGeometricTransformer Member
 
@@ -2745,8 +3141,15 @@ namespace gView.Framework.Geometry
 
         private string[] allParameters(ISpatialReference sRef)
         {
-            if (sRef == null) return "".Split();
-            if (sRef.Datum == null) return sRef.Parameters;
+            if (sRef == null)
+            {
+                return "".Split();
+            }
+
+            if (sRef.Datum == null)
+            {
+                return sRef.Parameters;
+            }
 
             string parameters = "";
             foreach (string param in sRef.Parameters)
@@ -2759,17 +3162,28 @@ namespace gView.Framework.Geometry
         }
         private string allParametersString(ISpatialReference sRef)
         {
-            if (sRef == null) return String.Empty;
+            if (sRef == null)
+            {
+                return String.Empty;
+            }
 
             StringBuilder sb = new StringBuilder();
             foreach (string param in sRef.Parameters)
             {
-                if (sb.Length > 0) sb.Append(" ");
+                if (sb.Length > 0)
+                {
+                    sb.Append(" ");
+                }
+
                 sb.Append(param.Trim());
             }
             if (sRef.Datum != null && !String.IsNullOrEmpty(sRef.Datum.Parameter))
             {
-                if (sb.Length > 0) sb.Append(" ");
+                if (sb.Length > 0)
+                {
+                    sb.Append(" ");
+                }
+
                 sb.Append(sRef.Datum.Parameter);
             }
             return sb.ToString();
@@ -2779,7 +3193,9 @@ namespace gView.Framework.Geometry
             foreach (string param in sRef.Parameters)
             {
                 if (param == p)
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -2795,18 +3211,27 @@ namespace gView.Framework.Geometry
 
         private object Transform2D_(object geometry, CoordinateReferenceSystem from, CoordinateReferenceSystem to, bool fromProjective, bool toProjektive)
         {
-            if (geometry == null) return null;
+            if (geometry == null)
+            {
+                return null;
+            }
 
-            if (from == null || to == null) return geometry;
+            if (from == null || to == null)
+            {
+                return geometry;
+            }
 
             if (geometry is PointCollection)
             {
                 IPointCollection pColl = (IPointCollection)geometry;
                 int pointCount = pColl.PointCount;
-                if (pointCount == 0) return geometry;
+                if (pointCount == 0)
+                {
+                    return geometry;
+                }
 
                 IPointCollection target = null;
-                
+
                 var projectionPipeline = ProjectionPipeline(from, to);
 
                 for (int p = 0, p_to = projectionPipeline.Length; p < p_to - 1; p++)
@@ -2814,13 +3239,21 @@ namespace gView.Framework.Geometry
                     BasicCoordinateTransform t = new BasicCoordinateTransform(projectionPipeline[p], projectionPipeline[p + 1]);
 
                     if (pColl is IRing)
+                    {
                         target = new Ring();
+                    }
                     else if (pColl is IPath)
+                    {
                         target = new Path();
+                    }
                     else if (pColl is IMultiPoint)
+                    {
                         target = new MultiPoint();
+                    }
                     else
+                    {
                         target = new PointCollection();
+                    }
 
                     for (int i = 0; i < pointCount; i++)
                     {
@@ -2915,12 +3348,16 @@ namespace gView.Framework.Geometry
         private bool IsEqual(CoordinateReferenceSystem c1, CoordinateReferenceSystem c2)
         {
             if (c1.Parameters.Length != c2.Parameters.Length)
+            {
                 return false;
+            }
 
             foreach (var p in c1.Parameters)
             {
                 if (!c2.Parameters.Contains(p))
+                {
                     return false;
+                }
             }
 
             return true;
@@ -2928,7 +3365,10 @@ namespace gView.Framework.Geometry
 
         private void ToDeg(double[] x, double[] y)
         {
-            if (x.Length != y.Length) return;
+            if (x.Length != y.Length)
+            {
+                return;
+            }
 
             for (int i = 0; i < x.Length; i++)
             {
@@ -2943,7 +3383,9 @@ namespace gView.Framework.Geometry
             {
                 double* b = (double*)buffer;
                 for (int i = 0; i < count; i++)
+                {
                     b[i] = b[i] * RAD2DEG;
+                }
             }
         }
 
@@ -2975,16 +3417,22 @@ namespace gView.Framework.Geometry
 
         public void Release()
         {
-            
+
         }
 
         #endregion
 
         static public IGeometry Transform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to)
         {
-            if (geometry == null) return null;
+            if (geometry == null)
+            {
+                return null;
+            }
 
-            if (from == null || to == null || from.Equals(to)) return geometry;
+            if (from == null || to == null || from.Equals(to))
+            {
+                return geometry;
+            }
 
             using (GeometricTransformer transformer = new GeometricTransformer())
             {
@@ -3089,35 +3537,58 @@ namespace gView.Framework.Geometry
         static public void VerifyGeometryType(IGeometry geometry, IGeometryDef geoDef)
         {
             if (geoDef == null)
+            {
                 throw new ArgumentException("VerifyGeometryType - IGeometryDef Argument is null!");
+            }
+
             if (geometry == null)
+            {
                 throw new ArgumentException("VerifyGeometryType - IGeometry Argument is null!");
+            }
 
             switch (geoDef.GeometryType)
             {
                 case geometryType.Envelope:
                     if (geometry is IEnvelope)
+                    {
                         return;
+                    }
+
                     break;
                 case geometryType.Point:
                     if (geometry is IPoint)
+                    {
                         return;
+                    }
+
                     break;
                 case geometryType.Multipoint:
                     if (geometry is IMultiPoint)
+                    {
                         return;
+                    }
+
                     break;
                 case geometryType.Polyline:
                     if (geometry is IPolyline)
+                    {
                         return;
+                    }
+
                     break;
                 case geometryType.Polygon:
                     if (geometry is IPolygon)
+                    {
                         return;
+                    }
+
                     break;
                 case geometryType.Aggregate:
                     if (geometry is IAggregateGeometry)
+                    {
                         return;
+                    }
+
                     break;
             }
 

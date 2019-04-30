@@ -1,20 +1,19 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
-using System.Text;
-using System.IO;
-using gView.Framework.Carto;
+using gView.Framework.Carto.UI;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Framework.Symbology;
 using gView.Framework.IO;
+using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.Framework.UI;
-using gView.Framework.Carto.UI;
-using System.Threading.Tasks;
+using System;
+using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Carto
 {
@@ -133,7 +132,10 @@ namespace gView.Framework.Carto
                     if (element.Class is IWebServiceClass)
                     {
                         IWebServiceClass wClass = ((IWebServiceClass)element.Class).Clone() as IWebServiceClass;
-                        if (wClass == null) continue;
+                        if (wClass == null)
+                        {
+                            continue;
+                        }
 
                         layer = LayerFactory.Create(wClass, element as ILayer);
                         layer.ID = _layerIDSequece.Number;
@@ -146,7 +148,9 @@ namespace gView.Framework.Carto
                         }
 
                         if (writeNamespace)
+                        {
                             layer.Namespace = map.Name;
+                        }
 
                         AddLayer(layer);
 
@@ -154,7 +158,9 @@ namespace gView.Framework.Carto
                         {
                             theme.ID = _layerIDSequece.Number;
                             if (writeNamespace)
+                            {
                                 theme.Namespace = map.Name;
+                            }
                         }
                     }
                     else
@@ -166,7 +172,9 @@ namespace gView.Framework.Carto
                             layer.DatasetID = element.DatasetID;
                         }
                         else
+                        {
                             layer = LayerFactory.Create(element.Class, element as ILayer);
+                        }
 
                         layer.ID = _layerIDSequece.Number;
 
@@ -180,16 +188,23 @@ namespace gView.Framework.Carto
 
 
                         if (writeNamespace)
+                        {
                             layer.Namespace = map.Name;
-
+                        }
 
                         AddLayer(layer);
 
                         if (layer is IGroupLayer && element is IGroupLayer)
+                        {
                             groupLayers.Add(element as IGroupLayer, layer as IGroupLayer);
+                        }
                     }
 
-                    if (layer == null) continue;
+                    if (layer == null)
+                    {
+                        continue;
+                    }
+
                     ITOCElement newTocElement = _toc.GetTOCElement(layer);
                     ITOCElement oriTocElement = map.TOC.GetTOCElement(element as ILayer);
                     if (newTocElement != null && oriTocElement != null)
@@ -255,7 +270,9 @@ namespace gView.Framework.Carto
                 {
                     m_name = value;
                     if (MapRenamed != null)
+                    {
                         MapRenamed(this, new EventArgs());
+                    }
                 }
             }
         }
@@ -287,9 +304,13 @@ namespace gView.Framework.Carto
                     sender.StartTime, sender.FinishTime));
             }
             if (succeeded)
+            {
                 m_imageMerger.Add(image, order);
+            }
             else
+            {
                 m_imageMerger.max--;
+            }
         }
 
         internal bool DisposeImage()
@@ -305,7 +326,11 @@ namespace gView.Framework.Carto
                         _graphics = null;
                     }
                 }
-                if (NewBitmap != null) NewBitmap(null);
+                if (NewBitmap != null)
+                {
+                    NewBitmap(null);
+                }
+
                 _image.Dispose();
                 _image = null;
                 DisposeStreams();
@@ -327,7 +352,11 @@ namespace gView.Framework.Carto
         }
         public bool DisposeGraphics()
         {
-            if (_graphics == null) return true;
+            if (_graphics == null)
+            {
+                return true;
+            }
+
             lock (_graphics)
             {
                 _graphics.Dispose();
@@ -346,7 +375,11 @@ namespace gView.Framework.Carto
             while (this[m_datasetNr] != null)
             {
                 IDataset dataset = this[m_datasetNr];
-                if (!(dataset is IFeatureDataset)) continue;
+                if (!(dataset is IFeatureDataset))
+                {
+                    continue;
+                }
+
                 IFeatureDataset fDataset = (IFeatureDataset)dataset;
 
                 for (int i = m_layerNr; i < (await fDataset.Elements()).Count; i++)
@@ -355,7 +388,10 @@ namespace gView.Framework.Carto
                     IDatasetElement layer = (IDatasetElement)(await fDataset.Elements())[i];
                     string name = layer.Title;
 
-                    if (layername == name) return layer;
+                    if (layername == name)
+                    {
+                        return layer;
+                    }
                 }
                 m_layerNr = 0;
                 m_datasetNr++;
@@ -373,17 +409,41 @@ namespace gView.Framework.Carto
             List<IFeatureLayer> labelLayers = new List<IFeatureLayer>();
             foreach (ILayer layer in layers)
             {
-                if (!(layer is IFeatureLayer)) continue;
+                if (!(layer is IFeatureLayer))
+                {
+                    continue;
+                }
 
-                if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale) continue;
-                if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale) continue;
+                if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale)
+                {
+                    continue;
+                }
 
-                if (layer.MinimumLabelScale > 1 && layer.MinimumLabelScale > this.mapScale) continue;
-                if (layer.MaximumLabelScale > 1 && layer.MaximumLabelScale < this.mapScale) continue;
+                if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale)
+                {
+                    continue;
+                }
+
+                if (layer.MinimumLabelScale > 1 && layer.MinimumLabelScale > this.mapScale)
+                {
+                    continue;
+                }
+
+                if (layer.MaximumLabelScale > 1 && layer.MaximumLabelScale < this.mapScale)
+                {
+                    continue;
+                }
 
                 IFeatureLayer fLayer = (IFeatureLayer)layer;
-                if (fLayer.LabelRenderer == null) continue;
-                if (fLayer.LabelRenderer.RenderMode == LabelRenderMode.RenderWithFeature) continue;
+                if (fLayer.LabelRenderer == null)
+                {
+                    continue;
+                }
+
+                if (fLayer.LabelRenderer.RenderMode == LabelRenderMode.RenderWithFeature)
+                {
+                    continue;
+                }
 
                 labelLayers.Add(fLayer);
             }
@@ -399,16 +459,27 @@ namespace gView.Framework.Carto
 
             public int Compare(IFeatureLayer x, IFeatureLayer y)
             {
-                if (x == null || y == null || x == y) return 0;
+                if (x == null || y == null || x == y)
+                {
+                    return 0;
+                }
 
                 IPriority p1 = x.LabelRenderer as IPriority;
                 IPriority p2 = y.LabelRenderer as IPriority;
-                if (p1 == null || p2 == null) return 0;
+                if (p1 == null || p2 == null)
+                {
+                    return 0;
+                }
 
                 if (p1.Priority < p2.Priority)
+                {
                     return -1;
+                }
                 else if (p1.Priority > p2.Priority)
+                {
                     return 1;
+                }
+
                 return 0;
             }
 
@@ -438,7 +509,11 @@ namespace gView.Framework.Carto
         {
             get
             {
-                if (datasetIndex < 0 || datasetIndex >= _datasets.Count) return null;
+                if (datasetIndex < 0 || datasetIndex >= _datasets.Count)
+                {
+                    return null;
+                }
+
                 return (IDataset)_datasets[datasetIndex];
             }
         }
@@ -448,7 +523,9 @@ namespace gView.Framework.Carto
             get
             {
                 if (layer is ServiceFeatureLayer)
+                {
                     layer = ((ServiceFeatureLayer)layer).FeatureLayer;
+                }
 
                 foreach (ILayer element in _layers)
                 {
@@ -486,7 +563,9 @@ namespace gView.Framework.Carto
             get
             {
                 if (_datasets == null)
+                {
                     return new List<IDataset>();
+                }
 
                 return new List<IDataset>(_datasets);
             }
@@ -496,7 +575,9 @@ namespace gView.Framework.Carto
         {
             int index = _datasets.IndexOf(dataset);
             if (index == -1)
+            {
                 return;
+            }
 
             foreach (ILayer layer in ListOperations<ILayer>.Clone(_layers))
             {
@@ -517,7 +598,11 @@ namespace gView.Framework.Carto
         public void RemoveAllDatasets()
         {
             _datasets.Clear();
-            if (_toc != null) _toc.RemoveAllElements();
+            if (_toc != null)
+            {
+                _toc.RemoveAllElements();
+            }
+
             _layers.Clear();
         }
 
@@ -528,7 +613,11 @@ namespace gView.Framework.Carto
                 string names = "";
                 foreach (string activeLayerName in m_activeLayerNames)
                 {
-                    if (names != "") names += ";";
+                    if (names != "")
+                    {
+                        names += ";";
+                    }
+
                     names += activeLayerName;
                 }
                 return names;
@@ -538,7 +627,11 @@ namespace gView.Framework.Carto
                 m_activeLayerNames = new ArrayList();
                 foreach (string activeLayerName in value.Split(';'))
                 {
-                    if (m_activeLayerNames.IndexOf(activeLayerName) != -1) continue;
+                    if (m_activeLayerNames.IndexOf(activeLayerName) != -1)
+                    {
+                        continue;
+                    }
+
                     m_activeLayerNames.Add(activeLayerName);
                 }
             }
@@ -546,10 +639,15 @@ namespace gView.Framework.Carto
 
         public void SetNewLayerID(ILayer layer)
         {
-            if (layer == null) return;
+            if (layer == null)
+            {
+                return;
+            }
 
             while (LayerIDExists(layer.ID))
+            {
                 layer.ID = _layerIDSequece.Number;
+            }
         }
 
         public void AddLayer(ILayer layer)
@@ -558,16 +656,23 @@ namespace gView.Framework.Carto
         }
         public void AddLayer(ILayer layer, int pos)
         {
-            if (layer == null) return;
+            if (layer == null)
+            {
+                return;
+            }
 
             SetNewLayerID(layer);
 
             _layers.Add(layer);
 
             if (pos < 0)
+            {
                 _toc.AddLayer(layer, null);
+            }
             else
+            {
                 _toc.AddLayer(layer, null, pos);
+            }
 
             if (SpatialReference == null)
             {
@@ -615,7 +720,10 @@ namespace gView.Framework.Carto
                 if (parent != null)
                 {
                     TOCElement tocElement = _toc.GetTOCElement(layer) as TOCElement;
-                    if (tocElement != null) tocElement.ParentGroup = parent;
+                    if (tocElement != null)
+                    {
+                        tocElement.ParentGroup = parent;
+                    }
                 }
                 else if (layer is Layer)
                 {
@@ -624,8 +732,11 @@ namespace gView.Framework.Carto
             }
 
             CheckDatasetCopyright();
-            
-            if (LayerAdded != null) LayerAdded(this, layer);
+
+            if (LayerAdded != null)
+            {
+                LayerAdded(this, layer);
+            }
         }
 
         public void RemoveLayer(ILayer layer)
@@ -634,7 +745,11 @@ namespace gView.Framework.Carto
         }
         private void RemoveLayer(ILayer layer, bool removeUnusedDataset)
         {
-            if (layer == null) return;
+            if (layer == null)
+            {
+                return;
+            }
+
             IDataset layerDataset = this[layer];
 
             if (layer is IGroupLayer)
@@ -661,7 +776,10 @@ namespace gView.Framework.Carto
                 _toc.RemoveLayer(layer);
             }
 
-            if (LayerRemoved != null) LayerRemoved(this, layer);
+            if (LayerRemoved != null)
+            {
+                LayerRemoved(this, layer);
+            }
 
             if (removeUnusedDataset)
             {
@@ -732,9 +850,15 @@ namespace gView.Framework.Carto
         {
             foreach (IDatasetElement element in _layers)
             {
-                if (element == null) continue;
+                if (element == null)
+                {
+                    continue;
+                }
+
                 if (element.Class == cls)
+                {
                     return element;
+                }
             }
             return null;
         }
@@ -746,10 +870,16 @@ namespace gView.Framework.Carto
                 {
                     foreach (IWebServiceTheme theme in ((IWebServiceLayer)layer).WebServiceClass.Themes)
                     {
-                        if (!(theme is IFeatureSelection)) continue;
+                        if (!(theme is IFeatureSelection))
+                        {
+                            continue;
+                        }
 
                         ISelectionSet themeSelSet = ((IFeatureSelection)theme).SelectionSet;
-                        if (themeSelSet == null) continue;
+                        if (themeSelSet == null)
+                        {
+                            continue;
+                        }
 
                         if (themeSelSet.Count > 0)
                         {
@@ -759,10 +889,16 @@ namespace gView.Framework.Carto
                     }
                 }
 
-                if (!(layer is IFeatureSelection)) continue;
+                if (!(layer is IFeatureSelection))
+                {
+                    continue;
+                }
 
                 ISelectionSet selSet = ((IFeatureSelection)layer).SelectionSet;
-                if (selSet == null) continue;
+                if (selSet == null)
+                {
+                    continue;
+                }
 
                 if (selSet.Count > 0)
                 {
@@ -777,18 +913,27 @@ namespace gView.Framework.Carto
             _requestExceptions = null;
             bool printerMap = (this.GetType() == typeof(PrinterMap));
 
-            if (StartRefreshMap != null) StartRefreshMap(this);
+            if (StartRefreshMap != null)
+            {
+                StartRefreshMap(this);
+            }
 
             try
             {
                 _lastException = null;
 
-                if (_graphics != null && phase == DrawPhase.Graphics) return true;
+                if (_graphics != null && phase == DrawPhase.Graphics)
+                {
+                    return true;
+                }
 
                 #region Start Drawing/Initialisierung
                 this.ZoomTo(m_actMinX, m_actMinY, m_actMaxX, m_actMaxY);
 
-                if (cancelTracker == null) cancelTracker = new CancelTracker();
+                if (cancelTracker == null)
+                {
+                    cancelTracker = new CancelTracker();
+                }
 
                 GeometricTransformer geoTransformer = new GeometricTransformer();
                 //geoTransformer.ToSpatialReference = this.SpatialReference;
@@ -797,7 +942,10 @@ namespace gView.Framework.Carto
                     if (_image != null && (_image.Width != iWidth || _image.Height != iHeight))
                     {
 
-                        if (!DisposeImage()) return false;
+                        if (!DisposeImage())
+                        {
+                            return false;
+                        }
                     }
 
                     if (_image == null)
@@ -813,7 +961,7 @@ namespace gView.Framework.Carto
                     }
 
                     _graphics = System.Drawing.Graphics.FromImage(_image);
-                    
+
                     this.dpi = _graphics.DpiX;
 
                     using (System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(_backgroundColor))
@@ -845,15 +993,25 @@ namespace gView.Framework.Carto
                         webServices = new List<IWebServiceLayer>();
                         foreach (IDatasetElement layer in this.MapElements)
                         {
-                            if (!(layer is IWebServiceLayer)) continue;
+                            if (!(layer is IWebServiceLayer))
+                            {
+                                continue;
+                            }
+
                             if (((ILayer)layer).Visible)
+                            {
                                 webServices.Add((IWebServiceLayer)layer);
+                            }
                         }
                     }
                     int webServiceOrder = 0;
                     foreach (IWebServiceLayer element in webServices)
                     {
-                        if (!element.Visible) continue;
+                        if (!element.Visible)
+                        {
+                            continue;
+                        }
+
                         ServiceRequestThread srt = new ServiceRequestThread(this, element, webServiceOrder++);
                         srt.finish += new ServiceRequestThread.RequestThreadFinished(MapRequestThread_finished);
                         //Thread thread = new Thread(new ThreadStart(srt.ImageRequest));
@@ -868,18 +1026,28 @@ namespace gView.Framework.Carto
                     if (this.TOC != null)
                     {
                         if (this.ToString() == "gView.MapServer.Instance.ServiceMap")
+                        {
                             layers = ListOperations<ILayer>.Swap(this.TOC.Layers);
+                        }
                         else
+                        {
                             layers = ListOperations<ILayer>.Swap(this.TOC.VisibleLayers);
+                        }
                     }
                     else
                     {
                         layers = new List<ILayer>();
                         foreach (IDatasetElement layer in this.MapElements)
                         {
-                            if (!(layer is ILayer)) continue;
+                            if (!(layer is ILayer))
+                            {
+                                continue;
+                            }
+
                             if (((ILayer)layer).Visible)
+                            {
                                 layers.Add((ILayer)layer);
+                            }
                         }
                     }
 
@@ -892,10 +1060,19 @@ namespace gView.Framework.Carto
                     foreach (ILayer layer in layers)
                     {
                         if (!cancelTracker.Continue)
+                        {
                             break;
+                        }
 
-                        if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale) continue;
-                        if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale) continue;
+                        if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale)
+                        {
+                            continue;
+                        }
+
+                        if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale)
+                        {
+                            continue;
+                        }
 
                         SetGeotransformer(layer, geoTransformer);
 
@@ -918,23 +1095,37 @@ namespace gView.Framework.Carto
                             {
                                 RenderFeatureLayerThread rlt = new RenderFeatureLayerThread(this, fLayer, cancelTracker, fCounter);
                                 if (fLayer.LabelRenderer != null && fLayer.LabelRenderer.RenderMode == LabelRenderMode.RenderWithFeature)
+                                {
                                     rlt.UseLabelRenderer = true;
+                                }
                                 else
+                                {
                                     rlt.UseLabelRenderer = labelLayers.IndexOf(fLayer) == 0;  // letzten Layer gleich mitlabeln
+                                }
 
-                                if (rlt.UseLabelRenderer) labelLayers.Remove(fLayer);
+                                if (rlt.UseLabelRenderer)
+                                {
+                                    labelLayers.Remove(fLayer);
+                                }
 
                                 //thread = new Thread(new ThreadStart(rlt.Render));
                                 //thread.Start();
 
-                                if (DrawingLayer != null && cancelTracker.Continue) DrawingLayer(layer.Title);
+                                if (DrawingLayer != null && cancelTracker.Continue)
+                                {
+                                    DrawingLayer(layer.Title);
+                                }
+
                                 await rlt.Render();
                             }
                         }
                         if (layer is IRasterLayer && ((IRasterLayer)layer).RasterClass != null)
                         {
                             IRasterLayer rLayer = (IRasterLayer)layer;
-                            if (rLayer.RasterClass.Polygon == null) continue;
+                            if (rLayer.RasterClass.Polygon == null)
+                            {
+                                continue;
+                            }
 
                             IEnvelope dispEnvelope = this.DisplayTransformation.TransformedBounds(this); //this.Envelope;
                             if (Display.GeometricTransformer != null)
@@ -957,13 +1148,20 @@ namespace gView.Framework.Carto
                                     //thread = new Thread(new ThreadStart(rlt.Render));
                                     //thread.Start();
 
-                                    if (DrawingLayer != null && cancelTracker.Continue) DrawingLayer(layer.Title);
+                                    if (DrawingLayer != null && cancelTracker.Continue)
+                                    {
+                                        DrawingLayer(layer.Title);
+                                    }
                                 }
                             }
                         }
                         // Andere Layer (zB IRasterLayer)
 
-                        if (thread == null) continue;
+                        if (thread == null)
+                        {
+                            continue;
+                        }
+
                         thread.Join();
 
                         if (DrawingLayerFinished != null)
@@ -994,7 +1192,10 @@ namespace gView.Framework.Carto
 
                             RenderLabelThread rlt = new RenderLabelThread(this, fLayer, cancelTracker);
 
-                            if (DrawingLayer != null && cancelTracker.Continue) DrawingLayer(fLayer.Title);
+                            if (DrawingLayer != null && cancelTracker.Continue)
+                            {
+                                DrawingLayer(fLayer.Title);
+                            }
 
                             await rlt.Render();
 
@@ -1006,7 +1207,11 @@ namespace gView.Framework.Carto
                         DrawStream(_msGeometry);
                     }
 
-                    if (!printerMap) LabelEngine.Draw(this.Display, cancelTracker);
+                    if (!printerMap)
+                    {
+                        LabelEngine.Draw(this.Display, cancelTracker);
+                    }
+
                     LabelEngine.Release();
 
                     #endregion
@@ -1015,7 +1220,11 @@ namespace gView.Framework.Carto
 
                     if (cancelTracker.Continue)
                     {
-                        if (DrawingLayer != null && m_imageMerger.max > 0) DrawingLayer("...Waiting for WebServices...");
+                        if (DrawingLayer != null && m_imageMerger.max > 0)
+                        {
+                            DrawingLayer("...Waiting for WebServices...");
+                        }
+
                         while (m_imageMerger.Count < m_imageMerger.max)
                         {
                             await Task.Delay(100);
@@ -1055,12 +1264,22 @@ namespace gView.Framework.Carto
                 if (Bit.Has(phase, DrawPhase.Selection))
                 //if (phase == DrawPhase.All || phase == DrawPhase.Selection)
                 {
-                    if (phase != DrawPhase.All) DrawStream(_msGeometry);
+                    if (phase != DrawPhase.All)
+                    {
+                        DrawStream(_msGeometry);
+                    }
 
                     foreach (IDatasetElement layer in this.MapElements)
                     {
-                        if (!cancelTracker.Continue) break;
-                        if (!(layer is ILayer)) continue;
+                        if (!cancelTracker.Continue)
+                        {
+                            break;
+                        }
+
+                        if (!(layer is ILayer))
+                        {
+                            continue;
+                        }
 
                         if (layer is IFeatureLayer &&
                             layer is IFeatureSelection &&
@@ -1073,7 +1292,10 @@ namespace gView.Framework.Carto
                         else if (layer is IWebServiceLayer)
                         {
                             IWebServiceLayer wLayer = (IWebServiceLayer)layer;
-                            if (wLayer.WebServiceClass == null) continue;
+                            if (wLayer.WebServiceClass == null)
+                            {
+                                continue;
+                            }
 
                             foreach (IWebServiceTheme theme in wLayer.WebServiceClass.Themes)
                             {
@@ -1112,9 +1334,9 @@ namespace gView.Framework.Carto
                         if (grElement is IGraphicElement2)
                         {
                             if (((IGraphicElement2)grElement).Ghost != null)
+                            {
                                 ((IGraphicElement2)grElement).Ghost.Draw(Display);
-
-                            ((IGraphicElement2)grElement).DrawGrabbers(Display);
+                            } ((IGraphicElement2)grElement).DrawGrabbers(Display);
                         }
                     }
                 }
@@ -1133,7 +1355,11 @@ namespace gView.Framework.Carto
                 // Überprüfen, ob sich Extent seit dem letztem Zeichnen geändert hat...
                 if (cancelTracker.Continue)
                 {
-                    if (_lastRenderExtent == null) _lastRenderExtent = new Envelope();
+                    if (_lastRenderExtent == null)
+                    {
+                        _lastRenderExtent = new Envelope();
+                    }
+
                     if (NewExtentRendered != null)
                     {
                         if (!_lastRenderExtent.Equals(Display.Envelope))
@@ -1163,7 +1389,11 @@ namespace gView.Framework.Carto
 
                 if (!printerMap)
                 {
-                    if (_graphics != null) _graphics.Dispose();
+                    if (_graphics != null)
+                    {
+                        _graphics.Dispose();
+                    }
+
                     _graphics = null;
                 }
             }
@@ -1171,7 +1401,10 @@ namespace gView.Framework.Carto
 
         public void HighlightGeometry(IGeometry geometry, int milliseconds)
         {
-            if (geometry == null || _image == null || _graphics != null) return;
+            if (geometry == null || _image == null || _graphics != null)
+            {
+                return;
+            }
 
             geometryType type = geometryType.Unknown;
             if (geometry is IPolygon)
@@ -1194,7 +1427,10 @@ namespace gView.Framework.Carto
             {
                 type = geometryType.Envelope;
             }
-            if (type == geometryType.Unknown) return;
+            if (type == geometryType.Unknown)
+            {
+                return;
+            }
 
             ISymbol symbol = null;
             PlugInManager compMan = new PlugInManager();
@@ -1203,7 +1439,10 @@ namespace gView.Framework.Carto
             {
                 symbol = ((ISymbolCreator)renderer).CreateStandardHighlightSymbol(type);
             }
-            if (symbol == null) return;
+            if (symbol == null)
+            {
+                return;
+            }
 
             System.Drawing.Bitmap bm = new System.Drawing.Bitmap(_image.Width, _image.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
@@ -1211,11 +1450,26 @@ namespace gView.Framework.Carto
             _graphics.DrawImage(_image, 0, 0);
 
             this.Draw(symbol, geometry);
-            if (NewBitmap != null) NewBitmap(bm);
-            if (DoRefreshMapView != null) DoRefreshMapView();
+            if (NewBitmap != null)
+            {
+                NewBitmap(bm);
+            }
+
+            if (DoRefreshMapView != null)
+            {
+                DoRefreshMapView();
+            }
+
             Thread.Sleep(milliseconds);
-            if (NewBitmap != null) NewBitmap(_image);
-            if (DoRefreshMapView != null) DoRefreshMapView();
+            if (NewBitmap != null)
+            {
+                NewBitmap(_image);
+            }
+
+            if (DoRefreshMapView != null)
+            {
+                DoRefreshMapView();
+            }
 
             bm.Dispose();
             bm = null;
@@ -1227,7 +1481,11 @@ namespace gView.Framework.Carto
         {
             get
             {
-                if (_dataViewTOC != null) return _dataViewTOC;
+                if (_dataViewTOC != null)
+                {
+                    return _dataViewTOC;
+                }
+
                 return _toc;
             }
         }
@@ -1252,25 +1510,45 @@ namespace gView.Framework.Carto
         internal void FireRefreshMapView()
         {
             if (this.DoRefreshMapView != null)
+            {
                 this.DoRefreshMapView();
+            }
         }
 
         private bool LayerIDExists(int layerID)
         {
-            if (_layers == null) return false;
+            if (_layers == null)
+            {
+                return false;
+            }
+
             foreach (ILayer layer in _layers)
             {
-                if (layer.ID == layerID) return true;
+                if (layer.ID == layerID)
+                {
+                    return true;
+                }
             }
             return false;
         }
 
         async private Task RenderSelection(IFeatureLayer fLayer, ICancelTracker cancelTracker)
         {
-            if (fLayer == null || !(fLayer is IFeatureSelection)) return;
-            if (fLayer.SelectionRenderer == null) return;
+            if (fLayer == null || !(fLayer is IFeatureSelection))
+            {
+                return;
+            }
+
+            if (fLayer.SelectionRenderer == null)
+            {
+                return;
+            }
+
             IFeatureSelection fSelection = (IFeatureSelection)fLayer;
-            if (fSelection.SelectionSet == null || fSelection.SelectionSet.Count == 0) return;
+            if (fSelection.SelectionSet == null || fSelection.SelectionSet.Count == 0)
+            {
+                return;
+            }
 
             RenderFeatureLayerSelectionThread rlt = new RenderFeatureLayerSelectionThread(this, fLayer, cancelTracker);
             //rlt.Render();
@@ -1278,7 +1556,10 @@ namespace gView.Framework.Carto
             //Thread thread = new Thread(new ThreadStart(rlt.Render));
             //thread.Start();
 
-            if (DrawingLayer != null && cancelTracker.Continue) DrawingLayer(fLayer.Title);
+            if (DrawingLayer != null && cancelTracker.Continue)
+            {
+                DrawingLayer(fLayer.Title);
+            }
 
             await rlt.Render();
 
@@ -1292,7 +1573,10 @@ namespace gView.Framework.Carto
             //    }
             //    count++;
             //}
-            if (DoRefreshMapView != null && cancelTracker.Continue) DoRefreshMapView();
+            if (DoRefreshMapView != null && cancelTracker.Continue)
+            {
+                DoRefreshMapView();
+            }
         }
 
         /// <summary>
@@ -1331,7 +1615,9 @@ namespace gView.Framework.Carto
             }
 
             if (layerSR == null)
+            {
                 layerSR = this.LayerDefaultSpatialReference;
+            }
 
             if (layerSR == null)
             {
@@ -1373,23 +1659,34 @@ namespace gView.Framework.Carto
                 while ((child = await cursor.NextRasterLayer()) != null)
                 //foreach (ILayer child in ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
                 {
-                    if (!cancelTracker.Continue) break;
+                    if (!cancelTracker.Continue)
+                    {
+                        break;
+                    }
+
                     if (child.Class is IParentRasterLayer)
                     {
                         await DrawRasterParentLayer((IParentRasterLayer)child.Class, cancelTracker, rootLayer);
                         continue;
                     }
-                    if (!(child is IRasterLayer)) continue;
+                    if (!(child is IRasterLayer))
+                    {
+                        continue;
+                    }
+
                     IRasterLayer cLayer = (IRasterLayer)child;
 
                     RenderRasterLayerThread rlt = new RenderRasterLayerThread(this, cLayer, rootLayer, cancelTracker);
-                    
+
                     //Thread thread = new Thread(new ThreadStart(rlt.Render));
                     //thread.Start();
 
                     if (DrawingLayer != null && cancelTracker.Continue)
                     {
-                        if (rLayer is ILayer) DrawingLayer(((ILayer)rLayer).Title);
+                        if (rLayer is ILayer)
+                        {
+                            DrawingLayer(((ILayer)rLayer).Title);
+                        }
                     }
 
                     await rlt.Render();
@@ -1403,10 +1700,15 @@ namespace gView.Framework.Carto
                     //    if (DoRefreshMapView != null && (counter % 10) == 0 && cancelTracker.Continue) DoRefreshMapView();
                     //    counter++;
                     //}
-                    if (DoRefreshMapView != null && cancelTracker.Continue) DoRefreshMapView();
+                    if (DoRefreshMapView != null && cancelTracker.Continue)
+                    {
+                        DoRefreshMapView();
+                    }
 
                     if (child.Class is IDisposable)
+                    {
                         ((IDisposable)child.Class).Dispose();
+                    }
                 }
             }
             if (rLayer is ILayer && ((ILayer)rLayer).Class is IRasterClass)
@@ -1540,7 +1842,9 @@ namespace gView.Framework.Carto
             while ((gLayer = (GroupLayer)stream.Load("IGroupLayer", null, new GroupLayer())) != null)
             {
                 while (LayerIDExists(gLayer.ID))
+                {
                     gLayer.ID = _layerIDSequece.Number;
+                }
 
                 _layers.Add(gLayer);
             }
@@ -1564,7 +1868,9 @@ namespace gView.Framework.Carto
                     //fLayer.DatasetID = -1;
                 }
                 while (LayerIDExists(fLayer.ID))
+                {
                     fLayer.ID = _layerIDSequece.Number;
+                }
 
                 if (fLayer.Class == null)
                 {
@@ -1573,7 +1879,10 @@ namespace gView.Framework.Carto
 
                 _layers.Add(fLayer);
 
-                if (LayerAdded != null) LayerAdded(this, fLayer);
+                if (LayerAdded != null)
+                {
+                    LayerAdded(this, fLayer);
+                }
             }
 
             RasterCatalogLayer rcLayer;
@@ -1600,7 +1909,10 @@ namespace gView.Framework.Carto
                 }
 
                 _layers.Add(rcLayer);
-                if (LayerAdded != null) LayerAdded(this, rcLayer);
+                if (LayerAdded != null)
+                {
+                    LayerAdded(this, rcLayer);
+                }
             }
 
             RasterLayer rLayer;
@@ -1620,7 +1932,9 @@ namespace gView.Framework.Carto
                 {
                 }
                 while (LayerIDExists(rLayer.ID))
+                {
                     rLayer.ID = _layerIDSequece.Number;
+                }
 
                 if (rLayer.Class == null)
                 {
@@ -1629,7 +1943,10 @@ namespace gView.Framework.Carto
 
                 _layers.Add(rLayer);
 
-                if (LayerAdded != null) LayerAdded(this, rLayer);
+                if (LayerAdded != null)
+                {
+                    LayerAdded(this, rLayer);
+                }
             }
 
             WebServiceLayer wLayer;
@@ -1650,7 +1967,9 @@ namespace gView.Framework.Carto
                 {
                 }
                 while (LayerIDExists(wLayer.ID))
+                {
                     wLayer.ID = _layerIDSequece.Number;
+                }
 
                 if (fLayer.Class == null)
                 {
@@ -1664,10 +1983,15 @@ namespace gView.Framework.Carto
                     foreach (IWebServiceTheme theme in wLayer.WebServiceClass.Themes)
                     {
                         while (LayerIDExists(theme.ID) || theme.ID == 0)
+                        {
                             theme.ID = _layerIDSequece.Number;
+                        }
                     }
 
-                    if (LayerAdded != null) LayerAdded(this, wLayer);
+                    if (LayerAdded != null)
+                    {
+                        LayerAdded(this, wLayer);
+                    }
                 }
             }
 
@@ -1733,15 +2057,25 @@ namespace gView.Framework.Carto
             foreach (ILayer layer in _layers)
             {
                 if (layer is IGroupLayer)
+                {
                     stream.Save("IGroupLayer", layer);
+                }
                 else if (layer is IRasterCatalogLayer)
+                {
                     stream.Save("IRasterCatalogLayer", layer);
+                }
                 else if (layer is IRasterLayer)
+                {
                     stream.Save("IRasterLayer", layer);
+                }
                 else if (layer is IWebServiceLayer)
+                {
                     stream.Save("IWebServiceLayer", layer);
+                }
                 else if (layer is IFeatureLayer)
+                {
                     stream.Save("IFeatureLayer", layer);
+                }
             }
 
             stream.Save("IClasses", new PersistableClasses(_layers));
@@ -1799,7 +2133,9 @@ namespace gView.Framework.Carto
             public void Load(IPersistStream stream)
             {
                 if (_layers == null)
+                {
                     return;
+                }
 
                 int layerID = (int)stream.Load("LayerID", -99);
                 foreach (ILayer layer in _layers)
@@ -1815,7 +2151,9 @@ namespace gView.Framework.Carto
             public void Save(IPersistStream stream)
             {
                 if (_layer == null || !(_layer.Class is IPersistable))
-                    return; 
+                {
+                    return;
+                }
 
                 stream.Save("LayerID", _layer.ID);
                 stream.Save("Stream", _layer.Class);
@@ -1830,7 +2168,10 @@ namespace gView.Framework.Carto
             set
             {
                 _dataViewTOC = value;
-                if (TOCChanged != null) TOCChanged(this);
+                if (TOCChanged != null)
+                {
+                    TOCChanged(this);
+                }
             }
         }
         public ITOC PublicTOC
@@ -1845,7 +2186,11 @@ namespace gView.Framework.Carto
 
         protected virtual void DrawStream(Stream stream)
         {
-            if (stream == null || _graphics == null) return;
+            if (stream == null || _graphics == null)
+            {
+                return;
+            }
+
             try
             {
                 stream.Position = 0;
@@ -1863,8 +2208,16 @@ namespace gView.Framework.Carto
         {
             try
             {
-                if (image == null) return;
-                if (stream != null) stream.Dispose();
+                if (image == null)
+                {
+                    return;
+                }
+
+                if (stream != null)
+                {
+                    stream.Dispose();
+                }
+
                 stream = new MemoryStream();
                 image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
             }
@@ -1946,7 +2299,11 @@ namespace gView.Framework.Carto
         {
             lock (exceptionLocker)
             {
-                if (_requestExceptions == null) _requestExceptions = new List<Exception>();
+                if (_requestExceptions == null)
+                {
+                    _requestExceptions = new List<Exception>();
+                }
+
                 _requestExceptions.Add(ex);
             }
         }
@@ -1954,7 +2311,9 @@ namespace gView.Framework.Carto
         public void AppendExceptionsToImage()
         {
             if (_requestExceptions == null || this.Display.GraphicsContext == null)
+            {
                 return;
+            }
 
             lock (exceptionLocker)
             {
@@ -1968,7 +2327,7 @@ namespace gView.Framework.Carto
                 using (System.Drawing.Font font = new System.Drawing.Font("Arial", 12))
                 {
                     System.Drawing.SizeF size = this.Display.GraphicsContext.MeasureString(sb.ToString().ToString(), font);
-                    int mx = this.Display.iWidth / 2 - (int)size.Width / 2, my = this.Display.iHeight/2 - (int)size.Height / 2;
+                    int mx = this.Display.iWidth / 2 - (int)size.Width / 2, my = this.Display.iHeight / 2 - (int)size.Height / 2;
                     this.Display.GraphicsContext.FillRectangle(System.Drawing.Brushes.LightGray, new System.Drawing.Rectangle(mx - 30, my - 30, (int)size.Width + 60, (int)size.Height + 60));
                     this.Display.GraphicsContext.DrawRectangle(System.Drawing.Pens.Black, new System.Drawing.Rectangle(mx - 30, my - 30, (int)size.Width + 60, (int)size.Height + 60));
                     this.Display.GraphicsContext.DrawString(sb.ToString(), font, System.Drawing.Brushes.Red, mx, my);
@@ -1981,7 +2340,7 @@ namespace gView.Framework.Carto
             get { return _errorMessages.ToArray(); }
         }
 
-        public bool HasErrorMessages { get { return _errorMessages!=null && _errorMessages.Count > 0; } }
+        public bool HasErrorMessages { get { return _errorMessages != null && _errorMessages.Count > 0; } }
 
         #endregion
     }
@@ -1993,7 +2352,7 @@ namespace gView.Framework.Carto
 
         #region Variablen
         protected double m_maxX, m_maxY, m_minX, m_minY;
-        protected double m_actMinX=-10, m_actMinY=-10, m_actMaxX=10, m_actMaxY=10;
+        protected double m_actMinX = -10, m_actMinY = -10, m_actMaxX = 10, m_actMaxY = 10;
         protected int m_iWidth, m_iHeight, m_fixScaleIndex;
         protected double m_dpm = (96.0 / 0.0254);  // dots per [m]... 96 dpi werden angenommen
         protected double m_scale;
@@ -2022,7 +2381,7 @@ namespace gView.Framework.Carto
             //m_fixScales=new ArrayList();
 
             _labelEngine = new LabelEngine2();
-            initEnvironment();
+            InitEnvironment();
         }
 
         internal Display(bool createLabelEngine)
@@ -2032,10 +2391,10 @@ namespace gView.Framework.Carto
             //m_fixScales = new ArrayList();
 
             _labelEngine = (createLabelEngine) ? new LabelEngine2() : null;
-            initEnvironment();
+            InitEnvironment();
         }
 
-        private void initEnvironment()
+        private void InitEnvironment()
         {
             try
             {
@@ -2068,13 +2427,17 @@ namespace gView.Framework.Carto
             y += _OY;
 
             if (_displayTransformation.UseTransformation)
+            {
                 _displayTransformation.Transform(this, ref x, ref y);
+            }
         }
 
         public void Image2World(ref double x, ref double y)
         {
             if (_displayTransformation.UseTransformation)
+            {
                 _displayTransformation.InvTransform(this, ref x, ref y);
+            }
 
             x -= _OX;
             y -= _OY;
@@ -2142,8 +2505,15 @@ namespace gView.Framework.Carto
 
         public void DrawOverlay(IGraphicsContainer container, bool clearOld)
         {
-            if (RenderOverlayImage == null || _graphics != null) return;
-            if (container == null) ClearOverlay();
+            if (RenderOverlayImage == null || _graphics != null)
+            {
+                return;
+            }
+
+            if (container == null)
+            {
+                ClearOverlay();
+            }
 
             System.Drawing.Bitmap bm = null;
             try
@@ -2164,9 +2534,16 @@ namespace gView.Framework.Carto
             }
             finally
             {
-                if (_graphics != null) _graphics.Dispose();
+                if (_graphics != null)
+                {
+                    _graphics.Dispose();
+                }
+
                 _graphics = null;
-                if (bm != null) bm.Dispose();
+                if (bm != null)
+                {
+                    bm.Dispose();
+                }
             }
         }
 
@@ -2177,7 +2554,11 @@ namespace gView.Framework.Carto
 
         public void ZoomTo(IEnvelope envelope)
         {
-            if (envelope == null) return;
+            if (envelope == null)
+            {
+                return;
+            }
+
             this.ZoomTo(envelope.minx, envelope.miny, envelope.maxx, envelope.maxy);
         }
 
@@ -2451,7 +2832,10 @@ namespace gView.Framework.Carto
             */
             #endregion
 
-            if (MapScaleChanged != null) MapScaleChanged(this);
+            if (MapScaleChanged != null)
+            {
+                MapScaleChanged(this);
+            }
         }
         public void setScale(double scale)
         {
@@ -2514,7 +2898,10 @@ namespace gView.Framework.Carto
             }
             else
             {
-                if (MapScaleChanged != null) MapScaleChanged(this);
+                if (MapScaleChanged != null)
+                {
+                    MapScaleChanged(this);
+                }
             }
 
 
@@ -2586,8 +2973,15 @@ namespace gView.Framework.Carto
 
         public IGeometry Transform(IGeometry geometry, ISpatialReference geometrySpatialReference)
         {
-            if (geometry == null) return null;
-            if (geometrySpatialReference == null || _spatialReference == null || geometrySpatialReference.Equals(_spatialReference)) return geometry;
+            if (geometry == null)
+            {
+                return null;
+            }
+
+            if (geometrySpatialReference == null || _spatialReference == null || geometrySpatialReference.Equals(_spatialReference))
+            {
+                return geometry;
+            }
 
             GeometricTransformer transformer = new GeometricTransformer();
 
@@ -2693,7 +3087,9 @@ namespace gView.Framework.Carto
         public void Transform(IDisplay display, ref double x, ref double y)
         {
             if (display == null || _useTransformation == false)
+            {
                 return;
+            }
 
             x -= display.iWidth / 2.0;
             y -= display.iHeight / 2.0;
@@ -2710,7 +3106,9 @@ namespace gView.Framework.Carto
         public void InvTransform(IDisplay display, ref double x, ref double y)
         {
             if (display == null || _useTransformation == false)
+            {
                 return;
+            }
 
             x -= display.iWidth / 2.0;
             y -= display.iHeight / 2.0;
@@ -2727,10 +3125,14 @@ namespace gView.Framework.Carto
         public IEnvelope TransformedBounds(IDisplay display)
         {
             if (display == null)
+            {
                 return new Envelope();
+            }
 
             if (_useTransformation == false)
+            {
                 return display.Envelope;
+            }
 
             IEnvelope oBounds = display.Envelope;
             Envelope bounds = new Envelope(display.Envelope);
@@ -2789,19 +3191,29 @@ namespace gView.Framework.Carto
             if (_layer == null || _layer.WebServiceClass == null)
             {
                 _finishTime = DateTime.Now;
-                if (finish != null) finish(this, false, null, 0);
+                if (finish != null)
+                {
+                    finish(this, false, null, 0);
+                }
+
                 return;
             }
 
             if (await _layer.WebServiceClass.MapRequest(_map.Display))
             {
                 _finishTime = DateTime.Now;
-                if (finish != null) finish(this, true, _layer.WebServiceClass.Image, _order);
+                if (finish != null)
+                {
+                    finish(this, true, _layer.WebServiceClass.Image, _order);
+                }
             }
             else
             {
                 _finishTime = DateTime.Now;
-                if (finish != null) finish(this, false, null, _order);
+                if (finish != null)
+                {
+                    finish(this, false, null, _order);
+                }
             }
         }
     }
@@ -2832,16 +3244,22 @@ namespace gView.Framework.Carto
 
         async public Task Render()
         {
-            if (_layer == null || _map == null) return;
+            if (_layer == null || _map == null)
+            {
+                return;
+            }
 
             #region JSON FilterCollection
+
             if (_layer.FilterQuery != null && !String.IsNullOrEmpty(_layer.FilterQuery.JsonWhereClause))
             {
                 try
                 {
                     DisplayFilterCollection dfc = DisplayFilterCollection.FromJSON(_layer.FilterQuery.JsonWhereClause);
                     if (dfc == null)
+                    {
                         return;
+                    }
 
                     IFeatureLayer flayer = (IFeatureLayer)LayerFactory.Create(_layer.Class, _layer);
                     flayer.FilterQuery = (IQueryFilter)_layer.FilterQuery.Clone();
@@ -2849,7 +3267,7 @@ namespace gView.Framework.Carto
                     {
                         // immer neu klonen (wegen PenWidth...)!!
                         flayer.FeatureRenderer = _layer.FeatureRenderer != null ? (IFeatureRenderer)_layer.FeatureRenderer.Clone() : null;
-                    
+
                         flayer.FilterQuery.WhereClause = df.Filter;
                         if (flayer.FeatureRenderer != null)
                         {
@@ -2858,14 +3276,24 @@ namespace gView.Framework.Carto
                                 if (df.Color.A > 0)
                                 {
                                     if (symbol is IPenColor)
+                                    {
                                         ((IPenColor)symbol).PenColor = df.Color;
+                                    }
+
                                     if (symbol is IBrushColor)
+                                    {
                                         ((IBrushColor)symbol).FillColor = df.Color;
+                                    }
+
                                     if (symbol is IFontColor)
+                                    {
                                         ((IFontColor)symbol).FontColor = df.Color;
+                                    }
                                 }
                                 if (df.PenWidth > 0f && symbol is IPenWidth)
+                                {
                                     ((IPenWidth)symbol).PenWidth = df.PenWidth;
+                                }
                             }
                         }
                         await Render(flayer);
@@ -2874,6 +3302,7 @@ namespace gView.Framework.Carto
                 catch { }
                 return;
             }
+
             #endregion
 
             await Render(_layer);
@@ -2890,10 +3319,15 @@ namespace gView.Framework.Carto
                     layer.LabelRenderer == null ||
                     _useLabelRenderer == false
                     ))
+                {
                     return;
+                }
 
                 IFeatureClass fClass = layer.FeatureClass;
-                if (fClass == null) return;
+                if (fClass == null)
+                {
+                    return;
+                }
 
                 //IDataset dataset = (IDataset)_map[layer];
                 //if (dataset == null) return;
@@ -2981,15 +3415,25 @@ namespace gView.Framework.Carto
                             while ((feature = await fCursor.NextFeature()) != null)
                             {
                                 if (_cancelTracker != null)
+                                {
                                     if (!_cancelTracker.Continue)
+                                    {
                                         break;
+                                    }
+                                }
 
                                 renderer.Draw(_map, feature);
-                                if (labelRenderer != null) labelRenderer.Draw(_map, feature);
+                                if (labelRenderer != null)
+                                {
+                                    labelRenderer.Draw(_map, feature);
+                                }
+
                                 _counter.Counter++;
 
                                 if (_counter.Counter % 10000 == 0)
+                                {
                                     _map.FireRefreshMapView();
+                                }
                             }
                         }
                         else if (labelRenderer != null)
@@ -2997,19 +3441,33 @@ namespace gView.Framework.Carto
                             while ((feature = await fCursor.NextFeature()) != null)
                             {
                                 if (_cancelTracker != null)
+                                {
                                     if (!_cancelTracker.Continue)
+                                    {
                                         break;
+                                    }
+                                }
 
                                 labelRenderer.Draw(_map, feature);
                                 _counter.Counter++;
 
-                                
+
                             }
                         }
-                        if (labelRenderer != null) labelRenderer.Release();
+                        if (labelRenderer != null)
+                        {
+                            labelRenderer.Release();
+                        }
+
                         if (renderer != null)
+                        {
                             renderer.FinishDrawing(_map, _cancelTracker);
-                        if (renderer != null && layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale) renderer.Release();
+                        }
+
+                        if (renderer != null && layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale)
+                        {
+                            renderer.Release();
+                        }
                     }
                 }
             }
@@ -3023,7 +3481,10 @@ namespace gView.Framework.Carto
                         loggingMethod.error,
                         ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                 }
-                if (_map != null) _map.AddException(new Exception("RenderFeatureLayerThread: " + ((layer != null) ? layer.Title : String.Empty) + "\n" + ex.Message, ex));
+                if (_map != null)
+                {
+                    _map.AddException(new Exception("RenderFeatureLayerThread: " + ((layer != null) ? layer.Title : String.Empty) + "\n" + ex.Message, ex));
+                }
             }
         }
     }
@@ -3046,10 +3507,16 @@ namespace gView.Framework.Carto
         {
             try
             {
-                if (_layer == null || _layer.LabelRenderer == null || _map == null) return;
+                if (_layer == null || _layer.LabelRenderer == null || _map == null)
+                {
+                    return;
+                }
 
                 IFeatureClass fClass = _layer.FeatureClass;
-                if (fClass == null) return;
+                if (fClass == null)
+                {
+                    return;
+                }
 
                 IGeometry filterGeom = _map.Display.Envelope;
 
@@ -3095,8 +3562,12 @@ namespace gView.Framework.Carto
                         while ((feature = await fCursor.NextFeature()) != null)
                         {
                             if (_cancelTracker != null)
+                            {
                                 if (!_cancelTracker.Continue)
+                                {
                                     break;
+                                }
+                            }
 
                             labelRenderer.Draw(_map, feature);
                         }
@@ -3116,7 +3587,12 @@ namespace gView.Framework.Carto
                         ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                 }
                 if (_map != null)
-                    if (_map != null) _map.AddException(new Exception("RenderLabelThread: " + ((_layer != null) ? _layer.Title : String.Empty) + "\n" + ex.Message, ex));
+                {
+                    if (_map != null)
+                    {
+                        _map.AddException(new Exception("RenderLabelThread: " + ((_layer != null) ? _layer.Title : String.Empty) + "\n" + ex.Message, ex));
+                    }
+                }
             }
         }
     }
@@ -3149,8 +3625,15 @@ namespace gView.Framework.Carto
         {
             try
             {
-                if (_layer == null || _map == null || _cancelTracker == null) return;
-                if (_layer.RasterClass.Polygon == null) return;
+                if (_layer == null || _map == null || _cancelTracker == null)
+                {
+                    return;
+                }
+
+                if (_layer.RasterClass.Polygon == null)
+                {
+                    return;
+                }
 
                 IEnvelope env = _layer.RasterClass.Polygon.Envelope;
                 double minx = env.minx, miny = env.miny, maxx = env.maxx, maxy = env.maxy;
@@ -3173,7 +3656,10 @@ namespace gView.Framework.Carto
                 */
 
                 await _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker);
-                if (_layer.RasterClass.Bitmap == null) return;
+                if (_layer.RasterClass.Bitmap == null)
+                {
+                    return;
+                }
 
                 //System.Windows.Forms.MessageBox.Show("begin");
 
@@ -3185,7 +3671,11 @@ namespace gView.Framework.Carto
                 //_lastRasterLayer = _layer;
 
                 System.Drawing.Graphics gr = _map.Display.GraphicsContext;
-                if (gr == null) return;
+                if (gr == null)
+                {
+                    return;
+                }
+
                 gr.InterpolationMode = (System.Drawing.Drawing2D.InterpolationMode)_interpolMethod;
 
                 // Transformation berechnen
@@ -3283,7 +3773,12 @@ namespace gView.Framework.Carto
                                 ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                         }
                         if (_map != null)
-                            if (_map != null) _map.AddException(new Exception("RenderRasterLayerThread: " + ((_layer != null) ? _layer.Title : String.Empty) + "\n" + ex.Message, ex));
+                        {
+                            if (_map != null)
+                            {
+                                _map.AddException(new Exception("RenderRasterLayerThread: " + ((_layer != null) ? _layer.Title : String.Empty) + "\n" + ex.Message, ex));
+                            }
+                        }
                     }
                 }
 
@@ -3292,11 +3787,11 @@ namespace gView.Framework.Carto
                 float opaque = 1.0f - _transparency;
                 if (opaque > 0f && opaque < 1f)
                 {
-                    float[][] ptsArray ={ 
+                    float[][] ptsArray ={
                             new float[] {1, 0, 0, 0, 0},
                             new float[] {0, 1, 0, 0, 0},
                             new float[] {0, 0, 1, 0, 0},
-                            new float[] {0, 0, 0, opaque, 0}, 
+                            new float[] {0, 0, 0, opaque, 0},
                             new float[] {0, 0, 0, 0, 1}};
 
                     System.Drawing.Imaging.ColorMatrix clrMatrix = new System.Drawing.Imaging.ColorMatrix(ptsArray);
@@ -3315,7 +3810,7 @@ namespace gView.Framework.Carto
                     //{
                     //    gr__.DrawImage(_layer.RasterClass.Bitmap, new System.Drawing.Point(0, 0),);
                     //}
-                } 
+                }
             }
             catch (Exception ex)
             {
@@ -3327,7 +3822,12 @@ namespace gView.Framework.Carto
                         ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                 }
                 if (_map != null)
-                    if (_map != null) _map.AddException(new Exception("RenderRasterLayerThread: " + ((_layer != null) ? _layer.Title : String.Empty) + "\n" + ex.Message, ex));
+                {
+                    if (_map != null)
+                    {
+                        _map.AddException(new Exception("RenderRasterLayerThread: " + ((_layer != null) ? _layer.Title : String.Empty) + "\n" + ex.Message, ex));
+                    }
+                }
             }
             finally
             {
@@ -3405,7 +3905,7 @@ namespace gView.Framework.Carto
         private void RoundGraphicPixelPoints(System.Drawing.PointF[] points)
         {
             float espsi = .1f;
-            if(points.Length==3)
+            if (points.Length == 3)
             {
                 points[0].X -= espsi;
                 points[0].Y -= espsi;
@@ -3434,20 +3934,43 @@ namespace gView.Framework.Carto
 
         async public Task Render()
         {
-            if (_layer == null) return;
-            if (_layer.SelectionRenderer == null) return;
-            if (!(_layer is IFeatureSelection)) return;
+            if (_layer == null)
+            {
+                return;
+            }
+
+            if (_layer.SelectionRenderer == null)
+            {
+                return;
+            }
+
+            if (!(_layer is IFeatureSelection))
+            {
+                return;
+            }
 
             IFeatureClass fClass = _layer.FeatureClass;
-            if (fClass == null) return;
+            if (fClass == null)
+            {
+                return;
+            }
 
             ISelectionSet selectionSet = ((IFeatureSelection)_layer).SelectionSet;
-            if (selectionSet == null) return;
+            if (selectionSet == null)
+            {
+                return;
+            }
 
             IDataset dataset = (IDataset)_map[_layer];
-            if (dataset == null) return;
+            if (dataset == null)
+            {
+                return;
+            }
 
-            if (!(dataset is IFeatureDataset)) return;
+            if (!(dataset is IFeatureDataset))
+            {
+                return;
+            }
 
             IGeometry filterGeom = _map.Display.Envelope;
 
@@ -3485,7 +4008,9 @@ namespace gView.Framework.Carto
             }
 
             if (filter == null)
+            {
                 return;
+            }
 
             filter.AddField(fClass.ShapeFieldName);
             _layer.SelectionRenderer.PrepareQueryFilter(_layer, filter);
@@ -3499,8 +4024,12 @@ namespace gView.Framework.Carto
                     while ((feature = await fCursor.NextFeature()) != null)
                     {
                         if (_cancelTracker != null)
+                        {
                             if (!_cancelTracker.Continue)
+                            {
                                 break;
+                            }
+                        }
 
                         _layer.SelectionRenderer.Draw(_map, feature);
                     }
@@ -3526,7 +4055,10 @@ namespace gView.Framework.Carto
 
         public void Render()
         {
-            if (_display == null || _labelEngine == null) return;
+            if (_display == null || _labelEngine == null)
+            {
+                return;
+            }
 
             _labelEngine.Draw(_display, _cancelTracker);
             _labelEngine.Release();
@@ -3537,9 +4069,15 @@ namespace gView.Framework.Carto
     {
         static public IEnvelope Project3(IFeatureClass fc, IDisplay display)
         {
-            if (fc == null || display == null) return null;
+            if (fc == null || display == null)
+            {
+                return null;
+            }
 
-            if (display.GeometricTransformer == null) return display.Envelope;
+            if (display.GeometricTransformer == null)
+            {
+                return display.Envelope;
+            }
 
             //Feature feature=new Feature();
             //feature.Shape=fClass.Envelope;
@@ -3561,8 +4099,15 @@ namespace gView.Framework.Carto
         }
         static public IEnvelope Project(IFeatureClass fc, IDisplay display)
         {
-            if (fc == null || display == null) return null;
-            if (display.GeometricTransformer == null) return display.Envelope;
+            if (fc == null || display == null)
+            {
+                return null;
+            }
+
+            if (display.GeometricTransformer == null)
+            {
+                return display.Envelope;
+            }
 
             IPointCollection pColl = display.Envelope.ToPointCollection(0);
 
@@ -3581,14 +4126,25 @@ namespace gView.Framework.Carto
                 epsi = Math.Max(display.Envelope.Width, display.Envelope.Height) / 1e3;
             }
             if (!((PointCollection)pColl).Equals(pColl3, epsi))
+            {
                 return null;
+            }
             else
+            {
                 return pColl2.Envelope;
+            }
         }
         static public IEnvelope Project2(IFeatureClass fc, IDisplay display)
         {
-            if (display == null) return null;
-            if (display.GeometricTransformer == null) return display.Envelope;
+            if (display == null)
+            {
+                return null;
+            }
+
+            if (display.GeometricTransformer == null)
+            {
+                return display.Envelope;
+            }
 
             IPointCollection pColl = display.Envelope.ToPointCollection(100);
 

@@ -1304,20 +1304,24 @@ namespace gView.Framework.SpatialAlgorithms
             for (int r = 0; r < ringCount; r++)
             {
                 var ring = polygon[r];
+                var newRing = new Ring();  // Always create new Rings -> never change existing geometry!!!
+
                 if (!envelope.Contains(ring.Envelope))
                 {
                     for (int i = 0, to = ring.PointCount; i < to; i++)
                     {
-                        IPoint point = ring[i];
+                        IPoint point = new Point(ring[i]); // Always create new Point -> never change existing geometry!!!
 
                         point.X = Math.Max(point.X, envelope.minx);
                         point.Y = Math.Max(point.Y, envelope.miny);
 
                         point.X = Math.Min(point.X, envelope.maxx);
                         point.Y = Math.Min(point.Y, envelope.maxy);
+
+                        newRing.AddPoint(point);
                     }
                 }
-                result.AddRing(ring);
+                result.AddRing(newRing);
             }
 
             return result;

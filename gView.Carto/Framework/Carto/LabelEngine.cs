@@ -1,11 +1,10 @@
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.Symbology;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Symbology;
-using gView.Framework.Geometry;
-using gView.Framework.system;
 using System.Drawing;
-using gView.Framework.Data;
 
 namespace gView.Framework.Carto
 {
@@ -46,7 +45,10 @@ namespace gView.Framework.Carto
         {
             try
             {
-                if (display == null) return;
+                if (display == null)
+                {
+                    return;
+                }
                 //if (_bm != null && (_bm.Width != display.iWidth || _bm.Height != display.iHeight))
                 {
                     Dispose();
@@ -81,13 +83,19 @@ namespace gView.Framework.Carto
 
         public LabelAppendResult TryAppend(IDisplay display, ITextSymbol symbol, IGeometry geometry, bool checkForOverlap)
         {
-            if (symbol == null || !(display is Display)) return LabelAppendResult.WrongArguments;
+            if (symbol == null || !(display is Display))
+            {
+                return LabelAppendResult.WrongArguments;
+            }
 
             IAnnotationPolygonCollision labelPolyon = null;
             if (display.GeometricTransformer != null && !(geometry is IDisplayPath))
             {
                 geometry = display.GeometricTransformer.Transform2D(geometry) as IGeometry;
-                if (geometry == null) return LabelAppendResult.WrongArguments;
+                if (geometry == null)
+                {
+                    return LabelAppendResult.WrongArguments;
+                }
             }
             IEnvelope labelPolyonEnvelope = null;
             if (symbol is ILabel)
@@ -101,7 +109,7 @@ namespace gView.Framework.Carto
                     foreach (IAnnotationPolygonCollision polyCollision in aPolygons)
                     {
                         AnnotationPolygonEnvelope env = polyCollision.Envelope;
-                        if(env.MinX<0 || env.MinY<0 || env.MaxX>_bm.Width || env.MaxY>_bm.Height)
+                        if (env.MinX < 0 || env.MinY < 0 || env.MaxX > _bm.Width || env.MaxY > _bm.Height)
                         {
                             return LabelAppendResult.Outside;
                         }
@@ -138,7 +146,10 @@ namespace gView.Framework.Carto
                                         if (polyCollision.Contains(x, y))
                                         {
                                             //_bm.SetPixel(x, y, Color.Yellow);
-                                            if (_bm.GetPixel(x, y) != _back) return LabelAppendResult.Overlap;
+                                            if (_bm.GetPixel(x, y) != _back)
+                                            {
+                                                return LabelAppendResult.Overlap;
+                                            }
                                         }
                                     }
                                 }
@@ -154,7 +165,9 @@ namespace gView.Framework.Carto
                                     foreach (IAnnotationPolygonCollision lp in indexedPolygons)
                                     {
                                         if (lp.CheckCollision(polyCollision) == true)
+                                        {
                                             return LabelAppendResult.Overlap;
+                                        }
                                     }
                                 }
                                 #endregion
@@ -171,11 +184,14 @@ namespace gView.Framework.Carto
                                 #endregion
                             }
                         }
-                        labelPolyonEnvelope=new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY);
+                        labelPolyonEnvelope = new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY);
                     }
                 }
 
-                if (outside) return LabelAppendResult.Outside;
+                if (outside)
+                {
+                    return LabelAppendResult.Outside;
+                }
             }
 
             if (labelPolyon != null)
@@ -200,7 +216,10 @@ namespace gView.Framework.Carto
 
             symbol.Draw(display, geometry);
             ((Display)display).GraphicsContext = original;
-            if (_directDraw) symbol.Draw(display, geometry);
+            if (_directDraw)
+            {
+                symbol.Draw(display, geometry);
+            }
 
             return LabelAppendResult.Succeeded;
         }
@@ -222,7 +241,11 @@ namespace gView.Framework.Carto
                     int miny = (int)Math.Max(0, env.MinY);
                     int maxy = (int)Math.Min(_bm.Height, env.MaxY);
 
-                    if (minx > _bm.Width || maxx <= 0 || miny > _bm.Height || maxy <= 0) continue;  // liegt außerhalb!!
+                    if (minx > _bm.Width || maxx <= 0 || miny > _bm.Height || maxy <= 0)
+                    {
+                        continue;  // liegt außerhalb!!
+                    }
+
                     outside = false;
 
                     if (!_first && checkForOverlap)
@@ -240,7 +263,10 @@ namespace gView.Framework.Carto
                                     if (polyCollision.Contains(x, y))
                                     {
                                         //_bm.SetPixel(x, y, Color.Yellow);
-                                        if (_bm.GetPixel(x, y) != _back) return LabelAppendResult.Overlap;
+                                        if (_bm.GetPixel(x, y) != _back)
+                                        {
+                                            return LabelAppendResult.Overlap;
+                                        }
                                     }
                                 }
                             }
@@ -256,7 +282,9 @@ namespace gView.Framework.Carto
                                 foreach (IAnnotationPolygonCollision lp in indexedPolygons)
                                 {
                                     if (lp.CheckCollision(polyCollision) == true)
+                                    {
                                         return LabelAppendResult.Overlap;
+                                    }
                                 }
                             }
                             #endregion
@@ -275,10 +303,13 @@ namespace gView.Framework.Carto
                     }
                     labelPolyonEnvelope = new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY);
                 }
-                if (outside) return LabelAppendResult.Outside;
+                if (outside)
+                {
+                    return LabelAppendResult.Outside;
+                }
             }
 
-            
+
             if (labelPolyon != null)
             {
                 List<IAnnotationPolygonCollision> indexedPolygons = _gridArrayPolygons[labelPolyonEnvelope];
@@ -292,6 +323,7 @@ namespace gView.Framework.Carto
         {
             try
             {
+                
                 display.GraphicsContext.DrawImage(_bm, new PointF(0, 0));
 
                 //_bm.Save(@"c:\temp\label.png", System.Drawing.Imaging.ImageFormat.Png);
@@ -324,9 +356,15 @@ namespace gView.Framework.Carto
             public bool CheckCollision(LabelPolygon lp)
             {
                 if (HasSeperateLine(this, lp))
+                {
                     return false;
+                }
+
                 if (HasSeperateLine(lp, this))
+                {
                     return false;
+                }
+
                 return true;
             }
 
@@ -335,7 +373,10 @@ namespace gView.Framework.Carto
                 get
                 {
                     if (index < 0 || index >= _points.Length)
+                    {
                         return _points[0];
+                    }
+
                     return _points[index];
                 }
             }
@@ -354,7 +395,9 @@ namespace gView.Framework.Carto
 
                     if ((t_min <= c_max && t_max <= c_min) ||
                         (c_min <= t_max && c_max <= t_min))
+                    {
                         return true;
+                    }
                 }
 
                 return false;

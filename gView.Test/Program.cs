@@ -101,9 +101,9 @@ namespace gView.Test
 
             for (int i = 0; i < 100; i++)
             {
-                string server = "www.server.domain";
+                string server = "gis2.esn.at";
                 //string service = "geoservices/rest/services/default/UEBERSICHTSKARTE";
-                string service = "gview5/geoservices/rest/services/default/KATASTER_BEV";
+                string service = "gview5/geoservices/rest/services/basis/KATASTER_BEV";
                 //string service = "arcgis/rest/services/sdep/estag_dkm_sdep";
 
                 string url = String.Empty;

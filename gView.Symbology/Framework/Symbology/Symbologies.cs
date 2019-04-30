@@ -1007,86 +1007,92 @@ namespace gView.Framework.Symbology
         {
             //float x=(float)point.X,y=(float)point.Y;
 
-            float x = (float)_xOffset - _size / 2;
-            float y = (float)_yOffset - _size / 2;
-
-            display.GraphicsContext.SmoothingMode = (SmoothingMode)this.Smoothingmode;
-
-            display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
-            display.GraphicsContext.RotateTransform(_angle + _rotation);
-
-            switch (_type)
+            try
             {
-                case MarkerType.Circle:
-                    if (_brush.Color != Color.Transparent)
-                        display.GraphicsContext.FillEllipse(_brush, x, y, _size, _size);
-                    if (_pen.Color != Color.Transparent)
-                        display.GraphicsContext.DrawEllipse(_pen, x, y, _size, _size);
-                    break;
-                case MarkerType.Triangle:
-                    using (GraphicsPath gp = new GraphicsPath())
-                    {
-                        gp.StartFigure();
-                        gp.AddLine(x, .866f * _size + y, _size + x, .866f * _size + y);
-                        gp.AddLine(_size + x, .866f * _size + y, _size / 2 + x, y);
-                        gp.CloseFigure();
+                float x = (float)_xOffset - _size / 2;
+                float y = (float)_yOffset - _size / 2;
 
+                display.GraphicsContext.SmoothingMode = (SmoothingMode)this.Smoothingmode;
+
+                display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
+                display.GraphicsContext.RotateTransform(_angle + _rotation);
+
+                switch (_type)
+                {
+                    case MarkerType.Circle:
                         if (_brush.Color != Color.Transparent)
-                            display.GraphicsContext.FillPath(_brush, gp);
+                            display.GraphicsContext.FillEllipse(_brush, x, y, _size, _size);
                         if (_pen.Color != Color.Transparent)
-                            display.GraphicsContext.DrawPath(_pen, gp);
-                    }
-                    break;
-                case MarkerType.Square:
-                    if (_brush.Color != Color.Transparent)
-                        display.GraphicsContext.FillRectangle(_brush, x, y, _size, _size);
-                    if (_pen.Color != Color.Transparent)
-                        display.GraphicsContext.DrawRectangle(_pen, x, y, _size, _size);
-                    break;
-                case MarkerType.Cross:
-                    float sw = _symbolWidth;
-
-                    using (GraphicsPath gp2 = new GraphicsPath())
-                    {
-                        gp2.StartFigure();
-                        gp2.AddLine(x, y + _size / 2 - sw, x, y + _size / 2 + sw);
-                        gp2.AddLine(x + _size / 2 - sw, y + _size / 2 + sw, x + _size / 2 - sw, y + _size);
-                        gp2.AddLine(x + _size / 2 + sw, y + _size, x + _size / 2 + sw, y + _size / 2 + sw);
-                        gp2.AddLine(x + _size, y + _size / 2 + sw, x + _size, y + _size / 2 - sw);
-                        gp2.AddLine(x + _size / 2 + sw, y + _size / 2 - sw, x + _size / 2 + sw, y);
-                        gp2.AddLine(x + _size / 2 - sw, y, x + _size / 2 - sw, y + _size / 2 - sw);
-                        gp2.CloseFigure();
-
-                        if (_brush.Color != Color.Transparent && sw > 0.0)
-                            display.GraphicsContext.FillPath(_brush, gp2);
-                        if (_pen.Color != Color.Transparent)
-                            display.GraphicsContext.DrawPath(_pen, gp2);
-                    }
-                    break;
-                case MarkerType.Star:
-                    using (GraphicsPath gp3 = new GraphicsPath())
-                    {
-                        double w1 = 2.0 * Math.PI / 5.0;
-                        double w2 = w1 / 2.0;
-                        for (int i = 0; i < 5; i++)
+                            display.GraphicsContext.DrawEllipse(_pen, x, y, _size, _size);
+                        break;
+                    case MarkerType.Triangle:
+                        using (GraphicsPath gp = new GraphicsPath())
                         {
-                            float x1 = _size / 2 + _size / 2 * (float)Math.Sin(w1 * i);
-                            float y1 = _size / 2 - _size / 2 * (float)Math.Cos(w1 * i);
-                            float x2 = _size / 2 + _size / 5 * (float)Math.Sin(w1 * i + w2);
-                            float y2 = _size / 2 - _size / 5 * (float)Math.Cos(w1 * i + w2);
-                            gp3.AddLine(x1 + x, y1 + y, x2 + x, y2 + y);
-                        }
-                        gp3.CloseFigure();
+                            gp.StartFigure();
+                            gp.AddLine(x, .866f * _size + y, _size + x, .866f * _size + y);
+                            gp.AddLine(_size + x, .866f * _size + y, _size / 2 + x, y);
+                            gp.CloseFigure();
 
+                            if (_brush.Color != Color.Transparent)
+                                display.GraphicsContext.FillPath(_brush, gp);
+                            if (_pen.Color != Color.Transparent)
+                                display.GraphicsContext.DrawPath(_pen, gp);
+                        }
+                        break;
+                    case MarkerType.Square:
                         if (_brush.Color != Color.Transparent)
-                            display.GraphicsContext.FillPath(_brush, gp3);
+                            display.GraphicsContext.FillRectangle(_brush, x, y, _size, _size);
                         if (_pen.Color != Color.Transparent)
-                            display.GraphicsContext.DrawPath(_pen, gp3);
-                    }
-                    break;
+                            display.GraphicsContext.DrawRectangle(_pen, x, y, _size, _size);
+                        break;
+                    case MarkerType.Cross:
+                        float sw = _symbolWidth;
+
+                        using (GraphicsPath gp2 = new GraphicsPath())
+                        {
+                            gp2.StartFigure();
+                            gp2.AddLine(x, y + _size / 2 - sw, x, y + _size / 2 + sw);
+                            gp2.AddLine(x + _size / 2 - sw, y + _size / 2 + sw, x + _size / 2 - sw, y + _size);
+                            gp2.AddLine(x + _size / 2 + sw, y + _size, x + _size / 2 + sw, y + _size / 2 + sw);
+                            gp2.AddLine(x + _size, y + _size / 2 + sw, x + _size, y + _size / 2 - sw);
+                            gp2.AddLine(x + _size / 2 + sw, y + _size / 2 - sw, x + _size / 2 + sw, y);
+                            gp2.AddLine(x + _size / 2 - sw, y, x + _size / 2 - sw, y + _size / 2 - sw);
+                            gp2.CloseFigure();
+
+                            if (_brush.Color != Color.Transparent && sw > 0.0)
+                                display.GraphicsContext.FillPath(_brush, gp2);
+                            if (_pen.Color != Color.Transparent)
+                                display.GraphicsContext.DrawPath(_pen, gp2);
+                        }
+                        break;
+                    case MarkerType.Star:
+                        using (GraphicsPath gp3 = new GraphicsPath())
+                        {
+                            double w1 = 2.0 * Math.PI / 5.0;
+                            double w2 = w1 / 2.0;
+                            for (int i = 0; i < 5; i++)
+                            {
+                                float x1 = _size / 2 + _size / 2 * (float)Math.Sin(w1 * i);
+                                float y1 = _size / 2 - _size / 2 * (float)Math.Cos(w1 * i);
+                                float x2 = _size / 2 + _size / 5 * (float)Math.Sin(w1 * i + w2);
+                                float y2 = _size / 2 - _size / 5 * (float)Math.Cos(w1 * i + w2);
+                                gp3.AddLine(x1 + x, y1 + y, x2 + x, y2 + y);
+                            }
+                            gp3.CloseFigure();
+
+                            if (_brush.Color != Color.Transparent)
+                                display.GraphicsContext.FillPath(_brush, gp3);
+                            if (_pen.Color != Color.Transparent)
+                                display.GraphicsContext.DrawPath(_pen, gp3);
+                        }
+                        break;
+                }
             }
-            display.GraphicsContext.ResetTransform();
-            display.GraphicsContext.SmoothingMode = SmoothingMode.None;
+            finally
+            {
+                display.GraphicsContext.ResetTransform();
+                display.GraphicsContext.SmoothingMode = SmoothingMode.None;
+            }
         }
 
         #endregion
@@ -1444,24 +1450,30 @@ namespace gView.Framework.Symbology
                 format.LineAlignment = StringAlignment.Center;
                 format.FormatFlags = StringFormatFlags.DirectionRightToLeft;
 
-                display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
-                display.GraphicsContext.RotateTransform(_angle + _rotation);
-
-                double xo = _xOffset, yo = _yOffset;
-                if (_angle != 0 || _rotation != 0)
+                try
                 {
-                    if (_rotation != 0)
-                        SymbolTransformation.Transform(_angle + _rotation, _hOffset, _vOffset, out _xOffset, out _yOffset);
+                    display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
+                    display.GraphicsContext.RotateTransform(_angle + _rotation);
 
-                    double cos_a = Math.Cos(((double)(-_angle - _rotation)) / 180.0 * Math.PI);
-                    double sin_a = Math.Sin(((double)(-_angle - _rotation)) / 180.0 * Math.PI);
+                    double xo = _xOffset, yo = _yOffset;
+                    if (_angle != 0 || _rotation != 0)
+                    {
+                        if (_rotation != 0)
+                            SymbolTransformation.Transform(_angle + _rotation, _hOffset, _vOffset, out _xOffset, out _yOffset);
 
-                    xo = (double)(_xOffset) * cos_a + (double)(_yOffset) * sin_a;
-                    yo = -(double)(_xOffset) * sin_a + (double)(_yOffset) * cos_a;
+                        double cos_a = Math.Cos(((double)(-_angle - _rotation)) / 180.0 * Math.PI);
+                        double sin_a = Math.Sin(((double)(-_angle - _rotation)) / 180.0 * Math.PI);
+
+                        xo = (double)(_xOffset) * cos_a + (double)(_yOffset) * sin_a;
+                        yo = -(double)(_xOffset) * sin_a + (double)(_yOffset) * cos_a;
+                    }
+
+                    display.GraphicsContext.DrawString(_char.ToString(), _font, _brush, (float)xo, (float)yo, format);
                 }
-
-                display.GraphicsContext.DrawString(_char.ToString(), _font, _brush, (float)xo, (float)yo, format);
-                display.GraphicsContext.ResetTransform();
+                finally
+                {
+                    display.GraphicsContext.ResetTransform();
+                }
 
                 // Rotationspunkt muss gegen den Uhrzeiger mitbewegen,
                 // damit sich Font im Uhrzeigersinn um das Zentrum des Fadenkreuzes
@@ -1831,24 +1843,30 @@ namespace gView.Framework.Symbology
                 float x = (float)_xOffset - _sizeX / 2;
                 float y = (float)_yOffset - _sizeY / 2;
 
-                display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
-                display.GraphicsContext.RotateTransform(_angle + _rotation);
-
                 try
                 {
-                    if (_image == null) _image = Image.FromFile(_filename);
-                    display.GraphicsContext.DrawImage(
-                            _image,
-                            new Rectangle((int)x, (int)y,
-                            (int)_sizeX, (int)_sizeY),
-                            new Rectangle(0, 0, _image.Width, _image.Height),
-                            GraphicsUnit.Pixel);
+                    display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
+                    display.GraphicsContext.RotateTransform(_angle + _rotation);
 
+                    try
+                    {
+                        if (_image == null) _image = Image.FromFile(_filename);
+                        display.GraphicsContext.DrawImage(
+                                _image,
+                                new Rectangle((int)x, (int)y,
+                                (int)_sizeX, (int)_sizeY),
+                                new Rectangle(0, 0, _image.Width, _image.Height),
+                                GraphicsUnit.Pixel);
+
+                    }
+                    catch
+                    {
+                    }
                 }
-                catch
+                finally
                 {
+                    display.GraphicsContext.ResetTransform();
                 }
-                display.GraphicsContext.ResetTransform();
             }
         }
 

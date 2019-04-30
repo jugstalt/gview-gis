@@ -1,15 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Carto.Rendering;
+using gView.Framework.Carto.Rendering.UI;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
 using System.Reflection;
-using gView.Framework.Carto.Rendering.UI;
-using System.Threading.Tasks;
 
 namespace gView.Framework.Carto.Rendering
 {
@@ -118,9 +115,13 @@ namespace gView.Framework.Carto.Rendering
             set
             {
                 if (value == null)
+                {
                     _symbolRotation.RotationFieldName = "";
+                }
                 else
+                {
                     _symbolRotation = value;
+                }
             }
         }
 
@@ -131,11 +132,17 @@ namespace gView.Framework.Carto.Rendering
             _expressionFields = new List<string>();
             while (true)
             {
-                if (expr == null || expr == "") break;
+                if (expr == null || expr == "")
+                {
+                    break;
+                }
 
                 int p1 = expr.IndexOf("[");
                 int p2 = expr.IndexOf("]");
-                if (p1 >= p2) break;
+                if (p1 >= p2)
+                {
+                    break;
+                }
 
                 _expressionFields.Add(expr.Substring(p1 + 1, p2 - p1 - 1));
                 expr = expr.Substring(p2 + 1, expr.Length - p2 - 1);
@@ -147,7 +154,10 @@ namespace gView.Framework.Carto.Rendering
 
         public void PrepareQueryFilter(IDisplay display, IFeatureLayer layer, IQueryFilter filter)
         {
-            if (layer.FeatureClass == null) return;
+            if (layer.FeatureClass == null)
+            {
+                return;
+            }
 
             if (_useExpression)
             {
@@ -155,24 +165,38 @@ namespace gView.Framework.Carto.Rendering
                 foreach (string fieldname in _expressionFields)
                 {
                     if (layer.FeatureClass.FindField(fieldname) != null)
+                    {
                         filter.AddField(fieldname);
+                    }
                 }
             }
             else
             {
                 filter.AddField(_fieldname);
             }
-            if (_sizeField != String.Empty) filter.AddField(_sizeField);
-            if (_fontField != String.Empty) filter.AddField(_fontField);
+            if (_sizeField != String.Empty)
+            {
+                filter.AddField(_sizeField);
+            }
+
+            if (_fontField != String.Empty)
+            {
+                filter.AddField(_fontField);
+            }
 
             if (layer.FeatureClass.FindField(_symbolRotation.RotationFieldName) != null)
+            {
                 filter.AddField(_symbolRotation.RotationFieldName);
+            }
 
             _clipEnvelope = new Envelope(display.DisplayTransformation.TransformedBounds(display));
             if (display.GeometricTransformer != null)
             {
                 object e = display.GeometricTransformer.InvTransform2D(display.Envelope);
-                if (e is IGeometry) _clipEnvelope = ((IGeometry)e).Envelope;
+                if (e is IGeometry)
+                {
+                    _clipEnvelope = ((IGeometry)e).Envelope;
+                }
             }
         }
 
@@ -204,7 +228,10 @@ namespace gView.Framework.Carto.Rendering
 
         public void Draw(IDisplay disp, IFeature feature)
         {
-            if (!(_symbol is ISymbol)) return;
+            if (!(_symbol is ISymbol))
+            {
+                return;
+            }
 
             string expr = _expression;
             foreach (FieldValue fv in feature.Fields)
@@ -227,22 +254,31 @@ namespace gView.Framework.Carto.Rendering
                 }
             }
             if (_useExpression)
+            {
                 _symbol.Text = expr;
+            }
 
             if (String.IsNullOrEmpty(_symbol.Text))
+            {
                 return;
+            }
 
             if (_howManyLabels == howManyLabels.one_per_name)
             {
                 if (_labelStrings.Contains(_symbol.Text.Trim()))
+                {
                     return;
+                }
             }
 
             if (feature.Shape is IPoint)
             {
                 if (disp.LabelEngine.TryAppend(disp, _symbol, feature.Shape, _labelPriority != labelPriority.always) == LabelAppendResult.Succeeded)
                 {
-                    if (_howManyLabels == howManyLabels.one_per_name) _labelStrings.Add(_symbol.Text.Trim());
+                    if (_howManyLabels == howManyLabels.one_per_name)
+                    {
+                        _labelStrings.Add(_symbol.Text.Trim());
+                    }
                 }
             }
             else if (feature.Shape is IMultiPoint)
@@ -251,13 +287,21 @@ namespace gView.Framework.Carto.Rendering
                 for (int i = 0, i_to = multiPoint.PointCount; i < i_to; i++)
                 {
                     if (multiPoint[i] == null)
+                    {
                         continue;
+                    }
 
                     if (disp.LabelEngine.TryAppend(disp, _symbol, multiPoint[i], _labelPriority != labelPriority.always) == LabelAppendResult.Succeeded)
                     {
-                        if (_howManyLabels == howManyLabels.one_per_name) _labelStrings.Add(_symbol.Text.Trim());
+                        if (_howManyLabels == howManyLabels.one_per_name)
+                        {
+                            _labelStrings.Add(_symbol.Text.Trim());
+                        }
+
                         if (_howManyLabels == howManyLabels.one_per_part)
+                        {
                             break;
+                        }
                     }
                 }
             }
@@ -274,24 +318,35 @@ namespace gView.Framework.Carto.Rendering
                 //}
                 IPolyline pLine = (IPolyline)gView.Framework.SpatialAlgorithms.Clip.PerformClip(dispEnv, feature.Shape);
 
-                if (pLine == null) return;
+                if (pLine == null)
+                {
+                    return;
+                }
 
                 if (_lineLabelling == CartographicLineLabeling.CurvedText)
                 {
                     #region Text On Path
                     IDisplayCharacterRanges ranges = _symbol.MeasureCharacterWidth(disp);
                     if (ranges == null)
+                    {
                         return;
+                    }
+
                     float textWidth = ranges.Width;
 
                     for (int iPath = 0; iPath < pLine.PathCount; iPath++)
                     {
                         IPath path = pLine[iPath];
-                        if (path == null) continue;
+                        if (path == null)
+                        {
+                            continue;
+                        }
 
-                        IPointCollection pathPoints=path;
+                        IPointCollection pathPoints = path;
                         if (disp.GeometricTransformer != null)
+                        {
                             pathPoints = (IPointCollection)disp.GeometricTransformer.Transform2D(pathPoints);
+                        }
 
                         Geometry.DisplayPath displayPath = new Geometry.DisplayPath();
                         for (int iPoint = 0; iPoint < pathPoints.PointCount; iPoint++)
@@ -302,7 +357,9 @@ namespace gView.Framework.Carto.Rendering
                         }
                         float pathLenght = displayPath.Length;
                         if (pathLenght == 0.0 || textWidth > pathLenght)
+                        {
                             continue;
+                        }
 
                         displayPath.Chainage = pathLenght / 2f - textWidth / 2f;
                         float nextChainage = pathLenght / 10f;
@@ -312,9 +369,15 @@ namespace gView.Framework.Carto.Rendering
                             if (disp.LabelEngine.TryAppend(disp, _symbol, displayPath, _labelPriority != labelPriority.always) == LabelAppendResult.Succeeded)
                             {
                                 found = true;
-                                if (_howManyLabels == howManyLabels.one_per_name) _labelStrings.Add(_symbol.Text.Trim());
+                                if (_howManyLabels == howManyLabels.one_per_name)
+                                {
+                                    _labelStrings.Add(_symbol.Text.Trim());
+                                }
+
                                 if (_howManyLabels != howManyLabels.one_per_part)
+                                {
                                     break;
+                                }
                             }
                             if (!found)
                             {
@@ -322,7 +385,9 @@ namespace gView.Framework.Carto.Rendering
                                 nextChainage += pathLenght / 10f;
                             }
                             if (displayPath.Chainage + textWidth > pathLenght)
+                            {
                                 break;
+                            }
                         }
                     }
                     #endregion
@@ -362,13 +427,24 @@ namespace gView.Framework.Carto.Rendering
                         if (_lineLabelling == CartographicLineLabeling.Perpendicular)
                         {
                             double angle = Math.Atan2(point2.X - point1.X, point2.Y - point1.Y) * 180.0 / Math.PI;
-                            if (angle < 0) angle += 360;
-                            if (angle > 90 && angle < 270) angle -= 180;
+                            if (angle < 0)
+                            {
+                                angle += 360;
+                            }
+
+                            if (angle > 90 && angle < 270)
+                            {
+                                angle -= 180;
+                            }
+
                             _symbol.Angle = (float)angle;
                         }
                         if (disp.LabelEngine.TryAppend(disp, _symbol, p, _labelPriority != labelPriority.always) == LabelAppendResult.Succeeded)
                         {
-                            if (_howManyLabels == howManyLabels.one_per_name) _labelStrings.Add(_symbol.Text.Trim());
+                            if (_howManyLabels == howManyLabels.one_per_name)
+                            {
+                                _labelStrings.Add(_symbol.Text.Trim());
+                            }
                         }
                     }
                     #endregion
@@ -408,7 +484,10 @@ namespace gView.Framework.Carto.Rendering
 
                         if (disp.LabelEngine.TryAppend(disp, _symbol, pLine, _labelPriority != labelPriority.always) == LabelAppendResult.Succeeded)
                         {
-                            if (_howManyLabels == howManyLabels.one_per_name) _labelStrings.Add(_symbol.Text.Trim());
+                            if (_howManyLabels == howManyLabels.one_per_name)
+                            {
+                                _labelStrings.Add(_symbol.Text.Trim());
+                            }
                         }
                     }
                     #endregion
@@ -424,6 +503,10 @@ namespace gView.Framework.Carto.Rendering
 
         private bool LabelPolygon(IDisplay disp, IPolygon polygon)
         {
+            //var center = new MultiPoint();
+            //center.AddPoint(polygon.Envelope.Center);
+            //return LabelPointCollection(disp, polygon, center);
+
             IEnvelope env = new Envelope(_clipEnvelope); //new Envelope(disp.Envelope);
             //env.Raise(70.0);
             if (polygon is ITopologicalOperation)
@@ -441,19 +524,32 @@ namespace gView.Framework.Carto.Rendering
                     polygon = SpatialAlgorithms.Algorithm.SnapOutsidePointsToEnvelope(polygon, env);
                     polygon = (IPolygon)SpatialAlgorithms.Algorithm.Generalize(polygon, tolerance);
 
+                    var center = new MultiPoint();
+                    center.AddPoint(polygon.Envelope.Center);
+                    return LabelPointCollection(disp, polygon, center);
+
+
                     IGeometry g;
                     ((ITopologicalOperation)polygon).Clip(env, out g);
                     if (g == null)
+                    {
                         return false;
+                    }
+
                     if (g is IPolygon)
+                    {
                         polygon = (IPolygon)g;
+                    }
                 }
-                catch
+                catch(Exception ex)
                 {
                     return false;
                 }
             }
-            if (polygon == null) return false;
+            if (polygon == null)
+            {
+                return false;
+            }
 
             IMultiPoint pColl = gView.Framework.SpatialAlgorithms.Algorithm.PolygonLabelPoints(polygon);
             return LabelPointCollection(disp, polygon, pColl);
@@ -461,7 +557,10 @@ namespace gView.Framework.Carto.Rendering
 
         private bool LabelPointCollection(IDisplay disp, IPolygon polygon, IMultiPoint pColl)
         {
-            if (pColl == null) return false;
+            if (pColl == null)
+            {
+                return false;
+            }
 
             switch (_howManyLabels)
             {
@@ -472,7 +571,9 @@ namespace gView.Framework.Carto.Rendering
                         if (disp.LabelEngine.TryAppend(disp, _symbol, pColl[i], _labelPriority != labelPriority.always) == LabelAppendResult.Succeeded)
                         {
                             if (_howManyLabels == howManyLabels.one_per_name)
+                            {
                                 _labelStrings.Add(_symbol.Text.Trim());
+                            }
 
                             return true;
                         }
@@ -490,7 +591,9 @@ namespace gView.Framework.Carto.Rendering
                     if (disp.LabelEngine.TryAppend(disp, _symbol, pColl, _labelPriority != labelPriority.always) == LabelAppendResult.Succeeded)
                     {
                         if (_howManyLabels == howManyLabels.one_per_name)
+                        {
                             _labelStrings.Add(_symbol.Text.Trim());
+                        }
 
                         return true;
                     }
@@ -563,7 +666,10 @@ namespace gView.Framework.Carto.Rendering
 
         public void Release()
         {
-            if (_symbol is ISymbol) ((ISymbol)_symbol).Release();
+            if (_symbol is ISymbol)
+            {
+                ((ISymbol)_symbol).Release();
+            }
 
             _symbol = null;
             _labelStrings.Clear();
@@ -578,7 +684,10 @@ namespace gView.Framework.Carto.Rendering
             if (initObject is IFeatureLayer)
             {
                 IFeatureLayer layer = (IFeatureLayer)initObject;
-                if (layer.FeatureClass == null) return null;
+                if (layer.FeatureClass == null)
+                {
+                    return null;
+                }
 
                 string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
                 Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.Win.Carto.Rendering.UI.dll");
@@ -610,14 +719,19 @@ namespace gView.Framework.Carto.Rendering
         public ILegendItem LegendItem(int index)
         {
             if (index == 0)
+            {
                 return _symbol;
+            }
+
             return null;
         }
 
         public void SetSymbol(ILegendItem item, ISymbol symbol)
         {
             if (item == _symbol && symbol is ITextSymbol)
+            {
                 _symbol = symbol as ITextSymbol;
+            }
         }
 
         #endregion
