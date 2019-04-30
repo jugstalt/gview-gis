@@ -119,8 +119,6 @@ namespace gView.Win.DataExplorer
         {
             _tree.InitTree(true);
 
-            App.CloseSplash();
-
             foreach (var item in ribbon.QuickAccessItems)
             {
                 ribbon.AddToQuickAccessToolBar(item.Target);
@@ -515,7 +513,7 @@ namespace gView.Win.DataExplorer
         }
 
         private LayoutDocument _selectedLayoutDoc = null;
-        void explorerDocPane_PropertyChanged(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
+        async void explorerDocPane_PropertyChanged(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "SelectedContent")
             {
@@ -531,8 +529,8 @@ namespace gView.Win.DataExplorer
                             if (_selected.Count == 1)
                             {
                                 this.Cursor = global::System.Windows.Input.Cursors.Wait;
-                                _activeTabPage.ExplorerObject = _selected[0];
-                                _activeTabPage.OnShow();
+                                await _activeTabPage.SetExplorerObjectAsync(_selected[0]);
+                                await _activeTabPage.OnShow();
                                 this.Cursor = global::System.Windows.Input.Cursors.Arrow;
                             }
                         }
@@ -706,7 +704,7 @@ namespace gView.Win.DataExplorer
                     {
                         this.Cursor = global::System.Windows.Input.Cursors.Wait;
                         this.Refresh();
-                        _activeTabPage.ExplorerObject = _selected[0];
+                        await _activeTabPage.SetExplorerObjectAsync(_selected[0]);
                         await _activeTabPage.OnShow();
                         this.Cursor = global::System.Windows.Input.Cursors.Arrow;
                         this.Refresh();

@@ -211,7 +211,7 @@ namespace gView.Framework.UI.Controls
             contentsList1.Filter = (ExplorerDialogFilter)cmbFilters.SelectedItem;
             Cursor = Cursors.WaitCursor;
             await contentsList1.RefreshContents();
-            contentsList1.ExplorerObject = contentsList1.ExplorerObject;
+            await contentsList1.SetExplorerObjectAsync(contentsList1.GetExplorerObject());
             Cursor = Cursors.Default;
 
             await SetElementTextBoxVisibility();
@@ -221,11 +221,11 @@ namespace gView.Framework.UI.Controls
         {
             if (await contentsList1.ShowWith(item.ExplorerObject))
             {
-                contentsList1.ExplorerObject = item.ExplorerObject;
+                await contentsList1.SetExplorerObjectAsync(item.ExplorerObject);
             }
             else
             {
-                contentsList1.ExplorerObject = null;
+                await contentsList1.SetExplorerObjectAsync(null);
             }
 
             await SetElementTextBoxVisibility();

@@ -1,22 +1,20 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace gView.Framework.system.UI
 {
     public partial class SplashScreen : Form
     {
-        private string _productName = "";
-        public SplashScreen(string ProductName)
+        //private string _productName = "";
+        public SplashScreen(string productName)
         {
             InitializeComponent();
 
-            _productName = ProductName;
+            lblProductName.Text = productName;
+            lblParseAssembly.Text = lblAddPluginType.Text = String.Empty;
+
+            //_productName = ProductName;
 
             //lblUsername.Text += " " + SystemVariables.InsallationUsername;
             //lblCompany.Text += " " + SystemVariables.InsallationCompanyname;
@@ -27,8 +25,7 @@ namespace gView.Framework.system.UI
             lblDemo.Visible = demo;
         }
         public SplashScreen(string ProductName, bool demo, Version version)
-            :
-            this(ProductName, demo)
+            : this(ProductName, demo)
         {
             lblVersion.Visible = true;
             lblVersion.Text = "Version: " + version.Major.ToString() + "." + version.Minor.ToString();
@@ -39,41 +36,59 @@ namespace gView.Framework.system.UI
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            PlugInManager.OnParseAssembly += OnParseAssembly;
+            PlugInManager.OnAddPluginType += OnAddPluginType;
         }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            //this.Close();
+            this.Close();
         }
 
         private void Form1_Shown(object sender, EventArgs e)
         {
             //timer1.Enabled = true;
+
         }
 
-        private void pictureBox1_Paint(object sender, PaintEventArgs e)
+        private void OnParseAssembly(string assemblyName)
         {
-            if (e.Graphics != null)
+            if (this.InvokeRequired)
             {
-                using (Font font = new Font("Verdana", 22, FontStyle.Bold))
+                PlugInManager.ParseAssemblyDelegate d = new PlugInManager.ParseAssemblyDelegate(OnParseAssembly);
+                this.Invoke(d, new object[] { assemblyName });
+            }
+            else
+            {
+                if (String.IsNullOrWhiteSpace(assemblyName))
                 {
-                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    e.Graphics.DrawString("gView GIS", font, Brushes.Black, 5, 185);
+                    //this.Close();
+                    lblAddPluginType.Text = lblParseAssembly.Text = String.Empty;
+                    timer1.Enabled = true;
                 }
-                using (Pen pen = new Pen(Color.Black))
+                else
                 {
-                    e.Graphics.DrawLine(pen, 10, 225, 390, 225);
-                }
-                using (Font font = new Font("Verdana", 16, FontStyle.Bold))
-                {
-                    float w = e.Graphics.MeasureString(_productName, font).Width;
-                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    e.Graphics.DrawString(_productName, font, Brushes.Black, 395f - w, 225f);
+                    lblParseAssembly.Text = "Parse: " + assemblyName;
+                    lblParseAssembly.Refresh();
+                    //Task.Delay(1).Wait();
                 }
             }
         }
 
-
+        private void OnAddPluginType(string pluginType)
+        {
+            if (this.InvokeRequired)
+            {
+                PlugInManager.ParseAssemblyDelegate d = new PlugInManager.ParseAssemblyDelegate(OnParseAssembly);
+                this.Invoke(d, new object[] { pluginType });
+            }
+            else
+            {
+                lblAddPluginType.Text = "Add: " + pluginType;
+                //lblAddPluginType.Update();
+                lblAddPluginType.Refresh();
+                //Task.Delay(1).Wait();
+            }
+        }
     }
 }

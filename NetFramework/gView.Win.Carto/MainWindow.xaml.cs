@@ -12,18 +12,12 @@ using gView.Win.Carto.Items;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms.Integration;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Xml;
 using Xceed.Wpf.AvalonDock.Layout;
 
@@ -50,18 +44,22 @@ namespace gView.Win.Carto
                 InitializeComponent();
 
                 #region Create Application
+
                 _mapApplication = new MapApplication(this, cartoDocPane);
                 _mapApplication.DockWindowAdded += new DockWindowAddedEvent(mapApplication_DockWindowAdded);
                 _mapApplication.OnShowDockableWindow += new OnShowDockableWindowEvent(mapApplication_OnShowDockableWindow);
+
                 #endregion
 
                 #region Create Document
+
                 _mapDocument = new gView.Framework.UI.MapDocument(_mapApplication);
                 _mapDocument.DocumentWindow = this;
                 _mapDocument.MapAdded += new MapAddedEvent(_mapApplication.MapAddedToDocument);
                 _mapDocument.MapScaleChanged += new MapScaleChangedEvent(_mapDocument_MapScaleChanged);
 
                 #endregion
+
 
                 _mapApplication.mapDocument = _mapDocument;
                 _mapApplication.DocumentFilename = String.Empty;
@@ -111,7 +109,7 @@ namespace gView.Win.Carto
 
                     MakeMainMenuBar(doc.SelectSingleNode("//Menubar"));
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //MessageBox.Show(ex.Message);
                 }
@@ -135,7 +133,9 @@ namespace gView.Win.Carto
                     foreach (var item in ribbon.QuickAccessItems)
                     {
                         if (item is Fluent.QuickAccessMenuItem)
-                            ((Fluent.QuickAccessMenuItem)item).IsChecked = true;
+                        {
+                            item.IsChecked = true;
+                        }
                     }
                 };
             }
@@ -150,7 +150,9 @@ namespace gView.Win.Carto
         void mapApplication_OnShowDockableWindow(IDockableWindow window)
         {
             if (!_anchorables.ContainsKey(window))
+            {
                 return;
+            }
 
             LayoutAnchorable anchorable = _anchorables[window];
             if (anchorable != null)
@@ -167,7 +169,10 @@ namespace gView.Win.Carto
                         ILayoutContentSelector selector = (ILayoutContentSelector)content.Parent;
                         int index = selector.IndexOf(content);
                         if (index != selector.SelectedContentIndex)
+                        {
                             selector.SelectedContentIndex = index;
+                        }
+
                         content = content.Parent as LayoutContent;
                     }
 
@@ -215,9 +220,13 @@ namespace gView.Win.Carto
                     }
                 }
                 if (parent != null)
+                {
                     parent.Children.Add(anchorable);
+                }
                 else
+                {
                     parentDockableWindowName = String.Empty;
+                }
             }
             if (String.IsNullOrEmpty(parentDockableWindowName))
             {
@@ -256,11 +265,15 @@ namespace gView.Win.Carto
         {
             LayoutAnchorable anchorable = sender as LayoutAnchorable;
             if (anchorable == null || anchorable.IsActive == false)
+            {
                 return;
+            }
 
             IDockableWindow window = (anchorable.Content is WindowsFormsHost ? ((WindowsFormsHost)anchorable.Content).Child : anchorable.Content) as IDockableWindow;
             if (window == null)
+            {
                 return;
+            }
 
             //if (window is IContextTools)
             {
@@ -273,7 +286,10 @@ namespace gView.Win.Carto
         #region Events UI
         private void ViewToolStripItem_Click(object sender, System.EventArgs e)
         {
-            if (!(sender is WpfViewToolStripItem)) return;
+            if (!(sender is WpfViewToolStripItem))
+            {
+                return;
+            }
 
             mapApplication_OnShowDockableWindow(((WpfViewToolStripItem)sender).DockableToolWindow);
         }
@@ -281,19 +297,33 @@ namespace gView.Win.Carto
         async private void ToolButton_Click(object sender, EventArgs e)
         {
             DataView dataView = _mapApplication.ActiveDataView;
-            if (dataView == null) return;
+            if (dataView == null)
+            {
+                return;
+            }
 
             ITool tool = null;
             if (sender is ToolButton)
+            {
                 tool = ((ToolButton)sender).Tool;
+            }
             else if (sender is ToolToggleButton)
+            {
                 tool = ((ToolToggleButton)sender).Tool;
+            }
             else if (sender is ToolMenuItem)
+            {
                 tool = ((ToolMenuItem)sender).Tool;
+            }
             else if (sender is DropDownToolButton)
+            {
                 tool = ((DropDownToolButton)sender).Tool;
+            }
 
-            if (tool == null) return;
+            if (tool == null)
+            {
+                return;
+            }
 
             if (tool is IToolWindow)
             {
@@ -322,7 +352,11 @@ namespace gView.Win.Carto
                     if (sender is ICheckAbleButton)
                     {
                         SetActiveTool(tool);
-                        if (_activeTool != null) _activeTool.Checked = false;
+                        if (_activeTool != null)
+                        {
+                            _activeTool.Checked = false;
+                        }
+
                         _activeTool = sender as ICheckAbleButton;
                         _activeTool.Checked = true;
                     }
@@ -377,7 +411,9 @@ namespace gView.Win.Carto
                 Fluent.BackstageTabItem item = (Fluent.BackstageTabItem)backstageTabControl.SelectedItem;
 
                 if (_activeBackstageControl != null)
+                {
                     _activeBackstageControl.UnloadControl();
+                }
 
                 if (item.Content is IControl)
                 {
@@ -471,7 +507,10 @@ namespace gView.Win.Carto
             if (e.Key == Key.Enter)
             {
                 int scale = int.Parse(cmbScale.Text.Replace(".", ""));
-                if (scale <= 0) return;
+                if (scale <= 0)
+                {
+                    return;
+                }
 
                 int index = 0;
                 foreach (ComboBoxItem item in cmbScale.Items)
@@ -497,7 +536,9 @@ namespace gView.Win.Carto
         {
             _mapApplication.ActiveDataView.MapView.CancelDrawing(DrawPhase.All);
             if (_mapApplication.IsDirty)
+            {
                 e.Cancel = !_mapApplication.SaveDirtyDocument();
+            }
         }
 
         #endregion
@@ -509,14 +550,19 @@ namespace gView.Win.Carto
             foreach (ToolToggleButton button in _toolButtons)
             {
                 if (button.Tool == tool)
+                {
                     return button;
+                }
             }
             return null;
         }
 
         private void SetActiveTool(ITool newTool)
         {
-            if (_mapApplication == null) return;
+            if (_mapApplication == null)
+            {
+                return;
+            }
 
             DataView dataView = _mapApplication.ActiveDataView;
 
@@ -524,7 +570,10 @@ namespace gView.Win.Carto
             {
                 ITool oldTool = null;
                 oldTool = dataView.MapView.Tool;
-                if (oldTool == newTool) return;
+                if (oldTool == newTool)
+                {
+                    return;
+                }
 
                 dataView.MapView.Tool = newTool;
                 _mapApplication.MapToolChanged(oldTool, newTool);
@@ -533,8 +582,15 @@ namespace gView.Win.Carto
 
         async private Task SetMapScale(int scale)
         {
-            if (_mapDocument == null || _mapDocument.FocusMap == null || _mapApplication == null) return;
-            if (scale <= 0 || scale == (int)((IDisplay)_mapDocument.FocusMap).mapScale) return;
+            if (_mapDocument == null || _mapDocument.FocusMap == null || _mapApplication == null)
+            {
+                return;
+            }
+
+            if (scale <= 0 || scale == (int)((IDisplay)_mapDocument.FocusMap).mapScale)
+            {
+                return;
+            }
 
             _mapDocument.FocusMap.Display.mapScale = scale;
             await _mapApplication.RefreshActiveMap(DrawPhase.All);
@@ -563,21 +619,32 @@ namespace gView.Win.Carto
         {
             get
             {
-                if (_activeTool == null) return null;
+                if (_activeTool == null)
+                {
+                    return null;
+                }
+
                 return _activeTool.Tool;
             }
 
             set
             {
                 ToolToggleButton button = GetToolButton(value);
-                if (button == null) return;
+                if (button == null)
+                {
+                    return;
+                }
+
                 ToolButton_Click(button, new EventArgs());
             }
         }
 
         private void MakeMainMenuBar(XmlNode node)
         {
-            if (node == null) return;
+            if (node == null)
+            {
+                return;
+            }
 
             backstageTabControl.Items.Clear();
 
@@ -594,7 +661,10 @@ namespace gView.Win.Carto
                         else
                         {
                             ITool tool = _mapApplication.Tool(new Guid(menuItem.Attributes["guid"].Value));
-                            if (tool == null) continue;
+                            if (tool == null)
+                            {
+                                continue;
+                            }
 
                             tool.OnCreate(_mapDocument);
 
@@ -635,8 +705,12 @@ namespace gView.Win.Carto
                             ribbon.QuickAccessItems.Add(new Fluent.QuickAccessMenuItem() { Target = new Separator() });
                             continue;
                         }
-                        ITool tool = (ITool)_mapApplication.Tool(new Guid(menuItem.Attributes["guid"].Value));
-                        if (tool == null) continue;
+                        ITool tool = _mapApplication.Tool(new Guid(menuItem.Attributes["guid"].Value));
+                        if (tool == null)
+                        {
+                            continue;
+                        }
+
                         tool.OnCreate(_mapDocument);
 
                         if (tool.toolType == ToolType.command)
@@ -737,18 +811,27 @@ namespace gView.Win.Carto
             Fluent.QuickAccessMenuItem item = (Fluent.QuickAccessMenuItem)sender;
 
             if (item.Target is ToolButton)
+            {
                 ToolButton_Click(item.Target, new EventArgs());
+            }
         }
 
         internal DataView AddDataView(IMap map)
         {
-            if (map == null) return null;
+            if (map == null)
+            {
+                return null;
+            }
 
             DataView dataView = _mapApplication.GetDataView(map);
             if (dataView == null)
             {
                 gView.Framework.UI.Controls.MapView mapView = new gView.Framework.UI.Controls.MapView();
-                if (map != null) mapView.Map = map;
+                if (map != null)
+                {
+                    mapView.Map = map;
+                }
+
                 mapView.resizeMode = gView.Framework.UI.Controls.MapView.ResizeMode.SameScale;
                 mapView.ContextMenu = _contextMenuStripMapView;
                 mapView.ControlKeyTool = _mapApplication.Tool(new Guid("3E2E9F8C-24FB-48f6-B80E-1B0A54E8C309")); // SmartNavigation
@@ -781,7 +864,9 @@ namespace gView.Win.Carto
             foreach (IMapApplicationModule module in _modules)
             {
                 if (PlugInManager.PlugInID(module).Equals(guid))
+                {
                     return module;
+                }
             }
             return null;
         }
@@ -789,12 +874,17 @@ namespace gView.Win.Carto
         async internal Task RefreshTOC()
         {
             if (_toc != null)
+            {
                 await _toc.RefreshList();
+            }
         }
 
         internal void RefreshTOCElement(IDatasetElement element)
         {
-            if (_toc != null) _toc.RefreshTOCElement(element);
+            if (_toc != null)
+            {
+                _toc.RefreshTOCElement(element);
+            }
         }
 
         internal void SelectTocElementByContextObject(object contextObject)
@@ -821,7 +911,10 @@ namespace gView.Win.Carto
         public void MakeRibbon()
         {
             DataView dataView = _mapApplication.ActiveDataView;
-            if (dataView == null) return;
+            if (dataView == null)
+            {
+                return;
+            }
 
             PlugInManager pm = new PlugInManager();
 
@@ -852,7 +945,10 @@ namespace gView.Win.Carto
                         }
 
                         object tool = _mapApplication.Tool(toolGUID);
-                        if (tool == null) continue;
+                        if (tool == null)
+                        {
+                            continue;
+                        }
 
                         #region IToolItem
                         if (tool is IToolItem)
@@ -864,7 +960,7 @@ namespace gView.Win.Carto
                                     StackPanel panel = new StackPanel();
                                     panel.Margin = new Thickness(0, 32, 0, 0);
 
-                                    System.Windows.Forms.ToolStripItem stripItem = (System.Windows.Forms.ToolStripItem)((IToolItem)tool).ToolItem;
+                                    System.Windows.Forms.ToolStripItem stripItem = ((IToolItem)tool).ToolItem;
 
                                     System.Windows.Forms.MenuStrip bar = new System.Windows.Forms.MenuStrip();
                                     bar.BackColor = System.Drawing.Color.Transparent; //.FromArgb(223, 234, 246);
@@ -882,15 +978,22 @@ namespace gView.Win.Carto
                                                             label.LabelPosition == ToolItemLabelPosition.bottom ? Orientation.Vertical : Orientation.Horizontal;
 
                                         if (panel.Orientation == Orientation.Vertical)
+                                        {
                                             panel.Margin = new Thickness(0, 13, 0, 0);
+                                        }
+
                                         TextBlock text = new TextBlock();
                                         text.Text = label.Label;
                                         text.Padding = new Thickness(3);
 
                                         if (label.LabelPosition == ToolItemLabelPosition.top || label.LabelPosition == ToolItemLabelPosition.left)
+                                        {
                                             panel.Children.Insert(0, text);
+                                        }
                                         else
+                                        {
                                             panel.Children.Add(text);
+                                        }
                                     }
 
                                     panel.Children.Add(host);
@@ -955,7 +1058,10 @@ namespace gView.Win.Carto
             foreach (var pageType in pm.GetPlugins(Framework.system.Plugins.Type.IMapOptionPage))
             {
                 IMapOptionPage page = pm.CreateInstance<IMapOptionPage>(pageType);
-                if (page == null) continue;
+                if (page == null)
+                {
+                    continue;
+                }
 
                 OptionsButton button = new OptionsButton(page);
                 button.Click += new RoutedEventHandler(OptionButton_Click);
@@ -993,7 +1099,10 @@ namespace gView.Win.Carto
                     try
                     {
                         if (ribbon.SelectedTabIndex == i)
+                        {
                             ribbon.SelectedTabIndex = 0;
+                        }
+
                         ribbon.ContextualGroups.Remove(ribbon.Tabs[i].Group);
                         ribbon.Tabs.RemoveAt(i);
                     }
@@ -1079,7 +1188,10 @@ namespace gView.Win.Carto
                     try
                     {
                         if (ribbon.SelectedTabIndex == i)
+                        {
                             ribbon.SelectedTabIndex = 0;
+                        }
+
                         ribbon.ContextualGroups.Remove(ribbon.Tabs[i].Group);
                         ribbon.Tabs.RemoveAt(i);
                     }
@@ -1091,7 +1203,10 @@ namespace gView.Win.Carto
 
             foreach (LayoutAnchorable anchorable in _anchorables.Values)
             {
-                if (!anchorable.IsActive) continue;
+                if (!anchorable.IsActive)
+                {
+                    continue;
+                }
 
                 IDockableWindow window = (anchorable.Content is WindowsFormsHost ? ((WindowsFormsHost)anchorable.Content).Child : anchorable.Content) as IDockableWindow;
                 if (window is IContextTools && ((IContextTools)window).ContextTools != null)
@@ -1246,7 +1361,10 @@ namespace gView.Win.Carto
         private delegate void CursorMoveCallback(int x, int y, double X, double Y);
         public void mapView1_CursorMove(int x, int y, double X, double Y)
         {
-            if (_mapDocument == null || _mapDocument.FocusMap == null || _mapDocument.FocusMap.Display == null) return;
+            if (_mapDocument == null || _mapDocument.FocusMap == null || _mapDocument.FocusMap.Display == null)
+            {
+                return;
+            }
 
             if (!statusLabelX.Dispatcher.CheckAccess())
             {
@@ -1266,16 +1384,24 @@ namespace gView.Win.Carto
                     map.Display.MapUnits,
                     map.Display.DisplayUnits,
                     map.Display.SpatialReference != null ? map.Display.SpatialReference.SpatialParameters : null);
-                if (c == null || c.Length != 2) return;
+                if (c == null || c.Length != 2)
+                {
+                    return;
+                }
 
                 statusLabelX.Text = "X=" + String.Format("{0:#.##}", c[0]);
                 statusLabelY.Text = "Y=" + String.Format("{0:#.##}", c[1]);
                 statusLabelUnit.Text = "[" + map.Display.DisplayUnits.ToString() + "]";
                 if (map.Display.SpatialReference != null &&
                     statusLabelRefSystem.Text != map.Display.SpatialReference.Description)
+                {
                     statusLabelRefSystem.Text = map.Display.SpatialReference.Description;
+                }
 
-                if (_mapApplication != null) _mapApplication.CursorPos(X, Y);
+                if (_mapApplication != null)
+                {
+                    _mapApplication.CursorPos(X, Y);
+                }
             }
         }
 
@@ -1329,7 +1455,11 @@ namespace gView.Win.Carto
             {
                 foreach (object item in _combo.Items)
                 {
-                    if (base.Items.Contains(item)) continue;
+                    if (base.Items.Contains(item))
+                    {
+                        continue;
+                    }
+
                     base.Items.Add(item);
                 }
                 base.SelectedItem = _combo.SelectedItem;

@@ -192,22 +192,20 @@ namespace gView.Framework.UI.Controls
             return true;
         }
 
-        public IExplorerObject ExplorerObject
+        public IExplorerObject GetExplorerObject()
         {
-            get
-            {
-                return _exObject;
-            }
-            set
-            {
-                if (_exObject == value) return;
-                listView.Items.Clear();
-                _exObject = value;
-                if (_exObject == null) return;
-
-                //BuildList();
-            }
+            return _exObject;
         }
+        async public Task SetExplorerObjectAsync(IExplorerObject value)
+        {
+            if (_exObject == value) return;
+            listView.Items.Clear();
+            _exObject = value;
+            if (_exObject == null) return;
+
+            await BuildList();
+        }
+
         #endregion
 
         async private Task BuildList()

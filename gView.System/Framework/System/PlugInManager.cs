@@ -60,6 +60,11 @@ namespace gView.Framework.system
             Init();
         }
 
+        public delegate void ParseAssemblyDelegate(string assemblyName);
+
+        public static event ParseAssemblyDelegate OnParseAssembly = null;
+        public static event ParseAssemblyDelegate OnAddPluginType = null;
+
         public static void Init()
         {
             if (_pluginTypes != null)
@@ -77,6 +82,8 @@ namespace gView.Framework.system
                 {
                     currentDll = dll.Name;
 
+                    OnParseAssembly?.Invoke(dll.Name);
+
                     try
                     {
                         Assembly assembly = Assembly.LoadFrom(dll.FullName);
@@ -87,6 +94,8 @@ namespace gView.Framework.system
                                 continue;
 
                             _pluginTypes.Add(registerPluginAttribute.Value, pluginType);
+
+                            OnAddPluginType?.Invoke(pluginType.ToString());
                         }
                     }
                     catch (BadImageFormatException)
@@ -105,10 +114,12 @@ namespace gView.Framework.system
                 error.Append(Environment.NewLine);
             }
 
-            if(error.Length>0)
+            if (error.Length > 0)
             {
                 //throw new Exception("PluginMananger.Init() " + Environment.NewLine + error.ToString());
             }
+
+            OnParseAssembly?.Invoke(null);
         }
 
         public IEnumerable<Type> GetPlugins(Type interfaceType)
@@ -128,8 +139,6 @@ namespace gView.Framework.system
 
         public IEnumerable<Type> GetPlugins(Plugins.Type type)
         {
-            Init();
-
             Init();
 
             List<Type> pluginTypes = new List<Type>();

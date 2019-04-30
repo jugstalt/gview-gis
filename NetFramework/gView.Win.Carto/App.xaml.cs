@@ -13,5 +13,14 @@ namespace gView.Win.Carto
     /// </summary>
     public partial class App : Application
     {
+        internal static gView.Framework.system.UI.SplashScreen SplashScreen = new gView.Framework.system.UI.SplashScreen("gView Carto");
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            SplashScreen.Show();
+            SplashScreen.Refresh();
+
+            base.OnStartup(e);
+        }
     }
 }
