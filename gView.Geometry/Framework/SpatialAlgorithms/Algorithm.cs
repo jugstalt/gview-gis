@@ -1,11 +1,10 @@
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.LinAlg;
+using gView.Framework.SpatialAlgorithms.Clipper;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Geometry;
-using gView.Framework.Data;
-using gView.Framework.LinAlg;
-using gView.Framework.system;
-using gView.Framework.SpatialAlgorithms.Clipper;
 
 namespace gView.Framework.SpatialAlgorithms
 {
@@ -29,12 +28,19 @@ namespace gView.Framework.SpatialAlgorithms
 
         public static bool Jordan(IRing ring, IRing hole)
         {
-            if (hole == null || hole.PointCount < 3 || ring == null || ring.PointCount < 3) return false;
+            if (hole == null || hole.PointCount < 3 || ring == null || ring.PointCount < 3)
+            {
+                return false;
+            }
+
             Polygon polygon = new Polygon(ring);
 
             for (int i = 0; i < hole.PointCount; i++)
             {
-                if (!Jordan(polygon, hole[i].X, hole[i].Y)) return false;
+                if (!Jordan(polygon, hole[i].X, hole[i].Y))
+                {
+                    return false;
+                }
             }
             return true;
         }
@@ -56,7 +62,10 @@ namespace gView.Framework.SpatialAlgorithms
                     {
                         if (getLineKD(x1, y1, x2, y2, out k, out d))
                         {
-                            if (d > 0) inter++;
+                            if (d > 0)
+                            {
+                                inter++;
+                            }
                         }
                     }
                 }
@@ -76,7 +85,10 @@ namespace gView.Framework.SpatialAlgorithms
                 {
                     if (getLineKD(x0, y0, x2, y2, out k, out d))
                     {
-                        if (d > 0) inter++;
+                        if (d > 0)
+                        {
+                            inter++;
+                        }
                     }
                 }
             }
@@ -87,7 +99,10 @@ namespace gView.Framework.SpatialAlgorithms
         #region Box
         public static bool IntersectBox(IGeometry geometry, IEnvelope envelope)
         {
-            if (geometry == null) return false;
+            if (geometry == null)
+            {
+                return false;
+            }
 
             switch (geometry.GeometryType)
             {
@@ -97,7 +112,10 @@ namespace gView.Framework.SpatialAlgorithms
                     IPointCollection points = (IPointCollection)geometry;
                     for (int i = 0; i < points.PointCount; i++)
                     {
-                        if (PointInBox(points[i], envelope)) return true;
+                        if (PointInBox(points[i], envelope))
+                        {
+                            return true;
+                        }
                     }
                     return false;
                 case geometryType.Polyline:
@@ -105,10 +123,17 @@ namespace gView.Framework.SpatialAlgorithms
                     for (int i = 0; i < polyline.PathCount; i++)
                     {
                         IPath path = polyline[i];
-                        if (PathIntersectBox(path, envelope)) return true;
+                        if (PathIntersectBox(path, envelope))
+                        {
+                            return true;
+                        }
+
                         for (int j = 0; j < path.PointCount; j++)
                         {
-                            if (PointInBox(path[i], envelope)) return true;
+                            if (PointInBox(path[i], envelope))
+                            {
+                                return true;
+                            }
                         }
                     }
                     return false;
@@ -117,17 +142,39 @@ namespace gView.Framework.SpatialAlgorithms
                     for (int i = 0; i < polygon.RingCount; i++)
                     {
                         IRing ring = polygon[i];
-                        if (PathIntersectBox((IPath)ring, envelope)) return true;
+                        if (PathIntersectBox(ring, envelope))
+                        {
+                            return true;
+                        }
+
                         for (int j = 0; j < ring.PointCount; j++)
                         {
-                            if (PointInBox(ring[j], envelope)) return true;
+                            if (PointInBox(ring[j], envelope))
+                            {
+                                return true;
+                            }
                         }
                     }
 
-                    if (Jordan(polygon, envelope.minx, envelope.miny)) return true;
-                    if (Jordan(polygon, envelope.maxx, envelope.maxy)) return true;
-                    if (Jordan(polygon, envelope.minx, envelope.maxy)) return true;
-                    if (Jordan(polygon, envelope.maxx, envelope.miny)) return true;
+                    if (Jordan(polygon, envelope.minx, envelope.miny))
+                    {
+                        return true;
+                    }
+
+                    if (Jordan(polygon, envelope.maxx, envelope.maxy))
+                    {
+                        return true;
+                    }
+
+                    if (Jordan(polygon, envelope.minx, envelope.maxy))
+                    {
+                        return true;
+                    }
+
+                    if (Jordan(polygon, envelope.maxx, envelope.miny))
+                    {
+                        return true;
+                    }
 
                     return false;
                 case geometryType.Envelope:
@@ -137,7 +184,9 @@ namespace gView.Framework.SpatialAlgorithms
                     for (int i = 0; i < ((IAggregateGeometry)geometry).GeometryCount; i++)
                     {
                         if (IntersectBox(((IAggregateGeometry)geometry)[i], envelope))
+                        {
                             return true;
+                        }
                     }
                     return false;
             }
@@ -146,18 +195,40 @@ namespace gView.Framework.SpatialAlgorithms
 
         private static bool PointInBox(IPoint point, IEnvelope env)
         {
-            if (point == null) return false;
+            if (point == null)
+            {
+                return false;
+            }
 
-            if (point.X >= env.minx && point.X <= env.maxx && point.Y >= env.miny && point.Y <= env.maxy) return true;
+            if (point.X >= env.minx && point.X <= env.maxx && point.Y >= env.miny && point.Y <= env.maxy)
+            {
+                return true;
+            }
 
             return false;
         }
         private static bool PathIntersectBox(IPath path, IEnvelope envelope)
         {
-            if (PathIntersectLine(path, envelope.minx, envelope.miny, envelope.minx, envelope.maxy)) return true;
-            if (PathIntersectLine(path, envelope.minx, envelope.maxy, envelope.maxx, envelope.maxy)) return true;
-            if (PathIntersectLine(path, envelope.maxx, envelope.maxy, envelope.maxx, envelope.miny)) return true;
-            if (PathIntersectLine(path, envelope.maxx, envelope.miny, envelope.minx, envelope.miny)) return true;
+            if (PathIntersectLine(path, envelope.minx, envelope.miny, envelope.minx, envelope.maxy))
+            {
+                return true;
+            }
+
+            if (PathIntersectLine(path, envelope.minx, envelope.maxy, envelope.maxx, envelope.maxy))
+            {
+                return true;
+            }
+
+            if (PathIntersectLine(path, envelope.maxx, envelope.maxy, envelope.maxx, envelope.miny))
+            {
+                return true;
+            }
+
+            if (PathIntersectLine(path, envelope.maxx, envelope.miny, envelope.minx, envelope.miny))
+            {
+                return true;
+            }
+
             return false;
         }
         #endregion
@@ -165,7 +236,10 @@ namespace gView.Framework.SpatialAlgorithms
         #region Intersects
         public static bool Intersects(IGeometry geometry, IGeometry candidate)
         {
-            if (geometry == null || candidate == null) return false;
+            if (geometry == null || candidate == null)
+            {
+                return false;
+            }
 
             if (geometry is IEnvelope)
             {
@@ -178,17 +252,25 @@ namespace gView.Framework.SpatialAlgorithms
             if (geometry is IPolygon)
             {
                 IPointCollection coll = GeometryPoints(candidate, false);
-                if (coll.PointCount == 0) return false;
+                if (coll.PointCount == 0)
+                {
+                    return false;
+                }
 
                 // candidate is inside of geometry (1 Point)
                 for (int i = 0; i < coll.PointCount; i++)
                 {
                     IPoint point = coll[i];
-                    if (point == null) continue;
+                    if (point == null)
+                    {
+                        continue;
+                    }
 
                     // If there is a point inside the polygon -> return true;
                     if (Jordan((IPolygon)geometry, point.X, point.Y))
+                    {
                         return true;
+                    }
                 }
 
                 // geometry is in candidate (1 Point)
@@ -198,10 +280,16 @@ namespace gView.Framework.SpatialAlgorithms
                     for (int i = 0; i < coll.PointCount; i++)
                     {
                         IPoint point = coll[i];
-                        if (point == null) continue;
+                        if (point == null)
+                        {
+                            continue;
+                        }
 
                         // If there is a point inside the candidate -> return true;
-                        if (Jordan((IPolygon)candidate, point.X, point.Y)) return true;
+                        if (Jordan((IPolygon)candidate, point.X, point.Y))
+                        {
+                            return true;
+                        }
                     }
                 }
 
@@ -214,7 +302,10 @@ namespace gView.Framework.SpatialAlgorithms
                     {
                         foreach (IPath candPath in candPaths)
                         {
-                            if (PathIntersectPath(polyPath, candPath)) return true;
+                            if (PathIntersectPath(polyPath, candPath))
+                            {
+                                return true;
+                            }
                         }
                     }
                 }
@@ -224,8 +315,10 @@ namespace gView.Framework.SpatialAlgorithms
 
             if (geometry is IPolyline)
             {
-                if(candidate is Polygon)
+                if (candidate is Polygon)
+                {
                     return Intersects(candidate, geometry);
+                }
                 // if there is a path intersection -> return true;
                 List<IPath> polyPaths = GeometryPaths(geometry);
                 List<IPath> candPaths = GeometryPaths(candidate);
@@ -235,7 +328,10 @@ namespace gView.Framework.SpatialAlgorithms
                     {
                         foreach (IPath candPath in candPaths)
                         {
-                            if (PathIntersectPath(polyPath, candPath)) return true;
+                            if (PathIntersectPath(polyPath, candPath))
+                            {
+                                return true;
+                            }
                         }
                     }
                 }
@@ -245,19 +341,28 @@ namespace gView.Framework.SpatialAlgorithms
             if (geometry is IPoint)
             {
                 if (candidate is IPoint)
+                {
                     return (
                         Math.Abs(((IPoint)geometry).X - ((IPoint)candidate).X) < 1e-5 &&
                         Math.Abs(((IPoint)geometry).X - ((IPoint)candidate).X) < 1e-5);
+                }
+
                 return Intersects(candidate, geometry);
             }
 
             if (geometry is IMultiPoint)
             {
                 if (!Intersects(candidate, geometry.Envelope))
+                {
                     return false;
+                }
+
                 for (int i = 0; i < ((IMultiPoint)geometry).PointCount; i++)
                 {
-                    if (Intersects(candidate, ((IMultiPoint)geometry)[i])) return true;
+                    if (Intersects(candidate, ((IMultiPoint)geometry)[i]))
+                    {
+                        return true;
+                    }
                 }
                 return false;
             }
@@ -267,7 +372,9 @@ namespace gView.Framework.SpatialAlgorithms
                 for (int i = 0; i < ((IAggregateGeometry)geometry).GeometryCount; i++)
                 {
                     if (Intersects(((IAggregateGeometry)geometry)[i], candidate))
+                    {
                         return true;
+                    }
                 }
 
                 return false;
@@ -277,7 +384,10 @@ namespace gView.Framework.SpatialAlgorithms
         }
         public static IPoint SegmentIntersection(IPoint p11, IPoint p12, IPoint p21, IPoint p22, bool between)
         {
-            if (p11 == null || p12 == null || p21 == null || p22 == null) return null;
+            if (p11 == null || p12 == null || p21 == null || p22 == null)
+            {
+                return null;
+            }
 
             double lx = p21.X - p11.X;
             double ly = p21.Y - p11.Y;
@@ -296,7 +406,10 @@ namespace gView.Framework.SpatialAlgorithms
 
                 if (between &&
                     (t1 < 0.0 || t1 > 1.0 ||
-                     t2 < 0.0 || t2 > 1.0)) return null;
+                     t2 < 0.0 || t2 > 1.0))
+                {
+                    return null;
+                }
 
                 return new Point(p11.X + t1 * r1x, p11.Y + t1 * r1y);
             }
@@ -307,7 +420,9 @@ namespace gView.Framework.SpatialAlgorithms
         public static bool IsSelfIntersecting(IPointCollection pColl)
         {
             if (pColl == null || pColl.PointCount <= 2)
+            {
                 return false;
+            }
 
             int to = pColl.PointCount - 1;
             for (int i = 0; i < to; i++)
@@ -324,7 +439,9 @@ namespace gView.Framework.SpatialAlgorithms
                     double x2 = p02.X - p01.X, y2 = p02.Y - p01.Y;
 
                     if (IsParallel(x1, y1, x2, y2) == -1)
+                    {
                         return true;
+                    }
                 }
 
                 #endregion
@@ -338,20 +455,24 @@ namespace gView.Framework.SpatialAlgorithms
                         (intersectionPoint.Distance(p01) > 0) &&
                         (intersectionPoint.Distance(p10) > 0) &&
                         (intersectionPoint.Distance(p11) > 0))
+                    {
                         return true;
+                    }
                 }
             }
 
             return false;
         }
 
-        public static int IsParallel(double x1,double y1, double x2,double y2, double epsi = 1e-7)
+        public static int IsParallel(double x1, double y1, double x2, double y2, double epsi = 1e-7)
         {
             var len1 = Math.Sqrt(x1 * x1 + y1 * y1);
             var len2 = Math.Sqrt(x2 * x2 + y2 * y2);
 
             if (len1 == 0 || len2 == 0)  // ??
+            {
                 return 0;  // NaN ??
+            }
 
             x1 /= len1;
             y1 /= len1;
@@ -359,10 +480,14 @@ namespace gView.Framework.SpatialAlgorithms
             y2 /= len2;
 
             if (Math.Abs(x2 - x1) < epsi && Math.Abs(y2 - y1) < epsi)   // Parallel with same direction
+            {
                 return 1;
+            }
 
             if (Math.Abs(x1 + x2) < epsi && Math.Abs(y1 + y2) < epsi)   // Paralell with opposite direction 
+            {
                 return -1;
+            }
 
             return 0;
         }
@@ -372,20 +497,32 @@ namespace gView.Framework.SpatialAlgorithms
         #region Contains
         public static bool Contains(IGeometry geometry, IGeometry candidate)
         {
-            if (geometry == null || candidate == null) return false;
+            if (geometry == null || candidate == null)
+            {
+                return false;
+            }
 
             IPointCollection coll = GeometryPoints(candidate, false);
-            if (coll.PointCount == 0) return false;
+            if (coll.PointCount == 0)
+            {
+                return false;
+            }
 
             if (geometry is IPolygon)
             {
                 for (int i = 0; i < coll.PointCount; i++)
                 {
                     IPoint point = coll[i];
-                    if (point == null) continue;
+                    if (point == null)
+                    {
+                        continue;
+                    }
 
                     // If there is a Point outside -> return false;
-                    if (!Jordan((IPolygon)geometry, point.X, point.Y)) return false;
+                    if (!Jordan((IPolygon)geometry, point.X, point.Y))
+                    {
+                        return false;
+                    }
 
                     // If there is a Path intersection -> return false;
                     List<IPath> polyPaths = GeometryPaths(geometry);
@@ -396,7 +533,10 @@ namespace gView.Framework.SpatialAlgorithms
                         {
                             foreach (IPath candPath in candPaths)
                             {
-                                if (PathIntersectPath(polyPath, candPath)) return false;
+                                if (PathIntersectPath(polyPath, candPath))
+                                {
+                                    return false;
+                                }
                             }
                         }
                     }
@@ -409,7 +549,10 @@ namespace gView.Framework.SpatialAlgorithms
                 for (int i = 0; i < coll.PointCount; i++)
                 {
                     IPoint point = coll[i];
-                    if (point == null) continue;
+                    if (point == null)
+                    {
+                        continue;
+                    }
 
                     if (point.X < env.minx || point.X > env.maxx ||
                         point.Y < env.miny || point.Y > env.maxy)
@@ -424,7 +567,9 @@ namespace gView.Framework.SpatialAlgorithms
                 for (int i = 0; i < ((IAggregateGeometry)geometry).GeometryCount; i++)
                 {
                     if (Contains(((IAggregateGeometry)geometry)[i], candidate))
+                    {
                         return true;
+                    }
                 }
                 return false;
             }
@@ -436,7 +581,10 @@ namespace gView.Framework.SpatialAlgorithms
         private static bool PathIntersectPath(IPath path1, IPath path2)
         {
             if (path1 == null || path2 == null ||
-                path1.PointCount < 2 || path2.PointCount < 2 || !path1.Envelope.Intersects(path2.Envelope)) return false;
+                path1.PointCount < 2 || path2.PointCount < 2 || !path1.Envelope.Intersects(path2.Envelope))
+            {
+                return false;
+            }
 
             double x1 = path1[0].X;
             double y1 = path1[0].Y;
@@ -445,7 +593,11 @@ namespace gView.Framework.SpatialAlgorithms
             {
                 x2 = path1[i].X;
                 y2 = path1[i].Y;
-                if (PathIntersectLine(path2, x1, y1, x2, y2)) return true;
+                if (PathIntersectLine(path2, x1, y1, x2, y2))
+                {
+                    return true;
+                }
+
                 x1 = x2;
                 y1 = y2;
             }
@@ -453,7 +605,10 @@ namespace gView.Framework.SpatialAlgorithms
             {
                 x2 = path1[0].X;
                 y2 = path1[0].Y;
-                if (PathIntersectLine(path2, x1, y1, x2, y2)) return true;
+                if (PathIntersectLine(path2, x1, y1, x2, y2))
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -539,8 +694,15 @@ namespace gView.Framework.SpatialAlgorithms
 
         private static bool PathIntersectLine(IPath path, double x_1, double y_1, double x_2, double y_2)
         {
-            if (path == null) return false;
-            if (path.PointCount < 2) return false;
+            if (path == null)
+            {
+                return false;
+            }
+
+            if (path.PointCount < 2)
+            {
+                return false;
+            }
 
             double x1 = path[0].X;
             double y1 = path[0].Y;
@@ -552,7 +714,11 @@ namespace gView.Framework.SpatialAlgorithms
 
                 x2 = point.X;
                 y2 = point.Y;
-                if (LineIntersectLine(x1, y1, x2, y2, x_1, y_1, x_2, y_2)) return true;
+                if (LineIntersectLine(x1, y1, x2, y2, x_1, y_1, x_2, y_2))
+                {
+                    return true;
+                }
+
                 x1 = x2;
                 y1 = y2;
             }
@@ -562,7 +728,10 @@ namespace gView.Framework.SpatialAlgorithms
 
                 x2 = point.X;
                 y2 = point.Y;
-                if (LineIntersectLine(x1, y1, x2, y2, x_1, y_1, x_2, y_2)) return true;
+                if (LineIntersectLine(x1, y1, x2, y2, x_1, y_1, x_2, y_2))
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -576,7 +745,10 @@ namespace gView.Framework.SpatialAlgorithms
             double rx2 = x12 - x02, ry2 = y12 - y02;
 
             double D = Det(rx1, -rx2, ry1, -ry2);
-            if (Math.Abs(D) < 1e-10) return false; // Paralell
+            if (Math.Abs(D) < 1e-10)
+            {
+                return false; // Paralell
+            }
             // Algorithmus zum prüfen, ob sich Paralelle Linienstücke überlappen
             // Fehlt noch...
 
@@ -587,14 +759,20 @@ namespace gView.Framework.SpatialAlgorithms
             double t2 = D2 / D;
 
             if (t1 >= 0.0 && t1 <= 1.0 &&
-                t2 >= 0.0 && t2 <= 1.0) return true;
+                t2 >= 0.0 && t2 <= 1.0)
+            {
+                return true;
+            }
 
             return false;
         }
 
         public static Point IntersectLine(IPoint p11, IPoint p12, IPoint p21, IPoint p22, bool between)
         {
-            if (p11 == null || p12 == null || p21 == null || p22 == null) return null;
+            if (p11 == null || p12 == null || p21 == null || p22 == null)
+            {
+                return null;
+            }
 
             double lx = p21.X - p11.X;
             double ly = p21.Y - p11.Y;
@@ -613,7 +791,10 @@ namespace gView.Framework.SpatialAlgorithms
 
                 if (between &&
                     (t1 < 0.0 || t1 > 1.0 ||
-                     t2 < 0.0 || t2 > 1.0)) return null;
+                     t2 < 0.0 || t2 > 1.0))
+                {
+                    return null;
+                }
 
                 return new Point(p11.X + t1 * r1x, p11.Y + t1 * r1y);
             }
@@ -643,7 +824,11 @@ namespace gView.Framework.SpatialAlgorithms
         }
         private static bool isPositive(double z)
         {
-            if (Math.Sign(z) < 0) return false;
+            if (Math.Sign(z) < 0)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -671,7 +856,11 @@ namespace gView.Framework.SpatialAlgorithms
         }
         private static void HorizontalIntersectionPoints(IPath path, double cx, double cy, ref List<IPoint> points)
         {
-            if (path.PointCount == 0) return;
+            if (path.PointCount == 0)
+            {
+                return;
+            }
+
             double x1 = path[0].X - cx, y1 = path[0].Y - cy, x2, y2, k, d;
 
             int to = path.PointCount;
@@ -706,7 +895,11 @@ namespace gView.Framework.SpatialAlgorithms
         }
         private static void VerticalIntersectionPoints(IPath path, double cx, double cy, ref List<IPoint> points)
         {
-            if (path.PointCount == 0) return;
+            if (path.PointCount == 0)
+            {
+                return;
+            }
+
             double x1 = path[0].X - cx, y1 = path[0].Y - cy, x2, y2, k, d;
 
             int to = path.PointCount;
@@ -745,7 +938,10 @@ namespace gView.Framework.SpatialAlgorithms
         }
         private static void CreateLineSegments(List<IPoint> points, ref List<SimpleLineSegment> lines)
         {
-            if (lines == null || points == null) return;
+            if (lines == null || points == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < points.Count - 1; i++)
             {
@@ -755,7 +951,10 @@ namespace gView.Framework.SpatialAlgorithms
 
         public static void Rotate(double angle, IPointCollection pColl)
         {
-            if (pColl == null) return;
+            if (pColl == null)
+            {
+                return;
+            }
 
             double sin_a = Math.Sin(angle);
             double cos_a = Math.Cos(angle);
@@ -771,7 +970,10 @@ namespace gView.Framework.SpatialAlgorithms
         }
         public static void Translate(double tx, double ty, IPointCollection pColl)
         {
-            if (pColl == null) return;
+            if (pColl == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < pColl.PointCount; i++)
             {
@@ -795,7 +997,10 @@ namespace gView.Framework.SpatialAlgorithms
         }
         private static void AppendGeometryPoints(IGeometry geometry, IPointCollection coll, bool clonePoints, bool startEndPointsOnly)
         {
-            if (geometry == null) return;
+            if (geometry == null)
+            {
+                return;
+            }
 
             if (geometry is IPoint)
             {
@@ -822,7 +1027,11 @@ namespace gView.Framework.SpatialAlgorithms
                 for (int p = 0; p < ((IPolyline)geometry).PathCount; p++)
                 {
                     IPath path = ((IPolyline)geometry)[p];
-                    if (path == null) continue;
+                    if (path == null)
+                    {
+                        continue;
+                    }
+
                     if (startEndPointsOnly && path.PointCount > 1)
                     {
                         AppendGeometryPoints(path[0], coll, clonePoints, false);
@@ -842,7 +1051,11 @@ namespace gView.Framework.SpatialAlgorithms
                 for (int p = 0; p < ((IPolygon)geometry).RingCount; p++)
                 {
                     IRing ring = ((IPolygon)geometry)[p];
-                    if (ring == null) continue;
+                    if (ring == null)
+                    {
+                        continue;
+                    }
+
                     if (startEndPointsOnly && ring.PointCount > 1)
                     {
                         AppendGeometryPoints(ring[0], coll, clonePoints, false);
@@ -862,7 +1075,11 @@ namespace gView.Framework.SpatialAlgorithms
                 for (int p = 0; p < ((IAggregateGeometry)geometry).GeometryCount; p++)
                 {
                     IGeometry geom = ((IAggregateGeometry)geometry)[p];
-                    if (geom == null) continue;
+                    if (geom == null)
+                    {
+                        continue;
+                    }
+
                     AppendGeometryPoints(geom, coll, clonePoints, startEndPointsOnly);
                 }
             }
@@ -892,17 +1109,24 @@ namespace gView.Framework.SpatialAlgorithms
         }
         private static void AppendGeometryPaths(IGeometry geometry, List<IPath> paths)
         {
-            if (geometry == null) return;
+            if (geometry == null)
+            {
+                return;
+            }
 
             if (geometry is IPolyline)
             {
                 for (int i = 0; i < ((IPolyline)geometry).PathCount; i++)
+                {
                     paths.Add(((IPolyline)geometry)[i]);
+                }
             }
             else if (geometry is IPolygon)
             {
                 for (int i = 0; i < ((IPolygon)geometry).RingCount; i++)
+                {
                     paths.Add(((IPolygon)geometry)[i]);
+                }
             }
             else if (geometry is IEnvelope)
             {
@@ -932,7 +1156,10 @@ namespace gView.Framework.SpatialAlgorithms
         }
         private static void PartEnvelops(IGeometry geometry, List<IEnvelope> envelops)
         {
-            if (geometry == null) return;
+            if (geometry == null)
+            {
+                return;
+            }
 
             if (geometry is IPoint)
             {
@@ -943,7 +1170,9 @@ namespace gView.Framework.SpatialAlgorithms
                 for (int i = 0; i < ((IMultiPoint)geometry).PointCount; i++)
                 {
                     if (((IMultiPoint)geometry)[i] != null)
+                    {
                         envelops.Add(((IMultiPoint)geometry)[i].Envelope);
+                    }
                 }
             }
             else if (geometry is IPolyline)
@@ -951,18 +1180,26 @@ namespace gView.Framework.SpatialAlgorithms
                 for (int i = 0; i < ((IPolyline)geometry).PathCount; i++)
                 {
                     if (((IPolyline)geometry)[i] != null)
+                    {
                         envelops.Add(((IPolyline)geometry)[i].Envelope);
+                    }
                 }
             }
             else if (geometry is IPolygon)
             {
-                if (geometry is Polygon) ((Polygon)geometry).VerifyHoles();
+                if (geometry is Polygon)
+                {
+                    ((Polygon)geometry).VerifyHoles();
+                }
+
                 for (int i = 0; i < ((IPolygon)geometry).RingCount; i++)
                 {
                     // Nur Ringe übernehmen, weil Envelope von Holes
                     // darin schon enthalten sind...
                     if (((IPolygon)geometry)[i] is IRing)
+                    {
                         envelops.Add(((IPolygon)geometry)[i].Envelope);
+                    }
                 }
             }
             else if (geometry is IAggregateGeometry)
@@ -1006,7 +1243,10 @@ namespace gView.Framework.SpatialAlgorithms
                 {
                     foreach (Path path in paths)
                     {
-                        if (path == null) continue;
+                        if (path == null)
+                        {
+                            continue;
+                        }
 
                         for (int i = 0; i < path.PointCount - 1; i++)
                         {
@@ -1017,7 +1257,10 @@ namespace gView.Framework.SpatialAlgorithms
                             double a00 = p1.X - p0.X;
                             double a10 = p1.Y - p0.Y;
                             double len = Math.Sqrt(a00 * a00 + a10 * a10);
-                            if (len == 0.0) continue;
+                            if (len == 0.0)
+                            {
+                                continue;
+                            }
 
                             LinearEquation2 eq = new LinearEquation2(
                                 l0, l1, a00, a10, a10, -a00);
@@ -1026,7 +1269,11 @@ namespace gView.Framework.SpatialAlgorithms
                                 double t1 = eq.Var1;
                                 double t2 = eq.Var2;
 
-                                if (t1 < 0.0 || t1 > 1.0) continue;
+                                if (t1 < 0.0 || t1 > 1.0)
+                                {
+                                    continue;
+                                }
+
                                 double dist = Math.Abs(len * t2);
 
                                 if (dist < distance)
@@ -1090,7 +1337,9 @@ namespace gView.Framework.SpatialAlgorithms
         static public double PointDistance(IPoint p1, IPoint p2)
         {
             if (p1 == null || p2 == null)
+            {
                 throw new ArgumentException();
+            }
 
             double dx = p1.X - p2.X;
             double dy = p1.Y - p2.Y;
@@ -1101,7 +1350,9 @@ namespace gView.Framework.SpatialAlgorithms
         static public IPoint PointDifference(IPoint p1, IPoint p2)
         {
             if (p1 == null || p2 == null)
+            {
                 throw new ArgumentException();
+            }
 
             return new Point(p1.X - p2.X, p1.Y - p2.Y);
         }
@@ -1109,14 +1360,19 @@ namespace gView.Framework.SpatialAlgorithms
         static public IPoint PointAddition(IPoint p1, IPoint p2)
         {
             if (p1 == null || p2 == null)
+            {
                 throw new ArgumentException();
+            }
 
             return new Point(p2.X + p1.X, p2.Y + p1.Y);
         }
 
         static public List<IPolygon> SplitPolygonToDonutsAndPolygons(IPolygon canditate)
         {
-            if (canditate == null || canditate.RingCount == 0) return null;
+            if (canditate == null || canditate.RingCount == 0)
+            {
+                return null;
+            }
 
             List<IPolygon> polygons = new List<IPolygon>();
             Polygon polygon = new Polygon(canditate);
@@ -1132,14 +1388,20 @@ namespace gView.Framework.SpatialAlgorithms
 
             for (int i = 0; i < polygon.RingCount; i++)
             {
-                if (polygon[i] == null || polygon[i] is IHole) continue;
+                if (polygon[i] == null || polygon[i] is IHole)
+                {
+                    continue;
+                }
 
                 Polygon p = new Polygon(polygon[i]);
                 polygons.Add(p);
             }
             for (int i = 0; i < polygon.RingCount; i++)
             {
-                if (!(polygon[i] is IHole)) continue;
+                if (!(polygon[i] is IHole))
+                {
+                    continue;
+                }
 
                 foreach (IPolygon p in polygons)
                 {
@@ -1157,7 +1419,9 @@ namespace gView.Framework.SpatialAlgorithms
         static public void RemoveArcs(IPath path)
         {
             if (path == null || path.PointCount < 3)
+            {
                 return;
+            }
 
             Point M = null;
             double R2 = double.NaN;
@@ -1192,7 +1456,9 @@ namespace gView.Framework.SpatialAlgorithms
                             if (M.Distance2(M_) < 1e-2)
                             {
                                 if (!removeIndices.Contains(j - 1))
+                                {
                                     removeIndices.Add(j - 1);
+                                }
                             }
                             else
                             {
@@ -1216,19 +1482,26 @@ namespace gView.Framework.SpatialAlgorithms
             }
         }
 
-        static public IPointCollection RemoveDoubles(IPointCollection pColl, double epsi=1e-7)
+        static public IPointCollection RemoveDoubles(IPointCollection pColl, double epsi = 1e-7)
         {
             if (pColl == null)
+            {
                 return null;
+            }
 
             PointCollection result = new PointCollection();
             if (pColl.PointCount > 0)
+            {
                 result.AddPoint(pColl[0]);
+            }
+
             for (int i = 1, to = pColl.PointCount; i < to; i++)
             {
                 IPoint p0 = pColl[i - 1], p1 = pColl[i];
                 if (p0.Distance(p1) <= epsi)
+                {
                     continue;
+                }
 
                 result.AddPoint(p1);
             }
@@ -1238,23 +1511,23 @@ namespace gView.Framework.SpatialAlgorithms
 
         static public IGeometry Generalize(IGeometry geometry, double generalizationDistance)
         {
-            if(geometry is IPolyline)
+            if (geometry is IPolyline)
             {
                 var polyline = (IPolyline)geometry;
 
                 Polyline result = new Polyline();
-                for(int i=0;i<polyline.PathCount;i++)
+                for (int i = 0; i < polyline.PathCount; i++)
                 {
                     result.AddPath(new Path(GeneralizePointCollection(polyline[i], generalizationDistance)));
                 }
                 return result;
             }
-            if(geometry is IPolygon)
+            if (geometry is IPolygon)
             {
                 var polygon = (IPolygon)geometry;
 
                 Polygon result = new Polygon();
-                for(int i=0;i<polygon.RingCount;i++)
+                for (int i = 0; i < polygon.RingCount; i++)
                 {
                     result.AddRing(new Ring(GeneralizePointCollection(polygon[i], generalizationDistance)));
                 }
@@ -1267,13 +1540,19 @@ namespace gView.Framework.SpatialAlgorithms
         static public IPointCollection GeneralizePointCollection(IPointCollection pColl, double generalizationDistance)
         {
             if (pColl == null)
+            {
                 return null;
+            }
 
             PointCollection result = new PointCollection();
             if (pColl.PointCount > 0)
+            {
                 result.AddPoint(pColl[0]);
+            }
             else
+            {
                 return result;
+            }
 
             IPoint p0 = pColl[0];
 
@@ -1281,7 +1560,9 @@ namespace gView.Framework.SpatialAlgorithms
             {
                 IPoint p1 = pColl[i];
                 if (p0.Distance(p1) <= generalizationDistance)
+                {
                     continue;
+                }
 
                 result.AddPoint(p1);
                 p0 = p1;
@@ -1293,10 +1574,14 @@ namespace gView.Framework.SpatialAlgorithms
         static public IPolygon SnapOutsidePointsToEnvelope(IPolygon polygon, IEnvelope envelope)
         {
             if (polygon == null)
+            {
                 return null;
+            }
 
             if (envelope == null || envelope.Contains(polygon.Envelope))
+            {
                 return polygon;
+            }
 
             Polygon result = new Polygon();
             int ringCount = polygon.RingCount;
@@ -1330,14 +1615,18 @@ namespace gView.Framework.SpatialAlgorithms
         static public IPointCollection OrderPoints(IPointCollection points, IPoint center)
         {
             if (points == null || center == null)
+            {
                 return points;
+            }
 
             List<IPoint> pointList = new List<IPoint>();
-            for(int p=0,to=points.PointCount;p<to;p++)
+            for (int p = 0, to = points.PointCount; p < to; p++)
             {
                 var point = points[p];
                 if (point != null)
+                {
                     pointList.Add(point);
+                }
             }
 
             pointList.Sort(new PointSorter(center));
@@ -1357,13 +1646,24 @@ namespace gView.Framework.SpatialAlgorithms
             public int Compare(IPoint x, IPoint y)
             {
                 if (_center == null)
+                {
                     return 0;
+                }
+
                 if (x == null && y == null)
+                {
                     return 0;
+                }
+
                 if (x == null)
+                {
                     return 1;
+                }
+
                 if (y == null)
+                {
                     return -1;
+                }
 
                 return _center.Distance(x).CompareTo(_center.Distance(y));
             }
@@ -1375,18 +1675,31 @@ namespace gView.Framework.SpatialAlgorithms
         public static IMultiPoint PolygonLabelPoints(IPolygon polygon)
         {
             MultiPoint pColl = new MultiPoint();
-            if (polygon == null) return pColl;
+            if (polygon == null)
+            {
+                return pColl;
+            }
 
-            if (polygon is Polygon) ((Polygon)polygon).VerifyHoles();
+            if (polygon is Polygon)
+            {
+                ((Polygon)polygon).VerifyHoles();
+            }
 
             for (int i = 0; i < polygon.RingCount; i++)
             {
-                if (polygon[i] is IHole) continue;
+                if (polygon[i] is IHole)
+                {
+                    continue;
+                }
 
                 double A = polygon[i].Area;
                 IPoint centroid = polygon[i].Centroid;
 
-                if (centroid == null) continue;
+                if (centroid == null)
+                {
+                    continue;
+                }
+
                 if (Jordan(polygon, centroid.X, centroid.Y))
                 {
                     pColl.AddPoint(new SmartPolygonLabelPoint(centroid, polygon, polygon[i], centroid));
@@ -1454,7 +1767,9 @@ namespace gView.Framework.SpatialAlgorithms
                         double x = _centerPoint.X + r * Math.Cos(w);
                         double y = _centerPoint.Y + r * Math.Sin(w);
                         if (Jordan(_polygon, x, y))
+                        {
                             pColl.AddPoint(new Point(x, y));
+                        }
                     }
                 }
 
@@ -1473,8 +1788,15 @@ namespace gView.Framework.SpatialAlgorithms
 
         public static IPolygon FastMergePolygon(List<IPolygon> polygons, ICancelTracker cancelTracker, gView.Framework.UI.ProgressReporterEvent reporter)
         {
-            if (polygons == null || polygons.Count == 0) return null;
-            if (polygons.Count == 1) return polygons[0];
+            if (polygons == null || polygons.Count == 0)
+            {
+                return null;
+            }
+
+            if (polygons.Count == 1)
+            {
+                return polygons[0];
+            }
 
             int count = polygons.Count;
             List<IPolygon> merged = new List<IPolygon>();
@@ -1485,7 +1807,10 @@ namespace gView.Framework.SpatialAlgorithms
             for (int i = 0; i < polygons.Count; i += 2)
             {
                 if (cancelTracker != null &&
-                    cancelTracker.Continue == false) return null;
+                    cancelTracker.Continue == false)
+                {
+                    return null;
+                }
 
                 if (i + 1 < count)
                 {
@@ -1522,25 +1847,37 @@ namespace gView.Framework.SpatialAlgorithms
         }
         private static void PathBuffers(IPath path, double distance, ref List<IPolygon> polygons)
         {
-            if (polygons == null) return;
+            if (polygons == null)
+            {
+                return;
+            }
 
             //IPolygon polygon=ClipWrapper.BufferPath(path,Math.Abs(distance));
             //if(polygon!=null) polygons.Add(polygon);
 
             List<IPoint> points = new List<IPoint>();
             int to = path.PointCount;
-            if (to == 0) return;
+            if (to == 0)
+            {
+                return;
+            }
 
             if (path is IRing)
             {
-                if (path[0].X != path[to - 1].X || path[0].Y != path[to - 1].Y) to += 1;
+                if (path[0].X != path[to - 1].X || path[0].Y != path[to - 1].Y)
+                {
+                    to += 1;
+                }
             }
             for (int i = 0; i < to - 1; i++)
             {
                 IPoint p1 = ((i < path.PointCount) ? path[i] : path[0]);
                 IPoint p2 = ((i + 1 < path.PointCount) ? path[i + 1] : path[0]);
                 IPoint p3 = ((i + 2 < path.PointCount) ? path[i + 2] : path[0]);
-                if (i == to - 2) p3 = null;
+                if (i == to - 2)
+                {
+                    p3 = null;
+                }
 
                 Vector2D v1 = new Vector2D(p2.X - p1.X, p2.Y - p1.Y);
                 Vector2D v2 = (p3 != null) ? new Vector2D(p3.X - p2.X, p3.Y - p2.Y) : null;
@@ -1594,8 +1931,15 @@ namespace gView.Framework.SpatialAlgorithms
 
         internal static IPolygon PolygonBuffer(IPolygon polygon, double distance)
         {
-            if (polygon == null) return null;
-            if (distance == 0.0) return polygon;
+            if (polygon == null)
+            {
+                return null;
+            }
+
+            if (distance == 0.0)
+            {
+                return polygon;
+            }
 
             //if (polygon.PointCount.PointCount > 50000)
             //    throw new Exception("To many vertices :" + polygon.PointCount);
@@ -1603,7 +1947,9 @@ namespace gView.Framework.SpatialAlgorithms
             var clipperPolygon = polygon.ToClipperPolygons();
             var result = clipperPolygon.Buffer(distance);
             if (result == null)
+            {
                 throw new Exception("Can't calculate buffer!");
+            }
 
             return result.ToPolygon();
 
@@ -1644,7 +1990,11 @@ namespace gView.Framework.SpatialAlgorithms
         {
             double from = v1.Angle;
             double to = v2.Angle;
-            if (to < from) to += 2.0 * Math.PI;
+            if (to < from)
+            {
+                to += 2.0 * Math.PI;
+            }
+
             double step = Math.Min(Math.PI / 5, 1.0 / 10.0 /*/ distance*/);  // 1m toleranz!!!
 
             for (double a = from; a < to; a += step)
@@ -1658,15 +2008,27 @@ namespace gView.Framework.SpatialAlgorithms
         #region Merge
         public static IGeometry Merge(IGeometry geom1, IGeometry geom2, bool copy)
         {
-            if (geom1 == null && geom2 == null) return null;
+            if (geom1 == null && geom2 == null)
+            {
+                return null;
+            }
+
             if (geom1 == null)
             {
-                if (copy) return (IGeometry)geom2.Clone();
+                if (copy)
+                {
+                    return (IGeometry)geom2.Clone();
+                }
+
                 return geom2;
             }
             if (geom2 == null)
             {
-                if (copy) return (IGeometry)geom1.Clone();
+                if (copy)
+                {
+                    return (IGeometry)geom1.Clone();
+                }
+
                 return geom1;
             }
 
@@ -1706,20 +2068,29 @@ namespace gView.Framework.SpatialAlgorithms
             if (geom2 is IMultiPoint)
             {
                 if (geom1 is IPoint)
+                {
                     return Merge(geom2, geom1, copy);
+                }
+
                 if (geom1 is IMultiPoint)
                 {
                     if (copy)
                     {
                         MultiPoint mp = new MultiPoint((IMultiPoint)geom1);
                         for (int i = 0; i < ((IMultiPoint)geom2).PointCount; i++)
+                        {
                             mp.AddPoint(new Point(((IMultiPoint)geom2)[i]));
+                        }
+
                         return mp;
                     }
                     else
                     {
                         for (int i = 0; i < ((IMultiPoint)geom2).PointCount; i++)
+                        {
                             ((IMultiPoint)geom1).AddPoint(((IMultiPoint)geom2)[i]);
+                        }
+
                         return geom1;
                     }
                 }
@@ -1733,15 +2104,24 @@ namespace gView.Framework.SpatialAlgorithms
                 {
                     Polyline line = new Polyline();
                     for (int i = 0; i < ((IPolyline)geom1).PathCount; i++)
+                    {
                         line.AddPath(new Path(((IPolyline)geom1)[i]));
+                    }
+
                     for (int i = 0; i < ((IPolyline)geom2).PathCount; i++)
+                    {
                         line.AddPath(new Path(((IPolyline)geom2)[i]));
+                    }
+
                     return line;
                 }
                 else
                 {
                     for (int i = 0; i < ((IPolyline)geom2).PathCount; i++)
+                    {
                         ((IPolyline)geom1).AddPath(((IPolyline)geom2)[i]);
+                    }
+
                     return geom1;
                 }
             }
@@ -1764,15 +2144,24 @@ namespace gView.Framework.SpatialAlgorithms
                 {
                     IAggregateGeometry ag = new AggregateGeometry();
                     for (int i = 0; i < ((IAggregateGeometry)geom1).GeometryCount; i++)
+                    {
                         ag.AddGeometry((IGeometry)((IAggregateGeometry)geom1)[i].Clone());
+                    }
+
                     for (int i = 0; i < ((IAggregateGeometry)geom2).GeometryCount; i++)
+                    {
                         ag.AddGeometry((IGeometry)((IAggregateGeometry)geom2)[i].Clone());
+                    }
+
                     return ag;
                 }
                 else
                 {
                     for (int i = 0; i < ((IAggregateGeometry)geom2).GeometryCount; i++)
-                        ((IAggregateGeometry)geom1).AddGeometry((IGeometry)((IAggregateGeometry)geom2)[i]);
+                    {
+                        ((IAggregateGeometry)geom1).AddGeometry(((IAggregateGeometry)geom2)[i]);
+                    }
+
                     return geom1;
                 }
             }
@@ -1819,14 +2208,19 @@ namespace gView.Framework.SpatialAlgorithms
             sign = 1;
 
             if (polyline == null)
+            {
                 return null;
+            }
+
             try
             {
                 for (int p = 0; p < polyline.PathCount; p++)
                 {
                     IPath path = polyline[p];
                     if (path == null || path.PointCount == 0)
+                    {
                         continue;
+                    }
 
                     double x1, y1, x2, y2, X_, Y_;
                     x1 = path[0].X;
@@ -1870,14 +2264,15 @@ namespace gView.Framework.SpatialAlgorithms
             tangentDx = tangentDy = 0.0;
 
             if (path == null || point == null)
+            {
                 return null;
+            }
 
             double Station = 0.0;
             double X = 0.0, Y = 0.0;
             double x = point.X, y = point.Y;
 
             double x1, y1, x2, y2, X_, Y_;
-            int sign;
             x1 = path[0].X;
             y1 = path[0].Y;
             int pointCount = path.PointCount;
@@ -1912,7 +2307,9 @@ namespace gView.Framework.SpatialAlgorithms
             tangentDx = tangentDy = 0.0;
 
             if (path == null || point == null)
+            {
                 return null;
+            }
 
             double Station = 0.0;
             double X = 0.0, Y = 0.0;
@@ -2044,7 +2441,9 @@ namespace gView.Framework.SpatialAlgorithms
             LinearEquation2 eq = new LinearEquation2(x - x1, y - y1, rx, -r_x, ry, -r_y);
 
             if (!eq.Solve())
+            {
                 return double.MaxValue;
+            }
 
             double v = eq.Var1;
             if (v > 1.0)
@@ -2070,7 +2469,9 @@ namespace gView.Framework.SpatialAlgorithms
         public static Polyline PolylineSplit(IPolyline polyline, double from, double to)
         {
             if (polyline == null)
+            {
                 return null;
+            }
 
             Polyline polylinePart = new Polyline();
             bool firstPointFound = false, lastPointFound = false;
@@ -2080,7 +2481,9 @@ namespace gView.Framework.SpatialAlgorithms
             {
                 IPath path = polyline[p];
                 if (path == null || path.PointCount == 0)
+                {
                     continue;
+                }
 
                 PointCollection pColl = new PointCollection();
 
@@ -2134,7 +2537,9 @@ namespace gView.Framework.SpatialAlgorithms
                 }
                 else*/
                 if (Station <= to && !lastPointFound)
+                {
                     pColl.AddPoint(new Point(x1, y1));
+                }
 
                 //if (Station >= from && Station <= to && lastPointFound == false)
                 //    pColl.AddPoint(new Point(x1, y1));
@@ -2145,7 +2550,9 @@ namespace gView.Framework.SpatialAlgorithms
                 }
 
                 if (lastPointFound == true)
+                {
                     break;
+                }
             }
 
             return polylinePart.PathCount > 0 ? polylinePart : null;
@@ -2153,14 +2560,18 @@ namespace gView.Framework.SpatialAlgorithms
         public static Point PolylinePoint(IPolyline polyline, double stat)
         {
             if (polyline == null)
+            {
                 return null;
+            }
 
             double Station = 0.0, Station0 = 0.0;
             for (int p = 0; p < polyline.PathCount; p++)
             {
                 IPath path = polyline[p];
                 if (path == null || path.PointCount == 0)
+                {
                     continue;
+                }
 
                 Path newPath = new Path();
 
@@ -2196,7 +2607,9 @@ namespace gView.Framework.SpatialAlgorithms
             {
                 IPoint p = PathPoint(path, s);
                 if (p != null)
+                {
                     pColl.AddPoint(p);
+                }
             }
 
             return pColl;
@@ -2205,7 +2618,9 @@ namespace gView.Framework.SpatialAlgorithms
         private static Point PathPoint(IPath path, double Station)
         {
             if (Station < 0.0)
+            {
                 return null;
+            }
 
             double x1, y1, x2, y2, stat = 0;
             x1 = path[0].X;
@@ -2234,13 +2649,18 @@ namespace gView.Framework.SpatialAlgorithms
         private static PointCollection RemoveDoubles(IPointCollection pColl)
         {
             PointCollection newColl = new PointCollection();
-            if (pColl.PointCount == 0) return newColl;
+            if (pColl.PointCount == 0)
+            {
+                return newColl;
+            }
 
             newColl.AddPoint(new Point(pColl[0]));
             for (int i = 1; i < pColl.PointCount; i++)
             {
                 if (newColl[newColl.PointCount - 1].Equals(pColl[i]) == false)
+                {
                     newColl.AddPoint(pColl[i]);
+                }
             }
 
             return newColl;
@@ -2266,11 +2686,15 @@ namespace gView.Framework.SpatialAlgorithms
                 {
                     IPoint p = path[i];
                     if (shapePoints.PointCount == 0)
+                    {
                         shapePoints.AddPoint(p);
+                    }
                     else
                     {
                         if (p.Distance(shapePoints[shapePoints.PointCount - 1]) > double.Epsilon)
+                        {
                             shapePoints.AddPoint(p);
+                        }
                     }
                 }
                 #endregion
@@ -2307,14 +2731,19 @@ namespace gView.Framework.SpatialAlgorithms
                 for (int i = 1; i < s.Length; i++)
                 {
                     if (a[i - 1] >= Math.PI ||
-                        Math.Abs(Math.Abs(a[i - 1] / 2.0) - Math.PI / 2.0) <= 1e-8) continue;
+                        Math.Abs(Math.Abs(a[i - 1] / 2.0) - Math.PI / 2.0) <= 1e-8)
+                    {
+                        continue;
+                    }
 
                     h = Math.Min(h, Math.Abs(Math.Max(s[i - 1], s[i]) * Math.Tan(a[i - 1] / 2.0)));
                     //h = Math.Min(h, Math.Abs(s[i - 1] * Math.Tan(a[i - 1] / 2.0)));
                     //h = Math.Min(h, Math.Abs(s[i] * Math.Tan(a[i - 1] / 2.0)));
                 }
                 if (h == 0.0)
+                {
                     return null;
+                }
                 #endregion
 
                 o = Math.Min(h, o);
@@ -2342,8 +2771,10 @@ namespace gView.Framework.SpatialAlgorithms
                                                        offsetPoints[i + add + 3], false);
                     add++;
                     if (v == null)
+                    {
                         continue;
-                        //return null;
+                    }
+                    //return null;
                     nPoints.Add(v);
                 }
                 nPoints.Add(offsetPoints[offsetPoints.Count - 1]);
@@ -2379,7 +2810,9 @@ namespace gView.Framework.SpatialAlgorithms
 
                 interation++;
                 if (interation > 50)
+                {
                     break;
+                }
 
                 path = offsetPath;
             }
@@ -2403,7 +2836,11 @@ namespace gView.Framework.SpatialAlgorithms
         {
             get
             {
-                if (_p1 == null || _p2 == null) return 0.0;
+                if (_p1 == null || _p2 == null)
+                {
+                    return 0.0;
+                }
+
                 return Math.Sqrt((_p1.X - _p2.X) * (_p1.X - _p2.X) + (_p1.Y - _p2.Y) * (_p1.Y - _p2.Y));
             }
         }
@@ -2412,7 +2849,11 @@ namespace gView.Framework.SpatialAlgorithms
         {
             get
             {
-                if (_p1 == null || _p2 == null) return null;
+                if (_p1 == null || _p2 == null)
+                {
+                    return null;
+                }
+
                 return new Point(
                     (_p1.X + _p2.X) * 0.5,
                     (_p1.Y + _p2.Y) * 0.5);
@@ -2421,7 +2862,10 @@ namespace gView.Framework.SpatialAlgorithms
 
         public IPolygon Buffer(double distance)
         {
-            if (_p1 == null || _p2 == null) return null;
+            if (_p1 == null || _p2 == null)
+            {
+                return null;
+            }
 
             List<IPoint> points = new List<IPoint>();
 
@@ -2434,7 +2878,9 @@ namespace gView.Framework.SpatialAlgorithms
 
             Ring ring = new Ring();
             foreach (IPoint point in points)
+            {
                 ring.AddPoint(point);
+            }
 
             Algorithm.Rotate(angle, ring);
             Algorithm.Translate(_p1.X, _p1.Y, ring);
@@ -2447,7 +2893,10 @@ namespace gView.Framework.SpatialAlgorithms
 
         private void BufferCurve(double distance, double mx, double from, double to, ref List<IPoint> points)
         {
-            if (points == null) return;
+            if (points == null)
+            {
+                return;
+            }
 
             double step = Math.Min(Math.PI / 5, 1.0 / distance);  // 1m toleranz!!!
             step = Math.PI / 5.0;
@@ -2469,9 +2918,21 @@ namespace gView.Framework.SpatialAlgorithms
 
         public int Compare(IPoint x, IPoint y)
         {
-            if (x == null || y == null) return 0;
-            if (x.X < y.X) return -1;
-            if (x.X > y.X) return 1;
+            if (x == null || y == null)
+            {
+                return 0;
+            }
+
+            if (x.X < y.X)
+            {
+                return -1;
+            }
+
+            if (x.X > y.X)
+            {
+                return 1;
+            }
+
             return 0;
         }
 
@@ -2484,9 +2945,21 @@ namespace gView.Framework.SpatialAlgorithms
 
         public int Compare(IPoint x, IPoint y)
         {
-            if (x == null || y == null) return 0;
-            if (x.Y < y.Y) return -1;
-            if (x.Y > y.Y) return 1;
+            if (x == null || y == null)
+            {
+                return 0;
+            }
+
+            if (x.Y < y.Y)
+            {
+                return -1;
+            }
+
+            if (x.Y > y.Y)
+            {
+                return 1;
+            }
+
             return 0;
         }
 
@@ -2499,12 +2972,24 @@ namespace gView.Framework.SpatialAlgorithms
 
         public int Compare(SimpleLineSegment x, SimpleLineSegment y)
         {
-            if (x == null || y == null) return 0;
+            if (x == null || y == null)
+            {
+                return 0;
+            }
+
             double len1 = x.Length;
             double len2 = y.Length;
 
-            if (len1 < len2) return -1;
-            if (len1 > len2) return 1;
+            if (len1 < len2)
+            {
+                return -1;
+            }
+
+            if (len1 > len2)
+            {
+                return 1;
+            }
+
             return 0;
         }
 
@@ -2517,12 +3002,24 @@ namespace gView.Framework.SpatialAlgorithms
 
         public int Compare(SimpleLineSegment x, SimpleLineSegment y)
         {
-            if (x == null || y == null) return 0;
+            if (x == null || y == null)
+            {
+                return 0;
+            }
+
             double len1 = x.Length;
             double len2 = y.Length;
 
-            if (len1 < len2) return 1;
-            if (len1 > len2) return -1;
+            if (len1 < len2)
+            {
+                return 1;
+            }
+
+            if (len1 > len2)
+            {
+                return -1;
+            }
+
             return 0;
         }
 
@@ -2535,12 +3032,24 @@ namespace gView.Framework.SpatialAlgorithms
 
         public int Compare(IRing x, IRing y)
         {
-            if (x == null || y == null) return 0;
+            if (x == null || y == null)
+            {
+                return 0;
+            }
+
             double A1 = x.Area;
             double A2 = y.Area;
 
-            if (A1 < A2) return -1;
-            if (A1 > A2) return 1;
+            if (A1 < A2)
+            {
+                return -1;
+            }
+
+            if (A1 > A2)
+            {
+                return 1;
+            }
+
             return 0;
         }
 
@@ -2553,12 +3062,24 @@ namespace gView.Framework.SpatialAlgorithms
 
         public int Compare(IRing x, IRing y)
         {
-            if (x == null || y == null) return 0;
+            if (x == null || y == null)
+            {
+                return 0;
+            }
+
             double A1 = x.Area;
             double A2 = y.Area;
 
-            if (A1 < A2) return 1;
-            if (A1 > A2) return -1;
+            if (A1 < A2)
+            {
+                return 1;
+            }
+
+            if (A1 > A2)
+            {
+                return -1;
+            }
+
             return 0;
         }
 
@@ -2572,7 +3093,10 @@ namespace gView.Framework.Geometry
     {
         static public bool Check(ISpatialFilter filter, IGeometry geom)
         {
-            if (filter == null || filter.Geometry == null || geom == null) return false;
+            if (filter == null || filter.Geometry == null || geom == null)
+            {
+                return false;
+            }
 
             switch (filter.SpatialRelation)
             {

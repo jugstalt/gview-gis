@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -69,7 +68,11 @@ namespace gView.Server.AppCode
 
         async public Task<bool> SaveImage(string path, System.Drawing.Imaging.ImageFormat format)
         {
-            if (_image == null) return false;
+            if (_image == null)
+            {
+                return false;
+            }
+
             try
             {
                 try
@@ -113,7 +116,11 @@ namespace gView.Server.AppCode
 
         async public Task<bool> SaveImage(Stream ms, System.Drawing.Imaging.ImageFormat format)
         {
-            if (_image == null) return false;
+            if (_image == null)
+            {
+                return false;
+            }
+
             try
             {
                 try
@@ -158,7 +165,9 @@ namespace gView.Server.AppCode
         public void ReleaseImage()
         {
             if (_image == null)
+            {
                 return;
+            }
 
             try
             {
@@ -187,18 +196,34 @@ namespace gView.Server.AppCode
                 webServices = new List<IWebServiceLayer>();
                 foreach (IDatasetElement layer in this.MapElements)
                 {
-                    if (!(layer is IWebServiceLayer)) continue;
+                    if (!(layer is IWebServiceLayer))
+                    {
+                        continue;
+                    }
+
                     if (((ILayer)layer).Visible)
+                    {
                         webServices.Add((IWebServiceLayer)layer);
+                    }
                 }
             }
             foreach (IWebServiceLayer element in webServices)
             {
-                if (!(element is ILayer)) continue;
-                if (!((ILayer)element).Visible) continue;
+                if (!(element is ILayer))
+                {
+                    continue;
+                }
 
-                IWebServiceLayer wsLayer = LayerFactory.Create(((IWebServiceLayer)element).WebServiceClass.Clone() as IClass, element as ILayer) as IWebServiceLayer;
-                if (wsLayer == null || wsLayer.WebServiceClass == null) continue;
+                if (!element.Visible)
+                {
+                    continue;
+                }
+
+                IWebServiceLayer wsLayer = LayerFactory.Create(element.WebServiceClass.Clone() as IClass, element as ILayer) as IWebServiceLayer;
+                if (wsLayer == null || wsLayer.WebServiceClass == null)
+                {
+                    continue;
+                }
 
                 if (BeforeRenderLayers != null)
                 {
@@ -206,14 +231,17 @@ namespace gView.Server.AppCode
                     // Besser layer als layer.Class verwendenden, weil Class von mehrerenen Layern
                     // verwendet werden kann zB bei gesplitteten Layern...
                     //ITOCElement tocElement = toc.GetTOCElement(element.Class);
-                    ITOCElement tocElement = toc.GetTOCElement((ILayer)element);
+                    ITOCElement tocElement = toc.GetTOCElement(element);
                     tocElement.RemoveLayer(element as ILayer);
                     tocElement.AddLayer(wsLayer);
 
                     List<ILayer> modLayers = new List<ILayer>();
                     foreach (IWebServiceTheme theme in wsLayer.WebServiceClass.Themes)
                     {
-                        if (theme is ILayer) modLayers.Add(theme as ILayer);
+                        if (theme is ILayer)
+                        {
+                            modLayers.Add(theme as ILayer);
+                        }
                     }
                     BeforeRenderLayers(this, modLayers);
                 }
@@ -224,18 +252,28 @@ namespace gView.Server.AppCode
             if (this.TOC != null)
             {
                 if (this.GetType().Equals(typeof(ServiceMap)))
+                {
                     layers = ListOperations<ILayer>.Swap(this.TOC.Layers);
+                }
                 else
+                {
                     layers = ListOperations<ILayer>.Swap(this.TOC.VisibleLayers);
+                }
             }
             else
             {
                 layers = new List<ILayer>();
                 foreach (IDatasetElement layer in this.MapElements)
                 {
-                    if (!(layer is ILayer)) continue;
+                    if (!(layer is ILayer))
+                    {
+                        continue;
+                    }
+
                     if (((ILayer)layer).Visible)
+                    {
                         layers.Add((ILayer)layer);
+                    }
                 }
             }
 
@@ -250,10 +288,21 @@ namespace gView.Server.AppCode
                 List<ILayer> modLayers = new List<ILayer>();
                 foreach (IDatasetElement element in layers)
                 {
-                    if (!(element is ILayer) || element is IWebServiceTheme) continue;
+                    if (!(element is ILayer) || element is IWebServiceTheme)
+                    {
+                        continue;
+                    }
+
                     ILayer layer = (ILayer)element;
-                    if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale) continue;
-                    if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale) continue;
+                    if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale)
+                    {
+                        continue;
+                    }
+
+                    if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale)
+                    {
+                        continue;
+                    }
 
                     ILayer newLayer = null;
                     modLayers.Add(newLayer = LayerFactory.Create(layer.Class, layer));
@@ -280,11 +329,17 @@ namespace gView.Server.AppCode
         {
             base._requestExceptions = null;
 
-            if (_graphics != null && phase == DrawPhase.Graphics) return true;
+            if (_graphics != null && phase == DrawPhase.Graphics)
+            {
+                return true;
+            }
 
             this.ZoomTo(m_actMinX, m_actMinY, m_actMaxX, m_actMaxY);
 
-            if (cancelTracker == null) cancelTracker = new CancelTracker();
+            if (cancelTracker == null)
+            {
+                cancelTracker = new CancelTracker();
+            }
 
             GeometricTransformer geoTransformer = new GeometricTransformer();
             //geoTransformer.ToSpatialReference = this.SpatialReference;
@@ -323,18 +378,32 @@ namespace gView.Server.AppCode
                     webServices = new List<IWebServiceLayer>();
                     foreach (IDatasetElement layer in this.MapElements)
                     {
-                        if (!(layer is IWebServiceLayer)) continue;
+                        if (!(layer is IWebServiceLayer))
+                        {
+                            continue;
+                        }
+
                         if (((ILayer)layer).Visible)
+                        {
                             webServices.Add((IWebServiceLayer)layer);
+                        }
                     }
                 }
                 int webServiceOrder = 0, webServiceOrder2 = 1;
                 foreach (IWebServiceLayer element in webServices)
                 {
-                    if (!((ILayer)element).Visible) continue;
-                    IWebServiceLayer wsLayer = LayerFactory.Create(((IWebServiceLayer)element).WebServiceClass.Clone() as IClass, element as ILayer) as IWebServiceLayer;
+                    if (!element.Visible)
+                    {
+                        continue;
+                    }
 
-                    if (wsLayer == null || wsLayer.WebServiceClass == null) continue;
+                    IWebServiceLayer wsLayer = LayerFactory.Create(element.WebServiceClass.Clone() as IClass, element as ILayer) as IWebServiceLayer;
+
+                    if (wsLayer == null || wsLayer.WebServiceClass == null)
+                    {
+                        continue;
+                    }
+
                     wsLayer.WebServiceClass.SpatialReference = this.SpatialReference;
 
                     List<IWebServiceClass> additionalWebServices = new List<IWebServiceClass>();
@@ -343,7 +412,10 @@ namespace gView.Server.AppCode
                         List<ILayer> modLayers = new List<ILayer>();
                         foreach (IWebServiceTheme theme in wsLayer.WebServiceClass.Themes)
                         {
-                            if (theme is ILayer) modLayers.Add(theme as ILayer);
+                            if (theme is ILayer)
+                            {
+                                modLayers.Add(theme as ILayer);
+                            }
                         }
                         BeforeRenderLayers(this, modLayers);
 
@@ -353,7 +425,9 @@ namespace gView.Server.AppCode
                             MapServerHelper.CopyWebThemeProperties(additionalWebService, additionalLayer);
 
                             if (MapServerHelper.HasVisibleThemes(additionalWebService))
+                            {
                                 additionalWebServices.Add(additionalWebService);
+                            }
                         }
                     }
 
@@ -369,7 +443,11 @@ namespace gView.Server.AppCode
                     foreach (IWebServiceClass additionalWebService in additionalWebServices)
                     {
                         wsLayer = LayerFactory.Create(additionalWebService, element as ILayer) as IWebServiceLayer;
-                        if (wsLayer == null || wsLayer.WebServiceClass == null) continue;
+                        if (wsLayer == null || wsLayer.WebServiceClass == null)
+                        {
+                            continue;
+                        }
+
                         wsLayer.WebServiceClass.SpatialReference = this.SpatialReference;
 
                         srt = new ServiceRequestThread(this, wsLayer, (++webServiceOrder2) + webServices.Count);
@@ -386,9 +464,13 @@ namespace gView.Server.AppCode
                 if (this.TOC != null)
                 {
                     if (this.GetType().Equals(typeof(ServiceMap)))
+                    {
                         layers = ListOperations<ILayer>.Swap(this.TOC.Layers);
+                    }
                     else
+                    {
                         layers = ListOperations<ILayer>.Swap(this.TOC.VisibleLayers);
+                    }
                 }
                 else
                 {
@@ -396,9 +478,14 @@ namespace gView.Server.AppCode
                     foreach (IDatasetElement layer in this.MapElements)
                     {
                         if (!(layer is ILayer))
+                        {
                             continue;
+                        }
+
                         if (((ILayer)layer).Visible)
+                        {
                             layers.Add((ILayer)layer);
+                        }
                     }
                 }
 
@@ -413,10 +500,21 @@ namespace gView.Server.AppCode
                     List<ILayer> modLayers = new List<ILayer>();
                     foreach (IDatasetElement element in layers)
                     {
-                        if (!(element is ILayer) || element is IWebServiceTheme) continue;
+                        if (!(element is ILayer) || element is IWebServiceTheme)
+                        {
+                            continue;
+                        }
+
                         ILayer layer = (ILayer)element;
-                        if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale) continue;
-                        if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale) continue;
+                        if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale)
+                        {
+                            continue;
+                        }
+
+                        if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale)
+                        {
+                            continue;
+                        }
 
                         modLayers.Add(LayerFactory.Create(layer.Class, layer));
                     }
@@ -429,19 +527,37 @@ namespace gView.Server.AppCode
                 LabelEngine.Init(this.Display, false);
                 foreach (IDatasetElement element in layers)
                 {
-                    if (!cancelTracker.Continue) break;
+                    if (!cancelTracker.Continue)
+                    {
+                        break;
+                    }
 
-                    if (!(element is ILayer)) continue;
+                    if (!(element is ILayer))
+                    {
+                        continue;
+                    }
+
                     ILayer layer = (ILayer)element;
 
                     //if (_ceckLayerVisibilityBeforeDrawing)
                     //{
                     //    if (!LayerIsVisible(layer)) continue;
                     //}
-                    if (!layer.Visible) continue;
-                    if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale) continue;
-                    if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale) continue;
-#if(DEBUG)
+                    if (!layer.Visible)
+                    {
+                        continue;
+                    }
+
+                    if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale)
+                    {
+                        continue;
+                    }
+
+                    if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale)
+                    {
+                        continue;
+                    }
+#if (DEBUG)
                     //Logger.LogDebug("Drawing Layer:" + element.Title);
 #endif
                     SetGeotransformer((ILayer)element, geoTransformer);
@@ -461,11 +577,18 @@ namespace gView.Server.AppCode
                         {
                             RenderFeatureLayerThread rlt = new RenderFeatureLayerThread(this, fLayer, cancelTracker, new FeatureCounter());
                             if (fLayer.LabelRenderer != null && fLayer.LabelRenderer.RenderMode == LabelRenderMode.RenderWithFeature)
+                            {
                                 rlt.UseLabelRenderer = true;
+                            }
                             else
+                            {
                                 rlt.UseLabelRenderer = labelLayers.IndexOf(fLayer) == 0;  // letzten Layer gleich mitlabeln
+                            }
 
-                            if (rlt.UseLabelRenderer) labelLayers.Remove(fLayer);
+                            if (rlt.UseLabelRenderer)
+                            {
+                                labelLayers.Remove(fLayer);
+                            }
 
                             await rlt.Render();
                         }
@@ -475,12 +598,15 @@ namespace gView.Server.AppCode
                     if (layer is IRasterLayer && ((IRasterLayer)layer).RasterClass != null)
                     {
                         IRasterLayer rLayer = (IRasterLayer)layer;
-                        if (rLayer.RasterClass.Polygon == null) continue;
+                        if (rLayer.RasterClass.Polygon == null)
+                        {
+                            continue;
+                        }
 
                         IEnvelope dispEnvelope = this.Envelope;
                         if (Display.GeometricTransformer != null)
                         {
-                            dispEnvelope = (IEnvelope)((IGeometry)Display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
+                            dispEnvelope = ((IGeometry)Display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
                         }
 
                         if (gView.Framework.SpatialAlgorithms.Algorithm.IntersectBox(rLayer.RasterClass.Polygon, dispEnvelope))
@@ -513,7 +639,11 @@ namespace gView.Server.AppCode
                     {
                         this.SetGeotransformer(fLayer, geoTransformer);
 
-                        if (!fLayer.Visible) continue;
+                        if (!fLayer.Visible)
+                        {
+                            continue;
+                        }
+
                         RenderLabelThread rlt = new RenderLabelThread(this, fLayer, cancelTracker);
                         await rlt.Render();
                     }
@@ -554,7 +684,11 @@ namespace gView.Server.AppCode
 
             base.AppendExceptionsToImage();
 
-            if (_graphics != null) _graphics.Dispose();
+            if (_graphics != null)
+            {
+                _graphics.Dispose();
+            }
+
             _graphics = null;
 
             if (geoTransformer != null)
@@ -583,27 +717,37 @@ namespace gView.Server.AppCode
                     ((IRasterCatalogLayer)rootLayer).FilterQuery.WhereClause : String.Empty);
             }
 
-            using (IRasterLayerCursor cursor = await ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
+            using (IRasterLayerCursor cursor = await rLayer.ChildLayers(this, filterClause))
             {
                 ILayer child;
 
                 while ((child = await cursor.NextRasterLayer()) != null)
                 //foreach (ILayer child in ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
                 {
-                    if (!cancelTracker.Continue) break;
+                    if (!cancelTracker.Continue)
+                    {
+                        break;
+                    }
+
                     if (child.Class is IParentRasterLayer)
                     {
                         await DrawRasterParentLayer((IParentRasterLayer)child.Class, cancelTracker, rootLayer);
                         continue;
                     }
-                    if (!(child is IRasterLayer)) continue;
+                    if (!(child is IRasterLayer))
+                    {
+                        continue;
+                    }
+
                     IRasterLayer cLayer = (IRasterLayer)child;
 
                     RenderRasterLayerThread rlt = new RenderRasterLayerThread(this, cLayer, rootLayer, cancelTracker);
                     await rlt.Render();
 
                     if (child.Class is IDisposable)
+                    {
                         ((IDisposable)child.Class).Dispose();
+                    }
                 }
             }
             if (rLayer is ILayer && ((ILayer)rLayer).Class is IRasterClass)
@@ -661,7 +805,9 @@ namespace gView.Server.AppCode
         public T GetModule<T>()
         {
             if (_modules == null)
+            {
                 return default(T);
+            }
 
             var module = _modules.Where(m => m.GetType().Equals(typeof(T))).FirstOrDefault();
             return (T)module;

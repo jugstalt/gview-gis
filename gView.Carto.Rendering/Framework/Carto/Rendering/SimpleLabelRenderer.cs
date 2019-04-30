@@ -524,10 +524,9 @@ namespace gView.Framework.Carto.Rendering
                     polygon = SpatialAlgorithms.Algorithm.SnapOutsidePointsToEnvelope(polygon, env);
                     polygon = (IPolygon)SpatialAlgorithms.Algorithm.Generalize(polygon, tolerance);
 
-                    var center = new MultiPoint();
-                    center.AddPoint(polygon.Envelope.Center);
-                    return LabelPointCollection(disp, polygon, center);
-
+                    //var center = new MultiPoint();
+                    //center.AddPoint(polygon.Envelope.Center);
+                    //return LabelPointCollection(disp, polygon, center);
 
                     IGeometry g;
                     ((ITopologicalOperation)polygon).Clip(env, out g);
@@ -541,7 +540,7 @@ namespace gView.Framework.Carto.Rendering
                         polygon = (IPolygon)g;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception)
                 {
                     return false;
                 }
@@ -649,7 +648,7 @@ namespace gView.Framework.Carto.Rendering
         public object Clone(IDisplay display)
         {
             SimpleLabelRenderer renderer = new SimpleLabelRenderer(
-                (ITextSymbol)((_symbol is IClone2) ? ((IClone2)_symbol).Clone(display) : null),
+                (ITextSymbol)((_symbol is IClone2) ? _symbol.Clone(display) : null),
                 _fieldname);
 
             renderer._howManyLabels = _howManyLabels;
@@ -668,7 +667,7 @@ namespace gView.Framework.Carto.Rendering
         {
             if (_symbol is ISymbol)
             {
-                ((ISymbol)_symbol).Release();
+                _symbol.Release();
             }
 
             _symbol = null;

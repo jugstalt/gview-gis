@@ -3423,6 +3423,7 @@ namespace gView.Framework.Carto
                                 }
 
                                 renderer.Draw(_map, feature);
+
                                 if (labelRenderer != null)
                                 {
                                     labelRenderer.Draw(_map, feature);
