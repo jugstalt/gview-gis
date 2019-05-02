@@ -3367,47 +3367,69 @@ namespace gView.Framework.Carto
                         filter.Geometry = ((ISpatialFilter)layer.FilterQuery).Geometry;
                     }
                 }
-                if (layer.FeatureRenderer != null && layer.FeatureRenderer.HasEffect(layer, _map))
-                {
-                    layer.FeatureRenderer.PrepareQueryFilter(layer, filter);
-                }
-                if (layer.LabelRenderer != null && _useLabelRenderer)
-                {
-                    layer.LabelRenderer.PrepareQueryFilter(_map.Display, layer, filter);
-                }
+
+                // Erst nach dem Clonen anwenden!!!
+                //if (layer.FeatureRenderer != null && layer.FeatureRenderer.HasEffect(layer, _map))
+                //{
+                //    layer.FeatureRenderer.PrepareQueryFilter(layer, filter);
+                //}
+                //if (layer.LabelRenderer != null && _useLabelRenderer)
+                //{
+                //    layer.LabelRenderer.PrepareQueryFilter(_map.Display, layer, filter);
+                //}
 
                 IDisplay display = (IDisplay)_map;
                 double refScale = display.refScale;
+
+                #region Layer Clonen
+
+                IFeatureRenderer renderer = null;
+                ILabelRenderer labelRenderer = null;
+
+                lock (lockThis)
+                {
+                    // Beim Clonen sprerren...
+                    // Da sonst bei der Servicemap bei gleichzeitigen Requests
+                    // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
+                    if (layer.FeatureRenderer != null && layer.FeatureRenderer.HasEffect(layer, _map))
+                    {
+                        renderer = (layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale) ? (IFeatureRenderer)layer.FeatureRenderer.Clone(display) : layer.FeatureRenderer;
+                    }
+                    if (layer.LabelRenderer != null && _useLabelRenderer)
+                    {
+                        if (layer.ApplyLabelRefScale == false && display.refScale > 0)
+                        {
+                            //display.refScale = 0;
+                            labelRenderer = (ILabelRenderer)layer.LabelRenderer.Clone(null);
+                            //display.refScale = refScale;
+                        }
+                        else
+                        {
+                            labelRenderer = (ILabelRenderer)layer.LabelRenderer.Clone(display);
+                        }
+                    }
+                }
+
+                #endregion
+
+                #region Prepare filter
+
+                // Prepare erst auf geclonte renderer anwenden!! (Threadsafe)
+                if (renderer != null && renderer.HasEffect(layer, _map))
+                {
+                    renderer.PrepareQueryFilter(layer, filter);
+                }
+                if (labelRenderer != null && _useLabelRenderer)
+                {
+                    labelRenderer.PrepareQueryFilter(_map.Display, layer, filter);
+                }
+
+                #endregion
+
                 using (IFeatureCursor fCursor = await fClass.GetFeatures(MapHelper.MapQueryFilter(filter)))
                 {
                     if (fCursor != null)
                     {
-                        IFeatureRenderer renderer = null;
-                        ILabelRenderer labelRenderer = null;
-
-                        lock (lockThis)
-                        {
-                            // Beim Clonen sprerren...
-                            // Da sonst bei der Servicemap bei gleichzeitigen Requests
-                            // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
-                            if (layer.FeatureRenderer != null && layer.FeatureRenderer.HasEffect(layer, _map))
-                            {
-                                renderer = (layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale) ? (IFeatureRenderer)layer.FeatureRenderer.Clone(display) : layer.FeatureRenderer;
-                            }
-                            if (layer.LabelRenderer != null && _useLabelRenderer)
-                            {
-                                if (layer.ApplyLabelRefScale == false && display.refScale > 0)
-                                {
-                                    //display.refScale = 0;
-                                    labelRenderer = (ILabelRenderer)layer.LabelRenderer.Clone(null);
-                                    //display.refScale = refScale;
-                                }
-                                else
-                                {
-                                    labelRenderer = (ILabelRenderer)layer.LabelRenderer.Clone(display);
-                                }
-                            }
-                        }
                         IFeature feature;
 
                         if (renderer != null)
@@ -3543,21 +3565,31 @@ namespace gView.Framework.Carto
                     }
                 }
 
-                _layer.LabelRenderer.PrepareQueryFilter(_map.Display, _layer, filter);
+                #region Clone Layer
+
+                ILabelRenderer labelRenderer = null;
+
+                lock (lockThis)
+                {
+                    // Beim Clonen sprerren...
+                    // Da sonst bei der Servicemap bei gleichzeitigen Requests
+                    // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
+                    labelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone((IDisplay)_map);
+                }
+
+                #endregion
+
+                #region Prepare Filter
+
+                labelRenderer.PrepareQueryFilter(_map.Display, _layer, filter);
+
+                #endregion
 
                 using (IFeatureCursor fCursor = await fClass.GetFeatures(filter))
                 {
                     if (fCursor != null)
                     {
-                        ILabelRenderer labelRenderer = null;
-
-                        lock (lockThis)
-                        {
-                            // Beim Clonen sprerren...
-                            // Da sonst bei der Servicemap bei gleichzeitigen Requests
-                            // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
-                            labelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone((IDisplay)_map);
-                        }
+                        
                         IFeature feature;
 
                         while ((feature = await fCursor.NextFeature()) != null)
@@ -3925,6 +3957,7 @@ namespace gView.Framework.Carto
         private Map _map;
         private IFeatureLayer _layer;
         private ICancelTracker _cancelTracker;
+        private static object lockThis = new object();
 
         public RenderFeatureLayerSelectionThread(Map map, IFeatureLayer layer, ICancelTracker cancelTracker)
         {
@@ -4014,7 +4047,22 @@ namespace gView.Framework.Carto
             }
 
             filter.AddField(fClass.ShapeFieldName);
-            _layer.SelectionRenderer.PrepareQueryFilter(_layer, filter);
+
+            #region Clone Layer
+
+            IFeatureRenderer selectionRenderer = null;
+
+            lock (lockThis)
+            {
+                // Beim Clonen sprerren...
+                // Da sonst bei der Servicemap bei gleichzeitigen Requests
+                // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
+                selectionRenderer = (IFeatureRenderer)_layer.SelectionRenderer.Clone((IDisplay)_map);
+            }
+
+            #endregion
+
+            selectionRenderer.PrepareQueryFilter(_layer, filter);
 
             using (IFeatureCursor fCursor = (fClass is ISelectionCache) ? ((ISelectionCache)fClass).GetSelectedFeatures(_map.Display) : await fClass.GetFeatures(filter))
             {
@@ -4032,7 +4080,7 @@ namespace gView.Framework.Carto
                             }
                         }
 
-                        _layer.SelectionRenderer.Draw(_map, feature);
+                        selectionRenderer.Draw(_map, feature);
                     }
                     fCursor.Dispose();
                 }

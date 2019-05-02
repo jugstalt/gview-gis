@@ -658,7 +658,7 @@ namespace gView.Framework.Carto.Rendering
             renderer._expression = _expression;
             renderer._useExpression = _useExpression;
             renderer._symbolRotation = (SymbolRotation)_symbolRotation.Clone();
-            renderer._clipEnvelope = new Envelope(_clipEnvelope);
+            renderer._clipEnvelope = _clipEnvelope != null ? new Envelope(_clipEnvelope) : null;
             renderer._lineLabelling = _lineLabelling;
             return renderer;
         }

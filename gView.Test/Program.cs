@@ -101,7 +101,7 @@ namespace gView.Test
 
             for (int i = 0; i < 100; i++)
             {
-                string server = "gis2.esn.at";
+                string server = "server.domain.at";
                 //string service = "geoservices/rest/services/default/UEBERSICHTSKARTE";
                 string service = "gview5/geoservices/rest/services/basis/KATASTER_BEV";
                 //string service = "arcgis/rest/services/sdep/estag_dkm_sdep";
@@ -110,7 +110,7 @@ namespace gView.Test
 
                 #region Image Request
 
-                bbox = bbox.Select(x => x + i).ToArray();
+                bbox = bbox.Select(x => x+ (i/1)).ToArray();
 
                 url = "https://"+server+"/" + service + "/MapServer/export?" +
                 "size=800,800&dpi=96&imageSR=&bboxSR=&format=png&layerDefs=&layers=&transparent=true&time=&layerTimeOptions=&dynamicLayers=&mapScale=0&rotation=0&datumTransformations=&mapRangeValues=&layerRangeValues=&layerParameterValues=&historicMoment=0&f=pjson&";
