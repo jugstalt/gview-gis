@@ -107,6 +107,7 @@ window.gview.manage = function () {
     // Page Services
     //
     var createServiceListItem = function ($services, service) {
+        console.log(service);
         var $service = $services.children(".service[data-service='" + (service.folder ? service.folder + "/" : "") + service.name + "']");
         if ($service.length === 0) {
             $service = $("<li></li>")

@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using gView.Core.Framework.Exceptions;
+﻿using gView.Core.Framework.Exceptions;
 using gView.Framework.system;
-using gView.Interoperability.GeoServices.Rest.Json;
 using gView.MapServer;
 using gView.Server.AppCode;
 using gView.Server.Models;
 using Microsoft.AspNetCore.Mvc;
-using static gView.Interoperability.GeoServices.Rest.Json.JsonServices;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace gView.Server.Controllers
 {
@@ -21,7 +19,9 @@ namespace gView.Server.Controllers
             {
                 var authToken = base.GetAuthToken();
                 if (!authToken.IsManageUser)
+                {
                     return RedirectToAction("Login");
+                }
 
                 ViewData["mainMenuItems"] = "mainMenuItemsPartial";
                 return View();
@@ -49,7 +49,9 @@ namespace gView.Server.Controllers
                 var authToken = loginManager.GetManagerAuthToken(model.Username, model.Password, createIfFirst: true);
 
                 if (authToken == null)
+                {
                     throw new Exception("Unknown user or password");
+                }
 
                 base.SetAuthCookie(authToken);
 
@@ -87,17 +89,22 @@ namespace gView.Server.Controllers
             folder = folder ?? String.Empty;
             await InternetMapServer.ReloadServices(folder, true);
 
-            return SecureApiCall(() =>
+            return await SecureApiCall(async () =>
             {
+                var servicesInFolder = InternetMapServer.mapServices
+                    .Where(s => s.Type != MapServiceType.Folder &&
+                                    s.Folder == folder);
+
+                List<object> mapServiceJson = new List<object>();
+                foreach (var serviceInFolder in servicesInFolder)
+                {
+                    mapServiceJson.Add(MapService2Json(serviceInFolder, await serviceInFolder.GetSettingsAsync()));
+                }
+
                 return Json(new
                 {
                     success = true,
-                    services = InternetMapServer.mapServices
-                        .Where(s => s.Type != MapServiceType.Folder &&
-                                    s.Folder == folder)
-                        .Select(async s => MapService2Json(s, await s.GetSettingsAsync()))
-                        .Select(async t => await t)
-                        .ToArray()
+                    services = mapServiceJson.ToArray()
                 });
             });
         }
@@ -108,7 +115,9 @@ namespace gView.Server.Controllers
             {
                 var mapService = InternetMapServer.mapServices.Where(s => s.Fullname == service).FirstOrDefault();
                 if (mapService == null)
+                {
                     throw new MapServerException("Unknown service: " + service);
+                }
 
                 var settings = await mapService.GetSettingsAsync();
                 switch (status.ToLower())
@@ -147,7 +156,7 @@ namespace gView.Server.Controllers
             });
         }
 
-        public IActionResult ServiceErrorLogs(string service, string last="0")
+        public IActionResult ServiceErrorLogs(string service, string last = "0")
         {
             return SecureApiCall(() =>
             {
@@ -170,7 +179,9 @@ namespace gView.Server.Controllers
 
                 var mapService = InternetMapServer.mapServices.Where(s => s.Fullname?.ToLower() == service).FirstOrDefault();
                 if (mapService == null)
+                {
                     throw new MapServerException("Unknown service: " + service);
+                }
 
                 var settings = await mapService.GetSettingsAsync();
 
@@ -204,7 +215,9 @@ namespace gView.Server.Controllers
 
                 var mapService = InternetMapServer.mapServices.Where(s => s.Fullname?.ToLower() == service).FirstOrDefault();
                 if (mapService == null)
+                {
                     throw new MapServerException("Unknown service: " + service);
+                }
 
                 var settings = await mapService.GetSettingsAsync();
                 settings.AccessRules = null;  // Remove all
@@ -224,7 +237,10 @@ namespace gView.Server.Controllers
                                 accessRule = new MapServiceSettings.MapServiceAccess();
                                 var rules = new List<IMapServiceAccess>();
                                 if (settings.AccessRules != null)
+                                {
                                     rules.AddRange(settings.AccessRules);
+                                }
+
                                 rules.Add(accessRule);
                                 settings.AccessRules = rules.ToArray();
                             }
@@ -267,7 +283,7 @@ namespace gView.Server.Controllers
                 }
 
                 await mapService.SaveSettingsAsync();
-                
+
                 return Json(new
                 {
                     success = true,
@@ -329,7 +345,9 @@ namespace gView.Server.Controllers
             {
                 var authToken = base.GetAuthToken();
                 if (!authToken.IsManageUser)
+                {
                     throw new Exception("Not allowed");
+                }
 
                 return func.Invoke();
             }
@@ -337,7 +355,7 @@ namespace gView.Server.Controllers
             {
                 return Json(new { success = false, error = "not authorized" });
             }
-            catch(MapServerException mse)
+            catch (MapServerException mse)
             {
                 return Json(new { success = false, error = mse.Message });
             }
@@ -353,7 +371,9 @@ namespace gView.Server.Controllers
             {
                 var authToken = base.GetAuthToken();
                 if (!authToken.IsManageUser)
+                {
                     throw new Exception("Not allowed");
+                }
 
                 return await func.Invoke();
             }
