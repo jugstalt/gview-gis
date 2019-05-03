@@ -20,7 +20,7 @@ namespace gView.Framework.Data
         public Task<IRow> NextRow()
         {
             if (_rows == null || _pos >= _rows.Count)
-                return null;
+                return Task.FromResult<IRow>(null);
 
             return Task.FromResult<IRow>(_rows[_pos++]);
         }
@@ -52,7 +52,7 @@ namespace gView.Framework.Data
         public Task<IFeature> NextFeature()
         {
             if (_features == null || _pos >= _features.Count)
-                return null;
+                return Task.FromResult<IFeature>(null);
 
             return Task.FromResult<IFeature>( _features[_pos++]);
         }

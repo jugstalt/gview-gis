@@ -1,21 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml;
-using System.IO;
-using gView.Framework.UI;
 using gView.Framework.Carto;
-using gView.Framework.Symbology;
-using gView.Framework.system;
+using gView.Framework.Carto.Rendering;
+using gView.Framework.Carto.UI;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.MapServer;
+using gView.Framework.Network;
+using gView.Framework.Symbology;
+using gView.Framework.system;
+using gView.Framework.UI;
 using gView.Framework.XML;
 using gView.Interoperability.ArcXML.Dataset;
-using gView.Framework.Carto.UI;
-using gView.Framework.Carto.Rendering;
-using gView.Framework.Network;
+using gView.MapServer;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Interoperability.ArcXML
 {
@@ -59,11 +59,17 @@ namespace gView.Interoperability.ArcXML
             foreach (ITableClass Class in Classes)
             {
                 IQueryFilter filter = Filter.Clone() as IQueryFilter;
-                if (filter == null) return String.Empty;
+                if (filter == null)
+                {
+                    return String.Empty;
+                }
 
                 if (Classes.Count > 1)
                 {
-                    if (!await MapServerHelper.ModifyFilter(ServiceMap, Class, filter)) continue;
+                    if (!await MapServerHelper.ModifyFilter(ServiceMap, Class, filter))
+                    {
+                        continue;
+                    }
                 }
 
                 if (Class != null && Class.Dataset is ArcIMSDataset && filter is IArcXmlGET_FEATURES_Attributes)
@@ -90,7 +96,10 @@ namespace gView.Interoperability.ArcXML
                 {
                     cursor = await Class.Search(filter) as IRowCursor;
                 }
-                if (cursor == null) continue;
+                if (cursor == null)
+                {
+                    continue;
+                }
 
                 if ((filter is ArcXMLQueryFilter || filter is ArcXMLSpatialFilter) &&
                     cursor is AXLFeatureCursor &&
@@ -119,7 +128,9 @@ namespace gView.Interoperability.ArcXML
                     }
 
                     if (Classes.Count > 1)
+                    {
                         MapServerHelper.AppendMergedID(MapServerHelper.GetClassID(ServiceMap, Class), row);
+                    }
 
                     if (row is IFeature && ((IFeature)row).Shape != null &&
                         ServiceMap != null && ServiceMap.Display.SpatialReference != null
@@ -145,9 +156,9 @@ namespace gView.Interoperability.ArcXML
                         {
                             ISpatialReference sRef = ((IFeatureClass)Class).SpatialReference;
                             if (sRef == null && ServiceMap is IMap)
+                            {
                                 sRef = ((IMap)ServiceMap).LayerDefaultSpatialReference;
-
-                            ((Feature)row).Shape = GeometricTransformer.Transform2D(
+                            } ((Feature)row).Shape = GeometricTransformer.Transform2D(
                                 shape,
                                 sRef,
                                 ServiceMap.Display.SpatialReference);
@@ -179,9 +190,13 @@ namespace gView.Interoperability.ArcXML
                         //}
                         AXL.ENVELOPE(xWriter, e);
                         if (env == null)
+                        {
                             env = new Envelope(e);
+                        }
                         else
+                        {
                             env.Union(e);
+                        }
                     }
                     else if (envelope && row is IFeature)
                     {
@@ -190,9 +205,13 @@ namespace gView.Interoperability.ArcXML
                             IEnvelope e = ((IFeature)row).Shape.Envelope;
                             AXL.ENVELOPE(xWriter, e);
                             if (env == null)
+                            {
                                 env = new Envelope(e);
+                            }
                             else
+                            {
                                 env.Union(e);
+                            }
                         }
                     }
                     if (row.Fields != null)
@@ -230,7 +249,9 @@ namespace gView.Interoperability.ArcXML
             xWriter.WriteEndElement(); // FEATURECOUNT
 
             if (env != null)
+            {
                 AXL.ENVELOPE(xWriter, env);
+            }
 
             xWriter.WriteEndElement();
             xWriter.WriteEndDocument();
@@ -248,11 +269,20 @@ namespace gView.Interoperability.ArcXML
 
         async private Task<IRow> ReadNext(ICursor cursor)
         {
-            if (cursor == null) return null;
+            if (cursor == null)
+            {
+                return null;
+            }
+
             if (cursor is IRowCursor)
+            {
                 return await ((IRowCursor)cursor).NextRow();
+            }
             else if (cursor is IFeatureCursor)
+            {
                 return await ((IFeatureCursor)cursor).NextFeature();
+            }
+
             return null;
         }
     }
@@ -291,7 +321,7 @@ namespace gView.Interoperability.ArcXML
             map.ScaleSymbolFactor = symbolScaleFactor;
             await map.Render();
 
-            string title = map.Name.Replace(",", "_").Replace("/","_") + "_" + System.Guid.NewGuid().ToString("N") + _imageExtension;
+            string title = map.Name.Replace(",", "_").Replace("/", "_") + "_" + System.Guid.NewGuid().ToString("N") + _imageExtension;
             if (await map.SaveImage(mapServer.OutputPath + @"\" + title, _imageFormat))
             {
                 ret = response.IMAGE(mapServer.OutputPath, mapServer.OutputUrl, title, map.Display.Envelope);
@@ -353,7 +383,10 @@ namespace gView.Interoperability.ArcXML
                 // verwendet werden kann zB bei gesplitteten Layern...
                 //ITOCElement tocElement = map.TOC.GetTOCElement(layer.Class);
                 ITOCElement tocElement = map.TOC.GetTOCElement(layer);
-                if (tocElement != null) return tocElement.Name;
+                if (tocElement != null)
+                {
+                    return tocElement.Name;
+                }
             }
 
             if (layer != null)
@@ -366,13 +399,20 @@ namespace gView.Interoperability.ArcXML
 
         async void map_BeforeRenderLayers(IServiceMap sender, List<ILayer> layers)
         {
-            if (layers == null) return;
+            if (layers == null)
+            {
+                return;
+            }
 
             #region Set all layers invisible
             // ArcMap sends layerdef only for visible layers...
             foreach (ILayer layer in layers)
             {
-                if (layer == null) continue;
+                if (layer == null)
+                {
+                    continue;
+                }
+
                 layer.Visible = false;
             }
             #endregion
@@ -383,7 +423,10 @@ namespace gView.Interoperability.ArcXML
                 foreach (XmlNode layerDef in layerDefs)
                 {
                     if (layerDef.Attributes["id"] == null ||
-                        layerDef.Attributes["visible"] == null) continue;
+                        layerDef.Attributes["visible"] == null)
+                    {
+                        continue;
+                    }
 
                     try
                     {
@@ -395,10 +438,15 @@ namespace gView.Interoperability.ArcXML
                             {
                                 if (layerDef.Attributes["applyRefScale"] != null &&
                                     layerDef.Attributes["applyRefScale"].Value.ToLower() == "false")
+                                {
                                     ((IFeatureLayer)layer).ApplyRefScale = false;
+                                }
+
                                 if (layerDef.Attributes["applyLabelRefScale"] != null &&
                                     layerDef.Attributes["applyLabelRefScale"].Value.ToLower() == "false")
+                                {
                                     ((IFeatureLayer)layer).ApplyLabelRefScale = false;
+                                }
                             }
                         }
                     }
@@ -423,7 +471,10 @@ namespace gView.Interoperability.ArcXML
                                 ((IWebServiceTheme)layer).LayerID : "";
 
                             IFeatureLayer fLayer = (IFeatureLayer)layer;
-                            if (fLayer.Visible == false) continue;
+                            if (fLayer.Visible == false)
+                            {
+                                continue;
+                            }
 
                             SetLayerObjects(aClass, layerID, fLayer, layerdef, layers);
                         }
@@ -438,7 +489,10 @@ namespace gView.Interoperability.ArcXML
                 foreach (XmlNode LAYER in LAYERS)
                 {
                     element = null;
-                    if (LAYER.Attributes["type"] == null) continue;
+                    if (LAYER.Attributes["type"] == null)
+                    {
+                        continue;
+                    }
 
                     if (LAYER.Attributes["type"].Value == "acetate")
                     {
@@ -446,13 +500,18 @@ namespace gView.Interoperability.ArcXML
                         {
                             IGraphicElement grElement = ObjectFromAXLFactory.GraphicElement(OBJECT);
                             if (grElement != null)
+                            {
                                 sender.Display.GraphicsContainer.Elements.Add(grElement);
+                            }
                         }
                     }
                     else if (LAYER.Attributes["type"].Value == "featureclass")
                     {
                         XmlNode datasetNode = LAYER.SelectSingleNode("DATASET[@fromlayer]");
-                        if (datasetNode == null) continue;
+                        if (datasetNode == null)
+                        {
+                            continue;
+                        }
 
                         XmlNode bufferNode = LAYER.SelectSingleNode("QUERY/BUFFER[@distance]");
                         bufferNode = (bufferNode != null) ?
@@ -465,10 +524,14 @@ namespace gView.Interoperability.ArcXML
                         MapServerHelper.Layers aLayers;
                         //IDatasetElement e = null;
                         if (targetNode != null)
+                        {
                             aLayers = MapServerHelper.FindMapLayers(sender, _useTOC, targetNode.Attributes["id"].Value, layers);
+                        }
                         //e = FindElement(layers, targetNode.Attributes["id"].Value);
                         else
+                        {
                             aLayers = MapServerHelper.FindMapLayers(sender, _useTOC, datasetNode.Attributes["fromlayer"].Value, layers);
+                        }
                         //e = FindElement(layers, datasetNode.Attributes["fromlayer"].Value);
 
                         foreach (ILayer e in aLayers)
@@ -485,7 +548,9 @@ namespace gView.Interoperability.ArcXML
                                     if (filter != null)
                                     {
                                         if (!await MapServerHelper.ModifyFilter(sender, e.Class as ITableClass, filter))
+                                        {
                                             continue;
+                                        }
 
                                         ReplaceQueryWhereClause(clonedLAYER, filter.WhereClause);
                                     }
@@ -503,9 +568,17 @@ namespace gView.Interoperability.ArcXML
                                     {
                                         // Buffer als Graphic !!
                                         IDatasetElement e1 = FindElement(layers, datasetNode.Attributes["fromlayer"].Value);
-                                        if (e1 == null || e1.Class == null || !(e1 is IFeatureLayer)) continue;
+                                        if (e1 == null || e1.Class == null || !(e1 is IFeatureLayer))
+                                        {
+                                            continue;
+                                        }
+
                                         IFeatureLayer fLayer = LayerFactory.Create(e1.Class, e1 as IFeatureLayer) as IFeatureLayer;
-                                        if (fLayer == null) continue;
+                                        if (fLayer == null)
+                                        {
+                                            continue;
+                                        }
+
                                         SetLayerObjects(null, "", fLayer, clonedLAYER, layers);
                                         if (fLayer.FilterQuery is IBufferQueryFilter &&
                                             fLayer.FeatureRenderer is SimpleRenderer)
@@ -524,7 +597,10 @@ namespace gView.Interoperability.ArcXML
                             }
                         }
                     }
-                    if (element == null) continue;
+                    if (element == null)
+                    {
+                        continue;
+                    }
 
                     if (element is IFeatureLayer)
                     {
@@ -538,7 +614,10 @@ namespace gView.Interoperability.ArcXML
 
         private void SetLayerObjects(ArcIMSClass aClass, string LayerID, IFeatureLayer fLayer, XmlNode layerdef, List<ILayer> layers)
         {
-            if (fLayer == null || layerdef == null) return;
+            if (fLayer == null || layerdef == null)
+            {
+                return;
+            }
 
             foreach (XmlNode child in layerdef.ChildNodes)
             {
@@ -550,7 +629,9 @@ namespace gView.Interoperability.ArcXML
                     {
                         IDatasetElement e = FindElement(layers, datasetNode.Attributes["fromlayer"].Value);
                         if (e is IFeatureLayer)
+                        {
                             rootFeatureClass = ((IFeatureLayer)e).FeatureClass;
+                        }
                     }
 
                     IQueryFilter orig = fLayer.FilterQuery;
@@ -576,7 +657,9 @@ namespace gView.Interoperability.ArcXML
                 else if (child.Name == "SIMPLERENDERER")
                 {
                     if (aClass != null)
+                    {
                         aClass.LayerRenderer.Add(LayerID, child);
+                    }
                     else
                     {
                         fLayer.FeatureRenderer = ObjectFromAXLFactory.SimpleRenderer(child);
@@ -585,7 +668,9 @@ namespace gView.Interoperability.ArcXML
                 else if (child.Name == "VALUEMAPRENDERER")
                 {
                     if (aClass != null)
+                    {
                         aClass.LayerRenderer.Add(LayerID, child);
+                    }
                     else
                     {
                         fLayer.FeatureRenderer = ObjectFromAXLFactory.ValueMapRenderer(child);
@@ -603,7 +688,9 @@ namespace gView.Interoperability.ArcXML
                 else if (child.Name == "GROUPRENDERER")
                 {
                     if (aClass != null)
+                    {
                         aClass.LayerRenderer.Add(LayerID, child);
+                    }
                     else
                     {
                         fLayer.FeatureRenderer = ObjectFromAXLFactory.GroupRenderer(child);
@@ -616,7 +703,10 @@ namespace gView.Interoperability.ArcXML
         private bool ParseChildNodesForLabelRenderer(ArcIMSClass aClass, string LayerID, IFeatureLayer fLayer, XmlNode layerdef)
         {
             if (fLayer == null || layerdef == null ||
-                layerdef.ChildNodes == null || layerdef.ChildNodes.Count == 0) return false;
+                layerdef.ChildNodes == null || layerdef.ChildNodes.Count == 0)
+            {
+                return false;
+            }
 
             foreach (XmlNode child in layerdef.ChildNodes)
             {
@@ -661,13 +751,20 @@ namespace gView.Interoperability.ArcXML
         #region Helper
         private ArcIMSClass FindArcIMSClass(IWebServiceTheme layer)
         {
-            if (layer == null) return null;
+            if (layer == null)
+            {
+                return null;
+            }
+
             return layer.ServiceClass as ArcIMSClass;
         }
 
         private XmlNode Transform2LayerIDs(IServiceMap sender, ArcIMSClass aClass, List<ILayer> layers, XmlNode node)
         {
-            if (aClass == null || layers == null || node == null) return null;
+            if (aClass == null || layers == null || node == null)
+            {
+                return null;
+            }
 
             XmlNode ret = node.Clone();
             foreach (XmlNode dataset in ret.SelectNodes("DATASET[@fromlayer]"))
@@ -678,7 +775,10 @@ namespace gView.Interoperability.ArcXML
                 foreach (ILayer theme in themes)
                 {
                     if (!(theme is IWebServiceTheme) ||
-                          ((IWebServiceTheme)theme).ServiceClass != aClass) return null;
+                          ((IWebServiceTheme)theme).ServiceClass != aClass)
+                    {
+                        return null;
+                    }
 
                     dataset.Attributes["fromlayer"].Value = ((IWebServiceTheme)theme).LayerID;
                 }
@@ -692,7 +792,10 @@ namespace gView.Interoperability.ArcXML
                 foreach (ILayer theme in themes)
                 {
                     if (!(theme is IWebServiceTheme) ||
-                          ((IWebServiceTheme)theme).ServiceClass != aClass) return null;
+                          ((IWebServiceTheme)theme).ServiceClass != aClass)
+                    {
+                        return null;
+                    }
 
                     target.Attributes["id"].Value = ((IWebServiceTheme)theme).LayerID;
                 }
@@ -706,7 +809,10 @@ namespace gView.Interoperability.ArcXML
                 foreach (ILayer theme in themes)
                 {
                     if (!(theme is IWebServiceTheme) ||
-                          ((IWebServiceTheme)theme).ServiceClass != aClass) return null;
+                          ((IWebServiceTheme)theme).ServiceClass != aClass)
+                    {
+                        return null;
+                    }
 
                     target.Attributes["id"].Value = ((IWebServiceTheme)theme).LayerID;
                 }
@@ -719,7 +825,10 @@ namespace gView.Interoperability.ArcXML
         {
             foreach (ILayer element in layers)
             {
-                if (element == null) continue;
+                if (element == null)
+                {
+                    continue;
+                }
 
                 //if (element.ID.ToString() == id)
                 if (element.SID.ToString() == id)
@@ -742,21 +851,33 @@ namespace gView.Interoperability.ArcXML
         /// <param name="map"></param>
         async private Task ModifyLAYERS(IServiceMap map)
         {
-            if (LAYERS == null) return;
+            if (LAYERS == null)
+            {
+                return;
+            }
 
             foreach (XmlNode LAYER in LAYERS)
             {
-                if (LAYER == null || LAYER.Attributes["type"] == null) continue;
+                if (LAYER == null || LAYER.Attributes["type"] == null)
+                {
+                    continue;
+                }
 
                 if (LAYER.Attributes["type"].Value == "featureclass")
                 {
                     XmlNode datasetNode = LAYER.SelectSingleNode("DATASET[@fromlayer]");
-                    if (datasetNode == null) continue;
+                    if (datasetNode == null)
+                    {
+                        continue;
+                    }
 
                     XmlNode queryNode = (LAYER.SelectSingleNode("QUERY") != null) ?
                         LAYER.SelectSingleNode("QUERY") :
                         LAYER.SelectSingleNode("SPATIALQUERY");
-                    if (queryNode == null) continue;
+                    if (queryNode == null)
+                    {
+                        continue;
+                    }
 
                     XmlNode bufferNode = queryNode.SelectSingleNode("BUFFER[@distance]");
                     XmlNode targetNode = (bufferNode != null) ?
@@ -786,7 +907,9 @@ namespace gView.Interoperability.ArcXML
                                 }
 
                                 if (target[0].Class is IBeforeQueryEventHandler)
+                                {
                                     ((IBeforeQueryEventHandler)target[0].Class).FireBeforeQureyEvent(ref filter);
+                                }
 
                                 string axl = AXLFromObjectFactory.Query(filter);
                                 XmlDocument doc = new XmlDocument();
@@ -823,7 +946,10 @@ namespace gView.Interoperability.ArcXML
 
             public void Draw(IDisplay display)
             {
-                if (_symbol == null || _geometry == null) return;
+                if (_symbol == null || _geometry == null)
+                {
+                    return;
+                }
 
                 display.Draw(_symbol, _geometry);
             }
@@ -848,7 +974,10 @@ namespace gView.Interoperability.ArcXML
 
         async public Task<string> Request()
         {
-            if (Classes == null || Points == null) return String.Empty;
+            if (Classes == null || Points == null)
+            {
+                return String.Empty;
+            }
 
             StringBuilder axl = new StringBuilder();
             MemoryStream ms = new MemoryStream();
@@ -873,7 +1002,11 @@ namespace gView.Interoperability.ArcXML
                     StringBuilder sb = new StringBuilder();
                     for (int i = 2; i < vals.Length; i++)
                     {
-                        if (sb.Length > 0) sb.Append(" ");
+                        if (sb.Length > 0)
+                        {
+                            sb.Append(" ");
+                        }
+
                         sb.Append(vals[i].ToString());
                     }
                     xWriter.WriteRaw(sb.ToString());
@@ -897,9 +1030,13 @@ namespace gView.Interoperability.ArcXML
                         using (ICursor cursor = await ((IMulitPointIdentify)rasterClass).MultiPointQuery(Display, pColl, SpatialReference, UserData))
                         {
                             if (Compact)
+                            {
                                 await AddCompactRasterInfo2(xWriter, cursor, null);
+                            }
                             else
+                            {
                                 await AddRasterInfo(xWriter, cursor, null);
+                            }
                         }
                     }
                     else if (rasterClass is IPointIdentify)
@@ -909,9 +1046,13 @@ namespace gView.Interoperability.ArcXML
                             using (ICursor cursor = await ((IPointIdentify)rasterClass).PointQuery(Display, point, SpatialReference, UserData))
                             {
                                 if (Compact)
+                                {
                                     await AddCompactRasterInfo(xWriter, cursor, point);
+                                }
                                 else
+                                {
                                     await AddRasterInfo(xWriter, cursor, point);
+                                }
                             }
                         }
                     }
@@ -933,7 +1074,10 @@ namespace gView.Interoperability.ArcXML
 
         async private Task AddRasterInfo(XmlTextWriter xWriter, ICursor cursor, IPoint point)
         {
-            if (cursor == null) return;
+            if (cursor == null)
+            {
+                return;
+            }
 
             if (cursor is IRowCursor)
             {
@@ -952,9 +1096,14 @@ namespace gView.Interoperability.ArcXML
                         {
                             object x_ = row["x"], y_ = row["y"];
                             if (x_ != null)
+                            {
                                 xWriter.WriteAttributeString("x", x_.ToString());
+                            }
+
                             if (y_ != null)
+                            {
                                 xWriter.WriteAttributeString("y", y_.ToString());
+                            }
                         }
                         xWriter.WriteStartElement("BANDS");
 
@@ -978,9 +1127,14 @@ namespace gView.Interoperability.ArcXML
                                 xWriter.WriteStartElement("attribute");
                                 xWriter.WriteAttributeString("name", fv.Name);
                                 if (fv.Value != null)
+                                {
                                     xWriter.WriteAttributeString("value", fv.Value.ToString());
+                                }
                                 else
+                                {
                                     xWriter.WriteAttributeString("value", "");
+                                }
+
                                 xWriter.WriteEndElement();
                             }
                         }
@@ -1030,7 +1184,9 @@ namespace gView.Interoperability.ArcXML
                             }
                         }
                         if (point == null)
+                        {
                             xWriter.WriteRaw(" ");
+                        }
                     }
                 }
             }
@@ -1071,7 +1227,9 @@ namespace gView.Interoperability.ArcXML
                             }
                         }
                         if (r != null)
+                        {
                             clonePointList.Remove(r);
+                        }
                     }
                 }
             }
@@ -1084,11 +1242,20 @@ namespace gView.Interoperability.ArcXML
         }
         async private Task<IRow> ReadNext(ICursor cursor)
         {
-            if (cursor == null) return null;
+            if (cursor == null)
+            {
+                return null;
+            }
+
             if (cursor is IRowCursor)
+            {
                 return await ((IRowCursor)cursor).NextRow();
+            }
             else if (cursor is IFeatureCursor)
+            {
                 return await ((IFeatureCursor)cursor).NextFeature();
+            }
+
             return null;
         }
     }
@@ -1197,14 +1364,20 @@ namespace gView.Interoperability.ArcXML
         }
         private void WriteLayerInfoTOC(XmlTextWriter xw, ILegendGroup lGroup)
         {
-            if (lGroup == null) return;
+            if (lGroup == null)
+            {
+                return;
+            }
 
             xw.WriteStartElement("TOC");
             xw.WriteStartElement("TOCGROUP");
             for (int i = 0; i < lGroup.LegendItemCount; i++)
             {
                 ILegendItem lItem = lGroup.LegendItem(i);
-                if (lItem == null) continue;
+                if (lItem == null)
+                {
+                    continue;
+                }
 
                 xw.WriteStartElement("TOCCLASS");
                 xw.WriteAttributeString("label", lItem.LegendLabel);
@@ -1229,11 +1402,18 @@ namespace gView.Interoperability.ArcXML
 
         async public Task<string> GET_SERVICE_INFO(IServiceRequestContext context, bool fields, bool envelope, bool renderers, bool toc, bool gv_meta, bool useTOC)
         {
-            if (context == null) return String.Empty;
+            if (context == null)
+            {
+                return String.Empty;
+            }
+
             using (IServiceMap map = await context.CreateServiceMapInstance())
             {
 
-                if (map == null) return "";
+                if (map == null)
+                {
+                    return "";
+                }
 
                 double dpm = 96.0 / 0.0254;
 
@@ -1327,27 +1507,56 @@ namespace gView.Interoperability.ArcXML
                         IEnvelope env = null;
                         if (element is IFeatureLayer)
                         {
-                            if (((IFeatureLayer)element).FeatureClass == null) continue;
+                            if (((IFeatureLayer)element).FeatureClass == null)
+                            {
+                                continue;
+                            }
+
                             IGeometry geom = GeometricTransformer.Transform2D(((IFeatureLayer)element).FeatureClass.Envelope, ((IFeatureLayer)element).FeatureClass.SpatialReference, map.Display.SpatialReference);
-                            if (geom != null) env = geom.Envelope;
+                            if (geom != null)
+                            {
+                                env = geom.Envelope;
+                            }
                         }
                         else if (element is IRasterLayer && ((IRasterLayer)element).RasterClass != null)
                         {
-                            if (((IRasterLayer)element).RasterClass.Polygon == null) continue;
+                            if (((IRasterLayer)element).RasterClass.Polygon == null)
+                            {
+                                continue;
+                            }
+
                             IGeometry geom = GeometricTransformer.Transform2D(((IRasterLayer)element).RasterClass.Polygon.Envelope, ((IRasterLayer)element).RasterClass.SpatialReference, map.Display.SpatialReference);
-                            if (geom != null) env = geom.Envelope;
+                            if (geom != null)
+                            {
+                                env = geom.Envelope;
+                            }
                         }
                         else if (element is IWebServiceLayer && ((IWebServiceLayer)element).WebServiceClass != null)
                         {
-                            if (((IWebServiceLayer)element).WebServiceClass.Envelope == null) continue;
+                            if (((IWebServiceLayer)element).WebServiceClass.Envelope == null)
+                            {
+                                continue;
+                            }
+
                             IGeometry geom = GeometricTransformer.Transform2D(((IWebServiceLayer)element).WebServiceClass.Envelope, ((IWebServiceLayer)element).WebServiceClass.SpatialReference, map.Display.SpatialReference);
-                            if (geom != null) env = geom.Envelope;
+                            if (geom != null)
+                            {
+                                env = geom.Envelope;
+                            }
                         }
-                        if (env == null) continue;
+                        if (env == null)
+                        {
+                            continue;
+                        }
+
                         if (mapEnvelope == null)
+                        {
                             mapEnvelope = new Envelope(env);
+                        }
                         else
+                        {
                             mapEnvelope.Union(env);
+                        }
                     }
                     ENVELOPE(xWriter, mapEnvelope, "Initial_Extent");
                 }
@@ -1405,7 +1614,11 @@ namespace gView.Interoperability.ArcXML
                     //    sb.Append(name + " " + ((TimeSpan)(DateTime.Now - t1)).TotalMilliseconds.ToString() + "ms\n");
                     //    t1 = DateTime.Now;
                     //}
-                    if (Layers == null || Layers.FirstLayer == null) continue;
+                    if (Layers == null || Layers.FirstLayer == null)
+                    {
+                        continue;
+                    }
+
                     name = Layers.Title;
                     ILayer element = Layers.FirstLayer;
 
@@ -1428,19 +1641,28 @@ namespace gView.Interoperability.ArcXML
                             xWriter.WriteAttributeString("id", Layers.ID);
                             xWriter.WriteAttributeString("visible", fLayer.Visible.ToString().ToLower());
                             if (fLayer.MinimumScale > 1)
+                            {
                                 xWriter.WriteAttributeString("minscale", (fLayer.MinimumScale / dpm).ToString());
+                            }
+
                             if (fLayer.MaximumScale > 1)
+                            {
                                 xWriter.WriteAttributeString("maxscale", (fLayer.MaximumScale / dpm).ToString());
+                            }
 
                             //xWriter.WriteAttributeString("aliasname", Layers.Title);
                             if (String.IsNullOrEmpty(Layers.GroupName))
+                            {
                                 xWriter.WriteAttributeString("group", Layers.GroupName);
+                            }
 
                             xWriter.WriteStartElement("FCLASS");
 
                             var geomType = fClass.GeometryType;  // if layer is SQL Spatial with undefined geometrytype...
                             if (geomType == geometryType.Unknown && fLayer.LayerGeometryType != geometryType.Unknown)  // take the settings from layer-properties
+                            {
                                 geomType = fLayer.LayerGeometryType;
+                            }
 
                             switch (geomType)
                             {
@@ -1474,7 +1696,11 @@ namespace gView.Interoperability.ArcXML
                             {
                                 foreach (IField field in fClass.Fields.ToEnumerable())
                                 {
-                                    if (field.type == FieldType.Shape) continue;
+                                    if (field.type == FieldType.Shape)
+                                    {
+                                        continue;
+                                    }
+
                                     xWriter.WriteStartElement("FIELD");
                                     xWriter.WriteAttributeString("name", field.name);
                                     xWriter.WriteAttributeString("type", GetAxlFieldType(field.type).ToString());
@@ -1491,13 +1717,25 @@ namespace gView.Interoperability.ArcXML
                                 }
                             }
                             xWriter.WriteEndElement(); // FCLASS
-                            if (toc) this.WriteLayerInfoTOC(xWriter, fLayer.FeatureRenderer as ILegendGroup);
-                            if (renderers) xWriter.WriteRaw(Renderer(element as IFeatureLayer));
+                            if (toc)
+                            {
+                                this.WriteLayerInfoTOC(xWriter, fLayer.FeatureRenderer as ILegendGroup);
+                            }
 
-                            if (gv_meta) WriteClassMeta(xWriter, fClass);
+                            if (renderers)
+                            {
+                                xWriter.WriteRaw(Renderer(element as IFeatureLayer));
+                            }
+
+                            if (gv_meta)
+                            {
+                                WriteClassMeta(xWriter, fClass);
+                            }
 
                             if (fClass.GeometryType == geometryType.Network)
+                            {
                                 WriteNetworkTracers(xWriter);
+                            }
 
                             if (fClass.GeometryType == geometryType.Network)
                             {
@@ -1515,14 +1753,24 @@ namespace gView.Interoperability.ArcXML
                             xWriter.WriteAttributeString("visible", element.Visible.ToString().ToLower());
 
                             if (element.MinimumScale > 1)
+                            {
                                 xWriter.WriteAttributeString("minscale", (element.MinimumScale / dpm).ToString());
+                            }
+
                             if (element.MaximumScale > 1)
+                            {
                                 xWriter.WriteAttributeString("maxscale", (element.MaximumScale / dpm).ToString());
+                            }
 
                             if (String.IsNullOrEmpty(Layers.GroupName))
+                            {
                                 xWriter.WriteAttributeString("group", Layers.GroupName);
+                            }
 
-                            if (gv_meta) WriteClassMeta(xWriter, element.Class);
+                            if (gv_meta)
+                            {
+                                WriteClassMeta(xWriter, element.Class);
+                            }
 
                             xWriter.WriteEndElement(); // LAYERINFO
                         }
@@ -1537,14 +1785,21 @@ namespace gView.Interoperability.ArcXML
                         xWriter.WriteAttributeString("visible", rLayer.Visible.ToString().ToLower());
 
                         if (rLayer.MinimumScale > 1)
+                        {
                             xWriter.WriteAttributeString("minscale", (rLayer.MinimumScale / dpm).ToString());
+                        }
+
                         if (rLayer.MaximumScale > 1)
+                        {
                             xWriter.WriteAttributeString("maxscale", (rLayer.MaximumScale / dpm).ToString());
+                        }
 
                         //ITOCElement tocElement = map.TOC.GetTOCElement((ILayer)element);
                         //xWriter.WriteAttributeString("aliasname", Layers.Title);
                         if (String.IsNullOrEmpty(Layers.GroupName))
+                        {
                             xWriter.WriteAttributeString("group", Layers.GroupName);
+                        }
 
                         if (envelope && rLayer.RasterClass.Polygon != null)
                         {
@@ -1555,7 +1810,11 @@ namespace gView.Interoperability.ArcXML
                             }
                         }
 
-                        if (gv_meta) WriteClassMeta(xWriter, rLayer.Class);
+                        if (gv_meta)
+                        {
+                            WriteClassMeta(xWriter, rLayer.Class);
+                        }
+
                         xWriter.WriteEndElement(); // LAYERINFO
                     }
                     else if (element is IGroupLayer)
@@ -1573,14 +1832,24 @@ namespace gView.Interoperability.ArcXML
                         xWriter.WriteAttributeString("visible", element.Visible.ToString().ToLower());
 
                         if (element.MinimumScale > 1)
+                        {
                             xWriter.WriteAttributeString("minscale", (element.MinimumScale / dpm).ToString());
+                        }
+
                         if (element.MaximumScale > 1)
+                        {
                             xWriter.WriteAttributeString("maxscale", (element.MaximumScale / dpm).ToString());
+                        }
 
                         if (String.IsNullOrEmpty(Layers.GroupName))
+                        {
                             xWriter.WriteAttributeString("group", Layers.GroupName);
+                        }
 
-                        if (gv_meta) WriteClassMeta(xWriter, element.Class);
+                        if (gv_meta)
+                        {
+                            WriteClassMeta(xWriter, element.Class);
+                        }
 
                         xWriter.WriteEndElement(); // LAYERINFO
                     }
@@ -1602,7 +1871,10 @@ namespace gView.Interoperability.ArcXML
 
         private void WriteClassMeta(XmlWriter xWriter, IClass cls)
         {
-            if (xWriter == null || cls == null) return;
+            if (xWriter == null || cls == null)
+            {
+                return;
+            }
 
             xWriter.WriteStartElement("gv_meta");
             xWriter.WriteStartElement("class");
@@ -1621,16 +1893,21 @@ namespace gView.Interoperability.ArcXML
 
         private void WriteNetworkTracers(XmlWriter xWriter)
         {
-            if (xWriter == null) return;
+            if (xWriter == null)
+            {
+                return;
+            }
 
             PlugInManager pluginMan = new PlugInManager();
             xWriter.WriteStartElement("gv_network_tracers");
-            
+
             foreach (Type tracerType in pluginMan.GetPlugins(typeof(INetworkTracer)))
             {
                 INetworkTracer tracer = pluginMan.CreateInstance(tracerType) as INetworkTracer;
                 if (tracer == null)
+                {
                     continue;
+                }
 
                 xWriter.WriteStartElement("gv_network_tracer");
                 xWriter.WriteAttributeString("name", tracer.Name);
@@ -1643,7 +1920,10 @@ namespace gView.Interoperability.ArcXML
 
         public string Renderer(IFeatureLayer layer)
         {
-            if (layer == null) return "";
+            if (layer == null)
+            {
+                return "";
+            }
 
             StringBuilder sb = new StringBuilder();
             string fRenderer = ObjectFromAXLFactory.ConvertToAXL(layer.FeatureRenderer);
@@ -1664,7 +1944,9 @@ namespace gView.Interoperability.ArcXML
             {
                 ArcIMSThemeFeatureClass c = layer.Class as ArcIMSThemeFeatureClass;
                 if (c.OriginalRendererNode != null)
+                {
                     return c.OriginalRendererNode.OuterXml;
+                }
             }
             return sb.ToString();
         }
@@ -1739,14 +2021,21 @@ namespace gView.Interoperability.ArcXML
         }
         static public void ENVELOPE(XmlTextWriter xWriter, IEnvelope envelope, string name)
         {
-            if (xWriter == null || envelope == null) return;
+            if (xWriter == null || envelope == null)
+            {
+                return;
+            }
+
             xWriter.WriteStartElement("ENVELOPE");
             xWriter.WriteAttributeString("minx", envelope.minx.ToString());
             xWriter.WriteAttributeString("miny", envelope.miny.ToString());
             xWriter.WriteAttributeString("maxx", envelope.maxx.ToString());
             xWriter.WriteAttributeString("maxy", envelope.maxy.ToString());
             if (name != String.Empty)
+            {
                 xWriter.WriteAttributeString("name", name);
+            }
+
             xWriter.WriteEndElement();
         }
 

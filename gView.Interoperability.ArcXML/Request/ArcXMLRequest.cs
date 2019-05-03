@@ -122,7 +122,7 @@ namespace gView.Interoperability.ArcXML
             catch (Exception ex)
             {
                 await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
-                context.ServiceRequest.Response = CreateException(ex.Message);
+                context.ServiceRequest.Response = CreateException(ex.Message + " " + ex.StackTrace);
                 return;
             }
             finally

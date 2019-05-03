@@ -1,14 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Data;
-using System.IO;
-using System.Drawing;
 using gView.Framework.Geometry;
-using System.Drawing.Imaging;
 using gView.Framework.IO;
 using gView.Framework.LinAlg;
 using gView.Framework.system;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.GDAL
@@ -70,9 +70,9 @@ namespace gView.DataSources.GDAL
                     case ".gsd":
                         _type = RasterType.grid;
                         break;
-                    //case ".jp2":
-                    //    _type = RasterType.wavelet;
-                    //    break;
+                        //case ".jp2":
+                        //    _type = RasterType.wavelet;
+                        //    break;
                 }
 
                 using (OSGeo.GDAL.Band band = _gDS.GetRasterBand(1))
@@ -80,7 +80,9 @@ namespace gView.DataSources.GDAL
                     if (_gDS.RasterCount == 1)
                     {
                         if (band.DataType != OSGeo.GDAL.DataType.GDT_Byte)
+                        {
                             _type = RasterType.grid;
+                        }
                     }
                     band.GetMinimum(out _min, out _hasNoDataVal);
                     band.GetMaximum(out _max, out _hasNoDataVal);
@@ -115,16 +117,23 @@ namespace gView.DataSources.GDAL
                 FileInfo tfwInfo = new FileInfo(tfwFilename);
 
                 _tfw = new TFWFile(tfw[0], tfw[3], tfw[1], tfw[2], tfw[4], tfw[5]);
-                if (tfwInfo.Exists) _tfw.Filename = tfwFilename;
+                if (tfwInfo.Exists)
+                {
+                    _tfw.Filename = tfwFilename;
+                }
 
                 if (_tfw.X == 0.0 && _tfw.Y == 0.0 &&
                     Math.Abs(_tfw.dx_X) == 1.0 && _tfw.dx_Y == 0.0 &&
                     Math.Abs(_tfw.dy_Y) == 1.0 && _tfw.dy_X == 0.0 && driver != null)
                 {
                     if (tfwInfo.Exists)
+                    {
                         _tfw = new TFWFile(tfwFilename);
+                    }
                     else
+                    {
                         _tfw.isValid = false;
+                    }
                 }
                 else
                 {
@@ -231,10 +240,16 @@ namespace gView.DataSources.GDAL
             EndPaint(cancelTracker);
             try
             {
-                if (!(_polygon is ITopologicalOperation)) return;
+                if (!(_polygon is ITopologicalOperation))
+                {
+                    return;
+                }
 
                 TFWFile tfw = this.WorldFile as TFWFile;
-                if (tfw == null) return;
+                if (tfw == null)
+                {
+                    return;
+                }
 
                 IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display); //display.Envelope;
                 if (display.GeometricTransformer != null)
@@ -244,7 +259,10 @@ namespace gView.DataSources.GDAL
 
                 IGeometry clipped;
                 ((ITopologicalOperation)_polygon).Clip(dispEnvelope, out clipped);
-                if (!(clipped is IPolygon)) return;
+                if (!(clipped is IPolygon))
+                {
+                    return;
+                }
 
                 IPolygon cPolygon = (IPolygon)clipped;
 
@@ -254,7 +272,11 @@ namespace gView.DataSources.GDAL
                 {
                     vecs[i] = new vector2(cPolygon[0][i].X, cPolygon[0][i].Y);
                 }
-                if (!tfw.ProjectInv(vecs)) return;
+                if (!tfw.ProjectInv(vecs))
+                {
+                    return;
+                }
+
                 IEnvelope picEnv = vector2.IntegerEnvelope(vecs);
                 picEnv.minx = Math.Max(0, picEnv.minx);
                 picEnv.miny = Math.Max(0, picEnv.miny);
@@ -276,7 +298,10 @@ namespace gView.DataSources.GDAL
                 double c2 = Math.Sqrt(_tfw.dy_Y * _tfw.dy_Y + _tfw.dy_X * _tfw.dy_X);
                 double mag = Math.Min(c1, c2) / pix;
 
-                if (mag > 1.0) mag = 1.0;
+                if (mag > 1.0)
+                {
+                    mag = 1.0;
+                }
 
                 int x = (int)(picEnv.minx);
                 int y = (int)(picEnv.miny);
@@ -299,9 +324,14 @@ namespace gView.DataSources.GDAL
                         break;
                     case RasterType.grid:
                         if (_renderRawGridValues)
+                        {
                             PaintGrid(x, y, wWidth, wHeight, iWidth, iHeight);
+                        }
                         else
+                        {
                             PaintHillShade(x, y, wWidth, wHeight, iWidth, iHeight, mag, cancelTracker);
+                        }
+
                         break;
 
                 }
@@ -330,7 +360,11 @@ namespace gView.DataSources.GDAL
 
         private void PaintImage(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
         {
-            if (CancelTracker.Canceled(cancelTracker) || _gDS == null) return;
+            if (CancelTracker.Canceled(cancelTracker) || _gDS == null)
+            {
+                return;
+            }
+
             int pixelSpace = 3;
             _bitmap = new Bitmap(iWidth, iHeight, PixelFormat.Format24bppRgb);
             BitmapData bitmapData = _bitmap.LockBits(new Rectangle(0, 0, iWidth, iHeight), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
@@ -366,7 +400,11 @@ namespace gView.DataSources.GDAL
                                 break;
                             case ColorInterp.PaletteIndex:
                                 OSGeo.GDAL.ColorTable colTable = band.GetRasterColorTable();
-                                if (colTable == null) break;
+                                if (colTable == null)
+                                {
+                                    break;
+                                }
+
                                 int colCount = colTable.GetCount();
                                 for (int iColor = 0; iColor < colCount; iColor++)
                                 {
@@ -391,7 +429,11 @@ namespace gView.DataSources.GDAL
                         byte* ptr = (byte*)(bitmapData.Scan0);
                         for (int i = 0; i < bitmapData.Height; i++)
                         {
-                            if (CancelTracker.Canceled(cancelTracker)) return;
+                            if (CancelTracker.Canceled(cancelTracker))
+                            {
+                                return;
+                            }
+
                             for (int j = 0; j < bitmapData.Width; j++)
                             {
                                 // write the logic implementation here
@@ -414,13 +456,19 @@ namespace gView.DataSources.GDAL
             finally
             {
                 if (_bitmap != null)
+                {
                     _bitmap.UnlockBits(bitmapData);
+                }
             }
         }
 
         private void PaintWavelet(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
         {
-            if (CancelTracker.Canceled(cancelTracker) || _gDS == null) return;
+            if (CancelTracker.Canceled(cancelTracker) || _gDS == null)
+            {
+                return;
+            }
+
             int pixelSpace = 3;
             _bitmap = new Bitmap(iWidth, iHeight, PixelFormat.Format24bppRgb);
             BitmapData bitmapData = _bitmap.LockBits(new Rectangle(0, 0, iWidth, iHeight), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
@@ -459,13 +507,18 @@ namespace gView.DataSources.GDAL
             finally
             {
                 if (_bitmap != null)
+                {
                     _bitmap.UnlockBits(bitmapData);
+                }
             }
         }
 
         private void PaintGrid(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight)
         {
-            if (_gDS == null) return;
+            if (_gDS == null)
+            {
+                return;
+            }
 
             int pixelSpace = 4;
             _bitmap = new Bitmap(iWidth, iHeight, PixelFormat.Format32bppArgb);
@@ -532,13 +585,18 @@ namespace gView.DataSources.GDAL
             finally
             {
                 if (_bitmap != null)
+                {
                     _bitmap.UnlockBits(bitmapData);
+                }
             }
         }
 
         private void PaintHillShade(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, double mag, ICancelTracker cancelTracker)
         {
-            if (CancelTracker.Canceled(cancelTracker) || _gDS == null) return;
+            if (CancelTracker.Canceled(cancelTracker) || _gDS == null)
+            {
+                return;
+            }
 
             int pixelSpace = 4;
             Bitmap bitmap = new Bitmap(iWidth, iHeight + 100, PixelFormat.Format32bppArgb);
@@ -576,7 +634,11 @@ namespace gView.DataSources.GDAL
 
                     for (int i = 0; i < iHeight; i++)
                     {
-                        if (CancelTracker.Canceled(cancelTracker)) return;
+                        if (CancelTracker.Canceled(cancelTracker))
+                        {
+                            return;
+                        }
+
                         for (int j = 0; j < iWidth; j++)
                         {
                             if ((_hasNoDataVal == 1 && *v == _nodata) ||
@@ -625,7 +687,9 @@ namespace gView.DataSources.GDAL
                     }
                 }
                 if (bitmap != null)
+                {
                     bitmap.UnlockBits(bitmapData);
+                }
 
                 _bitmap = new Bitmap(iWidth, iHeight, PixelFormat.Format32bppArgb);
                 using (Graphics gr = Graphics.FromImage(_bitmap))
@@ -637,7 +701,9 @@ namespace gView.DataSources.GDAL
             finally
             {
                 if (bitmap != null)
+                {
                     bitmap.Dispose();
+                }
             }
         }
 
@@ -708,22 +774,35 @@ namespace gView.DataSources.GDAL
         public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata)
         {
             TFWFile tfw = this.WorldFile as TFWFile;
-            if (tfw == null) return Task.FromResult<ICursor>(null);
+            if (tfw == null)
+            {
+                return Task.FromResult<ICursor>(null);
+            }
 
             if (this.SpatialReference != null && sRef != null &&
                 !sRef.Equals(this.SpatialReference))
             {
                 point = GeometricTransformer.Transform2D(point, sRef, this.SpatialReference) as IPoint;
             }
-            if (point == null) return null;
+            if (point == null)
+            {
+                return Task.FromResult<ICursor>(null); ;
+            }
 
             // Punkt transformieren -> Bild
             vector2[] vecs = new vector2[1];
             vecs[0] = new vector2(point.X, point.Y);
 
-            if (!tfw.ProjectInv(vecs)) return null;
+            if (!tfw.ProjectInv(vecs))
+            {
+                return Task.FromResult<ICursor>(null); ;
+            }
+
             if (vecs[0].x < 0 || vecs[0].x >= _iWidth ||
-                vecs[0].y < 0 || vecs[0].y >= _iHeight) return null;
+                vecs[0].y < 0 || vecs[0].y >= _iHeight)
+            {
+                return Task.FromResult<ICursor>(null);
+            }
 
             switch (_type)
             {
@@ -733,7 +812,7 @@ namespace gView.DataSources.GDAL
                     return Task.FromResult<ICursor>(QueryGrid((int)Math.Floor(vecs[0].x), (int)Math.Floor(vecs[0].y)));
             }
 
-            return null;
+            return Task.FromResult<ICursor>(null); ;
         }
 
         #endregion
@@ -744,28 +823,43 @@ namespace gView.DataSources.GDAL
         public void InitGridQuery()
         {
             if (_gridQueryBand == null)
+            {
                 _gridQueryBand = _gDS.GetRasterBand(1);
+            }
         }
 
         public float GridQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef)
         {
             TFWFile tfw = this.WorldFile as TFWFile;
-            if (tfw == null) return (float)_nodata;
+            if (tfw == null)
+            {
+                return (float)_nodata;
+            }
 
             if (this.SpatialReference != null && sRef != null &&
                 !sRef.Equals(this.SpatialReference))
             {
                 point = GeometricTransformer.Transform2D(point, sRef, this.SpatialReference) as IPoint;
             }
-            if (point == null) return (float)_nodata;
+            if (point == null)
+            {
+                return (float)_nodata;
+            }
 
             // Punkt transformieren -> Bild
             vector2[] vecs = new vector2[1];
             vecs[0] = new vector2(point.X, point.Y);
 
-            if (!tfw.ProjectInv(vecs)) return (float)_nodata;
+            if (!tfw.ProjectInv(vecs))
+            {
+                return (float)_nodata;
+            }
+
             if (vecs[0].x < 0 || vecs[0].x >= _iWidth ||
-                vecs[0].y < 0 || vecs[0].y >= _iHeight) return (float)_nodata;
+                vecs[0].y < 0 || vecs[0].y >= _iHeight)
+            {
+                return (float)_nodata;
+            }
 
             unsafe
             {
@@ -777,7 +871,9 @@ namespace gView.DataSources.GDAL
 
                     if ((_hasNoDataVal != 0 && buf[0] == _nodata) ||
                         (_useIgnoreValue && buf[0] == _ignoreValue))
+                    {
                         return (float)_nodata;
+                    }
 
                     return buf[0];
                 }
@@ -831,7 +927,11 @@ namespace gView.DataSources.GDAL
                             values = new object[values.Length + 4];
 
                             OSGeo.GDAL.ColorTable colTable = band.GetRasterColorTable();
-                            if (colTable == null) break;
+                            if (colTable == null)
+                            {
+                                break;
+                            }
+
                             int colCount = colTable.GetCount();
                             for (int iColor = 0; iColor < colCount; iColor++)
                             {
@@ -893,7 +993,9 @@ namespace gView.DataSources.GDAL
 
                         if ((_hasNoDataVal != 0 && buf[0] == _nodata) ||
                             (_useIgnoreValue && buf[0] == _ignoreValue))
+                        {
                             return null;
+                        }
 
                         string[] tags = { "ImageX", "ImageY", "band1" };
                         object[] values = { x, y, buf[0] };
@@ -934,7 +1036,10 @@ namespace gView.DataSources.GDAL
 
             public Task<IRow> NextRow()
             {
-                if (_pos > 0) return Task.FromResult<IRow>(null);
+                if (_pos > 0)
+                {
+                    return Task.FromResult<IRow>(null);
+                }
 
                 Row row = new Row();
                 row.OID = 1;
@@ -942,16 +1047,32 @@ namespace gView.DataSources.GDAL
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < _tag.Length; i++)
                 {
-                    if (_tag[i] == "ImageX" || _tag[i] == "ImageY") continue;
-                    if (_values[_pos] == null) continue;
-                    if (sb.Length > 0) sb.Append(",");
+                    if (_tag[i] == "ImageX" || _tag[i] == "ImageY")
+                    {
+                        continue;
+                    }
+
+                    if (_values[_pos] == null)
+                    {
+                        continue;
+                    }
+
+                    if (sb.Length > 0)
+                    {
+                        sb.Append(",");
+                    }
+
                     sb.Append(_values[i].ToString());
                 }
                 row.Fields.Add(new FieldValue("Bands", "(" + sb.ToString() + ")"));
 
                 for (int i = 0; i < _tag.Length; i++)
                 {
-                    if (_tag[_pos] == null) continue;
+                    if (_tag[_pos] == null)
+                    {
+                        continue;
+                    }
+
                     row.Fields.Add(new FieldValue(_tag[i], _values[i]));
                 }
                 _pos++;
@@ -971,9 +1092,13 @@ namespace gView.DataSources.GDAL
             get
             {
                 if (_type == RasterType.image)
+                {
                     return GridRenderMethode.None;
+                }
                 else
+                {
                     return GridRenderMethode.Colors | GridRenderMethode.HillShade | GridRenderMethode.NullValue;
+                }
             }
         }
 
@@ -981,7 +1106,11 @@ namespace gView.DataSources.GDAL
         {
             get
             {
-                if (_colorClasses == null) return null;
+                if (_colorClasses == null)
+                {
+                    return null;
+                }
+
                 GridColorClass[] copy = new GridColorClass[_colorClasses.Length];
                 _colorClasses.CopyTo(copy, 0);
 
@@ -1014,7 +1143,10 @@ namespace gView.DataSources.GDAL
             }
             set
             {
-                if (value == null || value.Length != 3) return;
+                if (value == null || value.Length != 3)
+                {
+                    return;
+                }
 
                 _hillShade[0] = value[0];
                 _hillShade[1] = value[1];
@@ -1076,7 +1208,9 @@ namespace gView.DataSources.GDAL
                     classes.Add(cc);
                 }
                 if (classes.Count > 0)
+                {
                     _colorClasses = classes.ToArray();
+                }
 
                 _useHillShade = (bool)stream.Load("UseHillShade", true);
                 _hillShade[0] = (double)stream.Load("HillShadeDx", 0.0);
