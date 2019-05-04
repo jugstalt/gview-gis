@@ -45,6 +45,9 @@ namespace gView.Server.Controllers
         {
             try
             {
+                Console.WriteLine("UN: "+model.Username);
+                Console.WriteLine("PW: "+model.Password);
+
                 var loginManager = new LoginManager(Globals.LoginManagerRootPath);
                 var authToken = loginManager.GetManagerAuthToken(model.Username, model.Password, createIfFirst: true);
 

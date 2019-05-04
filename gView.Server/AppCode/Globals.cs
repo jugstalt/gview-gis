@@ -49,6 +49,8 @@ namespace gView.Server.AppCode
             set { _queueLength = value; }
         }
 
+        public static bool ForceHttps { get; set; }
+
         public static bool log_requests
         {
             get

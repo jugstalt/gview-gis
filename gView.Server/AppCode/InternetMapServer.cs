@@ -39,6 +39,7 @@ namespace gView.Server.AppCode
 
         async static public Task Init(string rootPath, int port = 80)
         {
+            Globals.ForceHttps = true;  // DoTo: Set this by Environment Variable or config value;
             Globals.AppRootPath = rootPath;
            
             var mapServerConfig = JsonConvert.DeserializeObject<MapServerConfig>(File.ReadAllText(rootPath + "/_config/mapserver.json"));
@@ -664,7 +665,9 @@ namespace gView.Server.AppCode
 
             //return url;
 
-            return $"{request.Scheme}://{request.Host}{request.PathBase}";
+            string scheme = Globals.ForceHttps == true ? "https" : request.Scheme;
+
+            return $"{scheme}://{request.Host}{request.PathBase}";
         }
 
         #endregion
