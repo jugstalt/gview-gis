@@ -105,10 +105,19 @@ namespace gView.Server.AppCode
             {
                 if (String.IsNullOrWhiteSpace(_filename))
                     return String.Empty;
-                if (_filename.Contains("."))
-                    return _filename.Substring(0, _filename.LastIndexOf(".")) + ".settings";
 
-                return _filename + ".settings";
+                if (this.Type == MapServiceType.Folder)
+                {
+                    return _filename + "/_folder.settings";
+                }
+                else
+                {
+                    
+                    if (_filename.Contains("."))
+                        return _filename.Substring(0, _filename.LastIndexOf(".")) + ".settings";
+
+                    return _filename + ".settings";
+                }
             }
         }
 

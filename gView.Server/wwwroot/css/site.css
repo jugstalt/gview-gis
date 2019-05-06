@@ -276,6 +276,8 @@ ul.browseservices{
             padding: 8px;
             border-bottom: 1px solid #ddd;
             cursor: pointer;
+            height:43px;
+            position:relative;
         }
         .gview5-manage-body .folders .folder.selected,
         .gview5-manage-body .users .user.selected {
@@ -471,13 +473,22 @@ ul.browseservices{
     }
 }
 
+
 .gview5-manage-body .service .toolbar {
-    float:right;
+    float: right;
+    background-color: #fff;
+    height: 40px;
+}
+.gview5-manage-body .folder .toolbar {
+    position:absolute;
+    right:1px;
+    top:1px;
     background-color:#fff;
     height:40px;
 }
 
-.gview5-manage-body .service .toolbar .icon {
+.gview5-manage-body .service .toolbar .icon,
+.gview5-manage-body .folder  .toolbar .icon {
     display:inline-block;
     width:36px;
     height:36px;
@@ -486,6 +497,7 @@ ul.browseservices{
     margin:2px;
     border:1px solid #efefef;
 }
+
 
 .icon.clickable {
     cursor:pointer;

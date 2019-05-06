@@ -76,6 +76,15 @@ namespace gView.MapServer
         Edit = 4
     }
 
+    public enum FolderAccessTypes
+    {
+        None = 0,
+        Publish = 1,
+        Map = 2,
+        Query = 3,
+        Edit = 4
+    }
+
     public interface IMapServiceAccess
     {
         string Username { get; set; }

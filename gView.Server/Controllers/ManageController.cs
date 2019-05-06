@@ -71,18 +71,26 @@ namespace gView.Server.Controllers
 
         #region Services
 
-        public IActionResult Folders()
+        async public Task<IActionResult> Folders()
         {
-            return SecureApiCall(() =>
+            return await SecureApiCall(async () =>
             {
+                var folderServices = InternetMapServer.mapServices
+                                    .Where(s => s.Type == MapServiceType.Folder)
+                                    .Select(s => s)
+                                    .OrderBy(s => s.Name)
+                                    .Distinct();
+
+                List<object> mapServiceJson = new List<object>();
+                foreach (var folderService in folderServices)
+                {
+                    mapServiceJson.Add(MapService2Json(folderService, await folderService.GetSettingsAsync()));
+                }
+
                 return Json(new
                 {
                     success = true,
-                    folders = InternetMapServer.mapServices
-                                    .Where(s => s.Type == MapServiceType.Folder)
-                                    .Select(s => s.Name)
-                                    .OrderBy(s => s)
-                                    .Distinct()
+                    folders = mapServiceJson.ToArray()
                 });
             });
         }
@@ -291,6 +299,128 @@ namespace gView.Server.Controllers
                 {
                     success = true,
                     service = MapService2Json(mapService, settings)
+                });
+            });
+        }
+
+        [HttpGet]
+        async public Task<IActionResult> FolderSecurity(string folder)
+        {
+            return await SecureApiCall(async () =>
+            {
+                folder = folder?.ToLower() ?? String.Empty;
+
+                var mapService = InternetMapServer.mapServices.Where(s => s.Type== MapServiceType.Folder && s.Fullname?.ToLower() == folder).FirstOrDefault();
+                if (mapService == null)
+                {
+                    throw new MapServerException("Unknown folder: " + folder);
+                }
+
+                var settings = await mapService.GetSettingsAsync();
+
+                List<string> allTypes = new List<string>(Enum.GetNames(typeof(FolderAccessTypes)).Select(n => n.ToLower()).Where(n => n != "none"));
+                allTypes.Add("_all");
+
+                var accessRules = settings.AccessRules;
+
+                foreach (var interpreterType in InternetMapServer.Interpreters)
+                {
+                    allTypes.Add("_" + ((IServiceRequestInterpreter)Activator.CreateInstance(interpreterType)).IdentityName.ToLower());
+                }
+
+                var loginManager = new LoginManager(Globals.LoginManagerRootPath);
+                return Json(new
+                {
+                    allTypes = allTypes.ToArray(),
+                    accessRules = accessRules,
+                    allUsers = loginManager.GetTokenUsernames(),
+                    anonymousUsername = Identity.AnonyomousUsername
+                });
+            });
+        }
+
+        [HttpPost]
+        async public Task<IActionResult> FolderSecurity()
+        {
+            return await SecureApiCall(async () =>
+            {
+                var folder = Request.Query["folder"].ToString().ToLower();
+
+                var mapService = InternetMapServer.mapServices.Where(s => s.Type== MapServiceType.Folder && s.Fullname?.ToLower() == folder).FirstOrDefault();
+                if (mapService == null)
+                {
+                    throw new MapServerException("Unknown folder: " + folder);
+                }
+
+                var settings = await mapService.GetSettingsAsync();
+                settings.AccessRules = null;  // Remove all
+
+                if (Request.Form != null)
+                {
+                    var form = Request.Form;
+                    foreach (var key in form.Keys)
+                    {
+                        if (key.Contains("~"))   // username~accesstype or username~_interpreter
+                        {
+                            var username = key.Substring(0, key.IndexOf("~"));
+
+                            var accessRule = settings.AccessRules?.Where(a => a.Username.ToLower() == username.ToLower()).FirstOrDefault();
+                            if (accessRule == null)
+                            {
+                                accessRule = new MapServiceSettings.MapServiceAccess();
+                                var rules = new List<IMapServiceAccess>();
+                                if (settings.AccessRules != null)
+                                {
+                                    rules.AddRange(settings.AccessRules);
+                                }
+
+                                rules.Add(accessRule);
+                                settings.AccessRules = rules.ToArray();
+                            }
+                            accessRule.Username = username;
+
+
+                            var rule = key.Substring(key.IndexOf("~") + 1, key.Length - key.IndexOf("~") - 1);
+
+                            string serviceType = String.Empty;
+
+                            if (rule == "_all")
+                            {
+                                serviceType = rule;
+                            }
+                            else if (rule.StartsWith("_") && InternetMapServer.Interpreters
+                                            .Select(t => new Framework.system.PlugInManager().CreateInstance<IServiceRequestInterpreter>(t))
+                                            .Where(i => "_" + i.IdentityName.ToLower() == rule.ToLower())
+                                            .Count() == 1)  // Interpreter
+                            {
+                                serviceType = rule.ToLower();
+                            }
+                            else if (Enum.TryParse<FolderAccessTypes>(rule, true, out FolderAccessTypes accessType))
+                            {
+                                serviceType = accessType.ToString();
+                            }
+
+                            if (!String.IsNullOrWhiteSpace(serviceType))
+                            {
+                                if (Convert.ToBoolean(form[key]) == true)
+                                {
+                                    accessRule.AddServiceType(serviceType);
+                                }
+                                else
+                                {
+                                    accessRule.RemoveServiceType(serviceType);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                await mapService.SaveSettingsAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    folder = MapService2Json(mapService, settings)
                 });
             });
         }
