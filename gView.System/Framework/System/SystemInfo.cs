@@ -7,8 +7,10 @@ using System.Runtime.InteropServices;
 
 namespace gView.Framework.system
 {
-    internal class SystemInfo
+    public class SystemInfo
     {
+        public static Version Version = new Version(5, 0, 1);
+
         #region -> Private Variables
 
         public bool UseProcessorID;
@@ -21,6 +23,7 @@ namespace gView.Framework.system
         public bool UseBiosManufacturer;
         public bool UseWindowsSerialNumber;
         public bool UseMashineName = false;
+
         #endregion
 
         internal static string MashineName

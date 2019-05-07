@@ -18,6 +18,9 @@ namespace gView.Framework.system.UI
 
             //lblUsername.Text += " " + SystemVariables.InsallationUsername;
             //lblCompany.Text += " " + SystemVariables.InsallationCompanyname;
+
+            lblVersionNumber.Text = gView.Framework.system.SystemInfo.Version.Major + "." + gView.Framework.system.SystemInfo.Version.Minor;
+            lblBuildNumber.Text = gView.Framework.system.SystemInfo.Version.Build.ToString();
         }
         public SplashScreen(String ProductName, bool demo)
             : this(ProductName)

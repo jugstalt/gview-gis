@@ -55,6 +55,12 @@
         @RenderBody()
     </div>
 
+    <div class="footer">
+        <div class="version">
+            Version: @gView.Framework.system.SystemInfo.Version.ToString()
+        </div>
+    </div>
+
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>

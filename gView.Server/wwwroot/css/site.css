@@ -89,6 +89,22 @@ ul {
     }
 
 
+/***** Footer *******/
+.footer
+{
+    position:fixed;
+    bottom:0px;
+    left:0px;
+    right:0px;
+    padding:8px;
+    background-color:#000;
+    color:#fff;
+}
+
+    .footer .version {
+        float:right;
+    }
+
 /****** Menu *********/
 
 .login-button{
