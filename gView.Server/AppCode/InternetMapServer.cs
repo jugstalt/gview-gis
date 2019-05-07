@@ -33,7 +33,7 @@ namespace gView.Server.AppCode
         static internal string OnlineResource = String.Empty;
         static internal List<Type> Interpreters = new List<Type>();
         static internal License myLicense = null;
-        static internal ConcurrentBag<IMapService> mapServices = new ConcurrentBag<IMapService>();
+        static internal ConcurrentBag<IMapService> MapServices = new ConcurrentBag<IMapService>();
         static internal MapServerInstance Instance = null;
         static internal Acl acl = null;
 
@@ -109,9 +109,9 @@ namespace gView.Server.AppCode
             foreach (var folderDirectory in new DirectoryInfo((ServicesPath + "/" + folder).ToPlattformPath()).GetDirectories())
             {
                 MapService folderService = new MapService(folderDirectory.FullName, folder, MapServiceType.Folder);
-                if (mapServices.Where(s => s.Fullname == folderService.Fullname && s.Type == folderService.Type).Count() == 0)
+                if (MapServices.Where(s => s.Fullname == folderService.Fullname && s.Type == folderService.Type).Count() == 0)
                 {
-                    mapServices.Add(folderService);
+                    MapServices.Add(folderService);
                     Console.WriteLine("folder " + folderService.Name + " added");
                 }
             }
@@ -128,10 +128,10 @@ namespace gView.Server.AppCode
                     return null;
 
                 MapService mapService = new MapService(mapFileInfo.FullName, folder, MapServiceType.MXL);
-                if (mapServices.Where(s => s.Fullname == mapService.Fullname && s.Type == mapService.Type).Count() > 0)
+                if (MapServices.Where(s => s.Fullname == mapService.Fullname && s.Type == mapService.Type).Count() > 0)
                 {
                     // allready exists
-                    return mapServices.Where(s => s.Fullname == mapService.Fullname && s.Type == mapService.Type).FirstOrDefault();
+                    return MapServices.Where(s => s.Fullname == mapService.Fullname && s.Type == mapService.Type).FirstOrDefault();
                 }
 
                 if (!String.IsNullOrWhiteSpace(folder))
@@ -145,9 +145,9 @@ namespace gView.Server.AppCode
                         DirectoryInfo folderDirectory = new DirectoryInfo((ServicesPath + "/" + folder).ToPlattformPath());
                         MapService folderService = new MapService(folderDirectory.FullName, parentFolder, MapServiceType.Folder);
 
-                        if (mapServices.Where(s => s.Fullname == folderService.Fullname && s.Type == folderService.Type).Count() == 0)
+                        if (MapServices.Where(s => s.Fullname == folderService.Fullname && s.Type == folderService.Type).Count() == 0)
                         {
-                            mapServices.Add(folderService);
+                            MapServices.Add(folderService);
                             Console.WriteLine("folder " + folderService.Name + " added");
                         }
 
@@ -157,7 +157,7 @@ namespace gView.Server.AppCode
                     #endregion
                 }
 
-                mapServices.Add(mapService);
+                MapServices.Add(mapService);
                 Console.WriteLine("service " + mapService.Name + " added");
 
                 return mapService;
@@ -183,7 +183,7 @@ namespace gView.Server.AppCode
             }
             try
             {
-                if (forceRefresh == true || InternetMapServer.mapServices.Where(s => s.Type != MapServiceType.Folder && s.Folder == folder).Count() == 0)
+                if (forceRefresh == true || InternetMapServer.MapServices.Where(s => s.Type != MapServiceType.Folder && s.Folder == folder).Count() == 0)
                 {
                     await InternetMapServer.AddServices(folder);
                 }
@@ -224,7 +224,7 @@ namespace gView.Server.AppCode
 
                         MapDocument.SetMapModules(map, doc.GetMapModules(map));
 
-                        var mapService = InternetMapServer.mapServices.Where(s => s.Fullname == map.Name).FirstOrDefault();
+                        var mapService = InternetMapServer.MapServices.Where(s => s.Fullname == map.Name).FirstOrDefault();
                         if(mapService!=null)
                         {
                             mapService.ServiceRefreshed();
@@ -521,11 +521,11 @@ namespace gView.Server.AppCode
 
             bool found = false;
 
-            foreach (IMapService service in InternetMapServer.mapServices.ToArray())
+            foreach (IMapService service in InternetMapServer.MapServices.ToArray())
             {
                 if (service.Name == mapName)
                 {
-                    InternetMapServer.mapServices = new ConcurrentBag<IMapService>(InternetMapServer.mapServices.Except(new[] { service }));
+                    InternetMapServer.MapServices = new ConcurrentBag<IMapService>(InternetMapServer.MapServices.Except(new[] { service }));
                     found = true;
                 }
             }
@@ -635,7 +635,7 @@ namespace gView.Server.AppCode
 
         static private void AddMapService(string mapName, MapServiceType type)
         {
-            foreach (IMapService service in InternetMapServer.mapServices)
+            foreach (IMapService service in InternetMapServer.MapServices)
             {
                 if (service.Fullname == mapName)
                     return;
@@ -650,7 +650,7 @@ namespace gView.Server.AppCode
                 folder = mapName.Split('/')[0];
                 mapName = mapName.Split('/')[1];
             }
-            InternetMapServer.mapServices.Add(new MapService(mapName.Trim(), folder.Trim(), type));
+            InternetMapServer.MapServices.Add(new MapService(mapName.Trim(), folder.Trim(), type));
         }
 
         #endregion

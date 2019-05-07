@@ -54,7 +54,7 @@ namespace gView.Server.AppCode
                 if (createDir && !dir.Exists)
                     dir.Create();
 
-                var mapService = String.IsNullOrWhiteSpace(mapName) ? null : InternetMapServer.mapServices.Where(s => s.Fullname?.ToLower() == mapName).FirstOrDefault();
+                var mapService = String.IsNullOrWhiteSpace(mapName) ? null : InternetMapServer.MapServices.Where(s => s.Fullname?.ToLower() == mapName).FirstOrDefault();
 
                 string fileName = loggingMethod.ToString() +
                     ((mapService != null && mapService.RunningSinceUtc.HasValue) ? "-" + mapService.RunningSinceUtc.Value.Ticks.ToString().PadLeft(21, '0') : "") +

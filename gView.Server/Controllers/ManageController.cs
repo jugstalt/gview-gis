@@ -75,7 +75,7 @@ namespace gView.Server.Controllers
         {
             return await SecureApiCall(async () =>
             {
-                var folderServices = InternetMapServer.mapServices
+                var folderServices = InternetMapServer.MapServices
                                     .Where(s => s.Type == MapServiceType.Folder)
                                     .Select(s => s)
                                     .OrderBy(s => s.Name)
@@ -102,7 +102,7 @@ namespace gView.Server.Controllers
 
             return await SecureApiCall(async () =>
             {
-                var servicesInFolder = InternetMapServer.mapServices
+                var servicesInFolder = InternetMapServer.MapServices
                     .Where(s => s.Type != MapServiceType.Folder &&
                                     s.Folder == folder);
 
@@ -124,7 +124,7 @@ namespace gView.Server.Controllers
         {
             return await SecureApiCall(async () =>
             {
-                var mapService = InternetMapServer.mapServices.Where(s => s.Fullname == service).FirstOrDefault();
+                var mapService = InternetMapServer.MapServices.Where(s => s.Fullname == service).FirstOrDefault();
                 if (mapService == null)
                 {
                     throw new MapServerException("Unknown service: " + service);
@@ -188,7 +188,7 @@ namespace gView.Server.Controllers
             {
                 service = service?.ToLower() ?? String.Empty;
 
-                var mapService = InternetMapServer.mapServices.Where(s => s.Fullname?.ToLower() == service).FirstOrDefault();
+                var mapService = InternetMapServer.MapServices.Where(s => s.Fullname?.ToLower() == service).FirstOrDefault();
                 if (mapService == null)
                 {
                     throw new MapServerException("Unknown service: " + service);
@@ -224,7 +224,7 @@ namespace gView.Server.Controllers
             {
                 var service = Request.Query["service"].ToString().ToLower();
 
-                var mapService = InternetMapServer.mapServices.Where(s => s.Fullname?.ToLower() == service).FirstOrDefault();
+                var mapService = InternetMapServer.MapServices.Where(s => s.Fullname?.ToLower() == service).FirstOrDefault();
                 if (mapService == null)
                 {
                     throw new MapServerException("Unknown service: " + service);
@@ -310,7 +310,7 @@ namespace gView.Server.Controllers
             {
                 folder = folder?.ToLower() ?? String.Empty;
 
-                var mapService = InternetMapServer.mapServices.Where(s => s.Type== MapServiceType.Folder && s.Fullname?.ToLower() == folder).FirstOrDefault();
+                var mapService = InternetMapServer.MapServices.Where(s => s.Type== MapServiceType.Folder && s.Fullname?.ToLower() == folder).FirstOrDefault();
                 if (mapService == null)
                 {
                     throw new MapServerException("Unknown folder: " + folder);
@@ -346,7 +346,7 @@ namespace gView.Server.Controllers
             {
                 var folder = Request.Query["folder"].ToString().ToLower();
 
-                var mapService = InternetMapServer.mapServices.Where(s => s.Type== MapServiceType.Folder && s.Fullname?.ToLower() == folder).FirstOrDefault();
+                var mapService = InternetMapServer.MapServices.Where(s => s.Type== MapServiceType.Folder && s.Fullname?.ToLower() == folder).FirstOrDefault();
                 if (mapService == null)
                 {
                     throw new MapServerException("Unknown folder: " + folder);

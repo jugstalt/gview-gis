@@ -98,11 +98,11 @@ namespace gView.Server.AppCode
             {
                 if (identity == null)
                 {
-                    return InternetMapServer.mapServices.ToArray();
+                    return InternetMapServer.MapServices.ToArray();
                 }
 
                 List<IMapService> services = new List<IMapService>();
-                foreach (var service in InternetMapServer.mapServices)
+                foreach (var service in InternetMapServer.MapServices)
                 {
                     if (await service.HasAnyAccess(identity))
                     {
@@ -386,7 +386,7 @@ namespace gView.Server.AppCode
                     }
 
                     bool found = false;
-                    foreach (IMapService ms in InternetMapServer.mapServices)
+                    foreach (IMapService ms in InternetMapServer.MapServices)
                     {
                         if (ms != null &&
                             ms.Name == alias && ms.Type == MapServiceType.GDI)
@@ -398,7 +398,7 @@ namespace gView.Server.AppCode
 
                     if (!found)
                     {
-                        InternetMapServer.mapServices.Add(new MapService(name, String.Empty, MapServiceType.GDI));
+                        InternetMapServer.MapServices.Add(new MapService(name, String.Empty, MapServiceType.GDI));
                     }
 
                     return await ServiceMap.CreateAsync(newMap, this, null);
@@ -410,7 +410,7 @@ namespace gView.Server.AppCode
 
         public IMapService GetMapService(string name, string folder)
         {
-            foreach (IMapService ms in InternetMapServer.mapServices)
+            foreach (IMapService ms in InternetMapServer.MapServices)
             {
                 if (ms == null)
                 {

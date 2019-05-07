@@ -37,7 +37,7 @@ namespace gView.Server.Controllers
                         if (service.Type == MapServiceType.Folder)  // if accessable for current user... => ToDo!!!
                         {
                             await InternetMapServer.ReloadServices(service.Name);
-                            foreach (var folderService in InternetMapServer.mapServices.Where(s => s.Folder == service.Name))
+                            foreach (var folderService in InternetMapServer.MapServices.Where(s => s.Folder == service.Name))
                             {
                                 sb.Append("<SERVICE ");
                                 sb.Append("NAME='" + folderService.Fullname + "' ");

@@ -8,20 +8,20 @@
     <ul class="browseservices">
         @if (!String.IsNullOrWhiteSpace(Model.Folder))
         {
-        <li>
-            @Html.ActionLink("..", "Index", "BrowseServices", new { folder = "" })
-        </li>
+            <li>
+                @Html.ActionLink("..", "Index", "BrowseServices", new { folder = "" })
+            </li>
+        }
+        @foreach (var folder in Model.Folders)
+        {
+            <li style="font-weight:bold">
+                @Html.ActionLink(folder + "/", "Index", "BrowseServices", new { folder = folder })
+            </li>
         }
         @foreach (var mapService in Model.Services)
         {
             <li>
                 @Html.ActionLink(mapService.Name, "ServiceCapabilities", "BrowseServices", new { id = (String.IsNullOrWhiteSpace(mapService.Folder) ? "" : mapService.Folder + "@") + mapService.Name })
-            </li>
-        }
-        @foreach (var folder in Model.Folders)
-        {
-            <li>
-                @Html.ActionLink(folder + "/", "Index", "BrowseServices", new { folder = folder })
             </li>
         }
     </ul>

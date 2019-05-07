@@ -79,10 +79,10 @@ namespace gView.MapServer
     public enum FolderAccessTypes
     {
         None = 0,
-        Publish = 1,
-        Map = 2,
-        Query = 3,
-        Edit = 4
+        Map = 1,
+        Query = 2,
+        Edit = 4,
+        Publish = 8
     }
 
     public interface IMapServiceAccess

@@ -51,8 +51,29 @@ namespace gView.Server.Controllers
             {
                 await InternetMapServer.ReloadServices(id, true);
 
+                if(!String.IsNullOrWhiteSpace(id))
+                {
+                    var folderService = InternetMapServer.MapServices
+                        .Where(f => f.Type == MapServiceType.Folder && String.IsNullOrWhiteSpace(f.Folder) && id.Equals(f.Name, StringComparison.InvariantCultureIgnoreCase))
+                        .FirstOrDefault();
+
+                    if (folderService == null || !await folderService.HasAnyAccess(identity))
+                    {
+                        throw new Exception("Unknown folder or forbidden");
+                    }
+                }
+
+                List<string> folders = new List<string>();
+                foreach (var f in InternetMapServer.MapServices.Where(s => s.Type == MapServiceType.Folder && s.Folder == id))
+                {
+                    if (await f.HasAnyAccess(identity))
+                    {
+                        folders.Add(f.Name);
+                    }
+                }
+
                 List<AgsService> services = new List<AgsService>();
-                foreach (var s in InternetMapServer.mapServices)
+                foreach (var s in InternetMapServer.MapServices)
                 {
                     if (s.Type != MapServiceType.Folder &&
                        s.Folder == id &&
@@ -66,12 +87,7 @@ namespace gView.Server.Controllers
                 return Result(new JsonServices()
                 {
                     CurrentVersion = Version,
-                    Folders = InternetMapServer.mapServices
-                        .Where(s => s.Type == MapServiceType.Folder && s.Folder == id)
-                        .Select(s => s.Name)
-                        .Distinct()
-                        .OrderBy(s => s)
-                        .ToArray(),
+                    Folders = folders.ToArray(),
                     Services = services.ToArray()
                 });
             });
