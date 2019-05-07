@@ -5,10 +5,12 @@
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
   </PropertyGroup>
 
+  <!--
   <PropertyGroup>
-    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    <AspNetCoreHostingModel></AspNetCoreHostingModel>
   </PropertyGroup>
-
+-->
+  
   <ItemGroup>
     <None Remove="proj.db" />
   </ItemGroup>
