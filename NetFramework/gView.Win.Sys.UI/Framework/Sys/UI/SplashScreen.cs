@@ -21,6 +21,8 @@ namespace gView.Framework.system.UI
 
             lblVersionNumber.Text = gView.Framework.system.SystemInfo.Version.Major + "." + gView.Framework.system.SystemInfo.Version.Minor;
             lblBuildNumber.Text = gView.Framework.system.SystemInfo.Version.Build.ToString();
+
+            lblBit.Text = (Wow.Is64BitProcess ? "64" : "32") + " Bit";
         }
         public SplashScreen(String ProductName, bool demo)
             : this(ProductName)
