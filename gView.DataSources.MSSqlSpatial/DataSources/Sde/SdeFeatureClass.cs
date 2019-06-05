@@ -15,7 +15,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             
         }
 
-        async static public Task<IFeatureClass> Create(SdeDataset dataset, string name)
+        async static public Task<IFeatureClass> Create(SdeDataset dataset, string name, string multiVersionedViewName)
         {
             var featureClass = new SdeFeatureClass();
 
@@ -40,8 +40,12 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             if (featureClass._sRef == null && await dataset.RepoProvider.FeatureClassSpatialReference(featureClass) > 0)
                 featureClass._sRef = gView.Framework.Geometry.SpatialReference.FromID("epsg:" + await dataset.RepoProvider.FeatureClassSpatialReference(featureClass));
 
+            featureClass.MultiVersionedViewName = multiVersionedViewName;
+
             return featureClass;
         }
+
+        public string MultiVersionedViewName { get; private set; }
 
         public override ISpatialReference SpatialReference
         {
