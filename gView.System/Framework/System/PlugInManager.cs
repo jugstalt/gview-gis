@@ -1,20 +1,11 @@
+using gView.Framework.UI;
 using System;
-using System.Reflection;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Xml;
-using Microsoft.Win32;
-using gView.Framework.UI;
-using gView.Framework.Data;
-using gView.Framework.Carto;
-using gView.Framework.Symbology;
-using gView.MapServer;
-using gView.Framework.FDB;
-using gView.Framework.IO;
-using gView.Framework.GeoProcessing;
-using gView.Framework.Network;
-using System.Linq;
 
 namespace gView.Framework.system
 {
@@ -60,6 +51,8 @@ namespace gView.Framework.system
             Init();
         }
 
+        static public PluginUsage Usage = PluginUsage.Server;
+
         public delegate void ParseAssemblyDelegate(string assemblyName);
 
         public static event ParseAssemblyDelegate OnParseAssembly = null;
@@ -68,7 +61,9 @@ namespace gView.Framework.system
         public static void Init()
         {
             if (_pluginTypes != null)
+            {
                 return;
+            }
 
             string currentDll = String.Empty;
             var error = new StringBuilder();
@@ -91,7 +86,14 @@ namespace gView.Framework.system
                         {
                             var registerPluginAttribute = pluginType.GetCustomAttribute<RegisterPlugIn>();
                             if (registerPluginAttribute == null)
+                            {
                                 continue;
+                            }
+
+                            if (!registerPluginAttribute.Usage.HasFlag(PlugInManager.Usage))
+                            {
+                                continue;
+                            }
 
                             _pluginTypes.Add(registerPluginAttribute.Value, pluginType);
 
@@ -128,10 +130,12 @@ namespace gView.Framework.system
 
             List<Type> pluginTypes = new List<Type>();
 
-            foreach(var pluginType in _pluginTypes.Values)
+            foreach (var pluginType in _pluginTypes.Values)
             {
                 if (interfaceType.IsAssignableFrom(pluginType))
+                {
                     pluginTypes.Add(pluginType);
+                }
             }
 
             return pluginTypes;
@@ -148,8 +152,9 @@ namespace gView.Framework.system
                 foreach (var interfaceType in pluginType.GetInterfaces().Where(t => t.ToString().ToLower().StartsWith("gview.framework.")))
                 {
                     if (interfaceType.ToString().Substring(interfaceType.ToString().LastIndexOf(".") + 1).ToLower() == type.ToString().ToLower())
+                    {
                         pluginTypes.Add(pluginType);
-
+                    }
                 }
             }
 
@@ -170,22 +175,24 @@ namespace gView.Framework.system
                 List<Type> types = new List<Type>();
                 foreach (var pluginType in _pluginTypes.Values)
                 {
-                    foreach(var interfaceType in pluginType.GetInterfaces().Where(t=>t.ToString().ToLower().StartsWith("gview.framework.")))
+                    foreach (var interfaceType in pluginType.GetInterfaces().Where(t => t.ToString().ToLower().StartsWith("gview.framework.")))
                     {
                         if (types.Contains(interfaceType))
+                        {
                             types.Add(interfaceType);
+                        }
                     }
-                    
+
                 }
 
                 return types;
             }
         }
 
-		public object CreateInstance(Guid guid) 
-		{
+        public object CreateInstance(Guid guid)
+        {
             return PlugInManager.Create(guid);
-		}
+        }
         public T CreateInstance<T>(Type type)
         {
             return (T)Activator.CreateInstance(type);
@@ -217,15 +224,27 @@ namespace gView.Framework.system
         {
             try
             {
-                if (node == null) return null;
+                if (node == null)
+                {
+                    return null;
+                }
+
                 if (node.Attributes["fullname"] == null ||
-                    node.Attributes["assembly"] == null) return null;
+                    node.Attributes["assembly"] == null)
+                {
+                    return null;
+                }
 
                 string path = node.Attributes["assembly"].Value;
                 if (path.Contains("{APP_PATH}"))
+                {
                     path = path.Replace("{APP_PATH}", SystemVariables.ApplicationDirectory);
+                }
+
                 if (path.Contains("[APP_PATH]"))
+                {
                     path = path.Replace("[APP_PATH]", SystemVariables.ApplicationDirectory);
+                }
 
                 Assembly assembly = Assembly.LoadFrom(path);
                 return assembly.CreateInstance(node.Attributes["fullname"].Value, false);
@@ -242,7 +261,7 @@ namespace gView.Framework.system
             {
                 Init();
 
-                if(_pluginTypes.ContainsKey(guid))
+                if (_pluginTypes.ContainsKey(guid))
                 {
                     var pluginType = _pluginTypes[guid];
                     return Activator.CreateInstance(pluginType);
@@ -259,7 +278,9 @@ namespace gView.Framework.system
         public static object Create(object plugin)
         {
             if (IsPlugin(plugin))
+            {
                 return Create(PlugInID(plugin));
+            }
 
             return null;
         }
@@ -267,21 +288,28 @@ namespace gView.Framework.system
         {
             IPlugInParameter plugin = PlugInManager.Create(guid) as IPlugInParameter;
             if (plugin != null)
+            {
                 plugin.Parameter = parameter;
+            }
 
             return plugin;
         }
-        public static object Create(object PlugIn, object parameter) 
+        public static object Create(object PlugIn, object parameter)
         {
             IPlugInParameter plugin = PlugInManager.Create(PlugIn) as IPlugInParameter;
             if (plugin != null)
+            {
                 plugin.Parameter = parameter;
+            }
 
             return plugin;
         }
         static public bool IsPlugin(object obj)
         {
-            if (obj == null) return false;
+            if (obj == null)
+            {
+                return false;
+            }
 
             RegisterPlugIn plugin = (RegisterPlugIn)Attribute.GetCustomAttribute(obj is Type ? (Type)obj : obj.GetType(), typeof(RegisterPlugIn));
             return (plugin != null);
@@ -294,7 +322,10 @@ namespace gView.Framework.system
 
         static public Guid PlugInID(object obj)
         {
-            if (obj == null) return new Guid();
+            if (obj == null)
+            {
+                return new Guid();
+            }
 
             if (obj is IPlugInWrapper)
             {
@@ -303,7 +334,10 @@ namespace gView.Framework.system
             else
             {
                 RegisterPlugIn plugin = (RegisterPlugIn)Attribute.GetCustomAttribute(obj is Type ? (Type)obj : obj.GetType(), typeof(RegisterPlugIn));
-                if (plugin == null) return new Guid();
+                if (plugin == null)
+                {
+                    return new Guid();
+                }
 
                 return plugin.Value;
             }
@@ -319,7 +353,9 @@ namespace gView.Framework.system
             public PlugInType(object plugin)
             {
                 if (plugin == null)
+                {
                     throw new ArgumentException();
+                }
 
                 Type = plugin.GetType();
                 PluginGuid = PlugInManager.PlugInID(plugin);
@@ -336,12 +372,16 @@ namespace gView.Framework.system
             public bool ContainsType(Type type)
             {
                 if (type == null)
+                {
                     throw new ArgumentException();
+                }
 
                 foreach (PlugInType t in this)
                 {
                     if (type.Equals(t.Type))
+                    {
                         return true;
+                    }
                 }
 
                 return false;
@@ -357,16 +397,24 @@ namespace gView.Framework.system
 
         public int Compare(IOrder x, IOrder y)
         {
-            if (x.SortOrder < y.SortOrder) return -1;
-            if (x.SortOrder > y.SortOrder) return 1;
+            if (x.SortOrder < y.SortOrder)
+            {
+                return -1;
+            }
+
+            if (x.SortOrder > y.SortOrder)
+            {
+                return 1;
+            }
+
             return 0;
         }
 
         #endregion
     }
 
-    public class OrderedPluginList<T> 
-       // where T : IOrder
+    public class OrderedPluginList<T>
+    // where T : IOrder
     {
         public static List<T> Sort(IEnumerable<Type> pluginNodes)
         {
@@ -376,7 +424,11 @@ namespace gView.Framework.system
                 try
                 {
                     T t = (T)PlugInManager.Create(node);
-                    if (t == null) continue;
+                    if (t == null)
+                    {
+                        continue;
+                    }
+
                     ret.Add(t);
                 }
                 catch { }
@@ -399,10 +451,20 @@ namespace gView.Framework.system
             public int Compare(T x, T y)
             {
                 if (!(x is IOrder) || !(y is IOrder))
+                {
                     return 0;
+                }
 
-                if (((IOrder)x).SortOrder < ((IOrder)y).SortOrder) return -1;
-                if (((IOrder)x).SortOrder > ((IOrder)y).SortOrder) return 1;
+                if (((IOrder)x).SortOrder < ((IOrder)y).SortOrder)
+                {
+                    return -1;
+                }
+
+                if (((IOrder)x).SortOrder > ((IOrder)y).SortOrder)
+                {
+                    return 1;
+                }
+
                 return 0;
             }
 

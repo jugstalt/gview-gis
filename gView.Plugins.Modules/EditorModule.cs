@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.Modules
 {
-    [gView.Framework.system.RegisterPlugIn("45713F48-0D81-4a54-A422-D0E6F397BC95")]
+    [gView.Framework.system.RegisterPlugIn("45713F48-0D81-4a54-A422-D0E6F397BC95", PluginUsage.Server)]
     public class EditorModule : IMapApplicationModule, IPersistable
     {
         private List<EditLayer> _editLayers = new List<EditLayer>();
