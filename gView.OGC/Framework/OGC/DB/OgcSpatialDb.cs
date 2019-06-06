@@ -10,6 +10,7 @@ using System.Data;
 using gView.Framework.Editor.Core;
 using System.Threading.Tasks;
 using System.Linq;
+using gView.Framework.Db;
 
 namespace gView.Framework.OGC.DB
 {
@@ -65,7 +66,7 @@ namespace gView.Framework.OGC.DB
                 return _connectionString;
             }
         }
-        public Task<bool> SetConnectionString(string value)
+        virtual public Task<bool> SetConnectionString(string value)
         {
             string provider = String.Empty;
             if (value.ToLower().IndexOf("sql:") == 0 ||
@@ -930,7 +931,7 @@ namespace gView.Framework.OGC.DB
                 using (DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter()) //new NpgsqlDataAdapter("select extent(" + this.ShapeFieldName + ") from " + this.Name, conn))
                 {
                     adapter.SelectCommand = this.ProviderFactory.CreateCommand();
-                    adapter.SelectCommand.CommandText = "select st_extent(" + fc.ShapeFieldName + ") from " + DbTableName(fc.Name);
+                    adapter.SelectCommand.CommandText = "select ST_AsBinary(st_extent(" + fc.ShapeFieldName + ")) as extent from " + DbTableName(fc.Name);
                     adapter.SelectCommand.Connection = conn;
 
                     adapter.Fill(tab);
@@ -939,17 +940,19 @@ namespace gView.Framework.OGC.DB
                 {
                     try
                     {
-                        string box = tab.Rows[0][0].ToString();
-                        box = box.ToLower().Replace("box(", "").Replace(")", "");
-                        string[] xy = box.Split(',');
+                        var wkt=(byte[])tab.Rows[0][0];
+                        envelope = gView.Framework.OGC.OGC.WKBToGeometry(wkt)?.Envelope;
+                        //string box = tab.Rows[0][0].ToString();
+                        //box = box.ToLower().Replace("box(", "").Replace(")", "");
+                        //string[] xy = box.Split(',');
 
-                        string[] c1 = xy[0].Split(' ');
-                        string[] c2 = xy[1].Split(' ');
-                        envelope = new Envelope(
-                             gView.Framework.OGC.OGC.ToDouble(c1[0]),
-                             gView.Framework.OGC.OGC.ToDouble(c1[1]),
-                             gView.Framework.OGC.OGC.ToDouble(c2[0]),
-                             gView.Framework.OGC.OGC.ToDouble(c2[1]));
+                        //string[] c1 = xy[0].Split(' ');
+                        //string[] c2 = xy[1].Split(' ');
+                        //envelope = new Envelope(
+                        //     gView.Framework.OGC.OGC.ToDouble(c1[0]),
+                        //     gView.Framework.OGC.OGC.ToDouble(c1[1]),
+                        //     gView.Framework.OGC.OGC.ToDouble(c2[0]),
+                        //     gView.Framework.OGC.OGC.ToDouble(c2[1]));
                     }
                     catch { }
                 }

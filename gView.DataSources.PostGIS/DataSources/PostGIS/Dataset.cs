@@ -9,6 +9,8 @@ using gView.Framework.FDB;
 using System.Data.Common;
 using gView.Framework.system;
 using gView.Framework.OGC.DB;
+using System.Threading.Tasks;
+using gView.Framework.Db;
 
 namespace gView.DataSources.PostGIS
 {
@@ -64,6 +66,14 @@ namespace gView.DataSources.PostGIS
                 default:
                     return "varchar(256)";
             }
+        }
+
+        async public override Task<bool> SetConnectionString(string value)
+        {
+            var ret = await base.SetConnectionString(value);
+            _connectionString = DbConnectionString.ParseNpgsqlConnectionString(_connectionString);
+
+            return ret;
         }
 
         public override string SelectReadSchema(string tableName)

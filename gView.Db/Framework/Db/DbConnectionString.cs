@@ -6,6 +6,7 @@ using gView.Framework.IO;
 using System.Xml;
 using System.IO;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace gView.Framework.Db
 {
@@ -282,6 +283,60 @@ namespace gView.Framework.Db
             }
             return String.Empty;
         }
+        #endregion
+
+        #region Static Members
+
+        static public string ParseNpgsqlConnectionString(string connectionString)
+        {
+            string[] knownKeywords = new string[]
+            {
+                "host",
+                "server",
+                "port",
+                "database",
+                "userid",
+                "username",
+                "password",
+
+                "pooling",
+                "minpoolsize",
+                "maxpoolsize",
+
+                "timeout",
+                "sslmode"
+            };
+
+            Dictionary<string, string> keywordTranslation = new Dictionary<string, string>()
+            {
+                { "server", "host" },
+                { "userid","username" }
+            };
+
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var keywordParameter in connectionString.Split(';'))
+            {
+                if (keywordParameter.Contains("="))
+                {
+                    var keyword = keywordParameter.Substring(0, keywordParameter.IndexOf("=")).Trim().ToLower();
+                    if (knownKeywords.Contains(keyword))
+                    {
+                        string kp = keywordParameter;
+                        if(keywordTranslation.ContainsKey(keyword))
+                        {
+                            kp = keywordTranslation[keyword] + keywordParameter.Substring(keywordParameter.IndexOf("="));
+                        } 
+
+                        sb.Append(kp);
+                        sb.Append(";");
+                    }
+                }
+            }
+
+            return sb.ToString();
+        }
+
         #endregion
     }
 }
