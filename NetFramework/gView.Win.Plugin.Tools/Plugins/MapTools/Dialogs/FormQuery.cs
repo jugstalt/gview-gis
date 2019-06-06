@@ -176,7 +176,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
                     SetMsgText("Query Table " + title, 1);
                     SetMsgText("", 2);
-                    using (IFeatureCursor cursor = fc.Search(filter) as IFeatureCursor)
+                    using (IFeatureCursor cursor = (await fc.Search(filter)) as IFeatureCursor)
                     {
                         if (cursor == null) continue;
 

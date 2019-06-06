@@ -22,18 +22,28 @@ namespace gView.Framework.system
 	{
 	}
 
+    [Flags]
+    public enum PluginUsage
+    {
+        Server = 1,
+        Desktop = 2
+    }
+
     [global::System.AttributeUsageAttribute(global::System.AttributeTargets.Class)]
     public class RegisterPlugIn : global::System.Attribute
     {
         private Guid _guid;
-        public RegisterPlugIn(string guid)
+        public RegisterPlugIn(string guid, PluginUsage usage = PluginUsage.Server | PluginUsage.Desktop)
         {
             _guid = new Guid(guid);
+            this.Usage = usage;
         }
         public Guid Value
         {
             get { return _guid; }
         }
+
+        public PluginUsage Usage { get; set; }
     }
 
     public interface IPlugInWrapper

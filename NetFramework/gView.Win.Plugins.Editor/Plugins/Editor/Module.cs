@@ -17,8 +17,8 @@ using System.Linq;
 
 namespace gView.Plugins.Editor
 {
-    [gView.Framework.system.RegisterPlugIn(Globals.ModuleGuidString)]
-    class Module : IMapApplicationModule, IModule, IPersistable
+    [gView.Framework.system.RegisterPlugIn(Globals.ModuleGuidString, PluginUsage.Desktop)]
+    public class Module : IMapApplicationModule, IModule, IPersistable
     {
         public enum EditTask { None=0, CreateNewFeature = 1, ModifyFeature = 2 }
         

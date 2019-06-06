@@ -2687,7 +2687,7 @@ namespace gView.Plugins.MapTools
                     #endregion
 
                     #region Query
-                    using (IFeatureCursor cursor = (IFeatureCursor)fc.Search(filter))
+                    using (IFeatureCursor cursor = (IFeatureCursor)await fc.Search(filter))
                     {
                         if (cursor != null)
                         {
@@ -2787,7 +2787,7 @@ namespace gView.Plugins.MapTools
                             #endregion
 
                             #region Query
-                            using (IFeatureCursor cursor = (IFeatureCursor)fc.Search(filter))
+                            using (IFeatureCursor cursor = (IFeatureCursor)await fc.Search(filter))
                             {
                                 IFeature feature;
                                 while ((feature = await cursor.NextFeature()) != null)

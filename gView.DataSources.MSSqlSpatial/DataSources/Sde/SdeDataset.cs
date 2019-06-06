@@ -2,14 +2,13 @@
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.DB;
-using gView.OGC.Framework.OGC.DB;
+using gView.Framework.SpatialAlgorithms;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using gView.Framework.SpatialAlgorithms;
 
 namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 {
@@ -271,7 +270,11 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             StringBuilder fieldNames = new StringBuilder();
             foreach (string fieldName in filter.SubFields.Split(' '))
             {
-                if (fieldNames.Length > 0) fieldNames.Append(",");
+                if (fieldNames.Length > 0)
+                {
+                    fieldNames.Append(",");
+                }
+
                 if (fieldName == "[" + fc.ShapeFieldName + "]")
                 {
                     fieldNames.Append(fc.ShapeFieldName + ".STAsBinary() as temp_geometry");
@@ -284,7 +287,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             }
 
             string limit = String.Empty, top = String.Empty, orderBy = String.Empty;
-            if(!String.IsNullOrWhiteSpace(filter.OrderBy))
+            if (!String.IsNullOrWhiteSpace(filter.OrderBy))
             {
                 orderBy = " order by " + filter.OrderBy;
             }
@@ -297,7 +300,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 }
                 else
                 {
-                    if(String.IsNullOrWhiteSpace(orderBy))
+                    if (String.IsNullOrWhiteSpace(orderBy))
                     {
                         orderBy = " order by " + filter.fieldPrefix + fc.IDFieldName + filter.fieldPostfix;
                     }
@@ -306,7 +309,15 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 }
             }
 
-            command.CommandText = "SELECT " + top + fieldNames + " FROM " + fc.Name;
+            string fcName = fc.Name;
+            if(fc is SdeFeatureClass && !String.IsNullOrWhiteSpace(((SdeFeatureClass)fc).MultiVersionedViewName))
+            {
+                fcName = ((SdeFeatureClass)fc).MultiVersionedViewName;
+
+                // ToDo: filterWhereClause? SDE_STATE_ID=0?? 
+            }
+
+            command.CommandText = "SELECT " + top + fieldNames + " FROM " + fcName;
 
             if (!String.IsNullOrEmpty(where))
             {
@@ -324,7 +335,9 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
         async public override Task<IEnvelope> FeatureClassEnvelope(IFeatureClass fc)
         {
             if (RepoProvider == null)
+            {
                 throw new Exception("Repository not initialized");
+            }
 
             return await RepoProvider.FeatureClassEnveolpe(fc);
         }
@@ -332,7 +345,9 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
         async public override Task<List<IDatasetElement>> Elements()
         {
             if (RepoProvider == null)
+            {
                 throw new Exception("Repository not initialized");
+            }
 
             if (_layers == null || _layers.Count == 0)
             {
@@ -341,7 +356,8 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 foreach (var sdeLayer in RepoProvider.Layers)
                 {
                     layers.Add(new DatasetElement(
-                       await SdeFeatureClass.Create(this, sdeLayer.Owner + "." + sdeLayer.TableName)));
+                       await SdeFeatureClass.Create(this, sdeLayer.Owner + "." + sdeLayer.TableName, 
+                          String.IsNullOrWhiteSpace(sdeLayer.MultiVersionedViewName) ? null : sdeLayer.Owner+"."+sdeLayer.MultiVersionedViewName)));
                 }
 
                 _layers = layers;
@@ -352,14 +368,18 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
         async public override Task<IDatasetElement> Element(string title)
         {
             if (RepoProvider == null)
+            {
                 throw new Exception("Repository not initialized");
+            }
 
             title = title.ToLower();
             var sdeLayer = RepoProvider.Layers.Where(l => (l.Owner + "." + l.TableName).ToLower() == title).FirstOrDefault();
 
             if (sdeLayer != null)
             {
-                return new DatasetElement(await SdeFeatureClass.Create(this, sdeLayer.Owner + "." + sdeLayer.TableName));
+                return new DatasetElement(await SdeFeatureClass.Create(this, 
+                    sdeLayer.Owner + "." + sdeLayer.TableName,
+                    String.IsNullOrWhiteSpace(sdeLayer.MultiVersionedViewName) ? null : sdeLayer.Owner + "." + sdeLayer.MultiVersionedViewName));
             }
 
             return null;
@@ -372,11 +392,15 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
         async public override Task<int?> GetNextInsertRowId(ITableClass table)
         {
             if (RepoProvider == null)
+            {
                 throw new Exception("Repository not initialized");
+            }
 
             var sdeLayer = RepoProvider.LayerFromTableClass(table);
             if (sdeLayer == null)
+            {
                 throw new Exception("Sde layer not found: " + table?.Name);
+            }
 
             return await RepoProvider.GetInsertRowId(sdeLayer);
         }

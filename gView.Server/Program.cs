@@ -14,6 +14,8 @@ namespace gView.Server
     {
         public static void Main(string[] args)
         {
+            Framework.system.PlugInManager.Usage = Framework.system.PluginUsage.Server;
+
             CreateWebHostBuilder(args).Build().Run();
         }
 

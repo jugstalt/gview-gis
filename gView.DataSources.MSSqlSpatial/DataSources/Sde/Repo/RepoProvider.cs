@@ -2,11 +2,9 @@
 using gView.Framework.Geometry;
 using gView.OGC.Framework.OGC.DB;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
@@ -24,18 +22,23 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
         async private Task<bool> Refresh()
         {
             if (SdeLayers.Count != 0)  // DoTo: Refresh if older than 1 min...
+            {
                 return true;
+            }
 
             SdeLayers.Clear();
             SdeSpatialReferences.Clear();
             SdeColumns.Clear();
             SdeGeometryColumns.Clear();
+            SdeLayerMultiversionViewNames.Clear();
 
             var providerFactory = System.Data.SqlClient.SqlClientFactory.Instance;
 
             string sdeSchemaName = TableSchemaName("sde_layers");
             if (String.IsNullOrWhiteSpace(sdeSchemaName))
+            {
                 throw new Exception("Can't determine sde db-schema");
+            }
 
             using (DbConnection connection = providerFactory.CreateConnection())
             {
@@ -45,12 +48,26 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
                 var command = providerFactory.CreateCommand();
                 command.Connection = connection;
 
+
+                command.CommandText = "select * from " + sdeSchemaName + ".sde_table_registry";
+                using(var reader=await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        string mv_view_name = reader["imv_view_name"]?.ToString();
+                        if (!String.IsNullOrWhiteSpace(mv_view_name))
+                        {
+                            SdeLayerMultiversionViewNames[(reader["owner"]?.ToString() + "." + reader["table_name"]?.ToString()).ToLower()] = mv_view_name;
+                        }
+                    }
+                }
+
                 command.CommandText = "select * from " + sdeSchemaName + ".sde_layers";
                 using (var reader = await command.ExecuteReaderAsync())
                 {
-                    while(await reader.ReadAsync())
+                    while (await reader.ReadAsync())
                     {
-                        SdeLayers.Add(new SdeLayer(reader));
+                        SdeLayers.Add(new SdeLayer(reader, SdeLayerMultiversionViewNames));
                     }
                 }
 
@@ -89,6 +106,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
         private List<SdeSpatialReference> SdeSpatialReferences = new List<SdeSpatialReference>();
         private List<SdeColumn> SdeColumns = new List<SdeColumn>();
         private List<SdeGeometryColumn> SdeGeometryColumns = new List<SdeGeometryColumn>();
+        private Dictionary<string, string> SdeLayerMultiversionViewNames = new Dictionary<string, string>();
 
         public IEnumerable<SdeLayer> Layers => this.SdeLayers.ToArray();
 
@@ -133,7 +151,9 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
 
             string sdeSchemaName = TableSchemaName("sde_layers");
             if (String.IsNullOrWhiteSpace(sdeSchemaName))
+            {
                 throw new Exception("Can't determine sde db-schema");
+            }
 
             using (DbConnection connection = providerFactory.CreateConnection())
             {
@@ -163,7 +183,9 @@ SELECT @newid ""Next RowID""";
             var sdeLayer = SdeLayers.Where(l => (l.Owner + "." + l.TableName).ToLower() == fcName).FirstOrDefault();
 
             if (sdeLayer == null)
+            {
                 return new Envelope(-1000, -1000, 1000, 1000);
+            }
 
             return new Envelope(sdeLayer.MinX, sdeLayer.MinY, sdeLayer.MaxX, sdeLayer.MaxY);
         }
@@ -176,11 +198,15 @@ SELECT @newid ""Next RowID""";
             var sdeLayer = SdeLayers.Where(l => (l.Owner + "." + l.TableName).ToLower() == fcName).FirstOrDefault();
 
             if (sdeLayer == null)
+            {
                 return 0;
+            }
 
             var spatialRef = SdeSpatialReferences.Where(s => s.Srid == sdeLayer.Srid).FirstOrDefault();
             if (spatialRef?.AuthSrid == null)
+            {
                 return 0;
+            }
 
             return spatialRef.AuthSrid.Value;
         }
@@ -210,9 +236,9 @@ SELECT @newid ""Next RowID""";
             var fcName = fc.Name.ToLower();
             var geomColumn = SdeGeometryColumns.Where(c => (c.Owner + "." + c.TableName).ToLower() == fcName).FirstOrDefault();
 
-            if(geomColumn!=null)
+            if (geomColumn != null)
             {
-                switch(geomColumn.GeometryType.HasValue ? (SdeTypes.SdeGeometryTppe)geomColumn.GeometryType.Value : SdeTypes.SdeGeometryTppe.unknown)
+                switch (geomColumn.GeometryType.HasValue ? (SdeTypes.SdeGeometryTppe)geomColumn.GeometryType.Value : SdeTypes.SdeGeometryTppe.unknown)
                 {
                     case SdeTypes.SdeGeometryTppe.point:
                         return geometryType.Point;

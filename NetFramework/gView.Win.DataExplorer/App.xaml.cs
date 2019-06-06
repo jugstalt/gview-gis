@@ -20,6 +20,8 @@ namespace gView.Win.DataExplorer
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            Framework.system.PlugInManager.Usage = Framework.system.PluginUsage.Desktop;
+
             SplashScreen.Show();
             SplashScreen.Refresh();
 

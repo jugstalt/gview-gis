@@ -11,7 +11,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
     {
         public SdeLayer() { }
 
-        public SdeLayer(DbDataReader reader)
+        public SdeLayer(DbDataReader reader, Dictionary<string, string> multiversionedViewnames)
         {
             this.LayerId = Convert.ToInt32(reader["layer_id"]);
             this.Description = reader["description"]?.ToString();
@@ -34,6 +34,15 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
             this.MinM = reader["minm"] != DBNull.Value && reader["minm"] != null ? (double?)Convert.ToDouble(reader["minm"]) : null;
             this.MaxM = reader["maxm"] != DBNull.Value && reader["maxm"] != null ? (double?)Convert.ToDouble(reader["maxm"]) : null;
 
+            if(multiversionedViewnames!=null)
+            {
+                var mv_tab_name = (this.Owner + "." + this.TableName).ToLower();
+                if(multiversionedViewnames.ContainsKey(mv_tab_name))
+                {
+                    this.MultiVersionedViewName = multiversionedViewnames[mv_tab_name];
+                }
+            }
+
             this.Srid = Convert.ToInt32(reader["srid"]);
         }
 
@@ -43,6 +52,8 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
         public string DatabaseName { get; set; }
         public string TableName { get; set; }
         public string Owner { get; set; }
+
+        public string MultiVersionedViewName { get; set; }
 
         public string SpatialColumn { get; set; }
         public int EFlags { get; set; }
