@@ -15,9 +15,12 @@ namespace gView.Desktop.Wpf.Controls
         {
             try
             {
-                uiElement.Dispatcher.Invoke(DispatcherPriority.Render, EmptyDelegate);
+                //uiElement.Dispatcher.Invoke(DispatcherPriority.Render, EmptyDelegate);
             }
-            catch { }
+            catch(Exception ex)
+            {
+                string msg = ex.Message;
+            }
         }
     }
 }
