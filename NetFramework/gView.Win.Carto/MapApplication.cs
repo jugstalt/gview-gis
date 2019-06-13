@@ -704,7 +704,7 @@ namespace gView.Win.Carto
             if (_activeDataView == null) return;
             if (_activeDataView.MapView == null) return;
 
-            await _activeDataView.MapView.RefreshMap((DrawPhase)drawPhase);
+            _activeDataView.MapView.RefreshMap((DrawPhase)drawPhase);
         }
 
         public IDocumentWindow DocumentWindow

@@ -188,9 +188,9 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        async public Task OnShowAction()
+        public void OnShowAction()
         {
-            await mapView1.RefreshMap(DrawPhase.Geography);
+            mapView1.RefreshMap(DrawPhase.Geography);
         }
         async public Task<bool> OnShow()
         {
@@ -207,7 +207,7 @@ namespace gView.Framework.UI.Controls
             //}
             //else
             {
-                await OnShowAction();
+                OnShowAction();
             }
 
             return true;
@@ -349,7 +349,7 @@ namespace gView.Framework.UI.Controls
         async public Task RefreshContentsAction()
         {
             mapView1.CancelDrawing(DrawPhase.All);
-            await mapView1.RefreshMap(DrawPhase.All);
+            mapView1.RefreshMap(DrawPhase.All);
         }
         async public Task<bool> RefreshContents()
         {
@@ -400,25 +400,25 @@ namespace gView.Framework.UI.Controls
             return null;
         }
 
-        async public Task RefreshMapAction()
+        public void RefreshMapAction()
         {
             if (mapView1 != null)
             {
-                await mapView1.RefreshMap(DrawPhase.All);
+                mapView1.RefreshMap(DrawPhase.All);
             }
         }
         async public Task RefreshMap()
         {
             if (mapView1.InvokeRequired)
             {
-                await mapView1.RunSyncronously(async () => await RefreshMapAction());
+                await mapView1.RunSyncronously(() => RefreshMapAction());
                 //var d = new InvokeAsyncDelegate(RefreshMap);
                 //await (Task)mapView1.Invoke(d);
                 //await (Task)mapView1.Invoke(new MethodInvoker(async () => { await RefreshMap(); }));
             }
             else
             {
-                await RefreshMapAction();
+                RefreshMapAction();
             }
         }
 

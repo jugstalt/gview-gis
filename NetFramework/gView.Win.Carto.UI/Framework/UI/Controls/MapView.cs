@@ -228,7 +228,7 @@ namespace gView.Framework.UI.Controls
                 }
                 else
                 {
-                    await RefreshMap(DrawPhase.All);
+                    RefreshMap(DrawPhase.All);
                 }
             }
         }
@@ -448,7 +448,8 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        async public Task<bool> RefreshMap(DrawPhase phase)
+        private Thread _refreshMapThread=null;
+        public bool RefreshMap(DrawPhase phase)
         {
             if(this.InvokeRequired)
             {
@@ -467,33 +468,46 @@ namespace gView.Framework.UI.Controls
 
             try
             {
-                await Task.Run(async () =>
+                if (_cancelTracker.Continue)
                 {
+                    CancelDrawing(phase);
+                }
+                if (BeforeRefreshMap != null)
+                {
+                    BeforeRefreshMap();
+                }
 
-                    if (_cancelTracker.Continue)
-                    {
-                        CancelDrawing(phase);
-                    }
-                    if (BeforeRefreshMap != null)
-                    {
-                        BeforeRefreshMap();
-                    }
+                _map.Display.iWidth = this.Width;
+                _map.Display.iHeight = this.Height;
 
-                    _map.Display.iWidth = this.Width;
-                    _map.Display.iHeight = this.Height;
+                _phase = phase;
+                _canceled = false;
 
-                    _phase = phase;
-                    _canceled = false;
+                if (StartRequest != null)
+                {
+                    StartRequest();
+                }
 
-                    if (StartRequest != null)
-                    {
-                        StartRequest();
-                    }
+                if (_refreshMapThread != null)
+                {
+                    _refreshMapThread.Join();
+                }
 
-                    _cancelTracker.Reset();
-                    await _map.RefreshMap(_phase, _cancelTracker);
-                    MakeMapViewRefresh();
-                });
+                _cancelTracker.Reset();
+                _refreshMapThread = new Thread(async () =>
+                  {
+                      await _map.RefreshMap(_phase, _cancelTracker);
+                      MakeMapViewRefresh();
+                  });
+                _refreshMapThread.Start();
+                //Task.Factory.StartNew(async () =>
+                //{
+                //    await _map.RefreshMap(_phase, _cancelTracker);
+                //    MakeMapViewRefresh();
+
+                //}, CancellationToken.None,
+                //   TaskCreationOptions.None,
+                //   _uiTaskSchedular);
             }
             catch (Exception)
             {
@@ -1352,7 +1366,7 @@ namespace gView.Framework.UI.Controls
                 }
                 else
                 {
-                    await RefreshMap(phase);
+                    RefreshMap(phase);
                 }
             }
             else
@@ -1567,7 +1581,7 @@ namespace gView.Framework.UI.Controls
             }
             else
             {
-                await RefreshMap(DrawPhase.All);
+                RefreshMap(DrawPhase.All);
             }
         }
         #endregion
@@ -1584,7 +1598,7 @@ namespace gView.Framework.UI.Controls
             }
             else
             {
-                await RefreshMap(DrawPhase.All);
+                RefreshMap(DrawPhase.All);
             }
         }
 
