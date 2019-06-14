@@ -161,73 +161,29 @@ namespace gView.Framework.UI.Controls
 
         private void InvokeDoRefreshMapView()
         {
-            //if(mapView1.InvokeRequired)
-            //{
-            //    mapView1.Invoke(new MethodInvoker(() => { InvokeDoRefreshMapView(); }));
-            //}
-            //else
-            {
-                mapView1.MakeMapViewRefresh();
-            }
+            mapView1.MakeMapViewRefresh();
+            
         }
 
-        //private delegate Task InvokeAsyncDelegate();
-        //private delegate Task<T> InvokeAsyncDelegateResult<T>();
-
-        private delegate void InvokeNewBitmapCreatedDelegate(Image image);
         private void InvokeNewBitmapCreated(Image image)
         {
-            //if (mapView1.InvokeRequired)
-            //{
-            //    var d = new InvokeNewBitmapCreatedDelegate(InvokeNewBitmapCreated);
-            //    mapView1.Invoke(d, new object[] { image });
-            //}
-            //else
-            {
-                mapView1.NewBitmapCreated(image);
-            }
+            mapView1.NewBitmapCreated(image);
         }
 
-        public void OnShowAction()
-        {
-            mapView1.RefreshMap(DrawPhase.Geography);
-        }
         async public Task<bool> OnShow()
         {
-            if (_exObjectInvokeRequired)
-            {
-                await InvokeSetExplorerObject();
-            }
-
-            //if (mapView1.InvokeRequired)
-            //{
-            //    //var d = new InvokeAsyncDelegateResult<bool>(OnShow);
-            //    //return await (Task<bool>)mapView1.Invoke(d);
-            //    await mapView1.RunSyncronously(async () => await OnShowAction());
-            //}
-            //else
-            {
-                OnShowAction();
-            }
-
-            return true;
+            return mapView1.RefreshMap(DrawPhase.Geography);
         }
 
         public void OnHide()
         {
-            //if (mapView1.InvokeRequired)
-            //{
-            //    mapView1.Invoke(new MethodInvoker(() => { OnHide(); }));
-            //}
-            //else
-            {
-                mapView1.CancelDrawing(DrawPhase.All);
-            }
+            mapView1.CancelDrawing(DrawPhase.All);
         }
 
-        
-        async private Task InvokeSetExplorerObjectAction()
+        async private Task InvokeSetExplorerObject()
         {
+            _exObjectInvokeRequired = false;
+
             mapView1.CancelDrawing(DrawPhase.All);
             foreach (IDatasetElement element in _map.MapElements)
             {
@@ -290,23 +246,6 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        async private Task InvokeSetExplorerObject()
-        {
-            _exObjectInvokeRequired = false;
-
-            //if (mapView1.InvokeRequired)
-            //{
-            //    await mapView1.RunSyncronously(async () => await InvokeSetExplorerObjectAction());
-            //    //var d = new InvokeAsyncDelegate(InvokeSetExplorerObject);
-            //    //var t = mapView1.Invoke(d);
-            //    //await (Task)t;
-            //}
-            //else
-            {
-                await InvokeSetExplorerObjectAction();
-            }
-        }
-
         public IExplorerObject GetExplorerObject()
         {
             return _exObject;
@@ -346,11 +285,6 @@ namespace gView.Framework.UI.Controls
             get { return "Preview"; }
         }
 
-        async public Task RefreshContentsAction()
-        {
-            mapView1.CancelDrawing(DrawPhase.All);
-            mapView1.RefreshMap(DrawPhase.All);
-        }
         async public Task<bool> RefreshContents()
         {
             if (_exObjectInvokeRequired)
@@ -358,20 +292,10 @@ namespace gView.Framework.UI.Controls
                 await InvokeSetExplorerObject();
             }
 
-            if (mapView1.InvokeRequired)
-            {
-                await mapView1.RunSyncronously(async () => await RefreshContentsAction());
-                //var d = new InvokeAsyncDelegateResult<bool>(RefreshContents);
-                //return await (Task<bool>)mapView1.Invoke(d);
-                //await (Task<bool>)mapView1.Invoke(new MethodInvoker(async () => { await RefreshContents(); }));
-            }
-            else
-            {
-                await RefreshContentsAction();
-            }
-
-            return true;
+            mapView1.CancelDrawing(DrawPhase.All);
+            return  mapView1.RefreshMap(DrawPhase.All);
         }
+
         #endregion
 
         private void toolStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
@@ -400,26 +324,9 @@ namespace gView.Framework.UI.Controls
             return null;
         }
 
-        public void RefreshMapAction()
-        {
-            if (mapView1 != null)
-            {
-                mapView1.RefreshMap(DrawPhase.All);
-            }
-        }
         async public Task RefreshMap()
         {
-            if (mapView1.InvokeRequired)
-            {
-                await mapView1.RunSyncronously(() => RefreshMapAction());
-                //var d = new InvokeAsyncDelegate(RefreshMap);
-                //await (Task)mapView1.Invoke(d);
-                //await (Task)mapView1.Invoke(new MethodInvoker(async () => { await RefreshMap(); }));
-            }
-            else
-            {
-                RefreshMapAction();
-            }
+            mapView1.RefreshMap(DrawPhase.All);
         }
 
         #region IOrder Members
@@ -432,6 +339,7 @@ namespace gView.Framework.UI.Controls
         #endregion
 
         #region mapView
+
         private delegate void DrawingLayerCallback(string layerName);
         private void DrawingLayer(string layerName)
         {
