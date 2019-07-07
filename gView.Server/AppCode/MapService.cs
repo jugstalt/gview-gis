@@ -381,6 +381,8 @@ namespace gView.Server.AppCode
             }
 
             IMapServiceAccess folderAcccessRule = null;
+            IMapServiceAccess accessRule = null;
+
             if (_folderSettings?.AccessRules != null && _folderSettings.AccessRules.Length > 0)
             {
                 folderAcccessRule =
@@ -398,13 +400,18 @@ namespace gView.Server.AppCode
                 }
             }
 
-            var accessRule =
+            accessRule =
                _settings?.AccessRules?.Where(r => r.Username.Equals(identity.UserName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
 
             if (accessRule == null)
             {
                 accessRule =
                     _settings?.AccessRules?.Where(r => r.Username.Equals(Identity.AnonyomousUsername, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+            }
+
+            if (accessRule == null) // if there only folder settings use them for the service
+            {
+                accessRule = folderAcccessRule;
             }
 
             if (accessRule?.ServiceTypes == null || accessRule.ServiceTypes.Length == 0)

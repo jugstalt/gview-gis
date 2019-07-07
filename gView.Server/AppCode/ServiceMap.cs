@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
+using gView.Framework.IO;
 
 namespace gView.Server.AppCode
 {
@@ -95,7 +96,8 @@ namespace gView.Server.AppCode
                             ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                     }
                 }
-                _image.Save(path, format);
+                //_image.Save(path, format);
+                _image.SaveOrUpload(path, format);
                 _image.Dispose();
                 _image = null;
                 return true;
