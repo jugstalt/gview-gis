@@ -1507,11 +1507,15 @@ namespace gView.Framework.Carto
         }
         #endregion
 
+        private DateTime _lastRefresh = DateTime.UtcNow;
         internal void FireRefreshMapView()
         {
             if (this.DoRefreshMapView != null)
             {
-                this.DoRefreshMapView();
+                if ((DateTime.UtcNow - _lastRefresh).TotalMilliseconds > 100) {
+                    this.DoRefreshMapView();
+                    _lastRefresh = DateTime.UtcNow;
+                }
             }
         }
 
@@ -3453,7 +3457,8 @@ namespace gView.Framework.Carto
 
                                 _counter.Counter++;
 
-                                if (_counter.Counter % 10000 == 0)
+                                //  To Do: nur aufrufen, wenn Karte nicht ServiceMap oder PrintMap ist....?
+                                //if (_counter.Counter % 10000 == 0)
                                 {
                                     _map.FireRefreshMapView();
                                 }
