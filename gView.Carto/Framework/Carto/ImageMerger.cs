@@ -114,7 +114,7 @@ namespace gView.Framework.Carto
 					bar.Create(ref image,image.Width-(int)(50*m_dpi/96.0)-bar.ScaleBarWidth,image.Height-(int)(32*m_dpi/96.0));
 				}
 				imageUrl=m_outputUrl+"/"+filename;
-				filename=m_outputPath+@"\"+filename;
+				filename=m_outputPath+@"/"+filename;
 
 				image.Save(filename,ImageFormat.Png);
 				return filename;

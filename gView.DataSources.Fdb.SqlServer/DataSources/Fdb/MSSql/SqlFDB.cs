@@ -87,7 +87,7 @@ namespace gView.DataSources.Fdb.MSSql
                 return false;
             }
 
-            StreamReader reader = new StreamReader(SystemVariables.StartupDirectory + @"\sql\sqlFDB\createdatabase.sql");
+            StreamReader reader = new StreamReader(SystemVariables.StartupDirectory + @"/sql/sqlFDB/createdatabase.sql");
             string line = "";
             StringBuilder sql = new StringBuilder();
             while ((line = reader.ReadLine()) != null)
@@ -156,7 +156,7 @@ namespace gView.DataSources.Fdb.MSSql
                 return false;
             }
 
-            StreamReader reader = new StreamReader(SystemVariables.StartupDirectory + @"\sql\sqlFDB\createdatabase_from_mdf.sql");
+            StreamReader reader = new StreamReader(SystemVariables.StartupDirectory + @"/sql/sqlFDB/createdatabase_from_mdf.sql");
             string line = "";
             StringBuilder sql = new StringBuilder();
             while ((line = reader.ReadLine()) != null)

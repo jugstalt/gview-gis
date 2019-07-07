@@ -83,7 +83,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         //    get
         //    {
         //        if (this.ParentLayer != null)
-        //            return ParentLayer.FullName + @"\";
+        //            return ParentLayer.FullName + @"/";
 
         //        return String.Empty;
         //    }

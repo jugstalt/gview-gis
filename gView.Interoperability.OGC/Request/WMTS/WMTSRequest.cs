@@ -230,14 +230,14 @@ namespace gView.Interoperability.OGC.Request.WMTS
             if (format == ".jpg" && metadata.FormatJpg == false)
                 throw new Exception("Format image/jpeg no supported");
 
-            string path = _mapServer.TileCachePath + @"\" + MapName(context) + @"\_alllayers\compact\" +
+            string path = _mapServer.TileCachePath + @"/" + MapName(context) + @"/_alllayers\compact\" +
                 TileServiceMetadata.ScalePath(orientation, epsg, scale);
 
             string compactTileName = CompactTileName(row, col);
 
-            string bundleFilename = path + @"\" + compactTileName + ".tilebundle";
-            string bundleDoneFilename = path + @"\" + compactTileName + ".tilebundle.done";
-            string bundleCalcFilename = path + @"\" + compactTileName + ".tilebundle.calc";
+            string bundleFilename = path + @"/" + compactTileName + ".tilebundle";
+            string bundleDoneFilename = path + @"/" + compactTileName + ".tilebundle.done";
+            string bundleCalcFilename = path + @"/" + compactTileName + ".tilebundle.calc";
 
             if (new FileInfo(bundleFilename).Exists)
             {
@@ -298,8 +298,8 @@ namespace gView.Interoperability.OGC.Request.WMTS
         {
             string compactTileName = CompactTileName(row, col);
 
-            string bundleFilename = path + @"\" + compactTileName + ".tilebundle";
-            string bundleIndexFilename = path + @"\" + compactTileName + ".tilebundlx";
+            string bundleFilename = path + @"/" + compactTileName + ".tilebundle";
+            string bundleIndexFilename = path + @"/" + compactTileName + ".tilebundlx";
 
             FileInfo fi = new FileInfo(bundleIndexFilename);
             if (!fi.Exists)
@@ -475,7 +475,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
                 foreach (string cacheType in new string[] { "classic", "compact" })
                 {
-                    string epsgPath = _mapServer.TileCachePath + @"\" + MapName(context) + @"\_alllayers\" + (cacheType == "compact" ? @"compact\" : "") +
+                    string epsgPath = _mapServer.TileCachePath + @"/" + MapName(context) + @"/_alllayers/" + (cacheType == "compact" ? @"compact\" : "") +
                         TileServiceMetadata.EpsgPath(GridOrientation.UpperLeft, epsg);
 
                     if (!new DirectoryInfo(epsgPath).Exists)
@@ -593,7 +593,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
                     for (int s = 0, to = metadata.Scales.Count; s < to; s++)
                     {
-                        string scalePath = _mapServer.TileCachePath + @"\" + MapName(context) + @"\_alllayers\" + (cacheType == "compact" ? @"compact\" : "") +
+                        string scalePath = _mapServer.TileCachePath + @"/" + MapName(context) + @"/_alllayers/" + (cacheType == "compact" ? @"compact\" : "") +
                             TileServiceMetadata.ScalePath(GridOrientation.UpperLeft, epsg, metadata.Scales[s]);
 
                         if (!new DirectoryInfo(scalePath).Exists)

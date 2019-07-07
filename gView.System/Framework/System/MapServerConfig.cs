@@ -26,7 +26,7 @@ namespace gView.Framework.system
                 _servers = new ServerConfig[0];
 
                 XmlDocument doc = new XmlDocument();
-                doc.Load(SystemVariables.CommonApplicationData + @"\mapServer\MapServerConfig.xml");
+                doc.Load(SystemVariables.CommonApplicationData + @"/mapServer/MapServerConfig.xml");
 
                 XmlNode globalsNode = doc.SelectSingleNode("mapserver/globals");
                 _defaultOutputUrl = GetAttributeValue(globalsNode, "outputurl", "http://localhost/output");

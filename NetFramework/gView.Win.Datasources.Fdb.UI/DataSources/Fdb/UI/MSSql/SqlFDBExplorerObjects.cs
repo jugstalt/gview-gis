@@ -431,7 +431,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         void DropSpatialEngine_Click(object sender, EventArgs e)
         {
-            SqlCommandInterpreter interpreter = new SqlCommandInterpreter(_connectionString, SystemVariables.ApplicationDirectory + @"\sql\sqlFDB\dropSpatialEngine.sql");
+            SqlCommandInterpreter interpreter = new SqlCommandInterpreter(_connectionString, SystemVariables.ApplicationDirectory + @"/sql/sqlFDB/dropSpatialEngine.sql");
             Thread thread = new Thread(new ParameterizedThreadStart(interpreter.Exectue));
             SqlCommandProgressReporter reporter = new SqlCommandProgressReporter(interpreter);
 
@@ -445,7 +445,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
         {
             DropSpatialEngine_Click(sender, e);
 
-            SqlCommandInterpreter interpreter = new SqlCommandInterpreter(_connectionString, SystemVariables.ApplicationDirectory + @"\sql\sqlFDB\createSpatialEngine.sql");
+            SqlCommandInterpreter interpreter = new SqlCommandInterpreter(_connectionString, SystemVariables.ApplicationDirectory + @"/sql/sqlFDB/createSpatialEngine.sql");
             Thread thread = new Thread(new ParameterizedThreadStart(interpreter.Exectue));
             SqlCommandProgressReporter reporter = new SqlCommandProgressReporter(interpreter);
 
@@ -457,7 +457,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         void ShrinkDatabase_Click(object sender, EventArgs e)
         {
-            SqlCommandInterpreter interpreter = new SqlCommandInterpreter(_connectionString, SystemVariables.ApplicationDirectory + @"\sql\sqlFDB\shrinkDatabase.sql");
+            SqlCommandInterpreter interpreter = new SqlCommandInterpreter(_connectionString, SystemVariables.ApplicationDirectory + @"/sql/sqlFDB/shrinkDatabase.sql");
             interpreter.DatabaseName = ConfigTextStream.ExtractValue(_connectionString, "database");
             Thread thread = new Thread(new ParameterizedThreadStart(interpreter.Exectue));
             SqlCommandProgressReporter reporter = new SqlCommandProgressReporter(interpreter);
@@ -923,7 +923,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             get
             {
                 if (_parent == null) return "";
-                return _parent.FullName + @"\" + this.Name;
+                return _parent.FullName + @"/" + this.Name;
             }
         }
         public string Type
@@ -1019,8 +1019,8 @@ namespace gView.DataSources.Fdb.UI.MSSql
             if (cache.Contains(FullName))
                 return cache[FullName];
 
-            FullName = FullName.Replace("/", @"\");
-            int lastIndex = FullName.LastIndexOf(@"\");
+            FullName = FullName.Replace("\\", @"/");
+            int lastIndex = FullName.LastIndexOf(@"/");
             if (lastIndex == -1) return null;
 
             string fdbName = FullName.Substring(0, lastIndex);
@@ -1299,7 +1299,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             get
             {
                 if (_parent == null) return "";
-                return _parent.FullName + @"\" + this.Name;
+                return _parent.FullName + @"/" + this.Name;
             }
         }
         public string Type
@@ -1347,7 +1347,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 return cache[FullName];
 
             FullName = FullName.Replace("/", @"\");
-            int lastIndex = FullName.LastIndexOf(@"\");
+            int lastIndex = FullName.LastIndexOf(@"/");
             if (lastIndex == -1) return null;
 
             string dsName = FullName.Substring(0, lastIndex);

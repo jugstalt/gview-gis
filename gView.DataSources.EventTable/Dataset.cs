@@ -180,7 +180,7 @@ namespace gView.DataSources.EventTable
         public string ShowConnectionStringDialog(string initConnectionString)
         {
             string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.DataSources.EventTable.UI.dll");
+            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.DataSources.EventTable.UI.dll");
 
             gView.Framework.UI.IConnectionStringDialog p = uiAssembly.CreateInstance("gView.Datasources.EventTable.UI.FormEventTableConnection") as gView.Framework.UI.IConnectionStringDialog;
             if (p != null)

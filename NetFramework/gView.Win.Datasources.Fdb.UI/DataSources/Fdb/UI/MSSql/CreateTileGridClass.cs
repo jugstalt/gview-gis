@@ -96,7 +96,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 Envelope iBounds = new Envelope(bounds.minx - _tileSizeX, bounds.miny - _tileSizeY,
                                                 bounds.maxx + _tileSizeX, bounds.maxy + _tileSizeY);
 
-                _cacheDirectory += @"\" + _name;
+                _cacheDirectory += @"/" + _name;
                 if (!String.IsNullOrEmpty(_cacheDirectory))
                 {
                     DirectoryInfo di = new DirectoryInfo(_cacheDirectory);
@@ -111,7 +111,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     sb.Append(" <TileResolution x='" + _resX.ToString(_nhi) + "' y='" + _resY.ToString(_nhi) + "' />\r\n");
                     sb.Append("</TileCacheDefinition>");
 
-                    StreamWriter sw = new StreamWriter(di.FullName + @"\tilecache.xml");
+                    StreamWriter sw = new StreamWriter(di.FullName + @"/tilecache.xml");
                     sw.WriteLine(sb.ToString());
                     sw.Close();
                 }
@@ -228,7 +228,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                         int row = 0;
                         for (double y = bounds.miny; y < bounds.maxy; y += _tileSizeY)
                         {
-                            DirectoryInfo di = new DirectoryInfo(_cacheDirectory + @"\" + level + @"\" + row);
+                            DirectoryInfo di = new DirectoryInfo(_cacheDirectory + @"/" + level + @"/" + row);
                             if (!di.Exists) di.Create();
 
                             int column = 0;
@@ -268,7 +268,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                                 if (_createTiles)
                                 {
-                                    string filename = di.FullName + @"\" + column;
+                                    string filename = di.FullName + @"/" + column;
                                     if (_gridType == TileGridType.binary_float)
                                     {
                                         float[] vals = gridClass.MultiGridQuery(

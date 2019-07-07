@@ -247,7 +247,7 @@ namespace gView.DataSources.Fdb.UI
                 default:
                     try
                     {
-                        FileInfo fi = new FileInfo(imageSpace + @"\" + managed_file);
+                        FileInfo fi = new FileInfo(imageSpace + @"/" + managed_file);
                         if (!fi.Exists)
                         {
                             _errMsg = "Can't find file '" + fi.FullName + "'";

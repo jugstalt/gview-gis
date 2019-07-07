@@ -58,7 +58,7 @@ namespace gView.Framework.system
                 if (!String.IsNullOrEmpty(CustomMyApplicationData))
                     return CustomMyApplicationData;
 
-                string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\gView";
+                string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"/gView";
                 DirectoryInfo di = new DirectoryInfo(path);
                 if (!di.Exists) di.Create();
 
@@ -72,12 +72,12 @@ namespace gView.Framework.system
             get
             {
                 if (IsPortable)
-                    return PortableRootDirectory + @"\AppData";
+                    return PortableRootDirectory + @"/AppData";
 
                 if (!String.IsNullOrEmpty(CustomMyCommonApplicationData))
                     return CustomMyCommonApplicationData;
 
-                string path = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\gView";
+                string path = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"/gView";
                 DirectoryInfo di = new DirectoryInfo(path);
                 if (!di.Exists) di.Create();
 
@@ -91,12 +91,12 @@ namespace gView.Framework.system
             get
             {
                 if (IsPortable)
-                    return PortableRootDirectory + @"\AppData";
+                    return PortableRootDirectory + @"/AppData";
 
                 if (!String.IsNullOrEmpty(CustomCommonApplicationData))
                     return CustomCommonApplicationData;
 
-                string path = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\gView";
+                string path = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"/gView";
                 DirectoryInfo di = new DirectoryInfo(path);
                 if (!di.Exists) di.Create();
 
@@ -107,7 +107,7 @@ namespace gView.Framework.system
         {
             get
             {
-                string path = MyApplicationData + @"\config";
+                string path = MyApplicationData + @"/config";
                 DirectoryInfo di = new DirectoryInfo(path);
                 if (!di.Exists) di.Create();
 
@@ -122,7 +122,7 @@ namespace gView.Framework.system
                 try
                 {
                     string path = PortableRootDirectory;
-                    return File.Exists(path + @"\gview_portable.config");
+                    return File.Exists(path + @"/gview_portable.config");
                 }
                 catch { return false; }
             }
@@ -213,7 +213,7 @@ namespace gView.Framework.system
     {
         static public IProgressDialog CreateProgressDialogInstance()
         {
-            Assembly uiAssembly = Assembly.LoadFrom(SystemVariables.ApplicationDirectory + @"\gView.Explorer.UI.dll");
+            Assembly uiAssembly = Assembly.LoadFrom(SystemVariables.ApplicationDirectory + @"/gView.Explorer.UI.dll");
 
             IProgressDialog p = uiAssembly.CreateInstance("gView.Framework.UI.Dialogs.FormProgress") as IProgressDialog;
             return p;

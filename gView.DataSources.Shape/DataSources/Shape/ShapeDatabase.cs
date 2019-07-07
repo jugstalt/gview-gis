@@ -32,7 +32,7 @@ namespace gView.DataSources.Shape
         {
             if (geomDef == null || fields == null) return Task.FromResult(-1);
 
-            string filename = _directoryName + @"\" + fcname;
+            string filename = _directoryName + @"/" + fcname;
             Fields f = new Fields();
 
             foreach (IField field in fields.ToEnumerable())
@@ -91,7 +91,7 @@ namespace gView.DataSources.Shape
             if(_name=="")
                 return Task.FromResult(false);
 
-            SHPFile file = new SHPFile(_name + @"\" + fcName + ".shp");
+            SHPFile file = new SHPFile(_name + @"/" + fcName + ".shp");
             return Task.FromResult(file.Delete());
         }
 
@@ -192,7 +192,7 @@ namespace gView.DataSources.Shape
             if (features.Count == 0)
                 return Task.FromResult<bool>(true);
 
-            SHPFile shpFile = new SHPFile(fClass.Dataset.ConnectionString + @"\" + fClass.Name + ".shp");
+            SHPFile shpFile = new SHPFile(fClass.Dataset.ConnectionString + @"/" + fClass.Name + ".shp");
 
             foreach (IFeature feature in features)
             {

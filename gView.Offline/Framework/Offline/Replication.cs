@@ -3409,7 +3409,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
         public static void ShowAddReplicationIDDialog(IFeatureClass fc)
         {
             string appPath = SystemVariables.ApplicationDirectory;
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.Offline.UI.dll");
+            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Offline.UI.dll");
 
             IFeatureClassDialog p = uiAssembly.CreateInstance("gView.Framework.Offline.UI.FormAddReplicationID") as IFeatureClassDialog;
             if (p != null)
@@ -3420,7 +3420,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
         public static void ShowCheckoutDialog(IFeatureClass fc)
         {
             string appPath = SystemVariables.ApplicationDirectory;
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.Offline.UI.dll");
+            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Offline.UI.dll");
 
             IFeatureClassDialog p = uiAssembly.CreateInstance("gView.Framework.Offline.UI.FormCheckout") as IFeatureClassDialog;
             if (p != null)
@@ -3431,7 +3431,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
         public static void ShowCheckinDialog(IFeatureClass fc)
         {
             string appPath = SystemVariables.ApplicationDirectory;
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.Offline.UI.dll");
+            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Offline.UI.dll");
 
             IFeatureClassDialog p = uiAssembly.CreateInstance("gView.Framework.Offline.UI.FormCheckin") as IFeatureClassDialog;
             if (p != null)

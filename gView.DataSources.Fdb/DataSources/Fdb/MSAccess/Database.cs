@@ -200,7 +200,7 @@ namespace gView.DataSources.Fdb.MSAccess
         #region IFDB
         virtual public bool Create(string name)
         {
-            FileInfo tpl = new FileInfo(gView.Framework.system.SystemVariables.StartupDirectory + @"\sql\accessFDB\fdb_1_2_0.tpl");
+            FileInfo tpl = new FileInfo(gView.Framework.system.SystemVariables.StartupDirectory + @"/sql/accessFDB/fdb_1_2_0.tpl");
             if (!tpl.Exists)
             {
                 _errMsg = "Can't find template file: " + tpl.FullName;

@@ -27,8 +27,8 @@ namespace gView.Framework.system
         public Serial()
             :
             this("geographicView",
-            SystemVariables.CommonApplicationData + @"\serial.key",
-            SystemVariables.CommonApplicationData + @"\serial.dbf",
+            SystemVariables.CommonApplicationData + @"/serial.key",
+            SystemVariables.CommonApplicationData + @"/serial.dbf",
             60, "897")
         {
         }

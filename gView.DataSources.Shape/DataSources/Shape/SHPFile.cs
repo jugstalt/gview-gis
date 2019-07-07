@@ -231,10 +231,10 @@ namespace gView.DataSources.Shape
                 FileInfo fi = new FileInfo(_file_SHP);
                 string filter = fi.Name.Substring(0, fi.Name.Length - fi.Extension.Length) + ".*";
 
-                fi = new FileInfo(fi.Directory + @"\" + newName + ".shp");
+                fi = new FileInfo(fi.Directory + @"/" + newName + ".shp");
                 if (fi.Exists) return false;
 
-                FileInfo newFi = new FileInfo(fi.Directory.FullName + @"\" + newName);
+                FileInfo newFi = new FileInfo(fi.Directory.FullName + @"/" + newName);
                 if (newFi.Extension.ToLower() != ".shp")
                     newFi = new FileInfo(newFi.FullName + ".shp");
                 string name = newFi.Name.Substring(0, newFi.Name.Length - newFi.Extension.Length);
@@ -243,7 +243,7 @@ namespace gView.DataSources.Shape
                 {
                     try
                     {
-                        f.MoveTo(f.Directory.FullName + @"\" + name + f.Extension);
+                        f.MoveTo(f.Directory.FullName + @"/" + name + f.Extension);
                     }
                     catch
                     {
@@ -251,7 +251,7 @@ namespace gView.DataSources.Shape
                 }
 
                 fi = new FileInfo(_file_SHP);
-                string filename = fi.Directory.FullName + @"\" + newName;
+                string filename = fi.Directory.FullName + @"/" + newName;
 
                 fi = new FileInfo(filename);
 

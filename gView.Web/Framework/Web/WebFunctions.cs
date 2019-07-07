@@ -608,7 +608,7 @@ namespace gView.Framework.Web
                 _loaded = true;
 
                 XmlStream stream = new XmlStream("webproxy");
-                if (!stream.ReadStream(SystemVariables.CommonApplicationData + @"\options_webproxy.xml"))
+                if (!stream.ReadStream(SystemVariables.CommonApplicationData + @"/options_webproxy.xml"))
                 {
                     stream = new XmlStream("webproxy");
                     stream.Save("useproxy", (int)UseProxyType.none);
@@ -618,10 +618,10 @@ namespace gView.Framework.Web
                     stream.Save("domain", String.Empty);
                     stream.Save("user", String.Empty);
                     stream.Save("password", String.Empty);
-                    stream.WriteStream(SystemVariables.CommonApplicationData + @"\options_webproxy.xml");
+                    stream.WriteStream(SystemVariables.CommonApplicationData + @"/options_webproxy.xml");
 
                     stream = new XmlStream("webproxy");
-                    stream.ReadStream(SystemVariables.CommonApplicationData + @"\options_webproxy.xml");
+                    stream.ReadStream(SystemVariables.CommonApplicationData + @"/options_webproxy.xml");
                 }
 
                 _useProxy = (UseProxyType)stream.Load("useproxy");
@@ -653,7 +653,7 @@ namespace gView.Framework.Web
                 stream.Save("domain", _domain);
                 stream.Save("user", _user);
                 stream.Save("password", _password);
-                stream.WriteStream(SystemVariables.CommonApplicationData + @"\options_webproxy.xml");
+                stream.WriteStream(SystemVariables.CommonApplicationData + @"/options_webproxy.xml");
 
                 ProxySettings.LoadProxy();
                 return true;

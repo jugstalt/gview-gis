@@ -673,7 +673,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             get
             {
                 if (_parent == null) return String.Empty;
-                return _parent.FullName + @"\" + this.Name;
+                return _parent.FullName + @"/" + this.Name;
             }
         }
         public string Type
@@ -768,8 +768,8 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         {
             if (cache.Contains(FullName)) return cache[FullName];
 
-            FullName = FullName.Replace("/", @"\");
-            int lastIndex = FullName.LastIndexOf(@"\");
+            FullName = FullName.Replace(@"\", @"/");
+            int lastIndex = FullName.LastIndexOf(@"/");
             if (lastIndex == -1) return null;
 
             string fdbName = FullName.Substring(0, lastIndex);
@@ -1039,7 +1039,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             get
             {
                 if (_parent == null) return String.Empty;
-                return _parent.FullName + @"\" + this.Name;
+                return _parent.FullName + @"/" + this.Name;
             }
         }
         public string Type

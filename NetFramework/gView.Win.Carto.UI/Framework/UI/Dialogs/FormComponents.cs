@@ -196,7 +196,7 @@ namespace gView.Framework.UI.Dialogs
 				str+=explorer.Explore(assemblyname)+"\n";
 			}
 
-            string filename = gView.Framework.system.SystemVariables.MyCommonApplicationData + @"\gViewGisOS_plugins.xml";
+            string filename = gView.Framework.system.SystemVariables.MyCommonApplicationData + @"/gViewGisOS_plugins.xml";
 			StreamWriter sw=new StreamWriter(filename); 
 			sw.WriteLine("<components>\n"+str+"</components>");
 			sw.Close();

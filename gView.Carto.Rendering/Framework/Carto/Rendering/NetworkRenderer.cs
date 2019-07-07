@@ -257,7 +257,7 @@ namespace gView.Framework.Carto.Rendering
                 if (((IFeatureLayer)initObject).FeatureClass == null) return null;
 
                 string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.Win.Carto.Rendering.UI.dll");
+                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
 
                 IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Carto.Rendering.UI.NetworkRendererControl") as IPropertyPanel;
                 if (p != null)

@@ -1140,7 +1140,7 @@ namespace gView.Framework.IO
 
 	public class ConfigTextStream 
 	{
-		//private static string _configPath=System.Environment.CurrentDirectory+@"\config";
+		//private static string _configPath=System.Environment.CurrentDirectory+@"/config";
 		private string _path;
 		private global::System.IO.StreamReader tr=null;
 		private global::System.IO.StreamWriter tw=null;
@@ -1151,7 +1151,7 @@ namespace gView.Framework.IO
 		{
             if (name == "") return;
 
-			_path=SystemVariables.MyApplicationConfigPath+@"\"+name+".config";
+			_path=SystemVariables.MyApplicationConfigPath+@"/"+name+".config";
 			getIDs();
 			try 
 			{
@@ -1167,7 +1167,7 @@ namespace gView.Framework.IO
 		{
 			try 
 			{
-				_path=SystemVariables.MyApplicationConfigPath+@"\"+name+".config";
+				_path=SystemVariables.MyApplicationConfigPath+@"/"+name+".config";
 				getIDs();
 				if(!write) 
 				{
@@ -1673,7 +1673,7 @@ namespace gView.Framework.IO
         {
             if (name == null) return;
 
-            _root = SystemVariables.MyApplicationConfigPath + @"\connections\" + name;
+            _root = SystemVariables.MyApplicationConfigPath + @"/connections/" + name;
             DirectoryInfo di = new DirectoryInfo(_root);
             if (!di.Exists)
                 di.Create();
@@ -1734,7 +1734,7 @@ namespace gView.Framework.IO
                 connectionstring = Convert.ToBase64String(bytes);
             }
 
-            StreamWriter sw = new StreamWriter(di.FullName + @"\" + ReplaceSlash(name) + ".con",false, _encoding);
+            StreamWriter sw = new StreamWriter(di.FullName + @"/" + ReplaceSlash(name) + ".con",false, _encoding);
             sw.Write(connectionstring);
             sw.Close();
 
@@ -1749,7 +1749,7 @@ namespace gView.Framework.IO
 
             try
             {
-                FileInfo fi = new FileInfo(di.FullName + @"\" + ReplaceSlash(name) + ".con");
+                FileInfo fi = new FileInfo(di.FullName + @"/" + ReplaceSlash(name) + ".con");
                 if (fi.Exists) fi.Delete();
 
                 return true;
@@ -1768,10 +1768,10 @@ namespace gView.Framework.IO
 
             try
             {
-                FileInfo fi = new FileInfo(di.FullName + @"\" + ReplaceSlash(oldName) + ".con");
+                FileInfo fi = new FileInfo(di.FullName + @"/" + ReplaceSlash(oldName) + ".con");
                 if (fi.Exists)
                 {
-                    fi.MoveTo(di.FullName + @"\" + ReplaceSlash(newName) + ".con");
+                    fi.MoveTo(di.FullName + @"/" + ReplaceSlash(newName) + ".con");
                 }
 
                 return true;

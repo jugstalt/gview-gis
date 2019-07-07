@@ -434,7 +434,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 if (!_use_SLD_BODY && !string.IsNullOrEmpty(MapServerConfig.DefaultOutputPath))
                 {
                     string sldFilename = "style_" + Guid.NewGuid().ToString("N") + ".sld";
-                    StreamWriter sw = new StreamWriter(MapServerConfig.DefaultOutputPath + @"\" + sldFilename);
+                    StreamWriter sw = new StreamWriter(MapServerConfig.DefaultOutputPath + @"/" + sldFilename);
                     sw.WriteLine(sldWriter.ToString());
                     sw.Close();
 

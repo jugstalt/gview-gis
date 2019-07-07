@@ -18,7 +18,7 @@ namespace gView.Framework.system
         {
             string procName = global::System.Diagnostics.Process.GetCurrentProcess().ProcessName.Replace(".", "_");
 
-            string filename = SystemVariables.MyCommonApplicationData + @"\Logfiles\" + procName + @"\";
+            string filename = SystemVariables.MyCommonApplicationData + @"/Logfiles/" + procName + @"/";
             switch (method)
             {
                 case loggingMethod.request:
@@ -52,7 +52,7 @@ namespace gView.Framework.system
                             {
                                 if (log_archive)
                                 {
-                                    string aname = fi.DirectoryName + @"\archive_" + DateTime.Now.ToShortDateString().Replace(":", ".") + "_" + DateTime.Now.ToLongTimeString().Replace(":", ".") + "_";
+                                    string aname = fi.DirectoryName + @"/archive_" + DateTime.Now.ToShortDateString().Replace(":", ".") + "_" + DateTime.Now.ToLongTimeString().Replace(":", ".") + "_";
                                     aname = aname + fi.Name;
 
                                     fi.MoveTo(aname);
@@ -100,7 +100,7 @@ namespace gView.Framework.system
         public static void LogDebug(string text)
         {
             string procName = global::System.Diagnostics.Process.GetCurrentProcess().ProcessName.Replace(".", "_");
-            string filename = SystemVariables.MyCommonApplicationData + @"\Logfiles\" + procName + @"\debug.log";
+            string filename = SystemVariables.MyCommonApplicationData + @"/Logfiles/" + procName + @"/debug.log";
 
             Log(filename, text);
         }

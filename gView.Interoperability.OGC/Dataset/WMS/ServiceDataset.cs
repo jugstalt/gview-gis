@@ -41,7 +41,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
     //        try
     //        {
     //            string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-    //            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.Interoperability.OGC.UI.dll");
+    //            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Interoperability.OGC.UI.dll");
 
     //            IModalDialog dlg = uiAssembly.CreateInstance("gView.Interoperability.OGC.UI.Dataset.WMS.FormNewConnection") as IModalDialog;
     //            if (dlg is IConnectionString)

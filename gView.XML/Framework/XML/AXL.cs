@@ -455,7 +455,7 @@ namespace gView.Framework.XML
     //        xWriter.WriteStartElement("IMAGE");
     //        ENVELOPE(xWriter, envelope);
     //        xWriter.WriteStartElement("OUTPUT");
-    //        xWriter.WriteAttributeString("file", outputPath + @"\" + Title);
+    //        xWriter.WriteAttributeString("file", outputPath + @"/" + Title);
     //        xWriter.WriteAttributeString("url", outputUrl + "/" + Title);
     //        xWriter.WriteEndElement();  // OUTPUT
 

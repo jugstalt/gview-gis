@@ -683,7 +683,7 @@ namespace gView.Framework.Carto.Rendering
                 if (layer.FeatureClass == null) return null;
 
                 string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.Win.Carto.Rendering.UI.dll");
+                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
 
                 IPropertyPanel2 p = uiAssembly.CreateInstance("gView.Framework.Carto.Rendering.UI.PropertyForm_ChartLabelRenderer") as IPropertyPanel2;
                 if (p != null)

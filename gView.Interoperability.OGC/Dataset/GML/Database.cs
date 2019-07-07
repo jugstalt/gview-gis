@@ -97,7 +97,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
         {
             if (geomDef == null || fields == null) return -1;
 
-            string filename = _directoryName + @"\" + fcname + ".gml";
+            string filename = _directoryName + @"/" + fcname + ".gml";
             Fields f = new Fields();
 
             foreach (IField field in fields.ToEnumerable())
@@ -162,7 +162,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         async public Task<bool> DeleteFeatureClass(string fcName)
         {
-            string filename = _directoryName + @"\" + fcName + ".gml";
+            string filename = _directoryName + @"/" + fcName + ".gml";
 
             FileInfo fi = new FileInfo(filename);
             if (fi.Exists)

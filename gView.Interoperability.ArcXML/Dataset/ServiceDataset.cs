@@ -40,7 +40,7 @@ namespace gView.Interoperability.ArcXML.Dataset
     //        try
     //        {
     //            string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-    //            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.Interoperability.ArcXML.UI.dll");
+    //            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Interoperability.ArcXML.UI.dll");
 
     //            IModalDialog dlg = uiAssembly.CreateInstance("gView.Interoperability.ArcXML.UI.FormSelectService") as IModalDialog;
     //            if (dlg is IConnectionString)

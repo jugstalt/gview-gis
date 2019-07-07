@@ -134,7 +134,7 @@ namespace gView.DataSources.Raster.File
             {
                 if (_directory != "")
                 {
-                    FileInfo fi = new FileInfo(_directory + @"\" + title);
+                    FileInfo fi = new FileInfo(_directory + @"/" + title);
                     if (fi.Exists)
                     {
                         return Task.FromResult<IDatasetElement>(AddRasterFile(fi.FullName));

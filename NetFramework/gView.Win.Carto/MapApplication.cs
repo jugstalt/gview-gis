@@ -553,7 +553,7 @@ namespace gView.Win.Carto
         {
             if (filename == "") return;
 
-            if (filename.ToLower() == SystemVariables.ApplicationDirectory.ToLower() + @"\normal.mxl" ||
+            if (filename.ToLower() == SystemVariables.ApplicationDirectory.ToLower() + @"/normal.mxl" ||
                 filename == "normal.mxl")
             {
                 switch (MessageBox.Show("Override normal.mxl?", "gView.Carto", MessageBoxButtons.YesNo))
@@ -611,12 +611,12 @@ namespace gView.Win.Carto
                 {
                     if (_docFilename.Trim() == String.Empty)
                     {
-                        _docFilename = SystemVariables.ApplicationDirectory + @"\NewDocument.mxl";
+                        _docFilename = SystemVariables.ApplicationDirectory + @"/NewDocument.mxl";
                     }
                     else
                     {
                         FileInfo fi = new FileInfo(_docFilename);
-                        _docFilename = fi.DirectoryName + @"\NewDocument.mxl";
+                        _docFilename = fi.DirectoryName + @"/NewDocument.mxl";
                     }
                 }
                 else

@@ -768,7 +768,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                     //if ((bool)feature["MANAGED"] && _layer._imageSpaceType == SQLiteFDBImageCatalogClass.ImageSpaceType.FileSystem)
                     //{
-                    //    gView.DataSources.Raster.File.PyramidFileClass rasterClass = new gView.DataSources.Raster.File.PyramidFileClass(_layer._dataset, _layer._imageSpace + @"\" + (string)feature["MANAGED_FILE"], feature.Shape as IPolygon);
+                    //    gView.DataSources.Raster.File.PyramidFileClass rasterClass = new gView.DataSources.Raster.File.PyramidFileClass(_layer._dataset, _layer._imageSpace + @"/" + (string)feature["MANAGED_FILE"], feature.Shape as IPolygon);
                     //    if (rasterClass.isValid)
                     //    {
                     //        rLayer = LayerFactory.Create(rasterClass) as IRasterLayer;

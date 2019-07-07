@@ -534,7 +534,7 @@ namespace gView.Plugins.MapTools
                     //gView.MapServer.Connector.MapServerInstanceTypeService proxy = new gView.MapServer.Connector.MapServerInstanceTypeService(
                     //    dlg.Server + ":" + dlg.Port.ToString());
 
-                    string serverUrl = MapServer.Connector.MapServerConnection.ServerUrl(dlg.Server,dlg.Port);
+                    string serverUrl = MapServer.Connector.MapServerConnection.ServerUrl(dlg.Server, dlg.Port);
                     gView.MapServer.Connector.MapServerConnection service = new MapServer.Connector.MapServerConnection(serverUrl);
                     if (!service.AddMap(dlg.ServiceName, sb.ToString(), dlg.Username, dlg.Password))
                     {
@@ -4241,7 +4241,7 @@ namespace gView.Plugins.MapTools
             _docTools = new List<ITool>();
             try
             {
-                foreach (FileInfo fi in (new DirectoryInfo(SystemVariables.ApplicationDirectory + @"\doc").GetFiles("*.pdf")))
+                foreach (FileInfo fi in (new DirectoryInfo(SystemVariables.ApplicationDirectory + @"/doc").GetFiles("*.pdf")))
                 {
                     _docTools.Add(new PdfDocTool(fi));
                 }

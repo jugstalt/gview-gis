@@ -227,7 +227,7 @@ namespace gView.Interoperability.OGC
                         #region GetFeatureInfo
 
                         List<string> gfiFormats = new List<string>(new string[] { "text/plain", "text/html", "text/xml", "application/vnd.ogc.gml" });
-                        DirectoryInfo di = new DirectoryInfo(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"\misc\wms\GetFeatureInfo\xsl");
+                        DirectoryInfo di = new DirectoryInfo(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"/misc/wms/GetFeatureInfo/xsl");
                         if (di.Exists)
                         {
                             foreach (FileInfo fi in di.GetFiles("*.xsl"))
@@ -374,7 +374,7 @@ namespace gView.Interoperability.OGC
                         #region GetFeatureInfo
 
                         List<string> gfiFormats = new List<string>(new string[] { "text/plain", "text/html", "text/xml", "application/vnd.ogc.gml" });
-                        DirectoryInfo di = new DirectoryInfo(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"\misc\wms\GetFeatureInfo\xsl");
+                        DirectoryInfo di = new DirectoryInfo(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"/misc/wms/GetFeatureInfo/xsl");
                         if (di.Exists)
                         {
                             foreach (FileInfo fi in di.GetFiles("*.xsl"))
@@ -1098,7 +1098,7 @@ namespace gView.Interoperability.OGC
                     if (bounds == null || bounds.Width == 0.0 || bounds.Height == 0.0)
                         return "<Exception>Extent is not defined with Tile Service</Exception>";
 
-                    string path = _mapServer.TileCachePath + @"\" + service + @"\_alllayers\" +
+                    string path = _mapServer.TileCachePath + @"/" + service + @"/_alllayers/" +
                         TileServiceMetadata.TilePath(
                             gView.Framework.Geometry.Tiling.GridOrientation.UpperLeft,
                             parameters.SRS, parameters.Scale, parameters.TileRow, parameters.TileCol);
@@ -1360,7 +1360,7 @@ namespace gView.Interoperability.OGC
                     
                         /*
                         var xslTrans = new XslCompiledTransform();
-                        xslTrans.Load(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"\misc\wms\GetFeatureInfo\" + formatXsl.Replace("/", "\\"));
+                        xslTrans.Load(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"/misc/wms/GetFeatureInfo/" + formatXsl.Replace("\\", "/"));
                         using (StringReader xmlStrReader = new StringReader(xml.ToString()))
                         using (XmlReader xmlReader = XmlReader.Create(xmlStrReader))
                         using (StringWriter strWriter = new StringWriter())
@@ -1716,7 +1716,7 @@ namespace gView.Interoperability.OGC
         public object PropertyPage(object initObject)
         {
             string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.Interoperability.OGC.UI.dll");
+            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Interoperability.OGC.UI.dll");
 
             IPlugInParameter p = uiAssembly.CreateInstance("gView.Interoperability.OGC.UI.Dataset.WMS.WMSMetadata") as IPlugInParameter;
             if (p != null)

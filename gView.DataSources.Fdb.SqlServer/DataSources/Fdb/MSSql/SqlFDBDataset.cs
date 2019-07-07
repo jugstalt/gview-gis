@@ -444,7 +444,7 @@ namespace gView.DataSources.Fdb.MSSql
         public string ShowConnectionStringDialog(string initConnectionString)
         {
             string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.DataSources.Fdb.UI.dll");
+            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.DataSources.Fdb.UI.dll");
 
             gView.Framework.UI.IConnectionStringDialog p = uiAssembly.CreateInstance("gView.DataSources.Fdb.UI.MSSql.SqlFdbConnectionStringDialog") as gView.Framework.UI.IConnectionStringDialog;
             if (p != null)

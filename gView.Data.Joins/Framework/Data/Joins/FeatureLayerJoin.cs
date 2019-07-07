@@ -231,7 +231,7 @@ namespace gView.Framework.Data.Joins
             if (initObject is IMapDocument)
             {
                 string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.Data.Joins.UI.dll");
+                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Data.Joins.UI.dll");
 
                 IJoinPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Data.Joins.UI.FeatureLayerJoinControl") as IJoinPropertyPanel;
                 if (p != null)

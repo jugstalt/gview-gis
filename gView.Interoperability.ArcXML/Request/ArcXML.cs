@@ -322,7 +322,7 @@ namespace gView.Interoperability.ArcXML
             await map.Render();
 
             string title = map.Name.Replace(",", "_").Replace("/", "_") + "_" + System.Guid.NewGuid().ToString("N") + _imageExtension;
-            if (await map.SaveImage(mapServer.OutputPath + @"\" + title, _imageFormat))
+            if (await map.SaveImage(mapServer.OutputPath + @"/" + title, _imageFormat))
             {
                 ret = response.IMAGE(mapServer.OutputPath, mapServer.OutputUrl, title, map.Display.Envelope);
             }
@@ -368,7 +368,7 @@ namespace gView.Interoperability.ArcXML
                 if (legend != null)
                 {
                     string title = map.Name.Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + ".png";
-                    legend.Save(mapServer.OutputPath + @"\" + title, System.Drawing.Imaging.ImageFormat.Png);
+                    legend.Save(mapServer.OutputPath + @"/" + title, System.Drawing.Imaging.ImageFormat.Png);
                     ret = response.LEGEND(mapServer.OutputPath, mapServer.OutputUrl, title, map.Display.Envelope);
                 }
             }
@@ -1965,7 +1965,7 @@ namespace gView.Interoperability.ArcXML
             xWriter.WriteStartElement("IMAGE");
             ENVELOPE(xWriter, envelope);
             xWriter.WriteStartElement("OUTPUT");
-            xWriter.WriteAttributeString("file", outputPath + @"\" + Title);
+            xWriter.WriteAttributeString("file", outputPath + @"/" + Title);
             xWriter.WriteAttributeString("url", outputUrl + "/" + Title);
             xWriter.WriteEndElement();  // OUTPUT
 
@@ -1997,7 +1997,7 @@ namespace gView.Interoperability.ArcXML
             xWriter.WriteStartElement("IMAGE");
             ENVELOPE(xWriter, envelope);
             xWriter.WriteStartElement("LEGEND");
-            xWriter.WriteAttributeString("file", outputPath + @"\" + Title);
+            xWriter.WriteAttributeString("file", outputPath + @"/" + Title);
             xWriter.WriteAttributeString("url", outputUrl + "/" + Title);
             xWriter.WriteEndElement();  // OUTPUT
 

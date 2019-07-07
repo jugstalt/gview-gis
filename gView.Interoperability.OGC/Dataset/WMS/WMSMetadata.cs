@@ -164,7 +164,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         public object PropertyPage(object initObject)
         {
             string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.Interoperability.OGC.UI.dll");
+            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Interoperability.OGC.UI.dll");
 
             IPlugInParameter p = uiAssembly.CreateInstance("gView.Interoperability.OGC.UI.Dataset.WMS.Metadata_WMS") as IPlugInParameter;
             if (p != null)

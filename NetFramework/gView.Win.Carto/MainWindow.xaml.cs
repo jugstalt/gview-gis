@@ -105,7 +105,7 @@ namespace gView.Win.Carto
                 try
                 {
                     XmlDocument doc = new XmlDocument();
-                    doc.Load(SystemVariables.ApplicationDirectory + @"\menu.carto.xml");
+                    doc.Load(SystemVariables.ApplicationDirectory + @"/menu.carto.xml");
 
                     MakeMainMenuBar(doc.SelectSingleNode("//Menubar"));
                 }
@@ -1077,7 +1077,7 @@ namespace gView.Win.Carto
 
             try
             {
-                foreach (System.IO.FileInfo fi in (new System.IO.DirectoryInfo(SystemVariables.ApplicationDirectory + @"\doc").GetFiles("*.pdf")))
+                foreach (System.IO.FileInfo fi in (new System.IO.DirectoryInfo(SystemVariables.ApplicationDirectory + @"/doc").GetFiles("*.pdf")))
                 {
                     PdfLinkButton button = new PdfLinkButton(fi);
                     docsBox.Items.Add(button);

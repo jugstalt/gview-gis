@@ -327,7 +327,7 @@ namespace gView.DataSources.Fdb.SQLite
         public string ShowConnectionStringDialog(string initConnectionString)
         {
             //string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            //Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\FDB.dll");
+            //Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/FDB.dll");
 
             //gView.Framework.UI.IConnectionStringDialog p = uiAssembly.CreateInstance("gView.FDB.SqlFdbConnectionStringDialog") as gView.Framework.UI.IConnectionStringDialog;
             //if (p != null)

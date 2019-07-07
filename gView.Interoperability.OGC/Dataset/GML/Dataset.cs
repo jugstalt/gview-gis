@@ -259,7 +259,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 if (!di.Exists) return null;
 
                 Dataset ds = new Dataset();
-                await ds.SetConnectionString(di + @"\" + title + ".gml");
+                await ds.SetConnectionString(di + @"/" + title + ".gml");
                 if (await ds.Open())
                 {
                     return await ds.Element(title);

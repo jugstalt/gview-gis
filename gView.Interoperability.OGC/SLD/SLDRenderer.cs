@@ -305,7 +305,7 @@ namespace gView.Interoperability.OGC.SLD
             try
             {
                 string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.Interoperability.OGC.UI.dll");
+                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Interoperability.OGC.UI.dll");
 
                 gView.Framework.Carto.Rendering.UI.IPropertyPanel p = uiAssembly.CreateInstance("gView.Interoperability.OGC.UI.SLD.PropertyForm_SLDRenderer") as gView.Framework.Carto.Rendering.UI.IPropertyPanel;
                 if (p != null)

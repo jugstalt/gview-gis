@@ -153,7 +153,7 @@ namespace gView.DataSources.GDAL
                     double X = _X + dx_X * w * x + dx_Y * w * x;
                     double Y = _Y + dy_X * h * y + dy_Y * h * y;
 
-                    StreamWriter sw = new StreamWriter(outputPath + @"\" + filetitle + "_" + count + ".tfw");
+                    StreamWriter sw = new StreamWriter(outputPath + @"/" + filetitle + "_" + count + ".tfw");
                     sw.WriteLine(dx_X.ToString().Replace(",", "."));
                     sw.WriteLine(dx_Y.ToString().Replace(",", "."));
                     sw.WriteLine(dy_X.ToString().Replace(",", "."));

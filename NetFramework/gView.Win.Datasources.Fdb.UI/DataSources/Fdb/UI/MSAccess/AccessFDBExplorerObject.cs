@@ -200,7 +200,7 @@ namespace gView.DataSources.Fdb.UI.MSAccess
     //            SaveFileDialog dlg = new SaveFileDialog();
     //            dlg.Title = "New AccessFDB...";
     //            dlg.Filter = "MSAccess DB(*.mdb)|*.mdb";
-    //            dlg.FileName = parentExObject.FullName + @"\fdb.mdb";
+    //            dlg.FileName = parentExObject.FullName + @"/fdb.mdb";
 
     //            if (dlg.ShowDialog() == DialogResult.OK)
     //            {
@@ -343,7 +343,7 @@ namespace gView.DataSources.Fdb.UI.MSAccess
     //        {
     //            get
     //            {
-    //                return _filename + ((_filename != "") ? @"\" : "") + _dsname;
+    //                return _filename + ((_filename != "") ? @"/" : "") + _dsname;
     //            }
     //        }
     //        public string Type

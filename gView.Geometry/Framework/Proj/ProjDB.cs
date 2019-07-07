@@ -32,7 +32,7 @@ namespace gView.Framework.Proj
             _table = table;
 
             _dbFactory = DataProvider.SQLiteProviderFactory;
-            _connectionString = "Data Source=" + SystemVariables.StartupDirectory + @"\proj.db";
+            _connectionString = "Data Source=" + SystemVariables.StartupDirectory + @"/proj.db";
         }
 
 		/*

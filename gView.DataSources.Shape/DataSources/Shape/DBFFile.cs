@@ -350,7 +350,7 @@ namespace gView.DataSources.Shape
                 catch { }
                 if (_encoder == null)
                 {
-                    FileInfo encFi = new FileInfo(fi.Directory.FullName + @"\dbf_default_encoding.txt");
+                    FileInfo encFi = new FileInfo(fi.Directory.FullName + @"/dbf_default_encoding.txt");
                     if (encFi.Exists)
                     {
                         using (StreamReader encSr = new StreamReader(encFi.FullName))

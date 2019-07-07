@@ -316,7 +316,7 @@ namespace gView.Framework.Metadata
         public object PropertyPage(object initObject)
         {
             string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"\gView.Metadata.UI.dll");
+            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Metadata.UI.dll");
 
             IPlugInParameter p = uiAssembly.CreateInstance("gView.Framework.Metadata.UI.TileServiceMetadataControl") as IPlugInParameter;
             if (p != null)
@@ -337,22 +337,22 @@ namespace gView.Framework.Metadata
         public static string TilePath(GridOrientation orientation, int epsg, double scale, int row, int col)
         {
             return
-                (orientation == GridOrientation.UpperLeft ? "ul" : "ll") + @"\" +
-                epsg + @"\" + (int)Math.Round(scale) + @"\" + row + @"\" + col;
+                (orientation == GridOrientation.UpperLeft ? "ul" : "ll") + @"/" +
+                epsg + @"/" + (int)Math.Round(scale) + @"/" + row + @"/" + col;
         }
 
         public static string ScalePath(GridOrientation orientation, int epsg, double scale)
         {
             return
-                (orientation == GridOrientation.UpperLeft ? "ul" : "ll") + @"\" +
-                epsg + @"\" + (int)Math.Round(scale) + @"\";
+                (orientation == GridOrientation.UpperLeft ? "ul" : "ll") + @"/" +
+                epsg + @"/" + (int)Math.Round(scale) + @"/";
         }
 
         public static string EpsgPath(GridOrientation orientation, int epsg)
         {
             return
-                (orientation == GridOrientation.UpperLeft ? "ul" : "ll") + @"\" +
-                epsg + @"\";
+                (orientation == GridOrientation.UpperLeft ? "ul" : "ll") + @"/" +
+                epsg + @"/";
         }
 
         #endregion
