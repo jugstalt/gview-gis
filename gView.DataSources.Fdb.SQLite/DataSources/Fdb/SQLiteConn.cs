@@ -15,7 +15,7 @@ namespace gView.DataSources.Fdb.Sqlite
         private string _connectionString;
         private string _errMsg = String.Empty;
         private Exception _lastException = null;
-        //private SQLiteDataAdapter _updateAdapter = null;
+        private SQLiteDataAdapter _updateAdapter = null;
         private DataTable _schemaTable = null;
 
         public SqliteConn(string connectionString)
@@ -91,50 +91,50 @@ namespace gView.DataSources.Fdb.Sqlite
         {
             if (!writeable) return await SQLQuery(ds, sql, table);
 
-            throw new NotImplementedException();
-            //if(m_updateAdapter!=null) m_updateAdapter.Dispose();
-            //try
-            //{
-            //    _updateAdapter = new SQLiteDataAdapter(sql, _connectionString);
-            //    SQLiteCommandBuilder commandBuilder = new SQLiteCommandBuilder(_updateAdapter);
-            //    _updateAdapter.Fill(ds, table);
-            //}
-            //catch (Exception e)
-            //{
-            //    if (_updateAdapter != null)
-            //    {
-            //        _updateAdapter.Dispose();
-            //        _updateAdapter = null;
-            //    }
-            //    _errMsg = "QUERY WRITEABLE (" + sql + "): " + e.Message;
-            //    _lastException = e;
-            //    return false;
-            //}
-            //return true;
+            //throw new NotImplementedException();
+            if (_updateAdapter != null) _updateAdapter.Dispose();
+            try
+            {
+                _updateAdapter = new SQLiteDataAdapter(sql, _connectionString);
+                SQLiteCommandBuilder commandBuilder = new SQLiteCommandBuilder(_updateAdapter);
+                _updateAdapter.Fill(ds, table);
+            }
+            catch (Exception e)
+            {
+                if (_updateAdapter != null)
+                {
+                    _updateAdapter.Dispose();
+                    _updateAdapter = null;
+                }
+                _errMsg = "QUERY WRITEABLE (" + sql + "): " + e.Message;
+                _lastException = e;
+                return false;
+            }
+            return true;
         }
 
         public bool Update(System.Data.DataTable table)
         {
-            throw new NotImplementedException();
-            //try
-            //{
-            //    _updateAdapter.Update(table);
+            //throw new NotImplementedException();
+            try
+            {
+                _updateAdapter.Update(table);
 
-            //    _updateAdapter.Dispose();
-            //    _updateAdapter = null;
-            //}
-            //catch (Exception e)
-            //{
-            //    if (_updateAdapter != null)
-            //    {
-            //        _updateAdapter.Dispose();
-            //        _updateAdapter = null;
-            //    }
-            //    _errMsg = "UPDATE TABLE " + table + ": " + e.Message;
-            //    _lastException = e;
-            //    return false;
-            //}
-            //return true;
+                _updateAdapter.Dispose();
+                _updateAdapter = null;
+            }
+            catch (Exception e)
+            {
+                if (_updateAdapter != null)
+                {
+                    _updateAdapter.Dispose();
+                    _updateAdapter = null;
+                }
+                _errMsg = "UPDATE TABLE " + table + ": " + e.Message;
+                _lastException = e;
+                return false;
+            }
+            return true;
         }
 
         public bool UpdateData(ref System.Data.DataSet ds, string table)
@@ -144,11 +144,11 @@ namespace gView.DataSources.Fdb.Sqlite
 
         public void ReleaseUpdateAdapter()
         {
-            //if (_updateAdapter != null)
-            //{
-            //    _updateAdapter.Dispose();
-            //    _updateAdapter = null;
-            //}
+            if (_updateAdapter != null)
+            {
+                _updateAdapter.Dispose();
+                _updateAdapter = null;
+            }
         }
 
         public Task<DataTable> Select(string fields, string from)

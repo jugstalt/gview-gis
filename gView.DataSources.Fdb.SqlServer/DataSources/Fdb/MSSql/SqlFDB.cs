@@ -1279,7 +1279,8 @@ namespace gView.DataSources.Fdb.MSSql
                         command.Parameters.Clear();
                         if (feature.Shape != null)
                         {
-                            GeometryDef.VerifyGeometryType(feature.Shape, fClass);
+                            var shape = fClass.ConvertTo(feature.Shape);
+                            GeometryDef.VerifyGeometryType(shape, fClass);
 
                             if (msSpatial)
                             {
@@ -1287,16 +1288,16 @@ namespace gView.DataSources.Fdb.MSSql
                                 if (si.GeometryType == GeometryFieldType.MsGeometry)
                                 {
                                     if (fClass.GeometryType == geometryType.Polygon)
-                                        wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(feature.Shape) + "',0).MakeValid()";
+                                        wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "',0).MakeValid()";
                                     else
-                                        wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(feature.Shape) + "',0)";
+                                        wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "',0)";
                                 }
                                 else
                                 {
                                     if (fClass.GeometryType == geometryType.Polygon)
-                                        wkt = "geography::STGeomFromText('" + GeographyMakeValid(connection, transaction, gView.Framework.OGC.WKT.ToWKT(feature.Shape)) + "',4326)";
+                                        wkt = "geography::STGeomFromText('" + GeographyMakeValid(connection, transaction, gView.Framework.OGC.WKT.ToWKT(shape)) + "',4326)";
                                     else
-                                        wkt = "geography::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(feature.Shape) + "',4326)";
+                                        wkt = "geography::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "',4326)";
                                 }
                                 //SqlParameter parameter = new SqlParameter("@FDB_SHAPE", wkt);
                                 fields.Append("[FDB_SHAPE]");

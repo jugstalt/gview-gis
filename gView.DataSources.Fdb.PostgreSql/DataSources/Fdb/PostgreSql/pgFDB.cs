@@ -843,10 +843,11 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             command.Parameters.Clear();
                             if (feature.Shape != null)
                             {
-                                GeometryDef.VerifyGeometryType(feature.Shape, fClass);
+                                var shape = fClass.ConvertTo(feature.Shape);
+                                GeometryDef.VerifyGeometryType(shape, fClass);
 
                                 BinaryWriter writer = new BinaryWriter(new MemoryStream());
-                                feature.Shape.Serialize(writer, fClass);
+                                shape.Serialize(writer, fClass);
 
                                 byte[] geometry = new byte[writer.BaseStream.Length];
                                 writer.BaseStream.Position = 0;
@@ -997,10 +998,11 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             command.Parameters.Clear();
                             if (feature.Shape != null)
                             {
-                                GeometryDef.VerifyGeometryType(feature.Shape, fClass);
+                                var shape = fClass.ConvertTo(feature.Shape);
+                                GeometryDef.VerifyGeometryType(shape, fClass);
 
                                 BinaryWriter writer = new BinaryWriter(new MemoryStream());
-                                feature.Shape.Serialize(writer, fClass);
+                                shape.Serialize(writer, fClass);
 
                                 byte[] geometry = new byte[writer.BaseStream.Length];
                                 writer.BaseStream.Position = 0;

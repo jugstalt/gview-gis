@@ -411,6 +411,13 @@ namespace gView.Framework.UI
         bool UserInteractive { get; }
     }
 
+    public interface IProgressTaskDialog
+    {
+        string Text { get; set; }
+        void ShowProgressDialog(IProgressReporter reporter, object argument, Task task);
+        bool UserInteractive { get; }
+    }
+
 
     public interface IConnectionStringDialog
     {

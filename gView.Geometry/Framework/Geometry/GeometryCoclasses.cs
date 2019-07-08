@@ -954,8 +954,8 @@ namespace gView.Framework.Geometry
 
             for (int i = 0; i < count; i++)
             {
-                x[i] = ((IPoint)m_points[i]).X;
-                y[i] = ((IPoint)m_points[i]).Y;
+                x[i] = m_points[i].X;
+                y[i] = m_points[i].Y;
             }
         }
 
@@ -974,9 +974,9 @@ namespace gView.Framework.Geometry
 
             for (int i = 0; i < count; i++)
             {
-                x[i] = ((IPoint)m_points[i]).X;
-                y[i] = ((IPoint)m_points[i]).Y;
-                z[i] = ((IPoint)m_points[i]).Z;
+                x[i] = m_points[i].X;
+                y[i] = m_points[i].Y;
+                z[i] = m_points[i].Z;
             }
         }
 
@@ -1082,7 +1082,7 @@ namespace gView.Framework.Geometry
                     return null;
                 }
 
-                return (IPoint)m_points[pointIndex];
+                return m_points[pointIndex];
             }
         }
 
@@ -1151,7 +1151,7 @@ namespace gView.Framework.Geometry
             //    }
             //}
 
-            w.Write((System.Int32)m_points.Count);
+            w.Write(m_points.Count);
             foreach (IPoint p in m_points)
             {
                 p.Serialize(w, geomDef);
@@ -1760,7 +1760,7 @@ namespace gView.Framework.Geometry
                     return null;
                 }
 
-                return (IPath)_paths[pathIndex];
+                return _paths[pathIndex];
             }
         }
 
@@ -1830,7 +1830,7 @@ namespace gView.Framework.Geometry
         /// <param name="w"></param>
         public void Serialize(BinaryWriter w, IGeometryDef geomDef)
         {
-            w.Write((System.Int32)_paths.Count);
+            w.Write(_paths.Count);
             foreach (IPath path in _paths)
             {
                 path.Serialize(w, geomDef);
@@ -2118,7 +2118,7 @@ namespace gView.Framework.Geometry
                     return null;
                 }
 
-                return (IRing)_rings[ringIndex];
+                return _rings[ringIndex];
             }
         }
 
@@ -2193,7 +2193,7 @@ namespace gView.Framework.Geometry
         /// <param name="w"></param>
         public void Serialize(BinaryWriter w, IGeometryDef geomDef)
         {
-            w.Write((System.Int32)_rings.Count);
+            w.Write(_rings.Count);
             foreach (IRing ring in _rings)
             {
                 ring.Serialize(w, geomDef);
@@ -2659,7 +2659,7 @@ namespace gView.Framework.Geometry
                     return null;
                 }
 
-                return (IGeometry)m_geoms[geometryIndex];
+                return m_geoms[geometryIndex];
             }
         }
 
@@ -2843,7 +2843,7 @@ namespace gView.Framework.Geometry
         /// <param name="w"></param>
         public void Serialize(BinaryWriter w, IGeometryDef geomDef)
         {
-            w.Write((System.Int32)m_geoms.Count);
+            w.Write(m_geoms.Count);
             foreach (IGeometry geom in m_geoms)
             {
                 w.Write((System.Int32)geom.GeometryType);
@@ -3534,9 +3534,9 @@ namespace gView.Framework.Geometry
         //}
         #endregion
 
-        static public void VerifyGeometryType(IGeometry geometry, IGeometryDef geoDef)
+        static public void VerifyGeometryType(IGeometry geometry, IGeometryDef geomDef)
         {
-            if (geoDef == null)
+            if (geomDef == null)
             {
                 throw new ArgumentException("VerifyGeometryType - IGeometryDef Argument is null!");
             }
@@ -3546,7 +3546,7 @@ namespace gView.Framework.Geometry
                 throw new ArgumentException("VerifyGeometryType - IGeometry Argument is null!");
             }
 
-            switch (geoDef.GeometryType)
+            switch (geomDef.GeometryType)
             {
                 case geometryType.Envelope:
                     if (geometry is IEnvelope)
@@ -3593,10 +3593,91 @@ namespace gView.Framework.Geometry
             }
 
             throw new ArgumentException("Wrong Geometry for geometry type "
-                + geoDef.GeometryType.ToString() + ": "
+                + geomDef.GeometryType.ToString() + ": "
                 + geometry.GetType().ToString());
         }
+    }
 
+    static public class GeometryDefExtensions
+    {
+        static public IGeometry ConvertTo(this IGeometryDef geomDef, IGeometry geometry)
+        {
+            if (geomDef.GeometryType == geometryType.Point)
+            {
+                if (geometry is IPoint)
+                {
+                    return geometry;
+                }
+                if(geometry is IMultiPoint)
+                {
+                    if(((IMultiPoint)geometry).PointCount==1)
+                    {
+                        return geomDef.ConvertTo(((IMultiPoint)geometry)[0]);
+                    }
+                }
+            }
 
+            if (geomDef.GeometryType == geometryType.Multipoint)
+            {
+                if(geometry is IMultiPoint)
+                {
+                    return geometry;
+                }
+                if(geometry is IPoint)
+                {
+                    var multiPoint = new MultiPoint();
+                    multiPoint.AddPoint((IPoint)geometry);
+
+                    return geomDef.ConvertTo(multiPoint);
+                }
+            }
+
+            if(geomDef.GeometryType==geometryType.Polyline)
+            {
+                if(geometry is IPolygon)
+                {
+                    return geometry;
+                }
+            }
+
+            if (geomDef.GeometryType == geometryType.Polygon)
+            {
+                if (geometry is IPolygon)
+                {
+                    return geometry;
+                }
+            }
+
+            if(geomDef.GeometryType==geometryType.Envelope)
+            {
+                if(geometry is IEnvelope)
+                {
+                    return geometry;
+                }
+                else if(geometry!=null)
+                {
+                    return geomDef.ConvertTo(geometry.Envelope);
+                }
+            }
+
+            if(geomDef.GeometryType == geometryType.Aggregate)
+            {
+                if(geometry is IAggregateGeometry)
+                {
+                    return geometry;
+                }
+                else if(geometry!=null)
+                {
+                    var aggregateGeometry = new AggregateGeometry();
+                    aggregateGeometry.AddGeometry(geometry);
+
+                    return geomDef.ConvertTo(aggregateGeometry);
+                }
+            }
+
+            throw new ArgumentException("Unconvertable for geometrys type "
+                + geomDef.GeometryType.ToString() + ": "
+                + (geometry != null ? geometry.GetType().ToString() : "NULL"));
+        }
     }
 }
