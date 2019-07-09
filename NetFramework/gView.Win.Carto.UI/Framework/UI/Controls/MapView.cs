@@ -259,11 +259,11 @@ namespace gView.Framework.UI.Controls
                 }
                 else
                 {
-                    if (_image != null)
+                    if (_image != null && _handle!=IntPtr.Zero)
                     {
                         try
                         {
-                            using (var gr = System.Drawing.Graphics.FromHwnd(this.Handle))
+                            using (var gr = System.Drawing.Graphics.FromHwnd(_handle))
                             {
                                 gr.DrawImage(_image, new PointF(0, 0));
                             }
@@ -1493,6 +1493,8 @@ namespace gView.Framework.UI.Controls
 
         #region Resize
 
+        private IntPtr _handle = IntPtr.Zero;
+
         private void MapView_Load(object sender, EventArgs e)
         {
             Form parentForm = GetParentForm(this);
@@ -1502,6 +1504,8 @@ namespace gView.Framework.UI.Controls
                 parentForm.ResizeEnd += new EventHandler(MapView_ResizeEnd);
                 parentForm.ResizeBegin += new EventHandler(MapView_ResizeBegin);
             }
+
+            _handle = this.Handle;
         }
 
         private Form GetParentForm(Control control)

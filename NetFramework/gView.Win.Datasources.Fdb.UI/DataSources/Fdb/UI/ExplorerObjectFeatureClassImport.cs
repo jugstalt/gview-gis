@@ -128,7 +128,7 @@ namespace gView.DataSources.Fdb.UI
                     }
                 }
             }
-            //_dataset.RefreshClasses();
+            await _dataset.RefreshClasses();
             await this.Refresh();
         }
 
@@ -230,8 +230,6 @@ namespace gView.DataSources.Fdb.UI
             }
             if (datasetObject is IFeatureClass)
             {
-                //Thread thread = new Thread(new ParameterizedThreadStart(ImportAsync));
-
                 if (_import == null)
                     _import = new FDBImport();
                 else
@@ -242,7 +240,6 @@ namespace gView.DataSources.Fdb.UI
                 _import.SchemaOnly = schemaOnly;
                 FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.Create(_import, (IFeatureClass)datasetObject);
 
-                //FormProgress progress = new FormProgress(reporter, thread, datasetObject);
                 FormTaskProgress progress = new FormTaskProgress(reporter, ImportAsync(datasetObject));
                 progress.Text = "Import Featureclass: " + ((IFeatureClass)datasetObject).Name;
                 progress.ShowDialog();
@@ -250,8 +247,6 @@ namespace gView.DataSources.Fdb.UI
             }
             if (datasetObject is FeatureClassListViewItem)
             {
-                //Thread thread = new Thread(new ParameterizedThreadStart(ImportAsync));
-
                 if (_import == null)
                     _import = new FDBImport();
                 else
@@ -262,7 +257,6 @@ namespace gView.DataSources.Fdb.UI
                 _import.SchemaOnly = schemaOnly;
                 FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.Create(_import, ((FeatureClassListViewItem)datasetObject).FeatureClass);
 
-                //FormProgress progress = new FormProgress(reporter, thread, datasetObject);
                 FormTaskProgress progress = new FormTaskProgress(reporter, ImportAsync(datasetObject));
                 progress.Text = "Import Featureclass: " + ((FeatureClassListViewItem)datasetObject).Text;
                 progress.ShowDialog();

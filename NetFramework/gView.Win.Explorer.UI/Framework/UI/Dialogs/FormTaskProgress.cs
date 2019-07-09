@@ -18,7 +18,6 @@ namespace gView.Framework.UI.Dialogs
         private System.ComponentModel.IContainer components;
         private Task _task = null;
         private object _argument = null;
-        private bool _startWithArgument = false;
         private gView.Framework.UI.Controls.ProgressDisk progressDisk1;
         private ICancelTracker _cancelTracker = null;
         private Panel panelTime;
@@ -47,30 +46,14 @@ namespace gView.Framework.UI.Dialogs
 
             if (reporter != null)
             {
-                reporter.ReportProgress += new ProgressReporterEvent(progressEvent);
-            }
-        }
-        public FormTaskProgress(IProgressReporter reporter, Task task, object argument)
-        {
-            InitializeComponent();
-
-            _task = task;
-            _startWithArgument = true;
-            _argument = argument;
-
-            if (reporter != null)
-            {
-                _cancelTracker = reporter.CancelTracker;
-                btnCancel.Visible = (_cancelTracker != null);
-
-                reporter.ReportProgress += new ProgressReporterEvent(progressEvent);
+                reporter.ReportProgress += new ProgressReporterEvent(HandleProgressEvent);
             }
         }
 
         #region IProgressDialog Member
 
 
-        public void ShowProgressDialog(IProgressReporter reporter, object argument, Task task)
+        public void ShowProgressDialog(IProgressReporter reporter, Task task)
         {
             _task = task;
             if (_task == null)
@@ -78,17 +61,11 @@ namespace gView.Framework.UI.Dialogs
                 return;
             }
 
-            if (argument != null)
-            {
-                _startWithArgument = true;
-                _argument = argument;
-            }
-
             if (reporter != null)
             {
                 _cancelTracker = reporter.CancelTracker;
                 btnCancel.Visible = (_cancelTracker != null);
-                reporter.ReportProgress += new ProgressReporterEvent(progressEvent);
+                reporter.ReportProgress += new ProgressReporterEvent(HandleProgressEvent);
             }
 
             this.ShowDialog();
@@ -138,7 +115,7 @@ namespace gView.Framework.UI.Dialogs
             }
         }
 
-        public void progressEvent(object report)
+        public void HandleProgressEvent(object report)
         {
             try
             {
@@ -340,12 +317,7 @@ namespace gView.Framework.UI.Dialogs
 
         private void timer1_Tick(object sender, System.EventArgs e)
         {
-            if (_task == null)
-            {
-                this.Close();
-            }
-
-            if (_task.IsCompleted)
+            if (_task == null || _task.IsCompleted)
             {
                 this.Close();
             }
@@ -354,11 +326,6 @@ namespace gView.Framework.UI.Dialogs
         private void FormProgress_Shown(object sender, EventArgs e)
         {
             startTime = DateTime.Now;
-
-            //if (_startWithArgument)
-            //    _task.Start(_argument);
-            //else
-            //    _task.Start();
 
             // 
             // timer1
@@ -369,6 +336,8 @@ namespace gView.Framework.UI.Dialogs
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
+            btnCancel.Enabled = false;
+
             if (_cancelTracker == null)
             {
                 return;
