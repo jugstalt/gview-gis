@@ -64,6 +64,7 @@
     <Compile Include="Framework\UI\Controls\DatasetInfoControl.Designer.cs">
       <DependentUpon>DatasetInfoControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Framework\UI\Controls\DataTablePage.cs" />
     <Compile Include="Framework\UI\Controls\EvalFunctionControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

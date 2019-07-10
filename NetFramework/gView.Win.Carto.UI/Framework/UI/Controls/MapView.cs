@@ -419,12 +419,13 @@ namespace gView.Framework.UI.Controls
                 {
                     return;
                 }
-                //lock (lockThis)
+                lock (lockThis)
                 {
                     while (_cancelTracker.Continue)
                     {
                         _cancelTracker.Cancel();
-                        Task.Delay(5);
+                        //Task.Delay(5);
+                        Thread.Sleep(5);
                     }
                     if (_map is Map)
                     {
@@ -449,21 +450,16 @@ namespace gView.Framework.UI.Controls
         }
 
         private Thread _refreshMapThread=null;
-        public bool RefreshMap(DrawPhase phase)
+        public void RefreshMap(DrawPhase phase)
         {
-            if(this.InvokeRequired)
-            {
-                return true;
-            }
-
             if (!HasMap)
             {
-                return false;
+                return;
             }
 
             if (DesignMode)
             {
-                return true;
+                return;
             }
 
             try
@@ -511,9 +507,9 @@ namespace gView.Framework.UI.Controls
             }
             catch (Exception)
             {
-                return false;
+                return;
             }
-            return true;
+            return;
         }
 
         private delegate void RefreshCopyrightVisibilityDelegate();
