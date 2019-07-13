@@ -79,7 +79,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
         }
 
         // Thread
-        private void Run()
+        async private Task Run()
         {
             if (_targetDataset == null || _fdb == null || _sourceDataset == null)
                 return;
@@ -117,14 +117,14 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 }
                 ProgressReport report = new ProgressReport();
 
-                int datasetId = _fdb.DatasetID(_targetDataset.DatasetName).Result;
+                int datasetId = await _fdb.DatasetID(_targetDataset.DatasetName);
                 if (datasetId == -1)
                     return;
 
                 IClass cls = null;
                 try
                 {
-                    cls = _sourceDataset.Elements().Result[0].Class;
+                    cls = (await _sourceDataset.Elements())[0].Class;
                 }
                 catch { cls = null; }
                 IMultiGridIdentify gridClass = cls as IMultiGridIdentify;
@@ -145,7 +145,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                 #region Create Featureclass
                 IFeatureClass fc = null;
-                IDatasetElement element = _targetDataset.Element(_name).Result;
+                IDatasetElement element = await _targetDataset.Element(_name);
                 if (element != null && element.Class is IFeatureClass)
                 {
                     fc = (IFeatureClass)element.Class;
@@ -163,7 +163,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     }
                     else
                     {
-                        _fdb.DeleteFeatureClass(_name).Wait();
+                        await _fdb.DeleteFeatureClass(_name);
                         fc = null;
                     }
                 }
@@ -176,13 +176,13 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     fields.Add(new Field("GRID_COLUMN", FieldType.integer));
                     fields.Add(new Field("FILE", FieldType.String, 512));
 
-                    _fdb.CreateFeatureClass(_targetDataset.DatasetName, _name,
+                    await _fdb.CreateFeatureClass(_targetDataset.DatasetName, _name,
                         new GeometryDef(geometryType.Polygon),
-                        fields).Wait();
-                    element = _targetDataset.Element(_name).Result;
+                        fields);
+                    element = await _targetDataset.Element(_name);
                     if (element == null || !(element.Class is IFeatureClass))
                         return;
-                    _fdb.SetSpatialIndexBounds(_name, "BinaryTree2", iBounds, _spatialIndexDef.SplitRatio, _spatialIndexDef.MaxPerNode, _spatialIndexDef.Levels).Wait();
+                    await _fdb.SetSpatialIndexBounds(_name, "BinaryTree2", iBounds, _spatialIndexDef.SplitRatio, _spatialIndexDef.MaxPerNode, _spatialIndexDef.Levels);
                     fc = (IFeatureClass)element.Class;
                 }
                 #endregion
@@ -251,9 +251,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
                                     filter.AddField(sourceFc.IDFieldName);
                                     filter.Geometry = polygon;
                                     filter.FilterSpatialReference = fc.SpatialReference;
-                                    using (IFeatureCursor cursor = sourceFc.GetFeatures(filter).Result)
+                                    using (IFeatureCursor cursor = await sourceFc.GetFeatures(filter))
                                     {
-                                        if (cursor.NextFeature().Result == null)
+                                        if (await cursor.NextFeature() == null)
                                         {
                                             column++;
                                             report.featurePos++;
@@ -271,11 +271,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
                                     string filename = di.FullName + @"/" + column;
                                     if (_gridType == TileGridType.binary_float)
                                     {
-                                        float[] vals = gridClass.MultiGridQuery(
+                                        float[] vals = await gridClass.MultiGridQuery(
                                             null,
                                             new IPoint[] { ring[0], ring[1], ring[3] },
                                             _resX, _resY,
-                                            fc.SpatialReference, null).Result;
+                                            fc.SpatialReference, null);
                                         if (!HasFloatArrayData(vals))
                                         {
                                             column++;
@@ -289,7 +289,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                                     else if (map != null)
                                     {
                                         map.ZoomTo(new Envelope(x, y, x + _tileSizeX, y + _tileSizeY));
-                                        map.RefreshMap(DrawPhase.All, _cancelTracker).Wait();
+                                        await map.RefreshMap(DrawPhase.All, _cancelTracker);
                                         if (_gridType == TileGridType.image_png)
                                             map.Bitmap.Save(filename + ".png", System.Drawing.Imaging.ImageFormat.Png);
                                         else if (_gridType == TileGridType.image_jpg)
@@ -310,7 +310,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                                 if (features.Count >= reportInterval)
                                 {
                                     if (ReportProgress != null) ReportProgress(report);
-                                    if (!_fdb.Insert(fc, features).Result)
+                                    if (!await _fdb.Insert(fc, features))
                                     {
                                         MessageBox.Show(_fdb.LastErrorMessage, "DB Insert Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                         return;
@@ -338,9 +338,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 if (features.Count > 0)
                 {
                     if (ReportProgress != null) ReportProgress(report);
-                    _fdb.Insert(fc, features).Wait();
+                    await _fdb.Insert(fc, features);
                 }
-                _fdb.CalculateExtent(fc).Wait();
+                await _fdb.CalculateExtent(fc);
                 #endregion
 
                 succeeded = true;
@@ -353,17 +353,14 @@ namespace gView.DataSources.Fdb.UI.MSSql
             {
                 if (!succeeded)
                 {
-                    _fdb.DeleteFeatureClass(_name).Wait();
+                    await _fdb.DeleteFeatureClass(_name);
                 }
             }
         }
 
-        public Thread Thread
+        public Task RunTask()
         {
-            get
-            {
-                return new Thread(new ThreadStart(this.Run));
-            }
+            return this.Run();
         }
 
         #region IProgressReporter Member

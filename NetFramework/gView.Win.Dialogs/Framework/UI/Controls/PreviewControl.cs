@@ -172,6 +172,7 @@ namespace gView.Framework.UI.Controls
 
         async public Task<bool> OnShow()
         {
+            // Starts Refresh in the background, do NOT await!!!! Otherwise it blocks UI
             Task.Run(async () =>
             {
                 if (_exObjectInvokeRequired)

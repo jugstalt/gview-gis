@@ -264,7 +264,6 @@ namespace gView.DataSources.Fdb.UI
             }
         }
 
-        // Thread
         async private Task ImportAsync(object element)
         {
             if (_fdb == null || _import == null) return;

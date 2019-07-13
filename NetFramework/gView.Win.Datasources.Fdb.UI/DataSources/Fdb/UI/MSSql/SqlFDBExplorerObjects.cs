@@ -1,29 +1,28 @@
+using gView.DataSources.Fdb.MSAccess;
+using gView.DataSources.Fdb.MSSql;
+using gView.DataSources.Fdb.UI.MSAccess;
+using gView.Framework.Data;
+using gView.Framework.Db;
+using gView.Framework.Db.UI;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.Globalisation;
+using gView.Framework.IO;
+using gView.Framework.system;
+using gView.Framework.system.UI;
+using gView.Framework.UI;
+using gView.Framework.UI.Controls.Filter;
+using gView.Framework.UI.Dialogs;
+using gView.Framework.UI.Dialogs.Network;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
-using System.Windows.Forms;
+using System.Text;
 using System.Threading;
-using gView.Framework.UI;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
-using gView.Framework.IO;
-using gView.Framework.FDB;
-using gView.Framework.UI.Dialogs;
-using gView.Framework.system;
-using gView.Framework.system.UI;
-using gView.Framework.Db.UI;
-using gView.Framework.Globalisation;
-using gView.Framework.Db;
-using gView.Framework.Network;
-using gView.Framework.UI.Dialogs.Network;
-using gView.DataSources.Fdb.MSSql;
-using gView.DataSources.Fdb.UI.MSAccess;
-using gView.DataSources.Fdb.MSAccess;
-using gView.Framework.UI.Controls.Filter;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI.MSSql
 {
@@ -106,7 +105,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             if (this.FullName == FullName)
             {
@@ -191,7 +192,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }
@@ -267,7 +270,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 string connectionString = dbConnStr.ConnectionString;
                 string id = ConfigTextStream.ExtractValue(connectionString, "database");
                 id += "@" + ConfigTextStream.ExtractValue(connectionString, "server");
-                if (id == "@") id = "SqlFDB Connection";
+                if (id == "@")
+                {
+                    id = "SqlFDB Connection";
+                }
+
                 id = connStream.GetName(id);
 
                 connStream.Add(id, dbConnStr.ToString());
@@ -292,7 +299,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }
@@ -359,7 +368,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
             if (_contextItems != null)
             {
                 foreach (ToolStripMenuItem i in _contextItems)
+                {
                     items.Add(i);
+                }
             }
 
             ToolStripMenuItem item = new ToolStripMenuItem(LocalizedResources.GetResString("Menu.ConnectionProperties", "Connection Properties..."));
@@ -432,10 +443,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
         void DropSpatialEngine_Click(object sender, EventArgs e)
         {
             SqlCommandInterpreter interpreter = new SqlCommandInterpreter(_connectionString, SystemVariables.ApplicationDirectory + @"/sql/sqlFDB/dropSpatialEngine.sql");
-            Thread thread = new Thread(new ParameterizedThreadStart(interpreter.Exectue));
             SqlCommandProgressReporter reporter = new SqlCommandProgressReporter(interpreter);
 
-            FormProgress progress = new FormProgress(reporter, thread, null);
+            FormTaskProgress progress = new FormTaskProgress(reporter, interpreter.Exectue(null));
             progress.Text = "Execute Commands:";
             progress.Mode = ProgressMode.ProgressDisk;
             progress.ShowDialog();
@@ -446,10 +456,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
             DropSpatialEngine_Click(sender, e);
 
             SqlCommandInterpreter interpreter = new SqlCommandInterpreter(_connectionString, SystemVariables.ApplicationDirectory + @"/sql/sqlFDB/createSpatialEngine.sql");
-            Thread thread = new Thread(new ParameterizedThreadStart(interpreter.Exectue));
             SqlCommandProgressReporter reporter = new SqlCommandProgressReporter(interpreter);
 
-            FormProgress progress = new FormProgress(reporter, thread, null);
+            FormTaskProgress progress = new FormTaskProgress(reporter, interpreter.Exectue(null));
             progress.Text = "Execute Commands:";
             progress.Mode = ProgressMode.ProgressDisk;
             progress.ShowDialog();
@@ -458,11 +467,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
         void ShrinkDatabase_Click(object sender, EventArgs e)
         {
             SqlCommandInterpreter interpreter = new SqlCommandInterpreter(_connectionString, SystemVariables.ApplicationDirectory + @"/sql/sqlFDB/shrinkDatabase.sql");
-            interpreter.DatabaseName = ConfigTextStream.ExtractValue(_connectionString, "database");
-            Thread thread = new Thread(new ParameterizedThreadStart(interpreter.Exectue));
+            interpreter.DatabaseName = ConfigTextStream.ExtractValue(_connectionString, "database");;
             SqlCommandProgressReporter reporter = new SqlCommandProgressReporter(interpreter);
 
-            FormProgress progress = new FormProgress(reporter, thread, null);
+            FormTaskProgress progress = new FormTaskProgress(reporter, interpreter.Exectue(null));
             progress.Text = "Execute Commands:";
             progress.Mode = ProgressMode.ProgressDisk;
             progress.ShowDialog();
@@ -470,7 +478,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         void ConnectionProperties_Click(object sender, EventArgs e)
         {
-            if (_dbConnectionString == null) return;
+            if (_dbConnectionString == null)
+            {
+                return;
+            }
 
             FormConnectionString dlg = new FormConnectionString(_dbConnectionString);
             dlg.ProviderID = "mssql";
@@ -568,7 +579,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
                         dsMod[i++] = dsname;
                     }
                 }
-                if (ds == null) _errMsg = fdb.LastErrorMessage;
+                if (ds == null)
+                {
+                    _errMsg = fdb.LastErrorMessage;
+                }
+
                 fdb.Dispose();
 
                 return dsMod;
@@ -594,7 +609,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
             {
                 foreach (string dsname in ds)
                 {
-                    if (dsname == "") continue;
+                    if (dsname == "")
+                    {
+                        continue;
+                    }
+
                     base.AddChildObject(new SqlFDBDatasetExplorerObject(this, dsname));
                 }
             }
@@ -621,10 +640,16 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+            {
+                return cache[FullName];
+            }
 
             SqlFDBExplorerGroupObject group = new SqlFDBExplorerGroupObject();
-            if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2) return null;
+            if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2)
+            {
+                return null;
+            }
 
             group = (SqlFDBExplorerGroupObject)((cache.Contains(group.FullName)) ? cache[group.FullName] : group);
 
@@ -658,7 +683,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 stream.Remove(this.Name, _connectionString);
                 stream.Close();
             }
-            if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+            if (ExplorerObjectDeleted != null)
+            {
+                ExplorerObjectDeleted(this);
+            }
+
             return Task.FromResult(true);
         }
 
@@ -685,7 +714,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
             if (ret == true)
             {
                 _server = newName;
-                if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
+                if (ExplorerObjectRenamed != null)
+                {
+                    ExplorerObjectRenamed(this);
+                }
             }
             return Task.FromResult(ret);
         }
@@ -730,15 +762,15 @@ namespace gView.DataSources.Fdb.UI.MSSql
         {
             get { return _cancelTracker; }
         }
-        public void Exectue(object parameter)
+        async public Task Exectue(object parameter)
         {
             try
             {
                 StreamReader sr = new StreamReader(_path);
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-                    connection.Open();
-                    ExecuteQueries(connection, sr);
+                    await connection.OpenAsync();
+                    await ExecuteQueries(connection, sr);
                     connection.Close();
                 }
                 sr.Close();
@@ -749,21 +781,29 @@ namespace gView.DataSources.Fdb.UI.MSSql
             }
         }
 
-        private bool ExecuteQueries(SqlConnection connection, StreamReader reader)
+        async private Task<bool> ExecuteQueries(SqlConnection connection, StreamReader reader)
         {
             string line = "";
             StringBuilder sql = new StringBuilder();
             while ((line = reader.ReadLine()) != null)
             {
-                if (!_cancelTracker.Continue) return false;
+                if (!_cancelTracker.Continue)
+                {
+                    return false;
+                }
+
                 if (line.Trim().ToLower() == "go")
                 {
                     SqlCommand command = new SqlCommand(sql.ToString().Replace("#FDB#", _database), connection);
                     command.CommandTimeout = 0;
                     try
                     {
-                        if (ExecuteCommand != null) ExecuteCommand(command.CommandText);
-                        command.ExecuteNonQuery();
+                        if (ExecuteCommand != null)
+                        {
+                            ExecuteCommand(command.CommandText);
+                        }
+
+                        await command.ExecuteNonQueryAsync();
                         sql = new StringBuilder();
                     }
                     catch (Exception ex)
@@ -788,7 +828,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         public SqlCommandProgressReporter(SqlCommandInterpreter interpreter)
         {
-            if (interpreter == null) return;
+            if (interpreter == null)
+            {
+                return;
+            }
+
             _cancelTracker = interpreter.CancelTracker;
 
             interpreter.ExecuteCommand += new SqlCommandInterpreter.ExecuteCommandEventHandler(interpreter_ExecuteCommand);
@@ -796,7 +840,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         void interpreter_ExecuteCommand(string command)
         {
-            if (ReportProgress == null) return;
+            if (ReportProgress == null)
+            {
+                return;
+            }
 
             _report.Message = command.Substring(0, Math.Min(255, command.Length));
             _report.featurePos++;
@@ -884,12 +931,19 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         async void ShrinkSpatialIndices_Click(object sender, EventArgs e)
         {
-            if (_dataset == null) return;
+            if (_dataset == null)
+            {
+                return;
+            }
 
             List<IClass> classes = new List<IClass>();
             foreach (IDatasetElement element in await _dataset.Elements())
             {
-                if (element == null || element.Class == null) continue;
+                if (element == null || element.Class == null)
+                {
+                    continue;
+                }
+
                 classes.Add(element.Class);
             }
 
@@ -901,7 +955,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
         {
             get
             {
-                if (_parent == null) return "";
+                if (_parent == null)
+                {
+                    return "";
+                }
+
                 return _parent.ConnectionString;
             }
         }
@@ -922,7 +980,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
         {
             get
             {
-                if (_parent == null) return "";
+                if (_parent == null)
+                {
+                    return "";
+                }
+
                 return _parent.FullName + @"/" + this.Name;
             }
         }
@@ -935,7 +997,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
             get
             {
                 if (_icon == null)
+                {
                     return new AccessFDBDatasetIcon();
+                }
+
                 return _icon;
             }
         }
@@ -990,7 +1055,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         async internal Task<bool> DeleteFeatureClass(string name)
         {
-            if (_dataset == null || !(_dataset.Database is IFeatureDatabase)) return false;
+            if (_dataset == null || !(_dataset.Database is IFeatureDatabase))
+            {
+                return false;
+            }
 
             if (!await ((IFeatureDatabase)_dataset.Database).DeleteFeatureClass(name))
             {
@@ -1002,7 +1070,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         async internal Task<bool> DeleteDataset(string dsname)
         {
-            if (_dataset == null || !(_dataset.Database is IFeatureDatabase)) return false;
+            if (_dataset == null || !(_dataset.Database is IFeatureDatabase))
+            {
+                return false;
+            }
 
             if (!await ((IFeatureDatabase)_dataset.Database).DeleteDataset(dsname))
             {
@@ -1017,18 +1088,26 @@ namespace gView.DataSources.Fdb.UI.MSSql
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return cache[FullName];
+            }
 
             FullName = FullName.Replace("\\", @"/");
             int lastIndex = FullName.LastIndexOf(@"/");
-            if (lastIndex == -1) return null;
+            if (lastIndex == -1)
+            {
+                return null;
+            }
 
             string fdbName = FullName.Substring(0, lastIndex);
             string dsName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
 
             SqlFDBExplorerObject fdbObject = new SqlFDBExplorerObject();
             fdbObject = (SqlFDBExplorerObject)await fdbObject.CreateInstanceByFullName(fdbName, cache);
-            if (fdbObject == null || await fdbObject.ChildObjects() == null) return null;
+            if (fdbObject == null || await fdbObject.ChildObjects() == null)
+            {
+                return null;
+            }
 
             foreach (IExplorerObject exObject in await fdbObject.ChildObjects())
             {
@@ -1047,21 +1126,29 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         public bool CanCreate(IExplorerObject parentExObject)
         {
-            if (parentExObject is SqlFDBExplorerObject) return true;
+            if (parentExObject is SqlFDBExplorerObject)
+            {
+                return true;
+            }
 
             return false;
         }
 
         async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
-            if (!CanCreate(parentExObject)) return null;
+            if (!CanCreate(parentExObject))
+            {
+                return null;
+            }
 
             SqlFDB fdb = new SqlFDB();
             await fdb.Open(((SqlFDBExplorerObject)parentExObject).ConnectionString);
 
             FormNewDataset dlg = new FormNewDataset();
             if (fdb.FdbVersion >= new Version(1, 2, 0))
+            {
                 dlg.ShowSpatialIndexTab = true;
+            }
 
             Version sqlVersion = fdb.SqlServerVersion;
             if (fdb.SqlServerVersion < new Version(10, 0))
@@ -1069,7 +1156,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 dlg.IndexTypeIsEditable = false;
             }
 
-            if (dlg.ShowDialog() != DialogResult.OK) return null;
+            if (dlg.ShowDialog() != DialogResult.OK)
+            {
+                return null;
+            }
 
             ISpatialReference sRef = dlg.SpatialReferene;
             ISpatialIndexDef sIndexDef = dlg.SpatialIndexDef;
@@ -1077,7 +1167,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
             if (fdb.FdbVersion >= new Version(1, 2, 0) &&
                 sIndexDef is MSSpatialIndex &&
                 ((MSSpatialIndex)sIndexDef).GeometryType == GeometryFieldType.MsGeography)
+            {
                 sRef = SpatialReference.FromID("epsg:4326");
+            }
 
             int dsID = -1;
 
@@ -1124,7 +1216,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
         {
             if (await DeleteDataset(_dsname))
             {
-                if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+                if (ExplorerObjectDeleted != null)
+                {
+                    ExplorerObjectDeleted(this);
+                }
+
                 return true;
             }
             return false;
@@ -1138,7 +1234,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         async public Task<bool> RenameExplorerObject(string newName)
         {
-            if (newName == this.Name) return false;
+            if (newName == this.Name)
+            {
+                return false;
+            }
 
             if (_dataset == null || !(_dataset.Database is AccessFDB))
             {
@@ -1153,7 +1252,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
             _dsname = newName;
 
-            if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
+            if (ExplorerObjectRenamed != null)
+            {
+                ExplorerObjectRenamed(this);
+            }
+
             return true;
         }
 
@@ -1190,7 +1293,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
         public SqlFDBFeatureClassExplorerObject(SqlFDBDatasetExplorerObject parent, string dsname, IDatasetElement element)
             : base(parent, typeof(_IMClass), 1)
         {
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
 
             _parent = parent;
             _dsname = dsname;
@@ -1224,24 +1330,39 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     case geometryType.Envelope:
                     case geometryType.Polygon:
                         if (isLinked)
+                        {
                             _icon = new AccessFDBLinkedPolygonIcon();
+                        }
                         else
+                        {
                             _icon = new AccessFDBPolygonIcon();
+                        }
+
                         _type = typePrefix + "Polygon Featureclass";
                         break;
                     case geometryType.Multipoint:
                     case geometryType.Point:
                         if (isLinked)
+                        {
                             _icon = new AccessFDBLinkedPointIcon();
+                        }
                         else
+                        {
                             _icon = new AccessFDBPointIcon();
+                        }
+
                         _type = typePrefix + "Point Featureclass";
                         break;
                     case geometryType.Polyline:
                         if (isLinked)
+                        {
                             _icon = new AccessFDBLinkedLineIcon();
+                        }
                         else
+                        {
                             _icon = new AccessFDBLineIcon();
+                        }
+
                         _type = typePrefix + "Polyline Featureclass";
                         break;
                     case geometryType.Network:
@@ -1282,7 +1403,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
         {
             get
             {
-                if (_parent == null) return "";
+                if (_parent == null)
+                {
+                    return "";
+                }
+
                 return _parent.ConnectionString;
             }
         }
@@ -1298,7 +1423,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
         {
             get
             {
-                if (_parent == null) return "";
+                if (_parent == null)
+                {
+                    return "";
+                }
+
                 return _parent.FullName + @"/" + this.Name;
             }
         }
@@ -1312,7 +1441,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
             get
             {
                 if (_icon == null)
+                {
                     return new AccessFDBPolygonIcon();
+                }
+
                 return _icon;
             }
         }
@@ -1330,9 +1462,14 @@ namespace gView.DataSources.Fdb.UI.MSSql
         public Task<object> GetInstanceAsync()
         {
             if (_fc != null)
+            {
                 return Task.FromResult<object>(_fc);
+            }
+
             if (_rc != null)
+            {
                 return Task.FromResult<object>(_rc);
+            }
 
             return Task.FromResult<object>(null);
         }
@@ -1344,18 +1481,26 @@ namespace gView.DataSources.Fdb.UI.MSSql
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return cache[FullName];
+            }
 
             FullName = FullName.Replace("/", @"\");
             int lastIndex = FullName.LastIndexOf(@"/");
-            if (lastIndex == -1) return null;
+            if (lastIndex == -1)
+            {
+                return null;
+            }
 
             string dsName = FullName.Substring(0, lastIndex);
             string fcName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
 
             SqlFDBDatasetExplorerObject dsObject = new SqlFDBDatasetExplorerObject();
             dsObject = (SqlFDBDatasetExplorerObject)await dsObject.CreateInstanceByFullName(dsName, cache);
-            if (dsObject == null || await dsObject.ChildObjects() == null) return null;
+            if (dsObject == null || await dsObject.ChildObjects() == null)
+            {
+                return null;
+            }
 
             foreach (IExplorerObject exObject in await dsObject.ChildObjects())
             {
@@ -1459,10 +1604,18 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         async public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
-            if (_parent == null) return false;
+            if (_parent == null)
+            {
+                return false;
+            }
+
             if (await _parent.DeleteFeatureClass(_fcname))
             {
-                if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+                if (ExplorerObjectDeleted != null)
+                {
+                    ExplorerObjectDeleted(this);
+                }
+
                 return true;
             }
             return false;
@@ -1490,7 +1643,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
             _fcname = newName;
 
-            if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
+            if (ExplorerObjectRenamed != null)
+            {
+                ExplorerObjectRenamed(this);
+            }
+
             return true;
         }
 
@@ -1501,13 +1658,20 @@ namespace gView.DataSources.Fdb.UI.MSSql
         public bool CanCreate(IExplorerObject parentExObject)
         {
             if (parentExObject is SqlFDBDatasetExplorerObject &&
-                !((SqlFDBDatasetExplorerObject)parentExObject).IsImageDataset) return true;
+                !((SqlFDBDatasetExplorerObject)parentExObject).IsImageDataset)
+            {
+                return true;
+            }
+
             return false;
         }
 
         async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
-            if (!CanCreate(parentExObject)) return null;
+            if (!CanCreate(parentExObject))
+            {
+                return null;
+            }
 
             var instance = await parentExObject.GetInstanceAsync();
             if (!(instance is IFeatureDataset) || !(((IDataset)instance).Database is SqlFDB))
@@ -1517,7 +1681,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
             SqlFDB fdb = ((IDataset)instance).Database as SqlFDB;
 
             FormNewFeatureclass dlg = await FormNewFeatureclass.Create(instance as IFeatureDataset);
-            if (dlg.ShowDialog() != DialogResult.OK) return null;
+            if (dlg.ShowDialog() != DialogResult.OK)
+            {
+                return null;
+            }
 
             IGeometryDef gDef = dlg.GeometryDef;
 
@@ -1539,7 +1706,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                  sIndexDef.GeometryType == GeometryFieldType.MsGeography))
             {
                 MSSpatialIndex index = dlg.MSSpatialIndexDef;
-                ((SqlFDB)fdb).SetMSSpatialIndex(index, dlg.FeatureclassName);
+                fdb.SetMSSpatialIndex(index, dlg.FeatureclassName);
             }
             else
             {
@@ -1562,7 +1729,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
             get
             {
                 if (_fc is SqlFDBFeatureClass)
+                {
                     return ((SqlFDBFeatureClass)_fc).DbSchema;
+                }
 
                 return String.Empty;
             }
@@ -1627,23 +1796,33 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         public bool CanCreate(IExplorerObject parentExObject)
         {
-            if (parentExObject is SqlFDBDatasetExplorerObject) return true;
+            if (parentExObject is SqlFDBDatasetExplorerObject)
+            {
+                return true;
+            }
+
             return false;
         }
 
         async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             if (!(parentExObject is SqlFDBDatasetExplorerObject))
+            {
                 return null;
+            }
 
             var instance = await parentExObject.GetInstanceAsync();
             IFeatureDataset dataset = (SqlFDBDatasetExplorerObject)instance as IFeatureDataset;
             if (dataset == null || !(dataset.Database is SqlFDB))
+            {
                 return null;
+            }
 
             FormNewNetworkclass dlg = new FormNewNetworkclass(dataset, typeof(CreateFDBNetworkFeatureclass));
             if (dlg.ShowDialog() != DialogResult.OK)
+            {
                 return null;
+            }
 
             CreateFDBNetworkFeatureclass creator = new CreateFDBNetworkFeatureclass(
                 dataset, dlg.NetworkName,
@@ -1655,10 +1834,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
             creator.SwitchNodeFcIdAndFieldnames = dlg.SwitchNodeFcIds;
             creator.NodeTypeFcIds = dlg.NetworkNodeTypeFcIds;
 
-            FormProgress progress = new FormProgress();
-            progress.ShowProgressDialog(creator, null, creator.Thread);
+            FormTaskProgress progress = new FormTaskProgress();
+            progress.ShowProgressDialog(creator, creator.Run());
 
-            IDatasetElement element = await((IFeatureDataset)instance).Element(dlg.NetworkName);
+            IDatasetElement element = await ((IFeatureDataset)instance).Element(dlg.NetworkName);
             return new SqlFDBFeatureClassExplorerObject(
                 parentExObject as SqlFDBDatasetExplorerObject,
                 parentExObject.Name,
@@ -1684,18 +1863,22 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
             IFeatureDataset dataset = await parent.GetInstanceAsync() as IFeatureDataset;
             if (dataset == null)
+            {
                 return null;
+            }
 
             AccessFDB fdb = dataset.Database as AccessFDB;
             if (fdb == null)
+            {
                 return null;
+            }
 
             FormRegisterGeographicView dlg = await FormRegisterGeographicView.CreateAsync(dataset as IFeatureDataset);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 int fc_id = await fdb.CreateSpatialView(dataset.DatasetName, dlg.SpatialViewAlias);
 
-                IDatasetElement element = await ((IFeatureDataset)dataset).Element(dlg.SpatialViewAlias);
+                IDatasetElement element = await dataset.Element(dlg.SpatialViewAlias);
                 return new SqlFDBFeatureClassExplorerObject(
                     parentExObject as SqlFDBDatasetExplorerObject,
                     parentExObject.Name,
@@ -1782,11 +1965,15 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
             IFeatureDataset dataset = await parent.GetInstanceAsync() as IFeatureDataset;
             if (dataset == null)
+            {
                 return null;
+            }
 
             AccessFDB fdb = dataset.Database as AccessFDB;
             if (fdb == null)
+            {
                 return null;
+            }
 
             List<ExplorerDialogFilter> filters = new List<ExplorerDialogFilter>();
             filters.Add(new OpenFeatureclassFilter());
@@ -1943,23 +2130,33 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         public bool CanCreate(IExplorerObject parentExObject)
         {
-            if (parentExObject is SqlFDBDatasetExplorerObject) return true;
+            if (parentExObject is SqlFDBDatasetExplorerObject)
+            {
+                return true;
+            }
+
             return false;
         }
 
         async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
-        { 
+        {
             if (!(parentExObject is SqlFDBDatasetExplorerObject))
+            {
                 return null;
+            }
 
             var instance = await ((SqlFDBDatasetExplorerObject)parentExObject).GetInstanceAsync();
             IFeatureDataset dataset = (SqlFDBDatasetExplorerObject)instance as IFeatureDataset;
             if (dataset == null || !(dataset.Database is SqlFDB))
+            {
                 return null;
+            }
 
             FormNewTileGridClass dlg = new FormNewTileGridClass();
             if (dlg.ShowDialog() != DialogResult.OK)
+            {
                 return null;
+            }
 
             CreateTileGridClass creator = new CreateTileGridClass(
                 dlg.GridName,
@@ -1972,8 +2169,8 @@ namespace gView.DataSources.Fdb.UI.MSSql
             creator.TileLevelType = dlg.TileLevelType;
             creator.CreateLevels = dlg.CreateLevels;
 
-            FormProgress progress = new FormProgress();
-            progress.ShowProgressDialog(creator, null, creator.Thread);
+            FormTaskProgress progress = new FormTaskProgress();
+            progress.ShowProgressDialog(creator, creator.RunTask());
 
             IDatasetElement element = await ((IFeatureDataset)instance).Element(dlg.GridName);
             return new SqlFDBFeatureClassExplorerObject(

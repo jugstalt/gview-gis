@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using gView.Framework.UI;
 using gView.Framework.Network.Algorthm;
 using gView.Framework.Network;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.Network
 {
@@ -44,13 +45,13 @@ namespace gView.Plugins.Network
         #endregion
 
         #region Members
-        public void ShowPathDescription(INetworkFeatureClass nfc, Dijkstra dijkstra, int targetNodeId)
+        async public Task ShowPathDescription(INetworkFeatureClass nfc, Dijkstra dijkstra, int targetNodeId)
         {
             lstItems.Items.Clear();
             lstItems.Columns.Clear();
 
             RoadBook roadbook = new RoadBook(nfc);
-            RoadBook.Items items = roadbook.PathDescription(dijkstra, targetNodeId).Result;
+            RoadBook.Items items = await roadbook.PathDescription(dijkstra, targetNodeId);
 
             lstItems.Columns.Add(new ColumnHeader());
             lstItems.Columns[0].Text = "Distance";

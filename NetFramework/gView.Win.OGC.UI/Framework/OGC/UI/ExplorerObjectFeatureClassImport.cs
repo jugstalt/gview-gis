@@ -135,8 +135,6 @@ namespace gView.Framework.OGC.UI
             }
             if (datasetObject is IFeatureClass)
             {
-                Thread thread = new Thread(new ParameterizedThreadStart(ImportAsync));
-
                 if (_import == null)
                     _import = new FeatureImport();
                 else
@@ -147,15 +145,13 @@ namespace gView.Framework.OGC.UI
 
                 FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.Create(_import, (IFeatureClass)datasetObject);
 
-                FormProgress progress = new FormProgress(reporter, thread, datasetObject);
+                FormTaskProgress progress = new FormTaskProgress(reporter, ImportAsync(datasetObject));
                 progress.Text = "Import Featureclass: " + ((IFeatureClass)datasetObject).Name;
                 progress.ShowDialog();
                 _import = null;
             }
             if (datasetObject is FeatureClassListViewItem)
             {
-                Thread thread = new Thread(new ParameterizedThreadStart(ImportAsync));
-
                 if (_import == null)
                     _import = new FeatureImport();
                 else
@@ -166,7 +162,7 @@ namespace gView.Framework.OGC.UI
 
                 FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.Create(_import, ((FeatureClassListViewItem)datasetObject).FeatureClass);
 
-                FormProgress progress = new FormProgress(reporter, thread, datasetObject);
+                FormTaskProgress progress = new FormTaskProgress(reporter, ImportAsync(datasetObject));
                 progress.Text = "Import Featureclass: " + ((FeatureClassListViewItem)datasetObject).Text;
                 progress.ShowDialog();
                 _import = null;
@@ -174,18 +170,18 @@ namespace gView.Framework.OGC.UI
         }
 
         // Thread
-        private void ImportAsync(object element)
+        async private Task ImportAsync(object element)
         {
             if (_import == null) return;
 
             if (element is IFeatureClass)
             {
-                if (!_import.ImportToNewFeatureclass(
+                if (!await _import.ImportToNewFeatureclass(
                     _dataset,
                     ((IFeatureClass)element).Name,
                     (IFeatureClass)element,
                     null,
-                    true).Result)
+                    true))
                 {
                     MessageBox.Show(_import.lastErrorMsg);
                 }
@@ -195,12 +191,12 @@ namespace gView.Framework.OGC.UI
                 FeatureClassListViewItem item = element as FeatureClassListViewItem;
                 if (item.FeatureClass == null) return;
 
-                if (!_import.ImportToNewFeatureclass(
+                if (!await _import.ImportToNewFeatureclass(
                     _dataset,
                     item.TargetName,
                     item.FeatureClass,
                     item.ImportFieldTranslation,
-                    true).Result)
+                    true))
                 {
                     MessageBox.Show(_import.lastErrorMsg);
                 }

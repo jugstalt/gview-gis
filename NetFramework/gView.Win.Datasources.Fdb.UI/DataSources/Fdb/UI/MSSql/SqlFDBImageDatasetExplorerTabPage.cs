@@ -315,7 +315,6 @@ namespace gView.DataSources.Fdb.UI.MSSql
             IRasterDataset rDS = rc.Dataset as IRasterDataset;
             if (rDS == null || rDS.Database == null) return false;
 
-            Thread thread = new Thread(new ParameterizedThreadStart(Import));
             FDBImageDataset operations = new FDBImageDataset(rDS.Database as IImageDB, rDS.DatasetName);
             // refreshList = false wenn ganzen Verzeichnis durchsucht wird...
             // dann sollen auch keine Fehler verursacht werden wenn ein bild nicht gereferenziert ist,
@@ -326,7 +325,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
             ImportArguments args = new ImportArguments(operations, rDS, data, providers);
 
-            FormProgress progress = new FormProgress(reporter, thread, args);
+            FormTaskProgress progress = new FormTaskProgress(reporter, Import(args));
             progress.Text = "Import Images: " + rDS.DatasetName;
             progress.Mode = ProgressMode.ProgressDisk;
             progress.ShowDialog();
@@ -349,8 +348,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             return true;
         }
 
-        // Thread
-        void Import(object arg)
+        async private Task Import(object arg)
         {
             if (!(arg is ImportArguments)) return;
 
@@ -359,17 +357,17 @@ namespace gView.DataSources.Fdb.UI.MSSql
             bool succeeded = true;
             foreach (string filename in args.Data)
             {
-                succeeded = args.Operator.Import(filename, args.Providers).Result;
+                succeeded = await args.Operator.Import(filename, args.Providers);
                 if (!succeeded) break;
             }
 
             AccessFDB fdb = args.dataset.Database as AccessFDB;
             if (fdb != null)
             {
-                IFeatureClass fc = fdb.GetFeatureclass(args.dataset.DatasetName, args.dataset.DatasetName + "_IMAGE_POLYGONS").Result;
+                IFeatureClass fc = await fdb.GetFeatureclass(args.dataset.DatasetName, args.dataset.DatasetName + "_IMAGE_POLYGONS");
                 if (fc != null)
                     fdb.CalculateExtent(fc).Wait();
-                fdb.ShrinkSpatialIndex(args.dataset.DatasetName + "_IMAGE_POLYGONS").Wait();
+                await fdb.ShrinkSpatialIndex(args.dataset.DatasetName + "_IMAGE_POLYGONS");
                 //if (!fdb.CalculateSpatialIndex(fdb.GetFeatureclass(args.dataset.DatasetName, args.dataset.DatasetName + "_IMAGE_POLYGONS"), 10, 0))
                 //{
                 //    MessageBox.Show("ERROR: CalculateSpatialIndex - " + fdb.lastErrorMsg);

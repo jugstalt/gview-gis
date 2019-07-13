@@ -80,13 +80,12 @@ namespace gView.Plugins.Network
                 {
                     NetworkProgressReporter reporter = new NetworkProgressReporter(_doc);
 
-                    Thread thread = new Thread(new ParameterizedThreadStart(this.Trace));
-                    FormProgress dlg = new FormProgress();
-                    dlg.ShowProgressDialog(reporter, reporter, thread);
+                    FormTaskProgress dlg = new FormTaskProgress();
+                    dlg.ShowProgressDialog(reporter, this.Trace(reporter));
                 }
                 else
                 {
-                    Trace(null);
+                    await Trace(null);
                 }
                 ((MapEvent)MapEvent).drawPhase = DrawPhase.Graphics;
                 ((MapEvent)MapEvent).refreshMap = true;
@@ -97,7 +96,7 @@ namespace gView.Plugins.Network
 
         #endregion
 
-        async private void Trace(object arg)
+        async private Task Trace(object arg)
         {
             NetworkProgressReporter reporter = arg as NetworkProgressReporter;
             if (_doc == null || _module == null)
@@ -121,7 +120,7 @@ namespace gView.Plugins.Network
                 {
                     if (output is NetworkEdgeCollectionOutput)
                     {
-                        IFeatureCursor cursor = _module.NetworkPathEdges((NetworkEdgeCollectionOutput)output);
+                        IFeatureCursor cursor = await _module.NetworkPathEdges((NetworkEdgeCollectionOutput)output);
                         if (cursor == null)
                             return;
                         IFeature feature;

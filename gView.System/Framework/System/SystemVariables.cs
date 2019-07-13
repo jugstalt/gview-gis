@@ -211,11 +211,11 @@ namespace gView.Framework.system
 
     public class ProgressDialog
     {
-        static public IProgressDialog CreateProgressDialogInstance()
+        static public IProgressTaskDialog CreateProgressDialogInstance()
         {
-            Assembly uiAssembly = Assembly.LoadFrom(SystemVariables.ApplicationDirectory + @"/gView.Explorer.UI.dll");
+            Assembly uiAssembly = Assembly.LoadFrom(SystemVariables.ApplicationDirectory + @"/gView.Win.Explorer.UI.dll");
 
-            IProgressDialog p = uiAssembly.CreateInstance("gView.Framework.UI.Dialogs.FormProgress") as IProgressDialog;
+            IProgressTaskDialog p = uiAssembly.CreateInstance("gView.Framework.UI.Dialogs.FormTaskProgress") as IProgressTaskDialog;
             return p;
         }
     }

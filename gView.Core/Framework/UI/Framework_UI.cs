@@ -404,13 +404,6 @@ namespace gView.Framework.UI
         bool OpenModal();
     }
 
-    public interface IProgressDialog
-    {
-        string Text { get; set; }
-        void ShowProgressDialog(IProgressReporter reporter, object argument, Thread thread);
-        bool UserInteractive { get; }
-    }
-
     public interface IProgressTaskDialog
     {
         string Text { get; set; }

@@ -1,24 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
+using gView.DataSources.Fdb.MSAccess;
+using gView.DataSources.Fdb.UI;
+using gView.Framework.Carto;
 using gView.Framework.Data;
-using gView.Explorer.UI;
 using gView.Framework.FDB;
+using gView.Framework.Globalisation;
 using gView.Framework.system;
 using gView.Framework.system.UI;
-using System.Threading;
-using gView.Framework.UI.Dialogs;
-using gView.Framework.Geometry;
-using gView.Framework.Carto;
-using gView.Framework.Globalisation;
-using gView.DataSources.Fdb.UI;
+using gView.Framework.UI;
 using gView.Framework.UI.Controls.Filter;
-using gView.DataSources.Fdb.MSAccess;
+using gView.Framework.UI.Dialogs;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.DbTools.Export
 {
@@ -81,7 +76,9 @@ namespace gView.Plugins.DbTools.Export
             }
 
             if (cmbExport.SelectedIndex == -1)
+            {
                 cmbExport.SelectedIndex = 0;
+            }
             #endregion
 
             _listViewItem = new FeatureClassListViewItem(_sourceFeatureClass, 255);
@@ -137,7 +134,7 @@ namespace gView.Plugins.DbTools.Export
             {
                 if (_listViewItem != null)
                 {
-                    ExportDatasetObject(_listViewItem);
+                    await ExportDatasetObject(_listViewItem);
                     _destDatasetElement = await _dataset.Element(_listViewItem.TargetName);
                     this.DialogResult = DialogResult.OK;
                     this.Close();
@@ -201,7 +198,9 @@ namespace gView.Plugins.DbTools.Export
         {
             MaximumFieldnameLength maxLength = Attribute.GetCustomAttribute(dataset.GetType(), typeof(MaximumFieldnameLength)) as MaximumFieldnameLength;
             if (maxLength != null)
+            {
                 return maxLength.Value;
+            }
 
             return 255;
         }
@@ -233,74 +232,77 @@ namespace gView.Plugins.DbTools.Export
         private IFeatureDataset _dataset = null;
         private IQueryFilter _filter = null;
 
-        private void ExportDatasetObject(object datasetObject)
+        async private Task ExportDatasetObject(object datasetObject)
         {
             if (_dataset.Database is AccessFDB)
             {
-                ExportDatasetObject_fdb(datasetObject);
+                await ExportDatasetObject_fdb(datasetObject);
             }
             else
             {
-                ExportDatasetObject_db(datasetObject);
+                await ExportDatasetObject_db(datasetObject);
             }
         }
 
         #region FDB
-        private void ExportDatasetObject_fdb(object datasetObject)
+        async private Task ExportDatasetObject_fdb(object datasetObject)
         {
             if (datasetObject is IFeatureDataset)
             {
                 IFeatureDataset dataset = (IFeatureDataset)datasetObject;
-                foreach (IDatasetElement element in dataset.Elements().Result)
+                foreach (IDatasetElement element in await dataset.Elements())
                 {
                     if (element is IFeatureLayer)
                     {
-                        ExportDatasetObject(((IFeatureLayer)element).FeatureClass);
+                       await ExportDatasetObject(((IFeatureLayer)element).FeatureClass);
                     }
                 }
             }
             if (datasetObject is IFeatureClass)
             {
-                Thread thread = new Thread(new ParameterizedThreadStart(ExportAsync_fdb));
-
                 if (_fdbExport == null)
+                {
                     _fdbExport = new FDBImport();
+                }
                 else
                 {
                     MessageBox.Show("ERROR: Import already runnung");
                     return;
                 }
 
-                FeatureClassImportProgressReporter reporter = new FeatureClassImportProgressReporter(_fdbExport, (IFeatureClass)datasetObject);
+                FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.CreateAsync(_fdbExport, (IFeatureClass)datasetObject);
 
-                FormProgress progress = new FormProgress(reporter, thread, datasetObject);
+                FormTaskProgress progress = new FormTaskProgress(reporter, ExportAsync_fdb(datasetObject));
                 progress.Text = "Export Features: " + ((IFeatureClass)datasetObject).Name;
                 progress.ShowDialog();
                 _fdbExport = null;
             }
             if (datasetObject is FeatureClassListViewItem)
             {
-                Thread thread = new Thread(new ParameterizedThreadStart(ExportAsync_fdb));
-
                 if (_fdbExport == null)
+                {
                     _fdbExport = new FDBImport();
+                }
                 else
                 {
                     MessageBox.Show("ERROR: Import already runnung");
                     return;
                 }
 
-                FeatureClassImportProgressReporter reporter = new FeatureClassImportProgressReporter(_fdbExport, ((FeatureClassListViewItem)datasetObject).FeatureClass);
+                FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.CreateAsync(_fdbExport, ((FeatureClassListViewItem)datasetObject).FeatureClass);
 
-                FormProgress progress = new FormProgress(reporter, thread, datasetObject);
+                FormTaskProgress progress = new FormTaskProgress(reporter, ExportAsync_fdb(datasetObject));
                 progress.Text = "Export Features: " + ((FeatureClassListViewItem)datasetObject).TargetName;
                 progress.ShowDialog();
                 _fdbExport = null;
             }
         }
-        private void ExportAsync_fdb(object element)
+        async private Task ExportAsync_fdb(object element)
         {
-            if (_fdbExport == null) return;
+            if (_fdbExport == null)
+            {
+                return;
+            }
 
             List<IQueryFilter> filters = null;
             if (_filter != null)
@@ -311,14 +313,14 @@ namespace gView.Plugins.DbTools.Export
 
             if (element is IFeatureClass)
             {
-                if (!_fdbExport.ImportToNewFeatureclass(
+                if (!await _fdbExport.ImportToNewFeatureclass(
                     _dataset.Database as IFeatureDatabase,
                     _dataset.DatasetName,
                     _listViewItem.TargetName,
                     (IFeatureClass)element,
                     null,
                     true,
-                    filters).Result)
+                    filters))
                 {
                     MessageBox.Show(_export.lastErrorMsg);
                 }
@@ -326,16 +328,19 @@ namespace gView.Plugins.DbTools.Export
             else if (element is FeatureClassListViewItem)
             {
                 FeatureClassListViewItem item = element as FeatureClassListViewItem;
-                if (item.FeatureClass == null) return;
+                if (item.FeatureClass == null)
+                {
+                    return;
+                }
 
-                if (!_fdbExport.ImportToNewFeatureclass(
+                if (!await _fdbExport.ImportToNewFeatureclass(
                     _dataset.Database as IFeatureDatabase,
                     _dataset.DatasetName,
                     item.TargetName,
                     item.FeatureClass,
                     item.ImportFieldTranslation,
                     true,
-                    filters).Result)
+                    filters))
                 {
                     MessageBox.Show(_fdbExport.lastErrorMsg);
                 }
@@ -344,61 +349,64 @@ namespace gView.Plugins.DbTools.Export
         #endregion
 
         #region All other DBs
-        private void ExportDatasetObject_db(object datasetObject)
+        async private Task ExportDatasetObject_db(object datasetObject)
         {
             if (datasetObject is IFeatureDataset)
             {
                 IFeatureDataset dataset = (IFeatureDataset)datasetObject;
-                foreach (IDatasetElement element in dataset.Elements().Result)
+                foreach (IDatasetElement element in await dataset.Elements())
                 {
                     if (element is IFeatureLayer)
                     {
-                        ExportDatasetObject(((IFeatureLayer)element).FeatureClass);
+                        await ExportDatasetObject(((IFeatureLayer)element).FeatureClass);
                     }
                 }
             }
             if (datasetObject is IFeatureClass)
             {
-                Thread thread = new Thread(new ParameterizedThreadStart(ExportAsync_db));
-
                 if (_export == null)
+                {
                     _export = new FeatureImport();
+                }
                 else
                 {
                     MessageBox.Show("ERROR: Import already runnung");
                     return;
                 }
 
-                FeatureClassImportProgressReporter reporter = new FeatureClassImportProgressReporter(_export, (IFeatureClass)datasetObject);
+                FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.CreateAsync(_export, (IFeatureClass)datasetObject);
 
-                FormProgress progress = new FormProgress(reporter, thread, datasetObject);
+                FormTaskProgress progress = new FormTaskProgress(reporter, ExportAsync_db(datasetObject));
                 progress.Text = "Export Features: " + ((IFeatureClass)datasetObject).Name;
                 progress.ShowDialog();
                 _export = null;
             }
             if (datasetObject is FeatureClassListViewItem)
             {
-                Thread thread = new Thread(new ParameterizedThreadStart(ExportAsync_db));
-
                 if (_export == null)
+                {
                     _export = new FeatureImport();
+                }
                 else
                 {
                     MessageBox.Show("ERROR: Import already runnung");
                     return;
                 }
 
-                FeatureClassImportProgressReporter reporter = new FeatureClassImportProgressReporter(_export, ((FeatureClassListViewItem)datasetObject).FeatureClass);
+                FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.CreateAsync(_export, ((FeatureClassListViewItem)datasetObject).FeatureClass);
 
-                FormProgress progress = new FormProgress(reporter, thread, datasetObject);
+                FormTaskProgress progress = new FormTaskProgress(reporter, ExportAsync_db(datasetObject));
                 progress.Text = "Export Features: " + ((FeatureClassListViewItem)datasetObject).TargetName;
                 progress.ShowDialog();
                 _export = null;
             }
         }
-        private void ExportAsync_db(object element)
+        async private Task ExportAsync_db(object element)
         {
-            if (_export == null) return;
+            if (_export == null)
+            {
+                return;
+            }
 
             List<IQueryFilter> filters = null;
             if (_filter != null)
@@ -409,13 +417,13 @@ namespace gView.Plugins.DbTools.Export
 
             if (element is IFeatureClass)
             {
-                if (!_export.ImportToNewFeatureclass(
+                if (!await _export.ImportToNewFeatureclass(
                     _dataset,
                     ((IFeatureClass)element).Name,
                     (IFeatureClass)element,
                     null,
                     true,
-                    filters).Result)
+                    filters))
                 {
                     MessageBox.Show(_export.lastErrorMsg);
                 }
@@ -423,15 +431,18 @@ namespace gView.Plugins.DbTools.Export
             else if (element is FeatureClassListViewItem)
             {
                 FeatureClassListViewItem item = element as FeatureClassListViewItem;
-                if (item.FeatureClass == null) return;
+                if (item.FeatureClass == null)
+                {
+                    return;
+                }
 
-                if (!_export.ImportToNewFeatureclass(
+                if (!await _export.ImportToNewFeatureclass(
                     _dataset,
                     item.TargetName,
                     item.FeatureClass,
                     item.ImportFieldTranslation,
                     true,
-                    filters).Result)
+                    filters))
                 {
                     MessageBox.Show(_export.lastErrorMsg);
                 }
@@ -444,28 +455,46 @@ namespace gView.Plugins.DbTools.Export
             private ProgressReport _report = new ProgressReport();
             private ICancelTracker _cancelTracker = null;
 
-            public FeatureClassImportProgressReporter(object import, IFeatureClass source)
+            private FeatureClassImportProgressReporter()
             {
-                if (import == null) return;
+                
+            }
+
+            async static public Task<FeatureClassImportProgressReporter> CreateAsync(object import, IFeatureClass source)
+            {
+                var reporter = new FeatureClassImportProgressReporter();
+
+                if (import == null)
+                {
+                    return null;
+                }
 
                 if (import is FDBImport)
                 {
-                    _cancelTracker = ((FDBImport)import).CancelTracker;
+                    reporter._cancelTracker = ((FDBImport)import).CancelTracker;
 
-                    if (source != null) _report.featureMax = source.CountFeatures().Result;
-                    ((FDBImport)import).ReportAction += new FDBImport.ReportActionEvent(FeatureClassImportProgressReporter_ReportAction);
-                    ((FDBImport)import).ReportProgress += new FDBImport.ReportProgressEvent(FeatureClassImportProgressReporter_ReportProgress);
-                    ((FDBImport)import).ReportRequest += new FDBImport.ReportRequestEvent(FeatureClassImportProgressReporter_ReportRequest);
+                    if (source != null)
+                    {
+                        reporter._report.featureMax = await source.CountFeatures();
+                    } 
+                    ((FDBImport)import).ReportAction += new FDBImport.ReportActionEvent(reporter.FeatureClassImportProgressReporter_ReportAction);
+                    ((FDBImport)import).ReportProgress += new FDBImport.ReportProgressEvent(reporter.FeatureClassImportProgressReporter_ReportProgress);
+                    ((FDBImport)import).ReportRequest += new FDBImport.ReportRequestEvent(reporter.FeatureClassImportProgressReporter_ReportRequest);
                 }
                 if (import is FeatureImport)
                 {
-                    _cancelTracker = ((FeatureImport)import).CancelTracker;
+                    reporter._cancelTracker = ((FeatureImport)import).CancelTracker;
 
-                    if (source != null) _report.featureMax = source.CountFeatures().Result;
-                    ((FeatureImport)import).ReportAction += new FeatureImport.ReportActionEvent(import_ReportAction);
-                    ((FeatureImport)import).ReportProgress += new FeatureImport.ReportProgressEvent(import_ReportProgress);
-                    ((FeatureImport)import).ReportRequest += new FeatureImport.ReportRequestEvent(import_ReportRequest);
+                    if (source != null)
+                    {
+                        reporter._report.featureMax = await source.CountFeatures();
+                    } 
+                    ((FeatureImport)import).ReportAction += new FeatureImport.ReportActionEvent(reporter.import_ReportAction);
+                    ((FeatureImport)import).ReportProgress += new FeatureImport.ReportProgressEvent(reporter.import_ReportProgress);
+                    ((FeatureImport)import).ReportRequest += new FeatureImport.ReportRequestEvent(reporter.import_ReportRequest);
                 }
+
+                return reporter;
             }
 
             #region FDB
@@ -480,7 +509,10 @@ namespace gView.Plugins.DbTools.Export
 
             void FeatureClassImportProgressReporter_ReportProgress(FDBImport sender, int progress)
             {
-                if (ReportProgress == null) return;
+                if (ReportProgress == null)
+                {
+                    return;
+                }
 
                 _report.featureMax = Math.Max(_report.featureMax, progress);
                 _report.featurePos = progress;
@@ -490,7 +522,10 @@ namespace gView.Plugins.DbTools.Export
 
             void FeatureClassImportProgressReporter_ReportAction(FDBImport sender, string action)
             {
-                if (ReportProgress == null) return;
+                if (ReportProgress == null)
+                {
+                    return;
+                }
 
                 _report.featurePos = 0;
                 _report.Message = action;
@@ -510,7 +545,10 @@ namespace gView.Plugins.DbTools.Export
 
             void import_ReportProgress(FeatureImport sender, int progress)
             {
-                if (ReportProgress == null) return;
+                if (ReportProgress == null)
+                {
+                    return;
+                }
 
                 _report.featureMax = Math.Max(_report.featureMax, progress);
                 _report.featurePos = progress;
@@ -520,7 +558,10 @@ namespace gView.Plugins.DbTools.Export
 
             void import_ReportAction(FeatureImport sender, string action)
             {
-                if (ReportProgress == null) return;
+                if (ReportProgress == null)
+                {
+                    return;
+                }
 
                 _report.featurePos = 0;
                 _report.Message = action;

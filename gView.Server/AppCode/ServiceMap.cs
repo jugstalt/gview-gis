@@ -97,7 +97,7 @@ namespace gView.Server.AppCode
                     }
                 }
                 //_image.Save(path, format);
-                _image.SaveOrUpload(path, format);
+                await _image.SaveOrUpload(path, format);
                 _image.Dispose();
                 _image = null;
                 return true;

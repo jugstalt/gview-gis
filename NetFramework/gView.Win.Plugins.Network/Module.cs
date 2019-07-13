@@ -9,6 +9,7 @@ using gView.Framework.Data;
 using gView.Framework.Network.Algorthm;
 using gView.Framework.Geometry;
 using gView.Framework.Network;
+using System.Threading.Tasks;
 
 namespace gView.Plugins.Network
 {
@@ -129,7 +130,7 @@ namespace gView.Plugins.Network
             get { return _dlgRoadBook; }
         }
 
-        public List<int> QueryAllowedNodeIds(double minBufferDist, double maxBufferDist)
+        async public Task<List<int>> QueryAllowedNodeIds(double minBufferDist, double maxBufferDist)
         {
             if (_nfc == null || _startPoint == null || _endPoint == null)
                 return null;
@@ -149,13 +150,13 @@ namespace gView.Plugins.Network
             filter.Geometry = polygon;
             filter.AddField("FDB_NID");
 
-            IFeatureCursor cursor = _nfc.GetNodeFeatures(filter).Result;
+            IFeatureCursor cursor = await _nfc.GetNodeFeatures(filter);
             if (cursor == null)
                 return null;
 
             List<int> allowedNodeIds = new List<int>();
             IFeature feature;
-            while ((feature = cursor.NextFeature().Result) != null)
+            while ((feature = await cursor.NextFeature()) != null)
             {
                 allowedNodeIds.Add(feature.OID);
             }
@@ -206,7 +207,7 @@ namespace gView.Plugins.Network
                 display.GraphicsContainer.Elements.Remove(g);
         }
 
-        public IFeatureCursor NetworkPathEdges(Dijkstra.NetworkPath networkPath)
+        async public Task<IFeatureCursor> NetworkPathEdges(Dijkstra.NetworkPath networkPath)
         {
             if (_nfc == null)
                 return null;
@@ -217,9 +218,9 @@ namespace gView.Plugins.Network
                 filter.IDs.Add(edge.EId);
             }
 
-            return _nfc.GetEdgeFeatures(filter).Result;
+            return await _nfc.GetEdgeFeatures(filter);
         }
-        public IFeatureCursor NetworkPathEdges(NetworkEdgeCollectionOutput edgeCollection)
+        async public Task<IFeatureCursor> NetworkPathEdges(NetworkEdgeCollectionOutput edgeCollection)
         {
             if (_nfc == null)
                 return null;
@@ -230,14 +231,14 @@ namespace gView.Plugins.Network
                 filter.IDs.Add(edge.EdgeId);
             }
 
-            return _nfc.GetEdgeFeatures(filter).Result;
+            return await _nfc.GetEdgeFeatures(filter);
         }
 
-        public IFeatureCursor NetworkPathEdges(Dijkstra.Nodes nodes)
+        async public Task<IFeatureCursor> NetworkPathEdges(Dijkstra.Nodes nodes)
         {
-            return NetworkPathEdges(nodes, string.Empty);
+            return await NetworkPathEdges(nodes, string.Empty);
         }
-        public IFeatureCursor NetworkPathEdges(Dijkstra.Nodes nodes, string fields)
+        async public Task<IFeatureCursor> NetworkPathEdges(Dijkstra.Nodes nodes, string fields)
         {
             if (_nfc == null)
                 return null;
@@ -272,7 +273,7 @@ namespace gView.Plugins.Network
                     filter.AddField(field);
             }
 
-            return _nfc.GetEdgeFeatures(filter).Result;
+            return await _nfc.GetEdgeFeatures(filter);
         }
     }
 }

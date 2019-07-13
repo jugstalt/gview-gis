@@ -158,9 +158,6 @@
     <Compile Include="Framework\UI\Dialogs\FormTaskProgress.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Framework\UI\Dialogs\FormProgress.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="Framework\UI\Dialogs\Icons.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -300,12 +297,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Framework\UI\Dialogs\FormTaskProgress.resx">
       <DependentUpon>FormTaskProgress.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Framework\UI\Dialogs\FormProgress.de.resx">
-      <DependentUpon>FormProgress.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Framework\UI\Dialogs\FormProgress.resx">
-      <DependentUpon>FormProgress.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Framework\UI\Dialogs\Icons.resx">
       <DependentUpon>Icons.cs</DependentUpon>

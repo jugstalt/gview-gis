@@ -27,23 +27,26 @@ namespace gView.DataSources.Shape
             _bounds = bounds;
         }
 
-        public void Create()
+        public Task Create()
         {
-            _tree.CreateTree(_bounds);
-
-            for (uint i = 0; i < _file.Entities; i++)
+            return Task.Run(() =>
             {
-                IEnvelope env = _file.ReadEnvelope(i);
-                //if (env == null)
-                //    continue;
-                SHPObject obj = new SHPObject((int)i, env);
-                //bool inserted=_tree.SHPTreeAddShapeId(obj);
-                bool inserted = _tree.AddShape(obj);
-                inserted = false;
-            }
-            _tree.FinishIt();
+                _tree.CreateTree(_bounds);
 
-            _tree.writeIDXIndex(_file.IDX_Filename);
+                for (uint i = 0; i < _file.Entities; i++)
+                {
+                    IEnvelope env = _file.ReadEnvelope(i);
+                    //if (env == null)
+                    //    continue;
+                    SHPObject obj = new SHPObject((int)i, env);
+                    //bool inserted=_tree.SHPTreeAddShapeId(obj);
+                    bool inserted = _tree.AddShape(obj);
+                    inserted = false;
+                }
+                _tree.FinishIt();
+
+                _tree.writeIDXIndex(_file.IDX_Filename);
+            });
         }
     }
 
@@ -297,13 +300,13 @@ namespace gView.DataSources.Shape
             }
         }
 
-        public Task<IDatasetElement> Element(string title)
+        async public Task<IDatasetElement> Element(string title)
         {
             foreach (IDatasetElement element in _elements)
             {
                 if (element == null) continue;
                 if (element.Title == title)
-                    return Task.FromResult(element);
+                    return element;
             }
             try
             {
@@ -316,7 +319,7 @@ namespace gView.DataSources.Shape
                 if (fi.Length == 0)
                 {
                     _errMsg = "Can't find shapefile...";
-                    return Task.FromResult<IDatasetElement>(null);
+                    return null;
                 }
                 SHPFile shpFile = new SHPFile(fi[0].FullName);
 
@@ -330,20 +333,18 @@ namespace gView.DataSources.Shape
 
                     if (_useGUI)
                     {
-                        IProgressDialog progress = ProgressDialog.CreateProgressDialogInstance();
+                        IProgressTaskDialog progress = ProgressDialog.CreateProgressDialogInstance();
                         if (progress != null && progress.UserInteractive)
                         {
-                            Thread thread = new Thread(new ThreadStart(creator.Create));
-
                             progress.Text = "Create Spatial Index...";
-                            progress.ShowProgressDialog(tree, null, thread);
+                            progress.ShowProgressDialog(tree, creator.Create());
                         }
                         else
-                            creator.Create();
+                            await creator.Create();
                     }
                     else
                     {
-                        creator.Create();
+                        await creator.Create();
                     }
                 }
 
@@ -355,7 +356,7 @@ namespace gView.DataSources.Shape
 
                 ShapeDatasetElement element = new ShapeDatasetElement(shpFile, this, iTree);
                 _elements.Add(element);
-                return Task.FromResult<IDatasetElement>(element);
+                return element;
             }
             catch (Exception ex)
             {

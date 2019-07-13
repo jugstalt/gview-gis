@@ -1129,8 +1129,8 @@ namespace gView.DataSources.Fdb.UI.SQLite
             creator.SwitchNodeFcIdAndFieldnames = dlg.SwitchNodeFcIds;
             creator.NodeTypeFcIds = dlg.NetworkNodeTypeFcIds;
 
-            FormProgress progress = new FormProgress();
-            progress.ShowProgressDialog(creator, null, creator.Thread);
+            FormTaskProgress progress = new FormTaskProgress();
+            progress.ShowProgressDialog(creator, creator.Run());
 
             IDatasetElement element = await dataset.Element(dlg.NetworkName);
             return new SQLiteFDBFeatureClassExplorerObject(

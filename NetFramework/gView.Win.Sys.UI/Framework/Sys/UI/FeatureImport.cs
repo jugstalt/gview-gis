@@ -23,19 +23,19 @@ namespace gView.Framework.system.UI
         private IGeometricTransformer _transformer = null;
         private bool _schemaOnly = false;
 
-        public FeatureImport(int featureBufferSize=50)
+        public FeatureImport(int featureBufferSize=1000)
         {
             _cancelTracker = new CancelTracker();
             ((CancelTracker)_cancelTracker).Reset();
 
-            this.FeatureBufferSize = featureBufferSize > 0 ? featureBufferSize : 50;
+            this.FeatureBufferSize = featureBufferSize > 0 ? featureBufferSize : 1000;
         }
 
-        public FeatureImport(ICancelTracker cancelTracker, int featureBufferSize = 50)
+        public FeatureImport(ICancelTracker cancelTracker, int featureBufferSize = 1000)
         {
             _cancelTracker = cancelTracker;
 
-            this.FeatureBufferSize = featureBufferSize > 0 ? featureBufferSize : 50;
+            this.FeatureBufferSize = featureBufferSize > 0 ? featureBufferSize : 1000;
         }
 
         public ICancelTracker CancelTracker

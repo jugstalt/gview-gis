@@ -14,6 +14,7 @@ using gView.Framework.Network;
 using System.Collections;
 using System.IO;
 using gView.DataSources.Fdb.MSAccess;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.UI.MSSql
 {
@@ -108,8 +109,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
         }
         #endregion
 
-        // Thread
-        public void Run()
+        async public Task Run()
         {
             if (_dataset == null || !(_fdb is IFeatureDatabaseReplication) || _edgeFcs == null)
                 return;
@@ -127,11 +127,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
             {
                 ProgressReport report = new ProgressReport();
 
-                int datasetId = _fdb.DatasetID(_dataset.DatasetName).Result;
+                int datasetId = await _fdb.DatasetID(_dataset.DatasetName);
                 if (datasetId == -1)
                     return;
 
-                NetworkBuilder networkBuilder = new NetworkBuilder(_dataset.Envelope().Result, _tolerance);
+                NetworkBuilder networkBuilder = new NetworkBuilder(await _dataset.Envelope(), _tolerance);
                 if (ReportProgress != null)
                     networkBuilder.reportProgress += new ProgressReporterEvent(networkBuilder_reportProgress);
 
@@ -139,7 +139,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 BinaryTreeDef edgeTreeDef = null, nodeTreeDef = null;
                 foreach (IFeatureClass fc in _edgeFcs)
                 {
-                    BinaryTreeDef treeDef = _fdb.BinaryTreeDef(fc.Name).Result;
+                    BinaryTreeDef treeDef = await _fdb.BinaryTreeDef(fc.Name);
                     if (treeDef == null)
                     {
                         IEnvelope bounds = fc.Envelope;
@@ -158,7 +158,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 }
                 foreach (IFeatureClass fc in _nodeFcs)
                 {
-                    BinaryTreeDef treeDef = _fdb.BinaryTreeDef(fc.Name).Result;
+                    BinaryTreeDef treeDef = await _fdb.BinaryTreeDef(fc.Name);
                     if (treeDef == null)
                     {
                         IEnvelope bounds = fc.Envelope;
@@ -180,7 +180,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 #region Add Edges
                 foreach (IFeatureClass fc in _edgeFcs)
                 {
-                    int fcId = _fdb.FeatureClassID(datasetId, fc.Name).Result;
+                    int fcId = await _fdb.FeatureClassID(datasetId, fc.Name);
                     if (fcId == -1)
                         continue;
                     FcIds.Add(fcId);
@@ -216,17 +216,17 @@ namespace gView.DataSources.Fdb.UI.MSSql
                        (_complexEdgeFcs.Contains(fcId) || _complexEdgeFcs.Contains(-1)))
                         useWithComplexEdges = true;
 
-                    using (IFeatureCursor cursor = fc.GetFeatures(filter).Result)
+                    using (IFeatureCursor cursor = await fc.GetFeatures(filter))
                     {
                         #region Report
                         report.Message = "Analize Edges: " + fc.Name;
-                        report.featureMax = fc.CountFeatures().Result;
+                        report.featureMax = await fc.CountFeatures();
                         report.featurePos = 0;
                         if (ReportProgress != null) ReportProgress(report);
                         #endregion
 
                         IFeature feature;
-                        while ((feature = cursor.NextFeature().Result) != null)
+                        while ((feature = await cursor.NextFeature()) != null)
                         {
                             bool oneway = false;
                             if (useOneway)
@@ -291,7 +291,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 {
                     foreach (IFeatureClass fc in _nodeFcs)
                     {
-                        int fcId = _fdb.FeatureClassID(datasetId, fc.Name).Result;
+                        int fcId = await _fdb.FeatureClassID(datasetId, fc.Name);
                         if (fcId == -1)
                             continue;
                         FcIds.Add(fcId);
@@ -312,17 +312,17 @@ namespace gView.DataSources.Fdb.UI.MSSql
                         filter.AddField(fc.ShapeFieldName);
                         filter.AddField(switchStateFieldname);
 
-                        using (IFeatureCursor cursor = fc.GetFeatures(filter).Result)
+                        using (IFeatureCursor cursor = await fc.GetFeatures(filter))
                         {
                             #region Report
                             report.Message = "Analize Nodes: " + fc.Name;
-                            report.featureMax = fc.CountFeatures().Result;
+                            report.featureMax = await fc.CountFeatures();
                             report.featurePos = 0;
                             if (ReportProgress != null) ReportProgress(report);
                             #endregion
 
                             IFeature feature;
-                            while ((feature = cursor.NextFeature().Result) != null)
+                            while ((feature = await cursor.NextFeature()) != null)
                             {
                                 bool switchState = isSwitchable;
                                 if (isSwitchable && !String.IsNullOrEmpty(switchStateFieldname))
@@ -371,7 +371,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 Fields fields = new Fields();
                 fields.Add(new Field("Page", FieldType.integer));
                 fields.Add(new Field("Data", FieldType.binary));
-                db.CreateIfNotExists(_networkName + "_Edges", fields);
+                await db.CreateIfNotExists(_networkName + "_Edges", fields);
                 #endregion
 
                 #region Edge Index Table
@@ -380,7 +380,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 fields.Add(new Field("FCID", FieldType.integer));
                 fields.Add(new Field("OID", FieldType.integer));
                 fields.Add(new Field("ISCOMPLEX", FieldType.boolean));
-                db.CreateIfNotExists(_networkName + "_EdgeIndex", fields);
+                await db.CreateIfNotExists(_networkName + "_EdgeIndex", fields);
                 #endregion
 
                 #region Complex Edges FeatureClass
@@ -393,15 +393,15 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 //fields.Add(new Field("Length", FieldType.integer));
                 //fields.Add(new Field("GeoLength", FieldType.integer));
 
-                _fdb.ReplaceFeatureClass(_dataset.DatasetName,
+                await _fdb.ReplaceFeatureClass(_dataset.DatasetName,
                     _networkName + "_ComplexEdges",
                     new GeometryDef(geometryType.Polyline),
-                    fields).Wait();
-                IDatasetElement element = _dataset.Element(_networkName + "_ComplexEdges").Result;
+                    fields);
+                IDatasetElement element = await _dataset.Element(_networkName + "_ComplexEdges");
                 if (element == null || !(element.Class is IFeatureClass))
                     return;
                 if (edgeTreeDef != null)
-                    _fdb.SetSpatialIndexBounds(_networkName + "_ComplexEdges", "BinaryTree2", edgeTreeDef.Bounds, edgeTreeDef.SplitRatio, edgeTreeDef.MaxPerNode, edgeTreeDef.MaxLevel).Wait();
+                    await _fdb.SetSpatialIndexBounds(_networkName + "_ComplexEdges", "BinaryTree2", edgeTreeDef.Bounds, edgeTreeDef.SplitRatio, edgeTreeDef.MaxPerNode, edgeTreeDef.MaxLevel);
                 #endregion
 
                 int edge_page = 0;
@@ -421,7 +421,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 string tabEdgesName = _fdb.TableName(_networkName + "_Edges");
                 string tabEdgeIndexName = _fdb.TableName(_networkName + "_EdgeIndex");
 
-                while ((f = c.NextFeature().Result) != null)
+                while ((f = await c.NextFeature()) != null)
                 {
                     int eid = (int)f["EID"];
                     if ((bool)f["ISCOMPLEX"] == true)
@@ -433,7 +433,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                         if (features.Count > 0 && features.Count % 1000 == 0)
                         {
                             if (ReportProgress != null) ReportProgress(report);
-                            _fdb.Insert(edgeFc, features);
+                            await _fdb.Insert(edgeFc, features);
                             features.Clear();
                         }
                         #endregion
@@ -480,9 +480,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 if (features.Count > 0)
                 {
                     if (ReportProgress != null) ReportProgress(report);
-                    _fdb.Insert(edgeFc, features);
+                    await _fdb.Insert(edgeFc, features);
                 }
-                _fdb.CalculateExtent(edgeFc).Wait();
+                await _fdb.CalculateExtent(edgeFc);
                 #endregion
                 #region Create Weights
                 if (_graphWeights != null)
@@ -492,7 +492,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                         fields = new Fields();
                         fields.Add(new Field("Page", FieldType.integer));
                         fields.Add(new Field("Data", FieldType.binary));
-                        db.CreateIfNotExists(_networkName + "_Weights_" + weight.Guid.ToString("N").ToLower(), fields);
+                        await db.CreateIfNotExists(_networkName + "_Weights_" + weight.Guid.ToString("N").ToLower(), fields);
 
                         string tabWeightName = _fdb.TableName(_networkName + "_Weights_" + weight.Guid.ToString("N").ToLower());
 
@@ -545,18 +545,18 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 fields.Add(new Field("OID", FieldType.integer));
                 fields.Add(new Field("NODETYPE", FieldType.integer));
 
-                _fdb.ReplaceFeatureClass(_dataset.DatasetName,
+                await _fdb.ReplaceFeatureClass(_dataset.DatasetName,
                     _networkName + "_Nodes",
                     new GeometryDef(geometryType.Point),
-                    fields).Wait();
+                    fields);
 
-                element = _dataset.Element(_networkName + "_Nodes").Result;
+                element = await _dataset.Element(_networkName + "_Nodes");
                 if (element == null || !(element.Class is IFeatureClass))
                     return;
                 if (nodeTreeDef != null)
-                    _fdb.SetSpatialIndexBounds(_networkName + "_Nodes", "BinaryTree2", nodeTreeDef.Bounds, nodeTreeDef.SplitRatio, nodeTreeDef.MaxPerNode, nodeTreeDef.MaxLevel).Wait();
+                    await _fdb.SetSpatialIndexBounds(_networkName + "_Nodes", "BinaryTree2", nodeTreeDef.Bounds, nodeTreeDef.SplitRatio, nodeTreeDef.MaxPerNode, nodeTreeDef.MaxLevel);
                 else if (edgeTreeDef != null)
-                    _fdb.SetSpatialIndexBounds(_networkName + "_Nodes", "BinaryTree2", edgeTreeDef.Bounds, edgeTreeDef.SplitRatio, edgeTreeDef.MaxPerNode, edgeTreeDef.MaxLevel).Wait();
+                    await _fdb.SetSpatialIndexBounds(_networkName + "_Nodes", "BinaryTree2", edgeTreeDef.Bounds, edgeTreeDef.SplitRatio, edgeTreeDef.MaxPerNode, edgeTreeDef.MaxLevel);
 
                 features.Clear();
                 IFeatureClass nodeFc = (IFeatureClass)element.Class;
@@ -569,7 +569,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 if (ReportProgress != null) ReportProgress(report);
                 #endregion
 
-                while ((f = c.NextFeature().Result) != null)
+                while ((f = await c.NextFeature()) != null)
                 {
                     features.Add(f);
 
@@ -577,16 +577,16 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     if (features.Count > 0 && features.Count % 1000 == 0)
                     {
                         if (ReportProgress != null) ReportProgress(report);
-                        _fdb.Insert(nodeFc, features);
+                        await _fdb.Insert(nodeFc, features);
                         features.Clear();
                     }
                 }
                 if (features.Count > 0)
                 {
                     if (ReportProgress != null) ReportProgress(report);
-                    _fdb.Insert(nodeFc, features);
+                    await _fdb.Insert(nodeFc, features);
                 }
-                _fdb.CalculateExtent(nodeFc).Wait();
+                await _fdb.CalculateExtent(nodeFc);
                 #endregion
                 #region Create Graph Class
                 int graph_page = 0;
@@ -599,12 +599,12 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 //fields.Add(new Field("LENGTH", FieldType.Double));
                 //fields.Add(new Field("GEOLENGTH", FieldType.Double));
 
-                _fdb.ReplaceFeatureClass(_dataset.DatasetName,
+                await _fdb.ReplaceFeatureClass(_dataset.DatasetName,
                     _networkName,
                     new GeometryDef(geometryType.Network),
-                    fields).Wait();
+                    fields);
 
-                element = _dataset.Element(_networkName).Result;
+                element = await _dataset.Element(_networkName);
                 if (element == null || !(element.Class is IFeatureClass))
                     return;
 
@@ -621,7 +621,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                 string fcNetworkName = _fdb.TableName("FC_" + _networkName);
 
-                while ((f = c.NextFeature().Result) != null)
+                while ((f = await c.NextFeature()) != null)
                 {
                     report.featurePos++;
 
@@ -651,11 +651,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 #endregion
 
                 #region Create FDB_Networks
-                int netId = _fdb.GetFeatureClassID(_networkName).Result;
+                int netId = await _fdb.GetFeatureClassID(_networkName);
                 fields = new Fields();
                 fields.Add(new Field("ID", FieldType.integer));
                 fields.Add(new Field("Properties", FieldType.binary));
-                db.CreateIfNotExists("FDB_Networks", fields);
+                await db.CreateIfNotExists("FDB_Networks", fields);
 
                 NetworkObjectSerializer.NetworkProperties networkProps = new NetworkObjectSerializer.NetworkProperties(
                     NetworkObjectSerializer.PageSize, _tolerance);
@@ -672,7 +672,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 fields.Add(new Field("FCID", FieldType.integer));
                 fields.Add(new Field("Properties", FieldType.binary));
 
-                db.CreateIfNotExists("FDB_NetworkClasses", fields);
+                await db.CreateIfNotExists("FDB_NetworkClasses", fields);
                 foreach (int fcId in FcIds)
                 {
                     bool isSwitchable = (_switchNodeFcs != null && _switchNodeFcs.ContainsKey(fcId));
@@ -697,7 +697,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 fields.Add(new Field("WeightGuid", FieldType.guid));
                 fields.Add(new Field("Properties", FieldType.binary));
 
-                db.CreateIfNotExists("FDB_NetworkWeights", fields);
+                await db.CreateIfNotExists("FDB_NetworkWeights", fields);
                 if (_graphWeights != null)
                 {
                     foreach (IGraphWeight weight in _graphWeights)
@@ -724,9 +724,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 {
                     if (_fdb is IAlterDatabase)
                         ((IAlterDatabase)_fdb).DropTable(_networkName + "_Edges");
-                    _fdb.DeleteFeatureClass(_networkName + "_ComplexEdges").Wait();
-                    _fdb.DeleteFeatureClass(_networkName + "_Nodes").Wait();
-                    _fdb.DeleteFeatureClass(_networkName).Wait();
+                    await _fdb.DeleteFeatureClass(_networkName + "_ComplexEdges");
+                    await _fdb.DeleteFeatureClass(_networkName + "_Nodes");
+                    await _fdb.DeleteFeatureClass(_networkName);
                 }
             }
         }
@@ -735,13 +735,6 @@ namespace gView.DataSources.Fdb.UI.MSSql
         {
             if (ReportProgress != null)
                 ReportProgress(progressEventReport);
-        }
-        public Thread Thread
-        {
-            get
-            {
-                return new Thread(new ThreadStart(this.Run));
-            }
         }
 
         #region IProgressReporter Member

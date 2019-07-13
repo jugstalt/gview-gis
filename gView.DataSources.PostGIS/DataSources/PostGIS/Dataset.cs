@@ -107,24 +107,28 @@ namespace gView.DataSources.PostGIS
         {
             try
             {
+                _connectionString = DbConnectionString.ParseNpgsqlConnectionString(_connectionString);
                 _factory = Npgsql.NpgsqlFactory.Instance;
 
                 #region Version
+
                 try
                 {
                     object obj = base.ExecuteFunction("select postgis_version()");
                     if (obj is string)
                     {
-                        if (obj.ToString().StartsWith("2."))
-                            _majorVersion = 2;
-                        else
+                        string version = obj.ToString();
+                        if (!int.TryParse(version.Split('.')[0], out _majorVersion))
+                        {
                             _majorVersion = 1;
+                        }
                     }
                 }
                 catch
                 {
                     _majorVersion = 1;
                 }
+
                 #endregion
             }
             catch
@@ -148,7 +152,7 @@ namespace gView.DataSources.PostGIS
 
         protected override string AddGeometryColumn(string schemaName, string tableName, string colunName, string srid, string geomTypeString)
         {
-            if (_majorVersion == 2)
+            if (_majorVersion >= 2)
             {
                 return "SELECT " + DbSchemaPrefix + "AddGeometryColumn ('" + schemaName + "','" + tableName + "','" + colunName + "','" + srid + "','" + geomTypeString + "','2',true)";
             }

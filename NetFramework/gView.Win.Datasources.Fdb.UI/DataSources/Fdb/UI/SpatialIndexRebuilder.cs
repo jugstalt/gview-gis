@@ -1,13 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Windows.Forms;
+using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Data;
+using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Framework.UI.Dialogs;
-using gView.Framework.system;
-using gView.DataSources.Fdb.MSAccess;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI
 {
@@ -23,19 +22,20 @@ namespace gView.DataSources.Fdb.UI
 
         public bool RebuildIndices(List<IClass> classes)
         {
-            Thread thread = new Thread(new ParameterizedThreadStart(RebuildIndecesAsync));
-
-            FormProgress progress = new FormProgress(this, thread, classes);
+            FormTaskProgress progress = new FormTaskProgress(this, RebuildIndicesAsync(classes));
             progress.Text = "Shrink Spatial Indices...";
             progress.Show();
 
             return true;
         }
 
-        // Thread
-        private void RebuildIndecesAsync(object argument)
+        async private Task RebuildIndicesAsync(object argument)
         {
-            if (!(argument is List<IClass>)) return;
+            if (!(argument is List<IClass>))
+            {
+                return;
+            }
+
             List<IClass> classes = argument as List<IClass>;
 
             if (ReportProgress != null)
@@ -46,7 +46,10 @@ namespace gView.DataSources.Fdb.UI
             }
             foreach (IClass cl in classes)
             {
-                if (!(cl is IFeatureClass) || cl.Dataset == null || !(cl.Dataset.Database is AccessFDB)) continue;
+                if (!(cl is IFeatureClass) || cl.Dataset == null || !(cl.Dataset.Database is AccessFDB))
+                {
+                    continue;
+                }
 
                 if (ReportProgress != null)
                 {
@@ -54,14 +57,17 @@ namespace gView.DataSources.Fdb.UI
                     _report.Message = "Featureclass " + cl.Name;
                     ReportProgress(_report);
                 }
-                
+
                 AccessFDB fdb = cl.Dataset.Database as AccessFDB;
-                if (!fdb.ShrinkSpatialIndex(cl.Name).Result)
+                if (!await fdb.ShrinkSpatialIndex(cl.Name))
                 {
                     MessageBox.Show("Error rebuilding " + cl.Name + " index:\n" + fdb.LastErrorMessage);
                     return;
                 }
-                if (!_cancelTracker.Continue) return;
+                if (!_cancelTracker.Continue)
+                {
+                    return;
+                }
             }
         }
 

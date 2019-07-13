@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Data;
-using System.Threading;
 using gView.DataSources.Fdb.MSAccess;
+using gView.Framework.Data;
+using System;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI.MSSql
 {
@@ -16,6 +11,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
         private gView.DataSources.Fdb.MSAccess.AccessFDB _fdb;
         private IFeatureClass _fc;
         private bool _finished = true;
+        private Task _processTask = null;
 
         public FormRepairSpatialIndexProgress(gView.DataSources.Fdb.MSAccess.AccessFDB fdb, IFeatureClass fc)
         {
@@ -32,26 +28,34 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         private void FormRepairSpatialIndexProgress_Load(object sender, EventArgs e)
         {
+            
+        }
+
+        private void FormRepairSpatialIndexProgress_Shown(object sender, EventArgs e)
+        {
             if (_fdb != null && _fc != null)
             {
                 _finished = false;
-                Thread thread = new Thread(new ThreadStart(Process));
-                thread.Start();
+                _processTask = Process();
             }
             else
+            {
                 this.Close();
+            }
         }
 
         private void FormRepairSpatialIndexProgress_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (!_finished)
+            {
                 e.Cancel = true;
+            }
         }
 
         // Thread
-        private void Process()
+        async private Task Process()
         {
-            if (!_fdb.RepairSpatialIndex(_fc.Name, new EventHandler(ProcessEventHandler)).Result)
+            if (!await _fdb.RepairSpatialIndex(_fc.Name, new EventHandler(ProcessEventHandler)))
             {
                 MessageBox.Show(_fdb.LastErrorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -71,27 +75,57 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 if (sender == this)
                 {
                     btnClose.Enabled = true;
+                    this.Refresh();
                 }
                 else if (e is RepairSICheckNodes)
                 {
-                    if (progressBar1.Maximum != ((RepairSICheckNodes)e).Count)
-                        progressBar1.Maximum = ((RepairSICheckNodes)e).Count;
-                    progressBar1.Value = Math.Min(progressBar1.Maximum, ((RepairSICheckNodes)e).Pos);
-
-                    plabel1.Text = progressBar1.Value + "/" + progressBar1.Maximum;
-                    if (((RepairSICheckNodes)e).WrongNIDs != progressBar2.Maximum)
+                    if(((RepairSICheckNodes)e).Pos == 1)
                     {
-                        progressBar2.Maximum = ((RepairSICheckNodes)e).WrongNIDs;
-                        plabel2.Text = "0/" + progressBar2.Maximum;
+                        this.Refresh();
+                    }
+
+                    if (((RepairSICheckNodes)e).Pos == ((RepairSICheckNodes)e).Count ||
+                       ((RepairSICheckNodes)e).Pos % 100 == 0)
+                    {
+                        if (progressBar1.Maximum != ((RepairSICheckNodes)e).Count)
+                        {
+                            progressBar1.Maximum = ((RepairSICheckNodes)e).Count;
+                        }
+
+                        progressBar1.Value = Math.Min(progressBar1.Maximum, ((RepairSICheckNodes)e).Pos);
+
+                        plabel1.Text = progressBar1.Value + "/" + progressBar1.Maximum;
+                        if (((RepairSICheckNodes)e).WrongNIDs != progressBar2.Maximum)
+                        {
+                            progressBar2.Maximum = ((RepairSICheckNodes)e).WrongNIDs;
+                            plabel2.Text = "0/" + progressBar2.Maximum;
+                        }
+
+                        progressBar1.Refresh();
+                        plabel1.Refresh();
+                        plabel2.Refresh();
                     }
                 }
                 else if (e is RepairSIUpdateNodes)
                 {
-                    if (progressBar2.Maximum != ((RepairSIUpdateNodes)e).Count)
-                        progressBar2.Maximum = ((RepairSIUpdateNodes)e).Count;
-                    progressBar2.Value = Math.Min(progressBar2.Maximum, ((RepairSIUpdateNodes)e).Pos);
+                    if (((RepairSIUpdateNodes)e).Pos == ((RepairSIUpdateNodes)e).Count ||
+                       ((RepairSIUpdateNodes)e).Pos % 100 == 0)
+                    {
+                        if (progressBar2.Maximum != ((RepairSIUpdateNodes)e).Count)
+                        {
+                            progressBar2.Maximum = ((RepairSIUpdateNodes)e).Count;
+                        }
 
-                    plabel2.Text = progressBar2.Value + "/" + progressBar2.Maximum;
+                        progressBar2.Value = Math.Min(progressBar2.Maximum, ((RepairSIUpdateNodes)e).Pos);
+
+                        plabel2.Text = progressBar2.Value + "/" + progressBar2.Maximum;
+
+                        if (((RepairSIUpdateNodes)e).Count % 100 == 0)
+                        {
+                            progressBar2.Refresh();
+                            plabel2.Refresh();
+                        }
+                    }
                 }
             }
         }

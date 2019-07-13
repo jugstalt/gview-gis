@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.Framework.IO
 {
@@ -15,7 +16,7 @@ namespace gView.Framework.IO
             return path.Replace(@"\", "/");
         }
 
-        static public void SaveOrUpload(this Bitmap bitmap, string path, ImageFormat format)
+        async static public Task SaveOrUpload(this Bitmap bitmap, string path, ImageFormat format)
         {
             if (path.StartsWith("http://") || path.StartsWith("https://"))
             {
@@ -35,7 +36,7 @@ namespace gView.Framework.IO
                     MultipartFormDataContent form = new MultipartFormDataContent();
 
                     form.Add(new ByteArrayContent(file_bytes, 0, file_bytes.Length), "file", filename);
-                    HttpResponseMessage response = httpClient.PostAsync(url, form).Result;
+                    HttpResponseMessage response = await httpClient.PostAsync(url, form);
 
                     response.EnsureSuccessStatusCode();
                     //string sd = response.Content.ReadAsStringAsync().Result;

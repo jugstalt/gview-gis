@@ -112,40 +112,77 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="labelMessage.Location" type="System.Drawing.Point, System.Drawing">
+    <value>13, 13</value>
+  </data>
   <data name="labelMessage.Size" type="System.Drawing.Size, System.Drawing">
-    <value>468, 40</value>
+    <value>749, 59</value>
+  </data>
+  <data name="progressBar1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>13, 82</value>
   </data>
   <data name="progressBar1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>468, 23</value>
+    <value>749, 33</value>
+  </data>
+  <data name="labelProgress.Location" type="System.Drawing.Point, System.Drawing">
+    <value>13, 129</value>
+  </data>
+  <data name="labelProgress.Size" type="System.Drawing.Size, System.Drawing">
+    <value>627, 23</value>
   </data>
   <data name="btnCancel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 140</value>
+    <value>13, 205</value>
+  </data>
+  <data name="btnCancel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>179, 35</value>
   </data>
   <data name="btnCancel.Text" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
   <data name="progressDisk1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>370, 56</value>
+    <value>592, 82</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="progressDisk1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="progressDisk1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>170, 170</value>
   </data>
   <data name="lblTime.Location" type="System.Drawing.Point, System.Drawing">
-    <value>103, 5</value>
+    <value>165, 7</value>
+  </data>
+  <data name="lblTime.Size" type="System.Drawing.Size, System.Drawing">
+    <value>0, 20</value>
+  </data>
+  <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 7</value>
   </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>93, 13</value>
+    <value>138, 20</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>Verbleibende Zeit:</value>
   </data>
   <data name="panelTime.Location" type="System.Drawing.Point, System.Drawing">
-    <value>123, 141</value>
+    <value>197, 206</value>
+  </data>
+  <data name="panelTime.Size" type="System.Drawing.Size, System.Drawing">
+    <value>445, 34</value>
+  </data>
+  <data name="$this.AutoScaleBaseSize" type="System.Drawing.Size, System.Drawing">
+    <value>8, 19</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>488, 176</value>
+    <value>937, 268</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Task Progress</value>
   </data>
 </root>

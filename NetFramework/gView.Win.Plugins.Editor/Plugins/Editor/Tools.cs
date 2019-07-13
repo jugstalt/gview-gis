@@ -1553,16 +1553,16 @@ namespace gView.Plugins.Editor
             }
         }
 
-        public Task<bool> OnEvent(object MapEvent)
+        async public Task<bool> OnEvent(object MapEvent)
         {
             if (_module == null || _module.FeatureClass == null || _module.Feature == null)
-                return Task.FromResult(false);
+                return false;
 
             bool ret = false;
             if (_module.Feature.OID > 0)
-                ret = _module.PerformUpdateFeature(_module.FeatureClass, _module.Feature);
+                ret = await _module.PerformUpdateFeature(_module.FeatureClass, _module.Feature);
             else
-                ret = _module.PerformInsertFeature(_module.FeatureClass, _module.Feature);
+                ret = await _module.PerformInsertFeature(_module.FeatureClass, _module.Feature);
 
             if (!ret)
             {
@@ -1572,10 +1572,10 @@ namespace gView.Plugins.Editor
             else
             {
                 _module.Feature = null;
-                ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.All);
+                await ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.All);
             }
 
-            return Task.FromResult(ret);
+            return ret;
         }
 
         #endregion
@@ -1643,7 +1643,7 @@ namespace gView.Plugins.Editor
             bool ret = false;
             if (_module.Feature.OID > 0)
             {
-                ret = _module.PerformDeleteFeature(_module.FeatureClass, _module.Feature);
+                ret = await _module.PerformDeleteFeature(_module.FeatureClass, _module.Feature);
             }
             else
             {
@@ -1793,7 +1793,7 @@ namespace gView.Plugins.Editor
             {
                 foreach (IFeature feature in features)
                 {
-                    bool ret = _module.PerformDeleteFeature(fClass, feature);
+                    bool ret = await _module.PerformDeleteFeature(fClass, feature);
                     if (!ret)
                     {
                         if (!String.IsNullOrEmpty(_module.LastMessage))

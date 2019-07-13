@@ -159,7 +159,7 @@ namespace gView.Framework.UI.Dialogs.Network
                 };
             }
 
-            creator.Run();
+            await creator.Run();
         }
 
         #endregion

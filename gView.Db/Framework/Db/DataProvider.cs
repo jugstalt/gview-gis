@@ -76,7 +76,7 @@ namespace gView.Framework.Db
                             dbFactory = DataProvider.PostgresProvider;
 
                             dbConnection = dbFactory.CreateConnection();
-                            dbConnection.ConnectionString = connStr;
+                            dbConnection.ConnectionString = DbConnectionString.ParseNpgsqlConnectionString(connStr);
                             if (testIt)
                             {
                                 dbConnection.Open();

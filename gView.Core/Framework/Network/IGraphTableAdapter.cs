@@ -88,7 +88,7 @@ namespace gView.Framework.Network
 
         GraphWeights GraphWeights { get; set; }
 
-        void Run();
+        Task Run();
     }
 
     public class GraphWeights : List<IGraphWeight>

@@ -5,8 +5,10 @@ using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
+    public enum ProgressMode { ProgressBar, ProgressDisk }
+
     /// <summary>
-    /// Zusammenfassung für FormProgress.
+    /// Zusammenfassung für FormTaskProgress.
     /// </summary>
     public class FormTaskProgress : System.Windows.Forms.Form, IProgressTaskDialog
     {
@@ -201,7 +203,7 @@ namespace gView.Framework.UI.Dialogs
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormProgress));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormTaskProgress));
             this.labelMessage = new System.Windows.Forms.Label();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.labelProgress = new System.Windows.Forms.Label();
@@ -216,86 +218,55 @@ namespace gView.Framework.UI.Dialogs
             // 
             // labelMessage
             // 
-            this.labelMessage.AccessibleDescription = null;
-            this.labelMessage.AccessibleName = null;
             resources.ApplyResources(this.labelMessage, "labelMessage");
-            this.labelMessage.Font = null;
             this.labelMessage.Name = "labelMessage";
             // 
             // progressBar1
             // 
-            this.progressBar1.AccessibleDescription = null;
-            this.progressBar1.AccessibleName = null;
             resources.ApplyResources(this.progressBar1, "progressBar1");
-            this.progressBar1.BackgroundImage = null;
-            this.progressBar1.Font = null;
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Step = 1;
             // 
             // labelProgress
             // 
-            this.labelProgress.AccessibleDescription = null;
-            this.labelProgress.AccessibleName = null;
             resources.ApplyResources(this.labelProgress, "labelProgress");
-            this.labelProgress.Font = null;
             this.labelProgress.Name = "labelProgress";
             // 
             // btnCancel
             // 
-            this.btnCancel.AccessibleDescription = null;
-            this.btnCancel.AccessibleName = null;
             resources.ApplyResources(this.btnCancel, "btnCancel");
-            this.btnCancel.BackgroundImage = null;
-            this.btnCancel.Font = null;
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // progressDisk1
             // 
-            this.progressDisk1.AccessibleDescription = null;
-            this.progressDisk1.AccessibleName = null;
+            resources.ApplyResources(this.progressDisk1, "progressDisk1");
             this.progressDisk1.ActiveForeColor1 = System.Drawing.Color.Red;
             this.progressDisk1.ActiveForeColor2 = System.Drawing.Color.Coral;
-            resources.ApplyResources(this.progressDisk1, "progressDisk1");
-            this.progressDisk1.BackgroundImage = null;
             this.progressDisk1.BlockSize = gView.Framework.UI.Controls.BlockSize.Large;
-            this.progressDisk1.Font = null;
             this.progressDisk1.Name = "progressDisk1";
-            this.progressDisk1.SquareSize = 106;
+            this.progressDisk1.SquareSize = 170;
             // 
             // panelTime
             // 
-            this.panelTime.AccessibleDescription = null;
-            this.panelTime.AccessibleName = null;
             resources.ApplyResources(this.panelTime, "panelTime");
-            this.panelTime.BackgroundImage = null;
             this.panelTime.Controls.Add(this.lblTime);
             this.panelTime.Controls.Add(this.label1);
-            this.panelTime.Font = null;
             this.panelTime.Name = "panelTime";
             // 
             // lblTime
             // 
-            this.lblTime.AccessibleDescription = null;
-            this.lblTime.AccessibleName = null;
             resources.ApplyResources(this.lblTime, "lblTime");
-            this.lblTime.Font = null;
             this.lblTime.Name = "lblTime";
             // 
             // label1
             // 
-            this.label1.AccessibleDescription = null;
-            this.label1.AccessibleName = null;
             resources.ApplyResources(this.label1, "label1");
-            this.label1.Font = null;
             this.label1.Name = "label1";
             // 
-            // FormProgress
+            // FormTaskProgress
             // 
-            this.AccessibleDescription = null;
-            this.AccessibleName = null;
             resources.ApplyResources(this, "$this");
-            this.BackgroundImage = null;
             this.ControlBox = false;
             this.Controls.Add(this.panelTime);
             this.Controls.Add(this.progressDisk1);
@@ -303,11 +274,9 @@ namespace gView.Framework.UI.Dialogs
             this.Controls.Add(this.labelProgress);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.labelMessage);
-            this.Font = null;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = null;
-            this.Name = "FormProgress";
-            this.Shown += new System.EventHandler(this.FormProgress_Shown);
+            this.Name = "FormTaskProgress";
+            this.Shown += new System.EventHandler(this.FormTaskProgress_Shown);
             this.panelTime.ResumeLayout(false);
             this.panelTime.PerformLayout();
             this.ResumeLayout(false);
@@ -323,7 +292,7 @@ namespace gView.Framework.UI.Dialogs
             }
         }
 
-        private void FormProgress_Shown(object sender, EventArgs e)
+        private void FormTaskProgress_Shown(object sender, EventArgs e)
         {
             startTime = DateTime.Now;
 

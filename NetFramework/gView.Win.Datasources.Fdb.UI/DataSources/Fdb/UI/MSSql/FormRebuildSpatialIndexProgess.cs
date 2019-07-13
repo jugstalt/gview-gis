@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Data;
-using System.Threading;
 using gView.DataSources.Fdb.MSAccess;
+using gView.Framework.Data;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI.MSSql
 {
@@ -17,33 +13,39 @@ namespace gView.DataSources.Fdb.UI.MSSql
         private IFeatureClass _fc;
         private BinaryTreeDef _def;
         private bool _finished = true;
+        private Task _processTask = null;
 
-        public FormRebuildSpatialIndexProgess(gView.DataSources.Fdb.MSAccess.AccessFDB fdb,IFeatureClass fc,BinaryTreeDef def)
+        public FormRebuildSpatialIndexProgess(gView.DataSources.Fdb.MSAccess.AccessFDB fdb, IFeatureClass fc, BinaryTreeDef def)
         {
             InitializeComponent();
 
             _fdb = fdb;
             _fc = fc;
             _def = def;
-            
+
         }
 
         private void FormRebuildSpatialIndexProgess_Load(object sender, EventArgs e)
         {
+            
+        }
+
+        private void FormRebuildSpatialIndexProgess_Shown(object sender, EventArgs e)
+        {
             if (_fdb != null && _fc != null && _def != null)
             {
                 _finished = false;
-                Thread thread = new Thread(new ThreadStart(Process));
-                thread.Start();
+                _processTask = Process();
             }
-            else 
+            else
+            {
                 this.Close();
+            }
         }
 
-        // Thread
-        private void Process()
+        async private Task Process()
         {
-            if (!_fdb.RebuildSpatialIndexDef(_fc.Name, _def, new EventHandler(ProcessEventHandler)).Result)
+            if (!await _fdb.RebuildSpatialIndexDef(_fc.Name, _def, new EventHandler(ProcessEventHandler)))
             {
                 MessageBox.Show(_fdb.LastErrorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -70,19 +72,43 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 }
                 else if (e is UpdateSICalculateNodes)
                 {
-                    if (progressBar2.Maximum != ((UpdateSICalculateNodes)e).Count)
-                        progressBar2.Maximum = ((UpdateSICalculateNodes)e).Count;
-                    progressBar2.Value = Math.Min(progressBar2.Maximum, ((UpdateSICalculateNodes)e).Pos);
+                    if (((UpdateSICalculateNodes)e).Pos == 1)
+                    {
+                        this.Refresh();
+                    }
+                    if (((UpdateSICalculateNodes)e).Pos == ((UpdateSICalculateNodes)e).Count ||
+                       ((UpdateSICalculateNodes)e).Pos % 100 == 0)
+                    {
+                        if (progressBar2.Maximum != ((UpdateSICalculateNodes)e).Count)
+                        {
+                            progressBar2.Maximum = ((UpdateSICalculateNodes)e).Count;
+                        }
 
-                    plabel2.Text = progressBar2.Value + "/" + progressBar2.Maximum;
+                        progressBar2.Value = Math.Min(progressBar2.Maximum, ((UpdateSICalculateNodes)e).Pos);
+
+                        plabel2.Text = progressBar2.Value + "/" + progressBar2.Maximum;
+
+                        progressBar2.Refresh();
+                        plabel2.Refresh();
+                    }
                 }
                 else if (e is UpdateSIUpdateNodes)
                 {
-                    if (progressBar3.Maximum != ((UpdateSIUpdateNodes)e).Count)
-                        progressBar3.Maximum = ((UpdateSIUpdateNodes)e).Count;
-                    progressBar3.Value = Math.Min(progressBar3.Maximum, ((UpdateSIUpdateNodes)e).Pos);
+                    if (((UpdateSIUpdateNodes)e).Pos == ((UpdateSIUpdateNodes)e).Count ||
+                       ((UpdateSIUpdateNodes)e).Pos % 100 == 0)
+                    {
+                        if (progressBar3.Maximum != ((UpdateSIUpdateNodes)e).Count)
+                        {
+                            progressBar3.Maximum = ((UpdateSIUpdateNodes)e).Count;
+                        }
 
-                    plabel3.Text = progressBar3.Value + "/" + progressBar3.Maximum;
+                        progressBar3.Value = Math.Min(progressBar3.Maximum, ((UpdateSIUpdateNodes)e).Pos);
+
+                        plabel3.Text = progressBar3.Value + "/" + progressBar3.Maximum;
+
+                        progressBar3.Refresh();
+                        plabel2.Refresh();
+                    }
                 }
             }
         }
@@ -90,7 +116,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
         private void FormRebuildSpatialIndexProgess_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (!_finished)
+            {
                 e.Cancel = true;
+            }
         }
     }
 }
