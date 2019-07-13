@@ -1,20 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Carto;
-using gView.Framework.system;
-using gView.Framework.IO;
 using gView.Framework.Geometry;
 using gView.Framework.Globalisation;
-using System.Threading;
-using gView.Plugins.ExTools.Dialogs;
+using gView.Framework.IO;
+using gView.Framework.Sys.UI;
+using gView.Framework.system;
+using gView.Framework.UI;
 using gView.Framework.UI.Controls.Filter;
 using gView.Framework.UI.Dialogs;
-using gView.Framework.Sys.UI;
+using gView.Plugins.ExTools.Dialogs;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools
 {
@@ -44,7 +43,10 @@ namespace gView.Plugins.MapTools
 
                     foreach (IGraphicElement element in _doc.FocusMap.Display.GraphicsContainer.SelectedElements)
                     {
-                        if (element is IGraphicElement2 && element is IPersistable) return true;
+                        if (element is IGraphicElement2 && element is IPersistable)
+                        {
+                            return true;
+                        }
                     }
                 }
                 if (_context != null && _context.Count > 0)
@@ -56,7 +58,9 @@ namespace gView.Plugins.MapTools
                     foreach (var selected in _exapp.SelectedObjects)
                     {
                         if (selected is ISerializableExplorerObject)
+                        {
                             return true;
+                        }
                     }
                     //return true;
                 }
@@ -86,9 +90,13 @@ namespace gView.Plugins.MapTools
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = hook as IMapDocument;
+            }
             else if (hook is IExplorerApplication)
+            {
                 _exapp = hook as IExplorerApplication;
+            }
         }
 
         public Task<bool> OnEvent(object MapEvent)
@@ -162,7 +170,10 @@ namespace gView.Plugins.MapTools
                         elements.Add(ser);
                     }
                 }
-                if (elements.Count == 0) return;
+                if (elements.Count == 0)
+                {
+                    return;
+                }
 
                 Clipboard.Clear();
                 Clipboard.SetDataObject(new DataObject(elements.ToArray()));
@@ -173,7 +184,10 @@ namespace gView.Plugins.MapTools
                 foreach (IExplorerObject exObject in _context)
                 {
                     ExplorerObjectSerialization ser = ExplorerObjectManager.SerializeExplorerObject(exObject);
-                    if (ser == null) continue;
+                    if (ser == null)
+                    {
+                        continue;
+                    }
 
                     exObjects.Add(ser);
                 }
@@ -190,7 +204,10 @@ namespace gView.Plugins.MapTools
                 foreach (IExplorerObject exObject in _exapp.SelectedObjects)
                 {
                     IExplorerObjectSerialization ser = ExplorerObjectManager.SerializeExplorerObject(exObject);
-                    if (ser == null) continue;
+                    if (ser == null)
+                    {
+                        continue;
+                    }
 
                     exObjects.Add(ser);
                 }
@@ -237,8 +254,21 @@ namespace gView.Plugins.MapTools
                 if (_exapp.MoveToTreeNode(exDlg.ExplorerObjects[0].FullName))
                 {
                     Paste paste = new Paste();
-                    paste.OnCreate(_exapp);
 
+                    //var data = Clipboard.GetDataObject();
+                    //var task = Task.Run(async () =>
+                    //  {
+                    //      await Task.Delay(3000);
+                    //      if (Clipboard.GetDataObject()==null)
+                    //      {
+                    //          Clipboard.SetDataObject(data);
+                    //      }
+
+                    //      paste.OnCreate(_exapp);
+                    //      await paste.OnEvent(null);
+                    //  });
+
+                    paste.OnCreate(_exapp);
                     paste.OnEvent(null);
                 }
             }
@@ -269,7 +299,10 @@ namespace gView.Plugins.MapTools
                 {
                     foreach (IGraphicElement element in _doc.FocusMap.Display.GraphicsContainer.SelectedElements)
                     {
-                        if (element is IGraphicElement2 && element is IPersistable) return true;
+                        if (element is IGraphicElement2 && element is IPersistable)
+                        {
+                            return true;
+                        }
                     }
                 }
                 return false;
@@ -294,7 +327,9 @@ namespace gView.Plugins.MapTools
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = hook as IMapDocument;
+            }
         }
 
         public Task<bool> OnEvent(object MapEvent)
@@ -355,7 +390,10 @@ namespace gView.Plugins.MapTools
 
         private void OnEvent()
         {
-            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null)
+            {
+                return;
+            }
 
             List<ExtensionSerializer> elements = new List<ExtensionSerializer>();
             foreach (IGraphicElement element in _doc.FocusMap.Display.GraphicsContainer.SelectedElements.Clone())
@@ -370,13 +408,18 @@ namespace gView.Plugins.MapTools
 
                 }
             }
-            if (elements.Count == 0) return;
+            if (elements.Count == 0)
+            {
+                return;
+            }
 
             Clipboard.Clear();
             Clipboard.SetDataObject(new DataObject(elements.ToArray()));
 
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
     }
 
@@ -426,18 +469,22 @@ namespace gView.Plugins.MapTools
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = hook as IMapDocument;
+            }
             else if (hook is IExplorerApplication)
+            {
                 _exapp = hook as IExplorerApplication;
+            }
         }
 
         public Task<bool> OnEvent(object MapEvent)
         {
-            //Thread thread = new Thread(new ThreadStart(OnEvent));
-            //thread.TrySetApartmentState(ApartmentState.STA);
-            //thread.Start();
+            Thread thread = new Thread(new ThreadStart(OnEvent));
+            thread.TrySetApartmentState(ApartmentState.STA);
+            thread.Start();
             //thread.Join();   
-            OnEvent();
+            //OnEvent();
 
             return Task.FromResult(true);
         }
@@ -488,13 +535,19 @@ namespace gView.Plugins.MapTools
             if (_doc != null && _doc.FocusMap != null && _doc.FocusMap.Display != null)
             {
                 IDataObject iData = Clipboard.GetDataObject();
-                if (iData == null) return;
+                if (iData == null)
+                {
+                    return;
+                }
 
                 foreach (string format in iData.GetFormats())
                 {
                     if (!format.Contains("gView.Plugins.MapTools.ExtensionSerializer") &&
                         !format.Contains("gView.Framework.system.ExplorerObjectSerialization") &&
-                        !format.Contains("gView.Framework.UI.IExplorerObjectSerialization")) continue;
+                        !format.Contains("gView.Framework.UI.IExplorerObjectSerialization"))
+                    {
+                        continue;
+                    }
 
                     object ob = iData.GetData(format);
                     if (ob is IEnumerable<ExtensionSerializer>)
@@ -523,16 +576,24 @@ namespace gView.Plugins.MapTools
                 }
 
                 if (_doc.Application is IMapApplication)
+                {
                     ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+                }
             }
             if (_context != null && _context.Count == 1)
             {
                 IExplorerObjectContentDragDropEvents ddEvents = _context[0] as IExplorerObjectContentDragDropEvents;
                 _context = null;
-                if (ddEvents == null) return;
+                if (ddEvents == null)
+                {
+                    return;
+                }
 
                 IDataObject iData = Clipboard.GetDataObject();
-                if (iData == null) return;
+                if (iData == null)
+                {
+                    return;
+                }
 
                 foreach (string format in iData.GetFormats())
                 {
@@ -544,15 +605,38 @@ namespace gView.Plugins.MapTools
                     }
                 }
 
-                if (_exapp != null) _exapp.RefreshContents();
+                if (_exapp != null)
+                {
+                    _exapp.RefreshContents();
+                }
             }
             else if (_exapp != null && _exapp.SelectedObjects != null && _exapp.SelectedObjects.Count == 1)
             {
-                IExplorerObjectContentDragDropEvents ddEvents = _exapp.SelectedObjects[0] as IExplorerObjectContentDragDropEvents;
-                if (ddEvents == null) return;
+                IExplorerObjectContentDragDropEvents ddEvents = null;
+                // Try some times -> await all async treenode events after copy to:   I hate async windows programming!!!
+                for (int i = 0; i < 5; i++)
+                {
+                    ddEvents = _exapp.SelectedObjects[0] as IExplorerObjectContentDragDropEvents;
+                    if (ddEvents == null)
+                    {
+                        Thread.Sleep(1000);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                if(ddEvents==null)
+                {
+                    return;
+                }
 
                 IDataObject iData = Clipboard.GetDataObject();
-                if (iData == null) return;
+                if (iData == null)
+                {
+                    return;
+                }
 
                 foreach (string format in iData.GetFormats())
                 {
@@ -595,7 +679,10 @@ namespace gView.Plugins.MapTools
             {
                 if (!format.Contains("gView.Plugins.MapTools.ExtensionSerializer") &&
                     !format.Contains("gView.Framework.system.ExplorerObjectSerialization") &&
-                    !format.Contains("gView.Framework.UI.IExplorerObjectSerialization")) continue;
+                    !format.Contains("gView.Framework.UI.IExplorerObjectSerialization"))
+                {
+                    continue;
+                }
 
                 object ob = null;
                 try
@@ -666,7 +753,9 @@ namespace gView.Plugins.MapTools
         void IExTool.OnCreate(object hook)
         {
             if (hook is IExplorerApplication)
+            {
                 _exapp = hook as IExplorerApplication;
+            }
         }
 
         Task<bool> IExTool.OnEvent(object MapEvent)
@@ -703,13 +792,19 @@ namespace gView.Plugins.MapTools
             {
                 IExplorerObjectContentDragDropEvents2 ddEvents = _context[0] as IExplorerObjectContentDragDropEvents2;
                 _context = null;
-                if (ddEvents == null) return;
+                if (ddEvents == null)
+                {
+                    return;
+                }
 
                 UserData userData = new UserData();
                 userData.SetUserData("gView.Framework.UI.BaseTools.PasteSchema", true);
 
                 IDataObject iData = Clipboard.GetDataObject();
-                if (iData == null) return;
+                if (iData == null)
+                {
+                    return;
+                }
 
                 foreach (string format in iData.GetFormats())
                 {
@@ -721,18 +816,27 @@ namespace gView.Plugins.MapTools
                     }
                 }
 
-                if (_exapp != null) _exapp.RefreshContents();
+                if (_exapp != null)
+                {
+                    _exapp.RefreshContents();
+                }
             }
             else if (_exapp != null && _exapp.SelectedObjects != null && _exapp.SelectedObjects.Count == 1)
             {
                 IExplorerObjectContentDragDropEvents2 ddEvents = _exapp.SelectedObjects[0] as IExplorerObjectContentDragDropEvents2;
-                if (ddEvents == null) return;
+                if (ddEvents == null)
+                {
+                    return;
+                }
 
                 UserData userData = new UserData();
                 userData.SetUserData("gView.Framework.UI.BaseTools.PasteSchema", true);
 
                 IDataObject iData = Clipboard.GetDataObject();
-                if (iData == null) return;
+                if (iData == null)
+                {
+                    return;
+                }
 
                 foreach (string format in iData.GetFormats())
                 {
@@ -775,7 +879,10 @@ namespace gView.Plugins.MapTools
             {
                 if (!format.Contains("gView.Plugins.MapTools.ExtensionSerializer") &&
                     !format.Contains("gView.Framework.system.ExplorerObjectSerialization") &&
-                    !format.Contains("gView.Framework.UI.IExplorerObjectSerialization")) continue;
+                    !format.Contains("gView.Framework.UI.IExplorerObjectSerialization"))
+                {
+                    continue;
+                }
 
                 object ob = null;
                 try
@@ -827,20 +934,28 @@ namespace gView.Plugins.MapTools
                 {
 
                     if (_doc.FocusMap.Display.GraphicsContainer.SelectedElements.Count != 0)
+                    {
                         return true;
+                    }
                 }
                 if (_context != null)
                 {
                     foreach (IExplorerObject exObject in _context)
                     {
-                        if (exObject is IExplorerObjectDeletable) return true;
+                        if (exObject is IExplorerObjectDeletable)
+                        {
+                            return true;
+                        }
                     }
                 }
                 else if (_exapp != null && _exapp.SelectedObjects != null)
                 {
                     foreach (IExplorerObject exObject in _exapp.SelectedObjects)
                     {
-                        if (exObject is IExplorerObjectDeletable) return true;
+                        if (exObject is IExplorerObjectDeletable)
+                        {
+                            return true;
+                        }
                     }
                 }
                 return false;
@@ -865,9 +980,13 @@ namespace gView.Plugins.MapTools
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = hook as IMapDocument;
+            }
             else if (hook is IExplorerApplication)
+            {
                 _exapp = hook as IExplorerApplication;
+            }
         }
 
         public Task<bool> OnEvent(object MapEvent)
@@ -882,7 +1001,9 @@ namespace gView.Plugins.MapTools
                 _doc.FocusMap.Display.GraphicsContainer.SelectedElements.Clear();
 
                 if (_doc.Application is IMapApplication)
+                {
                     ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+                }
             }
             if (_context != null)
             {
@@ -892,7 +1013,9 @@ namespace gView.Plugins.MapTools
                     foreach (IExplorerObject exObject in dlg.Selected)
                     {
                         if (exObject is IExplorerObjectDeletable)
+                        {
                             ((IExplorerObjectDeletable)exObject).DeleteExplorerObject(new ExplorerObjectEventArgs());
+                        }
                     }
                 }
                 _context = null;
@@ -905,13 +1028,17 @@ namespace gView.Plugins.MapTools
                     foreach (IExplorerObject exObject in dlg.Selected)
                     {
                         if (exObject is IExplorerObjectDeletable)
+                        {
                             ((IExplorerObjectDeletable)exObject).DeleteExplorerObject(new ExplorerObjectEventArgs());
+                        }
                     }
                 }
             }
 
             if (_exapp != null)
+            {
                 _exapp.RefreshContents();
+            }
 
             return Task.FromResult(true);
         }
@@ -989,7 +1116,10 @@ namespace gView.Plugins.MapTools
                 {
                     foreach (IExplorerObject exObject in _exapp.SelectedObjects)
                     {
-                        if (exObject is IExplorerObjectRenamable) return true;
+                        if (exObject is IExplorerObjectRenamable)
+                        {
+                            return true;
+                        }
                     }
                 }
                 return false;
@@ -1009,7 +1139,9 @@ namespace gView.Plugins.MapTools
         public void OnCreate(object hook)
         {
             if (hook is IExplorerApplication)
+            {
                 _exapp = hook as IExplorerApplication;
+            }
         }
 
         public Task<bool> OnEvent(object MapEvent)
@@ -1034,7 +1166,9 @@ namespace gView.Plugins.MapTools
             }
 
             if (_exapp != null)
+            {
                 _exapp.RefreshContents();
+            }
 
             return Task.FromResult(true);
         }
@@ -1112,11 +1246,17 @@ namespace gView.Plugins.MapTools
             {
                 try
                 {
-                    if (_string == "" || _string == null) return null;
+                    if (_string == "" || _string == null)
+                    {
+                        return null;
+                    }
 
                     PlugInManager compMan = new PlugInManager();
                     object extension = compMan.CreateInstance(_guid);
-                    if (!(extension is IPersistable)) return null;
+                    if (!(extension is IPersistable))
+                    {
+                        return null;
+                    }
 
                     byte[] b = System.Text.Encoding.Unicode.GetBytes(_string);
                     XmlStream stream = new XmlStream("");

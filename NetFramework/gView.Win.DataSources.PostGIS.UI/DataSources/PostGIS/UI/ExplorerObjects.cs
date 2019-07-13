@@ -346,7 +346,7 @@ namespace gView.DataSources.PostGIS.UI
                 return false;
 
             PostGISDataset dataset = new PostGISDataset();
-            await dataset.SetConnectionString (_connectionString.ConnectionString);
+            await dataset.SetConnectionString(_connectionString.ConnectionString);
             await dataset.Open();
 
             List<IDatasetElement> elements = await dataset.Elements();

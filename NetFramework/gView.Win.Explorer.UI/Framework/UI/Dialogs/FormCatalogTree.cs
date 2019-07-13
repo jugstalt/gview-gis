@@ -1,24 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.IO;
-using System.Xml;
-using System.Management;
-using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.system;
-using gView.Framework.Data;
 using gView.Framework.UI.Controls;
+using System;
+using System.Drawing;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
     public partial class FormCatalogTree : UserControl, IDockableWindow
     {
-        public delegate void NodeClickedEvent(TreeNode node);
+        public delegate Task NodeClickedEvent(TreeNode node);
         public event NodeClickedEvent NodeSelected = null;
         public delegate void NodeDeletedEvent(IExplorerObject exObject);
         public event NodeDeletedEvent NodeDeleted = null;
@@ -26,7 +16,7 @@ namespace gView.Framework.UI.Dialogs
         public event NodeRenamedEvent NodeRenamed = null;
 
         public FormCatalogTree(IExplorerApplication application)
-            :this(application,true)
+            : this(application, true)
         {
         }
         public FormCatalogTree(IExplorerApplication application, bool init)
@@ -35,7 +25,9 @@ namespace gView.Framework.UI.Dialogs
 
             this.catalogTreeControl1.ExplorerApplication = application;
             if (init)
+            {
                 InitTree(true);
+            }
         }
 
         public void InitTree(bool expand)
@@ -95,19 +87,28 @@ namespace gView.Framework.UI.Dialogs
             //catalogTreeControl1.InitTreeView();
         }
 
-        private void catalogTreeControl1_NodeSelected(TreeNode node)
+        async private Task catalogTreeControl1_NodeSelected(TreeNode node)
         {
-            if (NodeSelected != null) NodeSelected(node);
+            if (NodeSelected != null)
+            {
+                await NodeSelected(node);
+            }
         }
 
         private void catalogTreeControl1_NodeRenamed(IExplorerObject exObject)
         {
-            if (NodeRenamed != null) NodeRenamed(exObject);
+            if (NodeRenamed != null)
+            {
+                NodeRenamed(exObject);
+            }
         }
 
         private void catalogTreeControl1_NodeDeleted(IExplorerObject exObject)
         {
-            if (NodeDeleted != null) NodeDeleted(exObject);
+            if (NodeDeleted != null)
+            {
+                NodeDeleted(exObject);
+            }
         }
 
         public bool MoveToNode(string path)
@@ -166,5 +167,5 @@ namespace gView.Framework.UI.Dialogs
     }
     */
 
-    
+
 }

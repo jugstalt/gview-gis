@@ -1,29 +1,18 @@
+using gView.Framework.Sys.UI;
+using gView.Framework.system.UI;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
-using System.IO;
-using System.Xml;
 using System.Management;
-using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.system;
-using gView.Framework.Data;
-using gView.Explorer.UI;
-using gView.Framework.system.UI;
-using gView.Framework.IO;
-using gView.Framework.UI.Dialogs;
-using gView.system.UI.Framework.system.UI;
-using gView.Framework.Sys.UI;
+using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Controls
 {
     public partial class CatalogTreeControl : UserControl
     {
-        public delegate void NodeClickedEvent(TreeNode node);
+        public delegate Task NodeClickedEvent(TreeNode node);
         public event NodeClickedEvent NodeSelected = null;
         public delegate void NodeDeletedEvent(IExplorerObject exObject);
         public event NodeDeletedEvent NodeDeleted = null;
@@ -85,7 +74,10 @@ namespace gView.Framework.UI.Controls
                             pos = treeView.Nodes.IndexOf(_contextNode);
                             treeView.Nodes.Remove(_contextNode);
                         }
-                        if (pos != -1 && NodeDeleted != null) NodeDeleted(_contextNode.ExplorerObject);
+                        if (pos != -1 && NodeDeleted != null)
+                        {
+                            NodeDeleted(_contextNode.ExplorerObject);
+                        }
                     }
                 }
 
@@ -125,7 +117,10 @@ namespace gView.Framework.UI.Controls
                 treeView.Nodes.Add(new ExplorerObjectNode(computer, 0));
 
                 if (expand)
+                {
                     treeView.Nodes[0].Expand();
+                }
+
                 treeView.SelectedNode = treeView.Nodes[0];
             }
         }
@@ -139,7 +134,9 @@ namespace gView.Framework.UI.Controls
             else
             {
                 if (treeView.Nodes.Count > 0)
+                {
                     treeView.Nodes[0].Expand();
+                }
             }
         }
 
@@ -152,14 +149,18 @@ namespace gView.Framework.UI.Controls
             else
             {
                 if (treeView.Nodes.Count > 0)
+                {
                     treeView.Nodes[0].Collapse();
+                }
             }
         }
 
         public void SelectRootNode()
         {
             if (treeView.Nodes.Count > 0)
+            {
                 treeView.SelectedNode = treeView.Nodes[0];
+            }
         }
 
         internal void InsertComputerChildNodes(IExplorerObject computerObject, TreeNode computer)
@@ -181,16 +182,31 @@ namespace gView.Framework.UI.Controls
 
         internal void SelectChildNode(IExplorerObject exObject)
         {
-            if (exObject == null) return;
+            if (exObject == null)
+            {
+                return;
+            }
+
             TreeNode node = treeView.SelectedNode;
-            if (node == null) return;
+            if (node == null)
+            {
+                return;
+            }
+
             node.Expand();
 
             foreach (TreeNode n in node.Nodes)
             {
-                if (!(n is ExplorerObjectNode)) continue;
+                if (!(n is ExplorerObjectNode))
+                {
+                    continue;
+                }
+
                 IExplorerObject ex = ((ExplorerObjectNode)n).ExplorerObject;
-                if (ex == null) continue;
+                if (ex == null)
+                {
+                    continue;
+                }
 
                 if (ExObjectComparer.Equals(ex, exObject))
                 {
@@ -201,9 +217,16 @@ namespace gView.Framework.UI.Controls
         }
         internal void RemoveChildNode(IExplorerObject exObject)
         {
-            if (exObject == null) return;
+            if (exObject == null)
+            {
+                return;
+            }
+
             TreeNode node = treeView.SelectedNode;
-            if (node == null) return;
+            if (node == null)
+            {
+                return;
+            }
 
             bool removed = false;
             if (node.IsExpanded)
@@ -211,9 +234,16 @@ namespace gView.Framework.UI.Controls
                 int index = -1;
                 foreach (TreeNode n in node.Nodes)
                 {
-                    if (!(n is ExplorerObjectNode)) continue;
+                    if (!(n is ExplorerObjectNode))
+                    {
+                        continue;
+                    }
+
                     IExplorerObject ex = ((ExplorerObjectNode)n).ExplorerObject;
-                    if (ex == null) continue;
+                    if (ex == null)
+                    {
+                        continue;
+                    }
 
                     if (ExObjectComparer.Equals(ex, exObject))
                     {
@@ -265,13 +295,19 @@ namespace gView.Framework.UI.Controls
             foreach (TreeNode node in treeView.Nodes)
             {
                 ExplorerObjectNode n = FindNode(node, exObject);
-                if (n != null) return n;
+                if (n != null)
+                {
+                    return n;
+                }
             }
             return null;
         }
         internal ExplorerObjectNode FindNode(TreeNode parent, IExplorerObject exObject)
         {
-            if (parent == null) return null;
+            if (parent == null)
+            {
+                return null;
+            }
 
             if (parent is ExplorerObjectNode &&
                 ExObjectComparer.Equals(((ExplorerObjectNode)parent).ExplorerObject, exObject))
@@ -282,14 +318,19 @@ namespace gView.Framework.UI.Controls
             foreach (TreeNode node in parent.Nodes)
             {
                 ExplorerObjectNode n = FindNode(node, exObject);
-                if (n != null) return n;
+                if (n != null)
+                {
+                    return n;
+                }
             }
             return null;
         }
         async internal Task<IExplorerObject> AddChildNode(IExplorerObject exObject)
         {
             if (!(treeView.SelectedNode is ExplorerObjectNode) || exObject == null)
+            {
                 return exObject;
+            }
 
             ExplorerObjectNode node = treeView.SelectedNode as ExplorerObjectNode;
             if (node.ExplorerObject is IExplorerParentObject)
@@ -306,11 +347,19 @@ namespace gView.Framework.UI.Controls
             }
 
             if (exObject is IExplorerObjectDeletable)
+            {
                 ((IExplorerObjectDeletable)exObject).ExplorerObjectDeleted += new ExplorerObjectDeletedEvent(CatalogTreeControl_ExplorerObjectDeleted);
-            if (exObject is IExplorerObjectRenamable)
-                ((IExplorerObjectRenamable)exObject).ExplorerObjectRenamed += new ExplorerObjectRenamedEvent(CatalogTreeControl_ExplorerObjectRenamed);
+            }
 
-            if (!node.IsExpanded) return exObject;
+            if (exObject is IExplorerObjectRenamable)
+            {
+                ((IExplorerObjectRenamable)exObject).ExplorerObjectRenamed += new ExplorerObjectRenamedEvent(CatalogTreeControl_ExplorerObjectRenamed);
+            }
+
+            if (!node.IsExpanded)
+            {
+                return exObject;
+            }
 
             int imageIndex = gView.Explorer.UI.Framework.UI.ExplorerIcons.ImageIndex(exObject);
             node.Nodes.Add(new ExplorerObjectNode(exObject, imageIndex));
@@ -319,16 +368,31 @@ namespace gView.Framework.UI.Controls
         }
         internal bool HasChildNode(IExplorerObject exObject)
         {
-            if (exObject == null) return true;
+            if (exObject == null)
+            {
+                return true;
+            }
+
             TreeNode node = treeView.SelectedNode;
-            if (node == null) return true;
+            if (node == null)
+            {
+                return true;
+            }
+
             node.Expand();
 
             foreach (TreeNode n in node.Nodes)
             {
-                if (!(n is ExplorerObjectNode)) continue;
+                if (!(n is ExplorerObjectNode))
+                {
+                    continue;
+                }
+
                 IExplorerObject ex = ((ExplorerObjectNode)n).ExplorerObject;
-                if (ex == null) continue;
+                if (ex == null)
+                {
+                    continue;
+                }
 
                 if (ExObjectComparer.Equals(ex, exObject))
                 {
@@ -344,7 +408,11 @@ namespace gView.Framework.UI.Controls
 
         async public Task RefreshSelectedNode()
         {
-            if (treeView.SelectedNode == null || !treeView.SelectedNode.IsExpanded) return;
+            if (treeView.SelectedNode == null || !treeView.SelectedNode.IsExpanded)
+            {
+                return;
+            }
+
             await InsertNodeElements(treeView.SelectedNode);
         }
 
@@ -428,7 +496,10 @@ namespace gView.Framework.UI.Controls
             }
             ExplorerObjectNode node = (ExplorerObjectNode)treenode;
             IExplorerObject exObject = node.ExplorerObject;
-            if (exObject == null) return true;
+            if (exObject == null)
+            {
+                return true;
+            }
 
             try
             {
@@ -442,18 +513,28 @@ namespace gView.Framework.UI.Controls
                     treenode.Nodes.Clear();
                     IStatusBar statusbar = (_app != null) ? _app.StatusBar : null;
                     List<IExplorerObject> childObjects = await ((IExplorerParentObject)exObject).ChildObjects();
-                    if (childObjects == null) return false;
+                    if (childObjects == null)
+                    {
+                        return false;
+                    }
+
                     int pos = 0, count = childObjects.Count;
-                    if (statusbar != null) statusbar.ProgressVisible = true;
+                    if (statusbar != null)
+                    {
+                        statusbar.ProgressVisible = true;
+                    }
 
                     foreach (IExplorerObject exObj in childObjects)
                     {
                         if (exObj == null ||
-                            exObj is IExplorerObjectDoubleClick) continue;
+                            exObj is IExplorerObjectDoubleClick)
+                        {
+                            continue;
+                        }
 
                         if (statusbar != null)
                         {
-                            statusbar.ProgressValue = (int)(((double)pos++ / (double)count) * 100.0);
+                            statusbar.ProgressValue = (int)((pos++ / (double)count) * 100.0);
                             statusbar.Text = exObj.Name;
                             statusbar.Refresh();
                         }
@@ -461,18 +542,31 @@ namespace gView.Framework.UI.Controls
                         if (_filter != null)
                         {
                             if (await _filter.Match(exObj))
+                            {
                                 continue;
-                            else if (!(exObj is IExplorerParentObject)) continue;
+                            }
+                            else if (!(exObj is IExplorerParentObject))
+                            {
+                                continue;
+                            }
                         }
                         int imageIndex = gView.Explorer.UI.Framework.UI.ExplorerIcons.ImageIndex(exObj);
                         treenode.Nodes.Add(new ExplorerObjectNode(exObj, imageIndex));
 
                         if (exObj is IExplorerObjectDeletable)
+                        {
                             ((IExplorerObjectDeletable)exObj).ExplorerObjectDeleted += new ExplorerObjectDeletedEvent(CatalogTreeControl_ExplorerObjectDeleted);
+                        }
+
                         if (exObj is IExplorerObjectRenamable)
+                        {
                             ((IExplorerObjectRenamable)exObj).ExplorerObjectRenamed += new ExplorerObjectRenamedEvent(CatalogTreeControl_ExplorerObjectRenamed);
+                        }
+
                         if (exObj is IRefreshedEventHandler)
+                        {
                             ((IRefreshedEventHandler)exObj).Refreshed += new RefreshedEventHandler(CatalogTreeControl_Refreshed);
+                        }
                     }
 
                     if (statusbar != null)
@@ -517,7 +611,11 @@ namespace gView.Framework.UI.Controls
 
         void CatalogTreeControl_ExplorerObjectRenamed(IExplorerObject exObject)
         {
-            if (exObject == null) return;
+            if (exObject == null)
+            {
+                return;
+            }
+
             ExplorerObjectNode node = FindNode(exObject);
             if (node != null)
             {
@@ -535,9 +633,16 @@ namespace gView.Framework.UI.Controls
         async private void treeView_MouseClick(object sender, MouseEventArgs e)
         {
             TreeNode node = treeView.GetNodeAt(e.X, e.Y);
-            if (!(node is ExplorerObjectNode)) return;
+            if (!(node is ExplorerObjectNode))
+            {
+                return;
+            }
+
             IExplorerObject exObject = ((ExplorerObjectNode)node).ExplorerObject;
-            if (exObject == null) return;
+            if (exObject == null)
+            {
+                return;
+            }
 
             Cursor = Cursors.WaitCursor;
 
@@ -577,16 +682,25 @@ namespace gView.Framework.UI.Controls
             Cursor = Cursors.Default;
         }
 
-        private void treeView_AfterSelect(object sender, TreeViewEventArgs e)
+        async private void treeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if (!(e.Node is ExplorerObjectNode)) return;
+            if (!(e.Node is ExplorerObjectNode))
+            {
+                return;
+            }
 
-            if (NodeSelected != null) NodeSelected(e.Node);
+            if (NodeSelected != null)
+            {
+                await NodeSelected(e.Node);
+            }
         }
         private void treeView_BeforeSelect(object sender, TreeViewCancelEventArgs e)
         {
             ExplorerObjectNode node = treeView.SelectedNode as ExplorerObjectNode;
-            if (node == null) return;
+            if (node == null)
+            {
+                return;
+            }
 
             if (node.ExplorerObject is IExplorerParentObject && !node.IsExpanded)
             {
@@ -595,10 +709,16 @@ namespace gView.Framework.UI.Controls
         }
         private void treeView_AfterCollapse(object sender, TreeViewEventArgs e)
         {
-            if (e.Node is ComputerNode) return;
+            if (e.Node is ComputerNode)
+            {
+                return;
+            }
 
             ExplorerObjectNode node = e.Node as ExplorerObjectNode;
-            if (node == null || node == treeView.SelectedNode) return;
+            if (node == null || node == treeView.SelectedNode)
+            {
+                return;
+            }
 
             if (node.ExplorerObject is IExplorerParentObject)
             {
@@ -613,7 +733,10 @@ namespace gView.Framework.UI.Controls
 
         private void RemoveAndDisposeChildNodes(TreeNode node)
         {
-            if (node == null) return;
+            if (node == null)
+            {
+                return;
+            }
 
             foreach (TreeNode child in node.Nodes)
             {
@@ -665,7 +788,10 @@ namespace gView.Framework.UI.Controls
 
         public void MoveUp()
         {
-            if (treeView.SelectedNode == null || treeView.SelectedNode.Parent == null) return;
+            if (treeView.SelectedNode == null || treeView.SelectedNode.Parent == null)
+            {
+                return;
+            }
 
             treeView.SelectedNode = treeView.SelectedNode.Parent;
         }
@@ -680,7 +806,7 @@ namespace gView.Framework.UI.Controls
                 return;
             }
 
-            IExplorerObject exObject = (IExplorerObject)((ExplorerObjectNode)node).ExplorerObject;
+            IExplorerObject exObject = ((ExplorerObjectNode)node).ExplorerObject;
             if (!(exObject is IExplorerObjectContentDragDropEvents))
             {
                 e.Effect = DragDropEffects.None;
@@ -706,7 +832,7 @@ namespace gView.Framework.UI.Controls
                 return;
             }
 
-            IExplorerObject exObject = (IExplorerObject)((ExplorerObjectNode)node).ExplorerObject;
+            IExplorerObject exObject = ((ExplorerObjectNode)node).ExplorerObject;
             if (!(exObject is IExplorerObjectContentDragDropEvents))
             {
                 e.Effect = DragDropEffects.None;
@@ -717,7 +843,10 @@ namespace gView.Framework.UI.Controls
 
         public bool MoveToNode(string path)
         {
-            if (treeView.Nodes.Count < 1) return false;
+            if (treeView.Nodes.Count < 1)
+            {
+                return false;
+            }
 
             TreeNode parent = treeView.Nodes[0];
             parent.Expand();
@@ -744,18 +873,30 @@ namespace gView.Framework.UI.Controls
             foreach (string subPath in path.Split('\\'))
             {
                 if (String.IsNullOrEmpty(subPath))
+                {
                     continue;
+                }
 
-                if (fullpath.Length != 0 && !fullpath.ToString().EndsWith(@"\")) fullpath.Append(@"\");
+                if (fullpath.Length != 0 && !fullpath.ToString().EndsWith(@"\"))
+                {
+                    fullpath.Append(@"\");
+                }
+
                 fullpath.Append(subPath);
 
                 bool found = false;
                 foreach (TreeNode node in parent.Nodes)
                 {
-                    if (!(node is ExplorerObjectNode)) continue;
+                    if (!(node is ExplorerObjectNode))
+                    {
+                        continue;
+                    }
 
                     IExplorerObject exObject = ((ExplorerObjectNode)node).ExplorerObject;
-                    if (exObject == null) continue;
+                    if (exObject == null)
+                    {
+                        continue;
+                    }
 
                     if (exObject.FullName == fullpath.ToString() ||
                         exObject.FullName == fullpath.ToString() + @"\")
@@ -767,7 +908,10 @@ namespace gView.Framework.UI.Controls
                         break;
                     }
                 }
-                if (!found) return false;
+                if (!found)
+                {
+                    return false;
+                }
             }
             return true;
         }
@@ -800,13 +944,18 @@ namespace gView.Framework.UI.Controls
 
         public ExplorerObjectNode(IExplorerObject exObject, int imageIndex)
         {
-            if (exObject == null) return;
+            if (exObject == null)
+            {
+                return;
+            }
 
             _exObject = exObject;
             base.Text = exObject.Name;
             base.ImageIndex = base.SelectedImageIndex = imageIndex;
             if (exObject is IExplorerParentObject || exObject is DriveObject || exObject is DirectoryObject)
+            {
                 base.Nodes.Add(new DummyNode());
+            }
         }
 
         #region IExplorerObjectTreeNode Members
@@ -840,7 +989,11 @@ namespace gView.Framework.UI.Controls
         {
             get
             {
-                if (base.Parent is IExplorerObjectTreeNode) return (IExplorerObjectTreeNode)base.Parent;
+                if (base.Parent is IExplorerObjectTreeNode)
+                {
+                    return (IExplorerObjectTreeNode)base.Parent;
+                }
+
                 return null;
             }
         }

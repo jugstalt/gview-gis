@@ -169,7 +169,7 @@ namespace gView.Framework.OGC.DB
                 {
                     using (DbConnection conn = this.ProviderFactory.CreateConnection())
                     {
-                        conn.ConnectionString = _connectionString;
+                        conn.ConnectionString =  _connectionString;
                         conn.Open();
 
                         DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();

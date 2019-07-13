@@ -9,18 +9,12 @@ using gView.Win.DataExplorer.Items;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms.Integration;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Xml;
 using Xceed.Wpf.AvalonDock.Layout;
 
@@ -53,7 +47,7 @@ namespace gView.Win.DataExplorer
                 _application.OnShowDockableWindow += new OnShowDockableWindowEvent(_application_OnShowDockableWindow);
 
                 #region Windows Forms Control Disign
-                
+
                 _toolStripAddress = new System.Windows.Forms.ToolStrip();
                 _toolStripAddress.Stretch = true;
                 _toolStripAddress.GripMargin = new System.Windows.Forms.Padding(1);
@@ -73,7 +67,9 @@ namespace gView.Win.DataExplorer
                 {
                     IExplorerTabPage page = compMan.CreateInstance<IExplorerTabPage>(tabType);
                     if (page == null || page.Control == null)
+                    {
                         continue;
+                    }
 
                     page.OnCreate(_application);
 
@@ -143,7 +139,9 @@ namespace gView.Win.DataExplorer
         void _application_OnShowDockableWindow(IDockableWindow window)
         {
             if (!_anchorables.ContainsKey(window))
+            {
                 return;
+            }
 
             LayoutAnchorable anchorable = _anchorables[window];
             if (anchorable != null)
@@ -160,7 +158,10 @@ namespace gView.Win.DataExplorer
                         ILayoutContentSelector selector = (ILayoutContentSelector)content.Parent;
                         int index = selector.IndexOf(content);
                         if (index != selector.SelectedContentIndex)
+                        {
                             selector.SelectedContentIndex = index;
+                        }
+
                         content = content.Parent as LayoutContent;
                     }
 
@@ -211,9 +212,14 @@ namespace gView.Win.DataExplorer
         #endregion
 
         #region TreeEvents
-        async private void tree_NodeSelected(global::System.Windows.Forms.TreeNode node)
+
+        async private Task tree_NodeSelected(global::System.Windows.Forms.TreeNode node)
         {
-            if (_toolStripAddress == null) return;
+            if (_toolStripAddress == null)
+            {
+                return;
+            }
+
             if (node is ExplorerObjectNode && ((ExplorerObjectNode)node).ExplorerObject != null)
             {
                 RemovePathButtons();
@@ -222,7 +228,17 @@ namespace gView.Win.DataExplorer
                 while (pathObject != null)
                 {
                     if (pathObject is IExplorerParentObject)
-                        _toolStripAddress.Items.Insert(0, await SubPathParentToolStripItem.Create(this, (IExplorerParentObject)pathObject));
+                    {
+                        try
+                        {
+                            _toolStripAddress.Items.Insert(0, await SubPathParentToolStripItem.Create(this, (IExplorerParentObject)pathObject));
+                        }
+                        catch (Exception ex)
+                        {
+                            string msg = ex.Message;
+                            MessageBox.Show(ex.Message);
+                        }
+                    }
 
                     SubPathToolStripItem item = new SubPathToolStripItem(pathObject);
                     item.Click += new EventHandler(SubPathItem_Click);
@@ -245,7 +261,10 @@ namespace gView.Win.DataExplorer
                         IExplorerObject ex = compMan.CreateInstance<IExplorerObject>(compType);
                         if (ex is IExplorerObjectCreatable)
                         {
-                            if (!((IExplorerObjectCreatable)ex).CanCreate(_exObject)) continue;
+                            if (!((IExplorerObjectCreatable)ex).CanCreate(_exObject))
+                            {
+                                continue;
+                            }
 
                             //if (_toolStripCreateNew.Items.Count == 0)
                             //{
@@ -258,7 +277,9 @@ namespace gView.Win.DataExplorer
                         }
                     }
                     if (_createNewRibbonGroupBox.Items.Count > 0)
+                    {
                         _createNewRibbonGroupBox.Visibility = Visibility.Visible;
+                    }
                 }
             }
             else
@@ -287,7 +308,7 @@ namespace gView.Win.DataExplorer
             PlugInManager pm = new PlugInManager();
 
             foreach (IExplorerRibbonTab exRibbonTab in OrderedPluginList<IExplorerRibbonTab>.Sort(
-                pm.GetPlugins(gView.Framework.system.Plugins.Type.IExplorerRibbonTab).Select(p=>pm.CreateInstance<IExplorerRibbonTab>(p))))
+                pm.GetPlugins(gView.Framework.system.Plugins.Type.IExplorerRibbonTab).Select(p => pm.CreateInstance<IExplorerRibbonTab>(p))))
             {
                 Fluent.RibbonTabItem tabItem = new Fluent.RibbonTabItem();
                 tabItem.Header = exRibbonTab.Header;
@@ -310,7 +331,10 @@ namespace gView.Win.DataExplorer
                         }
 
                         object tool = pm.CreateInstance(toolGUID);
-                        if (tool == null) continue;
+                        if (tool == null)
+                        {
+                            continue;
+                        }
 
                         #region IToolItem
                         if (tool is IToolItem)
@@ -322,7 +346,7 @@ namespace gView.Win.DataExplorer
                                     StackPanel panel = new StackPanel();
                                     panel.Margin = new Thickness(0, 32, 0, 0);
 
-                                    global::System.Windows.Forms.ToolStripItem stripItem = (global::System.Windows.Forms.ToolStripItem)((IToolItem)tool).ToolItem;
+                                    global::System.Windows.Forms.ToolStripItem stripItem = ((IToolItem)tool).ToolItem;
 
                                     global::System.Windows.Forms.MenuStrip bar = new global::System.Windows.Forms.MenuStrip();
                                     bar.BackColor = global::System.Drawing.Color.Transparent; //.FromArgb(223, 234, 246);
@@ -340,15 +364,22 @@ namespace gView.Win.DataExplorer
                                                             label.LabelPosition == ToolItemLabelPosition.bottom ? Orientation.Vertical : Orientation.Horizontal;
 
                                         if (panel.Orientation == Orientation.Vertical)
+                                        {
                                             panel.Margin = new Thickness(0, 13, 0, 0);
+                                        }
+
                                         TextBlock text = new TextBlock();
                                         text.Text = label.Label;
                                         text.Padding = new Thickness(3);
 
                                         if (label.LabelPosition == ToolItemLabelPosition.top || label.LabelPosition == ToolItemLabelPosition.left)
+                                        {
                                             panel.Children.Insert(0, text);
+                                        }
                                         else
+                                        {
                                             panel.Children.Add(text);
+                                        }
                                     }
 
                                     panel.Children.Add(host);
@@ -401,7 +432,11 @@ namespace gView.Win.DataExplorer
                     bool first = true;
                     foreach (MyFavorites.Favorite fav in (new MyFavorites().Favorites))
                     {
-                        if (fav == null) continue;
+                        if (fav == null)
+                        {
+                            continue;
+                        }
+
                         WpfFavoriteMenuItem fItem = new WpfFavoriteMenuItem(fav);
                         fItem.Click += new RoutedEventHandler(MenuItem_Favorite_Click);
 
@@ -434,7 +469,10 @@ namespace gView.Win.DataExplorer
             foreach (var pageType in pm.GetPlugins(gView.Framework.system.Plugins.Type.IExplorerOptionPage))
             {
                 IExplorerOptionPage page = pm.CreateInstance<IExplorerOptionPage>(pageType);
-                if (page == null) continue;
+                if (page == null)
+                {
+                    continue;
+                }
 
                 OptionsButton button = new OptionsButton(page);
                 button.Click += new RoutedEventHandler(OptoinButton_Click);
@@ -484,13 +522,19 @@ namespace gView.Win.DataExplorer
         private void ContentsList_ItemSelected(List<IExplorerObject> node)
         {
             _selected.Clear();
-            if (node == null) return;
+            if (node == null)
+            {
+                return;
+            }
 
             foreach (IExplorerObject exObject in node)
             {
                 _selected.Add(exObject);
             }
-            if (_selected.Count == 0 && _exObject != null) _selected.Add(_exObject);
+            if (_selected.Count == 0 && _exObject != null)
+            {
+                _selected.Add(_exObject);
+            }
         }
 
         async private void addNetworkDirectory_Click(object sender, EventArgs e)
@@ -509,7 +553,9 @@ namespace gView.Win.DataExplorer
         private void toolStripButtonRefresh_Click(object sender, EventArgs e)
         {
             if (_application != null)
+            {
                 _application.RefreshContents();
+            }
         }
 
         private LayoutDocument _selectedLayoutDoc = null;
@@ -543,15 +589,26 @@ namespace gView.Win.DataExplorer
         {
             IExTool tool = null;
             if (sender is ToolButton)
+            {
                 tool = ((ToolButton)sender).Tool;
+            }
             else if (sender is DropDownToolButton)
+            {
                 tool = ((DropDownToolButton)sender).Tool;
+            }
             else if (sender is WpfToolMenuItem)
+            {
                 tool = ((WpfToolMenuItem)sender).Tool;
+            }
             else if (sender is ToolMenuItem)
+            {
                 tool = ((ToolMenuItem)sender).Tool;
+            }
 
-            if (tool == null) return;
+            if (tool == null)
+            {
+                return;
+            }
 
             if (tool is IToolWindow)
             {
@@ -565,7 +622,10 @@ namespace gView.Win.DataExplorer
 
         async public void createNewItem_Click(object sender, EventArgs e)
         {
-            if (!(sender is CreateNewToolStripItem) || _content == null) return;
+            if (!(sender is CreateNewToolStripItem) || _content == null)
+            {
+                return;
+            }
 
             IExplorerObject exObject = ((CreateNewToolStripItem)sender).ExplorerObject;
             await _content.CreateNewItem(exObject);
@@ -587,10 +647,16 @@ namespace gView.Win.DataExplorer
 
         private void Add2Favorites_Click(object sender, RoutedEventArgs e)
         {
-            if (_tree == null) return;
+            if (_tree == null)
+            {
+                return;
+            }
 
             IExplorerObject exObject = _tree.SelectedExplorerObject;
-            if (exObject == null) return;
+            if (exObject == null)
+            {
+                return;
+            }
 
             gView.Framework.UI.Dialogs.FormAddToFavorites dlg = new gView.Framework.UI.Dialogs.FormAddToFavorites(exObject.FullName, false);
             if (dlg.ShowDialog() == global::System.Windows.Forms.DialogResult.OK)
@@ -630,7 +696,10 @@ namespace gView.Win.DataExplorer
 
         private void ViewToolStripItem_Click(object sender, EventArgs e)
         {
-            if (!(sender is WpfViewToolStripItem)) return;
+            if (!(sender is WpfViewToolStripItem))
+            {
+                return;
+            }
 
             _application_OnShowDockableWindow(((WpfViewToolStripItem)sender).DockableToolWindow);
         }
@@ -640,7 +709,9 @@ namespace gView.Win.DataExplorer
         private void RemovePathButtons()
         {
             if (_toolStripAddress == null)
+            {
                 return;
+            }
 
             for (int i = 0; i < _toolStripAddress.Items.Count; i++)
             {
@@ -669,7 +740,10 @@ namespace gView.Win.DataExplorer
             foreach (TabPage tabPage in _tabPages)
             {
                 IExplorerTabPage exTabPage = tabPage.ExTabPage;
-                if (exTabPage == null || exTabPage.Control == null) continue;
+                if (exTabPage == null || exTabPage.Control == null)
+                {
+                    continue;
+                }
 
                 if (await exTabPage.ShowWith(exObject))
                 {
@@ -724,7 +798,10 @@ namespace gView.Win.DataExplorer
 
         private void MakeMainMenuBar(XmlNode node)
         {
-            if (node == null) return;
+            if (node == null)
+            {
+                return;
+            }
 
             backstageTabControl.Items.Clear();
 
@@ -742,7 +819,10 @@ namespace gView.Win.DataExplorer
                         else
                         {
                             IExTool tool = (IExTool)compManager.CreateInstance(new Guid(menuItem.Attributes["guid"].Value));
-                            if (tool == null) continue;
+                            if (tool == null)
+                            {
+                                continue;
+                            }
 
                             tool.OnCreate(_application);
 
@@ -780,10 +860,14 @@ namespace gView.Win.DataExplorer
                     foreach (XmlNode menuItem in menu.SelectNodes("MenuItem"))
                     {
                         IExTool tool = compManager.CreateInstance(new Guid(menuItem.Attributes["guid"].Value)) as IExTool;
-                        if (tool == null) continue;
+                        if (tool == null)
+                        {
+                            continue;
+                        }
+
                         tool.OnCreate(_application);
 
-                        ToolButton button = new ToolButton((IExTool)tool);
+                        ToolButton button = new ToolButton(tool);
                         button.Click += new RoutedEventHandler(ToolButton_Click);
 
                         ribbon.QuickAccessItems.Add(new Fluent.QuickAccessMenuItem() { Target = button });
@@ -810,7 +894,9 @@ namespace gView.Win.DataExplorer
                     _subPath = exObject.FullName;
                     base.Text = exObject.Name;
                     if (exObject.Icon != null)
+                    {
                         base.Image = exObject.Icon.Image;
+                    }
                 }
                 base.BackColor = global::System.Drawing.Color.White;
 
@@ -827,7 +913,7 @@ namespace gView.Win.DataExplorer
         {
             private SubPathParentToolStripItem()
             {
-    
+
             }
 
             async static public Task<SubPathParentToolStripItem> Create(MainWindow window, IExplorerParentObject exObject)
@@ -885,7 +971,11 @@ namespace gView.Win.DataExplorer
             {
                 get
                 {
-                    if (_tool != null) return _tool.Enabled;
+                    if (_tool != null)
+                    {
+                        return _tool.Enabled;
+                    }
+
                     return base.Enabled;
                 }
                 set
@@ -914,7 +1004,9 @@ namespace gView.Win.DataExplorer
 
                 base.Header = name;
                 if (exObject.Icon != null)
+                {
                     base.Icon = base.LargeIcon = ImageFactory.FromBitmap(exObject.Icon.Image);
+                }
             }
 
             public IExplorerObject ExplorerObject
@@ -934,9 +1026,13 @@ namespace gView.Win.DataExplorer
                 {
                     base.Header = _fav.Name;
                     if (fav.Image == null)
+                    {
                         base.Icon = ImageFactory.FromBitmap(global::gView.Win.DataExplorer.Properties.Resources.folder_go);
+                    }
                     else
+                    {
                         base.Icon = ImageFactory.FromBitmap(fav.Image);
+                    }
                 }
             }
 
@@ -968,7 +1064,9 @@ namespace gView.Win.DataExplorer
                 foreach (TabPage page in this)
                 {
                     if (page.LayoutDoc == layoutDoc)
+                    {
                         return page.ExTabPage;
+                    }
                 }
                 return null;
             }
@@ -1029,7 +1127,9 @@ namespace gView.Win.DataExplorer
             this.Cursor = gView.Desktop.Wpf.CursorFactory.ToWpfCursor(cursor);
             var focused = global::System.Windows.Input.FocusManager.GetFocusedElement(this);
             if (focused is WindowsFormsHost && ((WindowsFormsHost)focused).Child != null)
+            {
                 ((WindowsFormsHost)focused).Child.Cursor = gView.Desktop.Wpf.CursorFactory.ToFormsCursor(cursor);
+            }
         }
 
         public void AppendContextMenuItems(global::System.Windows.Forms.ContextMenuStrip strip, object context)
@@ -1040,9 +1140,10 @@ namespace gView.Win.DataExplorer
             foreach (var toolType in compMan.GetPlugins(gView.Framework.system.Plugins.Type.IExTool))
             {
                 IContextMenuItem item = compMan.TryCreateInstance<IContextMenuItem>(toolType);
-                if (item == null || !item.ShowWith(context) || !(item is IExTool)) continue;
-
-                ((IExTool)item).OnCreate(_application);
+                if (item == null || !item.ShowWith(context) || !(item is IExTool))
+                {
+                    continue;
+                } ((IExTool)item).OnCreate(_application);
                 items.Add(item);
             }
 
@@ -1051,11 +1152,13 @@ namespace gView.Win.DataExplorer
             int l = -1;
             foreach (IContextMenuItem item in items)
             {
-                if (Math.Abs(l - (int)(item.SortOrder / 10)) != 0)
+                if (Math.Abs(l - item.SortOrder / 10) != 0)
                 {
                     l = item.SortOrder / 10;
                     if (strip.Items.Count > 0)
+                    {
                         strip.Items.Add(new global::System.Windows.Forms.ToolStripSeparator());
+                    }
                 }
                 ToolMenuItem toolItem = new ToolMenuItem(item as IExTool);
                 toolItem.Click += new EventHandler(ToolButton_Click);
@@ -1065,7 +1168,10 @@ namespace gView.Win.DataExplorer
 
         async public Task<bool> RefreshContents()
         {
-            if (_activeTabPage != null) await _activeTabPage.RefreshContents();
+            if (_activeTabPage != null)
+            {
+                await _activeTabPage.RefreshContents();
+            }
 
             await _tree.RefreshSelectedNode();
 
