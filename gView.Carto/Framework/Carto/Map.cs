@@ -908,6 +908,8 @@ namespace gView.Framework.Carto
             }
         }
 
+        public bool IsRefreshing { get; private set; }
+
         async virtual public Task<bool> RefreshMap(DrawPhase phase, ICancelTracker cancelTracker)
         {
             _requestExceptions = null;
@@ -920,6 +922,8 @@ namespace gView.Framework.Carto
 
             try
             {
+                this.IsRefreshing = true;
+
                 _lastException = null;
 
                 if (_graphics != null && phase == DrawPhase.Graphics)
@@ -1396,6 +1400,8 @@ namespace gView.Framework.Carto
 
                     _graphics = null;
                 }
+
+                this.IsRefreshing = false;
             }
         }
 

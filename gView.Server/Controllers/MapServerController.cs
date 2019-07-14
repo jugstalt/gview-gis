@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using gView.Core.Framework.Exceptions;
+﻿using gView.Core.Framework.Exceptions;
 using gView.Framework.system;
 using gView.MapServer;
 using gView.Server.AppCode;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.Server.Controllers
 {
@@ -68,7 +65,7 @@ namespace gView.Server.Controllers
             {
                 return WriteUnauthorized();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return WriteError(ex.Message);
             }
@@ -90,7 +87,9 @@ namespace gView.Server.Controllers
                 #endregion
 
                 if (!String.IsNullOrWhiteSpace(folder))
+                {
                     name = folder + "/" + name;
+                }
 
                 //DateTime td = DateTime.Now;
                 //Console.WriteLine("Start Map Request " + td.ToLongTimeString() + "." + td.Millisecond + " (" + name + ")");
@@ -115,9 +114,14 @@ namespace gView.Server.Controllers
                     input = Encoding.UTF8.GetString(ms.ToArray());
                 }
                 if (String.IsNullOrEmpty(input))
+                {
                     input = this.Request.QueryString.ToString();
+                }
+
                 if (input.StartsWith("?"))
+                {
                     input = input.Substring(1);
+                }
 
                 ServiceRequest serviceRequest = new ServiceRequest(name.ServiceName(), name.FolderName(), input)
                 {
@@ -164,16 +168,15 @@ namespace gView.Server.Controllers
             {
                 string input = GetBody();
 
-                string user=String.Empty, pwd=String.Empty;
-                //var request = Request(out user, out pwd);
+                var credentials = GetRequestCredentials();
 
                 name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
-                bool ret = await InternetMapServer.AddMap(name, input, user, pwd);
+                bool ret = await InternetMapServer.AddMap(name, input, credentials.user, credentials.password);
 
                 return Result(ret.ToString(), "text/plain");
             }
-            catch(MapServerException mse)
+            catch (MapServerException mse)
             {
                 return WriteError(mse.Message);
             }
@@ -188,7 +191,7 @@ namespace gView.Server.Controllers
         {
             try
             {
-                string user=String.Empty, pwd=String.Empty;
+                string user = String.Empty, pwd = String.Empty;
                 // var request = Request(out user, out pwd);
 
                 name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
@@ -302,14 +305,16 @@ namespace gView.Server.Controllers
                 }
                 data = Convert.FromBase64String(response);
             }
-            else if(response.StartsWith("{"))
+            else if (response.StartsWith("{"))
             {
                 try
                 {
                     var mapServerResponse = gView.Framework.system.MapServerResponse.FromString(response);
 
                     if (mapServerResponse.Expires != null)
+                    {
                         AppendEtag((DateTime)mapServerResponse.Expires);
+                    }
 
                     return Result(mapServerResponse.Data, mapServerResponse.ContentType);
                 }
@@ -330,6 +335,33 @@ namespace gView.Server.Controllers
             return View("_binary");
         }
 
+        private (string user, string password) GetRequestCredentials()
+        {
+            string user = String.Empty, password = String.Empty;
+            string auth64 = this.Request.Headers["Authorization"];
+
+            if (auth64 != null)
+            {
+                if (auth64.ToLower().StartsWith("basic "))
+                {
+                    auth64 = auth64.Substring("basic ".Length);
+                }
+
+                if (!String.IsNullOrEmpty(auth64))
+                {
+                    string auth = Encoding.ASCII.GetString(Convert.FromBase64String(auth64));
+                    int index = auth.IndexOf(":");
+                    if (index > 0)
+                    {
+                        user = auth.Substring(0, index);
+                        password = auth.Substring(index + 1);
+                    }
+                }
+            }
+
+            return (user, password);
+        }
+
         #region ETag
 
         private bool HasIfNonMatch()
@@ -342,13 +374,17 @@ namespace gView.Server.Controllers
             try
             {
                 if (HasIfNonMatch() == false)
+                {
                     return false;
+                }
 
                 var etag = long.Parse(this.Request.Headers["If-None-Match"].ToString());
 
                 DateTime etagTime = new DateTime(etag, DateTimeKind.Utc);
                 if (DateTime.UtcNow > etagTime)
+                {
                     return false;
+                }
 
                 return true;
             }

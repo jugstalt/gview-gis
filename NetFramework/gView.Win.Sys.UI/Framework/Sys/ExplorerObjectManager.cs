@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Management;
-using System.Collections;
+﻿using gView.Framework.system;
 using gView.Framework.UI;
-using gView.Framework.system;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Sys.UI
 {
@@ -27,19 +23,32 @@ namespace gView.Framework.Sys.UI
         {
             foreach (IExplorerObject exObject in _exObjectsCache)
             {
-                if (exObject == null) continue;
-                if (exObject.FullName == FullName) return exObject;
+                if (exObject == null)
+                {
+                    continue;
+                }
+
+                if (exObject.FullName == FullName)
+                {
+                    return exObject;
+                }
             }
             return null;
         }
         async public Task<IExplorerObject> DeserializeExplorerObject(Guid guid, string FullName)
         {
             IExplorerObject cached = GetExObjectFromCache(FullName);
-            if (cached != null) return cached;
+            if (cached != null)
+            {
+                return cached;
+            }
 
             PlugInManager compManager = new PlugInManager();
             object obj = compManager.CreateInstance(guid);
-            if (!(obj is ISerializableExplorerObject)) return null;
+            if (!(obj is ISerializableExplorerObject))
+            {
+                return null;
+            }
 
             return await ((ISerializableExplorerObject)obj).CreateInstanceByFullName(FullName, this);
         }
@@ -47,7 +56,10 @@ namespace gView.Framework.Sys.UI
         {
             try
             {
-                if (exObjectSerialization == null) return null;
+                if (exObjectSerialization == null)
+                {
+                    return null;
+                }
 
                 return await DeserializeExplorerObject(
                     exObjectSerialization.Guid,
@@ -59,12 +71,18 @@ namespace gView.Framework.Sys.UI
         async public Task<List<IExplorerObject>> DeserializeExplorerObject(IEnumerable<IExplorerObjectSerialization> list)
         {
             List<IExplorerObject> l = new List<IExplorerObject>();
-            if (list == null) return l;
+            if (list == null)
+            {
+                return l;
+            }
 
             foreach (IExplorerObjectSerialization ser in list)
             {
                 IExplorerObject exObject = await DeserializeExplorerObject(ser);
-                if (exObject == null) continue;
+                if (exObject == null)
+                {
+                    continue;
+                }
 
                 l.Add(exObject);
             }
@@ -86,7 +104,11 @@ namespace gView.Framework.Sys.UI
 
         public void Append(IExplorerObject exObject)
         {
-            if (exObject == null || Contains(exObject.FullName)) return;
+            if (exObject == null || Contains(exObject.FullName))
+            {
+                return;
+            }
+
             _exObjectsCache.Add(exObject);
         }
 
@@ -94,8 +116,15 @@ namespace gView.Framework.Sys.UI
         {
             foreach (IExplorerObject exObject in _exObjectsCache)
             {
-                if (exObject == null) continue;
-                if (exObject.FullName == FullName) return true;
+                if (exObject == null)
+                {
+                    continue;
+                }
+
+                if (exObject.FullName == FullName)
+                {
+                    return true;
+                }
             }
             return false;
         }

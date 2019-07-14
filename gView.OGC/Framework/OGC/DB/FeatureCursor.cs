@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Text;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using System;
+using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
 
@@ -23,7 +21,7 @@ namespace gView.Framework.OGC.DB
             : base((fc != null) ? fc.SpatialReference : null,
                    (filter != null) ? filter.FeatureSpatialReference : null)
         {
-           
+
         }
 
         async static public Task<IFeatureCursor> Create(OgcSpatialFeatureclass fc, IQueryFilter filter)
@@ -31,11 +29,15 @@ namespace gView.Framework.OGC.DB
             var featureCursor = new OgcSpatialFeatureCursor(fc, filter);
 
             if (fc == null || fc.Dataset == null)
+            {
                 return featureCursor;
+            }
 
             featureCursor._idField = fc.IDFieldName;
             if (filter is ISpatialFilter)
+            {
                 featureCursor._spatialfilter = (ISpatialFilter)filter;
+            }
 
             try
             {
@@ -53,14 +55,18 @@ namespace gView.Framework.OGC.DB
                     ((ISpatialFilter)filter).FilterSpatialReference = null;
                     if (((ISpatialFilter)filter).SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects &&
                        ((ISpatialFilter)filter).Geometry != null)
+                    {
                         ((ISpatialFilter)filter).Geometry = ((ISpatialFilter)filter).Geometry.Envelope;
+                    }
 
                     featureCursor._spatialfilter = (ISpatialFilter)filter;
                 }
                 DbCommand command = ((OgcSpatialDataset)fc.Dataset).SelectCommand(
                     fc, filter, out featureCursor._shapeField);
                 if (command == null)
+                {
                     return featureCursor;
+                }
 
                 featureCursor._conn = ((OgcSpatialDataset)fc.Dataset).ProviderFactory.CreateConnection();
                 featureCursor._conn.ConnectionString = fc.Dataset.ConnectionString;
@@ -82,7 +88,9 @@ namespace gView.Framework.OGC.DB
             catch (Exception ex)
             {
                 if (featureCursor._fc != null)
+                {
                     featureCursor._fc.LastException = ex;
+                }
 
                 if (featureCursor._conn != null && featureCursor._conn.State != ConnectionState.Closed)
                 {
@@ -105,7 +113,9 @@ namespace gView.Framework.OGC.DB
                 try
                 {
                     if (_reader == null || !await _reader.ReadAsync())
+                    {
                         return null;
+                    }
 
                     Feature feature = new Feature();
                     for (int i = 0; i < _reader.FieldCount; i++)
@@ -138,7 +148,10 @@ namespace gView.Framework.OGC.DB
                         }
                     }
 
-                    if (feature == null) continue;
+                    if (feature == null)
+                    {
+                        continue;
+                    }
 
                     Transform(feature);
                     return feature;
@@ -146,7 +159,9 @@ namespace gView.Framework.OGC.DB
                 catch (Exception ex)
                 {
                     if (_fc != null)
+                    {
                         _fc.LastException = ex;
+                    }
 
                     //string errMsg = ex.Message;
                     //return null;
@@ -166,19 +181,19 @@ namespace gView.Framework.OGC.DB
             {
                 if (_reader != null)
                 {
-                    _reader.Close();
-                    try
-                    {
-                        while (_reader.Read())
-                        {
-                            //_command.Cancel();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
+                    //_reader.Close();
+                    //try
+                    //{
+                    //    while (_reader.Read())
+                    //    {
+                    //        //_command.Cancel();
+                    //    }
+                    //}
+                    //catch (Exception)
+                    //{
 
-                    }
-                    _reader.Dispose();
+                    //}
+                    //_reader.Dispose();
                     _reader = null;
                 }
                 if (_conn != null && _conn.State != ConnectionState.Closed)

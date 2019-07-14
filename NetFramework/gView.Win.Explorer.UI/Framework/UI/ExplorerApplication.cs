@@ -34,6 +34,18 @@ namespace gView.Framework.UI
 
         ArrayList _dockWindows = new ArrayList();
 
+        public bool InvokeRequired
+        {
+            get
+            {
+                return _appWindow.InvokeRequired;
+            }
+        }
+        public object Invoke(Delegate method)
+        {
+            return _appWindow.Invoke(method);
+        }
+
         public List<IDockableWindow> DockableWindows
         {
             get

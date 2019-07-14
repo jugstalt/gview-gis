@@ -463,6 +463,8 @@ namespace gView.Server.AppCode
                 return await ReloadMap(mapName, usr, pwd);
             }
 
+            await CheckPublishAccess(folder, usr, pwd);
+
             if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, "admin_addmap"))
             {
                 throw new MapServerException("Not allowed");
@@ -774,6 +776,47 @@ namespace gView.Server.AppCode
         //        }
         //    }
         //}
+
+        #endregion
+
+        #region Helper
+
+        static private IMapService GetFolderService(string id)
+        {
+            var folderService = InternetMapServer.MapServices
+                        .Where(f => f.Type == MapServiceType.Folder && String.IsNullOrWhiteSpace(f.Folder) && id.Equals(f.Name, StringComparison.InvariantCultureIgnoreCase))
+                        .FirstOrDefault();
+
+            return folderService;
+        }
+
+        static private IIdentity GetIdentity(string user, string password)
+        {
+            if (String.IsNullOrWhiteSpace(user))
+            {
+                return new Identity(Identity.AnonyomousUsername);
+            }
+
+            var loginManager = new LoginManager(Globals.LoginManagerRootPath);
+            var authToken = loginManager.GetAuthToken(user, password);
+
+            if (authToken == null)
+            {
+                throw new MapServerException("Unknown user or password");
+            }
+
+            return new Identity(user);
+        }
+
+        async static private Task CheckPublishAccess(string folder, string usr, string pwd)
+        {
+            var folderService = GetFolderService(folder);
+            var identity = GetIdentity(usr, pwd);
+            if (!await folderService.HasPublishAccess(identity))
+            {
+                throw new MapServerException("Forbidden for user " + identity.UserName);
+            }
+        }
 
         #endregion
     }

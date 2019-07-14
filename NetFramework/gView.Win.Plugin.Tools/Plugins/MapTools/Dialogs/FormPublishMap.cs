@@ -14,7 +14,7 @@ namespace gView.Plugins.MapTools.Dialogs
         {
             InitializeComponent();
 
-            cmbServerVersion.SelectedIndex = 0;
+            cmbServerVersion.SelectedIndex = 1;
         }
 
         public string Server { get { return txtServer.Text; } set { txtServer.Text = value; } }

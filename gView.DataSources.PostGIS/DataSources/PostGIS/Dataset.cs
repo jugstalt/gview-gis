@@ -1,16 +1,12 @@
+using gView.Framework.Data;
+using gView.Framework.Db;
+using gView.Framework.Geometry;
+using gView.Framework.OGC.DB;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Data;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
-using gView.Framework.IO;
-using gView.Framework.FDB;
 using System.Data.Common;
-using gView.Framework.system;
-using gView.Framework.OGC.DB;
 using System.Threading.Tasks;
-using gView.Framework.Db;
 
 namespace gView.DataSources.PostGIS
 {
@@ -181,7 +177,7 @@ namespace gView.DataSources.PostGIS
 
                     //return false;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     return true;
                 }
@@ -194,10 +190,14 @@ namespace gView.DataSources.PostGIS
             try
             {
                 if (tableName.Contains("."))  // Tablename includes schema
+                {
                     return String.Empty;
+                }
 
                 if (_tableDbSchema.ContainsKey(tableName))
+                {
                     return _tableDbSchema[tableName];
+                }
 
                 using (DbConnection conn = _factory.CreateConnection())
                 {
@@ -229,6 +229,27 @@ namespace gView.DataSources.PostGIS
                 }
             }
             catch { return String.Empty; }
+        }
+
+        override protected string GetTableDbName(string fullTableName)
+        {
+            if (fullTableName.Contains("."))
+            {
+                return fullTableName.Substring(fullTableName.LastIndexOf(".") + 1);
+            }
+
+            return fullTableName;
+        }
+
+        override protected string GetTableDbSchemaName(string fullTableName)
+        {
+            if (fullTableName.Contains("."))
+            {
+                var parts = fullTableName.Split('.');
+                return parts[parts.Length - 2];   // vorletztes element
+            }
+
+            return String.Empty;
         }
 
         public override bool CanEditFeatureClass(IFeatureClass fc, EditCommands command)

@@ -180,7 +180,7 @@
     <value>8, 19</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>937, 268</value>
+    <value>779, 261</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Task Progress</value>

@@ -283,6 +283,18 @@ namespace gView.Win.Carto
 
         #endregion
 
+        public bool InvokeRequired
+        {
+            get
+            {
+                return _contextMenuStripMapView.InvokeRequired;
+            }
+        }
+        public object Invoke(Delegate method)
+        {
+            return _contextMenuStripMapView.Invoke(method);
+        }
+
         #region Events UI
         private void ViewToolStripItem_Click(object sender, System.EventArgs e)
         {

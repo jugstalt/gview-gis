@@ -1122,13 +1122,36 @@ namespace gView.Win.DataExplorer
             }
         }
 
+        public bool InvokeRequired
+        {
+            get
+            {
+                return _tree != null ? _tree.InvokeRequired : false;
+            }
+        }
+
+        public object Invoke(Delegate method)
+        {
+            return _tree.Invoke(method);
+        }
+
         public void SetCursor(object cursor)
         {
-            this.Cursor = gView.Desktop.Wpf.CursorFactory.ToWpfCursor(cursor);
-            var focused = global::System.Windows.Input.FocusManager.GetFocusedElement(this);
-            if (focused is WindowsFormsHost && ((WindowsFormsHost)focused).Child != null)
+            if (this.InvokeRequired)
             {
-                ((WindowsFormsHost)focused).Child.Cursor = gView.Desktop.Wpf.CursorFactory.ToFormsCursor(cursor);
+                this.Invoke((System.Windows.Forms.MethodInvoker)delegate
+                {
+                    this.SetCursor(cursor);
+                });
+            }
+            else
+            {
+                this.Cursor = gView.Desktop.Wpf.CursorFactory.ToWpfCursor(cursor);
+                var focused = global::System.Windows.Input.FocusManager.GetFocusedElement(this);
+                if (focused is WindowsFormsHost && ((WindowsFormsHost)focused).Child != null)
+                {
+                    ((WindowsFormsHost)focused).Child.Cursor = gView.Desktop.Wpf.CursorFactory.ToFormsCursor(cursor);
+                }
             }
         }
 

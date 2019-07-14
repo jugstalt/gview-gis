@@ -89,6 +89,8 @@ namespace gView.Framework.Carto
 
         void Release();
 
+        bool IsRefreshing { get; }
+
         ISpatialReference LayerDefaultSpatialReference
         {
             get;

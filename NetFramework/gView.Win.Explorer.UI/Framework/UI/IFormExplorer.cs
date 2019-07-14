@@ -26,5 +26,8 @@ namespace gView.Explorer.UI.Framework.UI
         bool MoveToTreeNode(string path);
 
         void SetCursor(object cursor);
+
+        bool InvokeRequired { get; }
+        object Invoke(Delegate method);
     }
 }

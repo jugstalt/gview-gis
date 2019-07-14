@@ -228,6 +228,16 @@ namespace gView.Win.Carto
             }
         }
 
+        public bool InvokeRequired
+        {
+            get { return _appWindow.InvokeRequired; }
+        }
+
+        public object Invoke(Delegate method)
+        {
+            return _appWindow.Invoke(method);
+        }
+
         public bool IsDirty
         {
             get { return _dirty; }
@@ -274,10 +284,20 @@ namespace gView.Win.Carto
 
         public void SetCursor(object cursor)
         {
-            _appWindow.Cursor = gView.Desktop.Wpf.CursorFactory.ToWpfCursor(cursor);
-            var focused = System.Windows.Input.FocusManager.GetFocusedElement(_appWindow);
-            if(focused is WindowsFormsHost && ((WindowsFormsHost)focused).Child!=null)
-                ((WindowsFormsHost)focused).Child.Cursor = gView.Desktop.Wpf.CursorFactory.ToFormsCursor(cursor);
+            if (this.InvokeRequired)
+            {
+                this.Invoke((MethodInvoker)delegate
+                {
+                    this.SetCursor(cursor);
+                });
+            }
+            else
+            {
+                _appWindow.Cursor = gView.Desktop.Wpf.CursorFactory.ToWpfCursor(cursor);
+                var focused = System.Windows.Input.FocusManager.GetFocusedElement(_appWindow);
+                if (focused is WindowsFormsHost && ((WindowsFormsHost)focused).Child != null)
+                    ((WindowsFormsHost)focused).Child.Cursor = gView.Desktop.Wpf.CursorFactory.ToFormsCursor(cursor);
+            }
         }
 
         #region IApplication

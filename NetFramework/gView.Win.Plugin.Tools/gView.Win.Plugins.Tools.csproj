@@ -79,7 +79,7 @@
     <Compile Include="Plugins\MapTools\Buttons.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Plugins\MapTools\Clipborad.cs" />
+    <Compile Include="Plugins\MapTools\Clipboard.cs" />
     <Compile Include="Plugins\MapTools\CloneLayer.cs" />
     <Compile Include="Plugins\MapTools\ContextMenuItems.cs" />
     <Compile Include="Plugins\MapTools\Controls\CoordControl.cs">

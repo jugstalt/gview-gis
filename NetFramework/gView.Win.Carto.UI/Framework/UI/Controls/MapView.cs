@@ -421,7 +421,7 @@ namespace gView.Framework.UI.Controls
                 }
                 lock (lockThis)
                 {
-                    while (_cancelTracker.Continue)
+                    while (_cancelTracker.Continue || (_map != null ? _map.IsRefreshing : false))
                     {
                         _cancelTracker.Cancel();
                         //Task.Delay(5);
@@ -572,7 +572,7 @@ namespace gView.Framework.UI.Controls
             // 
             // panelCopyright
             // 
-            this.panelCopyright.Anchor = (System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right);
+            this.panelCopyright.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.panelCopyright.BackColor = System.Drawing.Color.White;
             this.panelCopyright.Controls.Add(this.lnkCopyright);
             this.panelCopyright.Location = new System.Drawing.Point(185, 270);
@@ -582,11 +582,11 @@ namespace gView.Framework.UI.Controls
             // 
             // lnkCopyright
             // 
-            this.lnkCopyright.Anchor = (System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right);
+            this.lnkCopyright.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lnkCopyright.AutoSize = true;
             this.lnkCopyright.Location = new System.Drawing.Point(3, 3);
             this.lnkCopyright.Name = "lnkCopyright";
-            this.lnkCopyright.Size = new System.Drawing.Size(118, 13);
+            this.lnkCopyright.Size = new System.Drawing.Size(176, 20);
             this.lnkCopyright.TabIndex = 0;
             this.lnkCopyright.TabStop = true;
             this.lnkCopyright.Text = "© Copyright Information";
@@ -606,6 +606,7 @@ namespace gView.Framework.UI.Controls
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.this_MouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.this_MouseMove);
             this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.this_MouseUp);
+            this.Resize += new System.EventHandler(this.MapView_Resize);
             this.panelCopyright.ResumeLayout(false);
             this.panelCopyright.PerformLayout();
             this.ResumeLayout(false);
@@ -1213,6 +1214,11 @@ namespace gView.Framework.UI.Controls
             }
         }
 
+        private void MapView_Resize(object sender, EventArgs e)
+        {
+            
+        }
+
         async private void this_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             if (_cancelling)
@@ -1574,6 +1580,8 @@ namespace gView.Framework.UI.Controls
             }
 
             _image = null;
+
+            CancelDrawing();
 
             if (_mapDoc != null && _mapDoc.Application is IMapApplication)
             {

@@ -234,6 +234,9 @@ namespace gView.Framework.UI
 
         void ShowBackstageMenu();
         void HideBackstageMenu();
+
+        bool InvokeRequired { get; }
+        object Invoke(Delegate method);
     }
 
     public interface IMapApplication : IGUIApplication

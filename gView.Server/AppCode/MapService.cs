@@ -439,6 +439,31 @@ namespace gView.Server.AppCode
 
             return accessTypes;
         }
+
+        async public Task<bool> HasPublishAccess(IIdentity identity)
+        {
+            await ReloadServiceSettings();
+
+            if ((_folderSettings.AccessRules == null || _folderSettings.AccessRules.Length == 0) &&
+                (_settings.AccessRules == null || _settings.AccessRules.Length == 0))  // no rules -> service is open for everone
+            {
+                return true;
+            }
+
+            if (_folderSettings.AccessRules != null && _folderSettings.AccessRules.Length > 0)
+            {
+                if (_folderSettings.AccessRules.Where(r => r.Username == identity.UserName && r.ServiceTypes.Contains("publish")).Count() > 0)
+                    return true;
+            }
+
+            if (_type == MapServiceType.Folder && _settings.AccessRules != null && _settings.AccessRules.Length > 0)
+            {
+                if (_settings.AccessRules.Where(r => r.Username == identity.UserName && r.ServiceTypes.Contains("publish")).Count() > 0)
+                    return true;
+            }
+
+            return false;
+        }
     }
 
     public class MapServiceSettings : IMapServiceSettings

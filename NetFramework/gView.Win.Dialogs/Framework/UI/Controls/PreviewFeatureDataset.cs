@@ -325,6 +325,18 @@ namespace gView.Framework.UI.Controls
         public event ActiveMapToolChangedEvent ActiveMapToolChanged;
         public event OnCursorPosChangedEvent OnCursorPosChanged;
 
+        public bool InvokeRequired
+        {
+            get
+            {
+                return _application.InvokeRequired;
+            }
+        }
+        public object Invoke(Delegate method)
+        {
+            return _application.Invoke(method);
+        }
+
         async public Task LoadMapDocument(string filename)
         {
             if (_application is IMapApplication)

@@ -79,7 +79,7 @@
             0});
             this.numPort.Name = "numPort";
             this.numPort.Value = new decimal(new int[] {
-            8001,
+            443,
             0,
             0,
             0});
@@ -116,23 +116,23 @@
             // 
             // btnOk
             // 
-            this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
             resources.ApplyResources(this.btnOk, "btnOk");
+            this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnOk.Name = "btnOk";
             this.btnOk.UseVisualStyleBackColor = true;
             // 
             // btnCancel
             // 
-            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             resources.ApplyResources(this.btnCancel, "btnCancel");
+            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
             // panel1
             // 
+            resources.ApplyResources(this.panel1, "panel1");
             this.panel1.BackColor = System.Drawing.Color.White;
             this.panel1.Controls.Add(this.label6);
-            resources.ApplyResources(this.panel1, "panel1");
             this.panel1.Name = "panel1";
             // 
             // label6
@@ -147,12 +147,12 @@
             // 
             // cmbServerVersion
             // 
+            resources.ApplyResources(this.cmbServerVersion, "cmbServerVersion");
             this.cmbServerVersion.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbServerVersion.FormattingEnabled = true;
             this.cmbServerVersion.Items.AddRange(new object[] {
             resources.GetString("cmbServerVersion.Items"),
             resources.GetString("cmbServerVersion.Items1")});
-            resources.ApplyResources(this.cmbServerVersion, "cmbServerVersion");
             this.cmbServerVersion.Name = "cmbServerVersion";
             // 
             // FormPublishMap
@@ -178,7 +178,6 @@
             this.Name = "FormPublishMap";
             ((System.ComponentModel.ISupportInitialize)(this.numPort)).EndInit();
             this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 

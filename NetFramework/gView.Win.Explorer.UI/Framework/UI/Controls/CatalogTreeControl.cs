@@ -689,9 +689,28 @@ namespace gView.Framework.UI.Controls
                 return;
             }
 
-            if (NodeSelected != null)
+            try
             {
-                await NodeSelected(e.Node);
+                if (_app != null)
+                {
+                    _app.SetCursor(Cursors.WaitCursor);
+                }
+
+                if (NodeSelected != null)
+                {
+                    await NodeSelected(e.Node);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                if (_app != null)
+                {
+                    _app.SetCursor(Cursors.Default);
+                }
             }
         }
         private void treeView_BeforeSelect(object sender, TreeViewCancelEventArgs e)

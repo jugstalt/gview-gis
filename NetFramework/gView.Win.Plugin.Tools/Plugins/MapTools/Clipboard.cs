@@ -483,8 +483,6 @@ namespace gView.Plugins.MapTools
             Thread thread = new Thread(new ThreadStart(OnEvent));
             thread.TrySetApartmentState(ApartmentState.STA);
             thread.Start();
-            //thread.Join();   
-            //OnEvent();
 
             return Task.FromResult(true);
         }
@@ -532,122 +530,168 @@ namespace gView.Plugins.MapTools
 
         private void OnEvent()
         {
-            if (_doc != null && _doc.FocusMap != null && _doc.FocusMap.Display != null)
+            if (_exapp != null)
             {
-                IDataObject iData = Clipboard.GetDataObject();
-                if (iData == null)
+                _exapp.SetCursor(Cursors.WaitCursor);
+            }
+            try
+            {
+                if (_doc != null && _doc.FocusMap != null && _doc.FocusMap.Display != null)
                 {
-                    return;
-                }
-
-                foreach (string format in iData.GetFormats())
-                {
-                    if (!format.Contains("gView.Plugins.MapTools.ExtensionSerializer") &&
-                        !format.Contains("gView.Framework.system.ExplorerObjectSerialization") &&
-                        !format.Contains("gView.Framework.UI.IExplorerObjectSerialization"))
+                    IDataObject iData = Clipboard.GetDataObject();
+                    if (iData == null)
                     {
-                        continue;
+                        return;
                     }
 
-                    object ob = iData.GetData(format);
-                    if (ob is IEnumerable<ExtensionSerializer>)
+                    foreach (string format in iData.GetFormats())
                     {
-                        foreach (ExtensionSerializer ser in (IEnumerable<ExtensionSerializer>)ob)
+                        if (!format.Contains("gView.Plugins.MapTools.ExtensionSerializer") &&
+                            !format.Contains("gView.Framework.system.ExplorerObjectSerialization") &&
+                            !format.Contains("gView.Framework.UI.IExplorerObjectSerialization"))
                         {
-                            object extension = ser.Object;
+                            continue;
+                        }
 
-                            if (extension is IGraphicElement2)
+                        object ob = iData.GetData(format);
+                        if (ob is IEnumerable<ExtensionSerializer>)
+                        {
+                            foreach (ExtensionSerializer ser in (IEnumerable<ExtensionSerializer>)ob)
                             {
-                                IGraphicElement2 element = extension as IGraphicElement2;
+                                object extension = ser.Object;
 
-                                if (element.Geometry != null)
+                                if (extension is IGraphicElement2)
                                 {
-                                    Point point = new Point(
-                                        (_doc.FocusMap.Display.Envelope.minx + _doc.FocusMap.Display.Envelope.maxx) / 2.0 - (element.Geometry.Envelope.Width) / 2.0,
-                                        (_doc.FocusMap.Display.Envelope.miny + _doc.FocusMap.Display.Envelope.maxy) / 2.0 - (element.Geometry.Envelope.Height) / 2.0);
+                                    IGraphicElement2 element = extension as IGraphicElement2;
 
-                                    element.Translation(point.X, point.Y);
+                                    if (element.Geometry != null)
+                                    {
+                                        Point point = new Point(
+                                            (_doc.FocusMap.Display.Envelope.minx + _doc.FocusMap.Display.Envelope.maxx) / 2.0 - (element.Geometry.Envelope.Width) / 2.0,
+                                            (_doc.FocusMap.Display.Envelope.miny + _doc.FocusMap.Display.Envelope.maxy) / 2.0 - (element.Geometry.Envelope.Height) / 2.0);
+
+                                        element.Translation(point.X, point.Y);
+                                    }
+                                    _doc.FocusMap.Display.GraphicsContainer.Elements.Add(element);
+                                    _doc.FocusMap.Display.GraphicsContainer.SelectedElements.Add(element);
                                 }
-                                _doc.FocusMap.Display.GraphicsContainer.Elements.Add(element);
-                                _doc.FocusMap.Display.GraphicsContainer.SelectedElements.Add(element);
                             }
                         }
                     }
-                }
 
-                if (_doc.Application is IMapApplication)
-                {
-                    ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
-                }
-            }
-            if (_context != null && _context.Count == 1)
-            {
-                IExplorerObjectContentDragDropEvents ddEvents = _context[0] as IExplorerObjectContentDragDropEvents;
-                _context = null;
-                if (ddEvents == null)
-                {
-                    return;
-                }
-
-                IDataObject iData = Clipboard.GetDataObject();
-                if (iData == null)
-                {
-                    return;
-                }
-
-                foreach (string format in iData.GetFormats())
-                {
-                    object ob = iData.GetData(format);
-                    if (ob is List<IExplorerObjectSerialization>)
+                    if (_doc.Application is IMapApplication)
                     {
-                        DragEventArgs e = new DragEventArgs(iData, 0, 0, 0, DragDropEffects.Copy, DragDropEffects.Copy);
-                        ddEvents.Content_DragDrop(e);
+                        ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
                     }
                 }
-
-                if (_exapp != null)
+                if (_context != null && _context.Count == 1)
                 {
-                    _exapp.RefreshContents();
-                }
-            }
-            else if (_exapp != null && _exapp.SelectedObjects != null && _exapp.SelectedObjects.Count == 1)
-            {
-                IExplorerObjectContentDragDropEvents ddEvents = null;
-                // Try some times -> await all async treenode events after copy to:   I hate async windows programming!!!
-                for (int i = 0; i < 5; i++)
-                {
-                    ddEvents = _exapp.SelectedObjects[0] as IExplorerObjectContentDragDropEvents;
+                    IExplorerObjectContentDragDropEvents ddEvents = _context[0] as IExplorerObjectContentDragDropEvents;
+                    _context = null;
                     if (ddEvents == null)
                     {
-                        Thread.Sleep(1000);
+                        return;
+                    }
+
+                    IDataObject iData = Clipboard.GetDataObject();
+                    if (iData == null)
+                    {
+                        return;
+                    }
+
+                    if (_exapp != null && _exapp.InvokeRequired)
+                    {
+
                     }
                     else
                     {
-                        break;
+                        foreach (string format in iData.GetFormats())
+                        {
+                            object ob = iData.GetData(format);
+                            if (ob is List<IExplorerObjectSerialization>)
+                            {
+                                DragEventArgs e = new DragEventArgs(iData, 0, 0, 0, DragDropEffects.Copy, DragDropEffects.Copy);
+                                ddEvents.Content_DragDrop(e);
+                            }
+                        }
+
+                        if (_exapp != null)
+                        {
+                            _exapp.RefreshContents();
+                        }
                     }
                 }
-
-                if(ddEvents==null)
+                else if (_exapp != null && _exapp.SelectedObjects != null && _exapp.SelectedObjects.Count == 1)
                 {
-                    return;
-                }
-
-                IDataObject iData = Clipboard.GetDataObject();
-                if (iData == null)
-                {
-                    return;
-                }
-
-                foreach (string format in iData.GetFormats())
-                {
-                    object ob = iData.GetData(format);
-                    if (ob is IEnumerable<IExplorerObjectSerialization>)
+                    IExplorerObjectContentDragDropEvents ddEvents = null;
+                    // Try some times -> await all async treenode events after copy to:   I hate async windows programming!!!
+                    for (int i = 0; i < 5; i++)
                     {
-                        DragEventArgs e = new DragEventArgs(iData, 0, 0, 0, DragDropEffects.Copy, DragDropEffects.Copy);
-                        ddEvents.Content_DragDrop(e);
+                        ddEvents = _exapp.SelectedObjects[0] as IExplorerObjectContentDragDropEvents;
+                        if (ddEvents == null)
+                        {
+                            Thread.Sleep(1000);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    if (ddEvents == null)
+                    {
+                        return;
+                    }
+
+                    if (_exapp.InvokeRequired)
+                    {
+                        _exapp.Invoke((MethodInvoker)delegate
+                        {
+                            IDataObject iData = Clipboard.GetDataObject();
+                            if (iData == null)
+                            {
+                                return;
+                            }
+
+                            foreach (string format in iData.GetFormats())
+                            {
+                                object ob = iData.GetData(format);
+                                if (ob is IEnumerable<IExplorerObjectSerialization>)
+                                {
+                                    DragEventArgs e = new DragEventArgs(iData, 0, 0, 0, DragDropEffects.Copy, DragDropEffects.Copy);
+                                    ddEvents.Content_DragDrop(e);
+                                }
+                            }
+                            _exapp.RefreshContents();
+                        });
+                    }
+                    else
+                    {
+                        IDataObject iData = Clipboard.GetDataObject();
+                        if (iData == null)
+                        {
+                            return;
+                        }
+
+                        foreach (string format in iData.GetFormats())
+                        {
+                            object ob = iData.GetData(format);
+                            if (ob is IEnumerable<IExplorerObjectSerialization>)
+                            {
+                                DragEventArgs e = new DragEventArgs(iData, 0, 0, 0, DragDropEffects.Copy, DragDropEffects.Copy);
+                                ddEvents.Content_DragDrop(e);
+                            }
+                        }
+                        _exapp.RefreshContents();
                     }
                 }
-                _exapp.RefreshContents();
+            }
+            finally
+            {
+                if (_exapp != null)
+                {
+                    _exapp.SetCursor(Cursors.Default);
+                }
             }
         }
 
@@ -678,7 +722,7 @@ namespace gView.Plugins.MapTools
             foreach (string format in iData.GetFormats())
             {
                 if (!format.Contains("gView.Plugins.MapTools.ExtensionSerializer") &&
-                    !format.Contains("gView.Framework.system.ExplorerObjectSerialization") &&
+                    !format.Contains("gView.Framework.Sys.UI.ExplorerObjectSerialization") &&
                     !format.Contains("gView.Framework.UI.IExplorerObjectSerialization"))
                 {
                     continue;
