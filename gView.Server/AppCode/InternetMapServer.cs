@@ -33,7 +33,6 @@ namespace gView.Server.AppCode
         static internal License myLicense = null;
         static internal ConcurrentBag<IMapService> MapServices = new ConcurrentBag<IMapService>();
         static internal MapServerInstance Instance = null;
-        static internal Acl acl = null;
 
         async static public Task Init(string rootPath, int port = 80)
         {
@@ -465,11 +464,6 @@ namespace gView.Server.AppCode
 
             await CheckPublishAccess(folder, usr, pwd);
 
-            if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, "admin_addmap"))
-            {
-                throw new MapServerException("Not allowed");
-            }
-
             if ((await InternetMapServer.Instance.Maps(null)).Count() >= InternetMapServer.Instance.MaxServices)
             {
                 // Überprüfen, ob schon eine Service mit gleiche Namen gibt...
@@ -568,10 +562,7 @@ namespace gView.Server.AppCode
         }
         async static public Task<bool> RemoveMap(string mapName, string usr, string pwd)
         {
-            if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, "admin_removemap"))
-            {
-                return false;
-            }
+            await CheckPublishAccess(mapName.FolderName(), usr, pwd);
 
             bool found = false;
 
@@ -599,10 +590,7 @@ namespace gView.Server.AppCode
 
         async static public Task<bool> ReloadMap(string mapName, string usr, string pwd)
         {
-            if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, mapName))
-            {
-                return false;
-            }
+            await CheckPublishAccess(mapName.FolderName(), usr, pwd);
 
             if (MapDocument == null)
             {
@@ -658,10 +646,7 @@ namespace gView.Server.AppCode
 
         async static public Task<string> GetMetadata(string mapName, string usr, string pwd)
         {
-            if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, "admin_metadata_get"))
-            {
-                return "ERROR: Not Authorized!";
-            }
+            await CheckPublishAccess(mapName.FolderName(), usr, pwd);
 
             if (!await ReloadMap(mapName, usr, pwd))
             {
@@ -686,10 +671,7 @@ namespace gView.Server.AppCode
         }
         async static public Task<bool> SetMetadata(string mapName, string metadata, string usr, string pwd)
         {
-            if (InternetMapServer.acl != null && !InternetMapServer.acl.HasAccess(Identity.FromFormattedString(usr), pwd, "admin_metadata_set"))
-            {
-                return false;
-            }
+            await CheckPublishAccess(mapName.FolderName(), usr, pwd);
 
             FileInfo fi = new FileInfo(InternetMapServer.ServicesPath + @"/" + mapName + ".meta");
 
@@ -811,6 +793,11 @@ namespace gView.Server.AppCode
         async static private Task CheckPublishAccess(string folder, string usr, string pwd)
         {
             var folderService = GetFolderService(folder);
+            if (folderService == null)
+            {
+                throw new MapServerException("Unknown folder: " + folder);
+            }
+
             var identity = GetIdentity(usr, pwd);
             if (!await folderService.HasPublishAccess(identity))
             {
