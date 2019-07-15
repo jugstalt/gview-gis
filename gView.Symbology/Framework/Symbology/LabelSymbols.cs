@@ -916,7 +916,7 @@ namespace gView.Framework.Symbology
 
         #region Helper
 
-        protected void DrawString(Graphics gr, string text, Font font, SolidBrush brush, float xOffset, float yOffset, StringFormat format)
+        protected void DrawString(System.Drawing.Graphics/*IGraphicsEngine*/ gr, string text, Font font, SolidBrush brush, float xOffset, float yOffset, StringFormat format)
         {
             if (IncludesSuperScript == true)
             {

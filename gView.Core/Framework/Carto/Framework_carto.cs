@@ -10,6 +10,8 @@ using gView.Framework.system;
 using gView.MapServer;
 using System.IO;
 using System.Threading.Tasks;
+using System.Drawing.Drawing2D;
+using System.Drawing;
 
 namespace gView.Framework.Carto
 {
@@ -189,6 +191,7 @@ namespace gView.Framework.Carto
 
         global::System.Drawing.Image Bitmap { get; }
         global::System.Drawing.Graphics GraphicsContext { get; }
+        //IGraphicsEngine GraphicsContext { get; }
         global::System.Drawing.Color BackgroundColor { get; set; }
         global::System.Drawing.Color TransparentColor
         {
@@ -235,6 +238,34 @@ namespace gView.Framework.Carto
         {
             get;
         }
+    }
+
+    public interface IGraphicsEngine
+    {
+        SmoothingMode SmoothingMode { get; set; }
+
+        void TranslateTransform(float x, float y);
+        void RotateTransform(float angle);
+        void ResetTransform();
+
+        void FillEllipse(Brush brush, float x, float y, float width, float height);
+        void DrawEllipse(Pen pen, float x, float y, float width, float height);
+
+        void FillPath(Brush brush, GraphicsPath path);
+        void DrawPath(Pen pen, GraphicsPath path);
+
+        void FillRectangle(Brush brush, float x, float y, float width, float height);
+        void FillRectangle(Brush brush, Rectangle rect);
+        void FillRectangle(Brush brush, RectangleF rect);
+        void DrawRectangle(Pen pen, float x, float y, float width, float height);
+
+        System.Drawing.Text.TextRenderingHint TextRenderingHint { get; set; }
+
+        void DrawString(string text, Font font, Brush brush, float x, float y, System.Drawing.StringFormat format);
+
+        void DrawImage(Image image, Rectangle souceRect, Rectangle destRect, GraphicsUnit unit);
+
+        SizeF MeasureString(string text, Font font);
     }
 
     public interface IDisplayTransformation

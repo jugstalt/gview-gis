@@ -37,8 +37,6 @@ namespace gView.Framework.UI.Controls
         public event CursorMoveEvent CursorMove = null;
         public delegate void StartRequestEvent();
         public event StartRequestEvent StartRequest = null;
-        public delegate void EndRequestEvent(bool succeeded);
-        public event EndRequestEvent EndRequest = null;
         public delegate void AfterRefreshMapEvent();
         public event AfterRefreshMapEvent AfterRefreshMap = null;
         public delegate void BeforeRefreshMapEvent();
@@ -432,15 +430,7 @@ namespace gView.Framework.UI.Controls
                         ((Map)_map).DisposeGraphics();
                     }
 
-                    if (EndRequest != null)
-                    {
-                        EndRequest(false);
-                    }
-
-                    if (AfterRefreshMap != null)
-                    {
-                        AfterRefreshMap();
-                    }
+                    AfterRefreshMap?.Invoke();
                 }
             }
             finally
@@ -492,8 +482,12 @@ namespace gView.Framework.UI.Controls
                 _cancelTracker.Reset();
                 _refreshMapThread = new Thread(async () =>
                   {
+                      BeforeRefreshMap?.Invoke();
+
                       await _map.RefreshMap(_phase, _cancelTracker);
                       MakeMapViewRefresh();
+
+                      AfterRefreshMap?.Invoke();
                   });
                 _refreshMapThread.Start();
                 //Task.Factory.StartNew(async () =>

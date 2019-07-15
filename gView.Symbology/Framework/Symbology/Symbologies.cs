@@ -1853,8 +1853,7 @@ namespace gView.Framework.Symbology
                         if (_image == null) _image = Image.FromFile(_filename);
                         display.GraphicsContext.DrawImage(
                                 _image,
-                                new Rectangle((int)x, (int)y,
-                                (int)_sizeX, (int)_sizeY),
+                                new Rectangle((int)x, (int)y, (int)_sizeX, (int)_sizeY),
                                 new Rectangle(0, 0, _image.Width, _image.Height),
                                 GraphicsUnit.Pixel);
 

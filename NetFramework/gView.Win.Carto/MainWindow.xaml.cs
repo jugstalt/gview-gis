@@ -861,7 +861,9 @@ namespace gView.Win.Carto
                 mapView.MapDocument = _mapDocument;  // Um Event AfterLoadMapDocument hinzuzufügen
                 mapView.CursorMove += new gView.Framework.UI.Controls.MapView.CursorMoveEvent(mapView1_CursorMove);
                 mapView.DrawingLayer += new gView.Framework.UI.Controls.MapView.DrawingLayerEvent(mapView1_DrawingLayer);
-                mapView.AfterRefreshMap += new gView.Framework.UI.Controls.MapView.AfterRefreshMapEvent(mapView1_AfterRefreshMap);
+
+                mapView.BeforeRefreshMap += new MapView.BeforeRefreshMapEvent(mapView1_BeforeRefreshMap);
+                mapView.AfterRefreshMap += new MapView.AfterRefreshMapEvent(mapView1_AfterRefreshMap);
             }
             return dataView;
         }
@@ -1425,8 +1427,15 @@ namespace gView.Win.Carto
         public void mapView1_AfterRefreshMap()
         {
             ITool tool = this.ActiveTool;
-            SetPanelText(1, null);
+            SetPanelText(1, (int)(DateTime.UtcNow - _mapRefreshStartTime).TotalMilliseconds + "ms");
         }
+
+        private DateTime _mapRefreshStartTime;
+        public void mapView1_BeforeRefreshMap()
+        {
+            _mapRefreshStartTime = DateTime.UtcNow;
+        }
+
         #endregion
 
         #region Item Wrapper

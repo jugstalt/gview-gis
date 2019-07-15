@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace gView.Server.AppCode
 {
-    public enum HttpSchema
+    public enum Http
     {
         Default = 0,
         Current = 1,

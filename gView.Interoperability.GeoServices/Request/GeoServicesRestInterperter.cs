@@ -114,6 +114,15 @@ namespace gView.Interoperability.GeoServices.Request
                 _exportMap = JsonConvert.DeserializeObject<JsonExportMap>(context.ServiceRequest.Request);
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
+                    #region SpatialReference
+
+                    if(!String.IsNullOrWhiteSpace(_exportMap.BBoxSRef))
+                    {
+                        serviceMap.Display.SpatialReference = SRef(_exportMap.BBoxSRef);
+                    }
+
+                    #endregion
+
                     #region Display
 
                     serviceMap.Display.dpi = _exportMap.Dpi;
@@ -123,6 +132,7 @@ namespace gView.Interoperability.GeoServices.Request
                     serviceMap.Display.iHeight = size[1];
 
                     var bbox = _exportMap.BBox.ToBBox();
+
                     serviceMap.Display.ZoomTo(new Envelope(bbox[0], bbox[1], bbox[2], bbox[3]));
 
                     #endregion
