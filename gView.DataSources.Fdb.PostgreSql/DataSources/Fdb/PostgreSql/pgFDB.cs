@@ -94,10 +94,12 @@ namespace gView.DataSources.Fdb.PostgreSql
             return dataset;
         }
 
-        public override Task<bool> Open(string connString)
+        async public override Task<bool> Open(string connString)
         {
             try
             {
+                connString = DbConnectionString.ParseNpgsqlConnectionString(connString);
+
                 if (_conn != null) _conn.Dispose();
                 _conn = new CommonDbConnection(connString);
 
@@ -111,12 +113,12 @@ namespace gView.DataSources.Fdb.PostgreSql
                     _conn.dbType = gView.Framework.Db.DBType.npgsql;
                 }
 
-                SetVersion();
-                return Task.FromResult(true);
+                await SetVersion();
+                return true;
             }
             catch
             {
-                return Task.FromResult(false);
+                return false;
             }
         }
 

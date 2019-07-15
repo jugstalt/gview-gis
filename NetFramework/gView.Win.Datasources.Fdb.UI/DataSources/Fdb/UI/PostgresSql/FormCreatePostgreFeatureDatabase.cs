@@ -33,7 +33,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         {
             get
             {
-                return "npgsql:Server=" + txtServer.Text + ";Port=" + txtPort.Text + ";Userid=" + txtUser.Text + ";Password=" + txtPassword.Text + ";Protocol=3;SSL=true; Pooling=true;MinPoolSize=3;MaxPoolSize=20;Encoding=UNICODE;Timeout=20;SslMode=Disable;";
+                return "Server=" + txtServer.Text + ";Port=" + txtPort.Text + ";Userid=" + txtUser.Text + ";Password=" + txtPassword.Text + ";Protocol=3;SSL=true; Pooling=true;MinPoolSize=3;MaxPoolSize=20;Encoding=UNICODE;Timeout=20;SslMode=Disable;";
             }
         }
 
@@ -41,7 +41,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         {
             get
             {
-                return "npgsql:Server=" + txtServer.Text + ";Port=" + txtPort.Text + ";Userid=" + txtUser.Text + ";Password=" + txtPassword.Text + ";Database=" + txtDatabase.Text + ";Protocol=3;SSL=true; Pooling=true;MinPoolSize=3;MaxPoolSize=20;Encoding=UNICODE;Timeout=20;SslMode=Disable;";
+                return "Server=" + txtServer.Text + ";Port=" + txtPort.Text + ";Userid=" + txtUser.Text + ";Password=" + txtPassword.Text + ";Database=" + txtDatabase.Text + ";Protocol=3;SSL=true; Pooling=true;MinPoolSize=3;MaxPoolSize=20;Encoding=UNICODE;Timeout=20;SslMode=Disable;";
             }
         }
 
