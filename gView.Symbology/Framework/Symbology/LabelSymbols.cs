@@ -1187,7 +1187,7 @@ namespace gView.Framework.Symbology
         }
     }
 
-    [RegisterPlugIn("A06F8B12-394E-4F8E-8B9A-6025F96F6F4F")]
+    [RegisterPlugInAttribute("A06F8B12-394E-4F8E-8B9A-6025F96F6F4F")]
     public class BlockoutTextSymbol : SimpleTextSymbol
     {
         protected SolidBrush _outlinebrush;

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Metadata
 {
-    [RegisterPlugIn("D33D3DD2-DD63-4a47-9F84-F840FE0D01C0")]
+    [RegisterPlugInAttribute("D33D3DD2-DD63-4a47-9F84-F840FE0D01C0")]
     public class TileServiceMetadata : IMetadataProvider, IPropertyPage
     {
         private bool _use = false;

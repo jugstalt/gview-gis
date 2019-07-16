@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace gView.DataSources.PostGIS
 {
     [UseDatasetNameCase(DatasetNameCase.classNameLower)]
-    [RegisterPlugIn("206CF40B-D4D9-4e85-B872-D2E63C3556BA")]
+    [RegisterPlugInAttribute("206CF40B-D4D9-4e85-B872-D2E63C3556BA")]
     public class PostGISDataset : gView.Framework.OGC.DB.OgcSpatialDataset, IPlugInDependencies
     {
         DbProviderFactory _factory = null;

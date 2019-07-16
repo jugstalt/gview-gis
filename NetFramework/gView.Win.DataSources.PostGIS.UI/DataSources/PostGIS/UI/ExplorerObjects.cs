@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.PostGIS.UI
 {
-    [RegisterPlugIn("9F42DCF6-920E-433f-9D3C-610E4350EE35")]
+    [RegisterPlugInAttribute("9F42DCF6-920E-433f-9D3C-610E4350EE35")]
     public class PostGISExplorerGroupObject : ExplorerParentObject, IOgcGroupExplorerObject, IPlugInDependencies
     {
         private IExplorerIcon _icon = new PostGISIcon();
@@ -123,7 +123,7 @@ namespace gView.DataSources.PostGIS.UI
         #endregion
     }
 
-    [RegisterPlugIn("003ED96C-4041-4657-A544-E92A3B7A96BF")]
+    [RegisterPlugInAttribute("003ED96C-4041-4657-A544-E92A3B7A96BF")]
     public class PostGISNewConnectionObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectDoubleClick, IExplorerObjectCreatable
     {
         private IExplorerIcon _icon = new PostGISNewConnectionIcon();

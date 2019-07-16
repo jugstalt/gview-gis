@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.DbTools.Relates
 {
-    [RegisterPlugIn("9d377f08-9503-461f-962a-e9364119b1e8")]
+    [RegisterPlugInAttribute("9d377f08-9503-461f-962a-e9364119b1e8")]
     public class TableRelationsContextMenuItem : IDatasetElementContextMenuItem
     {
         private IMapDocument _doc = null;

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.DbTools.Joins
 {
-    [RegisterPlugIn("18D3A030-FBE6-4dbd-AD23-0F6C291EFCC9")]
+    [RegisterPlugInAttribute("18D3A030-FBE6-4dbd-AD23-0F6C291EFCC9")]
     class FeatureLayerJoins : IDatasetElementContextMenuItem
     {
         private IMapDocument _doc = null;

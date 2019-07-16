@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.Network
 {
-    [RegisterPlugIn("216D616B-FA15-4052-BFDE-16B6346C4B7F")]
+    [RegisterPlugInAttribute("216D616B-FA15-4052-BFDE-16B6346C4B7F")]
     public class RemoveNetworkElements : ITool
     {
         private IMapDocument _doc = null;

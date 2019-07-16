@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
 {
-    [RegisterPlugIn("325AD6CC-A7A7-4d21-960B-5C2B437DFB69")]
+    [RegisterPlugInAttribute("325AD6CC-A7A7-4d21-960B-5C2B437DFB69")]
     public class TraceShortestPathConnectioned : INetworkTracer, IProgressReporterEvent
     {
         #region INetworkTracer Member

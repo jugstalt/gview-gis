@@ -26,7 +26,7 @@ namespace gView.DataSources.Fdb.MSSql
     /// <summary>
     /// Zusammenfassung für Class1.
     /// </summary>
-    [RegisterPlugIn("e6efb823-82ff-4682-8654-ffb099db7050")]
+    [RegisterPlugInAttribute("e6efb823-82ff-4682-8654-ffb099db7050")]
     public class SqlFDB : gView.DataSources.Fdb.MSAccess.AccessFDB
     {
         //public delegate void ProgressEvent(object progressEventReport);

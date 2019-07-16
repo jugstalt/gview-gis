@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Calc
 {
-    [RegisterPlugIn("C25E2681-E904-4d4c-A094-3ADD71E8BC54")]
+    [RegisterPlugInAttribute("C25E2681-E904-4d4c-A094-3ADD71E8BC54")]
     public class SimpleMultiplication : ISimpleNumberCalculation
     {
         private double _multiplicator = 1.0;
@@ -68,7 +68,7 @@ namespace gView.Framework.Data.Calc
         #endregion
     }
 
-    [RegisterPlugIn("893A3D1A-BABD-4772-B2CC-A0F638D50B02")]
+    [RegisterPlugInAttribute("893A3D1A-BABD-4772-B2CC-A0F638D50B02")]
     public class ReciprocalValue : ISimpleNumberCalculation
     {
         protected double _zeroValue = 0.0;
@@ -122,7 +122,7 @@ namespace gView.Framework.Data.Calc
         #endregion
     }
 
-    [RegisterPlugIn("B8C40E43-71D1-4b0a-95F7-749093547F90")]
+    [RegisterPlugInAttribute("B8C40E43-71D1-4b0a-95F7-749093547F90")]
     public class Fraction : ISimpleNumberCalculation
     {
         private double _numerator = 1.0;
@@ -188,7 +188,7 @@ namespace gView.Framework.Data.Calc
         #endregion
     }
 
-    [RegisterPlugIn("FAE19184-54A6-48a1-A8A7-62A0214E0F66")]
+    [RegisterPlugInAttribute("FAE19184-54A6-48a1-A8A7-62A0214E0F66")]
     public class EvalFunction : ISimpleNumberCalculation
     {
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
@@ -243,7 +243,7 @@ namespace gView.Framework.Data.Calc
         #endregion
     }
 
-    [RegisterPlugIn("7D7A36CF-8F6D-4dbd-B566-8AC93FE82893")]
+    [RegisterPlugInAttribute("7D7A36CF-8F6D-4dbd-B566-8AC93FE82893")]
     public class ConstantValue : ISimpleNumberCalculation
     {
         private double _constValue = 1.0;
@@ -293,7 +293,7 @@ namespace gView.Framework.Data.Calc
         #endregion
     }
 
-    [RegisterPlugIn("AEE5A60F-3743-4c66-93A4-02FD24527C24")]
+    [RegisterPlugInAttribute("AEE5A60F-3743-4c66-93A4-02FD24527C24")]
     public class IfZeroValue : ISimpleNumberCalculation
     {
         private double _zeroValue = 0.0;

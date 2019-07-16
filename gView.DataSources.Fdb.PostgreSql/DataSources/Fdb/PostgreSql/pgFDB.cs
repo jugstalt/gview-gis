@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.PostgreSql
 {
-    [RegisterPlugIn("a408f01d-7237-4e33-81ba-ac9d29dfc433")]
+    [RegisterPlugInAttribute("a408f01d-7237-4e33-81ba-ac9d29dfc433")]
     public class pgFDB : gView.DataSources.Fdb.MSAccess.AccessFDB
     {
         internal static DbProviderFactory _dbProviderFactory = DataProvider.PostgresProvider;
@@ -804,7 +804,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
             var allowFcEditing = await Replication.AllowFeatureClassEditing(fClass);
             string replicationField = allowFcEditing.replFieldName;
-            if (allowFcEditing.allow)
+            if (!allowFcEditing.allow)
             {
                 _errMsg = "Replication Error: can't edit checked out and released featureclass...";
                 return false;

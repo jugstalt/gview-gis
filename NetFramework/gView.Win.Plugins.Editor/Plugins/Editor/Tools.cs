@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.Editor
 {
-    [gView.Framework.system.RegisterPlugIn("FE2AE24C-73F8-4da3-BBC7-45C2FCD3FE75")]
+    [gView.Framework.system.RegisterPlugIn("FE2AE24C-73F8-4da3-BBC7-45C2FCD3FE75", Obsolote = true)]
     public class EditorMenu : ITool, IToolItem
     {
         ToolStripMenuItem _startEditing = new ToolStripMenuItem();
@@ -88,7 +88,7 @@ namespace gView.Plugins.Editor
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("19396559-C13C-486c-B5F7-73DD5B12D5A8")]
+    [gView.Framework.system.RegisterPlugIn("19396559-C13C-486c-B5F7-73DD5B12D5A8", Obsolote = true)]
     public class TaskText : ITool, IToolItem
     {
 
@@ -144,7 +144,7 @@ namespace gView.Plugins.Editor
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("9B7D5E0E-88A5-40e2-977B-8A2E21875221")]
+    [gView.Framework.system.RegisterPlugIn("9B7D5E0E-88A5-40e2-977B-8A2E21875221", Obsolote = true)]
     public class TaskCombo : ITool, IToolItem, IPersistable, IToolItemLabel
     {
         private IMapDocument _doc = null;
@@ -321,7 +321,7 @@ namespace gView.Plugins.Editor
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("784148EB-04EA-413d-B11A-1A0F9A7EA4A0")]
+    [gView.Framework.system.RegisterPlugIn("784148EB-04EA-413d-B11A-1A0F9A7EA4A0", Obsolote = true)]
     public class TargetText : ITool, IToolItem
     {
         #region ITool Member
@@ -376,7 +376,7 @@ namespace gView.Plugins.Editor
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("3C8A7ABC-B535-43d8-8F2D-B220B298CB17")]
+    [gView.Framework.system.RegisterPlugIn("3C8A7ABC-B535-43d8-8F2D-B220B298CB17", Obsolote = true)]
     public class TargetCombo : ITool, IToolItem, IPersistable, IToolItemLabel
     {
         private IMapDocument _doc = null;
@@ -627,7 +627,7 @@ namespace gView.Plugins.Editor
     //    }
     //}
 
-    [gView.Framework.system.RegisterPlugIn("91392106-2C28-429c-8100-1E4E927D521C")]
+    [gView.Framework.system.RegisterPlugIn("91392106-2C28-429c-8100-1E4E927D521C", Obsolote = true)]
     public class EditTool : gView.Framework.Snapping.Core.SnapTool, ITool, IToolWindow, IToolMouseActions, IToolKeyActions, IToolContextMenu
     {
         private IMapDocument _doc = null;
@@ -947,7 +947,7 @@ namespace gView.Plugins.Editor
         }
     }
 
-    [gView.Framework.system.RegisterPlugIn("3B64107F-00C8-4f4a-B781-163FE9DA2D4B")]
+    [gView.Framework.system.RegisterPlugIn("3B64107F-00C8-4f4a-B781-163FE9DA2D4B", Obsolote = true)]
     public class EditPenTool : gView.Framework.Snapping.Core.SnapTool, ITool, IToolMouseActions, IToolMouseActions2, IToolKeyActions, IToolContextMenu
     {
         protected IMapDocument _doc = null;
@@ -1313,7 +1313,7 @@ namespace gView.Plugins.Editor
         }
     }
 
-    [gView.Framework.system.RegisterPlugIn("4F4A6AA1-89A6-498c-819A-0E52EF9AEA61")]
+    [gView.Framework.system.RegisterPlugIn("4F4A6AA1-89A6-498c-819A-0E52EF9AEA61", Obsolote = true)]
     public class EditOrthoPenTool : EditPenTool
     {
         #region ITool
@@ -1418,7 +1418,7 @@ namespace gView.Plugins.Editor
         }
     }
 
-    [gView.Framework.system.RegisterPlugIn("B576D3F9-F7C9-46d5-8A8C-16B3974F1BD7")]
+    [gView.Framework.system.RegisterPlugIn("B576D3F9-F7C9-46d5-8A8C-16B3974F1BD7", Obsolote = true)]
     public class EditAttributes : ITool
     {
         private IMapDocument _doc = null;
@@ -1493,7 +1493,7 @@ namespace gView.Plugins.Editor
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("96099E8C-163E-46ec-BA33-41696BFAE4D5")]
+    [gView.Framework.system.RegisterPlugIn("96099E8C-163E-46ec-BA33-41696BFAE4D5", Obsolote = true)]
     public class StoreFeature : ITool
     {
         private IMapDocument _doc = null;
@@ -1581,7 +1581,7 @@ namespace gView.Plugins.Editor
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("AC4620D4-3DE4-49ea-A902-0B267BA46BBF")]
+    [gView.Framework.system.RegisterPlugIn("AC4620D4-3DE4-49ea-A902-0B267BA46BBF", Obsolote = true)]
     public class DeleteFeature : ITool
     {
         private IMapDocument _doc = null;
@@ -1667,7 +1667,7 @@ namespace gView.Plugins.Editor
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("11DEE52F-F241-406e-BB40-9F247532E43D")]
+    [gView.Framework.system.RegisterPlugIn("11DEE52F-F241-406e-BB40-9F247532E43D", Obsolote = true)]
     public class DeleteSelectedFeatures : ITool
     {
         private IMapDocument _doc = null;
@@ -1811,7 +1811,7 @@ namespace gView.Plugins.Editor
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("FD340DE3-0BC1-4b3e-99D2-E8DCD55A46F2")]
+    [gView.Framework.system.RegisterPlugIn("FD340DE3-0BC1-4b3e-99D2-E8DCD55A46F2", Obsolote = true)]
     public class DeleteSketch : ITool
     {
         private IMapDocument _doc = null;

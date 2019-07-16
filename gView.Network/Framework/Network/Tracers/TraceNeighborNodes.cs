@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
 {
-    [RegisterPlugIn("3D20193C-8E5E-4F45-90F3-12DFE8AD3779")]
+    [RegisterPlugInAttribute("3D20193C-8E5E-4F45-90F3-12DFE8AD3779")]
     public class TraceNeighborNodes : INetworkTracer, INetworkTracerProperties, IProgressReporterEvent
     {
         private DynamicProperties _properties = new DynamicProperties();

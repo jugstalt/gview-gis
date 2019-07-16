@@ -13,7 +13,7 @@ using gView.Framework.Geometry;
 
 namespace gView.Interoperability.OGC.UI.Dataset.WMS
 {
-    [RegisterPlugIn("25010B9F-1A01-41da-88AE-3446496DE416")]
+    [RegisterPlugInAttribute("25010B9F-1A01-41da-88AE-3446496DE416")]
     public partial class FormWMSProperties : Form, ILayerPropertyPage
     {
         private WMSClass _class = null;

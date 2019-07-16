@@ -1,28 +1,27 @@
+using gView.Desktop.Wpf.Carto;
+using gView.Framework.Carto;
+using gView.Framework.Carto.Rendering;
+using gView.Framework.Carto.UI;
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.IO;
+using gView.Framework.Sys.UI;
+using gView.Framework.system;
+using gView.Framework.UI;
+using gView.Framework.UI.Controls;
+using gView.Framework.XML;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Windows.Forms;
-using gView.Framework.system;
-using gView.Framework.Carto;
-using gView.Framework.UI.Controls;
-using gView.Framework.IO;
-using gView.Framework.Geometry;
-using gView.Framework.Data;
-using System.IO;
-using System.Xml;
-using gView.Framework.XML;
-using gView.Framework.Symbology;
-using gView.Framework.Carto.UI;
-using gView.Framework.Carto.Rendering;
-using gView.Framework.UI;
-using Xceed.Wpf.AvalonDock.Layout;
-using System.Windows.Forms.Integration;
-using gView.Framework.Sys.UI;
-using gView.Desktop.Wpf.Carto;
 using System.Threading.Tasks;
-using System.Linq;
+using System.Windows.Forms;
+using System.Windows.Forms.Integration;
+using System.Xml;
+using Xceed.Wpf.AvalonDock.Layout;
 
 namespace gView.Win.Carto
 {
@@ -58,7 +57,7 @@ namespace gView.Win.Carto
 
         async void _dataViewContainer_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "SelectedContent" && _doc!=null)
+            if (e.PropertyName == "SelectedContent" && _doc != null)
             {
                 LayoutDocument document = _dataViewContainer.SelectedContent as LayoutDocument;
                 if (document != null)
@@ -76,7 +75,9 @@ namespace gView.Win.Carto
         public void Start()
         {
             if (OnApplicationStart != null)
+            {
                 OnApplicationStart(this, new EventArgs());
+            }
         }
 
         public MapDocument mapDocument
@@ -95,7 +96,11 @@ namespace gView.Win.Carto
 
         public void MapAddedToDocument(IMap map)
         {
-            if (map == null) return;
+            if (map == null)
+            {
+                return;
+            }
+
             map.NewBitmap += new NewBitmapEvent(NewBitmapCreated);
             map.DoRefreshMapView += new DoRefreshMapViewEvent(MakeMapViewRefresh);
             map.DrawingLayer += new gView.Framework.Carto.DrawingLayerEvent(OnDrawingLayer);
@@ -107,14 +112,20 @@ namespace gView.Win.Carto
 
         void Display_RenderOverlayImage(System.Drawing.Bitmap image, bool clearOld)
         {
-            if (_activeDataView == null || _activeDataView.MapView == null) return;
+            if (_activeDataView == null || _activeDataView.MapView == null)
+            {
+                return;
+            }
 
             _activeDataView.MapView.RenderOverlayImage(image, clearOld);
         }
 
         private void NewBitmapCreated(System.Drawing.Image image)
         {
-            if (_activeDataView == null) return;
+            if (_activeDataView == null)
+            {
+                return;
+            }
 
             if (image == null)
             {
@@ -132,19 +143,30 @@ namespace gView.Win.Carto
 
         private void MakeMapViewRefresh()
         {
-            if (_activeDataView == null) return;
+            if (_activeDataView == null)
+            {
+                return;
+            }
+
             _activeDataView.MapView.MakeMapViewRefresh();
         }
 
         private void OnDrawingLayer(string layerName)
         {
-            if (_activeDataView == null) return;
+            if (_activeDataView == null)
+            {
+                return;
+            }
+
             _activeDataView.MapView.OnDrawingLayer(layerName);
         }
 
         private void Display_MapScaleChanged(IDisplay display)
         {
-            if (_activeDataView == null) return;
+            if (_activeDataView == null)
+            {
+                return;
+            }
 
             if (_activeDataView.Envelope != null)
             {
@@ -172,7 +194,10 @@ namespace gView.Win.Carto
             IsDirty = true;
 
             if (!_dataViewContainer.Children.Contains(_activeDataView.LayoutDocument))
+            {
                 _dataViewContainer.Children.Add(_activeDataView.LayoutDocument);
+            }
+
             _dataViewContainer.SelectedContentIndex = _dataViewContainer.Children.IndexOf(_activeDataView.LayoutDocument);
         }
 
@@ -269,7 +294,10 @@ namespace gView.Win.Carto
 
         public bool SaveDirtyDocument()
         {
-            if (!IsDirty) return true;
+            if (!IsDirty)
+            {
+                return true;
+            }
 
             switch (MessageBox.Show("Save changes in document?", "gView.Carto", MessageBoxButtons.YesNoCancel))
             {
@@ -296,7 +324,9 @@ namespace gView.Win.Carto
                 _appWindow.Cursor = gView.Desktop.Wpf.CursorFactory.ToWpfCursor(cursor);
                 var focused = System.Windows.Input.FocusManager.GetFocusedElement(_appWindow);
                 if (focused is WindowsFormsHost && ((WindowsFormsHost)focused).Child != null)
+                {
                     ((WindowsFormsHost)focused).Child.Cursor = gView.Desktop.Wpf.CursorFactory.ToFormsCursor(cursor);
+                }
             }
         }
 
@@ -307,21 +337,29 @@ namespace gView.Win.Carto
             get
             {
                 if (_appWindow != null)
+                {
                     return _appWindow.Title;
+                }
                 else
+                {
                     return "";
+                }
             }
             set
             {
                 if (_appWindow != null)
+                {
                     _appWindow.Title = value;
+                }
             }
         }
 
         public void Exit()
         {
             if (_appWindow != null)
+            {
                 _appWindow.Close();
+            }
         }
 
         #endregion
@@ -365,7 +403,10 @@ namespace gView.Win.Carto
                 window.DockableWindowState = state;
                 _dockWindows.Add(window);
             }
-            if (DockWindowAdded != null) DockWindowAdded(window, "");
+            if (DockWindowAdded != null)
+            {
+                DockWindowAdded(window, "");
+            }
         }
 
         public void AddDockableWindow(IDockableWindow window, string parentDockableWindowName)
@@ -384,7 +425,8 @@ namespace gView.Win.Carto
                 {
                     window.DockableWindowState = DockWindowState.child;
                 }
-                else */if (window is IDockableToolWindow)
+                else */
+                if (window is IDockableToolWindow)
                 {
                     window.DockableWindowState = DockWindowState.right;
                     foreach (IDockableWindow win in _dockWindows)
@@ -399,7 +441,10 @@ namespace gView.Win.Carto
                 }
                 _dockWindows.Add(window);
             }
-            if (DockWindowAdded != null) DockWindowAdded(window, parentDockableWindowName);
+            if (DockWindowAdded != null)
+            {
+                DockWindowAdded(window, parentDockableWindowName);
+            }
         }
 
         public void ShowDockableWindow(IDockableWindow window)
@@ -408,14 +453,20 @@ namespace gView.Win.Carto
             {
                 ((Form)window).Visible = true;
             }
-            if (OnShowDockableWindow != null) OnShowDockableWindow(window);
+            if (OnShowDockableWindow != null)
+            {
+                OnShowDockableWindow(window);
+            }
         }
 
         public ITool Tool(Guid guid)
         {
             foreach (ITool tool in _tools)
             {
-                if (PlugInManager.PlugInID(tool) == guid) return tool;
+                if (PlugInManager.PlugInID(tool) == guid)
+                {
+                    return tool;
+                }
             }
             return null;
         }
@@ -423,19 +474,33 @@ namespace gView.Win.Carto
         {
             get
             {
-                if (_tools == null) return new List<ITool>();
+                if (_tools == null)
+                {
+                    return new List<ITool>();
+                }
+
                 return gView.Framework.system.ListOperations<ITool>.Clone(_tools);
             }
         }
 
         public IToolbar Toolbar(Guid guid)
         {
-            if (_appWindow == null) return null;
+            if (_appWindow == null)
+            {
+                return null;
+            }
 
             foreach (ToolbarStrip strip in _appWindow.ToolbarStrips)
             {
-                if (strip == null) continue;
-                if (PlugInManager.PlugInID(strip) == guid) return strip;
+                if (strip == null)
+                {
+                    continue;
+                }
+
+                if (PlugInManager.PlugInID(strip) == guid)
+                {
+                    return strip;
+                }
             }
             return null;
         }
@@ -444,11 +509,18 @@ namespace gView.Win.Carto
             get
             {
                 List<IToolbar> toolbars = new List<IToolbar>();
-                if (_appWindow == null) return toolbars;
+                if (_appWindow == null)
+                {
+                    return toolbars;
+                }
 
                 foreach (ToolbarStrip strip in _appWindow.ToolbarStrips)
                 {
-                    if (strip == null) continue;
+                    if (strip == null)
+                    {
+                        continue;
+                    }
+
                     toolbars.Add(strip);
                 }
 
@@ -457,8 +529,15 @@ namespace gView.Win.Carto
         }
         internal void AddTool(ITool tool)
         {
-            if (tool == null) return;
-            if (this.Tool(PlugInManager.PlugInID(tool)) != null) return; // Schon vorhanden
+            if (tool == null)
+            {
+                return;
+            }
+
+            if (this.Tool(PlugInManager.PlugInID(tool)) != null)
+            {
+                return; // Schon vorhanden
+            }
 
             _tools.Add(tool);
         }
@@ -487,17 +566,26 @@ namespace gView.Win.Carto
 
         async public Task LoadMapDocument(string filename)
         {
-            if (_doc == null || filename == "") return;
+            if (_doc == null || filename == "")
+            {
+                return;
+            }
+
             _docFilename = filename;
 
             System.IO.FileInfo fi = new System.IO.FileInfo(filename);
-            if (!fi.Exists) return;
+            if (!fi.Exists)
+            {
+                return;
+            }
 
             if (fi.Extension.ToLower() != ".axl")
             {
                 RemoveAllDataViews();
                 if (_appWindow != null)
+                {
                     _appWindow.RemoveAllToolbars();
+                }
 
                 _activeDataView = null;
             }
@@ -524,7 +612,10 @@ namespace gView.Win.Carto
             }
 
             while (_doc.Maps.Count() > 0)
+            {
                 _doc.RemoveMap(_doc.Maps.First());
+            }
+
             _dataViews.Clear();
 
             await stream.LoadAsync("MapDocument", _doc);
@@ -533,15 +624,25 @@ namespace gView.Win.Carto
             DataView dv;
             while ((dv = (DataView)stream.Load("DataView", null, new DataView(_doc.Maps))) != null)
             {
-                if (!(dv.Map is Map)) continue;
+                if (!(dv.Map is Map))
+                {
+                    continue;
+                }
 
                 DataView dataView = _appWindow.AddDataView((Map)dv.Map);
-                if (dataView == null) continue;
+                if (dataView == null)
+                {
+                    continue;
+                }
+
                 dataView.Envelope = dv.Envelope;
                 dataView.TOC = dv.TOC;
                 dataView.DisplayRotation = dv.DisplayRotation;
 
-                if (_activeDataView == null) _activeDataView = dataView;
+                if (_activeDataView == null)
+                {
+                    _activeDataView = dataView;
+                }
             }
 
             if (_dataViews.Count == 0 && _doc.Maps.Count() > 0)
@@ -562,7 +663,10 @@ namespace gView.Win.Carto
             _appWindow.Title = "gView.Carto " + fi.Name;
             _readonly = (fi.Extension.ToLower() == ".rdm");
 
-            if (AfterLoadMapDocument != null) AfterLoadMapDocument(_doc);
+            if (AfterLoadMapDocument != null)
+            {
+                AfterLoadMapDocument(_doc);
+            }
         }
 
         public void SaveMapDocument()
@@ -571,7 +675,10 @@ namespace gView.Win.Carto
         }
         public void SaveMapDocument(string filename, bool performEncryption)
         {
-            if (filename == "") return;
+            if (filename == "")
+            {
+                return;
+            }
 
             if (filename.ToLower() == SystemVariables.ApplicationDirectory.ToLower() + @"/normal.mxl" ||
                 filename == "normal.mxl")
@@ -657,9 +764,16 @@ namespace gView.Win.Carto
         bool _refreshing = false;
         async public Task RefreshActiveMap(DrawPhase drawPhase)
         {
-            if (_activeDataView == null) return;
+            if (_activeDataView == null)
+            {
+                return;
+            }
+
             if (_activeDataView.MapView == null ||
-                _refreshing) return;
+                _refreshing)
+            {
+                return;
+            }
 
             _refreshing = true;
             //_activeDataView.MapView.RefreshMap(drawPhase);
@@ -676,10 +790,14 @@ namespace gView.Win.Carto
             _activeDataView.MapView.RefreshCopyrightVisibility();
             _lastRefresh = DateTime.Now;
 
+            // Start this in new Thread to avoid deadlocking (happens with await Task :(( )
             //Thread thread = new Thread(new ParameterizedThreadStart(this.RefreshActiveMapThread));
             //thread.Start(drawPhase);
 
-            await this.RefreshActiveMapThread(drawPhase);
+            Task.Run(async () =>
+            {
+                await this.RefreshActiveMapThread(drawPhase);
+            });
 
             _refreshing = false;
         }
@@ -687,18 +805,26 @@ namespace gView.Win.Carto
         async public Task RefreshTOC()
         {
             if (_appWindow != null)
+            {
                 await _appWindow.RefreshTOC();
+            }
         }
 
         public void RefreshTOCElement(IDatasetElement element)
         {
             if (_appWindow != null)
+            {
                 _appWindow.RefreshTOCElement(element);
+            }
         }
 
         public IMapApplicationModule IMapApplicationModule(Guid guid)
         {
-            if (_appWindow == null) return null;
+            if (_appWindow == null)
+            {
+                return null;
+            }
+
             return _appWindow.MapApplicationModule(guid);
         }
 
@@ -710,7 +836,10 @@ namespace gView.Win.Carto
         public void DrawReversibleGeometry(IGeometry geometry, System.Drawing.Color color)
         {
             DataView actDataView = ActiveDataView;
-            if (actDataView == null || actDataView.MapView == null || actDataView.Map == null) return;
+            if (actDataView == null || actDataView.MapView == null || actDataView.Map == null)
+            {
+                return;
+            }
 
             actDataView.MapView.DrawReversibleGeometry(
                 actDataView.Map.Display,
@@ -719,10 +848,18 @@ namespace gView.Win.Carto
         }
         #endregion
 
+        //private void RefreshActiveMapThread(object drawPhase)
         async private Task RefreshActiveMapThread(object drawPhase)
         {
-            if (_activeDataView == null) return;
-            if (_activeDataView.MapView == null) return;
+            if (_activeDataView == null)
+            {
+                return;
+            }
+
+            if (_activeDataView.MapView == null)
+            {
+                return;
+            }
 
             _activeDataView.MapView.RefreshMap((DrawPhase)drawPhase);
         }
@@ -739,7 +876,10 @@ namespace gView.Win.Carto
         {
             foreach (DataView dv in _dataViews)
             {
-                if (dv.Name == dataView.Name) return false;
+                if (dv.Name == dataView.Name)
+                {
+                    return false;
+                }
             }
 
             WindowsFormsHost winHost = new WindowsFormsHost();
@@ -752,7 +892,9 @@ namespace gView.Win.Carto
 
             _dataViews.Add(dataView);
             if (_activeDataView == null)
+            {
                 _activeDataView = dataView;
+            }
 
             IsDirty = true;
 
@@ -792,7 +934,9 @@ namespace gView.Win.Carto
             foreach (DataView dv in _dataViews)
             {
                 if (dv.TabPage == layoutDocument)
+                {
                     return dv;
+                }
             }
             return null;
         }
@@ -809,9 +953,16 @@ namespace gView.Win.Carto
                     break;
                 }
             }
-            if (dataView == null) return false;
+            if (dataView == null)
+            {
+                return false;
+            }
+
             _dataViews.Remove(dataView);
-            if (DataViewRemoved != null) DataViewRemoved(dataView);
+            if (DataViewRemoved != null)
+            {
+                DataViewRemoved(dataView);
+            }
 
             LayoutDocument layoutDocument = dataView.TabPage;
             ((LayoutDocumentPane)_dataViewContainer).RemoveChild(layoutDocument);
@@ -859,7 +1010,10 @@ namespace gView.Win.Carto
                             else
                             {
                                 IEnvelope envelope = GetPublicEnvelope(_activeDataView.Map);
-                                if (envelope != null) _activeDataView.Map.Display.ZoomTo(envelope);
+                                if (envelope != null)
+                                {
+                                    _activeDataView.Map.Display.ZoomTo(envelope);
+                                }
                             }
                         }
                         if (_activeDataView.Map is Map)
@@ -876,7 +1030,11 @@ namespace gView.Win.Carto
         {
             get
             {
-                if (_activeDataView != null) return _activeDataView.Name;
+                if (_activeDataView != null)
+                {
+                    return _activeDataView.Name;
+                }
+
                 return "";
             }
             set
@@ -897,7 +1055,10 @@ namespace gView.Win.Carto
         {
             foreach (DataView dv in _dataViews)
             {
-                if (dv.Name == name) return dv;
+                if (dv.Name == name)
+                {
+                    return dv;
+                }
             }
             return null;
         }
@@ -906,7 +1067,10 @@ namespace gView.Win.Carto
         {
             foreach (DataView dv in _dataViews)
             {
-                if (dv.Map == map) return dv;
+                if (dv.Map == map)
+                {
+                    return dv;
+                }
             }
             return null;
         }
@@ -930,12 +1094,20 @@ namespace gView.Win.Carto
         {
             get
             {
-                if (_appWindow == null) return null;
+                if (_appWindow == null)
+                {
+                    return null;
+                }
+
                 return _appWindow.ActiveTool;
             }
             set
             {
-                if (_appWindow == null) return;
+                if (_appWindow == null)
+                {
+                    return;
+                }
+
                 _appWindow.ActiveTool = value;
             }
         }
@@ -951,12 +1123,17 @@ namespace gView.Win.Carto
                 }
             }
             if (ActiveMapToolChanged != null)
+            {
                 ActiveMapToolChanged(oldTool, newTool);
+            }
         }
 
         internal void CursorPos(double X, double Y)
         {
-            if (OnCursorPosChanged != null) OnCursorPosChanged(X, Y);
+            if (OnCursorPosChanged != null)
+            {
+                OnCursorPosChanged(X, Y);
+            }
         }
         private IEnvelope GetPublicEnvelope(IMap map)
         {
@@ -964,7 +1141,9 @@ namespace gView.Win.Carto
             {
                 IEnvelope publicEnv;
                 if (!_publicExtents.TryGetValue(map, out publicEnv))
+                {
                     _publicExtents.Add(map, map.Display.Envelope);
+                }
 
                 return _publicExtents[map];
             }
@@ -973,13 +1152,20 @@ namespace gView.Win.Carto
 
         private void SetPublicEnvelope(IMap map, IEnvelope envelope)
         {
-            if (map == null || envelope == null) return;
+            if (map == null || envelope == null)
+            {
+                return;
+            }
 
             IEnvelope ext;
             if (_publicExtents.TryGetValue(map, out ext))
+            {
                 _publicExtents[map] = envelope;
+            }
             else
+            {
                 _publicExtents.Add(map, envelope);
+            }
         }
 
         #region Helpers
@@ -1002,11 +1188,17 @@ namespace gView.Win.Carto
                 double o;
                 if (s.Length == 2)
                 {
-                    if (double.TryParse(s[1].Replace(".", ","), out o)) fLayer.MinimumScale = o;
+                    if (double.TryParse(s[1].Replace(".", ","), out o))
+                    {
+                        fLayer.MinimumScale = o;
+                    }
                 }
                 else
                 {
-                    if (double.TryParse(s[1].Replace(".", ","), out o)) fLayer.MinimumScale = o * (96.0 / 0.254);
+                    if (double.TryParse(s[1].Replace(".", ","), out o))
+                    {
+                        fLayer.MinimumScale = o * (96.0 / 0.254);
+                    }
                 }
             }
             if (layerNode.Attributes["maxscale"] != null)
@@ -1015,11 +1207,17 @@ namespace gView.Win.Carto
                 double o;
                 if (s.Length == 2)
                 {
-                    if (double.TryParse(s[1].Replace(".", ","), out o)) fLayer.MaximumScale = o;
+                    if (double.TryParse(s[1].Replace(".", ","), out o))
+                    {
+                        fLayer.MaximumScale = o;
+                    }
                 }
                 else
                 {
-                    if (double.TryParse(s[1].Replace(".", ","), out o)) fLayer.MaximumScale = o * (96.0 / 0.254);
+                    if (double.TryParse(s[1].Replace(".", ","), out o))
+                    {
+                        fLayer.MaximumScale = o * (96.0 / 0.254);
+                    }
                 }
             }
         }
@@ -1088,7 +1286,9 @@ namespace gView.Win.Carto
         private IRenderer SimplifyRenderer(IRenderer renderer)
         {
             if (renderer is ISimplify)
+            {
                 ((ISimplify)renderer).Simplify();
+            }
 
             if (renderer is IGroupRenderer)
             {
@@ -1184,7 +1384,10 @@ namespace gView.Win.Carto
         {
             set
             {
-                if (_appWin == null) return;
+                if (_appWin == null)
+                {
+                    return;
+                }
 
                 _appWin.SetPanelText(0, value);
             }
@@ -1193,7 +1396,10 @@ namespace gView.Win.Carto
         {
             set
             {
-                if (_appWin == null) return;
+                if (_appWin == null)
+                {
+                    return;
+                }
 
                 _appWin.SetPanelImage(0, value);
             }

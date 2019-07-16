@@ -3470,7 +3470,7 @@ namespace gView.Framework.Carto
                                 }
                             }
                         }
-                        else if (labelRenderer != null)
+                        else if (labelRenderer != null && _cancelTracker.Continue)
                         {
                             while ((feature = await fCursor.NextFeature()) != null)
                             {
@@ -3484,8 +3484,6 @@ namespace gView.Framework.Carto
 
                                 labelRenderer.Draw(_map, feature);
                                 _counter.Counter++;
-
-
                             }
                         }
                         if (labelRenderer != null)

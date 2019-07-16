@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.Network
 {
-    [RegisterPlugIn("9A975F46-D727-495b-B752-9E079289E296")]
+    [RegisterPlugInAttribute("9A975F46-D727-495b-B752-9E079289E296")]
     public class WeightSelector : ITool, IToolItem
     {
         private IMapDocument _doc = null;

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.Network
 {
-    [RegisterPlugIn("44762AEE-4F9C-4039-9577-372DC106B1C8")]
+    [RegisterPlugInAttribute("44762AEE-4F9C-4039-9577-372DC106B1C8")]
     public class NetworkSelector : ITool, IToolItem
     {
         private IMapDocument _doc = null;
@@ -166,7 +166,7 @@ namespace gView.Plugins.Network
         }
     }
 
-    [RegisterPlugIn("002124CB-804E-449e-BA7B-A3F3CBBBD154")]
+    [RegisterPlugInAttribute("002124CB-804E-449e-BA7B-A3F3CBBBD154")]
     public class NetworkSelectorLabel : ITool, IToolItem
     {
         #region ITool Member

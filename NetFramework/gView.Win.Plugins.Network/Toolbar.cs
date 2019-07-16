@@ -6,7 +6,7 @@ using gView.Framework.system;
 
 namespace gView.Plugins.Network
 {
-    [RegisterPlugIn("818C6ECE-85CB-4ce8-963E-ED1799715E12")]
+    [RegisterPlugInAttribute("818C6ECE-85CB-4ce8-963E-ED1799715E12")]
     public class Toolbar : IToolbar
     {
         private List<Guid> _guids;

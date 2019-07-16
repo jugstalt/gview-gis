@@ -209,7 +209,7 @@ namespace gView.Network.Framework.Network.Tracers
         #endregion
     }
 
-    [RegisterPlugIn("EBBF514D-DF17-4D57-82C8-6FA73C1D31CB")]
+    [RegisterPlugInAttribute("EBBF514D-DF17-4D57-82C8-6FA73C1D31CB")]
     public class TraceConnectedSources : TraceConnectedTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -226,7 +226,7 @@ namespace gView.Network.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("3B0338A7-EB79-44FB-91DD-1B85054366AB")]
+    [RegisterPlugInAttribute("3B0338A7-EB79-44FB-91DD-1B85054366AB")]
     public class TraceConnectedSinks : TraceConnectedTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -243,7 +243,7 @@ namespace gView.Network.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("39F2A6FD-C6F8-4036-9E92-DE611E609F47")]
+    [RegisterPlugInAttribute("39F2A6FD-C6F8-4036-9E92-DE611E609F47")]
     public class TraceConnectedTrafficCross : TraceConnectedTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -260,7 +260,7 @@ namespace gView.Network.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("26F1C494-7B2A-4D96-9D7C-10E58EF9646F")]
+    [RegisterPlugInAttribute("26F1C494-7B2A-4D96-9D7C-10E58EF9646F")]
     public class TraceConnectedTrafficLight : TraceConnectedTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -277,7 +277,7 @@ namespace gView.Network.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("299D0F08-00BF-474B-BF79-22A6CD93F79D")]
+    [RegisterPlugInAttribute("299D0F08-00BF-474B-BF79-22A6CD93F79D")]
     public class TraceConnectedTrafficRoundabout : TraceConnectedTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -294,7 +294,7 @@ namespace gView.Network.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("31EA1275-CCE3-48B0-B78F-3A0E784312CE")]
+    [RegisterPlugInAttribute("31EA1275-CCE3-48B0-B78F-3A0E784312CE")]
     public class TraceConnectedTrafficStop : TraceConnectedTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -311,7 +311,7 @@ namespace gView.Network.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("90F7F489-20FE-490B-B294-D1E763E8B129")]
+    [RegisterPlugInAttribute("90F7F489-20FE-490B-B294-D1E763E8B129")]
     public class TraceConnectedGasStation : TraceConnectedTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -328,7 +328,7 @@ namespace gView.Network.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("B50F603B-ABEC-4788-A91D-9072FD6D8571")]
+    [RegisterPlugInAttribute("B50F603B-ABEC-4788-A91D-9072FD6D8571")]
     public class TraceConnectedGasSwitch : TraceConnectedTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -345,7 +345,7 @@ namespace gView.Network.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("74D6FA1B-FBB1-4359-BAC5-86E9BD53AB06")]
+    [RegisterPlugInAttribute("74D6FA1B-FBB1-4359-BAC5-86E9BD53AB06")]
     public class TraceConnectedGasCustomer : TraceConnectedTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -362,7 +362,7 @@ namespace gView.Network.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("8F844FC2-D810-44A9-97D1-E41B4D60117F")]
+    [RegisterPlugInAttribute("8F844FC2-D810-44A9-97D1-E41B4D60117F")]
     public class TraceConnectedGasStop : TraceConnectedTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -379,7 +379,7 @@ namespace gView.Network.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("9BCEB61C-CC2C-4347-A48D-78BD1A96FCC2")]
+    [RegisterPlugInAttribute("9BCEB61C-CC2C-4347-A48D-78BD1A96FCC2")]
     public class TraceConnectedElectricityCustomer : TraceConnectedTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -396,7 +396,7 @@ namespace gView.Network.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("2D1D5100-1756-44E9-B51B-A0690B68DB47")]
+    [RegisterPlugInAttribute("2D1D5100-1756-44E9-B51B-A0690B68DB47")]
     public class TraceConnectedElectricityJunctionBox : TraceConnectedTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -413,7 +413,7 @@ namespace gView.Network.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("6E5745B1-4E51-4C94-AD51-E1504A3A359D")]
+    [RegisterPlugInAttribute("6E5745B1-4E51-4C94-AD51-E1504A3A359D")]
     public class TraceConnectedElectrictiyStation : TraceConnectedTargetNode
     {
         protected override NetworkNodeType TargetNodeType

@@ -6,7 +6,7 @@ using gView.Framework.Globalisation;
 
 namespace gView.Plugins.Snapping
 {
-    [gView.Framework.system.RegisterPlugIn("B903AF52-4CA7-4286-A596-775C4690C93D")]
+    [gView.Framework.system.RegisterPlugIn("B903AF52-4CA7-4286-A596-775C4690C93D", Obsolote = true)]
     class Toolbar : IToolbar
     {
         private List<Guid> _guids;

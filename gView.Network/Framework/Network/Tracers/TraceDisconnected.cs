@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
 {
-    [RegisterPlugIn("0FFEF927-F2A6-494f-85D9-48C119D3A4E2")]
+    [RegisterPlugInAttribute("0FFEF927-F2A6-494f-85D9-48C119D3A4E2")]
     class TraceDisconnected : INetworkTracer, IProgressReporterEvent
     {
         #region INetworkTracer Member

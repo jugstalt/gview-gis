@@ -26,7 +26,7 @@ namespace gView.Plugins.MapTools
     /// </summary>
     /// 
 
-    [RegisterPlugIn("D1A87DBA-00DB-4704-B67B-4846E6F03959")]
+    [RegisterPlugInAttribute("D1A87DBA-00DB-4704-B67B-4846E6F03959")]
     public class NewDocument : gView.Framework.UI.ITool
     {
         IMapDocument _doc;
@@ -108,7 +108,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("CEACE261-ECE4-4622-A892-58A5B32E5295")]
+    [RegisterPlugInAttribute("CEACE261-ECE4-4622-A892-58A5B32E5295")]
     public class LoadDocument : gView.Framework.UI.ITool, IShortCut
     {
         private MapDocument _doc = null;
@@ -209,7 +209,7 @@ namespace gView.Plugins.MapTools
 
     }
 
-    [RegisterPlugIn("FCA2C303-A0B6-4f36-BD21-E1C119EB9C8E")]
+    [RegisterPlugInAttribute("FCA2C303-A0B6-4f36-BD21-E1C119EB9C8E")]
     public class SaveDocument : gView.Framework.UI.ITool, IShortCut
     {
         private IMapDocument _doc = null;
@@ -326,7 +326,7 @@ namespace gView.Plugins.MapTools
 
     }
 
-    [RegisterPlugIn("17D0A3C1-5EE9-4ddd-9402-E6E9EAB1CD06")]
+    [RegisterPlugInAttribute("17D0A3C1-5EE9-4ddd-9402-E6E9EAB1CD06")]
     public class SaveDocumentAs : gView.Framework.UI.ITool
     {
         private IMapDocument _doc = null;
@@ -412,7 +412,7 @@ namespace gView.Plugins.MapTools
 
     }
 
-    [RegisterPlugIn("97F8675C-E01F-451e-AAE0-DC29CD547EB5")]
+    [RegisterPlugInAttribute("97F8675C-E01F-451e-AAE0-DC29CD547EB5")]
     public class ExitApplication : ITool, IExTool
     {
         IMapDocument _doc = null;
@@ -478,7 +478,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("CC299CF6-2C88-45aa-BE75-9EE3D5DCC0A8")]
+    [RegisterPlugInAttribute("CC299CF6-2C88-45aa-BE75-9EE3D5DCC0A8")]
     public class PublishMap : ITool, IMapContextMenuItem
     {
         private IMapDocument _doc = null;
@@ -641,7 +641,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("6351BCBE-809A-43cb-81AA-6414ED3FA459")]
+    [RegisterPlugInAttribute("6351BCBE-809A-43cb-81AA-6414ED3FA459")]
     public class ZoomInStatic : gView.Framework.UI.ITool
     {
         #region ITool Members
@@ -706,7 +706,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("E1C01E9D-8ADC-477b-BCD1-6B7BBA756D44")]
+    [RegisterPlugInAttribute("E1C01E9D-8ADC-477b-BCD1-6B7BBA756D44")]
     public class ZoomOutStatic : gView.Framework.UI.ITool
     {
         #region ITool Members
@@ -771,7 +771,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("09007AFA-B255-4864-AC4F-965DF330BFC4")]
+    [RegisterPlugInAttribute("09007AFA-B255-4864-AC4F-965DF330BFC4")]
     public class ZoomIn : gView.Framework.UI.ITool
     {
         public ZoomIn()
@@ -861,7 +861,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("58AE3C1D-40CD-4f61-8C5C-0A955C010CF4")]
+    [RegisterPlugInAttribute("58AE3C1D-40CD-4f61-8C5C-0A955C010CF4")]
     public class Zoom2FullExtent : ITool
     {
         #region ITool Member
@@ -921,7 +921,7 @@ namespace gView.Plugins.MapTools
 
         #endregion
     }
-    [RegisterPlugIn("3E2E9F8C-24FB-48f6-B80E-1B0A54E8C309")]
+    [RegisterPlugInAttribute("3E2E9F8C-24FB-48f6-B80E-1B0A54E8C309")]
     public class SmartNavigation : gView.Framework.UI.ITool, IScreenTip
     {
         public SmartNavigation()
@@ -1032,7 +1032,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("51D04E6F-A13E-40b6-BF28-1B8E7C24493D")]
+    [RegisterPlugInAttribute("51D04E6F-A13E-40b6-BF28-1B8E7C24493D")]
     public class ZoomOut : gView.Framework.UI.ITool
     {
         public ZoomOut()
@@ -1128,7 +1128,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("9AADD17B-CDD0-4111-BBC5-E31E060CE210")]
+    [RegisterPlugInAttribute("9AADD17B-CDD0-4111-BBC5-E31E060CE210")]
     public class QueryThemeText : gView.Framework.UI.ITool, gView.Framework.UI.IToolItem
     {
         #region ITool Member
@@ -1185,7 +1185,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("03058244-16EE-44dd-B185-5522281498F5")]
+    [RegisterPlugInAttribute("03058244-16EE-44dd-B185-5522281498F5")]
     public class ScaleCombo : gView.Framework.UI.ITool, gView.Framework.UI.IToolItem
     {
         private IMapDocument _doc = null;
@@ -1381,7 +1381,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("2680F0FD-31EE-48c1-B0F7-6674BAD0A688")]
+    [RegisterPlugInAttribute("2680F0FD-31EE-48c1-B0F7-6674BAD0A688")]
     public class Pan : gView.Framework.UI.ITool
     {
         public Pan()
@@ -1532,7 +1532,7 @@ namespace gView.Plugins.MapTools
         }
     }
 
-    [RegisterPlugIn("82F8E9C3-7B75-4633-AB7C-8F9637C2073D")]
+    [RegisterPlugInAttribute("82F8E9C3-7B75-4633-AB7C-8F9637C2073D")]
     public class ZoomBack : gView.Framework.UI.ITool
     {
         private IMapDocument _doc;
@@ -1614,7 +1614,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("CFE66CDF-CD95-463c-8CD1-2541574D719A")]
+    [RegisterPlugInAttribute("CFE66CDF-CD95-463c-8CD1-2541574D719A")]
     public class ZoomForward : gView.Framework.UI.ITool
     {
 
@@ -1677,7 +1677,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("646860CF-4F82-424b-BF7D-822BE7A214FF")]
+    [RegisterPlugInAttribute("646860CF-4F82-424b-BF7D-822BE7A214FF")]
     public class Select : gView.Framework.UI.ITool, gView.Framework.UI.IToolWindow
     {
         private gView.Plugins.MapTools.Controls.SelectionEnvironmentControl _dlg;
@@ -1991,7 +1991,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("F3DF8F45-4BAC-49ee-82E6-E10711029648")]
+    [RegisterPlugInAttribute("F3DF8F45-4BAC-49ee-82E6-E10711029648")]
     public class Zoom2Selection : gView.Framework.UI.ITool
     {
         IMapDocument _doc = null;
@@ -2262,7 +2262,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("16C05C00-7F21-4216-95A6-0B4B020D3B7D")]
+    [RegisterPlugInAttribute("16C05C00-7F21-4216-95A6-0B4B020D3B7D")]
     public class ClearSelection : gView.Framework.UI.ITool
     {
         IMapDocument _doc = null;
@@ -2458,7 +2458,7 @@ namespace gView.Plugins.MapTools
 	}
     */
 
-    [RegisterPlugIn("306C83D1-E4FE-4474-A78E-F581D4304937")]
+    [RegisterPlugInAttribute("306C83D1-E4FE-4474-A78E-F581D4304937")]
     public class FeatureClassDataTable : gView.Framework.UI.IDatasetElementContextMenuItem
     {
         IMapDocument _doc;
@@ -2580,7 +2580,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("44A1902B-CDC6-43d7-9D48-3DA80437445E")]
+    [RegisterPlugInAttribute("44A1902B-CDC6-43d7-9D48-3DA80437445E")]
     public class TableClassSelectByAttributes : gView.Framework.UI.IDatasetElementContextMenuItem
     {
         IMapDocument _doc;
@@ -2654,7 +2654,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("0F9E298A-C82E-4cae-B1EE-142CF1295D9E")]
+    [RegisterPlugInAttribute("0F9E298A-C82E-4cae-B1EE-142CF1295D9E")]
     public class FeatureLayerProperties : gView.Framework.UI.IDatasetElementContextMenuItem
     {
         IMapDocument _doc = null;
@@ -2747,7 +2747,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("F13D5923-70C8-4c6b-9372-0760D3A8C08C")]
+    [RegisterPlugInAttribute("F13D5923-70C8-4c6b-9372-0760D3A8C08C")]
     public class Identify : gView.Framework.UI.ITool, gView.Framework.UI.IToolWindow, IPersistable
     {
         private IMapDocument _doc = null;
@@ -3322,7 +3322,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("ED5B0B59-2F5D-4b1a-BAD2-3CABEF073A6A")]
+    [RegisterPlugInAttribute("ED5B0B59-2F5D-4b1a-BAD2-3CABEF073A6A")]
     public class Find : gView.Framework.UI.ITool, IShortCut
     {
         private IMapDocument _doc = null;
@@ -3425,7 +3425,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("1E21835C-FD41-4e68-8462-9FAA66EA5A54")]
+    [RegisterPlugInAttribute("1E21835C-FD41-4e68-8462-9FAA66EA5A54")]
     public class ScaleText : gView.Framework.UI.ITool, gView.Framework.UI.IToolItem
     {
         #region ITool Member
@@ -3484,7 +3484,7 @@ namespace gView.Plugins.MapTools
     }
 
     public enum QueryThemeMode { Default, Custom }
-    [RegisterPlugIn("51A2CF81-E343-4c58-9A42-9207C8DFBC01")]
+    [RegisterPlugInAttribute("51A2CF81-E343-4c58-9A42-9207C8DFBC01")]
     public class QueryThemeCombo : gView.Framework.UI.ITool, gView.Framework.UI.IToolItem, IToolItemLabel
     {
         internal delegate void SelectedItemChangedEvent(string itemText);
@@ -3880,7 +3880,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("D185D794-4BC8-4f3c-A5EA-494155692EAC")]
+    [RegisterPlugInAttribute("D185D794-4BC8-4f3c-A5EA-494155692EAC")]
     public class Measure : gView.Framework.Snapping.Core.SnapTool, ITool, IToolContextMenu, IToolWindow
     {
         internal delegate void ShapeChangedEventHandler(MeasureGraphicsElement grElement);
@@ -4569,7 +4569,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("0728E12C-AC12-4264-9B47-ECE6BB0CFFA9")]
+    [RegisterPlugInAttribute("0728E12C-AC12-4264-9B47-ECE6BB0CFFA9")]
     public class TOCCommand : ITool
     {
         private IMapDocument _doc = null;
@@ -4630,7 +4630,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("F4F7F60D-B560-4233-96F7-89012FD856A8")]
+    [RegisterPlugInAttribute("F4F7F60D-B560-4233-96F7-89012FD856A8")]
     public class RefreshMap : ITool, IShortCut
     {
         IMapDocument _doc = null;
@@ -4700,7 +4700,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("7219766E-55AB-4f64-B65E-C2DBC70E5786")]
+    [RegisterPlugInAttribute("7219766E-55AB-4f64-B65E-C2DBC70E5786")]
     public class About : ITool, IExTool
     {
         #region ITool Member
@@ -4746,7 +4746,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("6782B011-83C8-420B-9158-9267EB9C70D0")]
+    [RegisterPlugInAttribute("6782B011-83C8-420B-9158-9267EB9C70D0")]
     public class PdfDocs : ITool, IExTool, IToolMenu
     {
         private List<ITool> _docTools = null;
@@ -4890,7 +4890,7 @@ namespace gView.Plugins.MapTools
     }
 
 
-    [RegisterPlugIn("8874DF04-1B5D-4c22-9913-D1F45B9DC958")]
+    [RegisterPlugInAttribute("8874DF04-1B5D-4c22-9913-D1F45B9DC958")]
     public class ShowLegend : ITool
     {
         private IMapDocument _doc = null;
@@ -5002,7 +5002,7 @@ namespace gView.Plugins.MapTools
         }
     }
 
-    [RegisterPlugIn("61301C1E-BC8E-4081-A8BB-65BCC13C89EC")]
+    [RegisterPlugInAttribute("61301C1E-BC8E-4081-A8BB-65BCC13C89EC")]
     public class OverViewMap : ITool
     {
         private IMapDocument _doc;
@@ -5077,7 +5077,7 @@ namespace gView.Plugins.MapTools
         }
     }
 
-    [RegisterPlugIn("F1B1602A-DD53-40a2-A504-61DC47A7B261")]
+    [RegisterPlugInAttribute("F1B1602A-DD53-40a2-A504-61DC47A7B261")]
     public class PerformanceMonitor : ITool, IToolWindow
     {
         private IMapDocument _doc;
@@ -5139,7 +5139,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugIn("2AC4447E-ACF3-453D-BB2E-72ECF0C8506E")]
+    [RegisterPlugInAttribute("2AC4447E-ACF3-453D-BB2E-72ECF0C8506E")]
     public class XY : ITool
     {
         IMapDocument _doc = null;

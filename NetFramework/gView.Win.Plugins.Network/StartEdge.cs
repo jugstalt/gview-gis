@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.Network
 {
-    [RegisterPlugIn("D7640425-DEF2-4c57-A165-464CDAB7C56E")]
+    [RegisterPlugInAttribute("D7640425-DEF2-4c57-A165-464CDAB7C56E")]
     public class StartEdge : ITool
     {
         private IMapDocument _doc = null;

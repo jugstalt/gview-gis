@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.DbTools.Migrate
 {
-    [RegisterPlugIn("C15AA28A-07AE-4e5b-9F06-4C0254C44056")]
+    [RegisterPlugInAttribute("C15AA28A-07AE-4e5b-9F06-4C0254C44056")]
     class MirgrateMapToFeatureDatabase : IMapContextMenuItem
     {
         private IMapDocument _doc = null;

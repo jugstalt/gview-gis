@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
 {
-    [RegisterPlugIn("D102AFFA-1D37-4de0-9853-C28E2F3C5DC6")]
+    [RegisterPlugInAttribute("D102AFFA-1D37-4de0-9853-C28E2F3C5DC6")]
     public class TraceDistancePropagation : INetworkTracer, INetworkTracerProperties, IProgressReporterEvent
     {
         private Properties _properties = new Properties();

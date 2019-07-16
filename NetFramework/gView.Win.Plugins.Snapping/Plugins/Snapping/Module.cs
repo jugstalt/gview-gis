@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.Snapping
 {
-    [gView.Framework.system.RegisterPlugIn(gView.Framework.Snapping.Core.Globals.ModuleGuidString)]
+    [gView.Framework.system.RegisterPlugIn(gView.Framework.Snapping.Core.Globals.ModuleGuidString, Obsolote = true)]
     public class Module : IMapApplicationModule, ISnapModule, IPersistable
     {
         private IMapDocument _doc = null;

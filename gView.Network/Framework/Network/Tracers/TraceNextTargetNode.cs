@@ -236,7 +236,7 @@ namespace gView.Framework.Network.Tracers
         #endregion
     }
 
-    [RegisterPlugIn("B2F1272A-FC0E-40BD-9219-5ED6A660304E")]
+    [RegisterPlugInAttribute("B2F1272A-FC0E-40BD-9219-5ED6A660304E")]
     public class TraceNextSources : TraceNextTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -253,7 +253,7 @@ namespace gView.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("3EBC7A9E-A386-4EC2-99F9-36653A64ECBE")]
+    [RegisterPlugInAttribute("3EBC7A9E-A386-4EC2-99F9-36653A64ECBE")]
     public class TraceNextSinks : TraceNextTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -270,7 +270,7 @@ namespace gView.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("96242C33-7221-47B1-8069-3905FEE66241")]
+    [RegisterPlugInAttribute("96242C33-7221-47B1-8069-3905FEE66241")]
     public class TraceNextTrafficCross : TraceNextTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -287,7 +287,7 @@ namespace gView.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("2EAAF416-1ABE-4957-9107-77F71007442D")]
+    [RegisterPlugInAttribute("2EAAF416-1ABE-4957-9107-77F71007442D")]
     public class TraceNextTrafficLight : TraceNextTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -304,7 +304,7 @@ namespace gView.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("B9670DCF-02A5-4EED-A59F-154DCF064B05")]
+    [RegisterPlugInAttribute("B9670DCF-02A5-4EED-A59F-154DCF064B05")]
     public class TraceNextTrafficRoundabout : TraceNextTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -321,7 +321,7 @@ namespace gView.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("DCE2F264-F464-4AEA-B534-39201C12DF3D")]
+    [RegisterPlugInAttribute("DCE2F264-F464-4AEA-B534-39201C12DF3D")]
     public class TraceNextTrafficStop : TraceNextTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -338,7 +338,7 @@ namespace gView.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("C12055D1-A981-40A1-A84D-DCB900464ACE")]
+    [RegisterPlugInAttribute("C12055D1-A981-40A1-A84D-DCB900464ACE")]
     public class TraceNextGasStation : TraceNextTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -355,7 +355,7 @@ namespace gView.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("A966A99A-FFA0-43D3-9BBB-161ADDF171C2")]
+    [RegisterPlugInAttribute("A966A99A-FFA0-43D3-9BBB-161ADDF171C2")]
     public class TraceNextGasSwitch : TraceNextTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -372,7 +372,7 @@ namespace gView.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("D954E4D8-DEBC-40BC-9648-49A404E879AF")]
+    [RegisterPlugInAttribute("D954E4D8-DEBC-40BC-9648-49A404E879AF")]
     public class TraceNextGasCustomer : TraceNextTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -389,7 +389,7 @@ namespace gView.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("09F050A2-DC30-4C42-9281-C54CC1D54469")]
+    [RegisterPlugInAttribute("09F050A2-DC30-4C42-9281-C54CC1D54469")]
     public class TraceNextGasStop : TraceNextTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -406,7 +406,7 @@ namespace gView.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("3CCC0592-42AD-4A14-ABE7-F3C596000C19")]
+    [RegisterPlugInAttribute("3CCC0592-42AD-4A14-ABE7-F3C596000C19")]
     public class TraceNextElectricityCustomer : TraceNextTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -423,7 +423,7 @@ namespace gView.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("84F9E9C7-B945-486C-BE18-AD727377AF41")]
+    [RegisterPlugInAttribute("84F9E9C7-B945-486C-BE18-AD727377AF41")]
     public class TraceNextElectricityJunctionBox : TraceNextTargetNode
     {
         protected override NetworkNodeType TargetNodeType
@@ -440,7 +440,7 @@ namespace gView.Framework.Network.Tracers
         }
     }
 
-    [RegisterPlugIn("DA57D5E1-709B-4638-B322-44B37F1482DE")]
+    [RegisterPlugInAttribute("DA57D5E1-709B-4638-B322-44B37F1482DE")]
     public class TraceNextElectrictiyStation : TraceNextTargetNode
     {
         protected override NetworkNodeType TargetNodeType

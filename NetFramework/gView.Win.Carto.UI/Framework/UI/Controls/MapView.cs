@@ -419,11 +419,20 @@ namespace gView.Framework.UI.Controls
                 }
                 lock (lockThis)
                 {
+                    DateTime timeStamp = DateTime.UtcNow;
                     while (_cancelTracker.Continue || (_map != null ? _map.IsRefreshing : false))
                     {
                         _cancelTracker.Cancel();
                         //Task.Delay(5);
                         Thread.Sleep(5);
+                        if((DateTime.UtcNow-timeStamp).TotalSeconds>5)
+                        {
+                            if (_refreshMapThread != null)
+                            {
+                                _refreshMapThread.Abort();
+                            }
+                            break;
+                        }
                     }
                     if (_map is Map)
                     {
@@ -1358,7 +1367,11 @@ namespace gView.Framework.UI.Controls
             {
                 if (_mapDoc != null && _mapDoc.Application is IMapApplication)
                 {
-                    await ((IMapApplication)_mapDoc.Application).RefreshActiveMap(phase);
+                    // Avoid Deadlocking -> run this inside of Task  (or Thread?);
+                    Task.Run(async () =>
+                    {
+                        await ((IMapApplication)_mapDoc.Application).RefreshActiveMap(phase);
+                    });
                 }
                 else
                 {

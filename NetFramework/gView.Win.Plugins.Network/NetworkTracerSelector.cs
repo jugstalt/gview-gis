@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.Network
 {
-    [RegisterPlugIn("17475DC9-5A9B-4c90-8DE1-60654389F108")]
+    [RegisterPlugInAttribute("17475DC9-5A9B-4c90-8DE1-60654389F108")]
     public class NetworkTracerSelector : ITool, IToolItem
     {
         private IMapDocument _doc = null;
@@ -131,7 +131,7 @@ namespace gView.Plugins.Network
         #endregion
     }
 
-    [RegisterPlugIn("83A38411-27C7-4241-9F28-AC3005BFAFA8")]
+    [RegisterPlugInAttribute("83A38411-27C7-4241-9F28-AC3005BFAFA8")]
     public class NetworkTracerSelectorLabel : ITool, IToolItem
     {
         #region ITool Member

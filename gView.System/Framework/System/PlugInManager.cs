@@ -84,13 +84,18 @@ namespace gView.Framework.system
                         Assembly assembly = Assembly.LoadFrom(dll.FullName);
                         foreach (var pluginType in assembly.GetTypes())
                         {
-                            var registerPluginAttribute = pluginType.GetCustomAttribute<RegisterPlugIn>();
+                            var registerPluginAttribute = pluginType.GetCustomAttribute<RegisterPlugInAttribute>();
                             if (registerPluginAttribute == null)
                             {
                                 continue;
                             }
 
                             if (!registerPluginAttribute.Usage.HasFlag(PlugInManager.Usage))
+                            {
+                                continue;
+                            }
+
+                            if (registerPluginAttribute.Obsolote == true)
                             {
                                 continue;
                             }
@@ -311,7 +316,7 @@ namespace gView.Framework.system
                 return false;
             }
 
-            RegisterPlugIn plugin = (RegisterPlugIn)Attribute.GetCustomAttribute(obj is Type ? (Type)obj : obj.GetType(), typeof(RegisterPlugIn));
+            RegisterPlugInAttribute plugin = (RegisterPlugInAttribute)Attribute.GetCustomAttribute(obj is Type ? (Type)obj : obj.GetType(), typeof(RegisterPlugInAttribute));
             return (plugin != null);
         }
 
@@ -333,7 +338,7 @@ namespace gView.Framework.system
             }
             else
             {
-                RegisterPlugIn plugin = (RegisterPlugIn)Attribute.GetCustomAttribute(obj is Type ? (Type)obj : obj.GetType(), typeof(RegisterPlugIn));
+                RegisterPlugInAttribute plugin = (RegisterPlugInAttribute)Attribute.GetCustomAttribute(obj is Type ? (Type)obj : obj.GetType(), typeof(RegisterPlugInAttribute));
                 if (plugin == null)
                 {
                     return new Guid();

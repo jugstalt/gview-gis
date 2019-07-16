@@ -3362,7 +3362,7 @@ namespace gView.Framework.Symbology
         #endregion
     }
 
-    [RegisterPlugIn("E043E059-47E9-42A0-ACF0-FB1012DC8AA2")]
+    [RegisterPlugInAttribute("E043E059-47E9-42A0-ACF0-FB1012DC8AA2")]
     public sealed class GradientFillSymbol : LegendItem, IFillSymbol, IPenColor, IPenDashStyle, IPenWidth, IPropertyPage
     {
         public enum GradientRectType { Feature = 0, Display = 1 }

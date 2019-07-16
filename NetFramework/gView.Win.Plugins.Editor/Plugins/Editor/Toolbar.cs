@@ -6,7 +6,7 @@ using gView.Framework.Globalisation;
 
 namespace gView.Plugins.Editor
 {
-    [gView.Framework.system.RegisterPlugIn("414BD661-4128-42fe-BDA5-831E993C393B")]
+    [gView.Framework.system.RegisterPlugIn("414BD661-4128-42fe-BDA5-831E993C393B", Obsolote = true)]
     class Toolbar : IToolbar
     {
         private bool _visible = true;

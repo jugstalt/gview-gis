@@ -81,7 +81,7 @@ namespace gView.Framework.system.UI
                     {
                         if (type.IsAbstract || type.IsInterface) continue;
 
-                        RegisterPlugIn plugin = (RegisterPlugIn)Attribute.GetCustomAttribute(type, typeof(RegisterPlugIn));
+                        RegisterPlugInAttribute plugin = (RegisterPlugInAttribute)Attribute.GetCustomAttribute(type, typeof(RegisterPlugInAttribute));
                         if (plugin == null) continue;
 
                         try

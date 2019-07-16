@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.Network
 {
-    [RegisterPlugIn("457B8BC3-1F92-4512-BD09-9E6A870ADA93")]
+    [RegisterPlugInAttribute("457B8BC3-1F92-4512-BD09-9E6A870ADA93")]
     public class StartPoint : ITool
     {
         private IMapDocument _doc = null;

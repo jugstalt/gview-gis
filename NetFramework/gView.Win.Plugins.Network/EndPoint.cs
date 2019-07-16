@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.Network
 {
-    [RegisterPlugIn("84A6A670-4044-43a0-94CE-05A244931D5C")]
+    [RegisterPlugInAttribute("84A6A670-4044-43a0-94CE-05A244931D5C")]
     public class EndPoint : ITool
     {
         private IMapDocument _doc = null;

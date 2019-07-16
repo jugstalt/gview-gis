@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.DbTools.Export
 {
-    [RegisterPlugIn("F11BA03D-0401-495d-88C8-2A1D39F4CA45")]
+    [RegisterPlugInAttribute("F11BA03D-0401-495d-88C8-2A1D39F4CA45")]
     public class ExportFeatureClass : IDatasetElementContextMenuItem
     {
         private IMapDocument _doc = null;

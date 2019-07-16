@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Joins
 {
-    [RegisterPlugIn("b480ce21-7e05-4153-89ee-331ebc4b3167")]
+    [RegisterPlugInAttribute("b480ce21-7e05-4153-89ee-331ebc4b3167")]
     public class FeatureLayerJoin : IFeatureLayerJoin, IPropertyPage
     {
         private IMap _map;

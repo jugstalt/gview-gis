@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.Network
 {
-    [RegisterPlugIn("F3DBF95F-F915-4c10-8568-2BC873A745F6")]
+    [RegisterPlugInAttribute("F3DBF95F-F915-4c10-8568-2BC873A745F6")]
     public class Module : IMapApplicationModule
     {
         private IMapDocument _doc = null;

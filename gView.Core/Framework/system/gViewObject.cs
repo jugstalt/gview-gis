@@ -30,10 +30,10 @@ namespace gView.Framework.system
     }
 
     [global::System.AttributeUsageAttribute(global::System.AttributeTargets.Class)]
-    public class RegisterPlugIn : global::System.Attribute
+    public class RegisterPlugInAttribute : global::System.Attribute
     {
         private Guid _guid;
-        public RegisterPlugIn(string guid, PluginUsage usage = PluginUsage.Server | PluginUsage.Desktop)
+        public RegisterPlugInAttribute(string guid, PluginUsage usage = PluginUsage.Server | PluginUsage.Desktop)
         {
             _guid = new Guid(guid);
             this.Usage = usage;
@@ -44,6 +44,8 @@ namespace gView.Framework.system
         }
 
         public PluginUsage Usage { get; set; }
+
+        public bool Obsolote { get; set; }
     }
 
     public interface IPlugInWrapper

@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.Network
 {
-    [RegisterPlugIn("158C5F28-B987-4d16-8C9D-A1FC6E70EB56")]
+    [RegisterPlugInAttribute("158C5F28-B987-4d16-8C9D-A1FC6E70EB56")]
     public class TraceNetwork : ITool
     {
         private IMapDocument _doc = null;

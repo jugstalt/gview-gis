@@ -11,7 +11,7 @@ using gView.Framework.system;
 
 namespace gView.Framework.UI.Dialogs
 {
-    [RegisterPlugIn("F8055CEE-8BC3-4379-9737-6DDA2799028F")]
+    [RegisterPlugInAttribute("F8055CEE-8BC3-4379-9737-6DDA2799028F")]
     public partial class FormGridSettings : Form, ILayerPropertyPage
     {
         private IGridClass _class = null;

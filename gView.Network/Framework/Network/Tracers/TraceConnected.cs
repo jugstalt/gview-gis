@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
 {
-    [RegisterPlugIn("63AF7F85-6617-4944-ABED-A98CA2B45CA9")]
+    [RegisterPlugInAttribute("63AF7F85-6617-4944-ABED-A98CA2B45CA9")]
     class TraceConnected : INetworkTracer, IProgressReporterEvent
     {
         #region INetworkTracer Member

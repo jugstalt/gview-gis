@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Joins
 {
-    [RegisterPlugIn("297E544A-B92C-4B9C-9B58-BCF5AFA2B876")]
+    [RegisterPlugInAttribute("297E544A-B92C-4B9C-9B58-BCF5AFA2B876")]
     public class FeatureLayerDatabaseJoin : IFeatureLayerJoin, IPropertyPage
     {
         private DataProvider _provider = null;
