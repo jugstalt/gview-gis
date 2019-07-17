@@ -159,7 +159,7 @@ namespace gView.Plugins.Editor
                 _doc.FocusMap.Display.SpatialReference != null &&
                 !_doc.FocusMap.Display.SpatialReference.Equals(_fc.SpatialReference))
             {
-                feature.Shape = GeometricTransformer.Transform2D(
+                feature.Shape = GeometricTransformerFactory.Transform2D(
                     feature.Shape,
                     _doc.FocusMap.Display.SpatialReference,
                     _fc.SpatialReference);
@@ -200,7 +200,7 @@ namespace gView.Plugins.Editor
                 _doc.FocusMap.Display.SpatialReference != null &&
                 !_doc.FocusMap.Display.SpatialReference.Equals(_fc.SpatialReference))
             {
-                feature.Shape = GeometricTransformer.Transform2D(
+                feature.Shape = GeometricTransformerFactory.Transform2D(
                     feature.Shape,
                     _doc.FocusMap.Display.SpatialReference,
                     _fc.SpatialReference);

@@ -415,7 +415,7 @@ namespace gView.Framework.Geometry
                 return geometry;
             }
 
-            using (GeometricTransformer transformer = new GeometricTransformer())
+            using (IGeometricTransformer transformer = GeometricTransformerFactory.Create())
             {
                 //transformer.FromSpatialReference = from;
                 //transformer.ToSpatialReference = to;

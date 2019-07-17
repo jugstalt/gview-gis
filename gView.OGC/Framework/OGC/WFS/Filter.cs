@@ -588,7 +588,7 @@ namespace gView.Framework.OGC.WFS
                 if (feature == null || feature.Shape == null ||
                     sFilter == null || sFilter.Geometry == null) return false;
 
-                IGeometry pGeometry = GeometricTransformer.Transform2D(
+                IGeometry pGeometry = GeometricTransformerFactory.Transform2D(
                     sFilter.Geometry,
                     sFilter.FilterSpatialReference,
                     featureSRef);

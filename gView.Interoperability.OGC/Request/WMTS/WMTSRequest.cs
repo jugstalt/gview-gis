@@ -466,7 +466,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     continue;
 
                 ISpatialReference sRef = SpatialReference.FromID("epsg:" + epsg);
-                IEnvelope extent4326 = GeometricTransformer.Transform2D(extent, sRef, sRef4326).Envelope;
+                IEnvelope extent4326 = GeometricTransformerFactory.Transform2D(extent, sRef, sRef4326).Envelope;
 
                 if (double.IsInfinity(extent4326.minx)) extent4326.minx = -180D;
                 if (double.IsInfinity(extent4326.miny)) extent4326.miny = -90D;

@@ -939,7 +939,7 @@ namespace gView.Framework.Carto
                     cancelTracker = new CancelTracker();
                 }
 
-                GeometricTransformer geoTransformer = new GeometricTransformer();
+                IGeometricTransformer geoTransformer = GeometricTransformerFactory.Create();
                 //geoTransformer.ToSpatialReference = this.SpatialReference;
                 if (!printerMap)
                 {
@@ -2993,7 +2993,7 @@ namespace gView.Framework.Carto
                 return geometry;
             }
 
-            GeometricTransformer transformer = new GeometricTransformer();
+            IGeometricTransformer transformer = GeometricTransformerFactory.Create();
 
             //transformer.FromSpatialReference = geometrySpatialReference;
             //transformer.ToSpatialReference = _spatialReference;

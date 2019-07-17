@@ -343,108 +343,65 @@ namespace gView.Server.AppCode
                 cancelTracker = new CancelTracker();
             }
 
-            GeometricTransformer geoTransformer = new GeometricTransformer();
-            //geoTransformer.ToSpatialReference = this.SpatialReference;
-
-            if (_image == null)
+            using (var geoTransformer = GeometricTransformerFactory.Create())
             {
-                _image = new System.Drawing.Bitmap(iWidth, iHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            }
+                //geoTransformer.ToSpatialReference = this.SpatialReference;
 
-            _graphics = System.Drawing.Graphics.FromImage(_image);
-            //_graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
-            this.dpi = _graphics.DpiX * this.ScaleSymbolFactor;
-
-            if (BackgroundColor.A != 0 && !Display.MakeTransparent)
-            {
-                using (System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(BackgroundColor))
+                if (_image == null)
                 {
-                    _graphics.FillRectangle(brush, 0, 0, _image.Width, _image.Height);
+                    _image = new System.Drawing.Bitmap(iWidth, iHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 }
-            }
 
-            if (phase == DrawPhase.All || phase == DrawPhase.Geography)
-            {
-                this.GeometricTransformer = geoTransformer;
+                _graphics = System.Drawing.Graphics.FromImage(_image);
+                //_graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+                this.dpi = _graphics.DpiX * this.ScaleSymbolFactor;
 
-                // Thread für MapServer Datasets starten...
-
-                #region WebServiceLayer
-                List<IWebServiceLayer> webServices;
-                if (this.TOC != null)
+                if (BackgroundColor.A != 0 && !Display.MakeTransparent)
                 {
-                    webServices = ListOperations<IWebServiceLayer>.Swap(this.TOC.VisibleWebServiceLayers);
-                }
-                else
-                {
-                    webServices = new List<IWebServiceLayer>();
-                    foreach (IDatasetElement layer in this.MapElements)
+                    using (System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(BackgroundColor))
                     {
-                        if (!(layer is IWebServiceLayer))
+                        _graphics.FillRectangle(brush, 0, 0, _image.Width, _image.Height);
+                    }
+                }
+
+                if (phase == DrawPhase.All || phase == DrawPhase.Geography)
+                {
+                    this.GeometricTransformer = geoTransformer;
+
+                    // Thread für MapServer Datasets starten...
+
+                    #region WebServiceLayer
+                    List<IWebServiceLayer> webServices;
+                    if (this.TOC != null)
+                    {
+                        webServices = ListOperations<IWebServiceLayer>.Swap(this.TOC.VisibleWebServiceLayers);
+                    }
+                    else
+                    {
+                        webServices = new List<IWebServiceLayer>();
+                        foreach (IDatasetElement layer in this.MapElements)
+                        {
+                            if (!(layer is IWebServiceLayer))
+                            {
+                                continue;
+                            }
+
+                            if (((ILayer)layer).Visible)
+                            {
+                                webServices.Add((IWebServiceLayer)layer);
+                            }
+                        }
+                    }
+                    int webServiceOrder = 0, webServiceOrder2 = 1;
+                    foreach (IWebServiceLayer element in webServices)
+                    {
+                        if (!element.Visible)
                         {
                             continue;
                         }
 
-                        if (((ILayer)layer).Visible)
-                        {
-                            webServices.Add((IWebServiceLayer)layer);
-                        }
-                    }
-                }
-                int webServiceOrder = 0, webServiceOrder2 = 1;
-                foreach (IWebServiceLayer element in webServices)
-                {
-                    if (!element.Visible)
-                    {
-                        continue;
-                    }
+                        IWebServiceLayer wsLayer = LayerFactory.Create(element.WebServiceClass.Clone() as IClass, element as ILayer) as IWebServiceLayer;
 
-                    IWebServiceLayer wsLayer = LayerFactory.Create(element.WebServiceClass.Clone() as IClass, element as ILayer) as IWebServiceLayer;
-
-                    if (wsLayer == null || wsLayer.WebServiceClass == null)
-                    {
-                        continue;
-                    }
-
-                    wsLayer.WebServiceClass.SpatialReference = this.SpatialReference;
-
-                    List<IWebServiceClass> additionalWebServices = new List<IWebServiceClass>();
-                    if (BeforeRenderLayers != null)
-                    {
-                        List<ILayer> modLayers = new List<ILayer>();
-                        foreach (IWebServiceTheme theme in wsLayer.WebServiceClass.Themes)
-                        {
-                            if (theme is ILayer)
-                            {
-                                modLayers.Add(theme as ILayer);
-                            }
-                        }
-                        BeforeRenderLayers(this, modLayers);
-
-                        foreach (ILayer additionalLayer in MapServerHelper.FindAdditionalWebServiceLayers(wsLayer.WebServiceClass, modLayers))
-                        {
-                            IWebServiceClass additionalWebService = MapServerHelper.CloneNonVisibleWebServiceClass(wsLayer.WebServiceClass);
-                            MapServerHelper.CopyWebThemeProperties(additionalWebService, additionalLayer);
-
-                            if (MapServerHelper.HasVisibleThemes(additionalWebService))
-                            {
-                                additionalWebServices.Add(additionalWebService);
-                            }
-                        }
-                    }
-
-
-                    ServiceRequestThread srt = new ServiceRequestThread(this, wsLayer, webServiceOrder++);
-                    srt.finish += new ServiceRequestThread.RequestThreadFinished(MapRequestThread_finished);
-                    //Thread thread = new Thread(new ThreadStart(srt.ImageRequest));
-                    m_imageMerger.max++;
-                    //thread.Start();
-                    var task = srt.ImageRequest(); // start Task and continue...
-
-
-                    foreach (IWebServiceClass additionalWebService in additionalWebServices)
-                    {
-                        wsLayer = LayerFactory.Create(additionalWebService, element as ILayer) as IWebServiceLayer;
                         if (wsLayer == null || wsLayer.WebServiceClass == null)
                         {
                             continue;
@@ -452,62 +409,148 @@ namespace gView.Server.AppCode
 
                         wsLayer.WebServiceClass.SpatialReference = this.SpatialReference;
 
-                        srt = new ServiceRequestThread(this, wsLayer, (++webServiceOrder2) + webServices.Count);
+                        List<IWebServiceClass> additionalWebServices = new List<IWebServiceClass>();
+                        if (BeforeRenderLayers != null)
+                        {
+                            List<ILayer> modLayers = new List<ILayer>();
+                            foreach (IWebServiceTheme theme in wsLayer.WebServiceClass.Themes)
+                            {
+                                if (theme is ILayer)
+                                {
+                                    modLayers.Add(theme as ILayer);
+                                }
+                            }
+                            BeforeRenderLayers(this, modLayers);
+
+                            foreach (ILayer additionalLayer in MapServerHelper.FindAdditionalWebServiceLayers(wsLayer.WebServiceClass, modLayers))
+                            {
+                                IWebServiceClass additionalWebService = MapServerHelper.CloneNonVisibleWebServiceClass(wsLayer.WebServiceClass);
+                                MapServerHelper.CopyWebThemeProperties(additionalWebService, additionalLayer);
+
+                                if (MapServerHelper.HasVisibleThemes(additionalWebService))
+                                {
+                                    additionalWebServices.Add(additionalWebService);
+                                }
+                            }
+                        }
+
+
+                        ServiceRequestThread srt = new ServiceRequestThread(this, wsLayer, webServiceOrder++);
                         srt.finish += new ServiceRequestThread.RequestThreadFinished(MapRequestThread_finished);
-                        //thread = new Thread(new ThreadStart(srt.ImageRequest));
+                        //Thread thread = new Thread(new ThreadStart(srt.ImageRequest));
                         m_imageMerger.max++;
                         //thread.Start();
-                        var additionalTask = srt.ImageRequest(); // start task and continue...
-                    }
-                }
-                #endregion
+                        var task = srt.ImageRequest(); // start Task and continue...
 
-                List<ILayer> layers = new List<ILayer>();
-                if (this.TOC != null)
-                {
-                    if (this.GetType().Equals(typeof(ServiceMap)))
+
+                        foreach (IWebServiceClass additionalWebService in additionalWebServices)
+                        {
+                            wsLayer = LayerFactory.Create(additionalWebService, element as ILayer) as IWebServiceLayer;
+                            if (wsLayer == null || wsLayer.WebServiceClass == null)
+                            {
+                                continue;
+                            }
+
+                            wsLayer.WebServiceClass.SpatialReference = this.SpatialReference;
+
+                            srt = new ServiceRequestThread(this, wsLayer, (++webServiceOrder2) + webServices.Count);
+                            srt.finish += new ServiceRequestThread.RequestThreadFinished(MapRequestThread_finished);
+                            //thread = new Thread(new ThreadStart(srt.ImageRequest));
+                            m_imageMerger.max++;
+                            //thread.Start();
+                            var additionalTask = srt.ImageRequest(); // start task and continue...
+                        }
+                    }
+                    #endregion
+
+                    List<ILayer> layers = new List<ILayer>();
+                    if (this.TOC != null)
                     {
-                        layers = ListOperations<ILayer>.Swap(this.TOC.Layers);
+                        if (this.GetType().Equals(typeof(ServiceMap)))
+                        {
+                            layers = ListOperations<ILayer>.Swap(this.TOC.Layers);
+                        }
+                        else
+                        {
+                            layers = ListOperations<ILayer>.Swap(this.TOC.VisibleLayers);
+                        }
                     }
                     else
                     {
-                        layers = ListOperations<ILayer>.Swap(this.TOC.VisibleLayers);
+                        layers = new List<ILayer>();
+                        foreach (IDatasetElement layer in this.MapElements)
+                        {
+                            if (!(layer is ILayer))
+                            {
+                                continue;
+                            }
+
+                            if (((ILayer)layer).Visible)
+                            {
+                                layers.Add((ILayer)layer);
+                            }
+                        }
                     }
-                }
-                else
-                {
-                    layers = new List<ILayer>();
-                    foreach (IDatasetElement layer in this.MapElements)
+
+                    if (BeforeRenderLayers != null)
                     {
-                        if (!(layer is ILayer))
+                        //
+                        // Kopie der Original Layer erstellen
+                        // ACHTUNG: Renderer werden nicht kopiert!
+                        // dürfen in BeforeRenderLayers nicht verändert werden...
+                        // Eine zuweisung eines neuen Renderers ist jedoch legitim.
+                        //
+                        List<ILayer> modLayers = new List<ILayer>();
+                        foreach (IDatasetElement element in layers)
                         {
-                            continue;
-                        }
+                            if (!(element is ILayer) || element is IWebServiceTheme)
+                            {
+                                continue;
+                            }
 
-                        if (((ILayer)layer).Visible)
-                        {
-                            layers.Add((ILayer)layer);
+                            ILayer layer = (ILayer)element;
+                            if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale)
+                            {
+                                continue;
+                            }
+
+                            if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale)
+                            {
+                                continue;
+                            }
+
+                            modLayers.Add(LayerFactory.Create(layer.Class, layer));
                         }
+                        BeforeRenderLayers(this, modLayers);
+                        layers = modLayers;
                     }
-                }
+                    //layers = ModifyLayerList(layers);
+                    List<IFeatureLayer> labelLayers = this.OrderedLabelLayers(layers);
 
-                if (BeforeRenderLayers != null)
-                {
-                    //
-                    // Kopie der Original Layer erstellen
-                    // ACHTUNG: Renderer werden nicht kopiert!
-                    // dürfen in BeforeRenderLayers nicht verändert werden...
-                    // Eine zuweisung eines neuen Renderers ist jedoch legitim.
-                    //
-                    List<ILayer> modLayers = new List<ILayer>();
+                    LabelEngine.Init(this.Display, false);
                     foreach (IDatasetElement element in layers)
                     {
-                        if (!(element is ILayer) || element is IWebServiceTheme)
+                        if (!cancelTracker.Continue)
+                        {
+                            break;
+                        }
+
+                        if (!(element is ILayer))
                         {
                             continue;
                         }
 
                         ILayer layer = (ILayer)element;
+
+                        //if (_ceckLayerVisibilityBeforeDrawing)
+                        //{
+                        //    if (!LayerIsVisible(layer)) continue;
+                        //}
+                        if (!layer.Visible)
+                        {
+                            continue;
+                        }
+
                         if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale)
                         {
                             continue;
@@ -517,187 +560,141 @@ namespace gView.Server.AppCode
                         {
                             continue;
                         }
-
-                        modLayers.Add(LayerFactory.Create(layer.Class, layer));
-                    }
-                    BeforeRenderLayers(this, modLayers);
-                    layers = modLayers;
-                }
-                //layers = ModifyLayerList(layers);
-                List<IFeatureLayer> labelLayers = this.OrderedLabelLayers(layers);
-
-                LabelEngine.Init(this.Display, false);
-                foreach (IDatasetElement element in layers)
-                {
-                    if (!cancelTracker.Continue)
-                    {
-                        break;
-                    }
-
-                    if (!(element is ILayer))
-                    {
-                        continue;
-                    }
-
-                    ILayer layer = (ILayer)element;
-
-                    //if (_ceckLayerVisibilityBeforeDrawing)
-                    //{
-                    //    if (!LayerIsVisible(layer)) continue;
-                    //}
-                    if (!layer.Visible)
-                    {
-                        continue;
-                    }
-
-                    if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale)
-                    {
-                        continue;
-                    }
-
-                    if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale)
-                    {
-                        continue;
-                    }
 #if (DEBUG)
-                    //Logger.LogDebug("Drawing Layer:" + element.Title);
+                        //Logger.LogDebug("Drawing Layer:" + element.Title);
 #endif
-                    SetGeotransformer((ILayer)element, geoTransformer);
+                        SetGeotransformer((ILayer)element, geoTransformer);
 
-                    if (layer is IFeatureLayer)
-                    {
-                        IFeatureLayer fLayer = (IFeatureLayer)layer;
-                        if (fLayer.FeatureRenderer == null &&
-                             (
-                              fLayer.LabelRenderer == null ||
-                              (fLayer.LabelRenderer != null && fLayer.LabelRenderer.RenderMode != LabelRenderMode.RenderWithFeature)
-                             ))
+                        if (layer is IFeatureLayer)
                         {
-                            //continue;
-                        }
-                        else
-                        {
-                            RenderFeatureLayerThread rlt = new RenderFeatureLayerThread(this, fLayer, cancelTracker, new FeatureCounter());
-                            if (fLayer.LabelRenderer != null && fLayer.LabelRenderer.RenderMode == LabelRenderMode.RenderWithFeature)
+                            IFeatureLayer fLayer = (IFeatureLayer)layer;
+                            if (fLayer.FeatureRenderer == null &&
+                                 (
+                                  fLayer.LabelRenderer == null ||
+                                  (fLayer.LabelRenderer != null && fLayer.LabelRenderer.RenderMode != LabelRenderMode.RenderWithFeature)
+                                 ))
                             {
-                                rlt.UseLabelRenderer = true;
+                                //continue;
                             }
                             else
                             {
-                                rlt.UseLabelRenderer = labelLayers.IndexOf(fLayer) == 0;  // letzten Layer gleich mitlabeln
-                            }
+                                RenderFeatureLayerThread rlt = new RenderFeatureLayerThread(this, fLayer, cancelTracker, new FeatureCounter());
+                                if (fLayer.LabelRenderer != null && fLayer.LabelRenderer.RenderMode == LabelRenderMode.RenderWithFeature)
+                                {
+                                    rlt.UseLabelRenderer = true;
+                                }
+                                else
+                                {
+                                    rlt.UseLabelRenderer = labelLayers.IndexOf(fLayer) == 0;  // letzten Layer gleich mitlabeln
+                                }
 
-                            if (rlt.UseLabelRenderer)
+                                if (rlt.UseLabelRenderer)
+                                {
+                                    labelLayers.Remove(fLayer);
+                                }
+
+                                await rlt.Render();
+                            }
+                            //thread = new Thread(new ThreadStart(rlt.Render));
+                            //thread.Start();
+                        }
+                        if (layer is IRasterLayer && ((IRasterLayer)layer).RasterClass != null)
+                        {
+                            IRasterLayer rLayer = (IRasterLayer)layer;
+                            if (rLayer.RasterClass.Polygon == null)
                             {
-                                labelLayers.Remove(fLayer);
+                                continue;
                             }
 
+                            IEnvelope dispEnvelope = this.Envelope;
+                            if (Display.GeometricTransformer != null)
+                            {
+                                dispEnvelope = ((IGeometry)Display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
+                            }
+
+                            if (gView.Framework.SpatialAlgorithms.Algorithm.IntersectBox(rLayer.RasterClass.Polygon, dispEnvelope))
+                            {
+                                if (rLayer.Class is IParentRasterLayer)
+                                {
+                                    await DrawRasterParentLayer((IParentRasterLayer)rLayer.Class, cancelTracker, rLayer);
+                                }
+                                else
+                                {
+                                    RenderRasterLayerThread rlt = new RenderRasterLayerThread(this, rLayer, rLayer, cancelTracker);
+                                    await rlt.Render();
+
+                                    //thread = new Thread(new ThreadStart(rlt.Render));
+                                    //thread.Start();
+                                }
+                            }
+                        }
+                        // Andere Layer (zB IRasterLayer)
+
+#if (DEBUG)
+                        //Logger.LogDebug("Finished drawing layer: " + element.Title);
+#endif
+                    }
+
+                    // Label Features
+                    if (labelLayers.Count != 0)
+                    {
+                        foreach (IFeatureLayer fLayer in labelLayers)
+                        {
+                            this.SetGeotransformer(fLayer, geoTransformer);
+
+                            if (!fLayer.Visible)
+                            {
+                                continue;
+                            }
+
+                            RenderLabelThread rlt = new RenderLabelThread(this, fLayer, cancelTracker);
                             await rlt.Render();
                         }
-                        //thread = new Thread(new ThreadStart(rlt.Render));
-                        //thread.Start();
                     }
-                    if (layer is IRasterLayer && ((IRasterLayer)layer).RasterClass != null)
+
+                    LabelEngine.Draw(this.Display, cancelTracker);
+                    LabelEngine.Release();
+
+                    if (cancelTracker.Continue)
                     {
-                        IRasterLayer rLayer = (IRasterLayer)layer;
-                        if (rLayer.RasterClass.Polygon == null)
+                        while (m_imageMerger.Count < m_imageMerger.max)
                         {
-                            continue;
-                        }
-
-                        IEnvelope dispEnvelope = this.Envelope;
-                        if (Display.GeometricTransformer != null)
-                        {
-                            dispEnvelope = ((IGeometry)Display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
-                        }
-
-                        if (gView.Framework.SpatialAlgorithms.Algorithm.IntersectBox(rLayer.RasterClass.Polygon, dispEnvelope))
-                        {
-                            if (rLayer.Class is IParentRasterLayer)
-                            {
-                                await DrawRasterParentLayer((IParentRasterLayer)rLayer.Class, cancelTracker, rLayer);
-                            }
-                            else
-                            {
-                                RenderRasterLayerThread rlt = new RenderRasterLayerThread(this, rLayer, rLayer, cancelTracker);
-                                await rlt.Render();
-
-                                //thread = new Thread(new ThreadStart(rlt.Render));
-                                //thread.Start();
-                            }
+                            await Task.Delay(10);
                         }
                     }
-                    // Andere Layer (zB IRasterLayer)
-
-#if(DEBUG)          
-                    //Logger.LogDebug("Finished drawing layer: " + element.Title);
+                    if (_drawScaleBar)
+                    {
+                        m_imageMerger.mapScale = this.mapScale;
+                        m_imageMerger.dpi = this.dpi;
+                    }
+#if (DEBUG)
+                    //Logger.LogDebug("Merge Images");
+#endif
+                    m_imageMerger.Merge(_image, this.Display);
+                    m_imageMerger.Clear();
+#if (DEBUG)
+                    //Logger.LogDebug("Merge Images Finished");
 #endif
                 }
 
-                // Label Features
-                if (labelLayers.Count != 0)
+                if (phase == DrawPhase.All || phase == DrawPhase.Graphics)
                 {
-                    foreach (IFeatureLayer fLayer in labelLayers)
+                    foreach (IGraphicElement grElement in Display.GraphicsContainer.Elements)
                     {
-                        this.SetGeotransformer(fLayer, geoTransformer);
-
-                        if (!fLayer.Visible)
-                        {
-                            continue;
-                        }
-
-                        RenderLabelThread rlt = new RenderLabelThread(this, fLayer, cancelTracker);
-                        await rlt.Render();
+                        grElement.Draw(Display);
                     }
                 }
 
-                LabelEngine.Draw(this.Display, cancelTracker);
-                LabelEngine.Release();
+                base.AppendExceptionsToImage();
 
-                if (cancelTracker.Continue)
+                if (_graphics != null)
                 {
-                    while (m_imageMerger.Count < m_imageMerger.max)
-                    {
-                        await Task.Delay(10);
-                    }
+                    _graphics.Dispose();
                 }
-                if (_drawScaleBar)
-                {
-                    m_imageMerger.mapScale = this.mapScale;
-                    m_imageMerger.dpi = this.dpi;
-                }
-#if(DEBUG)
-                //Logger.LogDebug("Merge Images");
-#endif
-                m_imageMerger.Merge(_image, this.Display);
-                m_imageMerger.Clear();
-#if(DEBUG)
-                //Logger.LogDebug("Merge Images Finished");
-#endif
-            }
 
-            if (phase == DrawPhase.All || phase == DrawPhase.Graphics)
-            {
-                foreach (IGraphicElement grElement in Display.GraphicsContainer.Elements)
-                {
-                    grElement.Draw(Display);
-                }
-            }
+                _graphics = null;
 
-            base.AppendExceptionsToImage();
-
-            if (_graphics != null)
-            {
-                _graphics.Dispose();
-            }
-
-            _graphics = null;
-
-            if (geoTransformer != null)
-            {
                 this.GeometricTransformer = null;
-                geoTransformer.Release();
-                geoTransformer = null;
             }
             return true;
         }

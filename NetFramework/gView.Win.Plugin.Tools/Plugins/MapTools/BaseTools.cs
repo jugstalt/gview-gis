@@ -2237,7 +2237,7 @@ namespace gView.Plugins.MapTools
                     IEnvelope envelope = feat.Shape.Envelope;
                     if (project)
                     {
-                        IGeometry geom = GeometricTransformer.Transform2D(envelope, fc.SpatialReference, map.Display.SpatialReference);
+                        IGeometry geom = GeometricTransformerFactory.Transform2D(envelope, fc.SpatialReference, map.Display.SpatialReference);
                         if (geom == null)
                         {
                             continue;

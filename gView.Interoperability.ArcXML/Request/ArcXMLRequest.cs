@@ -486,7 +486,7 @@ namespace gView.Interoperability.ArcXML
                                         if (sFilter.FilterSpatialReference != null &&
                                             !sFilter.FilterSpatialReference.Equals(map2.Display.SpatialReference))
                                         {
-                                            polygon = GeometricTransformer.Transform2D(
+                                            polygon = GeometricTransformerFactory.Transform2D(
                                                 polygon,
                                                 sFilter.FilterSpatialReference,
                                                 map2.Display.SpatialReference) as IPolygon;

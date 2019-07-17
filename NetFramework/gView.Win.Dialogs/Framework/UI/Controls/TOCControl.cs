@@ -1797,21 +1797,21 @@ namespace gView.Framework.UI.Controls
                         IEnvelope limit = map.Display.Limit;
                         IEnvelope env = map.Display.Envelope;
 
-                        IGeometricTransformer geoTrans = new gView.Framework.Geometry.GeometricTransformer();
-                        //geoTrans.FromSpatialReference = sRef2;
-                        //geoTrans.ToSpatialReference = sRef1;
-                        geoTrans.SetSpatialReferences(sRef2, sRef1);
+                        using (var geoTrans = gView.Framework.Geometry.GeometricTransformerFactory.Create())
+                        {
+                            //geoTrans.FromSpatialReference = sRef2;
+                            //geoTrans.ToSpatialReference = sRef1;
+                            geoTrans.SetSpatialReferences(sRef2, sRef1);
 
-                        IGeometry limit2 = (IGeometry)geoTrans.Transform2D(limit);
-                        IGeometry env2 = (IGeometry)geoTrans.Transform2D(env);
-                        map.Display.Limit = limit2.Envelope;
-                        ((Map)_iMapDocument.FocusMap).ZoomTo(
-                            env2.Envelope.minx,
-                            env2.Envelope.miny,
-                            env2.Envelope.maxx,
-                            env2.Envelope.maxy);
-
-                        geoTrans.Release();
+                            IGeometry limit2 = (IGeometry)geoTrans.Transform2D(limit);
+                            IGeometry env2 = (IGeometry)geoTrans.Transform2D(env);
+                            map.Display.Limit = limit2.Envelope;
+                            ((Map)_iMapDocument.FocusMap).ZoomTo(
+                                env2.Envelope.minx,
+                                env2.Envelope.miny,
+                                env2.Envelope.maxx,
+                                env2.Envelope.maxy);
+                        }
                     }
                     map.Display.SpatialReference = dlg.SpatialReference;
                 }

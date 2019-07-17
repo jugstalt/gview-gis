@@ -249,7 +249,7 @@ namespace gView.Framework.Geometry
         string Parameter { get; set; }
     }
 
-    public interface IGeometricTransformer
+    public interface IGeometricTransformer : IDisposable
     {
         //ISpatialReference FromSpatialReference { set; get; }
         //ISpatialReference ToSpatialReference { set; get;  }

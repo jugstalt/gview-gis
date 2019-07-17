@@ -298,7 +298,7 @@ namespace gView.Framework.UI.Controls
         {
             if (sRef == null || env == null || _sRef == null) return env;
 
-            IGeometry geom = GeometricTransformer.Transform2D(env, sRef, _sRef);
+            IGeometry geom = GeometricTransformerFactory.Transform2D(env, sRef, _sRef);
             if (geom != null) return geom.Envelope;
 
             return null;

@@ -1281,7 +1281,7 @@ namespace gView.Interoperability.OGC
                 }
                 if (env == null || sRef == null) continue;
 
-                env = GeometricTransformer.Transform2D(env, sRef, sRef_4326).Envelope;
+                env = GeometricTransformerFactory.Transform2D(env, sRef, sRef_4326).Envelope;
                 if (envelope == null)
                     envelope = env;
                 else
@@ -1314,7 +1314,7 @@ namespace gView.Interoperability.OGC
                 }
                 else
                 {
-                    envelope = GeometricTransformer.Transform2D(env4326, from, to).Envelope;
+                    envelope = GeometricTransformerFactory.Transform2D(env4326, from, to).Envelope;
                 }
             }
 

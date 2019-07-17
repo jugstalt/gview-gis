@@ -114,13 +114,13 @@ namespace gView.Framework.UI.Dialogs
                     IEnvelope limit = _display.Limit;
                     IEnvelope env = _display.Envelope;
 
-                    _display.Limit = GeometricTransformer.Transform2D(
+                    _display.Limit = GeometricTransformerFactory.Transform2D(
                         limit,
                         oldSRef,
                         _display.SpatialReference).Envelope;
 
                     _display.ZoomTo(
-                        GeometricTransformer.Transform2D(
+                        GeometricTransformerFactory.Transform2D(
                             env,
                             oldSRef,
                             _display.SpatialReference).Envelope

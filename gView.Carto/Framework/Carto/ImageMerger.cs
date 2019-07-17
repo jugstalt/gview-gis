@@ -221,7 +221,7 @@ namespace gView.Framework.Carto
                             if (geoBmp.Envelope != null)
                             {
                                 double x0, y0, x1, y1, x2, y2;
-                                gView.Framework.Geometry.IGeometry geom = gView.Framework.Geometry.GeometricTransformer.Transform2D(geoBmp.Envelope, geoBmp.SpatialReference, display.SpatialReference);
+                                gView.Framework.Geometry.IGeometry geom = gView.Framework.Geometry.GeometricTransformerFactory.Transform2D(geoBmp.Envelope, geoBmp.SpatialReference, display.SpatialReference);
                                 if (geom is gView.Framework.Geometry.IPolygon)
                                 {
                                     gView.Framework.Geometry.IRing ring = ((gView.Framework.Geometry.IPolygon)geom)[0];
@@ -239,35 +239,36 @@ namespace gView.Framework.Carto
                                     Resample(image, display, geoBmp.Bitmap, d);
                                     continue;
 
-                                    gView.Framework.Geometry.GeometricTransformer transformer = new gView.Framework.Geometry.GeometricTransformer();
-                                    //transformer.FromSpatialReference = geoBmp.SpatialReference;
-                                    //transformer.ToSpatialReference = display.SpatialReference;
-                                    transformer.SetSpatialReferences(geoBmp.SpatialReference, display.SpatialReference);
-
-                                    for (int y = 0; y < image.Height; y++)
+                                    using (var transformer = gView.Framework.Geometry.GeometricTransformerFactory.Create())
                                     {
-                                        for (int x = 0; x < image.Width; x++)
+                                        //transformer.FromSpatialReference = geoBmp.SpatialReference;
+                                        //transformer.ToSpatialReference = display.SpatialReference;
+                                        transformer.SetSpatialReferences(geoBmp.SpatialReference, display.SpatialReference);
+
+                                        for (int y = 0; y < image.Height; y++)
                                         {
-                                            double xx = x, yy = y;
-                                            display.Image2World(ref xx, ref yy);
-                                            gView.Framework.Geometry.IPoint point = (gView.Framework.Geometry.IPoint)transformer.InvTransform2D(new gView.Framework.Geometry.Point(xx, yy));
-                                            xx = point.X; yy = point.Y;
-                                            d.World2Image(ref xx, ref yy);
-                                            try
+                                            for (int x = 0; x < image.Width; x++)
                                             {
-                                                int x_ = (int)xx, y_ = (int)yy;
-                                                if (x_ >= 0 && y_ < geoBmp.Bitmap.Width &&
-                                                    y_ > 0 && y_ < geoBmp.Bitmap.Height)
+                                                double xx = x, yy = y;
+                                                display.Image2World(ref xx, ref yy);
+                                                gView.Framework.Geometry.IPoint point = (gView.Framework.Geometry.IPoint)transformer.InvTransform2D(new gView.Framework.Geometry.Point(xx, yy));
+                                                xx = point.X; yy = point.Y;
+                                                d.World2Image(ref xx, ref yy);
+                                                try
                                                 {
+                                                    int x_ = (int)xx, y_ = (int)yy;
+                                                    if (x_ >= 0 && y_ < geoBmp.Bitmap.Width &&
+                                                        y_ > 0 && y_ < geoBmp.Bitmap.Height)
+                                                    {
 
-                                                    image.SetPixel(x, y, geoBmp.Bitmap.GetPixel(x_, y_));
+                                                        image.SetPixel(x, y, geoBmp.Bitmap.GetPixel(x_, y_));
 
+                                                    }
                                                 }
+                                                catch { }
                                             }
-                                            catch { }
                                         }
                                     }
-                                    transformer.Release();
                                     continue;
                                     //////////////////////////////////////////////////////////
                                 }
@@ -443,64 +444,65 @@ namespace gView.Framework.Carto
         public static void Resample(Bitmap dest, IDisplay destDisplay, Bitmap source, IDisplay sourceDisplay)
         {
             BitmapData destData = null, sourceData = null;
-            gView.Framework.Geometry.GeometricTransformer transformer = new gView.Framework.Geometry.GeometricTransformer();
-
-            try
+            using (var transformer = gView.Framework.Geometry.GeometricTransformerFactory.Create())
             {
-                //transformer.FromSpatialReference = sourceDisplay.SpatialReference;
-                //transformer.ToSpatialReference = destDisplay.SpatialReference;
-                transformer.SetSpatialReferences(sourceDisplay.SpatialReference, destDisplay.SpatialReference);
 
-                destData = dest.LockBits(new Rectangle(0, 0, dest.Width, dest.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-                sourceData = source.LockBits(new Rectangle(0, 0, source.Width, source.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-
-                int sWidth = source.Width, sHeight = source.Height;
-                int dWidth = dest.Width, dHeight = dest.Height;
-
-                unsafe
+                try
                 {
-                    byte* ptr = (byte*)destData.Scan0;
+                    //transformer.FromSpatialReference = sourceDisplay.SpatialReference;
+                    //transformer.ToSpatialReference = destDisplay.SpatialReference;
+                    transformer.SetSpatialReferences(sourceDisplay.SpatialReference, destDisplay.SpatialReference);
 
-                    for (int y = 0; y < dHeight; y++)
+                    destData = dest.LockBits(new Rectangle(0, 0, dest.Width, dest.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+                    sourceData = source.LockBits(new Rectangle(0, 0, source.Width, source.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+
+                    int sWidth = source.Width, sHeight = source.Height;
+                    int dWidth = dest.Width, dHeight = dest.Height;
+
+                    unsafe
                     {
-                        for (int x = 0; x < dWidth; x++)
+                        byte* ptr = (byte*)destData.Scan0;
+
+                        for (int y = 0; y < dHeight; y++)
                         {
-                            double xx = x, yy = y;
-                            destDisplay.Image2World(ref xx, ref yy);
-                            gView.Framework.Geometry.IPoint point = (gView.Framework.Geometry.IPoint)transformer.InvTransform2D(new gView.Framework.Geometry.Point(xx, yy));
-                            xx = point.X; yy = point.Y;
-                            sourceDisplay.World2Image(ref xx, ref yy);
-
-                            int x_ = (int)xx, y_ = (int)yy;
-                            if (x_ >= 0 && x_ < sWidth &&
-                                y_ >= 0 && y_ < sHeight)
+                            for (int x = 0; x < dWidth; x++)
                             {
-                                byte* p = (byte*)sourceData.Scan0;
-                                p += (y_ * destData.Stride + x_ * 4);
+                                double xx = x, yy = y;
+                                destDisplay.Image2World(ref xx, ref yy);
+                                gView.Framework.Geometry.IPoint point = (gView.Framework.Geometry.IPoint)transformer.InvTransform2D(new gView.Framework.Geometry.Point(xx, yy));
+                                xx = point.X; yy = point.Y;
+                                sourceDisplay.World2Image(ref xx, ref yy);
 
-                                if (p[3] != 0) // Transparenz!!!
+                                int x_ = (int)xx, y_ = (int)yy;
+                                if (x_ >= 0 && x_ < sWidth &&
+                                    y_ >= 0 && y_ < sHeight)
                                 {
-                                    ptr[0] = p[0];
-                                    ptr[1] = p[1];
-                                    ptr[2] = p[2];
-                                    ptr[3] = p[3];
-                                }
-                            }
+                                    byte* p = (byte*)sourceData.Scan0;
+                                    p += (y_ * destData.Stride + x_ * 4);
 
-                            ptr += 4;
+                                    if (p[3] != 0) // Transparenz!!!
+                                    {
+                                        ptr[0] = p[0];
+                                        ptr[1] = p[1];
+                                        ptr[2] = p[2];
+                                        ptr[3] = p[3];
+                                    }
+                                }
+
+                                ptr += 4;
+                            }
+                            ptr += destData.Stride - destData.Width * 4;
                         }
-                        ptr += destData.Stride - destData.Width * 4;
                     }
                 }
-            }
-            catch { }
-            finally
-            {
-                transformer.Release();
-                if (destData != null)
-                    dest.UnlockBits(destData);
-                if (sourceData != null)
-                    source.UnlockBits(sourceData);
+                catch { }
+                finally
+                {
+                    if (destData != null)
+                        dest.UnlockBits(destData);
+                    if (sourceData != null)
+                        source.UnlockBits(sourceData);
+                }
             }
         }
 	}

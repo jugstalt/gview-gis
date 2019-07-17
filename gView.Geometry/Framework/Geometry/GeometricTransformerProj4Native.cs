@@ -51,7 +51,7 @@ namespace gView.Framework.Geometry
         public static extern void pj_set_searchpath(int count, IntPtr path);
     }
 
-    public sealed class GeometricTransformer/*Proj4Nativ*/ : gView.Framework.Geometry.IGeometricTransformer, IDisposable
+    public sealed class GeometricTransformerProj4Nativ : gView.Framework.Geometry.IGeometricTransformer, IDisposable
     {
         private IntPtr _fromID = IntPtr.Zero, _toID = IntPtr.Zero;
         //private int _preToID = -1, _preFromID = -1;
@@ -528,7 +528,7 @@ namespace gView.Framework.Geometry
 
             if (from == null || to == null || from.Equals(to)) return geometry;
 
-            using (GeometricTransformer transformer = new GeometricTransformer())
+            using (IGeometricTransformer transformer = GeometricTransformerFactory.Create())
             {
                 //transformer.FromSpatialReference = from;
                 //transformer.ToSpatialReference = to;
