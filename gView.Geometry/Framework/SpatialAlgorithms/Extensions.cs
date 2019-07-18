@@ -48,9 +48,11 @@ namespace gView.Framework.SpatialAlgorithms
 
                 #region Remove Zero Length Paths 
 
-                int removePath = -1;
+                int removePath;
                 do
                 {
+                    removePath = -1;
+
                     for (int p = 0, to = polyline.PathCount; p < to; p++)
                     {
                         if (polyline[p] == null || polyline[p].Length == 0.0)
@@ -76,9 +78,11 @@ namespace gView.Framework.SpatialAlgorithms
 
                 #region Remove Zero Area Rings
 
-                int removeRing = -1;
+                int removeRing;
                 do
                 {
+                    removeRing = -1;
+
                     for (int p = 0, to = polygon.RingCount; p < to; p++)
                     {
                         if(polygon[p]==null || polygon[p].Area==0.0)
