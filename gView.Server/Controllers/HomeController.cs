@@ -15,21 +15,14 @@ namespace gView.Server.Controllers
     {
         public IActionResult Index()
         {
-            if(!String.IsNullOrWhiteSpace(Request.Query["user"]) && !String.IsNullOrWhiteSpace(Request.Query["portal_token"]))
+            var user = Globals.ExternalAuthService != null ?
+                Globals.ExternalAuthService.Perform(this.Request) :
+                null;
+
+            if(!String.IsNullOrWhiteSpace(user))
             {
-                string username = Request.Query["user"];
-                string password = "";
 
-                var loginManager = new LoginManager(Globals.LoginManagerRootPath);
-                var authToken = loginManager.GetAuthToken(username, password);
-
-                if(authToken!=null)
-                {
-                    base.SetAuthCookie(authToken);
-                }
-
-                return RedirectToAction("Index", "Home");
-            } 
+            }
 
             return View();
         }

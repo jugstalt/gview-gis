@@ -9,11 +9,5 @@
   "task-queue": {
     "max-parallel-tasks": 5,
     "max-queue-length": 1000
-  },
-
-  "external-auth-service": {
-    "url": "",
-    "assembly": "",
-    "instance": ""
   }
 }

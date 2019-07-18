@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Reflection;
+using System.Web;
 
 namespace gView.Server.AppCode
 {
@@ -25,7 +25,7 @@ namespace gView.Server.AppCode
         public SecurityConfig Security { get; set; }
 
         [JsonProperty("task-queue")]
-        public TaskQueueConfig TaskQueue {get;set;}
+        public TaskQueueConfig TaskQueue { get; set; }
 
         [JsonProperty("external-auth-service")]
         public ExtAuthService ExternalAuthService { get; set; }
@@ -34,7 +34,7 @@ namespace gView.Server.AppCode
 
         public class SecurityConfig
         {
-            
+
         }
 
         public class TaskQueueConfig
@@ -69,6 +69,36 @@ namespace gView.Server.AppCode
                            !String.IsNullOrWhiteSpace("instance") &&
                            !String.IsNullOrWhiteSpace("method");
                 }
+            }
+
+            public string Perform(HttpRequest request)
+            {
+                if (IsValid == false)
+                {
+                    return String.Empty;
+                }
+
+                try
+                {
+                    var queryString = HttpUtility.ParseQueryString(request.QueryString.ToString());
+                    if (queryString.Keys.Count > 0)
+                    {
+                        var assembly = Assembly.LoadFile(
+                            System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "/" +
+                            this.AssemblyName);
+
+                        var instance = assembly.CreateInstance(this.InstanceName);
+                        var method = instance.GetType().GetMethod(this.MethodName);
+
+                        return method.Invoke(instance, new object[] { this.Url, queryString })?.ToString();
+                    }
+                }
+                catch
+                {
+                    
+                }
+
+                return String.Empty;
             }
         }
 
