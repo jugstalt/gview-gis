@@ -57,6 +57,11 @@ namespace gView.Server.AppCode
             Globals.LoginManagerRootPath = mapServerConfig.ServiceFolder + "/_login";
             Globals.LoggingRootPath = mapServerConfig.ServiceFolder + "/log";
 
+            if(mapServerConfig.ExternalAuthService!=null && mapServerConfig.ExternalAuthService.IsValid)
+            {
+                Globals.ExternalAuthService=mapServerConfig.ExternalAuthService;
+            }
+
             foreach (string createDirectroy in new string[] {
                 ServicesPath,
                 Globals.LoginManagerRootPath,

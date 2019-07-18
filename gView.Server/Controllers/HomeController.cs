@@ -11,10 +11,26 @@ using gView.MapServer;
 
 namespace gView.Server.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         public IActionResult Index()
         {
+            if(!String.IsNullOrWhiteSpace(Request.Query["user"]) && !String.IsNullOrWhiteSpace(Request.Query["portal_token"]))
+            {
+                string username = Request.Query["user"];
+                string password = "";
+
+                var loginManager = new LoginManager(Globals.LoginManagerRootPath);
+                var authToken = loginManager.GetAuthToken(username, password);
+
+                if(authToken!=null)
+                {
+                    base.SetAuthCookie(authToken);
+                }
+
+                return RedirectToAction("Index", "Home");
+            } 
+
             return View();
         }
 

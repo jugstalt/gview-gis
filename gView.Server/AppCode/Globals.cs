@@ -80,6 +80,8 @@ namespace gView.Server.AppCode
             }
         }
 
+        public static MapServerConfig.ExtAuthService ExternalAuthService = null;
+
         //internal static string MasterPassword { get; set; }
     }
 }

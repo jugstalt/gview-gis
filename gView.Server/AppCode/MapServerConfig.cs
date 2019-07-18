@@ -27,6 +27,9 @@ namespace gView.Server.AppCode
         [JsonProperty("task-queue")]
         public TaskQueueConfig TaskQueue {get;set;}
 
+        [JsonProperty("external-auth-service")]
+        public ExtAuthService ExternalAuthService { get; set; }
+
         #region Classes
 
         public class SecurityConfig
@@ -41,6 +44,32 @@ namespace gView.Server.AppCode
 
             [JsonProperty("max-queue-length")]
             public int MaxQueueLength { get; set; }
+        }
+
+        public class ExtAuthService
+        {
+            [JsonProperty("url")]
+            public string Url { get; set; }
+
+            [JsonProperty("assembly")]
+            public string AssemblyName { get; set; }
+
+            [JsonProperty("instance")]
+            public string InstanceName { get; set; }
+
+            [JsonProperty("method")]
+            string MethodName { get; set; }
+
+            public bool IsValid
+            {
+                get
+                {
+                    return !String.IsNullOrWhiteSpace("url") &&
+                           !String.IsNullOrWhiteSpace("assembly") &&
+                           !String.IsNullOrWhiteSpace("instance") &&
+                           !String.IsNullOrWhiteSpace("method");
+                }
+            }
         }
 
         #endregion

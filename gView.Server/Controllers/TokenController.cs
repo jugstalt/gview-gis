@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using gView.Server.AppCode;
+﻿using gView.Server.AppCode;
 using gView.Server.Models;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace gView.Server.Controllers
 {
@@ -30,7 +27,9 @@ namespace gView.Server.Controllers
                 var authToken = loginManager.GetAuthToken(model.Username, model.Password);
 
                 if (authToken == null)
+                {
                     throw new Exception("Unknown user or password");
+                }
 
                 base.SetAuthCookie(authToken);
 
