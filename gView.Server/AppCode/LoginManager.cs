@@ -57,6 +57,17 @@ namespace gView.Server.AppCode
             return null;
         }
 
+        private AuthToken AuthTokenWithoutPasswordCheck(string path, string username, AuthToken.AuthTypes authType, int expireMiniutes = 30)
+        {
+            var fi = new FileInfo(path + "/" + username + ".lgn");
+            if (fi.Exists)
+            {
+                return new AuthToken(username, authType, new DateTimeOffset(DateTime.UtcNow.Ticks, new TimeSpan(0, 30, 0)));
+            }
+
+            return null;
+        }
+
         #endregion
 
         #region Manager Logins
@@ -111,6 +122,12 @@ namespace gView.Server.AppCode
         {
             var di = new DirectoryInfo(LoginRootPath + "/token");
             return AuthToken(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Tokenuser, expireMinutes);
+        }
+
+        public AuthToken CreateUserAuthTokenWithoutPasswordCheck(string username, int expireMinutes=30)
+        {
+            var di = new DirectoryInfo(LoginRootPath + "/token");
+            return AuthTokenWithoutPasswordCheck(di.FullName, username, AppCode.AuthToken.AuthTypes.Tokenuser, expireMinutes);
         }
 
         #endregion
