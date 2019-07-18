@@ -162,7 +162,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
             //return gView.Framework.OGC.OGC.GeometryToWKB(shape, gView.Framework.OGC.OGC.WkbByteOrder.Ndr);
             string geometryString =
-                (shape is IPolygon) ?
+                (shape is IPolygon || shape is IPolyline) ?
                 "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "'," + srid + ").MakeValid()" :
                 "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "'," + srid + ")";
             return geometryString;
