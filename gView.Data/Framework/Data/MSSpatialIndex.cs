@@ -74,7 +74,7 @@ namespace gView.Framework.Data
 
             if (_sRef != null && !_sRef.Equals(sRef))
             {
-                IGeometry result = GeometricTransformer.Transform2D(_bounds, _sRef, sRef);
+                IGeometry result = GeometricTransformerFactory.Transform2D(_bounds, _sRef, sRef);
                 if (result != null && result.Envelope != null)
                 {
                     _bounds = result.Envelope;
@@ -236,7 +236,7 @@ namespace gView.Framework.Data
             
             if (_sRef != null && !_sRef.Equals(sRef))
             {
-                IGeometry result = GeometricTransformer.Transform2D(_extent, _sRef, sRef);
+                IGeometry result = GeometricTransformerFactory.Transform2D(_extent, _sRef, sRef);
                 if (result != null && result.Envelope != null)
                 {
                     _extent = result.Envelope;

@@ -29,7 +29,7 @@ namespace gView.Plugins.MapTools.Dialogs
         #region Members
         public IPoint GetPoint(ISpatialReference sRef)
         {
-            return GeometricTransformer.Transform2D(
+            return GeometricTransformerFactory.Transform2D(
                 coordControl1.Point,
                 coordControl1.SpatialReference,
                 sRef) as IPoint;

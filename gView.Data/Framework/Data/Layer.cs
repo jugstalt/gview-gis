@@ -1874,14 +1874,14 @@ namespace gView.Framework.Data
 
     public abstract class FeatureCursor : IFeatureCursorSkills
     {
-        private GeometricTransformer _transformer = null;
+        private IGeometricTransformer _transformer = null;
         private bool _knowsFunctions = true;
 
         public FeatureCursor(ISpatialReference fcSRef, ISpatialReference toSRef)
         {
             if (fcSRef != null && !fcSRef.Equals(toSRef))
             {
-                _transformer = new GeometricTransformer();
+                _transformer = GeometricTransformerFactory.Create();
                 //_transformer.FromSpatialReference = fcSRef;
                 //_transformer.ToSpatialReference = toSRef;
                 _transformer.SetSpatialReferences(fcSRef, toSRef);

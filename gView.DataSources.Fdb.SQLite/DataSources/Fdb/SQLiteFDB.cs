@@ -978,7 +978,7 @@ namespace gView.DataSources.Fdb.SQLite
                 ISpatialReference filterSRef = ((ISpatialFilter)filter).FilterSpatialReference;
                 if (filterSRef != null && !filterSRef.Equals(fc.SpatialReference))
                 {
-                    sFilter.Geometry = GeometricTransformer.Transform2D(((ISpatialFilter)filter).Geometry, filterSRef, fc.SpatialReference);
+                    sFilter.Geometry = GeometricTransformerFactory.Transform2D(((ISpatialFilter)filter).Geometry, filterSRef, fc.SpatialReference);
                     if (sFilter.SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects)
                     {
                         sFilter.Geometry = sFilter.Geometry.Envelope;

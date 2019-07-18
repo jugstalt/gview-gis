@@ -1,23 +1,22 @@
+using gView.Framework.Carto;
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.IO;
+using gView.Framework.OGC.GML;
+using gView.Framework.OGC.WFS;
+using gView.Framework.system;
+using gView.Framework.UI;
+using gView.Interoperability.OGC.Dataset.GML;
+using gView.MapServer;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.MapServer;
-using gView.Framework.OGC.WFS;
-using gView.Framework.Carto;
-using gView.Framework.system;
-using System.IO;
-using gView.Framework.Data;
-using gView.Framework.UI;
-using gView.Framework.Geometry;
 using System.Globalization;
-using gView.Interoperability.OGC.Dataset.GML;
-using System.Xml;
-using gView.Framework.OGC.GML;
-using gView.Framework.IO;
+using System.IO;
 using System.Reflection;
-using System.Xml.Schema;
-using System.Xml.Serialization;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace gView.Interoperability.OGC
 {
@@ -42,9 +41,14 @@ namespace gView.Interoperability.OGC
         async public Task Request(IServiceRequestContext context)
         {
             if (context == null || context.ServiceRequest == null)
+            {
                 return;
+            }
 
-            if (_mapServer == null) return;
+            if (_mapServer == null)
+            {
+                return;
+            }
 
             WFSParameterDescriptor parameters = new WFSParameterDescriptor();
             string requestString = context.ServiceRequest.Request.Trim();
@@ -115,7 +119,11 @@ namespace gView.Interoperability.OGC
         {
             try
             {
-                if (_mapServer == null || parameters == null) return "";
+                if (_mapServer == null || parameters == null)
+                {
+                    return "";
+                }
+
                 await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request, "WFS GetCapabilities");
 
                 //if (parameters != null)
@@ -123,7 +131,10 @@ namespace gView.Interoperability.OGC
 
                 using (IServiceMap map = await context.CreateServiceMapInstance()) // _mapServer[context];
                 {
-                    if (map == null) return "";
+                    if (map == null)
+                    {
+                        return "";
+                    }
 
                     WFS_Export_Metadata exMetadata = map.MetadataProvider(new Guid("A2342AC5-9FD6-47a4-A25A-F684C375C895")) as WFS_Export_Metadata;
                     WFS_Export_Metadata.Metadata metadata = ((exMetadata != null) ? exMetadata.Data : null);
@@ -177,7 +188,10 @@ namespace gView.Interoperability.OGC
                         foreach (MapServerHelper.Layers layers in MapServerHelper.MapLayers(map, _useTOC))
                         {
                             IFeatureClass fc = MapServerHelper.GetProtoFeatureClass(layers);
-                            if (fc == null) continue;
+                            if (fc == null)
+                            {
+                                continue;
+                            }
 
                             gView.Framework.OGC.WFS.Version_1_0_0.FeatureTypeType fType = new Framework.OGC.WFS.Version_1_0_0.FeatureTypeType();
                             fType.Name = "c" + layers.ID;
@@ -192,7 +206,10 @@ namespace gView.Interoperability.OGC
                                 fType.LatLongBoundingBox[0].maxy = env4326.maxy.ToString(nfi);
                             }
                             if (map.Display.SpatialReference != null)
+                            {
                                 fType.SRS = map.Display.SpatialReference.Name.ToUpper();
+                            }
+
                             fTypes.Add(fType);
                         }
                         caps.FeatureTypeList.FeatureType = fTypes.ToArray();
@@ -299,7 +316,10 @@ namespace gView.Interoperability.OGC
                         foreach (MapServerHelper.Layers layers in MapServerHelper.MapLayers(map, _useTOC))
                         {
                             IFeatureClass fc = MapServerHelper.GetProtoFeatureClass(layers);
-                            if (fc == null) continue;
+                            if (fc == null)
+                            {
+                                continue;
+                            }
 
                             gView.Framework.OGC.WFS.Version_1_1_0.FeatureTypeType fType = new Framework.OGC.WFS.Version_1_1_0.FeatureTypeType();
                             fType.Name = new XmlQualifiedName("c" + layers.ID, "http://www.opengis.net/wfs");
@@ -533,8 +553,16 @@ namespace gView.Interoperability.OGC
         {
             using (IServiceMap map = await context.CreateServiceMapInstance()) // _mapServer[context];
             {
-                if (map == null) return "";
-                if (_mapServer == null || parameters == null) return "";
+                if (map == null)
+                {
+                    return "";
+                }
+
+                if (_mapServer == null || parameters == null)
+                {
+                    return "";
+                }
+
                 await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request, "WFS DescribeFeatureType");
 
                 try
@@ -638,12 +666,19 @@ namespace gView.Interoperability.OGC
 
         async private Task<string> WFS_GetFeature(string OnlineResource, string service, WFSParameterDescriptor parameters, IServiceRequestContext context)
         {
-            if (_mapServer == null || parameters == null) return "";
+            if (_mapServer == null || parameters == null)
+            {
+                return "";
+            }
+
             await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request, "WFS GetFeature");
 
             using (IServiceMap map = await context.CreateServiceMapInstance()) // _mapServer[context];
             {
-                if (map == null) return "";
+                if (map == null)
+                {
+                    return "";
+                }
 
                 string sOnlineResource = OnlineResource /*MapServerConnectors.OnlineResource(PlugInManager.PlugInID(this))*/ + "?SERVICE=WFS&amp;";
                 sOnlineResource = sOnlineResource.Replace("??", "?");
@@ -671,26 +706,39 @@ namespace gView.Interoperability.OGC
 
                 foreach (string fcid in parameters.TypeName.Split(','))
                 {
-                    if (fcid == String.Empty || fcid[0] != 'c') continue;
+                    if (fcid == String.Empty || fcid[0] != 'c')
+                    {
+                        continue;
+                    }
+
                     string fcID = fcid.Substring(1, fcid.Length - 1);
 
                     MapServerHelper.Layers layers = MapServerHelper.FindMapLayers(map, _useTOC, fcID);
                     foreach (ILayer layer in layers)
                     {
-                        if (!(layer.Class is IFeatureClass)) continue;
+                        if (!(layer.Class is IFeatureClass))
+                        {
+                            continue;
+                        }
+
                         IFeatureClass fc = (IFeatureClass)layer.Class;
 
                         if (fc == null)
+                        {
                             continue;
+                        }
 
                         IQueryFilter filter = Filter.FromWFS(fc, parameters.Filter, gmlVersion);
                         Filter.AppendSortBy(filter, parameters.SortBy);
 
                         if (filter == null)
+                        {
                             continue;
+                        }
+
                         filter.SubFields = parameters.SubFields;
 
-                        if(layer is IFeatureLayer)
+                        if (layer is IFeatureLayer)
                         {
                             var featureLayer = (IFeatureLayer)layer;
 
@@ -708,7 +756,7 @@ namespace gView.Interoperability.OGC
                             #endregion
                         }
 
-                        GeometricTransformer transformer = null;
+                        IGeometricTransformer transformer = null;
                         string srsName = parameters.SrsName;
                         if (srsName != String.Empty &&
                             fc.SpatialReference != null)
@@ -718,7 +766,7 @@ namespace gView.Interoperability.OGC
                             if (fc.SpatialReference != null &&
                                 !fc.SpatialReference.Equals(sRef))
                             {
-                                transformer = new GeometricTransformer();
+                                transformer = GeometricTransformerFactory.Create();
                                 transformer.SetSpatialReferences(fc.SpatialReference, sRef);
                             }
                         }
@@ -728,7 +776,7 @@ namespace gView.Interoperability.OGC
                             !fc.SpatialReference.Equals(((ISpatialFilter)filter).FilterSpatialReference))
                         {
 
-                            transformer = new GeometricTransformer();
+                            transformer = GeometricTransformerFactory.Create();
                             transformer.SetSpatialReferences(fc.SpatialReference, ((ISpatialFilter)filter).FilterSpatialReference);
                             srsName = ((ISpatialFilter)filter).FilterSpatialReference.Name;
                         }
@@ -745,7 +793,10 @@ namespace gView.Interoperability.OGC
                         filter.SetUserData("IServiceRequestContext", context);
                         using (IFeatureCursor cursor = await fc.GetFeatures(filter))
                         {
-                            if (cursor == null) continue;
+                            if (cursor == null)
+                            {
+                                continue;
+                            }
 
                             await FeatureTranslator.Features2GML(cursor, fc, fcid, sb, srsName, transformer, gmlVersion, parameters.MaxFeatures);
                         }
@@ -757,7 +808,9 @@ namespace gView.Interoperability.OGC
                         //}
 
                         if (transformer != null)
+                        {
                             transformer.Release();
+                        }
                     }
                 }
                 sb.Append(@"</wfs:FeatureCollection>");
@@ -772,7 +825,10 @@ namespace gView.Interoperability.OGC
         #region Helper
         private void AppendFeatureType(StreamWriter sw, IServiceMap map, IFeatureClass fc, string name, string title, WFS_Export_Metadata.Metadata metadata)
         {
-            if (fc == null) return;
+            if (fc == null)
+            {
+                return;
+            }
 
             NumberFormatInfo nfi = new NumberFormatInfo();
             nfi.NumberDecimalSeparator = ".";
@@ -795,7 +851,10 @@ namespace gView.Interoperability.OGC
                 foreach (string s in metadata.EPSGCodes)
                 {
                     IEnvelope env = TransFormEPSG4326Envelope(env4326, s);
-                    if (env == null) continue;
+                    if (env == null)
+                    {
+                        continue;
+                    }
 
                     sw.WriteLine("<SRS>" + s.ToUpper() + "</SRS>");
                     //sb_env.Append("\r\n         <BoundingBox SRS=\"" + s.ToUpper() + "\" minx=\"");
@@ -825,41 +884,64 @@ namespace gView.Interoperability.OGC
 
         private IEnvelope GetEPSG4326Envelope(IServiceMap map, IFeatureClass fc)
         {
-            if (map == null || fc == null || fc.Envelope == null) return null;
+            if (map == null || fc == null || fc.Envelope == null)
+            {
+                return null;
+            }
 
             ISpatialReference sRef = fc.SpatialReference;
             ISpatialReference sRef_4326 = SpatialReference.FromID("epsg:4326");
 
-            IEnvelope env = GeometricTransformer.Transform2D(fc.Envelope, sRef, sRef_4326).Envelope;
+            IEnvelope env = GeometricTransformerFactory.Transform2D(fc.Envelope, sRef, sRef_4326).Envelope;
 
             return env;
         }
 
         private IEnvelope TransFormEPSG4326Envelope(IEnvelope env4326, string projID)
         {
-            if (projID.ToLower() == "epsg:4326") return env4326;
-            if (env4326 == null) return null;
+            if (projID.ToLower() == "epsg:4326")
+            {
+                return env4326;
+            }
+
+            if (env4326 == null)
+            {
+                return null;
+            }
 
             ISpatialReference from = SpatialReference.FromID("epsg:4326");
             ISpatialReference to = SpatialReference.FromID(projID);
-            if (from == null || to == null || from.Equals(to)) return env4326;
+            if (from == null || to == null || from.Equals(to))
+            {
+                return env4326;
+            }
 
-            return GeometricTransformer.Transform2D(env4326, from, to).Envelope;
+            return GeometricTransformerFactory.Transform2D(env4326, from, to).Envelope;
         }
 
         private List<XmlSchemaWriter.FeatureClassSchema> CollectFeatureClassSchemas(IServiceMap map, WFSParameterDescriptor parameters)
         {
-            if (map == null || parameters == null) return null;
+            if (map == null || parameters == null)
+            {
+                return null;
+            }
 
             List<XmlSchemaWriter.FeatureClassSchema> fcs = new List<XmlSchemaWriter.FeatureClassSchema>();
             foreach (string fcname in parameters.TypeName.Split(','))
             {
-                if (fcname == string.Empty || fcname[0] != 'c') continue;
+                if (fcname == string.Empty || fcname[0] != 'c')
+                {
+                    continue;
+                }
+
                 string fcID = fcname.Substring(1, fcname.Length - 1);
 
                 MapServerHelper.Layers layers = MapServerHelper.FindMapLayers(map, _useTOC, fcID);
                 IFeatureClass fc = MapServerHelper.GetProtoFeatureClass(layers);
-                if (fc == null) continue;
+                if (fc == null)
+                {
+                    continue;
+                }
 
                 fcs.Add(new XmlSchemaWriter.FeatureClassSchema('c' + layers.ID, fc));
             }
@@ -867,12 +949,19 @@ namespace gView.Interoperability.OGC
         }
         private List<IFeatureClass> CollectFeatureclasses(IServiceMap map, WFSParameterDescriptor parameters)
         {
-            if (map == null || parameters == null) return null;
+            if (map == null || parameters == null)
+            {
+                return null;
+            }
 
             List<IFeatureClass> fcs = new List<IFeatureClass>();
             foreach (string fcname in parameters.TypeName.Split(','))
             {
-                if (fcname == string.Empty || fcname[0] != 'c') continue;
+                if (fcname == string.Empty || fcname[0] != 'c')
+                {
+                    continue;
+                }
+
                 string fcID = fcname.Substring(1, fcname.Length - 1);
 
                 MapServerHelper.Layers layers = MapServerHelper.FindMapLayers(map, _useTOC, fcID);
@@ -962,7 +1051,9 @@ namespace gView.Interoperability.OGC
             {
                 string epsg = String.Empty;
                 if (_map.Display != null && _map.Display.SpatialReference != null)
+                {
                     epsg = _map.Display.SpatialReference.Name;
+                }
 
                 _metadata = new Metadata(epsg);
             }
@@ -992,7 +1083,10 @@ namespace gView.Interoperability.OGC
                 }
                 internal set
                 {
-                    if (value == null) return;
+                    if (value == null)
+                    {
+                        return;
+                    }
 
                     _epsgCodes = new IndexList<string>();
                     foreach (string code in value)
@@ -1005,10 +1099,14 @@ namespace gView.Interoperability.OGC
             {
                 _epsgCodes = new IndexList<string>();
                 if (!String.IsNullOrEmpty(_epsg))
+                {
                     _epsgCodes.Add(_epsg.ToUpper());
+                }
 
                 foreach (string srs in WMSConfig.SRS.Split(';'))
+                {
                     _epsgCodes.Add(srs.ToUpper());
+                }
             }
             #region IPersistable Member
 
@@ -1056,7 +1154,9 @@ namespace gView.Interoperability.OGC
 
             IPlugInParameter p = uiAssembly.CreateInstance("gView.Interoperability.OGC.UI.Dataset.WFS.WFSMetadata") as IPlugInParameter;
             if (p != null)
+            {
                 p.Parameter = this;
+            }
 
             return p;
         }
@@ -1074,14 +1174,18 @@ namespace gView.Interoperability.OGC
             get
             {
                 if (_metadata != null)
+                {
                     return _metadata.EPSGCodes;
+                }
 
                 return null;
             }
             set
             {
                 if (_metadata != null)
+                {
                     _metadata.EPSGCodes = value;
+                }
             }
         }
         #endregion

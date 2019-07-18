@@ -35,7 +35,7 @@ namespace gView.Test
             var sRef3857 = SpatialReference.FromID("epsg:3857");
             var sRef23032 = new SpatialReference("test", "", "+proj=utm +zone=32 +ellps=intl +towgs84=-87,-98,-121,0,0,0,0 +units=m +no_defs ", null);
 
-            using (var transformer = new GeometricTransformer())
+            using (var transformer = GeometricTransformerFactory.Create())
             {
                 //var point = new Point(1443413.9574, 6133464.20414);
                 ////var point = new Point(-27239.046, 335772.696625);

@@ -3319,7 +3319,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 return false;
             }
 
-            GeometricTransformer transformer = new GeometricTransformer();
+            IGeometricTransformer transformer = GeometricTransformerFactory.Create();
             //transformer.FromSpatialReference = fc.SpatialReference;
             //transformer.ToSpatialReference = destSRef;
             transformer.SetSpatialReferences(fc.SpatialReference, destSRef);

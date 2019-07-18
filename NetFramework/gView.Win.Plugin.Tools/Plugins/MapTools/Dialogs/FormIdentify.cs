@@ -123,7 +123,7 @@ namespace gView.Plugins.MapTools.Dialogs
                     IGeometry shape = feature.Shape;
                     if (sRef != null && !sRef.Equals(_doc.FocusMap.Display.SpatialReference))
                     {
-                        shape = GeometricTransformer.Transform2D(shape, sRef, _doc.FocusMap.Display.SpatialReference);
+                        shape = GeometricTransformerFactory.Transform2D(shape, sRef, _doc.FocusMap.Display.SpatialReference);
                     }
                     _doc.FocusMap.HighlightGeometry(shape, 300);
                 }
@@ -220,7 +220,7 @@ namespace gView.Plugins.MapTools.Dialogs
                         IGeometry shape = feature.Shape;
                         if (sRef != null && !sRef.Equals(_doc.FocusMap.Display.SpatialReference))
                         {
-                            shape = GeometricTransformer.Transform2D(shape, sRef, _doc.FocusMap.Display.SpatialReference);
+                            shape = GeometricTransformerFactory.Transform2D(shape, sRef, _doc.FocusMap.Display.SpatialReference);
                         }
                         _doc.FocusMap.HighlightGeometry(shape, 300);
                     }
@@ -229,7 +229,7 @@ namespace gView.Plugins.MapTools.Dialogs
                         IEnvelope envelope = feature.Shape.Envelope;
                         if (sRef != null && !sRef.Equals(_doc.FocusMap.Display.SpatialReference))
                         {
-                            IGeometry geom = GeometricTransformer.Transform2D(envelope,
+                            IGeometry geom = GeometricTransformerFactory.Transform2D(envelope,
                                 sRef,
                                 _doc.FocusMap.Display.SpatialReference);
                             if (geom == null) return;

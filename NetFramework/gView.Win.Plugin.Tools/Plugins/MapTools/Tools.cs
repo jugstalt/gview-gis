@@ -118,7 +118,7 @@ namespace gView.Plugins.MapTools
                             }
                             else
                             {
-                                IGeometry geom = GeometricTransformer.Transform2D(classEnv.ToPolygon(0), sRef, map.Display.SpatialReference);
+                                IGeometry geom = GeometricTransformerFactory.Transform2D(classEnv.ToPolygon(0), sRef, map.Display.SpatialReference);
                                 if (geom != null)
                                     classEnv = geom.Envelope;
                                 else

@@ -49,7 +49,7 @@ namespace gView.Framework.OGC.DB
                     filter = (ISpatialFilter)filter.Clone();
 
                     ((ISpatialFilter)filter).Geometry =
-                        GeometricTransformer.Transform2D(((ISpatialFilter)filter).Geometry,
+                        GeometricTransformerFactory.Transform2D(((ISpatialFilter)filter).Geometry,
                          ((ISpatialFilter)filter).FilterSpatialReference,
                          fc.SpatialReference);
                     ((ISpatialFilter)filter).FilterSpatialReference = null;

@@ -72,7 +72,7 @@ namespace gView.Plugins.MapTools.Controls
                     (_sRef==null ||
                      !value.Equals(_sRef)))
                 {
-                    IPoint p = GeometricTransformer.Transform2D(
+                    IPoint p = GeometricTransformerFactory.Transform2D(
                         this.Point,
                         _sRef,
                         value) as IPoint;

@@ -196,7 +196,7 @@ namespace gView.DataSources.Fdb.UI
 
                 if (project && destFC.SpatialReference != null && !destFC.SpatialReference.Equals(sourceFC.SpatialReference))
                 {
-                    _transformer = new GeometricTransformer();
+                    _transformer = GeometricTransformerFactory.Create();
                     //_transformer.FromSpatialReference = sourceFC.SpatialReference;
                     //_transformer.ToSpatialReference = destFC.SpatialReference;
                     _transformer.SetSpatialReferences(sourceFC.SpatialReference, destFC.SpatialReference);
