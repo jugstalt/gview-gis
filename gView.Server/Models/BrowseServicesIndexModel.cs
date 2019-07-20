@@ -12,5 +12,8 @@ namespace gView.Server.Models
         public string Folder { get; set; }
         public string[] Folders { get; set; }
         public IEnumerable<IMapService> Services { get; set; }
+
+        public string ErrorMessage { get; set; }
+        public string ServiceName { get; set; }
     }
 }

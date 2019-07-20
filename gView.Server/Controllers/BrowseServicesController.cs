@@ -15,7 +15,7 @@ namespace gView.Server.Controllers
 {
     public class BrowseServicesController : BaseController
     {
-        async public Task<IActionResult> Index(string folder)
+        async public Task<IActionResult> Index(string folder, string serviceName="", string errorMessage="")
         {
             folder = folder ?? String.Empty;
 
@@ -84,10 +84,13 @@ namespace gView.Server.Controllers
                     IsPublisher = isPublisher,
                     Folder = folder,
                     Folders = folders.ToArray(),
-                    Services = services.ToArray()
+                    Services = services.ToArray(),
+
+                    ServiceName = serviceName,
+                    ErrorMessage = errorMessage
                 };
 
-                return View(model);
+                return View("Index", model);
             });
         }
 
@@ -182,6 +185,11 @@ namespace gView.Server.Controllers
                         service = folder + "/" + service;
                     }
 
+                    if(Request.Form.Files.Count==0)
+                    {
+                        throw new MapServerException("No file uploaded");
+                    }
+
                     var file = Request.Form.Files[0];
                     byte[] buffer = new byte[file.Length];
                     await file.OpenReadStream().ReadAsync(buffer, 0, buffer.Length);
@@ -229,26 +237,20 @@ namespace gView.Server.Controllers
 
                     bool ret = await InternetMapServer.AddMap(service, mapXml, identity);
 
-                    return Json(new
-                    {
-                        succeeded = true
-                    });
+                    //return Json(new
+                    //{
+                    //    succeeded = true
+                    //});
+
+                    return await Index(folder);
                 }
                 catch (MapServerException mse)
                 {
-                    return Json(new
-                    {
-                        succeeded = false,
-                        message = mse.Message
-                    }); ;
+                    return await Index(folder, service.ServiceName(), mse.Message);
                 }
                 catch (Exception)
                 {
-                    return Json(new
-                    {
-                        succeeded = false,
-                        message = "Unknown error"
-                    });
+                    return await Index(folder, service.ServiceName(), "Unknown error");
                 }
             });
         }

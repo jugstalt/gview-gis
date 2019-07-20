@@ -8,19 +8,19 @@
     <ul class="browseservices">
         @if (!String.IsNullOrWhiteSpace(Model.Folder))
         {
-            <li>
+            <li class="back">
                 @Html.ActionLink("..", "Index", "BrowseServices", new { folder = "" })
             </li>
         }
         @foreach (var folder in Model.Folders)
         {
-            <li style="font-weight:bold">
+            <li class="folder">
                 @Html.ActionLink(folder + "/", "Index", "BrowseServices", new { folder = folder })
             </li>
         }
         @foreach (var mapService in Model.Services)
         {
-            <li>
+            <li class="service">
                 @Html.ActionLink(mapService.Name, "ServiceCapabilities", "BrowseServices", new { id = (String.IsNullOrWhiteSpace(mapService.Folder) ? "" : mapService.Folder + "@") + mapService.Name })
                 @if(Model.IsPublisher)
                 {
@@ -32,12 +32,39 @@
 
     @if(Model.IsPublisher)
     {
-<form action="@Url.Action("AddService")" method="post" enctype="multipart/form-data">
-    <input type="text" name="service" />
-    <input type="hidden" name="folder" value="@Model.Folder" />
-    <input type="file" name="mxl" />
-    <button type="submit">Upload</button>
-</form>
+<div class="gview5-form-upload">
+    @if(!String.IsNullOrWhiteSpace(Model.ErrorMessage)) {
+    <div class="gview5-error-message">
+        @Model.ErrorMessage
+    </div>
+    }
+    <form action="@Url.Action("AddService")" method="post" enctype="multipart/form-data">
+        <div class="gview5-form-upload-header">
+            <h4>Publish</h4>
+        </div>
+
+        <div class="gview5-form-upload-body hidden" >
+            <div class="attribute">
+                <div>
+                    <div class="label">Service Name</div>
+                    <input id="service-name-input" name="service" class="form-control" autofocus placeholder="Name..." value="@Model.ServiceName" />
+                </div>
+            </div>
+            <div class="attribute">
+                <div>
+                    <label for="mxl-file-upload" class="custom-file-upload">
+                        <i class="fa fa-cloud-upload"></i> XML File Upload
+                    </label>
+                    <input id="mxl-file-upload" name="file" type="file" />
+                </div>
+            </div>
+
+            <input type="hidden" name="folder" value="@Model.Folder" />
+            <br/>
+            <button type="submit" class="btn btn-primary">Publish Service</button>
+        </div>
+    </form>
+</div>
     }
 </div>
 
@@ -82,6 +109,32 @@
                             }
                         }
                     });
+                });
+
+            $('.gview5-form-upload .gview5-form-upload-header')
+                .click(function (e) {
+                    $('.gview5-form-upload .gview5-form-upload-body').toggleClass('hidden');
+                });
+            
+            $('#mxl-file-upload')
+                .change(function () {
+                    var fileName = $(this).val();
+                    
+                    $(".gview5-form-upload label.custom-file-upload").html(fileName);
+
+                    if (!$('#service-name-input').val()) {
+                        var serviceName = fileName;
+                        var pos = Math.max(serviceName.lastIndexOf('/'), serviceName.lastIndexOf("\\"));
+                        if (pos > 0) {
+                            serviceName = serviceName.substr(pos + 1);
+                        }
+                        pos = serviceName.lastIndexOf('.');
+                        if (pos > 0) {
+                            serviceName = serviceName.substr(0, pos);
+                        }
+
+                        $('#service-name-input').val(serviceName);
+                    }
                 });
         })();
     </script>

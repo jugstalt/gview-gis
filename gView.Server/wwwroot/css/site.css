@@ -225,13 +225,26 @@ ul.browseservices{
 }
 
     ul.browseservices li {
-        padding: 4px;
+        padding: 4px 4px 4px 36px;
         cursor:pointer;
         position:relative;
         height:32px;
+        background-position:4px center;
+        background-repeat:no-repeat;
     }
         ul.browseservices li:hover {
             background-color:#eee;
+        }
+
+        ul.browseservices li.back {
+            background-image: url('../images/icons/back-26-b.png');
+        }
+        ul.browseservices li.folder {
+            background-image: url('../images/icons/folder-26-b.png');
+            font-weight:bold;
+        }
+        ul.browseservices li.service {
+            background-image: url('../images/icons/service-26-b.png');
         }
 
         ul.browseservices li .button-delete-service {
@@ -248,6 +261,57 @@ ul.browseservices{
             ul.browseservices li .button-delete-service:hover {
                 background-image: url('../images/icons/delete-26-b.png');
             }
+
+.gview5-error-message {
+    background-color:#ff8888;
+    color:white;
+    border:2px solid #ff0000;
+    border-radius:5px;
+    padding:10px;
+}
+
+.gview5-form-upload {
+    padding: 15px;
+    box-shadow: 4px 4px 9px rgba(0, 0, 0, .4) !important;
+}
+
+    .gview5-form-upload .gview5-form-upload-header {
+        cursor: pointer;
+    }
+    .gview5-form-upload .gview5-form-upload-header h4 {
+        padding-left:6px;
+    }
+
+    .gview5-form-upload .gvies5-form-upload-body {
+
+    }
+
+    .gview5-form-upload .gview5-form-upload-body.hidden {
+        display:none;
+    }
+
+    .gview5-form-upload .label {
+        color:#808080;
+        font-size:1em;
+    }
+
+    .gview5-form-upload .attribute {
+        margin-bottom:10px;
+    }
+
+input[type="file"] {
+    display: none;
+}
+
+.custom-file-upload {
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 6px 12px 6px 36px;
+    cursor: pointer;
+    background-image: url('../images/icons/upload-26-b.png');
+    background-repeat:no-repeat;
+    background-position: 4px center;
+}
 
 /****** Manage **********/
 *:focus {
