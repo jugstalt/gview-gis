@@ -1,8 +1,13 @@
-﻿<li><a asp-area="" asp-controller="BrowseServices" asp-action="Index">Browse Services</a></li>
-<li><a href="@(gView.Server.AppCode.InternetMapServer.AppRootUrl(this.Context.Request))/geoservices/rest/services">GeoServices (REST)</a></li>
-<li><a asp-area="" asp-controller="Manage" asp-action="Index">Manage</a></li>
+﻿@{
+    var username = gView.Server.AppCode.BaseController.LoginUsername(this.Context.Request);
+    var isManageUser = gView.Server.AppCode.BaseController.IsManageUser(this.Context.Request);
+}
 
-<!--
-<li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
-<li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
--->
+
+<li><a asp-area="" asp-controller="BrowseServices" asp-action="Index">Browse Services</a></li>
+<li><a href="@(gView.Server.AppCode.InternetMapServer.AppRootUrl(this.Context.Request))/geoservices/rest/services">GeoServices (REST)</a></li>
+@if (isManageUser == true || String.IsNullOrWhiteSpace(username))
+{
+<li><a asp-area="" asp-controller="Manage" asp-action="Index">Manage</a></li>
+}
+

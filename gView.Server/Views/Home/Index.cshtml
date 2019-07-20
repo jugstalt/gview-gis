@@ -1,5 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    var username = gView.Server.AppCode.BaseController.LoginUsername(this.Context.Request);
+    var isManageUser = gView.Server.AppCode.BaseController.IsManageUser(this.Context.Request);
 }
 
 <div>
@@ -13,8 +15,11 @@
         <a class="main-nav-panel geoservices" href="@(gView.Server.AppCode.InternetMapServer.AppRootUrl(this.Context.Request))/geoservices/rest/services">
             <div class="text">GeoServices (REST)</div>
         </a>
+        @if (isManageUser == true || String.IsNullOrWhiteSpace(username))
+        {
         <a class="main-nav-panel manage" asp-area="" asp-controller="Manage" asp-action="Index">
             <div class="text">Manage</div>
         </a>
+        }
     </div>
 </div>

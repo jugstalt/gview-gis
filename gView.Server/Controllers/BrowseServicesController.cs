@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Server.Controllers
 {
@@ -25,12 +27,13 @@ namespace gView.Server.Controllers
                 }
                 catch  // Folder not exists
                 {
-                    if(!String.IsNullOrWhiteSpace(folder))
+                    if (!String.IsNullOrWhiteSpace(folder))
                     {
                         return RedirectToAction("Index");
                     }
                 }
 
+                bool isPublisher = base.GetAuthToken().AuthType == AuthToken.AuthTypes.Manage;
                 if (!String.IsNullOrWhiteSpace(folder))
                 {
                     var folderService = InternetMapServer.MapServices
@@ -41,6 +44,8 @@ namespace gView.Server.Controllers
                     {
                         return RedirectToAction("Index");
                     }
+
+                    isPublisher |= await folderService.HasPublishAccess(identity);
                 }
 
                 List<string> folders = new List<string>();
@@ -76,6 +81,7 @@ namespace gView.Server.Controllers
 
                 var model = new BrowseServicesIndexModel()
                 {
+                    IsPublisher = isPublisher,
                     Folder = folder,
                     Folders = folders.ToArray(),
                     Services = services.ToArray()
@@ -121,6 +127,130 @@ namespace gView.Server.Controllers
                 });
             });
 
+        }
+
+        [HttpPost]
+        async public Task<IActionResult> DeleteService(string folder, string service)
+        {
+            folder = folder ?? String.Empty;
+
+            return await SecureMethodHandler(async (identity) =>
+            {
+                try
+                {
+                    if (!String.IsNullOrEmpty(folder))
+                    {
+                        service = folder + "/" + service;
+                    }
+
+                    bool ret = await InternetMapServer.RemoveMap(service, identity);
+
+                    return Json(new
+                    {
+                        succeeded = true
+                    });
+                }
+                catch (MapServerException mse)
+                {
+                    return Json(new
+                    {
+                        succeeded = false,
+                        message = mse.Message
+                    }); ;
+                }
+                catch (Exception)
+                {
+                    return Json(new
+                    {
+                        succeeded = false,
+                        message = "Unknown error"
+                    });
+                }
+            });
+        }
+
+        async public Task<IActionResult> AddService(string service, string folder)
+        {
+            folder = folder ?? String.Empty;
+
+            return await SecureMethodHandler(async (identity) =>
+            {
+                try
+                {
+                    if (!String.IsNullOrEmpty(folder))
+                    {
+                        service = folder + "/" + service;
+                    }
+
+                    var file = Request.Form.Files[0];
+                    byte[] buffer = new byte[file.Length];
+                    await file.OpenReadStream().ReadAsync(buffer, 0, buffer.Length);
+
+                    string mapXml = String.Empty;
+
+                    foreach (var encoding in new Encoding[]{
+                                Encoding.UTF8,
+                                Encoding.Unicode,
+                                Encoding.UTF32,
+                                Encoding.UTF7,
+                                Encoding.Default
+                            })
+                    {
+                        try
+                        {
+                            string xml = encoding.GetString(buffer);
+
+                            int index = xml.IndexOf("<");
+                            if(index<0)
+                            {
+                                continue;
+                            }
+
+                            // Cut leading bytes -> often strange charakters that are not XML conform
+                            xml = xml.Substring(index);
+
+                            XmlDocument doc = new XmlDocument();
+                            doc.LoadXml(xml);
+                            var mapDocumentNode = doc.SelectSingleNode("//MapDocument");
+
+                            mapXml = mapDocumentNode.OuterXml;
+                            break;
+                        }
+                        catch(Exception ex)
+                        {
+                            string xmlError = ex.Message;
+                        }
+                    }
+
+                    if (String.IsNullOrWhiteSpace(mapXml))
+                    {
+                        throw new MapServerException("Can't read xml");
+                    }
+
+                    bool ret = await InternetMapServer.AddMap(service, mapXml, identity);
+
+                    return Json(new
+                    {
+                        succeeded = true
+                    });
+                }
+                catch (MapServerException mse)
+                {
+                    return Json(new
+                    {
+                        succeeded = false,
+                        message = mse.Message
+                    }); ;
+                }
+                catch (Exception)
+                {
+                    return Json(new
+                    {
+                        succeeded = false,
+                        message = "Unknown error"
+                    });
+                }
+            });
         }
 
         #region Helper

@@ -451,7 +451,19 @@ namespace gView.Server.AppCode
 
         #region Manage
 
-        async static public Task<bool> AddMap(string mapName, string MapXML, string usr, string pwd)
+        async static public Task<bool> AddMap(string mapName, string mapXml, string usr, string pwd)
+        {
+            await CheckPublishAccess(mapName.FolderName(), usr, pwd);
+            return await AddMap(mapName, mapXml);
+        }
+
+        async static public Task<bool> AddMap(string mapName, string mapXml, IIdentity identity)
+        {
+            await CheckPublishAccess(mapName.FolderName(), identity);
+            return await AddMap(mapName, mapXml);
+        }
+
+        async static private Task<bool> AddMap(string mapName, string mapXml)
         {
             string folder = mapName.FolderName();
             if (!String.IsNullOrWhiteSpace(folder))
@@ -462,12 +474,10 @@ namespace gView.Server.AppCode
                 }
             }
 
-            if (String.IsNullOrEmpty(MapXML))
+            if (String.IsNullOrEmpty(mapXml))
             {
-                return await ReloadMap(mapName, usr, pwd);
+                return await ReloadMap(mapName);
             }
-
-            await CheckPublishAccess(folder, usr, pwd);
 
             if ((await InternetMapServer.Instance.Maps(null)).Count() >= InternetMapServer.Instance.MaxServices)
             {
@@ -491,7 +501,7 @@ namespace gView.Server.AppCode
 
             XmlStream xmlStream = new XmlStream("MapDocument");
 
-            using (StringReader sr = new StringReader(MapXML))
+            using (StringReader sr = new StringReader(mapXml))
             {
                 if (!xmlStream.ReadStream(sr))
                 {
@@ -542,7 +552,7 @@ namespace gView.Server.AppCode
             }
 
             XmlStream pluginStream = new XmlStream("Moduls");
-            using (StringReader sr = new StringReader(MapXML))
+            using (StringReader sr = new StringReader(mapXml))
             {
                 if (!xmlStream.ReadStream(sr))
                 {
@@ -563,40 +573,45 @@ namespace gView.Server.AppCode
 
             await InternetMapServer.SaveConfig(mapDocument);
 
-            return await ReloadMap(mapName, usr, pwd);
+            return await ReloadMap(mapName);
         }
+
         async static public Task<bool> RemoveMap(string mapName, string usr, string pwd)
         {
             await CheckPublishAccess(mapName.FolderName(), usr, pwd);
 
-            bool found = false;
+            return await RemoveMap(mapName);
+        }
 
-            foreach (IMapService service in InternetMapServer.MapServices.ToArray())
-            {
-                if (service.Name == mapName)
-                {
-                    InternetMapServer.MapServices = new ConcurrentBag<IMapService>(InternetMapServer.MapServices.Except(new[] { service }));
-                    found = true;
-                }
-            }
+        async static public Task<bool> RemoveMap(string mapName, IIdentity identity)
+        {
+            await CheckPublishAccess(mapName.FolderName(), identity);
+            return await RemoveMap(mapName);
+        }
 
-            foreach (IMapService m in ListOperations<IMapService>.Clone((await InternetMapServer.Instance.Maps(null)).ToList()))
+        async static private Task<bool> RemoveMap(string mapName)
+        { 
+            var mapService = GetMapService(mapName);
+            if (mapService != null)
             {
-                if (m.Name == mapName)
-                {
-                    //_doc.RemoveMap(m);
-                    found = true;
-                }
+                MapServices = new ConcurrentBag<IMapService>(MapServices.Except(new[] { mapService }));
             }
+            MapDocument.RemoveMap(mapName);
             await InternetMapServer.RemoveConfig(mapName);
 
-            return found;
+            await InternetMapServer.ReloadServices(mapName.FolderName(), true);
+
+            return true;
         }
 
         async static public Task<bool> ReloadMap(string mapName, string usr, string pwd)
         {
             await CheckPublishAccess(mapName.FolderName(), usr, pwd);
+            return await ReloadMap(mapName);
+        }
 
+        async static private Task<bool> ReloadMap(string mapName)
+        { 
             if (MapDocument == null)
             {
                 return false;
@@ -768,6 +783,15 @@ namespace gView.Server.AppCode
 
         #region Helper
 
+        static private IMapService GetMapService(string id)
+        {
+            var mapService = InternetMapServer.MapServices
+                        .Where(f => f.Type == MapServiceType.MXL && id.Equals(f.Fullname, StringComparison.InvariantCultureIgnoreCase))
+                        .FirstOrDefault();
+
+            return mapService;
+        }
+
         static private IMapService GetFolderService(string id)
         {
             var folderService = InternetMapServer.MapServices
@@ -797,13 +821,19 @@ namespace gView.Server.AppCode
 
         async static private Task CheckPublishAccess(string folder, string usr, string pwd)
         {
+            var identity = GetIdentity(usr, pwd);
+
+            await CheckPublishAccess(folder, identity);
+        }
+
+        async static private Task CheckPublishAccess(string folder, IIdentity identity)
+        {
             var folderService = GetFolderService(folder);
             if (folderService == null)
             {
                 throw new MapServerException("Unknown folder: " + folder);
             }
 
-            var identity = GetIdentity(usr, pwd);
             if (!await folderService.HasPublishAccess(identity))
             {
                 throw new MapServerException("Forbidden for user " + identity.UserName);

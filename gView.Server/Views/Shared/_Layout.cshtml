@@ -17,6 +17,9 @@
     </environment>
 </head>
 <body>
+    @{
+        var username = gView.Server.AppCode.BaseController.LoginUsername(this.Context.Request);
+    }
     <nav class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
@@ -36,14 +39,13 @@
                 </ul>
             </div>
             <div class="login-button">
-                @{ var username = gView.Server.AppCode.BaseController.LoginUsername(this.Context.Request); }
                 @if (String.IsNullOrWhiteSpace(username))
                 {
-                <a asp-area="" asp-controller="Token" asp-action="Login">Login</a>
+                    <a asp-area="" asp-controller="Token" asp-action="Login">Login</a>
                 }
                 else
                 {
-                <a asp-area="" asp-controller="Token" asp-action="Logout">Logout: @(username)</a>
+                    <a asp-area="" asp-controller="Token" asp-action="Logout">Logout: @(username)</a>
                 }
             </div>
         </div>
@@ -64,6 +66,7 @@
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="~/lib/bootbox.js/bootbox.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
     </environment>
     <environment exclude="Development">
@@ -79,10 +82,16 @@
                 crossorigin="anonymous"
                 integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
         </script>
+        <script src="~/lib/bootbox.js/bootbox.min.js"></script>
         <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
 
     @RenderSection("Scripts", required: false)
 
+    <script type="text/javascript">
+        (function () {
+            window.gview.server.setRootUrl('@(gView.Server.AppCode.InternetMapServer.AppRootUrl(this.Context.Request))')
+        })();
+    </script>
 </body>
 </html>

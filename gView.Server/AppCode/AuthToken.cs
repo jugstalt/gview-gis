@@ -13,7 +13,7 @@ namespace gView.Server.AppCode
     {
         public AuthToken()
         {
-            
+            this.AuthType = AuthTypes.Unknown;
         }
 
         public AuthToken(string username, AuthTypes authType, DateTimeOffset expires)

@@ -22,18 +22,67 @@
         {
             <li>
                 @Html.ActionLink(mapService.Name, "ServiceCapabilities", "BrowseServices", new { id = (String.IsNullOrWhiteSpace(mapService.Folder) ? "" : mapService.Folder + "@") + mapService.Name })
+                @if(Model.IsPublisher)
+                {
+                    <div class="button-delete-service" data-folder="@(mapService.Folder)" data-service="@(mapService.Name)"></div>
+                }
             </li>
         }
     </ul>
+
+    @if(Model.IsPublisher)
+    {
+<form action="@Url.Action("AddService")" method="post" enctype="multipart/form-data">
+    <input type="text" name="service" />
+    <input type="hidden" name="folder" value="@Model.Folder" />
+    <input type="file" name="mxl" />
+    <button type="submit">Upload</button>
+</form>
+    }
 </div>
 
 @section Scripts {
     <script type="text/javascript">
         (function () {
-            $('ul.browseservices li').click(function (e) {
-                e.stopPropagation();
-                $(this).children('a').first()[0].click();
-            });
+            $('ul.browseservices li')
+                .click(function (e) {
+                    e.stopPropagation();
+                    $(this).children('a').first()[0].click();
+                });
+
+            $('ul.browseservices li .button-delete-service')
+                .click(function (e) {
+                    e.stopPropagation();
+                    var folderName = $(this).attr('data-folder');
+                    var serviceName = $(this).attr('data-service');
+
+                    bootbox.confirm({
+                        title: "Delete service?",
+                        message: "Do you want to delete service "+folderName+"/"+serviceName+" now? This cannot be undone.",
+                        buttons: {
+                            cancel: {
+                                label: 'Better not'
+                            },
+                            confirm: {
+                                label: 'Yes, delete!',
+                                className: 'btn-danger'
+                            }
+                        },
+                        callback: function (result) {
+                            if (result === true) {
+                                var url = "@(Url.Action("DeleteService"))";
+                                gview.server.get({
+                                    url: url,
+                                    type: 'post',
+                                    data: { folder: folderName, service: serviceName },
+                                    success: function (result) {
+                                        location.reload();
+                                    }
+                                });
+                            }
+                        }
+                    });
+                });
         })();
     </script>
 }

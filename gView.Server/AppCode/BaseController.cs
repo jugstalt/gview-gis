@@ -105,6 +105,20 @@ namespace gView.Server.AppCode
             }
         }
 
+        static public bool IsManageUser(HttpRequest request)
+        {
+            try
+            {
+                var loginAuthToken = LoginAuthToken(request);
+                return loginAuthToken!=null &&
+                       loginAuthToken.AuthType == AuthToken.AuthTypes.Manage;
+            }
+            catch(Exception)
+            {
+                return false;
+            }
+        }
+
         #endregion
 
         #region ETAG
