@@ -37,6 +37,11 @@ namespace gView.Server.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+            if (Globals.AllowFormsLogin == false)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             return View(new ManageLoginModel());
         }
 
@@ -45,6 +50,11 @@ namespace gView.Server.Controllers
         {
             try
             {
+                if (Globals.AllowFormsLogin == false)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+
                 Console.WriteLine("UN: "+model.Username);
                 Console.WriteLine("PW: "+model.Password);
 

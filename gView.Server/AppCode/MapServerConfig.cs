@@ -30,6 +30,9 @@ namespace gView.Server.AppCode
         [JsonProperty("external-auth-service")]
         public ExtAuthService ExternalAuthService { get; set; }
 
+        [JsonProperty("allowFormsLogin", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? AllowFormsLogin { get; set; }
+
         #region Classes
 
         public class SecurityConfig

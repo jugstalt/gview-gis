@@ -119,6 +119,19 @@ namespace gView.Server.AppCode
             }
         }
 
+        static public bool HasManagerLogin()
+        {
+            try
+            {
+                var loginManager = new LoginManager(Globals.LoginManagerRootPath);
+                return loginManager.HasManagerLogin();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         #endregion
 
         #region ETAG

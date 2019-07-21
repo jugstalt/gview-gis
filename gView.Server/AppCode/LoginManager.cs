@@ -84,6 +84,12 @@ namespace gView.Server.AppCode
             return AuthToken(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Manage, exipreMinutes);
         }
 
+        public bool HasManagerLogin()
+        {
+            var di = new DirectoryInfo(LoginRootPath + "/manage");
+            return di.Exists && di.GetFiles("*.lgn").Length > 0;
+        } 
+
         #endregion
 
         #region Token Logins

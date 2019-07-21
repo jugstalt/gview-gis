@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using  gView.Server.AppCode
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -38,16 +39,20 @@
                     <partial name="@(ViewData["mainMenuItems"] ?? "_mainMenuItemsPartial")" />
                 </ul>
             </div>
+            
             <div class="login-button">
                 @if (String.IsNullOrWhiteSpace(username))
                 {
-                    <a asp-area="" asp-controller="Token" asp-action="Login">Login</a>
+                    @if (Globals.AllowFormsLogin)
+                    {
+                        <a asp-area="" asp-controller="Token" asp-action="Login">Login</a>
+                    }
                 }
                 else
                 {
-                    <a asp-area="" asp-controller="Token" asp-action="Logout">Logout: @(username)</a>
+                     <a asp-area="" asp-controller="Token" asp-action="Logout">Logout: @(username)</a>
                 }
-            </div>
+                </div>
         </div>
     </nav>
 

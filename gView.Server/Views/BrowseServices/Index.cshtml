@@ -103,7 +103,7 @@
                                     type: 'post',
                                     data: { folder: folderName, service: serviceName },
                                     success: function (result) {
-                                        location.reload();
+                                        window.location.href = '@(Url.Action("Index"))?folder=@(Model.Folder)';  // do not location.refresh() => triggers form again (Post)!!!
                                     }
                                 });
                             }

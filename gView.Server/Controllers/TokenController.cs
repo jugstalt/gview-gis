@@ -15,6 +15,11 @@ namespace gView.Server.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+            if (Globals.AllowFormsLogin == false)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             return View(new TokenLoginModel());
         }
 
@@ -23,6 +28,11 @@ namespace gView.Server.Controllers
         {
             try
             {
+                if (Globals.AllowFormsLogin == false)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+
                 var loginManager = new LoginManager(Globals.LoginManagerRootPath);
                 var authToken = loginManager.GetAuthToken(model.Username, model.Password);
 

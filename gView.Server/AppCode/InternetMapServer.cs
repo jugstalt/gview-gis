@@ -57,6 +57,8 @@ namespace gView.Server.AppCode
             Globals.LoginManagerRootPath = mapServerConfig.ServiceFolder + "/_login";
             Globals.LoggingRootPath = mapServerConfig.ServiceFolder + "/log";
 
+            Globals.AllowFormsLogin = mapServerConfig.AllowFormsLogin == false ? false : true;
+
             if(mapServerConfig.ExternalAuthService!=null && mapServerConfig.ExternalAuthService.IsValid)
             {
                 Globals.ExternalAuthService=mapServerConfig.ExternalAuthService;

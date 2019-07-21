@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace gView.Server.AppCode
 {
-    class Globals
+    public class Globals
     {
         private static int _maxThreads = 2, _queueLength = 100;
 
@@ -81,6 +81,8 @@ namespace gView.Server.AppCode
         }
 
         public static MapServerConfig.ExtAuthService ExternalAuthService = null;
+
+        public static bool AllowFormsLogin { get; set; }
 
         //internal static string MasterPassword { get; set; }
     }
