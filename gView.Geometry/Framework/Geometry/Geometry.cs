@@ -3235,7 +3235,7 @@ namespace gView.Framework.Geometry
 
             if (geomDef.GeometryType == geometryType.Polyline)
             {
-                if (geometry is IPolygon)
+                if (geometry is IPolyline)
                 {
                     return geometry;
                 }

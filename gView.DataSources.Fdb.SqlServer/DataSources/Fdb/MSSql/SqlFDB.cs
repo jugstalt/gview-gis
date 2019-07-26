@@ -411,7 +411,7 @@ namespace gView.DataSources.Fdb.MSSql
                     }
                 }
 
-                return await SqlFDBFeatureCursor.Create(_conn.ConnectionString, sql, where, orederBy, filter.NoLock, NIDs, sFilter, fc,
+                return await SqlFDBFeatureCursor.Create(_conn.ConnectionString, sql, where, orederBy, filter.Limit, filter.BeginRecord, filter.NoLock, NIDs, sFilter, fc,
                     (filter != null) ? filter.FeatureSpatialReference : null);
             }
         }
@@ -2806,6 +2806,7 @@ namespace gView.DataSources.Fdb.MSSql
         //IGeometry _queryGeometry;
         //Envelope _queryEnvelope;
         ISpatialFilter _spatialFilter;
+        public int _limit = 0, _beginRecord = 0;
 
         private SqlFDBFeatureCursor(IGeometryDef geomDef, ISpatialReference toSRef) :
             base((geomDef != null) ? geomDef.SpatialReference : null,
@@ -2815,7 +2816,7 @@ namespace gView.DataSources.Fdb.MSSql
             
         }
 
-        async public static Task<IFeatureCursor> Create(string connString, string sql, string where, string orderBy, bool nolock, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef)
+        async public static Task<IFeatureCursor> Create(string connString, string sql, string where, string orderBy, int limit, int beginRecord, bool nolock, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef)
         {
             var cursor = new SqlFDBFeatureCursor(geomDef, toSRef);
 
@@ -2829,6 +2830,8 @@ namespace gView.DataSources.Fdb.MSSql
                 cursor._where = where;
                 cursor._orderBy = orderBy;
                 cursor._nolock = nolock;
+                cursor._limit = limit;
+                cursor._beginRecord = beginRecord;
                 if (nids != null)
                 {
                     /*if (nids.Count > 0)*/
@@ -2863,35 +2866,6 @@ namespace gView.DataSources.Fdb.MSSql
             long pVal = 0, p2Val = 0;
             if (_nids != null)
             {
-                //if (_nid_pos >= _nids.Count) return false;
-                //StringBuilder sb_where = new StringBuilder();
-                //StringBuilder sb_in = new StringBuilder();
-                //for (int i = 0; i < 100; i++)
-                //{
-                //    if (_nid_pos >= _nids.Count)
-                //        break;
-
-                //    if (_nids[_nid_pos] < 0)
-                //    {
-                //        if (sb_where.Length > 0) sb_where.Append(" OR ");
-                //        sb_where.Append("FDB_NID BETWEEN " + -_nids[_nid_pos] + " AND " + _nids[_nid_pos + 1]);
-                //        _nid_pos += 2;
-                //    }
-                //    else
-                //    {
-                //        if (sb_in.Length > 0) sb_in.Append(",");
-                //        sb_in.Append(_nids[_nid_pos]);
-                //        _nid_pos++;
-                //    }
-                //}
-                //if (sb_in.Length > 0)
-                //{
-                //    if (sb_where.Length > 0) sb_where.Append(" OR ");
-                //    sb_where.Append("FDB_NID in(" + sb_in + ")");
-                //}
-                //where = "(" + sb_where.ToString() + ")" + (!String.IsNullOrEmpty(where) ? " AND " + where : String.Empty);
-                //_nid_pos--;
-
                 if (_nid_pos >= _nids.Count) return false;
                 if (_nids[_nid_pos] < 0)
                 {
@@ -2917,11 +2891,22 @@ namespace gView.DataSources.Fdb.MSSql
             }
             if (where != "") where = " WHERE " + where;
 
+            string offset = String.Empty;
+            if(this._limit>0)
+            {
+                if(String.IsNullOrWhiteSpace(_orderBy))  // offset only works with order by
+                {
+                    _orderBy = "FDB_OID";
+                }
+                offset= " offset " + Math.Max(0, _beginRecord - 1) + " rows fetch next " + _limit + " rows only";
+            }
+
             _nid_pos++;
             _command = new SqlCommand(_sql +
                 where +
-                ((_orderBy != String.Empty) ? " ORDER BY " + _orderBy : "") +
-                ((_nolock == true) ? " WITH (NOLOCK)" : ""),
+                (!String.IsNullOrWhiteSpace(_orderBy) ? " ORDER BY " + _orderBy : "") +
+                (!String.IsNullOrWhiteSpace(offset) ? " " + offset : "") +
+                (_nolock == true ? " WITH (NOLOCK)" : ""),
                 _connection);
             if (parameter != null) _command.Parameters.Add(parameter);
             if (parameter2 != null) _command.Parameters.Add(parameter2);

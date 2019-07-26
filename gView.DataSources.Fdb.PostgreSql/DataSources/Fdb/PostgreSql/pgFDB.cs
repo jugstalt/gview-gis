@@ -11,6 +11,7 @@ using System.Data.Common;
 using gView.Framework.FDB;
 using gView.Framework.Offline;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace gView.DataSources.Fdb.PostgreSql
 {
@@ -637,7 +638,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 }
             }
 
-            return await pgFeatureCursor.Create(_conn.ConnectionString, sql, DataProvider.ToDbWhereClause("npgsql", where), orederBy, filter.NoLock, NIDs, sFilter, fc,
+            return await pgFeatureCursor.Create(_conn.ConnectionString, sql, DataProvider.ToDbWhereClause("npgsql", where), orederBy, filter.Limit, filter.BeginRecord, filter.NoLock, NIDs, sFilter, fc,
                 (filter != null) ? filter.FeatureSpatialReference : null);
 
         }
@@ -787,7 +788,210 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             features.Add(feature);
             return Insert(fClass, features);
         }
+
         async public override Task<bool> Insert(IFeatureClass fClass, List<IFeature> features)
+        {
+            if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset))
+            {
+                return false;
+            }
+
+            if (features.Count == 0)
+            {
+                return true;
+            }
+
+            BinarySearchTree2 tree = null;
+            bool isNetwork = fClass.GeometryType == geometryType.Network;
+
+            await CheckSpatialSearchTreeVersion(fClass.Name);
+            if (_spatialSearchTrees[fClass.Name] == null)
+            {
+                _spatialSearchTrees[fClass.Name] = await this.SpatialSearchTree(fClass.Name);
+            }
+            tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
+
+            var allowFcEditing = await Replication.AllowFeatureClassEditing(fClass);
+            string replicationField = allowFcEditing.replFieldName;
+            if (!allowFcEditing.allow)
+            {
+                _errMsg = "Replication Error: can't edit checked out and released featureclass...";
+                return false;
+            }
+            try
+            {
+                //List<long> _nids = new List<long>();
+                DbProviderFactory factory = DataProvider.PostgresProvider;
+                using (DbConnection connection = factory.CreateConnection())
+                {
+                    connection.ConnectionString = _conn.ConnectionString;
+                    await connection.OpenAsync();
+
+                    using (DbCommand command = factory.CreateCommand())
+                    using (DbTransaction transaction = connection.BeginTransaction())
+                    {
+                        command.Connection = connection;
+                        ReplicationTransaction replTrans = null;// new ReplicationTransaction(connection, transaction);
+                        command.Transaction = transaction;
+
+                        StringBuilder fields = new StringBuilder();
+                        StringBuilder parameterLines = new StringBuilder();
+
+                        int count = 0;
+
+                        #region Fields
+
+                        fields.Append(DbColName(fClass.ShapeFieldName));
+
+                        List<IField> dbFields = new List<IField>();
+                        for (int i = 0; i < fClass.Fields.Count; i++)
+                        {
+                            var field = fClass.Fields[i];
+
+                            if (field.type == FieldType.Shape || field.type == FieldType.ID || field.name.Equals("FDB_NID", StringComparison.InvariantCultureIgnoreCase))
+                                continue;
+
+                            dbFields.Add(field);
+                            fields.Append(",");
+                            fields.Append(DbColName(field.name));
+                        }
+
+                        bool hasNID = features.Where(f => f.FindField("$FDB_NID") != null).FirstOrDefault()!=null;
+                        fields.Append("," + DbColName("FDB_NID"));
+
+                        #endregion
+
+                        foreach (IFeature feature in features)
+                        {
+                            if (!await feature.BeforeInsert(fClass))
+                            {
+                                _errMsg = "Insert: Error in Feature.BeforeInsert (AutoFields,...)";
+                                return false;
+                            }
+                            if (!String.IsNullOrEmpty(replicationField))
+                            {
+                                Replication.AllocateNewObjectGuid(feature, replicationField);
+                                if (!await Replication.WriteDifferencesToTable(fClass, (System.Guid)feature[replicationField], Replication.SqlStatement.INSERT, replTrans))
+                                {
+                                    return false;
+                                }
+                            }
+
+                            StringBuilder parameters = new StringBuilder();
+
+                            DbParameter shapeParameter = factory.CreateParameter();
+                            shapeParameter.ParameterName = "@fdb_shape" + count;
+                            parameters.Append(shapeParameter.ParameterName);
+                            command.Parameters.Add(shapeParameter);
+
+                            if (feature.Shape != null)
+                            {
+                                var shape = fClass.ConvertTo(feature.Shape);
+                                GeometryDef.VerifyGeometryType(shape, fClass);
+
+                                BinaryWriter writer = new BinaryWriter(new MemoryStream());
+                                shape.Serialize(writer, fClass);
+
+                                byte[] geometry = new byte[writer.BaseStream.Length];
+                                writer.BaseStream.Position = 0;
+                                writer.BaseStream.Read(geometry, 0, (int)writer.BaseStream.Length);
+                                writer.Close();
+
+                                shapeParameter.Value = geometry;
+                            }
+                            else
+                            {
+                                shapeParameter.Value = DBNull.Value;
+                            }
+
+                           if(feature.Fields!=null)
+                           {
+                                
+                                foreach (var dbField in dbFields)
+                                {
+                                    var fv = feature.Fields.Where(f => f.Name.Equals(dbField.name)).FirstOrDefault();
+
+                                    DbParameter parameter = factory.CreateParameter();
+                                    parameter.ParameterName = "@" + dbField.name + count;
+                                    command.Parameters.Add(parameter);
+
+                                    if (parameters.Length != 0)
+                                    {
+                                        parameters.Append(",");
+                                    }
+                                    parameters.Append(parameter.ParameterName);
+                                    
+
+                                    if (fv == null)
+                                    {
+                                        parameter.Value = dbField.DefautValue ?? System.DBNull.Value;
+                                    }
+                                    else
+                                    {
+                                        if (fv.Name == "FDB_NID" || fv.Name == "FDB_SHAPE" || fv.Name == "FDB_OID")
+                                        {
+                                            continue;
+                                        }
+
+                                        string name = fv.Name;
+
+                                        parameter.Value = fv.Value != null ?
+                                            ((fv.Value is Enum) ? (int)fv.Value : fv.Value) :
+                                            System.DBNull.Value;
+                                    }
+                                }
+                            }
+
+                            DbParameter fdbNidparameter = factory.CreateParameter();
+                            fdbNidparameter.ParameterName = "@fdb_nid" + count;
+                            if (parameters.Length != 0)
+                            {
+                                parameters.Append(",");
+                            }
+                            parameters.Append(fdbNidparameter.ParameterName);
+                            command.Parameters.Add(fdbNidparameter);
+
+                            var fdbNidField = feature.FindField("$FDB_NID");
+                            if(fdbNidField!=null)
+                            {
+                                fdbNidparameter.Value = fdbNidField.Value;
+                            }
+                            if (!hasNID && isNetwork == false)
+                            {
+                                long NID = 0;
+                                if (tree != null && feature.Shape != null)
+                                {
+                                    NID = tree.InsertSINode(feature.Shape.Envelope);
+                                }
+
+                                fdbNidparameter.Value = NID;                               
+                            }
+
+                            if (count > 0)
+                            {
+                                parameterLines.Append(",");
+                            }
+                            parameterLines.Append("(" + parameters + ")");
+
+                            count++;
+                        }
+
+                        command.CommandText = "INSERT INTO " + FcTableName(fClass) + " (" + fields.ToString() + ") VALUES " + parameterLines;
+                        await command.ExecuteNonQueryAsync();
+
+                        transaction.Commit();
+                    }
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _errMsg = "Insert: " + ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace;
+                return false;
+            }
+        }
+
+        async public /*override*/ Task<bool> Insert_old(IFeatureClass fClass, List<IFeature> features)
         {
             if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset)) return false;
             if (features.Count == 0) return true;
@@ -823,7 +1027,9 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     {
                         command.Connection = connection;
                         ReplicationTransaction replTrans = null;// new ReplicationTransaction(connection, transaction);
-                        //command.Transaction = transaction;
+                        command.Transaction = transaction;
+
+                        StringBuilder sql = new StringBuilder();
 
                         foreach (IFeature feature in features)
                         {
@@ -909,10 +1115,19 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                                 command.Parameters.Add(parameter);
                             }
 
-                            command.CommandText = "INSERT INTO " + FcTableName(fClass) + " (" + fields.ToString() + ") VALUES (" + parameters + ")";
-                            await command.ExecuteNonQueryAsync();
+                            //command.CommandText = "INSERT INTO " + FcTableName(fClass) + " (" + fields.ToString() + ") VALUES (" + parameters + ")";
+                            //await command.ExecuteNonQueryAsync();
+
+                            if (sql.Length > 0)
+                            {
+                                sql.Append(";");
+                            }
+                            sql.Append("INSERT INTO " + FcTableName(fClass) + " (" + fields.ToString() + ") VALUES (" + parameters + ")");
+
                         }
 
+                        command.CommandText = sql.ToString();
+                        await command.ExecuteNonQueryAsync();
                         transaction.Commit();
                     }
                     return true;
@@ -1660,6 +1875,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             int _nid_pos = 0;
             List<long> _nids;
             ISpatialFilter _spatialFilter;
+            int _limit = 0, _beginrecord = 0;
 
             public pgFeatureCursor(IGeometryDef geomDef, ISpatialReference toSRef) :
                 base((geomDef != null) ? geomDef.SpatialReference : null,
@@ -1668,7 +1884,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 
             }
 
-            async static public Task<IFeatureCursor> Create(string connString, string sql, string where, string orderBy, bool nolock, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef)
+            async static public Task<IFeatureCursor> Create(string connString, string sql, string where, string orderBy, int limit, int beginRecord, bool nolock, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef)
             {
                 var cursor = new pgFeatureCursor(geomDef, toSRef);
 
@@ -1680,6 +1896,8 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     cursor._command = cursor._factory.CreateCommand();
                     cursor._command.CommandText = cursor._sql = sql;
                     cursor._command.Connection = cursor._connection;
+                    cursor._limit = limit;
+                    cursor._beginrecord = beginRecord;
                     await cursor._connection.OpenAsync();
 
                     cursor._geomDef = geomDef;
@@ -1777,6 +1995,16 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                 if (String.IsNullOrEmpty(_command.CommandText))
                     _command.CommandText = GetCommandText(null, where);
+
+                if(_limit>0)
+                {
+                    _command.CommandText += " limit " + _limit;
+                }
+                if(_beginrecord>0)
+                {
+                    _command.CommandText += " offset " + _beginrecord;
+                }
+
                 _reader = await _command.ExecuteReaderAsync(CommandBehavior.Default);
 
                 return true;

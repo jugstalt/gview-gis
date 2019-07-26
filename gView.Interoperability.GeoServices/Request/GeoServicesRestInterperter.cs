@@ -395,6 +395,11 @@ namespace gView.Interoperability.GeoServices.Request
                             ((SpatialFilter)filter).Geometry = jsonGeometry.ToGeometry();
                             ((SpatialFilter)filter).FilterSpatialReference = SRef(query.InSRef);
                         }
+                        else if(!String.IsNullOrWhiteSpace(query.ObjectIds))
+                        {
+                            filter = new RowIDFilter(tableClass.IDFieldName,
+                                query.ObjectIds.Split(',').Select(id => int.Parse(id)).ToList());
+                        }
                         else
                         {
                             filter = new QueryFilter();
