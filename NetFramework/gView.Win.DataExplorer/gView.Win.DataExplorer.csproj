@@ -205,6 +205,10 @@
       <Project>{1730a1e1-3991-46d0-a52a-1a86b6ccb8f0}</Project>
       <Name>gView.Data.Joins</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.CosmoDb\gView.DataSources.CosmoDb.csproj">
+      <Project>{10d9cdc6-adcf-48f8-807e-1b31bef9eb32}</Project>
+      <Name>gView.DataSources.CosmoDb</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\gView.DataSources.EventTable\gView.DataSources.EventTable.csproj">
       <Project>{77afd455-9fd0-4087-8163-44ba03886670}</Project>
       <Name>gView.DataSources.EventTable</Name>
@@ -352,6 +356,10 @@
     <ProjectReference Include="..\gView.Win.Data.Joins.UI\gView.Win.Data.Joins.UI.csproj">
       <Project>{0d117d2f-1812-437a-a984-451e2073a352}</Project>
       <Name>gView.Win.Data.Joins.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.DataSources.CosmoDb.UI\gView.Win.DataSources.CosmoDb.UI.csproj">
+      <Project>{a4d020d4-c6ea-4067-a19f-6a64c30a5021}</Project>
+      <Name>gView.Win.DataSources.CosmoDb.UI</Name>
     </ProjectReference>
     <ProjectReference Include="..\gView.Win.DataSources.EventTable.UI\gView.Win.DataSources.EventTable.UI.csproj">
       <Project>{95e1c61e-50ff-4ab8-816e-115dc4c53ba4}</Project>

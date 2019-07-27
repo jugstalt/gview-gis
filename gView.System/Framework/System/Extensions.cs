@@ -18,5 +18,20 @@ namespace gView.Framework.system
 
         //    return default(T);
         //}
+
+        static public string ExtractConnectionStringParameter(this string connectionString, string parameterName)
+        {
+            parameterName = parameterName.ToLower();
+
+            foreach(var p in connectionString.Split(';'))
+            {
+                if(p.ToLower().StartsWith(parameterName+"="))
+                {
+                    return p.Substring(parameterName.Length + 1);
+                }
+            }
+
+            return String.Empty;
+        }
     }
 }

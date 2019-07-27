@@ -69,121 +69,75 @@ namespace gView.DataSources.PostGIS.UI
             // 
             // label1
             // 
-            this.label1.AccessibleDescription = null;
-            this.label1.AccessibleName = null;
             resources.ApplyResources(this.label1, "label1");
-            this.label1.Font = null;
             this.label1.Name = "label1";
             // 
             // txtServer
             // 
-            this.txtServer.AccessibleDescription = null;
-            this.txtServer.AccessibleName = null;
             resources.ApplyResources(this.txtServer, "txtServer");
-            this.txtServer.BackgroundImage = null;
             this.txtServer.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtServer.Font = null;
             this.txtServer.Name = "txtServer";
             // 
             // txtDataset
             // 
-            this.txtDataset.AccessibleDescription = null;
-            this.txtDataset.AccessibleName = null;
             resources.ApplyResources(this.txtDataset, "txtDataset");
-            this.txtDataset.BackgroundImage = null;
             this.txtDataset.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtDataset.Font = null;
             this.txtDataset.Name = "txtDataset";
             // 
             // label2
             // 
-            this.label2.AccessibleDescription = null;
-            this.label2.AccessibleName = null;
             resources.ApplyResources(this.label2, "label2");
-            this.label2.Font = null;
             this.label2.Name = "label2";
             // 
             // txtUser
             // 
-            this.txtUser.AccessibleDescription = null;
-            this.txtUser.AccessibleName = null;
             resources.ApplyResources(this.txtUser, "txtUser");
-            this.txtUser.BackgroundImage = null;
             this.txtUser.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtUser.Font = null;
             this.txtUser.Name = "txtUser";
             // 
             // label3
             // 
-            this.label3.AccessibleDescription = null;
-            this.label3.AccessibleName = null;
             resources.ApplyResources(this.label3, "label3");
-            this.label3.Font = null;
             this.label3.Name = "label3";
             // 
             // txtPwd
             // 
-            this.txtPwd.AccessibleDescription = null;
-            this.txtPwd.AccessibleName = null;
             resources.ApplyResources(this.txtPwd, "txtPwd");
-            this.txtPwd.BackgroundImage = null;
             this.txtPwd.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtPwd.Font = null;
             this.txtPwd.Name = "txtPwd";
             // 
             // label4
             // 
-            this.label4.AccessibleDescription = null;
-            this.label4.AccessibleName = null;
             resources.ApplyResources(this.label4, "label4");
-            this.label4.Font = null;
             this.label4.Name = "label4";
             // 
             // button1
             // 
-            this.button1.AccessibleDescription = null;
-            this.button1.AccessibleName = null;
             resources.ApplyResources(this.button1, "button1");
-            this.button1.BackgroundImage = null;
             this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.button1.Font = null;
             this.button1.Name = "button1";
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // button2
             // 
-            this.button2.AccessibleDescription = null;
-            this.button2.AccessibleName = null;
             resources.ApplyResources(this.button2, "button2");
-            this.button2.BackgroundImage = null;
             this.button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.button2.Font = null;
             this.button2.Name = "button2";
             // 
             // txtPort
             // 
-            this.txtPort.AccessibleDescription = null;
-            this.txtPort.AccessibleName = null;
             resources.ApplyResources(this.txtPort, "txtPort");
-            this.txtPort.BackgroundImage = null;
             this.txtPort.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtPort.Font = null;
             this.txtPort.Name = "txtPort";
             // 
             // label5
             // 
-            this.label5.AccessibleDescription = null;
-            this.label5.AccessibleName = null;
             resources.ApplyResources(this.label5, "label5");
-            this.label5.Font = null;
             this.label5.Name = "label5";
             // 
             // FormAddPostGISConnection
             // 
-            this.AccessibleDescription = null;
-            this.AccessibleName = null;
             resources.ApplyResources(this, "$this");
-            this.BackgroundImage = null;
             this.Controls.Add(this.txtPort);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.button2);
@@ -196,9 +150,7 @@ namespace gView.DataSources.PostGIS.UI
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.Font = null;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
-            this.Icon = null;
             this.Name = "FormAddPostGISConnection";
             this.ResumeLayout(false);
             this.PerformLayout();

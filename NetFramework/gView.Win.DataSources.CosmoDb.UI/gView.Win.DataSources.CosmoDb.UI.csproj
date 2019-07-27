@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{49494582-8D72-43BB-A4F4-75DD1C7B0416}</ProjectGuid>
+    <ProjectGuid>{A4D020D4-C6EA-4067-A19F-6A64C30A5021}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>gView.Win.DataSources.PostGIS.UI</RootNamespace>
-    <AssemblyName>gView.Win.DataSources.PostGIS.UI</AssemblyName>
+    <RootNamespace>gView</RootNamespace>
+    <AssemblyName>gView.Win.DataSources.CosmoDb.UI</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -34,9 +34,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Drawing.Common, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Drawing.Common.4.6.0-preview6.19303.8\lib\net461\System.Drawing.Common.dll</HintPath>
-    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -46,9 +43,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataSources\PostGIS\UI\ExplorerObjects.cs" />
-    <Compile Include="DataSources\PostGIS\UI\FormAddPostGISConnection.cs">
+    <Compile Include="DataSources\CosmoDb\UI\ExplorerObjects.cs" />
+    <Compile Include="DataSources\CosmoDb\UI\FormCosmoDbConnection.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DataSources\CosmoDb\UI\FormCosmoDbConnection.Designer.cs">
+      <DependentUpon>FormCosmoDbConnection.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -59,47 +59,27 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\gView.Core\gView.Core.csproj">
-      <Project>{5a66d185-6e2c-4da4-97d7-00616a182bd8}</Project>
+      <Project>{5A66D185-6E2C-4DA4-97D7-00616A182BD8}</Project>
       <Name>gView.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\gView.DataSources.PostGIS\gView.DataSources.PostGIS.csproj">
-      <Project>{794758c5-26a1-4141-b2a5-fca016aadb8b}</Project>
-      <Name>gView.DataSources.PostGIS</Name>
+    <ProjectReference Include="..\..\gView.DataSources.CosmoDb\gView.DataSources.CosmoDb.csproj">
+      <Project>{10d9cdc6-adcf-48f8-807e-1b31bef9eb32}</Project>
+      <Name>gView.DataSources.CosmoDb</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\gView.Data\gView.Data.csproj">
       <Project>{9b556868-8431-4d6c-b002-3fef15df0498}</Project>
       <Name>gView.Data</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\gView.Db\gView.Db.csproj">
-      <Project>{fb98412b-8def-4b02-b903-2979a433e75e}</Project>
-      <Name>gView.Db</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\gView.Editor.Core\gView.Editor.Core.csproj">
-      <Project>{8c804d9d-7cb0-4f53-88b2-f265060ce702}</Project>
-      <Name>gView.Editor.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\gView.OGC\gView.OGC.csproj">
-      <Project>{248d2c9b-793a-4eb0-a2da-7a881a1357bd}</Project>
-      <Name>gView.OGC</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\gView.System\gView.System.csproj">
-      <Project>{e50d8014-0fb8-4b67-8291-0abee04a1403}</Project>
+      <Project>{E50D8014-0FB8-4B67-8291-0ABEE04A1403}</Project>
       <Name>gView.System</Name>
     </ProjectReference>
     <ProjectReference Include="..\gView.Win.Core.UI\gView.Win.Core.UI.csproj">
-      <Project>{3c8ffd95-66e8-41e5-b891-4b13d44942c3}</Project>
+      <Project>{3C8FFD95-66E8-41E5-B891-4B13D44942C3}</Project>
       <Name>gView.Win.Core.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\gView.Win.Db.UI\gView.Win.Db.UI.csproj">
-      <Project>{e5ed18b7-1d13-441b-9b3e-55a65a147928}</Project>
-      <Name>gView.Win.Db.UI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\gView.Win.Dialogs\gView.Win.Dialogs.csproj">
-      <Project>{5e36eaa4-15c4-4d04-973b-245ad8a59b97}</Project>
-      <Name>gView.Win.Dialogs</Name>
-    </ProjectReference>
     <ProjectReference Include="..\gView.Win.Globalisation\gView.Win.Globalisation.csproj">
-      <Project>{68ff06ec-cebd-4ba4-a536-6c09d9714066}</Project>
+      <Project>{68FF06EC-CEBD-4BA4-A536-6C09D9714066}</Project>
       <Name>gView.Win.Globalisation</Name>
     </ProjectReference>
     <ProjectReference Include="..\gView.Win.OGC.UI\gView.Win.OGC.UI.csproj">
@@ -107,28 +87,18 @@
       <Name>gView.Win.OGC.UI</Name>
     </ProjectReference>
     <ProjectReference Include="..\gView.Win.Sys.UI\gView.Win.Sys.UI.csproj">
-      <Project>{a82d4f52-bdcd-4721-9363-09ccf4a3bb7a}</Project>
+      <Project>{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}</Project>
       <Name>gView.Win.Sys.UI</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DataSources\PostGIS\UI\FormAddPostGISConnection.de-DE.resx">
-      <DependentUpon>FormAddPostGISConnection.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="DataSources\PostGIS\UI\FormAddPostGISConnection.de.resx">
-      <DependentUpon>FormAddPostGISConnection.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="DataSources\PostGIS\UI\FormAddPostGISConnection.resx">
-      <DependentUpon>FormAddPostGISConnection.cs</DependentUpon>
+    <EmbeddedResource Include="DataSources\CosmoDb\UI\FormCosmoDbConnection.resx">
+      <DependentUpon>FormCosmoDbConnection.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="Resources\cat6.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\gps_point.png" />
@@ -141,6 +111,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\img-34.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\cosmosdb_16.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
