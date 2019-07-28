@@ -20,10 +20,15 @@ namespace gView.DataSources.CosmoDb
         private List<IDatasetElement> _layers;
 
         private const string SpatialCollectionRefName = "spatial_collections_ref";
-        private const string FeatureCollectionName = "feature_collection";
+        private const string FeatureCollectionNamePoints = "feature_collection_points";
+        private const string FeatureCollectionNameLines = "feature_collection_lines";
+        private const string FeatureCollectionNamePolygons = "feature_collection_polygons";
 
         private DocumentCollection _spatialCollectionRef = null;
-        internal DocumentCollection _featureCollection = null;
+        private DocumentCollection
+            _featureCollection_points = null,
+            _featureCollection_lines = null,
+            _featureCollection_polygons = null;
 
         #region IFeatureDataset
 
@@ -118,7 +123,8 @@ namespace gView.DataSources.CosmoDb
         {
             try
             {
-                if (_client == null || _featureCollection == null)
+                var featureCollection = GetFeatureCollection(fClass.GeometryType);
+                if (_client == null || featureCollection == null)
                 {
                     throw new Exception("No feature collection. Open database before running CreateFeatureClass method");
                 }
@@ -126,17 +132,24 @@ namespace gView.DataSources.CosmoDb
                 int fieldCount = fClass.Fields.Count;
 
                 var documentCollection = new DocumentCollection();
+
+                int degreeOfParallelism = 5;
+                var containers = new List<ExpandoObject>[degreeOfParallelism];
+                for(int i=0;i<degreeOfParallelism;i++)
+                {
+                    containers[i] = new List<ExpandoObject>();
+                }
+
+                int counter = 0;
                 foreach (var feature in features)
                 {
                     var expandoObject = new ExpandoObject();
                     var expandoDict = (IDictionary<string, object>)expandoObject;
                     expandoDict["_fc"] = fClass.Name;
 
-                    if (feature.Shape is Point)
+                    if (feature.Shape != null)
                     {
-                        expandoDict["_shape"] = new Microsoft.Azure.Documents.Spatial.Point(
-                            ((Point)feature.Shape).Y,
-                            ((Point)feature.Shape).X);
+                        expandoDict["_shape"] = feature.Shape.ToAzureGeometry();
                     }
                     for (int f = 0; f < fieldCount; f++)
                     {
@@ -154,8 +167,23 @@ namespace gView.DataSources.CosmoDb
                         }
                     }
 
-                    var result = await _client.CreateDocumentAsync(_featureCollection.SelfLink, expandoObject);
+                    containers[counter % degreeOfParallelism].Add(expandoObject);
+                    //var result = await _client.CreateDocumentAsync(featureCollection.SelfLink, expandoObject);
+                    counter++;
                 }
+
+                Task[] tasks = new Task[5];
+                for(int i=0;i<degreeOfParallelism;i++)
+                {
+                    tasks[i] = Task.Factory.StartNew(async (object index) =>
+                    {
+                        foreach (var expandoObjet in containers[(int)index])
+                        {
+                            var result = await _client.CreateDocumentAsync(featureCollection.SelfLink, expandoObjet);
+                        }
+                    }, (object)i);
+                }
+                await Task.WhenAll(tasks);
 
                 return true;
             }
@@ -221,7 +249,7 @@ namespace gView.DataSources.CosmoDb
 
         public void Dispose()
         {
-            _featureCollection = _spatialCollectionRef = null;
+            _featureCollection_points = _spatialCollectionRef = null;
             _client.Dispose();
         }
 
@@ -337,12 +365,14 @@ namespace gView.DataSources.CosmoDb
                     _spatialCollectionRef = response.Resource;
                 }
 
-                _featureCollection = _client.CreateDocumentCollectionQuery(database.SelfLink)
-                    .Where(col => col.Id == FeatureCollectionName)
+                #region Points Collection
+
+                _featureCollection_points = _client.CreateDocumentCollectionQuery(database.SelfLink)
+                    .Where(col => col.Id == FeatureCollectionNamePoints)
                     .AsEnumerable()
                     .FirstOrDefault();
 
-                if (_featureCollection == null)
+                if (_featureCollection_points == null)
                 {
                     IndexingPolicy indexingPolicyWithSpatialEnabled = new IndexingPolicy
                     {
@@ -369,15 +399,106 @@ namespace gView.DataSources.CosmoDb
                         database.SelfLink,
                         new DocumentCollection()
                         {
-                            Id = FeatureCollectionName,
+                            Id = FeatureCollectionNamePoints,
                             PartitionKey = partitionKey,
                             IndexingPolicy = indexingPolicyWithSpatialEnabled
                         });
 
                     // ToDo: Create Spatial Index
 
-                    _featureCollection = response.Resource;
+                    _featureCollection_points = response.Resource;
                 }
+
+                #endregion
+
+                #region Lines Collection
+
+                _featureCollection_lines = _client.CreateDocumentCollectionQuery(database.SelfLink)
+                    .Where(col => col.Id == FeatureCollectionNameLines)
+                    .AsEnumerable()
+                    .FirstOrDefault();
+
+                if (_featureCollection_lines == null)
+                {
+                    IndexingPolicy indexingPolicyWithSpatialEnabled = new IndexingPolicy
+                    {
+                        IncludedPaths = new System.Collections.ObjectModel.Collection<IncludedPath>()
+                        {
+                            new IncludedPath
+                            {
+                                Path = "/*",
+                                Indexes = new System.Collections.ObjectModel.Collection<Index>()
+                                {
+                                    new SpatialIndex(DataType.LineString),
+                                    new RangeIndex(DataType.Number) { Precision = -1 },
+                                    new RangeIndex(DataType.String) { Precision = -1 }
+                                }
+                            }
+                        }
+                    };
+
+                    var partitionKey = new PartitionKeyDefinition();
+                    partitionKey.Paths.Add("/_fc");
+
+
+                    var response = await _client.CreateDocumentCollectionAsync(
+                        database.SelfLink,
+                        new DocumentCollection()
+                        {
+                            Id = FeatureCollectionNameLines,
+                            PartitionKey = partitionKey,
+                            IndexingPolicy = indexingPolicyWithSpatialEnabled
+                        });
+
+                    _featureCollection_lines = response.Resource;
+                }
+
+                #endregion
+
+                #region Polygons Collection
+
+                _featureCollection_polygons = _client.CreateDocumentCollectionQuery(database.SelfLink)
+                    .Where(col => col.Id == FeatureCollectionNamePolygons)
+                    .AsEnumerable()
+                    .FirstOrDefault();
+
+                if (_featureCollection_polygons == null)
+                {
+                    IndexingPolicy indexingPolicyWithSpatialEnabled = new IndexingPolicy
+                    {
+                        IncludedPaths = new System.Collections.ObjectModel.Collection<IncludedPath>()
+                        {
+                            new IncludedPath
+                            {
+                                Path = "/*",
+                                Indexes = new System.Collections.ObjectModel.Collection<Index>()
+                                {
+                                    new SpatialIndex(DataType.Point),
+                                    new SpatialIndex(DataType.Polygon),
+                                    new RangeIndex(DataType.Number) { Precision = -1 },
+                                    new RangeIndex(DataType.String) { Precision = -1 }
+                                }
+                            }
+                        }
+                    };
+
+                    var partitionKey = new PartitionKeyDefinition();
+                    partitionKey.Paths.Add("/_fc");
+
+
+                    var response = await _client.CreateDocumentCollectionAsync(
+                        database.SelfLink,
+                        new DocumentCollection()
+                        {
+                            Id = FeatureCollectionNamePolygons,
+                            PartitionKey = partitionKey,
+                            IndexingPolicy = indexingPolicyWithSpatialEnabled
+                        });
+
+                    _featureCollection_polygons = response.Resource;
+                }
+
+                #endregion
 
                 _spatialReference = SpatialReference.FromID("epsg:4326");
             }
@@ -406,5 +527,21 @@ namespace gView.DataSources.CosmoDb
         }
 
         #endregion
+
+        internal DocumentCollection GetFeatureCollection(geometryType geomType)
+        {
+            switch(geomType)
+            {
+                case geometryType.Point:
+                case geometryType.Multipoint:
+                    return _featureCollection_points;
+                case geometryType.Polyline:
+                    return _featureCollection_lines;
+                case geometryType.Polygon:
+                    return _featureCollection_polygons;
+                default:
+                    throw new Exception($"There is no collection for geometry-type '{geomType.ToString()}'");
+            }
+        }
     }
 }

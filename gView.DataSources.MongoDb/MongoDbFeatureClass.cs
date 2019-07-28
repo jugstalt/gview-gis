@@ -1,21 +1,22 @@
 ﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
+using MongoDB.Driver;
 using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace gView.DataSources.CosmoDb
+namespace gView.DataSources.MongoDb
 {
-    class CosmoDbFeatureClass : IFeatureClass
+    class MongoDbFeatureClass : IFeatureClass
     {
-        private CosmoDbFeatureClass()
+        private MongoDbFeatureClass()
         {
 
         }
-        async static public Task<CosmoDbFeatureClass> Create(CosmoDbDataset dataset, Json.SpatialCollectionItem spatialCollectoinItem)
+        async static public Task<MongoDbFeatureClass> Create(MongoDbDataset dataset, Json.SpatialCollectionItem spatialCollectoinItem)
         {
-            var fc = new CosmoDbFeatureClass();
+            var fc = new MongoDbFeatureClass();
 
             fc.Dataset = dataset;
             fc.Name = spatialCollectoinItem.Name;
@@ -42,11 +43,10 @@ namespace gView.DataSources.CosmoDb
             }
             fc.Fields = fields;
 
-            fc.CosmoDocumentClient = dataset._client;
-            fc.CosmoDocumentCollection = dataset.GetFeatureCollection(fc.GeometryType);
+            fc.MongoCollection = dataset.GetFeatureCollection(fc.GeometryType);
 
             fc.Envelope = null;
-            using (var cursor = new CosmoDbFeatureCursor(fc, new QueryFilter()))
+            using (var cursor = new MongoDbFeatureCursor(fc, new QueryFilter()))
             {
                 IFeature feature = null;
                 while ((feature = await cursor.NextFeature()) != null)
@@ -106,12 +106,12 @@ namespace gView.DataSources.CosmoDb
 
         public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
-            return ((CosmoDbDataset)Dataset).Query(this, filter);
+            return ((MongoDbDataset)Dataset).Query(this, filter);
         }
 
         async public Task<ICursor> Search(IQueryFilter filter)
         {
-            return await ((CosmoDbDataset)Dataset).Query(this, filter);
+            return await ((MongoDbDataset)Dataset).Query(this, filter);
         }
 
         public Task<ISelectionSet> Select(IQueryFilter filter)
@@ -121,8 +121,7 @@ namespace gView.DataSources.CosmoDb
 
         #endregion
 
-        internal DocumentClient CosmoDocumentClient { get; private set; }
-        internal DocumentCollection CosmoDocumentCollection { get; private set; }
+        internal IMongoCollection<Json.GeometryDocument> MongoCollection { get; private set; }
 
     }
 }

@@ -229,6 +229,10 @@
       <Project>{595657d6-c9dc-4a48-a5d0-3cbc4a90ada1}</Project>
       <Name>gView.DataSources.Fdb</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.MongoDb\gView.DataSources.MongoDb.csproj">
+      <Project>{faeabc8e-55fd-4d3e-9759-83d0fb94c9fb}</Project>
+      <Name>gView.DataSources.MongoDb</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\gView.DataSources.MSSqlSpatial\gView.DataSources.MSSqlSpatial.csproj">
       <Project>{5326d7f9-707e-45e2-92d2-5cb92d0ff897}</Project>
       <Name>gView.DataSources.MSSqlSpatial</Name>
@@ -368,6 +372,10 @@
     <ProjectReference Include="..\gView.Win.Datasources.Fdb.UI\gView.Win.DataSources.Fdb.UI.csproj">
       <Project>{b3944c41-5bb6-4cbc-9173-59d5e50f74a4}</Project>
       <Name>gView.Win.DataSources.Fdb.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.DataSources.MongoDb.UI\gView.Win.DataSources.MongoDb.UI.csproj">
+      <Project>{84636d73-d607-441c-b069-b4c6e06a0b75}</Project>
+      <Name>gView.Win.DataSources.MongoDb.UI</Name>
     </ProjectReference>
     <ProjectReference Include="..\gView.Win.DataSources.MSSqlSpatial.UI\gView.Win.DataSources.MSSqlSpatial.UI.csproj">
       <Project>{58919130-d4fd-4346-a2df-b5728201da86}</Project>

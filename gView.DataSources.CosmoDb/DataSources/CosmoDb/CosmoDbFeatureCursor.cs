@@ -4,6 +4,7 @@ using Microsoft.Azure.Documents.Linq;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.CosmoDb
@@ -22,17 +23,23 @@ namespace gView.DataSources.CosmoDb
                 ISpatialFilter sFilter = (ISpatialFilter)filter;
                 var env = sFilter.Geometry.Envelope;
 
-                env.minx = Math.Max(-180, env.minx);
-                env.miny = Math.Max(-90, env.miny);
-                env.maxx = Math.Min(180, env.maxx);
-                env.maxy = Math.Min(90, env.maxy);
+                env.minx = Math.Max(-170, env.minx);
+                env.miny = Math.Max(-80, env.miny);
+                env.maxx = Math.Min(170, env.maxx);
+                env.maxy = Math.Min(80, env.maxy);
 
-                sql = $"SELECT e._shape FROM everything e WHERE e._fc='{fc.Name}' AND ST_WITHIN(e._shape, {{'type':'Polygon', 'coordinates': [[[{env.miny.ToString(_nhi)}, {env.minx.ToString(_nhi)}], [{env.maxy.ToString(_nhi)}, {env.minx.ToString(_nhi)}], [{env.maxy.ToString(_nhi)}, {env.maxx.ToString(_nhi)}], [{env.miny.ToString(_nhi)}, {env.maxx.ToString(_nhi)}], [{env.miny.ToString(_nhi)}, {env.minx.ToString(_nhi)}]]]}})";
+                //sql = $"SELECT e._shape FROM everything e WHERE e._fc='{fc.Name}' AND ST_WITHIN(e._shape, {{'type':'Polygon', 'coordinates': [[[{env.miny.ToString(_nhi)}, {env.minx.ToString(_nhi)}], [{env.maxy.ToString(_nhi)}, {env.minx.ToString(_nhi)}], [{env.maxy.ToString(_nhi)}, {env.maxx.ToString(_nhi)}], [{env.miny.ToString(_nhi)}, {env.maxx.ToString(_nhi)}], [{env.miny.ToString(_nhi)}, {env.minx.ToString(_nhi)}]]]}})";
+                sql = $"SELECT e._shape FROM everything e WHERE e._fc='{fc.Name}' AND ST_WITHIN(e._shape, {{'type':'Polygon', 'coordinates': [[[{env.minx.ToString(_nhi)}, {env.miny.ToString(_nhi)}], [{env.maxx.ToString(_nhi)}, {env.miny.ToString(_nhi)}], [{env.maxx.ToString(_nhi)}, {env.maxy.ToString(_nhi)}], [{env.minx.ToString(_nhi)}, {env.maxy.ToString(_nhi)}], [{env.minx.ToString(_nhi)}, {env.miny.ToString(_nhi)}]]]}})";
             }
             else
             {
                 sql = $"SELECT * FROM everything e WHERE e._fc='{fc.Name}'";
             }
+
+            //var query =
+            //    fc.CosmoDocumentClient.CreateDocumentQuery(fc.CosmoDocumentCollection.SelfLink, sql)
+            //       .AsEnumerable()
+            //       .ToArray();
 
             _query =
                 fc.CosmoDocumentClient.CreateDocumentQuery(fc.CosmoDocumentCollection.SelfLink, sql)
@@ -60,16 +67,9 @@ namespace gView.DataSources.CosmoDb
                 {
                     if (fieldName == "_shape")
                     {
-                        //feature.Shape = new Point(9 + (double)random.Next(1000) / 1000D, 48 + (double)random.Next(1000) / 1000D);
-                        var cosmoShape = (JObject)dyn[fieldName];
-                        switch (cosmoShape["type"].Value<string>()?.ToLower())
+                        if (dyn[fieldName] is JObject)
                         {
-                            case "point":
-                                var coordinates = (JArray)cosmoShape["coordinates"];
-                                feature.Shape = new Point(
-                                    coordinates[1].Value<double>(),
-                                    coordinates[0].Value<double>());
-                                break;
+                            feature.Shape = ((JObject)dyn[fieldName]).ToGeometry();
                         }
                     }
                     else
@@ -89,7 +89,7 @@ namespace gView.DataSources.CosmoDb
                 var next = await _query.ExecuteNextAsync();
                 //_dynamics = new List<dynamic>();
                 _dynamics.AddRange(next);
-                if (_dynamics.Count > 10000)
+                if (_dynamics.Count > 25000)
                 {
                     break;
                 }

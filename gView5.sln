@@ -147,6 +147,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.CosmoDb",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.DataSources.CosmoDb.UI", "NetFramework\gView.Win.DataSources.CosmoDb.UI\gView.Win.DataSources.CosmoDb.UI.csproj", "{A4D020D4-C6EA-4067-A19F-6A64C30A5021}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.MongoDb", "gView.DataSources.MongoDb\gView.DataSources.MongoDb.csproj", "{FAEABC8E-55FD-4D3E-9759-83D0FB94C9FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.DataSources.MongoDb.UI", "NetFramework\gView.Win.DataSources.MongoDb.UI\gView.Win.DataSources.MongoDb.UI.csproj", "{84636D73-D607-441C-B069-B4C6E06A0B75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -731,6 +735,22 @@ Global
 		{A4D020D4-C6EA-4067-A19F-6A64C30A5021}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A4D020D4-C6EA-4067-A19F-6A64C30A5021}.Release|x64.ActiveCfg = Release|Any CPU
 		{A4D020D4-C6EA-4067-A19F-6A64C30A5021}.Release|x64.Build.0 = Release|Any CPU
+		{FAEABC8E-55FD-4D3E-9759-83D0FB94C9FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAEABC8E-55FD-4D3E-9759-83D0FB94C9FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAEABC8E-55FD-4D3E-9759-83D0FB94C9FB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FAEABC8E-55FD-4D3E-9759-83D0FB94C9FB}.Debug|x64.Build.0 = Debug|Any CPU
+		{FAEABC8E-55FD-4D3E-9759-83D0FB94C9FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAEABC8E-55FD-4D3E-9759-83D0FB94C9FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAEABC8E-55FD-4D3E-9759-83D0FB94C9FB}.Release|x64.ActiveCfg = Release|Any CPU
+		{FAEABC8E-55FD-4D3E-9759-83D0FB94C9FB}.Release|x64.Build.0 = Release|Any CPU
+		{84636D73-D607-441C-B069-B4C6E06A0B75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84636D73-D607-441C-B069-B4C6E06A0B75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84636D73-D607-441C-B069-B4C6E06A0B75}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{84636D73-D607-441C-B069-B4C6E06A0B75}.Debug|x64.Build.0 = Debug|Any CPU
+		{84636D73-D607-441C-B069-B4C6E06A0B75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84636D73-D607-441C-B069-B4C6E06A0B75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84636D73-D607-441C-B069-B4C6E06A0B75}.Release|x64.ActiveCfg = Release|Any CPU
+		{84636D73-D607-441C-B069-B4C6E06A0B75}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
