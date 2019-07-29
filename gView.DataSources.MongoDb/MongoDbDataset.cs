@@ -4,14 +4,10 @@ using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.Driver.GeoJsonObjectModel;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.MongoDb
@@ -19,18 +15,12 @@ namespace gView.DataSources.MongoDb
     [RegisterPlugIn("8695CCB3-B8B4-476E-8011-F332494C4BFF")]
     public class MongoDbDataset : DatasetMetadata, IFeatureDataset2, IFeatureDatabase
     {
-        internal MongoClient _client = null;
         private List<IDatasetElement> _layers;
 
         private const string SpatialCollectionRefName = "spatial_collections_ref";
-        private const string FeatureCollectionNamePoints = "feature_collection_points";
-        private const string FeatureCollectionNameLines = "feature_collection_lines";
-        private const string FeatureCollectionNamePolygons = "feature_collection_polygons";
+        internal const string FeatureCollectionNamePrefix = "feature_collection_";
 
         private IMongoCollection<Json.SpatialCollectionItem> _spatialCollectionRef = null;
-        private IMongoCollection<Json.GeometryDocument> _featureCollection_points = null;
-        private IMongoCollection<Json.GeometryDocument> _featureCollection_lines = null;
-        private IMongoCollection<Json.GeometryDocument> _featureCollection_polygons = null;
 
         #region IFeatureDataset
 
@@ -54,14 +44,10 @@ namespace gView.DataSources.MongoDb
                     throw new Exception($"Featureclass {fcname} already exists");
                 }
 
-                var coordinates = new GeoJson2DGeographicCoordinates(15.0, 47.5);
-                var jsonPoint = new GeoJsonPoint<GeoJson2DGeographicCoordinates>(coordinates);
-
                 await _spatialCollectionRef.InsertOneAsync(
                     new Json.SpatialCollectionItem(geomDef, fields)
                     {
-                        Name = fcname,
-                        Test=jsonPoint
+                        Name = fcname
                     });
 
                 return 1;
@@ -85,9 +71,36 @@ namespace gView.DataSources.MongoDb
             throw new NotImplementedException();
         }
 
-        public Task<bool> DeleteFeatureClass(string fcName)
+        async public Task<bool> DeleteFeatureClass(string fcName)
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (_spatialCollectionRef == null)
+                {
+                    throw new Exception("No spatial collection reference. Open database before running CreateFeatureClass method");
+                }
+
+                var datasetElement = await Element(fcName);
+                if (datasetElement == null)
+                {
+                    throw new Exception($"Featureclass {fcName} not exists");
+                }
+
+                var mongoDatabase = GetMongoDatabase();
+                if (await CollectionExistsAsync(mongoDatabase, fcName.ToFeatureClassCollectionName()))
+                {
+                    await GetMongoDatabase().DropCollectionAsync(fcName.ToFeatureClassCollectionName());
+                }
+
+                var deleteResult = await _spatialCollectionRef.DeleteOneAsync<Json.SpatialCollectionItem>(i => i.Name == fcName);
+                return deleteResult.DeletedCount == 1;
+            }
+            catch (Exception ex)
+            {
+                this.lastException = ex;
+                this.LastErrorMessage = ex.Message;
+                return false;
+            }
         }
 
         public Task<bool> RenameDataset(string name, string newName)
@@ -129,15 +142,23 @@ namespace gView.DataSources.MongoDb
         {
             try
             {
-                var featureCollection = GetFeatureCollection(fClass.GeometryType);
+                var featureCollection = await GetFeatureCollection(fClass);
                 if (featureCollection == null)
                 {
                     throw new Exception("No feature collection. Open database before running CreateFeatureClass method");
                 }
 
+                var spatialCollectionItem = await (await _spatialCollectionRef.FindAsync(s => s.Name == fClass.Name)).FirstOrDefaultAsync();
+                if (spatialCollectionItem == null)
+                {
+                    throw new Exception("Feature class not exists");
+                }
+
+                IEnvelope bounds = spatialCollectionItem.FeatureBounds?.ToEnvelope();
+
                 int fieldCount = fClass.Fields.Count;
 
-                int degreeOfParallelism = 1;
+                int degreeOfParallelism = 5;
                 var containers = new List<Json.GeometryDocument>[degreeOfParallelism];
                 for (int i = 0; i < degreeOfParallelism; i++)
                 {
@@ -148,19 +169,34 @@ namespace gView.DataSources.MongoDb
                 foreach (var feature in features)
                 {
                     var document = new Json.GeometryDocument();
-                    var documentDict = new Dictionary<string, object>();
-
-                    document.FeatureClassName = fClass.Name;
+                    var documentProperties = new Dictionary<string, object>();
 
                     if (feature.Shape != null)
                     {
-                        document.Shape = feature.Shape.ToGeoJsonGeometry();
+                        document.Shape = feature.Shape.ToGeoJsonGeometry<GeoJson2DGeographicCoordinates>();
+                        if (bounds == null)
+                        {
+                            bounds = new Envelope(feature.Shape.Envelope);
+                        }
+                        else
+                        {
+                            bounds.Union(feature.Shape.Envelope);
+                        }
+                        if (fClass.GeometryType != geometryType.Point)
+                        {
+                            document.Bounds = feature.Shape.Envelope.ToPolygon(0).ToGeoJsonGeometry<GeoJson2DGeographicCoordinates>();
+                        }
+
+                        #region Generalize
+
+                        // dpm = 96/0.0254
+                        // tol = pix * s / dpm
+                        //
+                        // pix = dpm/s   (tol=1) -> 1 Pixel sind beim 1:s pix[m]
+
+                        #endregion
                     }
-                    
-                    //if (feature.Shape != null)
-                    //{
-                    //    expandoDict["_shape"] = MongoDB.Bson.poi feature.Shape.ToAzureGeometry();
-                    //}
+
                     for (int f = 0; f < fieldCount; f++)
                     {
                         var field = fClass.Fields[f];
@@ -173,28 +209,34 @@ namespace gView.DataSources.MongoDb
                         var fieldValue = feature.FindField(field.name);
                         if (fieldValue != null)
                         {
-                            documentDict.Add(fieldValue.Name, fieldValue.Value);
+                            if (fieldValue.Value == DBNull.Value)
+                            {
+                                fieldValue.Value = null;
+                            }
+
+                            documentProperties.Add(fieldValue.Name, fieldValue.Value);
                         }
                     }
 
-                    //document.AddRange(documentDict);
+                    document.Properties = documentProperties;
 
                     containers[counter % degreeOfParallelism].Add(document);
-                    //var result = await _client.CreateDocumentAsync(featureCollection.SelfLink, expandoObject);
                     counter++;
                 }
 
-                //Task[] tasks = new Task[5];
-                //for (int i = 0; i < degreeOfParallelism; i++)
-                //{
-                //    tasks[i] = Task.Factory.StartNew(async (object index) =>
-                //    {
-                //        await featureCollection.InsertManyAsync(containers[(int)index]);
-                //    }, (object)i);
-                //}
-                //await Task.WhenAll(tasks);
+                Task[] tasks = new Task[degreeOfParallelism];
+                for (int i = 0; i < degreeOfParallelism; i++)
+                {
+                    tasks[i] = Task.Factory.StartNew(async (object index) =>
+                    {
+                        await featureCollection.InsertManyAsync(containers[(int)index]);
+                    }, (object)i);
+                }
+                await Task.WhenAll(tasks);
 
-                await featureCollection.InsertManyAsync(containers[0]);
+                var updateResult = await _spatialCollectionRef.UpdateOneAsync<Json.SpatialCollectionItem>(
+                    c => c.Id == spatialCollectionItem.Id,
+                    Builders<Json.SpatialCollectionItem>.Update.Set(i => i.FeatureBounds, new Json.SpatialCollectionItem.Bounds(bounds)));
 
                 return true;
             }
@@ -260,9 +302,7 @@ namespace gView.DataSources.MongoDb
 
         public void Dispose()
         {
-            _featureCollection_points = null;
             _spatialCollectionRef = null;
-            _client = null;
         }
 
         async public Task<IDatasetElement> Element(string title)
@@ -301,7 +341,7 @@ namespace gView.DataSources.MongoDb
             foreach (var collectionItem in await _spatialCollectionRef.Find<Json.SpatialCollectionItem>(_ => true).ToListAsync())
             {
                 layers.Add(new DatasetElement(await MongoDbFeatureClass.Create(this, collectionItem)));
-            }                   
+            }
 
             _layers = layers;
 
@@ -349,33 +389,19 @@ namespace gView.DataSources.MongoDb
         {
             try
             {
-                _client = new MongoDB.Driver.MongoClient(ConnectionString.ExtractConnectionStringParameter("Connection"));
-                var database = _client.GetDatabase(ConnectionString.ExtractConnectionStringParameter("Database"));
+                var database = GetMongoDatabase();
 
                 if (database == null)
                 {
                     throw new Exception($"Database {ConnectionString.ExtractConnectionStringParameter("Database")} not exits");
                 }
 
+                if (!await CollectionExistsAsync(database, SpatialCollectionRefName))
+                {
+                    await database.CreateCollectionAsync(SpatialCollectionRefName);
+                }
+
                 _spatialCollectionRef = database.GetCollection<Json.SpatialCollectionItem>(SpatialCollectionRefName);
-
-                #region Points Collection
-
-                _featureCollection_points = database.GetCollection<Json.GeometryDocument>(FeatureCollectionNamePoints);
-
-                #endregion
-
-                #region Lines Collection
-
-                _featureCollection_lines = database.GetCollection<Json.GeometryDocument>(FeatureCollectionNameLines);
-
-                #endregion
-
-                #region Polygons Collection
-
-                _featureCollection_polygons = database.GetCollection<Json.GeometryDocument>(FeatureCollectionNamePolygons);
-
-                #endregion
 
                 _spatialReference = SpatialReference.FromID("epsg:4326");
             }
@@ -405,20 +431,87 @@ namespace gView.DataSources.MongoDb
 
         #endregion
 
-        internal IMongoCollection<Json.GeometryDocument> GetFeatureCollection(geometryType geomType)
+        async internal Task<IMongoCollection<Json.GeometryDocument>> GetFeatureCollection(IFeatureClass fc)
         {
-            switch (geomType)
+            var database = GetMongoDatabase();
+            var collectionName = fc.Name.ToFeatureClassCollectionName();
+
+            if (!await CollectionExistsAsync(database, collectionName))
             {
-                case geometryType.Point:
-                case geometryType.Multipoint:
-                    return _featureCollection_points;
-                case geometryType.Polyline:
-                    return _featureCollection_lines;
-                case geometryType.Polygon:
-                    return _featureCollection_polygons;
-                default:
-                    throw new Exception($"There is no collection for geometry-type '{geomType.ToString()}'");
+                return await CreateSpatialCollection(database, collectionName);
             }
+
+            return database.GetCollection<Json.GeometryDocument>(collectionName);
         }
+
+        #region Helper
+
+
+        private IMongoDatabase GetMongoDatabase()
+        {
+            var client = new MongoClient(this.ConnectionString.ExtractConnectionStringParameter("Connection"));
+            var database = client.GetDatabase(this.ConnectionString.ExtractConnectionStringParameter("Database"));
+
+            return database;
+        }
+
+        private async Task<bool> CollectionExistsAsync(IMongoDatabase database, string collectionName)
+        {
+            var filter = new BsonDocument("name", collectionName);
+            var collections = await database.ListCollectionsAsync(new ListCollectionsOptions { Filter = filter });
+            return await collections.AnyAsync();
+        }
+
+        private async Task<IMongoCollection<Json.GeometryDocument>> CreateSpatialCollection(IMongoDatabase database, string collectionName)
+        {
+            #region Create Collection
+
+            await database.CreateCollectionAsync(collectionName);
+            var collection = database.GetCollection<Json.GeometryDocument>(collectionName);
+
+            #endregion
+
+            #region Create Spatial Index
+
+            var spaitalIndex = Builders<Json.GeometryDocument>.IndexKeys.Geo2DSphere("_shape");
+            await collection.Indexes.CreateOneAsync(spaitalIndex);
+
+            spaitalIndex = Builders<Json.GeometryDocument>.IndexKeys.Geo2DSphere("_bounds");
+            await collection.Indexes.CreateOneAsync(spaitalIndex);
+
+            #endregion
+
+            #region Create Shard Key
+
+            //            var adminClient = new MongoClient(ConnectionString.ExtractConnectionStringParameter("Connection").Replace(":27017", ":27017"));
+
+            //            var admin = adminClient.GetDatabase("admin");
+
+            //            try
+            //            {
+            //                var shellCommandDb = new BsonDocument
+            //                {
+            //                    { "enableSharding", database.DatabaseNamespace.DatabaseName }
+            //                };
+            //                await admin.RunCommandAsync(new BsonDocumentCommand<BsonDocument>(shellCommandDb));
+            //            }
+            //            catch (Exception ex)
+            //            {
+            //                Console.WriteLine(ex.Message);
+            //            }
+
+            //            var partition = new BsonDocument {
+            //                        {"shardCollection", $"{database.DatabaseNamespace.DatabaseName}.{collectionName}"},
+            //                        {"key", new BsonDocument {{"_fc", "hashed"}}}
+            //};
+            //            var command = new BsonDocumentCommand<BsonDocument>(partition);
+            //            await database.RunCommandAsync(command);
+
+            #endregion
+
+            return collection;
+        }
+
+        #endregion
     }
 }

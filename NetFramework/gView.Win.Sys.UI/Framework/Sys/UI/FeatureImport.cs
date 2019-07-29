@@ -2,6 +2,7 @@ using gView.Framework.Data;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -180,6 +181,12 @@ namespace gView.Framework.system.UI
                     //_transformer.FromSpatialReference = sourceFC.SpatialReference;
                     //_transformer.ToSpatialReference = destFC.SpatialReference;
                     _transformer.SetSpatialReferences(sourceFC.SpatialReference, destFC.SpatialReference);
+                }
+
+                var importBufferSizeAttribute = destFC.GetType().GetCustomAttribute<ImportFeaturesBufferSizeAttribute>();
+                if (importBufferSizeAttribute != null && importBufferSizeAttribute.BufferSize > 0)
+                {
+                    this.FeatureBufferSize = importBufferSizeAttribute.BufferSize;
                 }
 
                 if (_cancelTracker.Continue)

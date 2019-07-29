@@ -65,8 +65,8 @@ namespace gView.DataSources.MongoDb.Json
             this.Fields = fieldCollection;
         }
 
-        [BsonElement("test")]
-        public GeoJsonPoint<GeoJson2DGeographicCoordinates> Test { get; set; }
+        [BsonElement("bounds")]
+        public Bounds FeatureBounds { get; set; }
 
         #region Classes
 
@@ -92,6 +92,35 @@ namespace gView.DataSources.MongoDb.Json
 
             [BsonElement("type")]
             public FieldType FieldType { get; set; }
+        }
+
+        public class Bounds
+        {
+            public Bounds() { }
+            public Bounds(IEnvelope envelpe)
+            {
+                this.MinX = envelpe.minx;
+                this.MinY = envelpe.miny;
+                this.MaxX = envelpe.maxx;
+                this.MaxY = envelpe.maxy;
+            }
+
+            [BsonElement("minx")]
+            double MinX { get; set; }
+
+            [BsonElement("miny")]
+            double MinY { get; set; }
+
+            [BsonElement("maxx")]
+            double MaxX { get; set; }
+
+            [BsonElement("maxy")]
+            double MaxY { get; set; }
+
+            public IEnvelope ToEnvelope()
+            {
+                return new Envelope(MinX, MinY, MaxX, MaxY);
+            }
         }
 
         #endregion

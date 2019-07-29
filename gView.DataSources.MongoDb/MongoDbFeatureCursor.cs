@@ -16,7 +16,8 @@ namespace gView.DataSources.MongoDb
         public MongoDbFeatureCursor(MongoDbFeatureClass fc, IQueryFilter filter)
             : base(fc.SpatialReference, filter.FeatureSpatialReference)
         {
-            string sql = String.Empty;
+            IFindFluent<Json.GeometryDocument, Json.GeometryDocument> findFluent = null;
+
             if (filter is ISpatialFilter)
             {
                 ISpatialFilter sFilter = (ISpatialFilter)filter;
@@ -36,57 +37,112 @@ namespace gView.DataSources.MongoDb
                 GeoJsonPolygonCoordinates<GeoJson2DGeographicCoordinates> boxcoord = new GeoJsonPolygonCoordinates<GeoJson2DGeographicCoordinates>(ringcoord);
                 GeoJsonPolygon<GeoJson2DGeographicCoordinates> box = new GeoJsonPolygon<GeoJson2DGeographicCoordinates>(boxcoord);
 
-                var bsonFilter = Builders<Json.GeometryDocument>.Filter
-                    .Eq(f => f.FeatureClassName, fc.Name);
-                bsonFilter = bsonFilter &
+                var bsonFilter =
+                    fc.GeometryType == Framework.Geometry.geometryType.Point ?
                     Builders<Json.GeometryDocument>.Filter
-                    .GeoIntersects(x => x.Shape, box);
+                        .GeoIntersects(x => x.Shape, box) :
+                    Builders<Json.GeometryDocument>.Filter
+                        .GeoIntersects(x => x.Bounds, box);
+                    //.GeoWithinBox(x => x.Shape, env.minx, env.miny, env.maxx, env.maxy);
 
-                _cursor = fc.MongoCollection.Find(bsonFilter)
-                             .ToCursor();
+                var findOptions = new FindOptions()
+                {
+                    BatchSize = 10000
+                };
+
+                findFluent = fc.MongoCollection.Find(bsonFilter, options: findOptions);
             }
             else
             {
-                _cursor = fc.MongoCollection.Find(f => f.FeatureClassName == fc.Name)
-                             .ToCursor();
+                findFluent = fc.MongoCollection.Find(_ => true);
+                filter.Limit = 50;
             }
+
+            if (filter.Limit > 0)
+            {
+                findFluent = findFluent.Limit(filter.Limit);
+            }
+            if(filter.BeginRecord>1)
+            {
+                findFluent = findFluent.Skip(filter.BeginRecord - 1);
+            }
+            if (filter.SubFields != "*")
+            {
+                StringBuilder project = new StringBuilder();
+                project.Append("{");
+                foreach (var field in filter.SubFields.Split(' '))
+                {
+                    if(project.Length>1)
+                    {
+                        project.Append(",");
+                    }
+                    if (field == "_id" || field == "_shape")
+                    {
+                        project.Append($"{field}:1");
+                    }
+                    else
+                    {
+                        project.Append($"\"properties.{field}\":1");
+                    }
+                }
+                project.Append("}");
+                findFluent = findFluent.Project<Json.GeometryDocument>(project.ToString());
+            }
+
+            _cursor = findFluent.ToCursor();
         }
 
-        private List<Json.GeometryDocument> _bsonDocuments = new List<Json.GeometryDocument>();
+        private List<Json.GeometryDocument> _document = new List<Json.GeometryDocument>();
         private int _pos = 0;
 
         async public override Task<IFeature> NextFeature()
         {
-            if (_bsonDocuments.Count > _pos)
+            if (_document.Count > _pos)
             {
-                var bsonDocument = _bsonDocuments[_pos++];
+                var document = _document[_pos++];
 
                 var feature = new Feature();
-                if (bsonDocument.Shape != null)
+                if (document.Shape != null)
                 {
-                    feature.Shape = bsonDocument.Shape.ToGeometry();
+                    feature.Shape = document.Shape.ToGeometry();
+                }
+                if(document.Properties!=null)
+                {
+                    foreach(var property in document.Properties.Keys)
+                    {
+                        feature.Fields.Add(new FieldValue(property, document.Properties[property]));
+                    }
                 }
                 return feature;
             }
 
-            _bsonDocuments.Clear();
+            _document.Clear();
             _pos = 0;
 
             while (await _cursor.MoveNextAsync())
             {
-                _bsonDocuments.AddRange(_cursor.Current);
-                if (_bsonDocuments.Count > 10000)
+                _document.AddRange(_cursor.Current);
+                if (_document.Count >= 10000)
                 {
                     break;
                 }
             }
 
-            if (_bsonDocuments.Count > _pos)
+            if (_document.Count > _pos)
             {
                 return await NextFeature();
             }
 
             return null;
+        }
+
+        public override void Dispose()
+        {
+            if (_cursor != null)
+            {
+                _cursor.Dispose();
+                _cursor = null;
+            }
         }
     }
 }

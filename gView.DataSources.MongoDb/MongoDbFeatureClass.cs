@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.MongoDb
 {
+    [ImportFeaturesBufferSize(1000)]
     class MongoDbFeatureClass : IFeatureClass
     {
         private MongoDbFeatureClass()
@@ -30,6 +31,8 @@ namespace gView.DataSources.MongoDb
             }
 
             var fields = new Fields();
+            //fields.Add(new Field("_id", FieldType.ID));
+            fields.Add(new Field("_shape", FieldType.Shape));
             if (spatialCollectoinItem.Fields != null)
             {
                 foreach (var field in spatialCollectoinItem.Fields)
@@ -43,29 +46,9 @@ namespace gView.DataSources.MongoDb
             }
             fc.Fields = fields;
 
-            fc.MongoCollection = dataset.GetFeatureCollection(fc.GeometryType);
+            fc.MongoCollection = await dataset.GetFeatureCollection(fc);
 
-            fc.Envelope = null;
-            using (var cursor = new MongoDbFeatureCursor(fc, new QueryFilter()))
-            {
-                IFeature feature = null;
-                while ((feature = await cursor.NextFeature()) != null)
-                {
-                    if (feature.Shape == null)
-                    {
-                        continue;
-                    }
-
-                    if (fc.Envelope == null)
-                    {
-                        fc.Envelope = feature.Shape.Envelope;
-                    }
-                    else
-                    {
-                        fc.Envelope.Union(feature.Shape.Envelope);
-                    }
-                }
-            }
+            fc.Envelope = spatialCollectoinItem.FeatureBounds?.ToEnvelope() ?? new Envelope(-180, -90, 180, 90);
 
             return fc;
         }

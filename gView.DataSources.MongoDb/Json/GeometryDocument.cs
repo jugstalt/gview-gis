@@ -12,12 +12,15 @@ namespace gView.DataSources.MongoDb.Json
     {
         [BsonId]
         public ObjectId Id { get; set; }
-
-        [BsonElement("_fc")]
-        public string FeatureClassName { get; set; }
         
         [BsonElement("_shape")]
         public GeoJsonGeometry<GeoJson2DGeographicCoordinates> Shape { get; set; }
+
+        [BsonElement("_bounds")]
+        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> Bounds { get; set; }
+
+        [BsonElement("properties")]
+        public Dictionary<string,object> Properties { get; set; }
     }
 
     //public class PointDocument : BsonDocument

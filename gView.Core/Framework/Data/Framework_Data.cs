@@ -156,6 +156,17 @@ namespace gView.Framework.Data
             get { return _case; }
         }
     }
+
+    [global::System.AttributeUsageAttribute(global::System.AttributeTargets.Class)]
+    public class ImportFeaturesBufferSizeAttribute : Attribute
+    {
+        public ImportFeaturesBufferSizeAttribute(int bufferSize)
+        {
+            this.BufferSize = bufferSize;
+        }
+        public int BufferSize { get; set; }
+    }
+
     [global::System.AttributeUsageAttribute(global::System.AttributeTargets.Class)]
     public class MaximumFieldnameLength : global::System.Attribute
     {
