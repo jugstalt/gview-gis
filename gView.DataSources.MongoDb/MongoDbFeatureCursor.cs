@@ -3,6 +3,8 @@ using MongoDB.Driver;
 using MongoDB.Driver.GeoJsonObjectModel;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,13 +12,29 @@ namespace gView.DataSources.MongoDb
 {
     class MongoDbFeatureCursor : FeatureCursor
     {
+        private const double _dpm= 96D / 0.0254;
         private IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
         private IAsyncCursor<Json.GeometryDocument> _cursor = null;
+        private string _shapeFieldname = "_shape";
+        private PropertyInfo _shapePropertyInfo = typeof(Json.GeometryDocument).GetProperty("Shape");
 
         public MongoDbFeatureCursor(MongoDbFeatureClass fc, IQueryFilter filter)
             : base(fc.SpatialReference, filter.FeatureSpatialReference)
         {
             IFindFluent<Json.GeometryDocument, Json.GeometryDocument> findFluent = null;
+
+            int bestLevel = -1;
+            if (fc.GeometryType != Framework.Geometry.geometryType.Point && filter.MapScale > 0)
+            {
+                var resolution = filter.MapScale / _dpm;
+                bestLevel = resolution.BestResolutionLevel();
+            }
+
+            if (bestLevel >= 0)
+            {
+                _shapeFieldname = $"_shapeGen{bestLevel}";
+                _shapePropertyInfo = typeof(Json.GeometryDocument).GetProperty($"ShapeGeneralized{bestLevel}");
+            }
 
             if (filter is ISpatialFilter)
             {
@@ -72,13 +90,17 @@ namespace gView.DataSources.MongoDb
                 project.Append("{");
                 foreach (var field in filter.SubFields.Split(' '))
                 {
-                    if(project.Length>1)
+                    if (project.Length > 1)
                     {
                         project.Append(",");
                     }
-                    if (field == "_id" || field == "_shape")
+                    if (field == "_id")
                     {
                         project.Append($"{field}:1");
+                    }
+                    else if (field == "_shape")
+                    {
+                        project.Append($"{_shapeFieldname}:1");
                     }
                     else
                     {
@@ -87,6 +109,11 @@ namespace gView.DataSources.MongoDb
                 }
                 project.Append("}");
                 findFluent = findFluent.Project<Json.GeometryDocument>(project.ToString());
+            }
+            else
+            {
+                string project = String.Join(",", Enumerable.Range(0, 15).Select(i => $"{{_shapeGen{i}:0}}"));
+                findFluent = findFluent.Project<Json.GeometryDocument>(project);
             }
 
             _cursor = findFluent.ToCursor();
@@ -102,9 +129,10 @@ namespace gView.DataSources.MongoDb
                 var document = _document[_pos++];
 
                 var feature = new Feature();
-                if (document.Shape != null)
+                var documentShape = _shapePropertyInfo.GetValue(document) as GeoJsonGeometry<GeoJson2DGeographicCoordinates>;
+                if (documentShape != null)
                 {
-                    feature.Shape = document.Shape.ToGeometry();
+                    feature.Shape = documentShape.ToGeometry();
                 }
                 if(document.Properties!=null)
                 {

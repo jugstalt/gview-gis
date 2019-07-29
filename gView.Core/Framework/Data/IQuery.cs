@@ -33,6 +33,8 @@ namespace gView.Framework.Data
         ISpatialReference ContextLayerDefaultSpatialReference { get; set; }
 
         bool IgnoreUndefinedFields { get; set; }
+
+        double MapScale { get; set; }
 	}
 
     public interface IDistinctFilter : IQueryFilter

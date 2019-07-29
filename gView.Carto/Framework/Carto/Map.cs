@@ -3356,6 +3356,7 @@ namespace gView.Framework.Carto
                 filter.AddField(fClass.ShapeFieldName);
                 //filter.FuzzyQuery = true;
                 filter.SpatialRelation = spatialRelation.SpatialRelationMapEnvelopeIntersects;
+                filter.MapScale = _map.Display.mapScale;
 
                 if (layer.FilterQuery != null)
                 {

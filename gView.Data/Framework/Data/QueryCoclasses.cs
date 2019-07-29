@@ -350,6 +350,8 @@ namespace gView.Framework.Data
             set;
         }
 
+        public double MapScale { get; set; }
+
         #endregion
 
         #region IClone4 Member

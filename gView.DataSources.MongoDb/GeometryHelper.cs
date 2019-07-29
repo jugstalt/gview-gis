@@ -72,6 +72,11 @@ namespace gView.DataSources.MongoDb
         {
             List<T> coordinates = new List<T>();
 
+            if (pCollection is IRing)
+            {
+                ((IRing)pCollection).Close();
+            }
+
             for (int i = 0, i_to = pCollection.PointCount; i < i_to; i++)
             {
                 coordinates.Add((T)Activator.CreateInstance(typeof(T), new object[] { pCollection[i].X, pCollection[i].Y }));
@@ -143,14 +148,14 @@ namespace gView.DataSources.MongoDb
 
                 return polygon;
             }
-            if(geoJsonGeometry is GeoJsonMultiPolygon<T>)
+            if (geoJsonGeometry is GeoJsonMultiPolygon<T>)
             {
                 var polygon = new Polygon();
                 var geoJsonMultiPolygon = (GeoJsonMultiPolygon<T>)geoJsonGeometry;
 
-                if(geoJsonMultiPolygon.Coordinates?.Polygons!=null)
+                if (geoJsonMultiPolygon.Coordinates?.Polygons != null)
                 {
-                    foreach(var geoJsonPolygon in geoJsonMultiPolygon.Coordinates.Polygons)
+                    foreach (var geoJsonPolygon in geoJsonMultiPolygon.Coordinates.Polygons)
                     {
                         if (geoJsonPolygon.Exterior != null)
                         {
@@ -197,6 +202,99 @@ namespace gView.DataSources.MongoDb
             }
 
             return path;
+        }
+
+        #endregion
+
+        #region Generalizatoin
+
+        public static double[] Resolutions =
+            new double[]
+            {
+                156543.04,                                      // 0
+                78271.52,                                       // 1     1 : 295,829,355.45           
+                39135.76,                                       // 2   
+                19567.88,                                       // 3
+                9783.94,                                        // 4
+                4891.97,                                        // 5
+                2445.985,                                       // 6    
+                1222.9925,                                      // 7
+                611.49625,                                      // 8
+                305.748125,                                     // 9
+                152.8740625,                                    // 10
+                76.43703125,                                    // 11
+                38.218515625,                                   // 12    
+                19.1092578125,                                  // 13   
+                9.55462890625,                                  // 14       1 : 36,111.98
+                //4.777314453125‬,
+                //2.3886572265625‬
+            };
+
+        public const double R = 6378137D;
+        public const double ToDeg = 180.0 / Math.PI;
+        static public double ToDegrees(this double meters)
+        {
+            return meters / R * ToDeg;
+        }
+
+        static public int BestResolutionLevel(this double resolution)
+        {
+            for (int r = 0; r < Resolutions.Length; r++)
+            {
+                if (Math.Abs(resolution - Resolutions[r]) < 1e-3)
+                    return r;
+
+                if (resolution > Resolutions[r])
+                {
+                    return r;
+                }
+            }
+
+            return -1;
+        }
+
+        public static IGeometry[] Generalize(this IGeometry geometry, ISpatialReference sRef)
+        {
+            var geometries = new IGeometry[Resolutions.Length];
+
+            for (int r = Resolutions.Length - 1; r >= 0; r--)
+            {
+                var res = Resolutions[r];
+                if (sRef.SpatialParameters.IsGeographic == true)
+                {
+                    res = res.ToDegrees();
+                }
+
+                var generalizedGeometry = gView.Framework.SpatialAlgorithms.Algorithm.Generalize(geometry, res * 2, true);
+
+                if (generalizedGeometry == null)
+                {
+                    break;
+                }
+
+                geometries[r] = generalizedGeometry;
+                geometry = generalizedGeometry;
+            }
+
+            return geometries;
+        }
+
+        public static Json.GeometryDocument AppendGeneralizedShapes(this Json.GeometryDocument geometryDocument, IGeometry geometry, ISpatialReference sRef)
+        {
+            var generalized = geometry.Generalize(sRef);
+
+            for (int i = 0; i < generalized.Length; i++)
+            {
+                if (generalized[i] != null)
+                {
+                    var propertyInfo = geometryDocument.GetType().GetProperty($"ShapeGeneralized{i}");
+                    if (propertyInfo != null)
+                    {
+                        propertyInfo.SetValue(geometryDocument, generalized[i].ToGeoJsonGeometry<GeoJson2DGeographicCoordinates>());
+                    }
+                }
+            }
+            return geometryDocument;
         }
 
         #endregion

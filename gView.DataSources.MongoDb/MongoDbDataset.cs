@@ -185,6 +185,7 @@ namespace gView.DataSources.MongoDb
                         if (fClass.GeometryType != geometryType.Point)
                         {
                             document.Bounds = feature.Shape.Envelope.ToPolygon(0).ToGeoJsonGeometry<GeoJson2DGeographicCoordinates>();
+                            document.AppendGeneralizedShapes(feature.Shape, fClass.SpatialReference);
                         }
 
                         #region Generalize

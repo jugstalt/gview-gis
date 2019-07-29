@@ -1509,7 +1509,7 @@ namespace gView.Framework.SpatialAlgorithms
             return result;
         }
 
-        static public IGeometry Generalize(IGeometry geometry, double generalizationDistance)
+        static public IGeometry Generalize(IGeometry geometry, double generalizationDistance, bool onlyValidResult = false)
         {
             if (geometry is IPolyline)
             {
@@ -1518,8 +1518,17 @@ namespace gView.Framework.SpatialAlgorithms
                 Polyline result = new Polyline();
                 for (int i = 0; i < polyline.PathCount; i++)
                 {
-                    result.AddPath(new Path(GeneralizePointCollection(polyline[i], generalizationDistance)));
+                    var path = new Path(GeneralizePointCollection(polyline[i], generalizationDistance));
+                    if (onlyValidResult == false || path.Length > 0)
+                    {
+                        result.AddPath(path);
+                    }
                 }
+                if (onlyValidResult == true && result.PathCount == 0)
+                {
+                    return null;
+                }
+
                 return result;
             }
             if (geometry is IPolygon)
@@ -1529,8 +1538,18 @@ namespace gView.Framework.SpatialAlgorithms
                 Polygon result = new Polygon();
                 for (int i = 0; i < polygon.RingCount; i++)
                 {
-                    result.AddRing(new Ring(GeneralizePointCollection(polygon[i], generalizationDistance)));
+                    var ring = new Ring(GeneralizePointCollection(polygon[i], generalizationDistance));
+                    if (onlyValidResult == false || ring.Area > 0)
+                    {
+                        result.AddRing(ring);
+                    }
                 }
+
+                if (onlyValidResult == true && result.RingCount == 0)
+                {
+                    return null;
+                }
+
                 return result;
             }
 
@@ -1570,6 +1589,8 @@ namespace gView.Framework.SpatialAlgorithms
 
             return result;
         }
+
+
 
         static public IPolygon SnapOutsidePointsToEnvelope(IPolygon polygon, IEnvelope envelope)
         {
