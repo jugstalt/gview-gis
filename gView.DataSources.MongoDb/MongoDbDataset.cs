@@ -158,7 +158,7 @@ namespace gView.DataSources.MongoDb
 
                 int fieldCount = fClass.Fields.Count;
 
-                int degreeOfParallelism = 5;
+                int degreeOfParallelism = 1;
                 var containers = new List<Json.GeometryDocument>[degreeOfParallelism];
                 for (int i = 0; i < degreeOfParallelism; i++)
                 {
@@ -225,15 +225,17 @@ namespace gView.DataSources.MongoDb
                     counter++;
                 }
 
-                Task[] tasks = new Task[degreeOfParallelism];
-                for (int i = 0; i < degreeOfParallelism; i++)
-                {
-                    tasks[i] = Task.Factory.StartNew(async (object index) =>
-                    {
-                        await featureCollection.InsertManyAsync(containers[(int)index]);
-                    }, (object)i);
-                }
-                await Task.WhenAll(tasks);
+                //Task[] tasks = new Task[degreeOfParallelism];
+                //for (int i = 0; i < degreeOfParallelism; i++)
+                //{
+                //    tasks[i] = Task.Factory.StartNew(async (object index) =>
+                //    {
+                //        await featureCollection.InsertManyAsync(containers[(int)index]);
+                //    }, (object)i);
+                //}
+                //await Task.WhenAll(tasks);
+
+                await featureCollection.InsertManyAsync(containers[0]);
 
                 var updateResult = await _spatialCollectionRef.UpdateOneAsync<Json.SpatialCollectionItem>(
                     c => c.Id == spatialCollectionItem.Id,
@@ -246,7 +248,7 @@ namespace gView.DataSources.MongoDb
                 lastException = ex;
                 LastErrorMessage = ex.Message;
 
-                return true;
+                return false;
             }
         }
 

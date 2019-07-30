@@ -17,6 +17,7 @@ namespace gView.DataSources.MongoDb
         private IAsyncCursor<Json.GeometryDocument> _cursor = null;
         private string _shapeFieldname = "_shape";
         private PropertyInfo _shapePropertyInfo = typeof(Json.GeometryDocument).GetProperty("Shape");
+        private bool _isWkbShape = false;
 
         public MongoDbFeatureCursor(MongoDbFeatureClass fc, IQueryFilter filter)
             : base(fc.SpatialReference, filter.FeatureSpatialReference)
@@ -34,6 +35,7 @@ namespace gView.DataSources.MongoDb
             {
                 _shapeFieldname = $"_shapeGen{bestLevel}";
                 _shapePropertyInfo = typeof(Json.GeometryDocument).GetProperty($"ShapeGeneralized{bestLevel}");
+                _isWkbShape = true;
             }
 
             if (filter is ISpatialFilter)
@@ -129,10 +131,21 @@ namespace gView.DataSources.MongoDb
                 var document = _document[_pos++];
 
                 var feature = new Feature();
-                var documentShape = _shapePropertyInfo.GetValue(document) as GeoJsonGeometry<GeoJson2DGeographicCoordinates>;
-                if (documentShape != null)
+                if (_isWkbShape)
                 {
-                    feature.Shape = documentShape.ToGeometry();
+                    var wkbShape = _shapePropertyInfo.GetValue(document) as byte[];
+                    if(wkbShape!=null)
+                    {
+                        feature.Shape = gView.Framework.OGC.OGC.WKBToGeometry(wkbShape);
+                    }
+                }
+                else
+                {
+                    var documentShape = _shapePropertyInfo.GetValue(document) as GeoJsonGeometry<GeoJson2DGeographicCoordinates>;
+                    if (documentShape != null)
+                    {
+                        feature.Shape = documentShape.ToGeometry();
+                    }
                 }
                 if(document.Properties!=null)
                 {

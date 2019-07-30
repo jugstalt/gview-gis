@@ -3,8 +3,10 @@ using gView.Framework.Geometry;
 using gView.Framework.LinAlg;
 using gView.Framework.SpatialAlgorithms.Clipper;
 using gView.Framework.system;
+using gView.Geometry.Framework.Topology;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace gView.Framework.SpatialAlgorithms
 {
@@ -234,6 +236,7 @@ namespace gView.Framework.SpatialAlgorithms
         #endregion
 
         #region Intersects
+
         public static bool Intersects(IGeometry geometry, IGeometry candidate)
         {
             if (geometry == null || candidate == null)
@@ -417,17 +420,24 @@ namespace gView.Framework.SpatialAlgorithms
             return null;
         }
 
-        public static bool IsSelfIntersecting(IPointCollection pColl)
+        public static bool IsSelfIntersecting(IPointCollection pColl, bool appendIntersectionVertices = false)
         {
             if (pColl == null || pColl.PointCount <= 2)
             {
                 return false;
             }
 
+            bool result = false;
+
+            var env1 = new Envelope();
+            var env2 = new Envelope();
+
             int to = pColl.PointCount - 1;
             for (int i = 0; i < to; i++)
             {
                 IPoint p00 = pColl[i], p01 = pColl[i + 1];
+
+                env1.Set(p00, p01);
 
                 #region Check if next is parallel with opposite direction
 
@@ -449,20 +459,39 @@ namespace gView.Framework.SpatialAlgorithms
                 for (int j = i + 2; j < to; j++)  // i+2 -> direkt anschließende Line nicht checken, die kann maximal paralell zurück verlaufen und brauch einen anderen Test...
                 {
                     IPoint p10 = pColl[j], p11 = pColl[j + 1];
+
+                    env2.Set(p10, p11);
+                    if (!env2.Intersects(env1))
+                    {
+                        continue;
+                    }
+
                     IPoint intersectionPoint = SegmentIntersection(p00, p01, p10, p11, true);
                     if (intersectionPoint != null &&
-                        (intersectionPoint.Distance(p00) > 0) &&
-                        (intersectionPoint.Distance(p01) > 0) &&
-                        (intersectionPoint.Distance(p10) > 0) &&
-                        (intersectionPoint.Distance(p11) > 0))
+                        (intersectionPoint.Distance(p00) > 1e-11) &&
+                        (intersectionPoint.Distance(p01) > 1e-11) &&
+                        (intersectionPoint.Distance(p10) > 1e-11) &&
+                        (intersectionPoint.Distance(p11) > 1e-11))
                     {
-                        return true;
+                        if (appendIntersectionVertices)
+                        {
+                            pColl.InsertPoint(intersectionPoint, j + 1);   // j first !!
+                            pColl.InsertPoint(intersectionPoint, i + 1);
+
+                            return IsSelfIntersecting(pColl, appendIntersectionVertices);
+                        }
+                        else
+                        {
+                            return true;
+                        }
                     }
                 }
             }
 
-            return false;
+            return result;
         }
+
+        
 
         public static int IsParallel(double x1, double y1, double x2, double y2, double epsi = 1e-7)
         {
@@ -490,6 +519,104 @@ namespace gView.Framework.SpatialAlgorithms
             }
 
             return 0;
+        }
+
+        #endregion
+
+        #region Paths
+
+        public static int[] FindIdenticalPoints(IPointCollection pColl, bool ignoreStartAndEnd = false)
+        {
+            int from = ignoreStartAndEnd ? 1 : 0;
+            int to = ignoreStartAndEnd ? pColl.PointCount - 1 : pColl.PointCount;
+
+            List<int> idendenticalPoints = null;
+
+            for (int i = from; i < to; i++)
+            {
+                if (idendenticalPoints != null && idendenticalPoints.Contains(i))
+                {
+                    continue;
+                }
+
+                var duples = FindDuples(pColl, pColl[i], i + 1);
+                if (duples.Length > 0)
+                {
+                    if (idendenticalPoints == null)
+                    {
+                        idendenticalPoints = new List<int>();
+                    }
+
+                    idendenticalPoints.Add(i);
+                    idendenticalPoints.AddRange(duples);
+                }
+            }
+
+            return idendenticalPoints?.ToArray() ?? new int[0];
+        }
+
+        public static int[] FindDuples(IPointCollection pColl, IPoint point, int startAt = 0)
+        {
+            List<int> result = null;
+
+            for (int i = startAt, to = pColl.PointCount; i < to; i++)
+            {
+                if (pColl[i].Equals(point, 1e-11))
+                {
+                    if (result == null)
+                    {
+                        result = new List<int>();
+                    }
+
+                    result.Add(i);
+                }
+            }
+
+            return result?.ToArray() ?? new int[0];
+        }
+
+        public static IEnumerable<IRing> SplitRing(IRing ring)
+        {
+            ring.Close();
+
+            if (IsSelfIntersecting(ring, true))
+            {
+                throw new Exception("can't resolve self intersecting for polygon ring");
+            }
+
+            var identicalPoints = FindIdenticalPoints(ring, true);
+            if (identicalPoints.Length == 0)
+            {
+                return new IRing[] { ring }.Where(r => r.Area > 0);
+            }
+
+            List<IPath> paths = new List<IPath>();
+            Path current = new Path();
+            for (int i = 0; i < ring.PointCount; i++)
+            {
+                current.AddPoint(new Point(ring[i]));
+
+                if (identicalPoints.Contains(i))
+                {
+                    paths.Add(current);
+                    current = new Ring();
+                    current.AddPoint(new Point(ring[i]));
+                }
+            }
+            paths.Add(current);
+
+            var result = new List<IRing>();
+
+            #region Paths to Polygons
+
+            foreach (var newPolygon in paths.Polygonize())
+            {
+                result.AddRange(newPolygon.Rings.Where(r => r.Area > 0));
+            }
+
+            #endregion
+
+            return result.Where(r => r.Area > 0);
         }
 
         #endregion
@@ -2484,6 +2611,60 @@ namespace gView.Framework.SpatialAlgorithms
             double dist = (X - x) * (X - x) + (Y - y) * (Y - y);
             return Math.Sqrt(dist);
         }
+
+        public static double Point2ShapeDistance(IGeometry shape, IPoint point)
+        {
+            int sign;
+            return Point2ShapeDistance(shape, point, out sign);
+        }
+        public static double Point2ShapeDistance(IGeometry shape, IPoint point, out int sign)
+        {
+            sign = 1;
+            if (shape == null || point == null)
+                return double.MaxValue;
+
+            if (shape is Point)
+            {
+                return ((Point)shape).Distance2D(point);
+            }
+            else if (shape is IPolyline)
+            {
+                double dist, stat;
+                Point2PolylineDistance((Polyline)shape, point, out dist, out stat, out sign);
+                return dist;
+            }
+            else if (shape is IPolygon)
+            {
+                var polygon = (Polygon)shape;
+                if (Jordan(polygon, point.X, point.Y))
+                    return 0D;
+
+                double dist = double.MaxValue;
+                foreach (var ring in polygon.Rings)
+                {
+                    ring.ClosePath();
+
+                    dist = Math.Min(Point2ShapeDistance(ring.ToPolyline(), point, out sign), dist);
+                }
+                return dist;
+            }
+            else if (shape is IPointCollection)
+            {
+                double ret = double.MaxValue;
+                for (int i = 0; i < ((PointCollection)shape).PointCount; i++)
+                {
+                    IPoint p = ((IPointCollection)shape)[i];
+                    double dist = p.Distance2D(point);
+                    if (dist < ret)
+                        ret = dist;
+                }
+                return ret;
+            }
+
+            return double.MaxValue;
+        }
+
+
         #endregion
 
         #region Stat

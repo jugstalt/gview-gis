@@ -582,6 +582,15 @@ namespace gView.Framework.Geometry
             return false;
         }
         #endregion
+
+        public void Set(IPoint ll, IPoint ur)
+        {
+            m_minx = Math.Min(ll.X, ur.X);
+            m_minx = Math.Min(ll.Y, ur.Y);
+
+            m_maxx = Math.Max(ll.X, ur.X);
+            m_maxx = Math.Max(ll.Y, ur.Y);
+        }
     }
 
     /// <summary>
@@ -844,6 +853,110 @@ namespace gView.Framework.Geometry
             }
             return false;
         }
+
+        public double Distance2D(IPoint p)
+        {
+            if (p == null)
+                return double.MaxValue;
+
+            return Math.Sqrt((p.X - m_x) * (p.X - m_x) + (p.Y - m_y) * (p.Y - m_y));
+        }
+    }
+
+    public class PointM : Point
+    {
+        private object _m;
+        public PointM(double x, double y, object m)
+            : base(x, y)
+        {
+            _m = m;
+        }
+
+        public PointM(double x, double y, double z, object m)
+            : base(x, y, z)
+        {
+            _m = m;
+        }
+
+        public PointM(IPoint p, object m)
+            : this(p.X, p.Y, p.Z, m)
+        {
+        }
+
+        public object M
+        {
+            get { return _m; }
+            set { _m = value; }
+        }
+
+        #region Classes
+
+        public class MComparer<T> : IComparer<PointM>
+            where T : IComparable
+        {
+            #region IComparer<PointM> Member
+
+            public int Compare(PointM x, PointM y)
+            {
+                return ((T)x.M).CompareTo(((T)y.M));
+            }
+
+            #endregion
+        }
+
+        #endregion
+    }
+
+    public class PointM2 : PointM
+    {
+        private object _m2;
+
+        public PointM2(double x, double y, object m, object m2)
+            : base(x, y, m)
+        {
+            _m2 = m2;
+        }
+        public PointM2(double x, double y, double z, object m, object m2)
+            : base(x, y, z, m)
+        {
+            _m2 = m2;
+        }
+        public PointM2(IPoint p, object m, object m2)
+            : this(p.X, p.Y, p.Z, m, m2)
+        {
+        }
+
+        public object M2
+        {
+            get { return _m2; }
+            set { _m2 = value; }
+        }
+    }
+
+    public class PointM3 : PointM2
+    {
+        private object _m3;
+
+        public PointM3(double x, double y, object m, object m2, object m3)
+            : base(x, y, m, m2)
+        {
+            _m3 = m3;
+        }
+        public PointM3(double x, double y, double z, object m, object m2, object m3)
+            : base(x, y, z, m, m2)
+        {
+            _m3 = m3;
+        }
+        public PointM3(IPoint p, object m, object m2, object m3)
+            : this(p.X, p.Y, p.Z, m, m2, m3)
+        {
+        }
+
+        public object M3
+        {
+            get { return _m3; }
+            set { _m3 = value; }
+        }
     }
 
     /// <summary>
@@ -980,6 +1093,18 @@ namespace gView.Framework.Geometry
             }
         }
 
+        public IPoint[] ToArray(int fromIndex = 0, bool reverse = false)
+        {
+            if (reverse)
+            {
+                return ((IEnumerable<Point>)m_points).Reverse().Skip(fromIndex).ToArray();
+            }
+            else
+            {
+                return m_points.Skip(fromIndex).ToArray();
+            }
+        }
+
         public void Dispose()
         {
 
@@ -1018,22 +1143,14 @@ namespace gView.Framework.Geometry
             m_points.Insert(pos, point);
         }
 
-        public void AddPoints(IPointCollection pColl)
+        public void AddPoints(IEnumerable<IPoint> points)
         {
-            if (pColl == null)
+            if (points == null)
             {
                 return;
             }
 
-            for (int i = 0, to = pColl.PointCount; i < to; i++)
-            {
-                if (pColl[i] == null)
-                {
-                    continue;
-                }
-
-                m_points.Add(pColl[i]);
-            }
+            m_points.AddRange(points.Where(p => p != null));
 
             _cacheEnv = null;
         }
@@ -1474,6 +1591,31 @@ namespace gView.Framework.Geometry
             }
             return trim;
         }
+
+        public IPoint MidPoint2D
+        {
+            get
+            {
+                if (this.PointCount == 0)
+                    return null;
+
+                double length = this.Length;
+                if (length == 0)
+                    return this[0];
+
+                return Algorithm.PolylinePoint(new Polyline(this), length / 2D);
+            }
+        }
+
+        public IPolyline ToPolyline()
+        {
+            var path = new Path(this);
+            if (this is Ring)
+                path.ClosePath();
+
+            return new Polyline(path);
+        }
+
         #endregion
 
         #region ICloneable Member
@@ -1600,6 +1742,12 @@ namespace gView.Framework.Geometry
                 return new Point(cx / A, cy / A);
             }
         }
+
+        public IPolygon ToPolygon()
+        {
+            return new Polygon(new Ring(this));  // Create new Ring -> Holes get outer rings!!
+        }
+
         #endregion
 
         public override object Clone()
@@ -1747,6 +1895,8 @@ namespace gView.Framework.Geometry
                 return _paths.Count;
             }
         }
+
+        public IEnumerable<IPath> Paths { get { return _paths; } }
 
         /// <summary>
         /// Returns the path at the given position (index).
@@ -2000,6 +2150,29 @@ namespace gView.Framework.Geometry
         }
 
         #endregion
+
+        public double Distance2D(IPolyline candidate)
+        {
+            if (candidate == null || candidate.PathCount == 0 || this.PathCount == 0)
+                return double.MaxValue;
+
+            double dist = double.MaxValue;
+            foreach (var candidatePath in candidate.Paths)
+            {
+                foreach (var candidatePoint in candidatePath.ToArray())
+                {
+                    dist = Math.Min(Algorithm.Point2ShapeDistance(this, candidatePoint), dist);
+                }
+            }
+            foreach (var path in this._paths)
+            {
+                foreach (var point in path.ToArray())
+                {
+                    dist = Math.Min(Algorithm.Point2ShapeDistance(candidate, point), dist);
+                }
+            }
+            return dist;
+        }
     }
 
     /// <summary>
@@ -2148,7 +2321,29 @@ namespace gView.Framework.Geometry
             }
         }
 
+        public void CloseAllRings()
+        {
+            if (_rings != null)
+            {
+                foreach (var ring in _rings)
+                {
+                    ring.Close();
+                }
+            }
+        }
 
+        public void MakeValid()
+        {
+            List<IRing> v = _rings;
+            _rings = new List<IRing>();
+
+            foreach(var ring in v)
+            {
+                _rings.AddRange(Algorithm.SplitRing(ring));
+            }
+
+            VerifyHoles();
+        }
 
         #endregion
 
@@ -2299,7 +2494,34 @@ namespace gView.Framework.Geometry
             _ringsChecked = _rings.Count;
         }
 
-        internal int OuterRingCount
+        public IEnumerable<IRing> OuterRings()
+        {
+            VerifyHoles();
+
+            return _rings.Where(r => !(r is IHole));
+        }
+
+        public IEnumerable<IHole> InnerRings(IRing ring)
+        {
+            VerifyHoles();
+
+            if (ring is IHole)
+            {
+                return new IHole[0];
+            }
+
+            List<IHole> result = new List<IHole>();
+            foreach(IHole hole in _rings.Where(r=>r is IHole))
+            {
+                if (SpatialAlgorithms.Algorithm.Jordan(ring, hole))
+                {
+                    result.Add(hole);
+                }
+            }
+            return result;
+        }
+
+        public int OuterRingCount
         {
             get
             {
@@ -2319,7 +2541,7 @@ namespace gView.Framework.Geometry
                 return counter;
             }
         }
-        internal int InnerRingCount
+        public int InnerRingCount
         {
             get
             {
@@ -2337,6 +2559,16 @@ namespace gView.Framework.Geometry
                     counter++;
                 }
                 return counter;
+            }
+        }
+
+        public IEnumerable<IRing> Rings { get { return _rings; } }
+        public IEnumerable<IHole> Holes
+        {
+            get
+            {
+                VerifyHoles();
+                return _rings.Where(r => (r is IHole)).Select(h => (IHole)h);
             }
         }
 
@@ -2526,33 +2758,33 @@ namespace gView.Framework.Geometry
 
         public override bool Equals(object obj)
         {
-            return Equals(obj, 0.0);
+            return Equals(obj, 1e-11);
         }
-        public bool Equals(object obj, double epsi)
-        {
-            if (obj is IPolygon)
-            {
-                IPolygon polygon = (IPolygon)obj;
-                if (polygon.RingCount != this.RingCount)
-                {
-                    return false;
-                }
+        //public bool Equals(object obj, double epsi)
+        //{
+        //    if (obj is IPolygon)
+        //    {
+        //        IPolygon polygon = (IPolygon)obj;
+        //        if (polygon.RingCount != this.RingCount)
+        //        {
+        //            return false;
+        //        }
 
-                for (int i = 0; i < this.RingCount; i++)
-                {
-                    IRing r1 = this[i];
-                    IRing r2 = polygon[i];
+        //        for (int i = 0; i < this.RingCount; i++)
+        //        {
+        //            IRing r1 = this[i];
+        //            IRing r2 = polygon[i];
 
-                    if (!r1.Equals(r2, epsi))
-                    {
-                        return false;
-                    }
-                }
+        //            if (!r1.Equals(r2, epsi))
+        //            {
+        //                return false;
+        //            }
+        //        }
 
-                return true;
-            }
-            return false;
-        }
+        //        return true;
+        //    }
+        //    return false;
+        //}
 
         #region IEnumerable<IRing> Members
 
@@ -2567,6 +2799,81 @@ namespace gView.Framework.Geometry
         }
 
         #endregion
+
+        public double Distance2D(IPolygon candidate)
+        {
+            if (candidate == null || candidate.RingCount == 0 || this.RingCount == 0)
+                return double.MaxValue;
+
+            double dist = double.MaxValue;
+            foreach (var candidateRing in candidate.Rings)
+            {
+                foreach (var candidatePoint in candidateRing.ToArray())
+                {
+                    dist = Math.Min(Algorithm.Point2ShapeDistance(this, candidatePoint), dist);
+                }
+            }
+            foreach (var ring in this._rings)
+            {
+                foreach (var point in ring.ToArray())
+                {
+                    dist = Math.Min(Algorithm.Point2ShapeDistance(candidate, point), dist);
+                }
+            }
+            return dist;
+        }
+
+        public bool Equals(object obj, double epsi)
+        {
+            if (obj is Polygon)
+            {
+                var polygon = (Polygon)obj;
+
+                if (polygon.RingCount != this.RingCount)
+                    return false;
+
+                if (Math.Abs(polygon.Area - this.Area) > epsi)
+                    return false;
+
+                var rings = _rings.OrderBy(r => r.Area).ToArray();
+                var candidateRings = polygon._rings.OrderBy(r => r.Area).ToArray();
+
+                for (int i = 0; i < rings.Length; i++)
+                {
+                    var ring = rings[i];
+                    ring.ClosePath();
+                    for (int j = 0; j < rings.Length; j++)
+                    {
+                        var candidateRing = candidateRings[j];
+                        candidateRing.ClosePath();
+
+                        //if (ring.PointCount != candidateRing.PointCount)
+                        //    return false;
+
+                        if (Math.Abs(ring.Area - candidateRing.Area) > epsi)
+                            return false;
+
+                        if (!ring.Envelope.Equals(candidateRing.Envelope))
+                            return false;
+
+                        // ToDo:
+                        // Testen, ob die Punkte eines Rings alle auf der Kante des anderen liegen...
+
+                        //var ringPoints = ring.ToArray();
+                        //var candidatePoints = candidateRing.ToArray();
+
+                        //foreach(var ringPoint in ringPoints)
+                        //{
+                        //    if (candidatePoints.Where(p => p.Equals(ringPoint)).Count() == 0)
+                        //        return false;
+                        //}
+                    }
+                }
+                return true;
+            }
+
+            return false;
+        }
     }
 
     /// <summary>

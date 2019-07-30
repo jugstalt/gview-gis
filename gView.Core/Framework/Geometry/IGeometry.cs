@@ -102,6 +102,8 @@ namespace gView.Framework.Geometry
 
         double Distance(IPoint p);
         double Distance2(IPoint p);
+
+        double Distance2D(IPoint p);
     }
 
     public interface IPointCollection : IEnumerable<IPoint>
@@ -109,7 +111,8 @@ namespace gView.Framework.Geometry
         void AddPoint(IPoint point);
         void InsertPoint(IPoint point, int pos);
         void RemovePoint(int pos);
-        void AddPoints(IPointCollection pColl);
+        //void AddPoints(IPointCollection pColl);
+        void AddPoints(IEnumerable<IPoint> points);
 
         int PointCount { get; }
         IPoint this[int pointIndex] { get; }
@@ -120,6 +123,8 @@ namespace gView.Framework.Geometry
         void Deserialize(BinaryReader r, IGeometryDef geomDef);
 
         bool Equals(object obj, double epsi);
+
+        IPoint[] ToArray(int fromIndex = 0, bool reverse = false);
     }
 
     public interface IMultiPoint : IGeometry, IPointCollection
@@ -134,6 +139,10 @@ namespace gView.Framework.Geometry
 
         void ChangeDirection();
         IPath Trim(double length);
+
+        IPoint MidPoint2D { get; }
+
+        IPolyline ToPolyline();
     }
 
     public interface IRing : IPath
@@ -141,6 +150,8 @@ namespace gView.Framework.Geometry
         double Area { get; }
         IPoint Centroid { get; }
         void Close();
+
+        IPolygon ToPolygon();
     }
 
     public interface IHole : IRing
@@ -156,7 +167,11 @@ namespace gView.Framework.Geometry
         int PathCount { get; }
         IPath this[int pathIndex] { get; }
 
+        IEnumerable<IPath> Paths { get; }
+
         double Length { get; }
+
+        double Distance2D(IPolyline p);
     }
 
     public interface IPolygon : IGeometry, IEnumerable<IRing>
@@ -169,8 +184,24 @@ namespace gView.Framework.Geometry
         IRing this[int ringIndex] { get; }
 
         void VerifyHoles();
+        void MakeValid();
+
+
+        int OuterRingCount { get; }
+
+        int InnerRingCount { get; }
+
+        void CloseAllRings();
+
+        IEnumerable<IRing> OuterRings();
+        IEnumerable<IHole> InnerRings(IRing outer);
+
+        IEnumerable<IRing> Rings { get; }
+        IEnumerable<IHole> Holes { get; }
 
         double Area { get; }
+
+        double Distance2D(IPolygon p);
     }
 
     public interface IAggregateGeometry : IGeometry, IEnumerable<IGeometry>

@@ -43,24 +43,38 @@ namespace gView.DataSources.MongoDb
             if (geometry is IPolygon)
             {
                 var polygon = (IPolygon)geometry;
-                polygon.VerifyHoles();
+                polygon.MakeValid();
+                polygon.CloseAllRings();
 
-                var linearRings = new List<GeoJsonLinearRingCoordinates<T>>();
-                for (int r = 0, r_to = polygon.RingCount; r < r_to; r++)
+                if (polygon.OuterRingCount == 1)
                 {
-                    linearRings.Add(new GeoJsonLinearRingCoordinates<T>(polygon[r].ToGeoJsonCoordinates<T>()));
-                }
-
-                if (linearRings.Count == 1)
-                {
-                    var polygonCoordinates = new GeoJsonPolygonCoordinates<T>(linearRings[0]);
+                    var outerRing = new GeoJsonLinearRingCoordinates<T>(polygon.OuterRings().First().ToGeoJsonCoordinates<T>());
+                    var innerRings = new List<GeoJsonLinearRingCoordinates<T>>();
+                    if (polygon.InnerRingCount > 0)
+                    {
+                        foreach (var hole in polygon.InnerRings(polygon.OuterRings().First()))
+                        {
+                            innerRings.Add(new GeoJsonLinearRingCoordinates<T>(hole.ToGeoJsonCoordinates<T>()));
+                        }
+                    }
+                    var polygonCoordinates = innerRings.Count > 0 ? new GeoJsonPolygonCoordinates<T>(outerRing, innerRings) : new GeoJsonPolygonCoordinates<T>(outerRing);
                     return new GeoJsonPolygon<T>(polygonCoordinates);
                 }
-                else if (linearRings.Count > 1)
+                else if(polygon.OuterRingCount>1)
                 {
-                    var multiPolygonCoordinates = new GeoJsonMultiPolygonCoordinates<T>(
-                        linearRings.Select(r => new GeoJsonPolygonCoordinates<T>(r)));
+                    List<GeoJsonPolygonCoordinates<T>> polygonCoordinatesArray = new List<GeoJsonPolygonCoordinates<T>>();
+                    foreach(var ring in polygon.OuterRings())
+                    {
+                        var outerRing = new GeoJsonLinearRingCoordinates<T>(ring.ToGeoJsonCoordinates<T>());
+                        var innerRings = new List<GeoJsonLinearRingCoordinates<T>>();
+                        foreach(var hole in polygon.InnerRings(ring))
+                        {
+                            innerRings.Add(new GeoJsonLinearRingCoordinates<T>(hole.ToGeoJsonCoordinates<T>()));
+                        }
+                        polygonCoordinatesArray.Add(innerRings.Count > 0 ? new GeoJsonPolygonCoordinates<T>(outerRing, innerRings) : new GeoJsonPolygonCoordinates<T>(outerRing));
+                    }
 
+                    var multiPolygonCoordinates = new GeoJsonMultiPolygonCoordinates<T>(polygonCoordinatesArray);
                     return new GeoJsonMultiPolygon<T>(multiPolygonCoordinates);
                 }
             }
@@ -290,7 +304,9 @@ namespace gView.DataSources.MongoDb
                     var propertyInfo = geometryDocument.GetType().GetProperty($"ShapeGeneralized{i}");
                     if (propertyInfo != null)
                     {
-                        propertyInfo.SetValue(geometryDocument, generalized[i].ToGeoJsonGeometry<GeoJson2DGeographicCoordinates>());
+                        var wkb = gView.Framework.OGC.OGC.GeometryToWKB(generalized[i], 0, Framework.OGC.OGC.WkbByteOrder.Ndr);
+                        propertyInfo.SetValue(geometryDocument, wkb);
+                        //propertyInfo.SetValue(geometryDocument, generalized[i].ToGeoJsonGeometry<GeoJson2DGeographicCoordinates>());
                     }
                 }
             }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.MongoDb
 {
-    [ImportFeaturesBufferSize(1000)]
+    [ImportFeaturesBufferSize(50)]
     class MongoDbFeatureClass : IFeatureClass
     {
         private MongoDbFeatureClass()

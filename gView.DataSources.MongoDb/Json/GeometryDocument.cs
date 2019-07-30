@@ -20,35 +20,35 @@ namespace gView.DataSources.MongoDb.Json
         public GeoJsonGeometry<GeoJson2DGeographicCoordinates> Bounds { get; set; }
 
         [BsonElement("_shapeGen0")]
-        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> ShapeGeneralized0 { get; set; }
+        public byte[] ShapeGeneralized0 { get; set; }
         [BsonElement("_shapeGen1")]
-        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> ShapeGeneralized1 { get; set; }
+        public byte[] ShapeGeneralized1 { get; set; }
         [BsonElement("_shapeGen2")]
-        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> ShapeGeneralized2 { get; set; }
+        public byte[] ShapeGeneralized2 { get; set; }
         [BsonElement("_shapeGen3")]
-        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> ShapeGeneralized3 { get; set; }
+        public byte[] ShapeGeneralized3 { get; set; }
         [BsonElement("_shapeGen4")]
-        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> ShapeGeneralized4 { get; set; }
+        public byte[] ShapeGeneralized4 { get; set; }
         [BsonElement("_shapeGen5")]
-        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> ShapeGeneralized5 { get; set; }
+        public byte[] ShapeGeneralized5 { get; set; }
         [BsonElement("_shapeGen6")]
-        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> ShapeGeneralized6 { get; set; }
+        public byte[] ShapeGeneralized6 { get; set; }
         [BsonElement("_shapeGen7")]
-        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> ShapeGeneralized7 { get; set; }
+        public byte[] ShapeGeneralized7 { get; set; }
         [BsonElement("_shapeGen8")]
-        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> ShapeGeneralized8 { get; set; }
+        public byte[] ShapeGeneralized8 { get; set; }
         [BsonElement("_shapeGen9")]
-        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> ShapeGeneralized9 { get; set; }
+        public byte[] ShapeGeneralized9 { get; set; }
         [BsonElement("_shapeGen10")]
-        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> ShapeGeneralized10 { get; set; }
+        public byte[] ShapeGeneralized10 { get; set; }
         [BsonElement("_shapeGen11")]
-        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> ShapeGeneralized11 { get; set; }
+        public byte[] ShapeGeneralized11 { get; set; }
         [BsonElement("_shapeGen12")]
-        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> ShapeGeneralized12 { get; set; }
+        public byte[] ShapeGeneralized12 { get; set; }
         [BsonElement("_shapeGen13")]
-        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> ShapeGeneralized13 { get; set; }
+        public byte[] ShapeGeneralized13 { get; set; }
         [BsonElement("_shapeGen14")]
-        public GeoJsonGeometry<GeoJson2DGeographicCoordinates> ShapeGeneralized14 { get; set; }
+        public byte[] ShapeGeneralized14 { get; set; }
 
         [BsonElement("properties")]
         public Dictionary<string,object> Properties { get; set; }
