@@ -38,6 +38,7 @@
     <ProjectReference Include="..\gView.DataSources.Fdb.SQLite\gView.DataSources.Fdb.SQLite.csproj" />
     <ProjectReference Include="..\gView.DataSources.Fdb.SqlServer\gView.DataSources.Fdb.SqlServer.csproj" />
     <ProjectReference Include="..\gView.DataSources.Fdb\gView.DataSources.Fdb.csproj" />
+    <ProjectReference Include="..\gView.DataSources.MongoDb\gView.DataSources.MongoDb.csproj" />
     <ProjectReference Include="..\gView.DataSources.MSSqlSpatial\gView.DataSources.MSSqlSpatial.csproj" />
     <ProjectReference Include="..\gView.DataSources.OSGeo\gView.DataSources.OSGeo.csproj" />
     <ProjectReference Include="..\gView.DataSources.PostGIS\gView.DataSources.PostGIS.csproj" />

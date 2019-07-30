@@ -103,6 +103,8 @@ namespace gView.Framework.system
                             _pluginTypes.Add(registerPluginAttribute.Value, pluginType);
 
                             OnAddPluginType?.Invoke(pluginType.ToString());
+
+                            Console.WriteLine($"added {pluginType.ToString()}");
                         }
                     }
                     catch (BadImageFormatException)
@@ -119,6 +121,9 @@ namespace gView.Framework.system
             {
                 error.Append(currentDll + ": " + ex.Message);
                 error.Append(Environment.NewLine);
+
+                Console.WriteLine("PluginManager Error:");
+                Console.WriteLine(error);
             }
 
             if (error.Length > 0)
