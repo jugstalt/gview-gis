@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.CosmoDb
 {
-    [RegisterPlugIn("8119C1CA-B8E1-4C55-B828-922966A56540")]
+    //[RegisterPlugIn("8119C1CA-B8E1-4C55-B828-922966A56540")]
     public class CosmoDbDataset : DatasetMetadata, IFeatureDataset2, IFeatureDatabase
     {
         internal DocumentClient _client = null;

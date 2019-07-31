@@ -15,7 +15,7 @@ using System.Windows.Forms;
 
 namespace gView.DataSources.CosmoDb.UI
 {
-    [RegisterPlugIn("5E71742E-433F-4448-BEF5-82D51B791B15")]
+    //[RegisterPlugIn("5E71742E-433F-4448-BEF5-82D51B791B15")]
     public class CosmoDbGroupObject : ExplorerParentObject, IExplorerGroupObject
     {
         private CosmoDbConnectionsIcon _icon = new CosmoDbConnectionsIcon();
@@ -95,7 +95,7 @@ namespace gView.DataSources.CosmoDb.UI
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("E453CA32-5E00-4D03-B874-9760A1C782BE")]
+    //[gView.Framework.system.RegisterPlugIn("E453CA32-5E00-4D03-B874-9760A1C782BE")]
     public class CosmoDbNewConnectionObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectDoubleClick, IExplorerObjectCreatable
     {
         private IExplorerIcon _icon = new EventTableNewConnectionIcon();

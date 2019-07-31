@@ -29,6 +29,9 @@ namespace gView.DataSources.MongoDb
             throw new NotImplementedException();
         }
 
+        public delegate IGeometryDef BeforeCreateFeatureClassHandler(string fcname, IGeometryDef geomDef);
+        public BeforeCreateFeatureClassHandler BeforeCreateFeatureClass = null;
+
         async public Task<int> CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFields fields)
         {
             try
@@ -44,10 +47,19 @@ namespace gView.DataSources.MongoDb
                     throw new Exception($"Featureclass {fcname} already exists");
                 }
 
+                if(BeforeCreateFeatureClass!=null)
+                {
+                    geomDef = BeforeCreateFeatureClass(fcname, geomDef);
+                }
+
+
                 await _spatialCollectionRef.InsertOneAsync(
                     new Json.SpatialCollectionItem(geomDef, fields)
                     {
-                        Name = fcname
+                        Name = fcname,
+                        GeneralizationLevel = geomDef is MongoGeometryDef ?
+                                ((MongoGeometryDef)geomDef).GeneralizationLevel :
+                                -1
                     });
 
                 return 1;
@@ -165,6 +177,10 @@ namespace gView.DataSources.MongoDb
                     containers[i] = new List<Json.GeometryDocument>();
                 }
 
+                var generalizationLevel = fClass is MongoDbFeatureClass ?
+                    ((MongoDbFeatureClass)fClass).GeneralizationLevel :
+                    -1;
+
                 int counter = 0;
                 foreach (var feature in features)
                 {
@@ -185,7 +201,7 @@ namespace gView.DataSources.MongoDb
                         if (fClass.GeometryType != geometryType.Point)
                         {
                             document.Bounds = feature.Shape.Envelope.ToPolygon(0).ToGeoJsonGeometry<GeoJson2DGeographicCoordinates>();
-                            document.AppendGeneralizedShapes(feature.Shape, fClass.SpatialReference);
+                            document.AppendGeneralizedShapes(feature.Shape, fClass.SpatialReference, generalizationLevel);
                         }
 
                         #region Generalize

@@ -8,8 +8,6 @@ using gView.Framework.system.UI;
 using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -59,7 +57,9 @@ namespace gView.DataSources.MongoDb.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             if (this.FullName == FullName)
             {
@@ -85,7 +85,7 @@ namespace gView.DataSources.MongoDb.UI
             Dictionary<string, string> DbConnectionStrings = conStream.Connections;
             foreach (string name in DbConnectionStrings.Keys)
             {
-                var connectionString=DbConnectionStrings[name];
+                var connectionString = DbConnectionStrings[name];
                 base.AddChildObject(new MongoDbExplorerObject(this, name, connectionString));
             }
 
@@ -177,7 +177,9 @@ namespace gView.DataSources.MongoDb.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }
@@ -226,7 +228,10 @@ namespace gView.DataSources.MongoDb.UI
 
         void ConnectionProperties_Click(object sender, EventArgs e)
         {
-            if (_connectionString == null) return;
+            if (_connectionString == null)
+            {
+                return;
+            }
 
             FormMongoDbConnection dlg = new FormMongoDbConnection();
 
@@ -283,11 +288,16 @@ namespace gView.DataSources.MongoDb.UI
         async public Task<object> GetInstanceAsync()
         {
             if (_dataset != null)
+            {
                 _dataset.Dispose();
+            }
 
             _dataset = new MongoDbDataset();
             await _dataset.SetConnectionString(_connectionString);
             await _dataset.Open();
+
+            ((MongoDbDataset)_dataset).BeforeCreateFeatureClass = BeforeCreateFeatureClass;
+
             return _dataset;
         }
 
@@ -299,16 +309,22 @@ namespace gView.DataSources.MongoDb.UI
         {
             await base.Refresh();
             if (_connectionString == null)
+            {
                 return false;
+            }
 
             var dataset = new MongoDbDataset();
             await dataset.SetConnectionString(_connectionString);
             await dataset.Open();
 
+            dataset.BeforeCreateFeatureClass = BeforeCreateFeatureClass;
+
             List<IDatasetElement> elements = await dataset.Elements();
 
             if (elements == null)
+            {
                 return false;
+            }
 
             foreach (IDatasetElement element in elements)
             {
@@ -327,10 +343,16 @@ namespace gView.DataSources.MongoDb.UI
 
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+            {
+                return cache[FullName];
+            }
 
             MongoDbGroupObject group = new MongoDbGroupObject();
-            if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2) return null;
+            if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2)
+            {
+                return null;
+            }
 
             group = (MongoDbGroupObject)((cache.Contains(group.FullName)) ? cache[group.FullName] : group);
 
@@ -366,7 +388,11 @@ namespace gView.DataSources.MongoDb.UI
                 ret = stream.Remove(_name);
             }
 
-            if (ret && ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+            if (ret && ExplorerObjectDeleted != null)
+            {
+                ExplorerObjectDeleted(this);
+            }
+
             return Task.FromResult(ret);
         }
 
@@ -399,7 +425,10 @@ namespace gView.DataSources.MongoDb.UI
             if (ret == true)
             {
                 _name = newName;
-                if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
+                if (ExplorerObjectRenamed != null)
+                {
+                    ExplorerObjectRenamed(this);
+                }
             }
             return Task.FromResult(ret);
         }
@@ -414,6 +443,24 @@ namespace gView.DataSources.MongoDb.UI
         }
 
         #endregion
+
+        public IGeometryDef BeforeCreateFeatureClass(string fcName, IGeometryDef geomDef)
+        {
+            if (geomDef.GeometryType == geometryType.Polygon || geomDef.GeometryType == geometryType.Polyline)
+            {
+                var dlg = new FormBeforeCreateFeatureclass();
+                dlg.ShowDialog();
+
+                if(dlg.GeneralizeToLevel>=0)
+                {
+                    return new MongoGeometryDef(geomDef)
+                    {
+                        GeneralizationLevel = dlg.GeneralizeToLevel
+                    };
+                }
+            }
+            return geomDef;
+        }
     }
 
     [gView.Framework.system.RegisterPlugIn("38FF7F06-BF15-4C8B-965A-9FE4503969D1")]
@@ -428,7 +475,10 @@ namespace gView.DataSources.MongoDb.UI
         public PostGISFeatureClassExplorerObject(MongoDbExplorerObject parent, IDatasetElement element)
             : base(parent, typeof(IFeatureClass), 1)
         {
-            if (element == null || !(element.Class is IFeatureClass)) return;
+            if (element == null || !(element.Class is IFeatureClass))
+            {
+                return;
+            }
 
             _parent = parent;
             _fcname = element.Title;
@@ -460,7 +510,11 @@ namespace gView.DataSources.MongoDb.UI
         {
             get
             {
-                if (_parent == null) return "";
+                if (_parent == null)
+                {
+                    return "";
+                }
+
                 return _parent.ConnectionString;
             }
         }
@@ -476,7 +530,11 @@ namespace gView.DataSources.MongoDb.UI
         {
             get
             {
-                if (_parent == null) return "";
+                if (_parent == null)
+                {
+                    return "";
+                }
+
                 return _parent.FullName + @"\" + this.Name;
             }
         }
@@ -508,11 +566,16 @@ namespace gView.DataSources.MongoDb.UI
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return cache[FullName];
+            }
 
             FullName = FullName.Replace("/", @"\");
             int lastIndex = FullName.LastIndexOf(@"\");
-            if (lastIndex == -1) return null;
+            if (lastIndex == -1)
+            {
+                return null;
+            }
 
             string dsName = FullName.Substring(0, lastIndex);
             string fcName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
@@ -522,7 +585,9 @@ namespace gView.DataSources.MongoDb.UI
 
             var childObjects = await dsObject?.ChildObjects();
             if (childObjects == null)
+            {
                 return null;
+            }
 
             foreach (IExplorerObject exObject in childObjects)
             {
@@ -548,7 +613,11 @@ namespace gView.DataSources.MongoDb.UI
             {
                 if (await ((IFeatureDatabase)instance).DeleteFeatureClass(this.Name))
                 {
-                    if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+                    if (ExplorerObjectDeleted != null)
+                    {
+                        ExplorerObjectDeleted(this);
+                    }
+
                     return true;
                 }
                 else
@@ -587,7 +656,7 @@ namespace gView.DataSources.MongoDb.UI
 
         #endregion
     }
-    
+
     class EventTableNewConnectionIcon : IExplorerIcon
     {
         #region IExplorerIcon Members
