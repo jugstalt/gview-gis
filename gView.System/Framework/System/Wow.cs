@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace gView.Framework.system
 {
+    // Wow!
     public static class Wow
     {
         public static bool Is64BitProcess
