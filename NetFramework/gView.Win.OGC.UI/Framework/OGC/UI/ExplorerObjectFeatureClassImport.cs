@@ -1,15 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-using System.Threading;
+using gView.Framework.Data;
+using gView.Framework.Sys.UI;
 using gView.Framework.system;
 using gView.Framework.system.UI;
 using gView.Framework.UI;
-using gView.Framework.Data;
 using gView.Framework.UI.Dialogs;
-using gView.Framework.Sys.UI;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.OGC.UI
 {
@@ -37,24 +35,36 @@ namespace gView.Framework.OGC.UI
                         ExplorerObjectManager exObjectManager = new ExplorerObjectManager();
 
                         List<IExplorerObject> exObjects = await exObjectManager.DeserializeExplorerObject((IEnumerable<IExplorerObjectSerialization>)ob);
-                        if (exObjects == null) return;
+                        if (exObjects == null)
+                        {
+                            return;
+                        }
 
                         _dataset = await ((IExplorerObject)this).GetInstanceAsync() as IFeatureDataset;
 
                         foreach (IExplorerObject exObject in ListOperations<IExplorerObject>.Clone(exObjects))
                         {
                             IFeatureClass fc = await exObject.GetInstanceAsync() as IFeatureClass;
-                            if (fc == null) continue;
+                            if (fc == null)
+                            {
+                                continue;
+                            }
 
                             if (fc.Dataset != null && fc.Dataset.ConnectionString.ToLower() == _dataset.ConnectionString.ToLower())
                             {
                                 exObjects.Remove(exObject);
                             }
                         }
-                        if (exObjects.Count == 0) return;
+                        if (exObjects.Count == 0)
+                        {
+                            return;
+                        }
 
                         FormFeatureclassCopy dlg = await FormFeatureclassCopy.Create(exObjects, _dataset);
-                        if (dlg.ShowDialog() != DialogResult.OK) continue;
+                        if (dlg.ShowDialog() != DialogResult.OK)
+                        {
+                            continue;
+                        }
 
                         foreach (FeatureClassListViewItem fcItem in dlg.FeatureClassItems)
                         {
@@ -136,7 +146,9 @@ namespace gView.Framework.OGC.UI
             if (datasetObject is IFeatureClass)
             {
                 if (_import == null)
+                {
                     _import = new FeatureImport();
+                }
                 else
                 {
                     MessageBox.Show("ERROR: Import already runnung");
@@ -153,7 +165,9 @@ namespace gView.Framework.OGC.UI
             if (datasetObject is FeatureClassListViewItem)
             {
                 if (_import == null)
+                {
                     _import = new FeatureImport();
+                }
                 else
                 {
                     MessageBox.Show("ERROR: Import already runnung");
@@ -172,7 +186,10 @@ namespace gView.Framework.OGC.UI
         // Thread
         async private Task ImportAsync(object element)
         {
-            if (_import == null) return;
+            if (_import == null)
+            {
+                return;
+            }
 
             if (element is IFeatureClass)
             {
@@ -189,7 +206,10 @@ namespace gView.Framework.OGC.UI
             else if (element is FeatureClassListViewItem)
             {
                 FeatureClassListViewItem item = element as FeatureClassListViewItem;
-                if (item.FeatureClass == null) return;
+                if (item.FeatureClass == null)
+                {
+                    return;
+                }
 
                 if (!await _import.ImportToNewFeatureclass(
                     _dataset,
@@ -214,12 +234,16 @@ namespace gView.Framework.OGC.UI
             {
                 var reporter = new FeatureClassImportProgressReporter();
                 if (import == null)
+                {
                     return reporter;
+                }
 
                 reporter._cancelTracker = import.CancelTracker;
 
                 if (source != null)
+                {
                     reporter._report.featureMax = await source.CountFeatures();
+                }
 
                 import.ReportAction += new FeatureImport.ReportActionEvent(reporter.import_ReportAction);
                 import.ReportProgress += new FeatureImport.ReportProgressEvent(reporter.import_ReportProgress);
@@ -239,7 +263,10 @@ namespace gView.Framework.OGC.UI
 
             void import_ReportProgress(FeatureImport sender, int progress)
             {
-                if (ReportProgress == null) return;
+                if (ReportProgress == null)
+                {
+                    return;
+                }
 
                 _report.featureMax = Math.Max(_report.featureMax, progress);
                 _report.featurePos = progress;
@@ -249,7 +276,10 @@ namespace gView.Framework.OGC.UI
 
             void import_ReportAction(FeatureImport sender, string action)
             {
-                if (ReportProgress == null) return;
+                if (ReportProgress == null)
+                {
+                    return;
+                }
 
                 _report.featurePos = 0;
                 _report.Message = action;

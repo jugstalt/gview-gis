@@ -49,6 +49,7 @@ namespace gView.DataSources.MongoDb
             fc.MongoCollection = await dataset.GetFeatureCollection(fc);
 
             fc.Envelope = spatialCollectoinItem.FeatureBounds?.ToEnvelope() ?? new Envelope(-180, -90, 180, 90);
+            fc.GeneralizationLevel = spatialCollectoinItem.GeneralizationLevel;
 
             return fc;
         }
@@ -106,5 +107,6 @@ namespace gView.DataSources.MongoDb
 
         internal IMongoCollection<Json.GeometryDocument> MongoCollection { get; private set; }
 
+        internal int GeneralizationLevel { get; private set; }
     }
 }

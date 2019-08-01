@@ -44,6 +44,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExplorerObjects.cs" />
+    <Compile Include="FormBeforeCreateFeatureclass.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormBeforeCreateFeatureclass.Designer.cs">
+      <DependentUpon>FormBeforeCreateFeatureclass.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormMongoDbConnection.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -58,6 +64,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="FormBeforeCreateFeatureclass.resx">
+      <DependentUpon>FormBeforeCreateFeatureclass.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FormMongoDbConnection.resx">
       <DependentUpon>FormMongoDbConnection.cs</DependentUpon>
     </EmbeddedResource>
@@ -78,6 +87,10 @@
     <ProjectReference Include="..\..\gView.Data\gView.Data.csproj">
       <Project>{9b556868-8431-4d6c-b002-3fef15df0498}</Project>
       <Name>gView.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Geometry\gView.Geometry.csproj">
+      <Project>{82012E45-2EFC-498E-9BB1-F3DEBA4B87C5}</Project>
+      <Name>gView.Geometry</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\gView.System\gView.System.csproj">
       <Project>{e50d8014-0fb8-4b67-8291-0abee04a1403}</Project>

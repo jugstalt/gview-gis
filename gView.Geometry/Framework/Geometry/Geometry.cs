@@ -3369,7 +3369,7 @@ namespace gView.Framework.Geometry
         #endregion
     }
 
-    public sealed class GeometryDef : IGeometryDef
+    public class GeometryDef : IGeometryDef
     {
         private bool _hasZ = false, _hasM = false;
         private ISpatialReference _sRef = null;

@@ -12,7 +12,7 @@ namespace gView.DataSources.MongoDb
 {
     class MongoDbFeatureCursor : FeatureCursor
     {
-        private const double _dpm= 96D / 0.0254;
+        private const double _dpm = 96D / 0.0254;
         private IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
         private IAsyncCursor<Json.GeometryDocument> _cursor = null;
         private string _shapeFieldname = "_shape";
@@ -25,7 +25,7 @@ namespace gView.DataSources.MongoDb
             IFindFluent<Json.GeometryDocument, Json.GeometryDocument> findFluent = null;
 
             int bestLevel = -1;
-            if (fc.GeometryType != Framework.Geometry.geometryType.Point && filter.MapScale > 0)
+            if (fc.GeneralizationLevel >= 0 && fc.GeometryType != Framework.Geometry.geometryType.Point && filter.MapScale > 0)
             {
                 var resolution = filter.MapScale / _dpm;
                 bestLevel = resolution.BestResolutionLevel();
@@ -33,6 +33,7 @@ namespace gView.DataSources.MongoDb
 
             if (bestLevel >= 0)
             {
+                bestLevel = Math.Max(fc.GeneralizationLevel, bestLevel);
                 _shapeFieldname = $"_shapeGen{bestLevel}";
                 _shapePropertyInfo = typeof(Json.GeometryDocument).GetProperty($"ShapeGeneralized{bestLevel}");
                 _isWkbShape = true;
@@ -63,7 +64,7 @@ namespace gView.DataSources.MongoDb
                         .GeoIntersects(x => x.Shape, box) :
                     Builders<Json.GeometryDocument>.Filter
                         .GeoIntersects(x => x.Bounds, box);
-                    //.GeoWithinBox(x => x.Shape, env.minx, env.miny, env.maxx, env.maxy);
+                //.GeoWithinBox(x => x.Shape, env.minx, env.miny, env.maxx, env.maxy);
 
                 var findOptions = new FindOptions()
                 {
@@ -82,7 +83,7 @@ namespace gView.DataSources.MongoDb
             {
                 findFluent = findFluent.Limit(filter.Limit);
             }
-            if(filter.BeginRecord>1)
+            if (filter.BeginRecord > 1)
             {
                 findFluent = findFluent.Skip(filter.BeginRecord - 1);
             }
@@ -134,7 +135,7 @@ namespace gView.DataSources.MongoDb
                 if (_isWkbShape)
                 {
                     var wkbShape = _shapePropertyInfo.GetValue(document) as byte[];
-                    if(wkbShape!=null)
+                    if (wkbShape != null)
                     {
                         feature.Shape = gView.Framework.OGC.OGC.WKBToGeometry(wkbShape);
                     }
@@ -147,9 +148,9 @@ namespace gView.DataSources.MongoDb
                         feature.Shape = documentShape.ToGeometry();
                     }
                 }
-                if(document.Properties!=null)
+                if (document.Properties != null)
                 {
-                    foreach(var property in document.Properties.Keys)
+                    foreach (var property in document.Properties.Keys)
                     {
                         feature.Fields.Add(new FieldValue(property, document.Properties[property]));
                     }

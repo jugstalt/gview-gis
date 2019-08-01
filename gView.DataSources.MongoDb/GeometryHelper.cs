@@ -60,14 +60,14 @@ namespace gView.DataSources.MongoDb
                     var polygonCoordinates = innerRings.Count > 0 ? new GeoJsonPolygonCoordinates<T>(outerRing, innerRings) : new GeoJsonPolygonCoordinates<T>(outerRing);
                     return new GeoJsonPolygon<T>(polygonCoordinates);
                 }
-                else if(polygon.OuterRingCount>1)
+                else if (polygon.OuterRingCount > 1)
                 {
                     List<GeoJsonPolygonCoordinates<T>> polygonCoordinatesArray = new List<GeoJsonPolygonCoordinates<T>>();
-                    foreach(var ring in polygon.OuterRings())
+                    foreach (var ring in polygon.OuterRings())
                     {
                         var outerRing = new GeoJsonLinearRingCoordinates<T>(ring.ToGeoJsonCoordinates<T>());
                         var innerRings = new List<GeoJsonLinearRingCoordinates<T>>();
-                        foreach(var hole in polygon.InnerRings(ring))
+                        foreach (var hole in polygon.InnerRings(ring))
                         {
                             innerRings.Add(new GeoJsonLinearRingCoordinates<T>(hole.ToGeoJsonCoordinates<T>()));
                         }
@@ -256,7 +256,9 @@ namespace gView.DataSources.MongoDb
             for (int r = 0; r < Resolutions.Length; r++)
             {
                 if (Math.Abs(resolution - Resolutions[r]) < 1e-3)
+                {
                     return r;
+                }
 
                 if (resolution > Resolutions[r])
                 {
@@ -267,12 +269,23 @@ namespace gView.DataSources.MongoDb
             return -1;
         }
 
-        public static IGeometry[] Generalize(this IGeometry geometry, ISpatialReference sRef)
+        public static IGeometry[] Generalize(this IGeometry geometry, ISpatialReference sRef, int generalizationLevel)
         {
+
             var geometries = new IGeometry[Resolutions.Length];
+
+            if(generalizationLevel < 0)
+            {
+                return geometries;
+            }
 
             for (int r = Resolutions.Length - 1; r >= 0; r--)
             {
+                if (r < generalizationLevel)
+                {
+                    break;
+                }
+
                 var res = Resolutions[r];
                 if (sRef.SpatialParameters.IsGeographic == true)
                 {
@@ -287,15 +300,24 @@ namespace gView.DataSources.MongoDb
                 }
 
                 geometries[r] = generalizedGeometry;
+
                 geometry = generalizedGeometry;
             }
 
             return geometries;
         }
 
-        public static Json.GeometryDocument AppendGeneralizedShapes(this Json.GeometryDocument geometryDocument, IGeometry geometry, ISpatialReference sRef)
+        public static Json.GeometryDocument AppendGeneralizedShapes(
+            this Json.GeometryDocument geometryDocument,
+            IGeometry geometry, ISpatialReference sRef,
+            int generalizationLevel)
         {
-            var generalized = geometry.Generalize(sRef);
+            if (generalizationLevel < 0)
+            {
+                return geometryDocument;
+            }
+
+            var generalized = geometry.Generalize(sRef, generalizationLevel);
 
             for (int i = 0; i < generalized.Length; i++)
             {

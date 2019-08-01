@@ -10,7 +10,10 @@ namespace gView.DataSources.MongoDb.Json
 {
     public class SpatialCollectionItem
     {
-        public SpatialCollectionItem() { }
+        public SpatialCollectionItem()
+        {
+            this.GeneralizationLevel = 0;
+        }
 
         public SpatialCollectionItem(IGeometryDef geomDef, IFields fields)
         {
@@ -67,6 +70,9 @@ namespace gView.DataSources.MongoDb.Json
 
         [BsonElement("bounds")]
         public Bounds FeatureBounds { get; set; }
+
+        [BsonElement("generalizationLevel")]
+        public int GeneralizationLevel { get; set; }
 
         #region Classes
 
