@@ -17,7 +17,7 @@ namespace gView.DataSources.Fdb.MSAccess
     /// <summary>
     /// Zusammenfassung für AccessFDBDataset.
     /// </summary>
-    [gView.Framework.system.RegisterPlugIn("6F540340-74C9-4b1a-BD4D-B1C5FE946CA1")]
+    //[gView.Framework.system.RegisterPlugIn("6F540340-74C9-4b1a-BD4D-B1C5FE946CA1")]
     public class AccessFDBDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset
     {
         internal int _dsID = -1;

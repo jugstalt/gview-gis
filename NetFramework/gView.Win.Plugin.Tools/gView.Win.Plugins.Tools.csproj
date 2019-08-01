@@ -266,7 +266,7 @@
     <EmbeddedResource Include="Plugins\MapTools\Controls\MapOptionsControl.resx">
       <DependentUpon>MapOptionsControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Plugins\MapTools\Controls\SelectionEnvironmentControl.de.resx">
+    <EmbeddedResource Include="Plugins\MapTools\Controls\SelectionEnvironmentControl.de-DE.resx">
       <DependentUpon>SelectionEnvironmentControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Plugins\MapTools\Controls\SelectionEnvironmentControl.resx">
@@ -454,6 +454,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="Resources\add_data.png" />
   </ItemGroup>
   <ItemGroup>

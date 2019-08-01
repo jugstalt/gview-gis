@@ -83,7 +83,7 @@ namespace gView.Plugins.MapTools
         {
             get
             {
-                return global::gView.Win.Plugins.Tools.Properties.Resources.copy_;
+                return gView.Win.Plugin.Tools.Properties.Resources.copy_;
             }
         }
 
@@ -233,7 +233,7 @@ namespace gView.Plugins.MapTools
         {
             get
             {
-                return global::gView.Win.Plugins.Tools.Properties.Resources.copyto;
+                return gView.Win.Plugin.Tools.Properties.Resources.copyto;
             }
         }
 
@@ -321,7 +321,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.cut; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.cut; }
         }
 
         public void OnCreate(object hook)
@@ -463,7 +463,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.paste_; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.paste_; }
         }
 
         public void OnCreate(object hook)
@@ -791,7 +791,7 @@ namespace gView.Plugins.MapTools
 
         object IExTool.Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.paste; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.paste; }
         }
 
         void IExTool.OnCreate(object hook)
@@ -1018,7 +1018,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.delete; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.delete; }
         }
 
         public void OnCreate(object hook)

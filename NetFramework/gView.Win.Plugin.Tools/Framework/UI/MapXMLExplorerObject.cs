@@ -558,13 +558,13 @@ namespace gView.Framework.UI
                 switch (_imageIndex)
                 {
                     case 0:
-                        return global::gView.Win.Plugins.Tools.Properties.Resources.map16;
+                        return gView.Win.Plugin.Tools.Properties.Resources.map16;
                     case 1:
-                        return global::gView.Win.Plugins.Tools.Properties.Resources.layers;
+                        return gView.Win.Plugin.Tools.Properties.Resources.layers;
                     case 2:
-                        return global::gView.Win.Plugins.Tools.Properties.Resources.layer;
+                        return gView.Win.Plugin.Tools.Properties.Resources.layer;
                     case 3:
-                        return global::gView.Win.Plugins.Tools.Properties.Resources.layergroup;
+                        return gView.Win.Plugin.Tools.Properties.Resources.layergroup;
                 }
                 return null;
             }

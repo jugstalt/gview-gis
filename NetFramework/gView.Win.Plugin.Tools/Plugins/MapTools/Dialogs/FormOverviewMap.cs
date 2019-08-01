@@ -193,14 +193,14 @@ namespace gView.Plugins.MapTools.Dialogs
 
                 ToolStripMenuItem item = new ToolStripMenuItem(
                     "Zoom to actual extent",
-                    global::gView.Win.Plugins.Tools.Properties.Resources.zoom
+                    gView.Win.Plugin.Tools.Properties.Resources.zoom
                     );
                 item.Click += new EventHandler(zoom2actual_Click);
                 _contextMenu.Items.Add(item);
 
                 item = new ToolStripMenuItem(
                     "Zoom to maximum extent",
-                    global::gView.Win.Plugins.Tools.Properties.Resources.map16);
+                    gView.Win.Plugin.Tools.Properties.Resources.map16);
 
                 item.Click += new EventHandler(zoom2max_Click);
                 _contextMenu.Items.Add(item);

@@ -1140,7 +1140,7 @@ namespace gView.Plugins.MapTools.Graphics
 
                 _picker = new gView.Framework.Symbology.UI.Controls.ToolStripColorPicker(System.Drawing.Color.Red,
                     ((IMapApplication)_doc.Application).ApplicationWindow as Form);
-                _picker.Image = global::gView.Win.Plugins.Tools.Properties.Resources.BucketFill;
+                _picker.Image = gView.Win.Plugin.Tools.Properties.Resources.BucketFill;
                 _picker.ImageTransparentColor = System.Drawing.Color.Magenta;
                 _picker.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
                 _picker.AddColorNameToToolTip = false;
@@ -1239,7 +1239,7 @@ namespace gView.Plugins.MapTools.Graphics
 
                 _picker = new gView.Framework.Symbology.UI.Controls.ToolStripColorPicker(System.Drawing.Color.Blue, 
                     ((IMapApplication)_doc.Application).ApplicationWindow as Form);
-                _picker.Image = global::gView.Win.Plugins.Tools.Properties.Resources.PenDraw;
+                _picker.Image = gView.Win.Plugin.Tools.Properties.Resources.PenDraw;
                 _picker.ImageTransparentColor = System.Drawing.Color.Magenta;
                 _picker.ImageAlign = System.Drawing.ContentAlignment.MiddleCenter;
                 _picker.AddColorNameToToolTip = false;
@@ -1338,7 +1338,7 @@ namespace gView.Plugins.MapTools.Graphics
 
                 _picker = new gView.Framework.Symbology.UI.Controls.ToolStripColorPicker(System.Drawing.Color.Black,
                     ((IMapApplication)_doc.Application).ApplicationWindow as Form);
-                _picker.Image = global::gView.Win.Plugins.Tools.Properties.Resources.TextColor;
+                _picker.Image = gView.Win.Plugin.Tools.Properties.Resources.TextColor;
                 _picker.ImageTransparentColor = System.Drawing.Color.Magenta;
                 _picker.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
                 _picker.AddColorNameToToolTip = false;
@@ -1406,7 +1406,7 @@ namespace gView.Plugins.MapTools.Graphics
 
                 _picker = new ToolStripLineWidthPicker(
                     ((IMapApplication)_doc.Application).ApplicationWindow as Form);
-                _picker.Image = global::gView.Win.Plugins.Tools.Properties.Resources.penWidth;
+                _picker.Image = gView.Win.Plugin.Tools.Properties.Resources.penWidth;
                 _picker.PenWidthSelected += new EventHandler(picker_PenWidthSelected);
             }
         }
@@ -1486,7 +1486,7 @@ namespace gView.Plugins.MapTools.Graphics
 
                 _picker = new ToolStripDashStylePicker(
                     ((IMapApplication)_doc.Application).ApplicationWindow as Form);
-                _picker.Image = global::gView.Win.Plugins.Tools.Properties.Resources.dashstyle;
+                _picker.Image = gView.Win.Plugin.Tools.Properties.Resources.dashstyle;
                 _picker.PenDashStyleSelected += new EventHandler(picker_DashStyleSelected);
             }
         }

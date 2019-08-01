@@ -41,7 +41,7 @@ namespace gView.Plugins.MapTools.Controls
 
         public Image Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.info; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.info; }
         }
         #endregion
 

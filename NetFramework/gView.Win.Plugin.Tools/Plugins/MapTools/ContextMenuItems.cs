@@ -100,7 +100,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.import; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.import; }
         }
 
         public int SortOrder
@@ -257,7 +257,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return gView.Win.Plugins.Tools.Properties.Resources.document_properties; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.document_properties; }
         }
 
         #endregion
@@ -321,7 +321,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.add_map; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.add_map; }
         }
 
         #endregion
@@ -379,7 +379,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.remove_map; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.remove_map; }
         }
 
         #endregion
@@ -442,7 +442,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.data_info; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.data_info; }
         }
 
         #endregion
@@ -517,7 +517,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.pie_diagram; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.pie_diagram; }
         }
 
         #endregion

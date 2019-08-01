@@ -98,7 +98,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.clone; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.clone; }
         }
 
         public int SortOrder
@@ -195,7 +195,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.split; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.split; }
         }
 
         public int SortOrder

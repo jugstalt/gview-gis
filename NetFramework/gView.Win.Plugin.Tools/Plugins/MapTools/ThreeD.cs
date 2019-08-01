@@ -84,7 +84,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.polyline1; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.polyline1; }
         }
 
         public void OnCreate(object hook)

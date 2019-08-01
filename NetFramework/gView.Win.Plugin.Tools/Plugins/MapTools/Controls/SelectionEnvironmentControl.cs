@@ -174,11 +174,8 @@ namespace gView.Plugins.MapTools.Controls
             // 
             // contextMenuStrip1
             // 
-            this.contextMenuStrip1.AccessibleDescription = null;
-            this.contextMenuStrip1.AccessibleName = null;
             resources.ApplyResources(this.contextMenuStrip1, "contextMenuStrip1");
-            this.contextMenuStrip1.BackgroundImage = null;
-            this.contextMenuStrip1.Font = null;
+            this.contextMenuStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItemSelectByAttributes,
             this.toolStripMenuItemZoomToSelection,
@@ -187,45 +184,27 @@ namespace gView.Plugins.MapTools.Controls
             // 
             // toolStripMenuItemSelectByAttributes
             // 
-            this.toolStripMenuItemSelectByAttributes.AccessibleDescription = null;
-            this.toolStripMenuItemSelectByAttributes.AccessibleName = null;
             resources.ApplyResources(this.toolStripMenuItemSelectByAttributes, "toolStripMenuItemSelectByAttributes");
-            this.toolStripMenuItemSelectByAttributes.BackgroundImage = null;
-            this.toolStripMenuItemSelectByAttributes.Image = global::gView.Win.Plugins.Tools.Properties.Resources.SQL1;
             this.toolStripMenuItemSelectByAttributes.Name = "toolStripMenuItemSelectByAttributes";
-            this.toolStripMenuItemSelectByAttributes.ShortcutKeyDisplayString = null;
             this.toolStripMenuItemSelectByAttributes.Click += new System.EventHandler(this.toolStripMenuItemSelectByAttributes_Click);
             // 
             // toolStripMenuItemZoomToSelection
             // 
-            this.toolStripMenuItemZoomToSelection.AccessibleDescription = null;
-            this.toolStripMenuItemZoomToSelection.AccessibleName = null;
             resources.ApplyResources(this.toolStripMenuItemZoomToSelection, "toolStripMenuItemZoomToSelection");
-            this.toolStripMenuItemZoomToSelection.BackgroundImage = null;
-            this.toolStripMenuItemZoomToSelection.Image = global::gView.Win.Plugins.Tools.Properties.Resources.zoom2selection;
             this.toolStripMenuItemZoomToSelection.Name = "toolStripMenuItemZoomToSelection";
-            this.toolStripMenuItemZoomToSelection.ShortcutKeyDisplayString = null;
             this.toolStripMenuItemZoomToSelection.Click += new System.EventHandler(this.toolStripMenuItemZoomToSelection_Click);
             // 
             // toolStripMenuItemClearSelection
             // 
-            this.toolStripMenuItemClearSelection.AccessibleDescription = null;
-            this.toolStripMenuItemClearSelection.AccessibleName = null;
             resources.ApplyResources(this.toolStripMenuItemClearSelection, "toolStripMenuItemClearSelection");
-            this.toolStripMenuItemClearSelection.BackgroundImage = null;
-            this.toolStripMenuItemClearSelection.Image = global::gView.Win.Plugins.Tools.Properties.Resources.sel_base1;
             this.toolStripMenuItemClearSelection.Name = "toolStripMenuItemClearSelection";
-            this.toolStripMenuItemClearSelection.ShortcutKeyDisplayString = null;
             this.toolStripMenuItemClearSelection.Click += new System.EventHandler(this.toolStripMenuItemClearSelection_Click);
             // 
             // toolStrip1
             // 
-            this.toolStrip1.AccessibleDescription = null;
-            this.toolStrip1.AccessibleName = null;
             resources.ApplyResources(this.toolStrip1, "toolStrip1");
-            this.toolStrip1.BackgroundImage = null;
-            this.toolStrip1.Font = null;
             this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.toolStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.btnCategories,
             this.btnAlphabetic,
@@ -242,10 +221,7 @@ namespace gView.Plugins.MapTools.Controls
             // 
             // btnCategories
             // 
-            this.btnCategories.AccessibleDescription = null;
-            this.btnCategories.AccessibleName = null;
             resources.ApplyResources(this.btnCategories, "btnCategories");
-            this.btnCategories.BackgroundImage = null;
             this.btnCategories.Checked = true;
             this.btnCategories.CheckState = System.Windows.Forms.CheckState.Checked;
             this.btnCategories.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -254,27 +230,19 @@ namespace gView.Plugins.MapTools.Controls
             // 
             // btnAlphabetic
             // 
-            this.btnAlphabetic.AccessibleDescription = null;
-            this.btnAlphabetic.AccessibleName = null;
             resources.ApplyResources(this.btnAlphabetic, "btnAlphabetic");
-            this.btnAlphabetic.BackgroundImage = null;
             this.btnAlphabetic.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnAlphabetic.Name = "btnAlphabetic";
             this.btnAlphabetic.Click += new System.EventHandler(this.btnAlphabetic_Click);
             // 
             // toolStripSeparator1
             // 
-            this.toolStripSeparator1.AccessibleDescription = null;
-            this.toolStripSeparator1.AccessibleName = null;
             resources.ApplyResources(this.toolStripSeparator1, "toolStripSeparator1");
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             // 
             // btnSelectionMethode
             // 
-            this.btnSelectionMethode.AccessibleDescription = null;
-            this.btnSelectionMethode.AccessibleName = null;
             resources.ApplyResources(this.btnSelectionMethode, "btnSelectionMethode");
-            this.btnSelectionMethode.BackgroundImage = null;
             this.btnSelectionMethode.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnSelectionMethode.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.btnMethodeRectangle,
@@ -285,50 +253,31 @@ namespace gView.Plugins.MapTools.Controls
             // 
             // btnMethodeRectangle
             // 
-            this.btnMethodeRectangle.AccessibleDescription = null;
-            this.btnMethodeRectangle.AccessibleName = null;
             resources.ApplyResources(this.btnMethodeRectangle, "btnMethodeRectangle");
-            this.btnMethodeRectangle.BackgroundImage = null;
             this.btnMethodeRectangle.Name = "btnMethodeRectangle";
-            this.btnMethodeRectangle.ShortcutKeyDisplayString = null;
             this.btnMethodeRectangle.Click += new System.EventHandler(this.btnMethodeRectangle_Click);
             // 
             // btnMethodeMultipoint
             // 
-            this.btnMethodeMultipoint.AccessibleDescription = null;
-            this.btnMethodeMultipoint.AccessibleName = null;
             resources.ApplyResources(this.btnMethodeMultipoint, "btnMethodeMultipoint");
-            this.btnMethodeMultipoint.BackgroundImage = null;
             this.btnMethodeMultipoint.Name = "btnMethodeMultipoint";
-            this.btnMethodeMultipoint.ShortcutKeyDisplayString = null;
             this.btnMethodeMultipoint.Click += new System.EventHandler(this.btnMethodeMultipoint_Click);
             // 
             // btnMethodePolyline
             // 
-            this.btnMethodePolyline.AccessibleDescription = null;
-            this.btnMethodePolyline.AccessibleName = null;
             resources.ApplyResources(this.btnMethodePolyline, "btnMethodePolyline");
-            this.btnMethodePolyline.BackgroundImage = null;
             this.btnMethodePolyline.Name = "btnMethodePolyline";
-            this.btnMethodePolyline.ShortcutKeyDisplayString = null;
             this.btnMethodePolyline.Click += new System.EventHandler(this.btnMethodePolyline_Click);
             // 
             // btnMethodePolygon
             // 
-            this.btnMethodePolygon.AccessibleDescription = null;
-            this.btnMethodePolygon.AccessibleName = null;
             resources.ApplyResources(this.btnMethodePolygon, "btnMethodePolygon");
-            this.btnMethodePolygon.BackgroundImage = null;
             this.btnMethodePolygon.Name = "btnMethodePolygon";
-            this.btnMethodePolygon.ShortcutKeyDisplayString = null;
             this.btnMethodePolygon.Click += new System.EventHandler(this.btnMethodePolygon_Click);
             // 
             // btnSpatialRelation
             // 
-            this.btnSpatialRelation.AccessibleDescription = null;
-            this.btnSpatialRelation.AccessibleName = null;
             resources.ApplyResources(this.btnSpatialRelation, "btnSpatialRelation");
-            this.btnSpatialRelation.BackgroundImage = null;
             this.btnSpatialRelation.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnSpatialRelation.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.btnIntersects,
@@ -338,43 +287,25 @@ namespace gView.Plugins.MapTools.Controls
             // 
             // btnIntersects
             // 
-            this.btnIntersects.AccessibleDescription = null;
-            this.btnIntersects.AccessibleName = null;
             resources.ApplyResources(this.btnIntersects, "btnIntersects");
-            this.btnIntersects.BackgroundImage = null;
-            this.btnIntersects.Image = global::gView.Win.Plugins.Tools.Properties.Resources.intersects;
             this.btnIntersects.Name = "btnIntersects";
-            this.btnIntersects.ShortcutKeyDisplayString = null;
             this.btnIntersects.Click += new System.EventHandler(this.btnIntersects_Click);
             // 
             // btnContains
             // 
-            this.btnContains.AccessibleDescription = null;
-            this.btnContains.AccessibleName = null;
             resources.ApplyResources(this.btnContains, "btnContains");
-            this.btnContains.BackgroundImage = null;
-            this.btnContains.Image = global::gView.Win.Plugins.Tools.Properties.Resources.within;
             this.btnContains.Name = "btnContains";
-            this.btnContains.ShortcutKeyDisplayString = null;
             this.btnContains.Click += new System.EventHandler(this.btnContains_Click);
             // 
             // btnWithin
             // 
-            this.btnWithin.AccessibleDescription = null;
-            this.btnWithin.AccessibleName = null;
             resources.ApplyResources(this.btnWithin, "btnWithin");
-            this.btnWithin.BackgroundImage = null;
-            this.btnWithin.Image = global::gView.Win.Plugins.Tools.Properties.Resources.contains;
             this.btnWithin.Name = "btnWithin";
-            this.btnWithin.ShortcutKeyDisplayString = null;
             this.btnWithin.Click += new System.EventHandler(this.btnWithin_Click);
             // 
             // btnCombination
             // 
-            this.btnCombination.AccessibleDescription = null;
-            this.btnCombination.AccessibleName = null;
             resources.ApplyResources(this.btnCombination, "btnCombination");
-            this.btnCombination.BackgroundImage = null;
             this.btnCombination.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnCombination.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.btnCombinationNew,
@@ -386,144 +317,89 @@ namespace gView.Plugins.MapTools.Controls
             // 
             // btnCombinationNew
             // 
-            this.btnCombinationNew.AccessibleDescription = null;
-            this.btnCombinationNew.AccessibleName = null;
             resources.ApplyResources(this.btnCombinationNew, "btnCombinationNew");
-            this.btnCombinationNew.BackgroundImage = null;
-            this.btnCombinationNew.Image = global::gView.Win.Plugins.Tools.Properties.Resources.pointer_new;
             this.btnCombinationNew.Name = "btnCombinationNew";
-            this.btnCombinationNew.ShortcutKeyDisplayString = null;
             this.btnCombinationNew.Click += new System.EventHandler(this.btnCombination_Click);
             // 
             // btnCombinationUnion
             // 
-            this.btnCombinationUnion.AccessibleDescription = null;
-            this.btnCombinationUnion.AccessibleName = null;
             resources.ApplyResources(this.btnCombinationUnion, "btnCombinationUnion");
-            this.btnCombinationUnion.BackgroundImage = null;
-            this.btnCombinationUnion.Image = global::gView.Win.Plugins.Tools.Properties.Resources.plus;
             this.btnCombinationUnion.Name = "btnCombinationUnion";
-            this.btnCombinationUnion.ShortcutKeyDisplayString = null;
             this.btnCombinationUnion.Click += new System.EventHandler(this.btnCombination_Click);
             // 
             // btnCombinationDifference
             // 
-            this.btnCombinationDifference.AccessibleDescription = null;
-            this.btnCombinationDifference.AccessibleName = null;
             resources.ApplyResources(this.btnCombinationDifference, "btnCombinationDifference");
-            this.btnCombinationDifference.BackgroundImage = null;
-            this.btnCombinationDifference.Image = global::gView.Win.Plugins.Tools.Properties.Resources.minus;
             this.btnCombinationDifference.Name = "btnCombinationDifference";
-            this.btnCombinationDifference.ShortcutKeyDisplayString = null;
             this.btnCombinationDifference.Click += new System.EventHandler(this.btnCombination_Click);
             // 
             // btnCombinationIntersection
             // 
-            this.btnCombinationIntersection.AccessibleDescription = null;
-            this.btnCombinationIntersection.AccessibleName = null;
             resources.ApplyResources(this.btnCombinationIntersection, "btnCombinationIntersection");
-            this.btnCombinationIntersection.BackgroundImage = null;
-            this.btnCombinationIntersection.Image = global::gView.Win.Plugins.Tools.Properties.Resources.intersection;
             this.btnCombinationIntersection.Name = "btnCombinationIntersection";
-            this.btnCombinationIntersection.ShortcutKeyDisplayString = null;
             this.btnCombinationIntersection.Click += new System.EventHandler(this.btnCombination_Click);
             // 
             // btnCombinationSymDifference
             // 
-            this.btnCombinationSymDifference.AccessibleDescription = null;
-            this.btnCombinationSymDifference.AccessibleName = null;
             resources.ApplyResources(this.btnCombinationSymDifference, "btnCombinationSymDifference");
-            this.btnCombinationSymDifference.BackgroundImage = null;
-            this.btnCombinationSymDifference.Image = global::gView.Win.Plugins.Tools.Properties.Resources.XOR;
             this.btnCombinationSymDifference.Name = "btnCombinationSymDifference";
-            this.btnCombinationSymDifference.ShortcutKeyDisplayString = null;
             this.btnCombinationSymDifference.Click += new System.EventHandler(this.btnCombination_Click);
             // 
             // btnApplySelection
             // 
-            this.btnApplySelection.AccessibleDescription = null;
-            this.btnApplySelection.AccessibleName = null;
             resources.ApplyResources(this.btnApplySelection, "btnApplySelection");
-            this.btnApplySelection.BackgroundImage = null;
             this.btnApplySelection.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnApplySelection.Name = "btnApplySelection";
             this.btnApplySelection.Click += new System.EventHandler(this.btnApplySelection_Click);
             // 
             // btnClearSelectionFigure
             // 
-            this.btnClearSelectionFigure.AccessibleDescription = null;
-            this.btnClearSelectionFigure.AccessibleName = null;
             resources.ApplyResources(this.btnClearSelectionFigure, "btnClearSelectionFigure");
-            this.btnClearSelectionFigure.BackgroundImage = null;
             this.btnClearSelectionFigure.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnClearSelectionFigure.Name = "btnClearSelectionFigure";
             this.btnClearSelectionFigure.Click += new System.EventHandler(this.btnClearSelectionFigure_Click);
             // 
             // toolStripSeparator2
             // 
-            this.toolStripSeparator2.AccessibleDescription = null;
-            this.toolStripSeparator2.AccessibleName = null;
             resources.ApplyResources(this.toolStripSeparator2, "toolStripSeparator2");
             this.toolStripSeparator2.Name = "toolStripSeparator2";
             // 
             // btnSelByLocation
             // 
-            this.btnSelByLocation.AccessibleDescription = null;
-            this.btnSelByLocation.AccessibleName = null;
             resources.ApplyResources(this.btnSelByLocation, "btnSelByLocation");
-            this.btnSelByLocation.BackgroundImage = null;
             this.btnSelByLocation.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnSelByLocation.Image = global::gView.Win.Plugins.Tools.Properties.Resources.SelByLocation;
             this.btnSelByLocation.Name = "btnSelByLocation";
             this.btnSelByLocation.Click += new System.EventHandler(this.btnSelByLocation_Click);
             // 
             // btnSelByGraphic
             // 
-            this.btnSelByGraphic.AccessibleDescription = null;
-            this.btnSelByGraphic.AccessibleName = null;
             resources.ApplyResources(this.btnSelByGraphic, "btnSelByGraphic");
-            this.btnSelByGraphic.BackgroundImage = null;
             this.btnSelByGraphic.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnSelByGraphic.Image = global::gView.Win.Plugins.Tools.Properties.Resources.SelByGraphic;
             this.btnSelByGraphic.Name = "btnSelByGraphic";
             this.btnSelByGraphic.Click += new System.EventHandler(this.btnSelByGraphic_Click);
             // 
             // tree
             // 
-            this.tree.AccessibleDescription = null;
-            this.tree.AccessibleName = null;
             resources.ApplyResources(this.tree, "tree");
-            this.tree.BackgroundImage = null;
             this.tree.CheckBoxes = true;
-            this.tree.Font = null;
             this.tree.Name = "tree";
             this.tree.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.tree_AfterCheck);
             this.tree.MouseDown += new System.Windows.Forms.MouseEventHandler(this.tree_MouseDown);
             // 
             // panel1
             // 
-            this.panel1.AccessibleDescription = null;
-            this.panel1.AccessibleName = null;
             resources.ApplyResources(this.panel1, "panel1");
-            this.panel1.BackgroundImage = null;
             this.panel1.Controls.Add(this.label1);
-            this.panel1.Font = null;
             this.panel1.Name = "panel1";
             // 
             // label1
             // 
-            this.label1.AccessibleDescription = null;
-            this.label1.AccessibleName = null;
             resources.ApplyResources(this.label1, "label1");
-            this.label1.Font = null;
             this.label1.Name = "label1";
             // 
             // panelSelByLoc
             // 
-            this.panelSelByLoc.AccessibleDescription = null;
-            this.panelSelByLoc.AccessibleName = null;
             resources.ApplyResources(this.panelSelByLoc, "panelSelByLoc");
-            this.panelSelByLoc.BackgroundImage = null;
             this.panelSelByLoc.Controls.Add(this.btnApplySelByLocation);
             this.panelSelByLoc.Controls.Add(this.btnCloseSelByLocation);
             this.panelSelByLoc.Controls.Add(this.chkSelByLoc_AppendBuffer);
@@ -534,59 +410,39 @@ namespace gView.Plugins.MapTools.Controls
             this.panelSelByLoc.Controls.Add(this.chkSelByLoc_UseSelected);
             this.panelSelByLoc.Controls.Add(this.cmbSelByLocLayer);
             this.panelSelByLoc.Controls.Add(this.label3);
-            this.panelSelByLoc.Font = null;
             this.panelSelByLoc.Name = "panelSelByLoc";
             // 
             // btnApplySelByLocation
             // 
-            this.btnApplySelByLocation.AccessibleDescription = null;
-            this.btnApplySelByLocation.AccessibleName = null;
             resources.ApplyResources(this.btnApplySelByLocation, "btnApplySelByLocation");
-            this.btnApplySelByLocation.BackgroundImage = null;
-            this.btnApplySelByLocation.Font = null;
             this.btnApplySelByLocation.Name = "btnApplySelByLocation";
             this.btnApplySelByLocation.UseVisualStyleBackColor = true;
             this.btnApplySelByLocation.Click += new System.EventHandler(this.btnApplySelByLocation_Click);
             // 
             // btnCloseSelByLocation
             // 
-            this.btnCloseSelByLocation.AccessibleDescription = null;
-            this.btnCloseSelByLocation.AccessibleName = null;
             resources.ApplyResources(this.btnCloseSelByLocation, "btnCloseSelByLocation");
-            this.btnCloseSelByLocation.BackgroundImage = null;
-            this.btnCloseSelByLocation.Font = null;
             this.btnCloseSelByLocation.Name = "btnCloseSelByLocation";
             this.btnCloseSelByLocation.UseVisualStyleBackColor = true;
             this.btnCloseSelByLocation.Click += new System.EventHandler(this.btnCloseSelByLocation_Click);
             // 
             // chkSelByLoc_AppendBuffer
             // 
-            this.chkSelByLoc_AppendBuffer.AccessibleDescription = null;
-            this.chkSelByLoc_AppendBuffer.AccessibleName = null;
             resources.ApplyResources(this.chkSelByLoc_AppendBuffer, "chkSelByLoc_AppendBuffer");
-            this.chkSelByLoc_AppendBuffer.BackgroundImage = null;
-            this.chkSelByLoc_AppendBuffer.Font = null;
             this.chkSelByLoc_AppendBuffer.Name = "chkSelByLoc_AppendBuffer";
             this.chkSelByLoc_AppendBuffer.UseVisualStyleBackColor = true;
             // 
             // cmbSelByLoc_BufferUnit
             // 
-            this.cmbSelByLoc_BufferUnit.AccessibleDescription = null;
-            this.cmbSelByLoc_BufferUnit.AccessibleName = null;
             resources.ApplyResources(this.cmbSelByLoc_BufferUnit, "cmbSelByLoc_BufferUnit");
-            this.cmbSelByLoc_BufferUnit.BackgroundImage = null;
             this.cmbSelByLoc_BufferUnit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbSelByLoc_BufferUnit.Font = null;
             this.cmbSelByLoc_BufferUnit.FormattingEnabled = true;
             this.cmbSelByLoc_BufferUnit.Name = "cmbSelByLoc_BufferUnit";
             // 
             // numSelByLoc_BufferDistance
             // 
-            this.numSelByLoc_BufferDistance.AccessibleDescription = null;
-            this.numSelByLoc_BufferDistance.AccessibleName = null;
             resources.ApplyResources(this.numSelByLoc_BufferDistance, "numSelByLoc_BufferDistance");
             this.numSelByLoc_BufferDistance.DecimalPlaces = 5;
-            this.numSelByLoc_BufferDistance.Font = null;
             this.numSelByLoc_BufferDistance.Maximum = new decimal(new int[] {
             10000000,
             0,
@@ -606,65 +462,43 @@ namespace gView.Plugins.MapTools.Controls
             // 
             // label4
             // 
-            this.label4.AccessibleDescription = null;
-            this.label4.AccessibleName = null;
             resources.ApplyResources(this.label4, "label4");
-            this.label4.Font = null;
             this.label4.Name = "label4";
             // 
             // chkSelByLoc_ApplyBuffer
             // 
-            this.chkSelByLoc_ApplyBuffer.AccessibleDescription = null;
-            this.chkSelByLoc_ApplyBuffer.AccessibleName = null;
             resources.ApplyResources(this.chkSelByLoc_ApplyBuffer, "chkSelByLoc_ApplyBuffer");
-            this.chkSelByLoc_ApplyBuffer.BackgroundImage = null;
-            this.chkSelByLoc_ApplyBuffer.Font = null;
             this.chkSelByLoc_ApplyBuffer.Name = "chkSelByLoc_ApplyBuffer";
             this.chkSelByLoc_ApplyBuffer.UseVisualStyleBackColor = true;
             this.chkSelByLoc_ApplyBuffer.CheckedChanged += new System.EventHandler(this.chkSelByLoc_ApplyBuffer_CheckedChanged);
             // 
             // chkSelByLoc_UseSelected
             // 
-            this.chkSelByLoc_UseSelected.AccessibleDescription = null;
-            this.chkSelByLoc_UseSelected.AccessibleName = null;
             resources.ApplyResources(this.chkSelByLoc_UseSelected, "chkSelByLoc_UseSelected");
-            this.chkSelByLoc_UseSelected.BackgroundImage = null;
-            this.chkSelByLoc_UseSelected.Font = null;
             this.chkSelByLoc_UseSelected.Name = "chkSelByLoc_UseSelected";
             this.chkSelByLoc_UseSelected.UseVisualStyleBackColor = true;
             this.chkSelByLoc_UseSelected.CheckedChanged += new System.EventHandler(this.chkSelByLoc_UseSelected_CheckedChanged);
             // 
             // cmbSelByLocLayer
             // 
-            this.cmbSelByLocLayer.AccessibleDescription = null;
-            this.cmbSelByLocLayer.AccessibleName = null;
             resources.ApplyResources(this.cmbSelByLocLayer, "cmbSelByLocLayer");
-            this.cmbSelByLocLayer.BackgroundImage = null;
             this.cmbSelByLocLayer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbSelByLocLayer.Font = null;
             this.cmbSelByLocLayer.FormattingEnabled = true;
             this.cmbSelByLocLayer.Name = "cmbSelByLocLayer";
             this.cmbSelByLocLayer.SelectedIndexChanged += new System.EventHandler(this.cmbSelByLocLayer_SelectedIndexChanged);
             // 
             // label3
             // 
-            this.label3.AccessibleDescription = null;
-            this.label3.AccessibleName = null;
             resources.ApplyResources(this.label3, "label3");
-            this.label3.Font = null;
             this.label3.Name = "label3";
             // 
             // SelectionEnvironmentControl
             // 
-            this.AccessibleDescription = null;
-            this.AccessibleName = null;
             resources.ApplyResources(this, "$this");
-            this.BackgroundImage = null;
             this.Controls.Add(this.tree);
             this.Controls.Add(this.panelSelByLoc);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.toolStrip1);
-            this.Font = null;
             this.Name = "SelectionEnvironmentControl";
             this.contextMenuStrip1.ResumeLayout(false);
             this.toolStrip1.ResumeLayout(false);

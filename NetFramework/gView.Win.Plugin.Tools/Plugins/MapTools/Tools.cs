@@ -167,7 +167,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.add_data; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.add_data; }
         }
 
         public ToolType toolType

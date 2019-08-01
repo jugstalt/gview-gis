@@ -510,7 +510,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.publish; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.publish; }
         }
 
         public void OnCreate(object hook)
@@ -891,7 +891,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.map16; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.map16; }
         }
 
         public void OnCreate(object hook)
@@ -2570,7 +2570,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.table; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.table; }
         }
 
         public int SortOrder
@@ -2643,7 +2643,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.sql; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.sql; }
         }
 
         public int SortOrder
@@ -2736,7 +2736,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.document_properties; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.document_properties; }
         }
 
         public int SortOrder
@@ -2825,7 +2825,7 @@ namespace gView.Plugins.MapTools
         {
             get
             {
-                return global::gView.Win.Plugins.Tools.Properties.Resources.info;
+                return gView.Win.Plugin.Tools.Properties.Resources.info;
             }
         }
 
@@ -3364,7 +3364,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.find; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.find; }
         }
 
         public void OnCreate(object hook)
@@ -4662,7 +4662,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.Refresh; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.Refresh; }
         }
 
         public void OnCreate(object hook)
@@ -4727,7 +4727,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.help; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.help; }
         }
 
         public void OnCreate(object hook)
@@ -4860,7 +4860,7 @@ namespace gView.Plugins.MapTools
 
             public object Image
             {
-                get { return gView.Win.Plugins.Tools.Properties.Resources.pdf; }
+                get { return gView.Win.Plugin.Tools.Properties.Resources.pdf; }
             }
 
             public void OnCreate(object hook)
@@ -5107,7 +5107,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.time; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.time; }
         }
 
         public void OnCreate(object hook)
@@ -5168,7 +5168,7 @@ namespace gView.Plugins.MapTools
 
         public object Image
         {
-            get { return global::gView.Win.Plugins.Tools.Properties.Resources.xy; }
+            get { return gView.Win.Plugin.Tools.Properties.Resources.xy; }
         }
 
         public void OnCreate(object hook)
