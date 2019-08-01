@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 
 namespace gView.Framework.system
 {
-    // Wow!
     public static class Wow
     {
         public static bool Is64BitProcess
@@ -45,5 +44,4 @@ namespace gView.Framework.system
         [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true)]
         extern static IntPtr GetProcAddress(IntPtr hModule, string methodName);
     }
-
 }
