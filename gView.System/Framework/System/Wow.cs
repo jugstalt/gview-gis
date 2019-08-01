@@ -45,5 +45,4 @@ namespace gView.Framework.system
         [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true)]
         extern static IntPtr GetProcAddress(IntPtr hModule, string methodName);
     }
-
 }
