@@ -76,7 +76,7 @@ namespace gView.DataSources.MongoDb
             else
             {
                 findFluent = fc.MongoCollection.Find(_ => true);
-                filter.Limit = 50;
+                //filter.Limit = 1000;
             }
 
             if (filter.Limit > 0)

@@ -268,7 +268,7 @@ namespace gView.DataSources.MongoDb.UI
         {
             get
             {
-                return @"MongoDb\" + _name;
+                return this.ParentExplorerObject.FullName + @"\" + _name;
             }
         }
 
