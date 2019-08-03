@@ -1076,7 +1076,7 @@ namespace gView.Server.Controllers
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("<div class='html-body container'>");
+            sb.Append("<div class='html-body'>");
 
             var typeString = obj.GetType().ToString();
             if (typeString.Contains("."))

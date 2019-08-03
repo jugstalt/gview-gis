@@ -89,21 +89,14 @@ ul {
     }
 
 
-/***** Footer *******/
-.footer
-{
-    position:fixed;
-    bottom:0px;
-    left:0px;
-    right:0px;
-    padding:8px;
-    background-color:#000;
-    color:#fff;
+/***** Header *******/
+.webportal-header.navbar {
+    background-color:#fefefe;
 }
-
-    .footer .version {
-        float:right;
-    }
+/***** Footer *******/
+.webportal-footer .version {
+    float: right;
+}
 
 /****** Menu *********/
 
@@ -122,19 +115,36 @@ ul {
 /****** Home *********/
 
 .gview-header-brand {
-    width: 48px;
-    height: 48px;
-    background-image: url('../images/logos/gview5_48x48-w.png');
+    background-image: url('../images/logos/gview5_48x48.png');
+    background-repeat:no-repeat;
+    background-position:center left;
+    background-size:26px;
     display:inline-block;
-    margin-top:-14px;
-    
+    padding-left:30px;
+    margin-left:-8px;
+}
+
+.gview-header-brand:hover {
+    color: #0094ff;
+}
+
+.navbar-inverse .navbar-nav > li > a {
+    color:rgba(0, 0, 0, .4);
+}
+.navbar-inverse .navbar-nav > li > a:hover {
+    color: #0094ff;
+}
+
+.webportal-sidebar,
+.webportal-sidebar .webportal-sidebar-items .webportal-sidebar-item.hr .text {
+    background-color: #5c6874;
 }
 
 .main-logo {
     display: block;
     text-align: center;
     height: 173px;
-    margin:10px;
+    margin: 10px;
     background-image: url('../images/logos/gview5_100x100.png');
     background-position: center 20px;
     background-repeat: no-repeat;

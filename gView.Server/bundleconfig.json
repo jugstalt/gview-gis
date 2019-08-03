@@ -4,6 +4,7 @@
   {
     "outputFileName": "wwwroot/css/site.min.css",
     "inputFiles": [
+      "wwwroot/css/layout.css",
       "wwwroot/css/site.css"
     ]
   },
