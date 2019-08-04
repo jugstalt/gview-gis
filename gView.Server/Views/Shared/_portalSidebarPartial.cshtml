@@ -4,34 +4,34 @@
     var isManageUser = gView.Server.AppCode.BaseController.IsManageUser(this.Context.Request);
 }
 
-<div class="webportal-sidebar">
-    <ul class="webportal-sidebar-items top">
-        <li class="webportal-sidebar-item portal">
+<div class="webportal-layout-sidebar">
+    <ul class="webportal-layout-sidebar-items top">
+        <li class="webportal-layout-sidebar-item portal">
             <img src="~/images/icons/home-26-w.png" />
             <a asp-area="" 
                asp-controller="Home" 
                asp-action="Index">Home</a>
         </li>
 
-        <li class="webportal-sidebar-item hr">
+        <li class="webportal-layout-sidebar-item hr">
             <hr />
             <div class="text">Services</div>
         </li>
     </ul>
-    <ul class="webportal-sidebar-items center">
-        <li class="webportal-sidebar-item resource">
+    <ul class="webportal-layout-sidebar-items center">
+        <li class="webportal-layout-sidebar-item resource">
             <img src="~/images/icons/browse-26-w.png" />
             <a asp-area=""
                asp-controller="BrowseServices"
                asp-action="Index">Browse Services</a>
         </li>
-        <li class="webportal-sidebar-item resource">
+        <li class="webportal-layout-sidebar-item resource">
             <img src="~/images/icons/code-26-w.png" />
             <a href="@(gView.Server.AppCode.InternetMapServer.AppRootUrl(this.Context.Request))/geoservices/rest/services">GeoServices (REST)</a>
         </li>
         @if (isManageUser || (Globals.AllowFormsLogin && (isManageUser == true || String.IsNullOrWhiteSpace(username))))
         {
-            <li class="webportal-sidebar-item resource">
+            <li class="webportal-layout-sidebar-item resource">
                 <img src="~/images/icons/manage-50-w.png" />
                 <a asp-area=""
                    asp-controller="Manage"
@@ -40,15 +40,15 @@
         }
     </ul>
     
-    <ul class="webportal-sidebar-items bottom">
+    <ul class="webportal-layout-sidebar-items bottom">
         @if(!String.IsNullOrWhiteSpace(username))
         {
-        <li class="webportal-sidebar-item hr">
+        <li class="webportal-layout-sidebar-item hr">
             <hr />
             <div class="text">@username</div>
         </li>
 
-        <li class="webportal-sidebar-item logout">
+        <li class="webportal-layout-sidebar-item logout">
             <img src="~/images/icons/logout-26-w.png" />
             <a asp-area=""
                asp-controller="Token"
@@ -57,7 +57,7 @@
         } 
         else if(Globals.AllowFormsLogin)
         {
-        <li class="webportal-sidebar-item logout">
+        <li class="webportal-layout-sidebar-item logout">
             <img src="~/images/icons/login-26-w.png" />
             <a asp-area="" 
                asp-controller="Token" 

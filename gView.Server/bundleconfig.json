@@ -4,7 +4,7 @@
   {
     "outputFileName": "wwwroot/css/site.min.css",
     "inputFiles": [
-      "wwwroot/css/layout.css",
+      "wwwroot/lib/webportal-layout/webportal-layout.css",
       "wwwroot/css/site.css"
     ]
   },
@@ -22,6 +22,7 @@
   {
     "outputFileName": "wwwroot/js/site.min.js",
     "inputFiles": [
+      "wwwroot/lib/webportal-layout/webportal-layout.js",
       "wwwroot/js/site.js"
     ],
     "minify": {

@@ -8,7 +8,7 @@
     
     <environment include="Development">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
-        <link href="~/css/layout.css" rel="stylesheet" />
+        <link rel="stylesheet" href="~/lib/webportal-layout/webportal-layout.css" />
         <link rel="stylesheet" href="~/css/site.css" />
     </environment>
     <environment exclude="Development">
@@ -22,7 +22,7 @@
     @{
         var username = gView.Server.AppCode.BaseController.LoginUsername(this.Context.Request);
     }
-    <nav class="webportal-header navbar navbar-inverse navbar-fixed-top">
+    <nav class="webportal-layout-header navbar navbar-inverse navbar-fixed-top">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                     <span class="sr-only">Toggle navigation</span>
@@ -43,16 +43,16 @@
 
     <partial name="_CookieConsentPartial" />
 
-    <div class="webportal-container page-has-header page-has-footer">
+    <div class="webportal-layout-container page-has-header page-has-footer">
         <partial name="_portalSidebarPartial" />
-        <div class="webportal-main">
-            <div class="webportal-main-container">
+        <div class="webportal-layout-main">
+            <div class="webportal-layout-main-container">
                 @RenderBody()
             </div>
         </div>
     </div>
 
-    <div class="webportal-footer">
+    <div class="webportal-layout-footer">
         <div class="version">
             Version: @gView.Framework.system.SystemInfo.Version.ToString()
         </div>
@@ -62,6 +62,7 @@
         <script src="~/lib/jquery/dist/jquery.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
         <script src="~/lib/bootbox.js/bootbox.js"></script>
+        <script src="~/lib/webportal-layout/webporta-layout.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
     </environment>
     <environment exclude="Development">
@@ -78,6 +79,7 @@
                 integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
         </script>
         <script src="~/lib/bootbox.js/bootbox.min.js"></script>
+        <script src="~/lib/webportal-layout/webporta-layout.js"></script>
         <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
 

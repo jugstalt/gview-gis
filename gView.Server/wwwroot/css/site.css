@@ -90,11 +90,11 @@ ul {
 
 
 /***** Header *******/
-.webportal-header.navbar {
+.webportal-layout-header.navbar {
     background-color:#fefefe;
 }
 /***** Footer *******/
-.webportal-footer .version {
+.webportal-layout-footer .version {
     float: right;
 }
 
@@ -135,8 +135,8 @@ ul {
     color: #0094ff;
 }
 
-.webportal-sidebar,
-.webportal-sidebar .webportal-sidebar-items .webportal-sidebar-item.hr .text {
+.webportal-layout-sidebar,
+.webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item.hr .text {
     background-color: #5c6874;
 }
 

@@ -1,0 +1,216 @@
+﻿body {
+    overflow: hidden !important;
+}
+
+/***** Header ******/
+.webportal-layout-header {
+    height: 57px !important;
+    margin: 0px !important;
+    border: none !important;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.2);
+}
+
+/***** Footer *******/
+.webportal-layout-footer {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    padding: 8px;
+    background-color: #000;
+    color: #fff;
+}
+
+/****** Container ********/
+.webportal-layout-container {
+    display: flex;
+    max-width: 100%;
+    padding: 0px;
+    margin: 0px;
+    height: 100%;
+    width: auto !important;
+}
+
+.webportal-layout-main {
+    text-align: center;
+}
+
+.webportal-layout-main-container {
+    max-width: 1100px;
+    margin: 0px auto;
+    text-align: left;
+}
+
+.webportal-layout-main {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    right: 0px;
+    left: 250px;
+    overflow: auto;
+    padding: 0px 4px;
+    /*transition: left .25s ease-in;*/
+}
+
+
+.webportal-layout-sidebar {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+    width: 250px;
+    height: 100%;
+    font-size: 13px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    background-color: #444;
+    color: white;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.2);
+    /*transition: width .25s ease-in;*/
+}
+
+    .webportal-layout-sidebar .webportal-layout-sidebar-items {
+        list-style: none;
+        padding: 0px;
+        margin: 0px;
+    }
+
+        .webportal-layout-sidebar .webportal-layout-sidebar-items.center {
+            height: calc(100% - 270px);
+            overflow: auto;
+        }
+
+        .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+            .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item:hover {
+                background-color: #888;
+            }
+
+            .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item a {
+                color: white;
+                text-decoration: none;
+            }
+
+            .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item img {
+                margin-right: 5px;
+            }
+
+            .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item.resource img {
+                max-width:26px;
+                max-height:26px;
+            }
+
+            .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item hr {
+                background-color: #aaa;
+                margin: 0px;
+            }
+
+            .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item.hr {
+                height: 20px;
+                overflow: hidden;
+            }
+
+                .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item.hr:hover {
+                    background-color: transparent;
+                    cursor: default;
+                }
+
+                .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item.hr .text {
+                    position: relative;
+                    top: -11px;
+                    background-color: #444;
+                    display: inline-block;
+                    padding: 0px 10px;
+                    margin-left: 24px;
+                    color: #aaa;
+                }
+
+
+.webportal-layout-sidebar .collapse-button {
+    height:32px;
+    font-size:20px;
+    color:#fff;
+    text-align:right;
+    padding: 1px 15px;
+    cursor:pointer;
+}
+
+    .webportal-layout-sidebar .collapse-button:hover {
+        background-color: #337ab7;
+    }
+
+    .webportal-layout-sidebar .collapse-button::before {
+        content: "«"
+    }
+
+body.sidebar-collapsed .webportal-layout-sidebar .collapse-button::before {
+    content: "»"
+}
+
+.webportal-layout-container.page-has-header .webportal-layout-main,
+.webportal-layout-container.page-has-header .webportal-layout-sidebar {
+    top: 57px;
+}
+
+.webportal-layout-container.page-has-footer .webportal-layout-main,
+.webportal-layout-container.page-has-footer .webportal-layout-sidebar {
+    bottom: 37px;
+}
+
+@media (max-width: 768px) {
+    .navbar-collapse {
+        background-color: #333;
+        color: #eee;
+    }
+
+    .webportal-layout-header {
+        height: 50px !important;
+    }
+
+    .webportal-layout-container.page-has-header .webportal-layout-main,
+    .webportal-layout-container.page-has-header .webportal-layout-sidebar {
+        top: 50px;
+    }
+}
+
+
+
+body.sidebar-collapsed .webportal-layout-main {
+    left: 42px;
+}
+
+body.sidebar-collapsed .webportal-layout-sidebar {
+    width: 42px;
+}
+
+    body.sidebar-collapsed .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item a {
+        display: none;
+    }
+
+
+body.hide-header .webportal-layout-header {
+    min-height:0px !important;
+    height:0px !important;
+    overflow:hidden;
+}
+
+body.hide-header .webportal-layout-container.page-has-header .webportal-layout-main,
+body.hide-header .webportal-layout-container.page-has-header .webportal-layout-sidebar {
+    top: 0px;
+}
+
+/****** Transitions *******/
+.webportal-layout-header {
+    transition: height .15s ease-in;
+}
+
+.webportal-layout-main,
+.webportal-layout-sidebar {
+    transition: top,left,width .15s ease-in;
+}
+
+
+
