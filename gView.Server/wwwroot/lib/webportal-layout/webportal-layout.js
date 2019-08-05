@@ -1,18 +1,26 @@
 ﻿if (jQuery) {
     (function($) {
         $(document).ready(function () {
-            $(window).resize(function (e) {
+            var onResize = function (e) {
                 if ($(window).width() <= 768) {
                     $('body').addClass('sidebar-collapsed');
                 } else {
                     $('body').removeClass('sidebar-collapsed');
                 }
-            });
+            };
+
+            $(window).resize(onResize);
+            onResize();
 
             if ($('.webportal-layout-sidebar .collapse-button').length === 0) {
                 $("<div class='collapse-button'></div>")
                     .prependTo($('.webportal-layout-sidebar'));
             }
+
+            $('.navbar-brand')
+                .click(function () {
+                    $('body').removeClass('sidebar-collapsed');
+                });
 
             $('.webportal-layout-sidebar .collapse-button')
                 .click(function () {

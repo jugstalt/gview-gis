@@ -209,7 +209,15 @@ body.hide-header .webportal-layout-container.page-has-header .webportal-layout-s
 
 .webportal-layout-main,
 .webportal-layout-sidebar {
-    transition: top,left,width .15s ease-in;
+    transition: top/*,left,width*/ .15s ease-in;
+}
+
+/***** Bootstrap Overrides *******/
+.navbar-brand {
+    cursor:pointer;
+}
+.navbar-brand:hover {
+    color:black;
 }
 
 
