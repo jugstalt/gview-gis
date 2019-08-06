@@ -19,6 +19,8 @@
     padding: 8px;
     background-color: #000;
     color: #fff;
+    height: 37px;
+    box-sizing: border-box;
 }
 
 /****** Container ********/
@@ -59,7 +61,6 @@
     left: 0px;
     bottom: 0px;
     width: 250px;
-    height: 100%;
     font-size: 13px;
     box-sizing: border-box;
     white-space: nowrap;
@@ -92,20 +93,35 @@
             .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item a {
                 color: white;
                 text-decoration: none;
+                background-color:transparent;
             }
+                .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item a:hover {
+                    background-color: transparent;
+                }
 
             .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item img {
                 margin-right: 5px;
+                vertical-align: middle;
             }
 
-            .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item.resource img {
-                max-width:26px;
-                max-height:26px;
+            .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item .webportal-layout-sidebar-item-firstletter {
+                display:inline-block;
+                width:28px;
+                height:28px;
+                text-align:center;
+                border-radius:50px;
+                background-color:#666;
+                padding:3px;
+                box-sizing:border-box;
+                margin-right:5px;
+                border:1px solid #fff;
             }
 
             .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item hr {
                 background-color: #aaa;
                 margin: 0px;
+                border: 0;
+                border-top: 1px solid rgba(0, 0, 0, 0.1);
             }
 
             .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item.hr {
@@ -195,6 +211,7 @@ body.hide-header .webportal-layout-header {
     min-height:0px !important;
     height:0px !important;
     overflow:hidden;
+    padding:0px;
 }
 
 body.hide-header .webportal-layout-container.page-has-header .webportal-layout-main,

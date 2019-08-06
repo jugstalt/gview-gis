@@ -1,4 +1,47 @@
 ﻿if (jQuery) {
+    $('body').addClass('sidebar-collapsed');
+
+    var webPortalLayout = function () {
+        var refreshSidebar = function () {
+            $(".webportal-layout-sidebar-item").each(function (i, item) {
+                var $item = $(item);
+                if ($item.hasClass('webportal-click-added') == false) {
+                    $item
+                        .addClass('webportal-click-added')
+                        .click(function (e) {
+                            if ($(window).width() <= 768) {
+                                $('body').addClass('sidebar-collapsed');
+                            }
+
+                            var $a = $(this).find('a:first');
+                            
+                            if (!e.originalEvent || $a.get(0) === e.originalEvent.target)
+                                return;
+
+                            e.stopPropagation();
+                            var href = $a.attr('href');
+                            if (href) {
+                                document.location = href;
+                            } else {
+                                $a.trigger('click');
+                            }
+
+                           
+                        });
+                }
+                var $letter = $item.children('.webportal-layout-sidebar-item-firstletter');
+                if ($letter.length !== 0) {
+                    var firstLetter = $item.children('a').html()[0];
+                    $letter.html(firstLetter);
+                }
+            });
+        };
+
+        return {
+            refreshSidebar: refreshSidebar
+        }
+    }();
+
     (function($) {
         $(document).ready(function () {
             var onResize = function (e) {
@@ -17,6 +60,8 @@
                     .prependTo($('.webportal-layout-sidebar'));
             }
 
+            webPortalLayout.refreshSidebar();
+
             $('.navbar-brand')
                 .click(function () {
                     $('body').removeClass('sidebar-collapsed');
@@ -24,16 +69,9 @@
 
             $('.webportal-layout-sidebar .collapse-button')
                 .click(function () {
-                    $('body').toggleClass('sidebar-collapsed')
+                    $('body').toggleClass('sidebar-collapsed');
                 });
-            $(".webportal-layout-sidebar-item")
-                .click(function (e) {
-                    e.stopPropagation();
-                    var href = $(this).find('a:first').attr('href');
-                    if (href) {
-                        document.location = href;
-                    }
-                });
+           
 
             $(".webportal-layout-main")
                 .data('prev-scrollTop', 0)
