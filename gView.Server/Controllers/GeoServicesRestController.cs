@@ -109,7 +109,7 @@ namespace gView.Server.Controllers
                     throw new Exception("unable to create map: " + id);
                 }
 
-                gView.Framework.Geometry.Envelope fullExtent = null;
+                gView.Framework.Geometry.IEnvelope fullExtent = map.FullExtent();
                 var spatialReference = map.Display.SpatialReference;
                 int epsgCode = spatialReference != null ? spatialReference.EpsgCode : 0;
 
@@ -119,19 +119,6 @@ namespace gView.Server.Controllers
                     Layers = map.MapElements.Select(e =>
                     {
                         var tocElement = map.TOC.GetTOCElement(e as ILayer);
-
-                        if (e.Class is IFeatureClass && ((IFeatureClass)e.Class).Envelope != null)
-                        {
-                            if (fullExtent == null)
-                            {
-                                fullExtent = new Framework.Geometry.Envelope(((IFeatureClass)e.Class).Envelope);
-                            }
-                            else
-                            {
-                                fullExtent.Union(((IFeatureClass)e.Class).Envelope);
-                            }
-                        }
-
                         return new JsonMapService.Layer()
                         {
                             Id = e.ID,
@@ -240,7 +227,11 @@ namespace gView.Server.Controllers
                 string format = ResultFormat();
                 if (String.IsNullOrWhiteSpace(format))
                 {
-                    return FormResult(exportMap);
+                    using (var serviceMap = await context.CreateServiceMapInstance())
+                    {
+                        exportMap.InitForm(serviceMap);
+                        return FormResult(exportMap);
+                    }
                 }
 
                 await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);

@@ -1,4 +1,7 @@
-﻿using gView.Interoperability.GeoServices.Rest.Reflection;
+﻿using gView.Framework.Carto;
+using gView.Framework.Data;
+using gView.Framework.system;
+using gView.Interoperability.GeoServices.Rest.Reflection;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -14,6 +17,45 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
             Transparent = true;
             ImageFormat = "png";
         }
+
+        public void InitForm(IServiceMap map)
+        {
+            if (map != null)
+            {
+                if (map.MapElements != null)
+                {
+                    Framework.Geometry.Envelope fullExtent = null;
+
+                    foreach (var layer in map.MapElements)
+                    {
+                        if (layer.Class is IFeatureClass && ((IFeatureClass)layer.Class).Envelope != null)
+                        {
+                            if (fullExtent == null)
+                            {
+                                fullExtent = new Framework.Geometry.Envelope(((IFeatureClass)layer.Class).Envelope);
+                            }
+                            else
+                            {
+                                fullExtent.Union(((IFeatureClass)layer.Class).Envelope);
+                            }
+                        }
+                    }
+
+                    if (fullExtent != null)
+                    {
+                        BBox = $"{fullExtent.minx.ToDoubleString()},{fullExtent.miny.ToDoubleString()},{fullExtent.maxx.ToDoubleString()},{fullExtent.maxy.ToDoubleString()}";
+                    }
+                }
+
+                if (map.Display?.SpatialReference != null)
+                {
+                    BBoxSRef = map.Display.SpatialReference.Name.ToLower().Replace("epsg:", "");
+                }
+
+                Size = "800,600";
+            }
+        }
+
         [JsonProperty(PropertyName = "bbox")]
         public string BBox { get; set; }
 
