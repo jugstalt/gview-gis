@@ -36,14 +36,17 @@ namespace gView.Server.AppCode
 
         async static public Task Init(string rootPath, int port = 80)
         {
-            Globals.ForceHttps = true;  // DoTo: Set this by Environment Variable or config value;
+            
             Globals.AppRootPath = rootPath;
 
             var mapServerConfig = JsonConvert.DeserializeObject<MapServerConfig>(File.ReadAllText(rootPath + "/_config/mapserver.json"));
+
             OutputPath = mapServerConfig.OuputPath.ToPlattformPath();
             OutputUrl = mapServerConfig.OutputUrl;
             OnlineResource = mapServerConfig.OnlineResourceUrl;
             TileCachePath = mapServerConfig.TileCacheRoot;
+
+            Globals.ForceHttps = mapServerConfig.ForceHttps.HasValue && mapServerConfig.ForceHttps.Value == false ? false : true;  // default: true
 
             if (mapServerConfig.TaskQueue != null)
             {
