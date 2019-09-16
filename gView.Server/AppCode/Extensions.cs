@@ -1,4 +1,7 @@
-﻿using System;
+﻿using gView.Framework.Carto;
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -57,6 +60,31 @@ namespace gView.Server.AppCode
             }
 
             return uri;
+        }
+
+        static public IEnvelope FullExtent(this IServiceMap map)
+        {
+            Envelope fullExtent = null;
+
+            if (map?.MapElements != null)
+            {
+                foreach (var layer in map.MapElements)
+                {
+                    if (layer.Class is IFeatureClass && ((IFeatureClass)layer.Class).Envelope != null)
+                    {
+                        if (fullExtent == null)
+                        {
+                            fullExtent = new Framework.Geometry.Envelope(((IFeatureClass)layer.Class).Envelope);
+                        }
+                        else
+                        {
+                            fullExtent.Union(((IFeatureClass)layer.Class).Envelope);
+                        }
+                    }
+                }
+            }
+
+            return fullExtent;
         }
     }
 }

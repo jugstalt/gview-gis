@@ -21,5 +21,10 @@ namespace gView.Framework.system
 
             return float.Parse(value.Replace(",", SystemInfo.Cnf.NumberDecimalSeparator));
         }
+
+        static public string ToDoubleString(this double d)
+        {
+            return d.ToString(Numbers.Nhi);
+        }
     }
 }

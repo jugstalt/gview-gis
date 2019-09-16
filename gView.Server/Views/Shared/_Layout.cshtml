@@ -23,25 +23,22 @@
         var username = gView.Server.AppCode.BaseController.LoginUsername(this.Context.Request);
     }
     <nav class="webportal-layout-header navbar navbar-inverse navbar-fixed-top">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            @*<a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">
-            <div class="gview-header-brand">gView Server</div>
-        </a>*@
-            <div class="navbar-brand">
-                <div class="gview-header-brand">gView Server</div>
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">
+                    <div class="gview-header-brand">gView Server</div>
+                </a>
             </div>
-        </div>
-            <div class="navbar-collapse collapse">
+            @*<div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <partial name="@(ViewData["mainMenuItems"] ?? "_mainMenuItemsPartial")" />
                 </ul>
-            </div>
+            </div>*@
     </nav>
 
     <partial name="_CookieConsentPartial" />
