@@ -131,6 +131,11 @@ namespace gView.Interoperability.GeoServices.Request
                     serviceMap.Display.iWidth = size[0];
                     serviceMap.Display.iHeight = size[1];
 
+                    if (_exportMap.Rotation != 0.0)
+                    {
+                        serviceMap.Display.DisplayTransformation.DisplayRotation = _exportMap.Rotation;
+                    }
+
                     var bbox = _exportMap.BBox.ToBBox();
 
                     serviceMap.Display.ZoomTo(new Envelope(bbox[0], bbox[1], bbox[2], bbox[3]));

@@ -18,5 +18,6 @@
     "method": "LoginAs"
   },
 
-  "allowFormsLogin": "false"
+  "allowFormsLogin": false,
+  "force-https":  false
 }

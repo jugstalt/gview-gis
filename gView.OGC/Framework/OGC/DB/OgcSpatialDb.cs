@@ -614,6 +614,11 @@ namespace gView.Framework.OGC.DB
                         DbCommand command = this.ProviderFactory.CreateCommand();
                         command.Connection = connection;
 
+                        if (this.DbImplementsTransactions)
+                        {
+                            command.Transaction = transaction;
+                        }
+
                         StringBuilder commandText = new StringBuilder();
 
                         foreach (IFeature feature in features)
@@ -741,7 +746,15 @@ namespace gView.Framework.OGC.DB
                             await command.ExecuteNonQueryAsync();
                         }
 
-                        transaction.Commit();
+                        try
+                        {
+                            transaction.Commit();
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            throw ex;
+                        }
                     }
                 }
 

@@ -1,18 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml;
-using gView.MapServer;
-using gView.Framework.Geometry;
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.Network;
+using gView.Framework.Network.Algorthm;
+using gView.Framework.system;
 using gView.Framework.XML;
 using gView.Interoperability.ArcXML.Dataset;
-using gView.Framework.system;
-using gView.Framework.Network;
+using gView.MapServer;
+using System;
+using System.Collections.Generic;
 using System.IO;
-using gView.Framework.Network.Algorthm;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Interoperability.ArcXML
 {
@@ -38,7 +38,9 @@ namespace gView.Interoperability.ArcXML
         async public Task Request(IServiceRequestContext context)
         {
             if (context == null || context.ServiceRequest == null)
+            {
                 return;
+            }
 
             if (_mapServer == null)
             {
@@ -108,8 +110,8 @@ namespace gView.Interoperability.ArcXML
                         await PerformGetRasterInfoRequest(context, rType);
                         Logger.LogDebug("ArcXML GET_RASTER_INFO Request Finished");
                         break;
-#if(DEBUG)
-                        
+#if (DEBUG)
+
 #endif
                     case "gv_CAN_TRACE_NETWORK":
                         await PerformCanTraceNetwork(context, rType);
@@ -223,7 +225,11 @@ namespace gView.Interoperability.ArcXML
             GET_IMAGE_REQUEST getImage = new GET_IMAGE_REQUEST();
             XmlNode properties = rType.SelectSingleNode("PROPERTIES");
             XmlNode Envelope = properties.SelectSingleNode("ENVELOPE");
-            if (Envelope != null) getImage.Envelope = new Envelope(Envelope);
+            if (Envelope != null)
+            {
+                getImage.Envelope = new Envelope(Envelope);
+            }
+
             XmlNode imageSize = properties.SelectSingleNode("IMAGESIZE");
             if (imageSize != null)
             {
@@ -243,7 +249,9 @@ namespace gView.Interoperability.ArcXML
             }
             XmlNode displaytransformation = properties.SelectSingleNode("DISPLAYTRANSFORMATION[@rotation]");
             if (displaytransformation != null)
+            {
                 displayRotation = double.Parse(displaytransformation.Attributes["rotation"].Value.Replace(",", "."), _nhi);
+            }
 
             ISpatialReference sRef = SpatialReferenceFromNode(properties, SpatialreferenceType.Feature);
 
@@ -284,9 +292,16 @@ namespace gView.Interoperability.ArcXML
                 }
 
                 map.Display.dpi = dpi;
-                if (sRef != null) map.Display.SpatialReference = sRef;
+                if (sRef != null)
+                {
+                    map.Display.SpatialReference = sRef;
+                }
+
                 if (displayRotation != 0.0)
+                {
                     map.Display.DisplayTransformation.DisplayRotation = displayRotation;
+                }
+
                 if (properties.SelectSingleNode("DISPLAY[@refscale]") != null)
                 {
                     map.Display.refScale = double.Parse(properties.SelectSingleNode("DISPLAY[@refscale]").Attributes["refscale"].Value.Replace(",", "."), _nhi);
@@ -324,7 +339,10 @@ namespace gView.Interoperability.ArcXML
                 if (properties.SelectSingleNode("DRAW[@map='false']") != null)
                 {
                     XmlNode legend = properties.SelectSingleNode("LEGEND");
-                    if (legend == null) return;
+                    if (legend == null)
+                    {
+                        return;
+                    }
 
                     serviceRequest.Response = await getImage.LegendRequest(map, _mapServer, _useTOC);
                 }
@@ -380,14 +398,22 @@ namespace gView.Interoperability.ArcXML
 
                     // QUERY, SPATIALQUERY
                     XmlNode query = rType.SelectSingleNode("QUERY");
-                    if (query == null) query = rType.SelectSingleNode("SPATIALQUERY");
+                    if (query == null)
+                    {
+                        query = rType.SelectSingleNode("SPATIALQUERY");
+                    }
+
                     if (query != null)
                     {
                         IArcXMLQueryFilter filter = null;
                         if (query.Name == "QUERY")
+                        {
                             filter = new ArcXMLQueryFilter();
+                        }
                         else
+                        {
                             filter = new ArcXMLSpatialFilter();
+                        }
 
                         if (query.Attributes["where"] != null && !String.IsNullOrWhiteSpace(query.Attributes["where"].Value))
                         {
@@ -400,12 +426,18 @@ namespace gView.Interoperability.ArcXML
                             foreach (string field in query.Attributes["subfields"].Value.Split(' '))
                             {
                                 if (field == "#ALL#")
+                                {
                                     filter.AddField("*");
+                                }
                                 else if (field == "#SHAPE#")
                                 {
                                     foreach (ITableClass tClass in getFeatures.Classes)
                                     {
-                                        if (!(tClass is IFeatureClass)) continue;
+                                        if (!(tClass is IFeatureClass))
+                                        {
+                                            continue;
+                                        }
+
                                         filter.AddField(((IFeatureClass)tClass).ShapeFieldName);
                                     }
                                 }
@@ -417,7 +449,9 @@ namespace gView.Interoperability.ArcXML
                                     }
                                 }
                                 else
+                                {
                                     filter.AddField(field);
+                                }
                             }
                         }
                         else
@@ -473,7 +507,11 @@ namespace gView.Interoperability.ArcXML
                                 foreach (ITableClass rootClass in getFeatures.Classes)
                                 {
                                     IQueryFilter cloned = filter.Clone() as IQueryFilter;
-                                    if (!await MapServerHelper.ModifyFilter(map2, rootClass, cloned)) continue;
+                                    if (!await MapServerHelper.ModifyFilter(map2, rootClass, cloned))
+                                    {
+                                        continue;
+                                    }
+
                                     BufferQueryFilter bFilter = new BufferQueryFilter();
                                     bFilter.RootFilter = cloned;
                                     bFilter.RootFeatureClass = rootClass as IFeatureClass;
@@ -545,25 +583,55 @@ namespace gView.Interoperability.ArcXML
                         //   skipfeatures ="true | false"  [false] 
 
                         if (rType.Attributes["beginrecord"] != null)
+                        {
                             filter.beginrecord = Convert.ToInt32(rType.Attributes["beginrecord"].Value);
+                        }
+
                         if (rType.Attributes["featurelimit"] != null && Convert.ToInt32(rType.Attributes["featurelimit"].Value) > 0)
+                        {
                             filter.featurelimit = Math.Min(Convert.ToInt32(rType.Attributes["featurelimit"].Value), _mapServer.FeatureQueryLimit);
+                        }
+
                         if (rType.Attributes["envelope"] != null)
+                        {
                             filter.envelope = Convert.ToBoolean(rType.Attributes["envelope"].Value);
+                        }
+
                         if (rType.Attributes["geometry"] != null)
+                        {
                             filter.geometry = Convert.ToBoolean(rType.Attributes["geometry"].Value);
+                        }
+
                         if (rType.Attributes["attributes"] != null)
+                        {
                             filter.attributes = Convert.ToBoolean(rType.Attributes["attributes"].Value);
+                        }
+
                         if (rType.Attributes["checkesc"] != null)
+                        {
                             filter.checkesc = Convert.ToBoolean(rType.Attributes["checkesc"].Value);
+                        }
+
                         if (rType.Attributes["compact"] != null)
+                        {
                             filter.compact = Convert.ToBoolean(rType.Attributes["compact"].Value);
+                        }
+
                         if (rType.Attributes["globalenvelope"] != null)
+                        {
                             filter.globalenvelope = Convert.ToBoolean(rType.Attributes["globalenvelope"].Value);
+                        }
+
                         if (rType.Attributes["skipfeatures"] != null)
+                        {
                             filter.skipfeatures = Convert.ToBoolean(rType.Attributes["skipfeatures"].Value);
+                        }
+
                         if (rType.Attributes["dataframe"] != null)
+                        {
                             filter.dataframe = rType.Attributes["dataframe"].Value;
+                        }
+
                         if (rType.Attributes["outputmode"] != null)
                         {
                             switch (rType.Attributes["outputmode"].Value)
@@ -584,7 +652,11 @@ namespace gView.Interoperability.ArcXML
                         {
                             foreach (ITableClass tClass in getFeatures.Classes)
                             {
-                                if (!(tClass is IFeatureClass)) continue;
+                                if (!(tClass is IFeatureClass))
+                                {
+                                    continue;
+                                }
+
                                 filter.AddField(((IFeatureClass)tClass).ShapeFieldName);
                             }
                         }
@@ -622,11 +694,13 @@ namespace gView.Interoperability.ArcXML
 
                     getFeatures.Filter.SetUserData("IServiceRequestContext", context);
                     if (getFeatures.Filter is IBufferQueryFilter)
+                    {
                         ((IBufferQueryFilter)getFeatures.Filter).RootFilter.SetUserData("IServiceRequestContext", context);
+                    }
 
                     serviceRequest.Response = await getFeatures.Request();
                 }
-                
+
                 await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
                 return;
             }
@@ -669,7 +743,10 @@ namespace gView.Interoperability.ArcXML
                 foreach (IClass table in ListOperations<IClass>.Clone(tables))
                 {
                     if (/*table is IRasterClass && */table is IPointIdentify)
+                    {
                         continue;
+                    }
+
                     tables.Remove(table);
                 }
                 if (tables.Count == 0)
@@ -746,7 +823,9 @@ namespace gView.Interoperability.ArcXML
                 XmlNode coordsysNode = rType.SelectSingleNode("COORDSYS");
                 raster_request.SpatialReference = SpatialReferenceFromNode(rType, SpatialreferenceType.Coordsys);
                 if (raster_request.SpatialReference == null)
+                {
                     raster_request.SpatialReference = map3.Display.SpatialReference;
+                }
 
                 XmlNode dispNode = rType.SelectSingleNode("gv_display");
                 if (dispNode != null)
@@ -805,8 +884,8 @@ namespace gView.Interoperability.ArcXML
             {
                 var result = await GetNetworkTracerInputCollection(context, rType);
 
-                INetworkTracer tracer=result.tracer;
-                INetworkFeatureClass netFc=result.netFc;
+                INetworkTracer tracer = result.tracer;
+                INetworkFeatureClass netFc = result.netFc;
 
                 var networkInput = result.inputCollection;
 
@@ -814,14 +893,14 @@ namespace gView.Interoperability.ArcXML
                 bool hasMore = false;
                 XmlWriter xWriter = GetNetworkFeaturesWriter();
 
-                if(networkInput!=null && netFc!=null && tracer!=null) 
+                if (networkInput != null && netFc != null && tracer != null)
                 {
-                    foreach(var inputItem in networkInput) 
+                    foreach (var inputItem in networkInput)
                     {
-                        if(inputItem is NetworkSourceInput) 
+                        if (inputItem is NetworkSourceInput)
                         {
                             counter++;
-                            IFeature node= await netFc.GetNodeFeature(((NetworkSourceInput)inputItem).NodeId);
+                            IFeature node = await netFc.GetNodeFeature(((NetworkSourceInput)inputItem).NodeId);
                             WriteNetworkNodeFeature(xWriter, ((NetworkSourceInput)inputItem).NodeId, node.Shape as IPoint, null);
                         }
                         else if (inputItem is NetworkSourceEdgeInput)
@@ -881,11 +960,15 @@ namespace gView.Interoperability.ArcXML
                                 while ((feature = await cursor.NextFeature()) != null)
                                 {
                                     if (!(feature.Shape is IPolyline))
+                                    {
                                         continue;
+                                    }
 
                                     counter++;
                                     if (feature.FindField("FDB_OID") == null)
+                                    {
                                         feature.Fields.Add(new FieldValue("FDB_OID", feature.OID));
+                                    }
 
                                     int edgeId = feature.FindField("_eid") != null ? int.Parse(feature["_eid"].ToString()) : feature.OID;
                                     WriteNetworkEdgeFeature(xWriter, edgeId, feature.Shape as IPolyline, feature);
@@ -915,9 +998,13 @@ namespace gView.Interoperability.ArcXML
                                 if (nodeFeature != null)
                                 {
                                     if (nodeFeature.FindField("FDB_OID") == null)
+                                    {
                                         nodeFeature.Fields.Add(new FieldValue("FDB_OID", nodeId));
+                                    }
                                     else
+                                    {
                                         nodeFeature["FDB_OID"] = nodeId;
+                                    }
                                 }
                             }
                             nodeFeature.Fields.Add(new FieldValue("FDB_NW_NODEID", nodeId));
@@ -939,15 +1026,15 @@ namespace gView.Interoperability.ArcXML
 
         #region Network Helper
 
-        async private Task<(NetworkTracerInputCollection inputCollection, INetworkFeatureClass netFc, INetworkTracer tracer)> 
-            GetNetworkTracerInputCollection(IServiceRequestContext context, XmlNode rType) 
+        async private Task<(NetworkTracerInputCollection inputCollection, INetworkFeatureClass netFc, INetworkTracer tracer)>
+            GetNetworkTracerInputCollection(IServiceRequestContext context, XmlNode rType)
         {
             ServiceRequest serviceRequest = context.ServiceRequest;
 
             INetworkFeatureClass netFc = null;
             INetworkTracer tracer = null;
 
-            try 
+            try
             {
                 #region Get Layer and Tracer
 
@@ -957,7 +1044,7 @@ namespace gView.Interoperability.ArcXML
                 {
                     //((AXLRequest)axlrequest).ResetEvent.Set();
                     serviceRequest.Response = CreateException("No Layerdefinition");
-                    return (null,netFc, tracer);
+                    return (null, netFc, tracer);
                 }
 
                 string id = layer.Attributes["id"].Value;
@@ -1006,12 +1093,15 @@ namespace gView.Interoperability.ArcXML
                         return (null, netFc, tracer);
                     }
 
-                #endregion
+                    #endregion
 
                     #region Queryfilter
 
                     XmlNode queryNode = rType.SelectSingleNode("QUERY");
-                    if (queryNode == null) queryNode = rType.SelectSingleNode("SPATIALQUERY");
+                    if (queryNode == null)
+                    {
+                        queryNode = rType.SelectSingleNode("SPATIALQUERY");
+                    }
 
                     IQueryFilter filter = ObjectFromAXLFactory.Query(queryNode, netFc as ITableClass);
                     if (filter == null)
@@ -1111,7 +1201,7 @@ namespace gView.Interoperability.ArcXML
             return xWriter;
         }
 
-        private string GetNetworkFeaturesReturnString(XmlWriter xWriter,int counter, bool hasmore)
+        private string GetNetworkFeaturesReturnString(XmlWriter xWriter, int counter, bool hasmore)
         {
             StringBuilder axl = new StringBuilder();
             xWriter.WriteStartElement("FEATURECOUNT");
@@ -1154,7 +1244,9 @@ namespace gView.Interoperability.ArcXML
             }
 
             if (point != null)
+            {
                 xWriter.WriteRaw(AXLFromObjectFactory.Geometry(point));
+            }
 
             xWriter.WriteEndElement();  // FEATURE
         }
@@ -1179,7 +1271,9 @@ namespace gView.Interoperability.ArcXML
             }
 
             if (line != null)
+            {
                 xWriter.WriteRaw(AXLFromObjectFactory.Geometry(line));
+            }
 
             xWriter.WriteEndElement();  // FEATURE
         }
@@ -1187,7 +1281,9 @@ namespace gView.Interoperability.ArcXML
         async private Task<IFeatureCursor> NetworkPathEdges(INetworkFeatureClass nfc, NetworkEdgeCollectionOutput edgeCollection)
         {
             if (nfc == null)
+            {
                 return null;
+            }
 
             RowIDFilter filter = new RowIDFilter(String.Empty);
             filter.SubFields = "*";
@@ -1202,7 +1298,9 @@ namespace gView.Interoperability.ArcXML
         async private Task<IFeatureCursor> NetworkNodes(INetworkFeatureClass nfc, int[] nodeIds)
         {
             if (nfc == null)
+            {
                 return null;
+            }
 
             RowIDFilter filter = new RowIDFilter(String.Empty);
             filter.IDs.AddRange(nodeIds);
@@ -1278,13 +1376,18 @@ namespace gView.Interoperability.ArcXML
         private List<ITableClass> FindTableClass(IServiceMap map, string id, out string filterQuery)
         {
             filterQuery = String.Empty;
-            if (map == null) return null;
+            if (map == null)
+            {
+                return null;
+            }
 
             List<ITableClass> classes = new List<ITableClass>();
             foreach (ILayer element in MapServerHelper.FindMapLayers(map, _useTOC, id))
             {
                 if (element.Class is ITableClass)
+                {
                     classes.Add(element.Class as ITableClass);
+                }
 
                 if (element is IFeatureLayer)
                 {
@@ -1332,20 +1435,29 @@ namespace gView.Interoperability.ArcXML
 
         private List<IClass> FindClass(IServiceMap map, string id)
         {
-            if (map == null) return null;
+            if (map == null)
+            {
+                return null;
+            }
 
             List<IClass> classes = new List<IClass>();
             foreach (ILayer element in MapServerHelper.FindMapLayers(map, _useTOC, id))
             {
                 if (element.Class is IClass)
+                {
                     classes.Add(element.Class as IClass);
+                }
             }
             return classes;
         }
 
         private string ArcXMLLayerID(IServiceMap map, string id)
         {
-            if (map == null) return "";
+            if (map == null)
+            {
+                return "";
+            }
+
             foreach (IDatasetElement element in map.MapElements)
             {
                 if (element is IWebServiceLayer && ((IWebServiceLayer)element).WebServiceClass != null && ((IWebServiceLayer)element).WebServiceClass.Themes != null)
@@ -1374,7 +1486,11 @@ namespace gView.Interoperability.ArcXML
         {
             try
             {
-                if (node.Attributes[attr] == null) return defaultValue;
+                if (node.Attributes[attr] == null)
+                {
+                    return defaultValue;
+                }
+
                 return Convert.ToBoolean(node.Attributes[attr].Value);
             }
             catch
@@ -1386,7 +1502,11 @@ namespace gView.Interoperability.ArcXML
         {
             try
             {
-                if (node.Attributes[attr] == null) return 0;
+                if (node.Attributes[attr] == null)
+                {
+                    return 0;
+                }
+
                 return Convert.ToInt32(node.Attributes[attr].Value);
             }
             catch
@@ -1398,7 +1518,11 @@ namespace gView.Interoperability.ArcXML
         {
             try
             {
-                if (node.Attributes[attr] == null) return 0.0;
+                if (node.Attributes[attr] == null)
+                {
+                    return 0.0;
+                }
+
                 return Convert.ToDouble(node.Attributes[attr].Value.Replace(".", ","));
             }
             catch
@@ -1410,10 +1534,15 @@ namespace gView.Interoperability.ArcXML
         {
             try
             {
-                if (node.Attributes[attr] == null) return System.Drawing.Color.Empty;
+                if (node.Attributes[attr] == null)
+                {
+                    return System.Drawing.Color.Empty;
+                }
 
                 if (node.Attributes[attr].Value.ToLower() == "transparent")
+                {
                     return System.Drawing.Color.Transparent;
+                }
 
                 string[] rgb = node.Attributes[attr].Value.Split(',');
                 return System.Drawing.Color.FromArgb(int.Parse(rgb[0]), int.Parse(rgb[1]), int.Parse(rgb[2]));
@@ -1427,7 +1556,10 @@ namespace gView.Interoperability.ArcXML
         private enum SpatialreferenceType { Filter = 0, Feature = 1, Coordsys = 2 }
         private ISpatialReference SpatialReferenceFromNode(XmlNode node, SpatialreferenceType type)
         {
-            if (node == null) return null;
+            if (node == null)
+            {
+                return null;
+            }
 
             XmlNode spatialreference = node.SelectSingleNode("SPATIALREFERENCE[@param]");
             if (spatialreference != null)
@@ -1435,7 +1567,9 @@ namespace gView.Interoperability.ArcXML
                 SpatialReference sRef = new SpatialReference();
                 SpatialReference.FromProj4(sRef, spatialreference.Attributes["param"].Value);
                 if (spatialreference.Attributes["name"] != null)
+                {
                     sRef.Name = spatialreference.Attributes["name"].Value;
+                }
 
                 return sRef;
             }

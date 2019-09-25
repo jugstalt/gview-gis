@@ -33,6 +33,9 @@ namespace gView.Server.AppCode
         [JsonProperty("allowFormsLogin", NullValueHandling = NullValueHandling.Ignore)]
         public bool? AllowFormsLogin { get; set; }
 
+        [JsonProperty("force-https", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? ForceHttps { get; set; }
+
         #region Classes
 
         public class SecurityConfig
