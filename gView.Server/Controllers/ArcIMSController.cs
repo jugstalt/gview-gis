@@ -89,10 +89,11 @@ namespace gView.Server.Controllers
 
         private IActionResult Result(string response, string contentType)
         {
-            ViewData["content-type"] = contentType;
-            ViewData["data"] = Encoding.UTF8.GetBytes(response);
+            //ViewData["content-type"] = contentType;
+            //ViewData["data"] = Encoding.UTF8.GetBytes(response);
 
-            return View("_binary");
+            //return View("_binary");
+            return File(Encoding.UTF8.GetBytes(response), contentType);
         }
 
         private IActionResult ErrorResult(int code, string message)

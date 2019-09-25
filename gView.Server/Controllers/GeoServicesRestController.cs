@@ -963,10 +963,11 @@ namespace gView.Server.Controllers
 
         private IActionResult Result(byte[] data, string contentType)
         {
-            ViewData["content-type"] = contentType;
-            ViewData["data"] = data;
+            //ViewData["content-type"] = contentType;
+            //ViewData["data"] = data;
 
-            return View("_binary");
+            //return View("_binary");
+            return File(data, contentType);
         }
 
         public IActionResult FormResult(object obj)

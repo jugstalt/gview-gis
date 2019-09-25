@@ -33,7 +33,13 @@ namespace gView.Server
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc(o=>
+                {
+                    o.EnableEndpointRouting = false;
+                })
+                .AddNewtonsoftJson();
+
+            //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             //services.AddTransient<Microsoft.AspNetCore.Authentication.IClaimsTransformation, ClaimsTransformer>();
             //services.AddAuthentication(Microsoft.AspNetCore.Server.IIS.IISServerDefaults.AuthenticationScheme);
@@ -49,12 +55,15 @@ namespace gView.Server
             else
             {
                 app.UseExceptionHandler("/Home/Error");
+                //app.ConfigureCustomExceptionMiddleware();
                 app.UseHsts();
             }
 
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
             //app.UseCookiePolicy();
+
+            app.UseRouting();
 
             app.UseMvc(routes =>
             {
