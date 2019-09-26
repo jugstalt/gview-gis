@@ -2159,7 +2159,11 @@ namespace gView.Framework.Symbology
             if (this.DashStyle != DashStyle.Solid &&
                 this.Smoothingmode != SymbolSmoothing.None)
             {
-                Envelope dispEnvelope = new Envelope(display.Envelope);
+                IEnvelope dispEnvelope =
+                    display.DisplayTransformation != null ?
+                    new Envelope(display.DisplayTransformation.TransformedBounds(display)) :
+                    new Envelope(display.Envelope);
+
                 //dispEnvelope.Raise(75);
                 geometry = gView.Framework.SpatialAlgorithms.Clip.PerformClip(dispEnvelope, geometry);
                 if (geometry == null) return;
