@@ -33,11 +33,11 @@ namespace gView.Server
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddMvc(o=>
+            services.AddMvc(o =>
                 {
                     o.EnableEndpointRouting = false;
-                })
-                .AddNewtonsoftJson();
+                });
+                //.AddNewtonsoftJson();
 
             //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 

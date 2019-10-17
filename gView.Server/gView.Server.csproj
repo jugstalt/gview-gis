@@ -21,9 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BuildBundlerMinifier" Version="3.0.415" />
-    <PackageReference Include="BundlerMinifier.Core" Version="3.0.415" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0" />
+    <PackageReference Include="BuildBundlerMinifier" Version="3.1.430" />
+    <PackageReference Include="BundlerMinifier.Core" Version="3.1.430" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.0.0" />
   </ItemGroup>
 
@@ -69,6 +68,21 @@
 
   <ItemGroup>
     <Folder Include="Views\GeoServices\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="tor_sdep.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>tor_sdep.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="tor_sdep.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>tor_sdep.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
 </Project>

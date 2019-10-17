@@ -923,9 +923,9 @@ namespace gView.Server.Controllers
             }
             else if (format == "pjson")
             {
-                return Json(obj, new Newtonsoft.Json.JsonSerializerSettings()
+                return Json(obj, new System.Text.Json.JsonSerializerOptions()
                 {
-                    Formatting = Newtonsoft.Json.Formatting.Indented
+                    WriteIndented = true
                 });
             }
 

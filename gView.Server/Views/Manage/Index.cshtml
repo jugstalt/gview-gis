@@ -24,6 +24,20 @@
     </nav>*@
 
 <h1>Manage</h1>
+<table>
+    <tr>
+        <td>
+            <a href="" onclick="window.gview.manage.pageServices(); return false;">Services</a>
+        </td>
+        <td>
+            &nbsp;/&nbsp;
+        </td>
+        <td>
+            <a href="" onclick="window.gview.manage.pageSecurity(); return false;">Security</a>
+        </td>
+    </tr>
+</table>
+<br/>
 <div class="gview5-manage-body">
 
 </div>
@@ -37,11 +51,11 @@
         <script src="~/js/manage.js"></script>
     </environment>
 
-        <script type="text/javascript">
+    <script type="text/javascript">
         (function () {
             window.gview.manage.setRootUrl('@(gView.Server.AppCode.InternetMapServer.AppRootUrl(this.Context.Request))')
             window.gview.manage.pageServices();
         })();
-        </script>
+    </script>
 }
 
