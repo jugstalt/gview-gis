@@ -79,6 +79,16 @@ namespace gView.Server.Controllers
 
         #endregion
 
+
+
+        public IActionResult Collect()
+        {
+            var mem1 = (double)GC.GetTotalMemory(false) / 1024.0 / 1024.0;
+            GC.Collect();
+            var mem2 = (double)GC.GetTotalMemory(true) / 1024.0 / 1024.0;
+            return Json(new { succeeded = true, mem1 = mem1, mem2 = mem2 });
+        }
+
         #region Services
 
         async public Task<IActionResult> Folders()
