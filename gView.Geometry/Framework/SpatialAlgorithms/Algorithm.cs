@@ -2817,9 +2817,9 @@ namespace gView.Framework.SpatialAlgorithms
             return pColl;
         }
 
-        private static Point PathPoint(IPath path, double Station)
+        private static PointM2 PathPoint(IPath path, double station)
         {
-            if (Station < 0.0)
+            if (station < 0.0)
             {
                 return null;
             }
@@ -2835,12 +2835,12 @@ namespace gView.Framework.SpatialAlgorithms
 
                 double stat0 = stat;
                 stat += Math.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-                if (stat >= Station)
+                if (stat >= station)
                 {
-                    double t = Station - stat0;
+                    double t = station - stat0;
                     double l = Math.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
                     double dx = (x2 - x1) / l, dy = (y2 - y1) / l;
-                    return new Point(x1 + dx * t, y1 + dy * t);
+                    return new PointM2(x1 + dx * t, y1 + dy * t, t + l, Math.Atan2(dy, dx));
                 }
                 x1 = x2; y1 = y2;
             }

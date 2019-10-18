@@ -202,6 +202,11 @@ namespace gView.Framework.Symbology.UI
                         propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.LineSymbolTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
+                    if(propAttributes[p] is UsePointSymbolPicker)
+                    {
+                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.PointSymbolTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        break;
+                    }
                     if (propAttributes[p] is UseCharacterPicker)
                     {
                         propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.CharacterTypeEditor), typeof(System.Drawing.Design.UITypeEditor));

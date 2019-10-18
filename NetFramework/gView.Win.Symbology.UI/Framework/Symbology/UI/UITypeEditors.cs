@@ -191,6 +191,45 @@ namespace gView.Framework.Symbology.UI
 
 	}
 
+    internal class PointSymbolTypeEditor : UITypeEditor
+    {
+        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
+        {
+            return UITypeEditorEditStyle.DropDown;
+        }
+
+        public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
+        {
+            IWindowsFormsEditorService wfes = provider.GetService(
+                typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
+
+            if (wfes != null)
+            {
+                ISymbol symbol = (ISymbol)value;
+                if (symbol == null)
+                {
+                    symbol = new SimplePointSymbol();
+                }
+
+                Form_UITypeEditor_Color dlg = new Form_UITypeEditor_Color(wfes, symbol);
+                wfes.DropDownControl(dlg.panelSymbol);
+                return dlg.Symbol;
+            }
+            return value;
+        }
+
+        public override bool GetPaintValueSupported(ITypeDescriptorContext context)
+        {
+            return true;
+        }
+
+        public override void PaintValue(PaintValueEventArgs e)
+        {
+            if (!(e.Value is ISymbol)) return;
+            SymbolPreview.Draw(e.Graphics, e.Bounds, (ISymbol)e.Value);
+        }
+    }
+
 	internal class CharacterTypeEditor : UITypeEditor 
 	{
 		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
