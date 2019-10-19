@@ -355,6 +355,14 @@
       <Project>{68ff06ec-cebd-4ba4-a536-6c09d9714066}</Project>
       <Name>gView.Win.Globalisation</Name>
     </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Interoperability.ArcXML.UI\gView.Win.Interoperability.ArcXML.UI.csproj">
+      <Project>{b2c2cdd4-875a-4e29-8bff-1faa93e65e13}</Project>
+      <Name>gView.Win.Interoperability.ArcXML.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Interoperability.GeoServices.UI\gView.Win.Interoperability.GeoServices.UI.csproj">
+      <Project>{d3c3bb05-095c-4f39-97c3-17e70d0d1773}</Project>
+      <Name>gView.Win.Interoperability.GeoServices.UI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\gView.Win.Interoperability.OGC.UI\gView.Win.Interoperability.OGC.UI.csproj">
       <Project>{ed609e9d-4942-4426-bad1-8de67d23385a}</Project>
       <Name>gView.Win.Interoperability.OGC.UI</Name>

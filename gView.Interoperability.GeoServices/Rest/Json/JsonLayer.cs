@@ -89,6 +89,27 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         //    }
         //}
 
+        public geometryType GetGeometryType()
+        {
+            switch(GeometryType)
+            {
+                case "esriGeometryPoint":
+                    return geometryType.Point;
+                case "esriGeometryMultipoint":
+                    return geometryType.Multipoint;
+                case "esriGeometryPolyline":
+                    return geometryType.Polyline;
+                case "esriGeometryPolygon":
+                    return geometryType.Polygon;
+                case "esriGeometryBag":
+                    return geometryType.Aggregate;
+                case "esriGeometryEnvelope":
+                    return geometryType.Envelope;
+            }
+
+            return geometryType.Unknown;
+        }
+
         #region Static Members
 
         static public EsriGeometryType ToGeometryType(geometryType type)

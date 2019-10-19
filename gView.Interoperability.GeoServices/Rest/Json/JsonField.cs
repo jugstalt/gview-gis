@@ -21,6 +21,35 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         [JsonProperty("domain")]
         public JsonDomain Domain { get; set; }
 
+        public FieldType GetFieldType()
+        {
+            switch(Type)
+            {
+                case "esriFieldTypeOID":
+                    return FieldType.ID;
+                case "esriFieldTypeGeometry":
+                    return FieldType.Shape;
+                case "esriFieldTypeSmallInteger":
+                    return FieldType.smallinteger;
+                case "esriFieldTypeInteger":
+                    return FieldType.integer;
+                case "esriFieldTypeString":
+                    return FieldType.String;
+                case "esriFieldTypeSingle":
+                    return FieldType.Float;
+                case "esriFieldTypeDouble":
+                    return FieldType.Double;
+                case "esriFieldTypeDate":
+                    return FieldType.Date;
+                case "esriFieldTypeBlob":
+                    return FieldType.binary;
+                case "esriFieldTypeGUID":
+                    return FieldType.guid;
+            }
+
+            return FieldType.String;
+        }
+
         #region Static Members
 
         static public EsriFieldType ToType(FieldType fieldType)
@@ -34,7 +63,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
                 case FieldType.boolean:
                     return EsriFieldType.esriFieldTypeSmallInteger;
                 case FieldType.biginteger:
-                    return EsriFieldType.esriFieldTypeSmallInteger;
+                    return EsriFieldType.esriFieldTypeInteger;
                 case FieldType.character:
                     return EsriFieldType.esriFieldTypeString;
                 case FieldType.integer:

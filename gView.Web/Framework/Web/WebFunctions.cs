@@ -11,6 +11,8 @@ using Microsoft.Win32;
 using System.Security.Cryptography;
 using gView.Framework.system;
 using gView.Framework.IO;
+using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Web
 {
@@ -368,6 +370,89 @@ namespace gView.Framework.Web
             }
         }
 
+        async public static Task<byte[]> DownloadRawAsync(string url, byte[] postBytes, IWebProxy proxy, ICredentials credentials, string usr, string pwd)
+        {
+            try
+            {
+                HttpWebRequest wReq = (HttpWebRequest)HttpWebRequest.Create(url);
+                wReq.Credentials = credentials;
+
+                if (proxy != null) wReq.Proxy = proxy;
+                AppendAuthentification(wReq, usr, pwd);
+
+                if (postBytes != null)
+                {
+                    wReq.Method = "POST";
+                    wReq.ContentLength = postBytes.Length;
+
+                    try
+                    {
+                        Stream postStream = wReq.GetRequestStream();
+                        postStream.Write(postBytes, 0, postBytes.Length);
+                        postStream.Flush();
+                        postStream.Close();
+                    }
+                    catch (Exception e)
+                    {
+                        //log("ERROR@Connector.Sendrequest_ServletExec:\n"+e.Message,"");
+                        LastErrorMessage = e.Message;
+                        return null;
+                    }
+                }
+                else
+                {
+                    wReq.ContentLength = 0;
+                }
+
+                HttpWebResponse wresp = (HttpWebResponse)await wReq.GetResponseAsync();
+
+                int Bytes2Read = 3500000;
+                Byte[] b = new Byte[Bytes2Read];
+
+                DateTime t1 = DateTime.Now;
+                Stream stream = wresp.GetResponseStream();
+
+                MemoryStream memStream = new MemoryStream();
+
+                while (Bytes2Read > 0)
+                {
+                    int len = stream.Read(b, 0, Bytes2Read);
+                    if (len == 0) break;
+
+                    memStream.Write(b, 0, len);
+                }
+                memStream.Position = 0;
+                byte[] bytes = new byte[memStream.Length];
+                memStream.Read(bytes, 0, (int)memStream.Length);
+
+                return bytes;
+            }
+            catch (Exception ex)
+            {
+                LastErrorMessage = ex.Message;
+                throw ex;
+                //return null;
+            }
+        }
+
+        async public static Task<T> DownloadObjectAsync<T>(string url)
+        {
+            return await DownloadObjectAsync<T>(url, null, null, null, String.Empty, String.Empty);
+        }
+
+        async public static Task<T> DownloadObjectAsync<T>(string url, byte[] postBytes, IWebProxy proxy, ICredentials credentials, string user, string pwd)
+        {
+            var bytes = await DownloadRawAsync(url, postBytes, proxy, credentials, user, pwd);
+            if (bytes == null || bytes.Length == 0)
+            {
+                return default(T);
+            }
+
+            var json = System.Text.Encoding.UTF8.GetString(bytes);
+
+            return JsonConvert.DeserializeObject<T>(json);
+        }
+
         public static string HttpSendRequest(string url)
         {
             return HttpSendRequest(url, "GET", null, "", "");
@@ -474,6 +559,92 @@ namespace gView.Framework.Web
             }
              * */
         }
+
+        async public static Task<string> HttpSendRequestAsync(string url, string methode, byte[] postBytes, string user, string password, Encoding encoding, int timeout = 0)
+        {
+            HttpWebResponse httpResponse;
+            int trys = 0;
+            while (true)
+            {
+                HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(url);
+
+                if (!user.Equals(String.Empty) || !password.Equals(string.Empty))
+                {
+                    string auth = "Basic " + Convert.ToBase64String(Encoding.ASCII.GetBytes(user + ":" + password));
+                    httpRequest.Headers.Add("Authorization", auth);
+                }
+
+                //HttpWReq.Timeout = timeout;
+                httpRequest.Method = methode;
+
+                if (timeout > 0)
+                    httpRequest.Timeout = timeout;
+
+                //ProxySettings settings = new ProxySettings();
+                //HttpWReq.Proxy = settings.Proxy(url);
+                httpRequest.Proxy = ProxySettings.Proxy(url);
+
+                if (postBytes != null)
+                {
+                    httpRequest.ContentLength = postBytes.Length;
+
+                    try
+                    {
+                        Stream stream = httpRequest.GetRequestStream();
+                        stream.Write(postBytes, 0, postBytes.Length);
+                        stream.Flush();
+                        stream.Close();
+                    }
+                    catch (Exception e)
+                    {
+                        //log("ERROR@Connector.Sendrequest_ServletExec:\n"+e.Message,"");
+                        LastErrorMessage = e.Message;
+                        return null;
+                    }
+                }
+                else
+                {
+                    httpRequest.ContentLength = 0;
+                }
+
+                try
+                {
+                    httpResponse = (HttpWebResponse)await httpRequest.GetResponseAsync();
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    trys++;
+                    if (trys > 5)
+                    {
+                        throw (ex);
+                    }
+                }
+            }
+
+            using (Stream stream = httpResponse.GetResponseStream())
+            {
+                int Bytes2Read = 3500000;
+                Byte[] b = new Byte[Bytes2Read];
+
+                MemoryStream memStream = new MemoryStream();
+                while (Bytes2Read > 0)
+                {
+                    int len = stream.Read(b, 0, Bytes2Read);
+                    if (len == 0) break;
+
+                    memStream.Write(b, 0, len);
+                }
+
+                memStream.Position = 0;
+                string s = encoding.GetString(memStream.GetBuffer()).Trim(' ', '\0');
+                memStream.Close();
+                memStream.Dispose();
+
+                return s;
+            }
+        }
+
 
         public static string AppendParametersToUrl(string url, string parameters)
         {
