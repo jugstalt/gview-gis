@@ -49,17 +49,9 @@ namespace gView.Server.Controllers
 
                 #region Request 
 
-                if (String.IsNullOrEmpty(content) && Request.Body.CanRead)
+                if(String.IsNullOrEmpty(content))
                 {
-                    MemoryStream ms = new MemoryStream();
-
-                    byte[] bodyData = new byte[1024];
-                    int bytesRead;
-                    while ((bytesRead = Request.Body.Read(bodyData, 0, bodyData.Length)) > 0)
-                    {
-                        ms.Write(bodyData, 0, bytesRead);
-                    }
-                    content = Encoding.UTF8.GetString(ms.ToArray());
+                    content = await GetBody();
                 }
 
                 ServiceRequest serviceRequest = new ServiceRequest(ServiceName.ServiceName(), ServiceName.FolderName(), content)
@@ -75,7 +67,8 @@ namespace gView.Server.Controllers
                 IServiceRequestContext context = await ServiceRequestContext.TryCreate(
                     InternetMapServer.Instance,
                     interpreter,
-                    serviceRequest);
+                    serviceRequest,
+                    checkSecurity: ServiceName.ToLower() != "catalog");
 
                 await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
 
@@ -106,6 +99,20 @@ namespace gView.Server.Controllers
 </ARCXML>";
 
             return Result(errorXML, "text/xml");
+        }
+
+        async private Task<string> GetBody()
+        {
+            if (Request.Body.CanRead)
+            {
+                using (var reader = new StreamReader(Request.Body))
+                {
+                    var body = await reader.ReadToEndAsync();
+                    return body;
+                }
+            }
+
+            return String.Empty;
         }
 
         #endregion

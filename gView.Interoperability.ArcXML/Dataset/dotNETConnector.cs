@@ -14,7 +14,7 @@ namespace gView.Interoperability.ArcXML.Dataset
 	/// <summary>
 	/// Zusammenfassung für dotNETConnector.
 	/// </summary>
-	internal class dotNETConnector
+	public class dotNETConnector
 	{
 		private int m_timeout=5000;
         private char m_comma = ',';

@@ -147,6 +147,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.MongoDb",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.DataSources.MongoDb.UI", "NetFramework\gView.Win.DataSources.MongoDb.UI\gView.Win.DataSources.MongoDb.UI.csproj", "{84636D73-D607-441C-B069-B4C6E06A0B75}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.Interoperability.ArcXML.UI", "NetFramework\gView.Win.Interoperability.ArcXML.UI\gView.Win.Interoperability.ArcXML.UI.csproj", "{B2C2CDD4-875A-4E29-8BFF-1FAA93E65E13}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -731,6 +733,14 @@ Global
 		{84636D73-D607-441C-B069-B4C6E06A0B75}.Release|Any CPU.Build.0 = Release|Any CPU
 		{84636D73-D607-441C-B069-B4C6E06A0B75}.Release|x64.ActiveCfg = Release|Any CPU
 		{84636D73-D607-441C-B069-B4C6E06A0B75}.Release|x64.Build.0 = Release|Any CPU
+		{B2C2CDD4-875A-4E29-8BFF-1FAA93E65E13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2C2CDD4-875A-4E29-8BFF-1FAA93E65E13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2C2CDD4-875A-4E29-8BFF-1FAA93E65E13}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B2C2CDD4-875A-4E29-8BFF-1FAA93E65E13}.Debug|x64.Build.0 = Debug|Any CPU
+		{B2C2CDD4-875A-4E29-8BFF-1FAA93E65E13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2C2CDD4-875A-4E29-8BFF-1FAA93E65E13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2C2CDD4-875A-4E29-8BFF-1FAA93E65E13}.Release|x64.ActiveCfg = Release|Any CPU
+		{B2C2CDD4-875A-4E29-8BFF-1FAA93E65E13}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

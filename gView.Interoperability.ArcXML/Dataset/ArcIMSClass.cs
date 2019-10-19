@@ -1,23 +1,20 @@
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.IO;
+using gView.Framework.system;
+using gView.Framework.Web;
+using gView.Framework.XML;
+using gView.MapServer;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Xml;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
-using gView.Framework.Web;
-using gView.Framework.IO;
-using gView.MapServer;
-using gView.Framework.XML;
-using gView.Framework.Carto;
-using gView.Framework.system;
 using System.Threading.Tasks;
-
-[assembly: InternalsVisibleTo("gView.Interoperability.ArcXML.UI, PublicKey=0024000004800000940000000602000000240000525341310004000001000100ad6b16ba6c0a7a8717a5945266036366beaed6fccb2f87802f0efe09e2a59e5554056ab439042410b35708e13362eadb16e89d183a7518a8c426a6f6cee0c64a93b3e39e2dd52948410c7bfc5b70a77d173105861e5875a75471b7fb2f833e0157cbd1b6a5d9b23bb1e093e4049083fbbd5b60fb41f84220ff3d0692bc2683bd")]
+using System.Xml;
 
 namespace gView.Interoperability.ArcXML.Dataset
 {
-    internal class ArcIMSClass : IWebServiceClass
+    public class ArcIMSClass : IWebServiceClass
     {
         internal event EventHandler ModifyResponseOuput = null;
 
@@ -30,28 +27,48 @@ namespace gView.Interoperability.ArcXML.Dataset
         public ArcIMSClass(ArcIMSDataset dataset)
         {
             _dataset = dataset;
-            if (_dataset != null) _name = _dataset._name;
+            if (_dataset != null)
+            {
+                _name = _dataset._name;
+            }
         }
 
         #region IWebServiceClass Member
-        
+
         public event BeforeMapRequestEventHandler BeforeMapRequest = null;
         public event AfterMapRequestEventHandler AfterMapRequest = null;
 
         async public Task<bool> MapRequest(gView.Framework.Carto.IDisplay display)
         {
-            if (_dataset == null) return false;
+            if (_dataset == null)
+            {
+                return false;
+            }
 
             List<IWebServiceTheme> themes = Themes;
-            if (themes == null) return false;
+            if (themes == null)
+            {
+                return false;
+            }
 
             #region Check for visible Layers
             bool visFound = false;
             foreach (IWebServiceTheme theme in themes)
             {
-                if (!theme.Visible) continue;
-                if (theme.MinimumScale > 1 && theme.MinimumScale > display.mapScale) continue;
-                if (theme.MaximumScale > 1 && theme.MaximumScale < display.mapScale) continue;
+                if (!theme.Visible)
+                {
+                    continue;
+                }
+
+                if (theme.MinimumScale > 1 && theme.MinimumScale > display.mapScale)
+                {
+                    continue;
+                }
+
+                if (theme.MaximumScale > 1 && theme.MaximumScale < display.mapScale)
+                {
+                    continue;
+                }
 
                 visFound = true;
                 break;
@@ -91,12 +108,16 @@ namespace gView.Interoperability.ArcXML.Dataset
 
             dotNETConnector connector = new dotNETConnector();
             if (!String.IsNullOrEmpty(user) || !String.IsNullOrEmpty(pwd))
+            {
                 connector.setAuthentification(user, pwd);
+            }
 
             if (_dataset.State != DatasetState.opened)
             {
                 if (!await _dataset.Open(context))
+                {
                     return false;
+                }
             }
 
             ISpatialReference sRef = (display.SpatialReference != null) ?
@@ -107,7 +128,9 @@ namespace gView.Interoperability.ArcXML.Dataset
             int iHeight = display.iHeight;
 
             if (BeforeMapRequest != null)
+            {
                 BeforeMapRequest(this, display, ref sRef, ref iWidth, ref iHeight);
+            }
 
             try
             {
@@ -165,7 +188,7 @@ namespace gView.Interoperability.ArcXML.Dataset
                         }
                     }
                 }
-                
+
                 sb.Append("<LAYERLIST>");
                 foreach (IWebServiceTheme theme in themes)
                 {
@@ -190,7 +213,9 @@ namespace gView.Interoperability.ArcXML.Dataset
                 foreach (XmlNode additional in this.AppendedLayers)
                 {
                     if (additional != null)
+                    {
                         sb.Append(additional.OuterXml);
+                    }
                 }
                 sb.Append("</GET_IMAGE>");
                 sb.Append("</REQUEST>");
@@ -213,7 +238,9 @@ namespace gView.Interoperability.ArcXML.Dataset
                 XmlNode envelopeNode = doc.SelectSingleNode("//IMAGE/ENVELOPE");
 
                 if (ModifyResponseOuput != null)
+                {
                     ModifyResponseOuput(this, new ModifyOutputEventArgs(outputNode));
+                }
 
                 if (_image != null)
                 {
@@ -224,7 +251,7 @@ namespace gView.Interoperability.ArcXML.Dataset
 #if(DEBUG)
                 //gView.Framework.system.Logger.LogDebug("Start ArcXML DownloadImage");
 #endif
-                System.Drawing.Bitmap bm=null;
+                System.Drawing.Bitmap bm = null;
                 if (outputNode != null)
                 {
 #if(DEBUG)
@@ -262,7 +289,9 @@ namespace gView.Interoperability.ArcXML.Dataset
                     _image.SpatialReference = display.SpatialReference;
 
                     if (AfterMapRequest != null)
+                    {
                         AfterMapRequest(this, display, _image);
+                    }
                 }
                 return _image != null;
             }
@@ -275,18 +304,35 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         async public Task<bool> LegendRequest(gView.Framework.Carto.IDisplay display)
         {
-            if (_dataset == null) return false;
+            if (_dataset == null)
+            {
+                return false;
+            }
 
             List<IWebServiceTheme> themes = Themes;
-            if (themes == null) return false;
+            if (themes == null)
+            {
+                return false;
+            }
 
             #region Check for visible Layers
             bool visFound = false;
             foreach (IWebServiceTheme theme in themes)
             {
-                if (!theme.Visible) continue;
-                if (theme.MinimumScale > 1 && theme.MinimumScale > display.mapScale) continue;
-                if (theme.MaximumScale > 1 && theme.MaximumScale < display.mapScale) continue;
+                if (!theme.Visible)
+                {
+                    continue;
+                }
+
+                if (theme.MinimumScale > 1 && theme.MinimumScale > display.mapScale)
+                {
+                    continue;
+                }
+
+                if (theme.MaximumScale > 1 && theme.MaximumScale < display.mapScale)
+                {
+                    continue;
+                }
 
                 visFound = true;
                 break;
@@ -326,12 +372,16 @@ namespace gView.Interoperability.ArcXML.Dataset
 
             dotNETConnector connector = new dotNETConnector();
             if (!String.IsNullOrEmpty(user) || !String.IsNullOrEmpty(pwd))
+            {
                 connector.setAuthentification(user, pwd);
+            }
 
             if (_dataset.State != DatasetState.opened)
             {
                 if (!await _dataset.Open(context))
+                {
                     return false;
+                }
             }
 
             try
@@ -391,7 +441,9 @@ namespace gView.Interoperability.ArcXML.Dataset
                 XmlNode output = doc.SelectSingleNode("//LEGEND");
 
                 if (ModifyResponseOuput != null)
+                {
                     ModifyResponseOuput(this, new ModifyOutputEventArgs(output));
+                }
 
                 if (_legend != null)
                 {
@@ -428,7 +480,11 @@ namespace gView.Interoperability.ArcXML.Dataset
         {
             get
             {
-                if (_clonedThemes != null) return _clonedThemes;
+                if (_clonedThemes != null)
+                {
+                    return _clonedThemes;
+                }
+
                 if (_dataset != null)
                 {
                     return _dataset._themes;
@@ -445,7 +501,9 @@ namespace gView.Interoperability.ArcXML.Dataset
             {
                 _sptatialReference = value;
                 if (_dataset != null)
+                {
                     _dataset.SetSpatialReference(value);
+                }
             }
         }
 
@@ -481,7 +539,11 @@ namespace gView.Interoperability.ArcXML.Dataset
 
             foreach (IWebServiceTheme theme in themes)
             {
-                if (theme == null || theme.Class == null) continue;
+                if (theme == null || theme.Class == null)
+                {
+                    continue;
+                }
+
                 clone._clonedThemes.Add(LayerFactory.Create(theme.Class, theme as ILayer, clone) as IWebServiceTheme);
             }
             clone.BeforeMapRequest = BeforeMapRequest;
@@ -513,7 +575,10 @@ namespace gView.Interoperability.ArcXML.Dataset
         {
             if (context == null ||
                 context.MapServer == null ||
-                context.MapServer.LoggingEnabled(loggingMethod.request_detail_pro) == false) return;
+                context.MapServer.LoggingEnabled(loggingMethod.request_detail_pro) == false)
+            {
+                return;
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.Append("\n");
@@ -529,15 +594,21 @@ namespace gView.Interoperability.ArcXML.Dataset
         {
             if (context == null ||
                 context.MapServer == null ||
-                context.MapServer.LoggingEnabled(loggingMethod.request_detail_pro) == false) return;
+                context.MapServer.LoggingEnabled(loggingMethod.request_detail_pro) == false)
+            {
+                return;
+            }
 
-           await LogAsync(context, header, server, service, axl.ToString());
+            await LogAsync(context, header, server, service, axl.ToString());
         }
         async public static Task ErrorLog(IServiceRequestContext context, string header, string server, string service, Exception ex)
         {
             if (context == null ||
                 context.MapServer == null ||
-                context.MapServer.LoggingEnabled(loggingMethod.error) == false) return;
+                context.MapServer.LoggingEnabled(loggingMethod.error) == false)
+            {
+                return;
+            }
 
             StringBuilder msg = new StringBuilder();
             if (ex != null)

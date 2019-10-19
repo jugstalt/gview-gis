@@ -100,19 +100,7 @@ namespace gView.Server.Controllers
 
                 #region Request
 
-                string input = String.Empty;
-                if (Request.Body.CanRead)
-                {
-                    MemoryStream ms = new MemoryStream();
-
-                    byte[] bodyData = new byte[1024];
-                    int bytesRead;
-                    while ((bytesRead = Request.Body.Read(bodyData, 0, bodyData.Length)) > 0)
-                    {
-                        ms.Write(bodyData, 0, bytesRead);
-                    }
-                    input = Encoding.UTF8.GetString(ms.ToArray());
-                }
+                string input = await GetBody();
                 if (String.IsNullOrEmpty(input))
                 {
                     input = this.Request.QueryString.ToString();
@@ -166,7 +154,7 @@ namespace gView.Server.Controllers
         {
             try
             {
-                string input = GetBody();
+                string input = await GetBody();
 
                 var credentials = GetRequestCredentials();
 
@@ -238,7 +226,7 @@ namespace gView.Server.Controllers
         {
             try
             {
-                string input = GetBody();
+                string input = await GetBody();
 
                 name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
@@ -273,19 +261,15 @@ namespace gView.Server.Controllers
             return Result("<ERROR>" + message + "</ERROR>", "text/xml");
         }
 
-        private string GetBody()
+        async private Task<string> GetBody()
         {
             if (Request.Body.CanRead)
             {
-                MemoryStream ms = new MemoryStream();
-
-                byte[] bodyData = new byte[1024];
-                int bytesRead;
-                while ((bytesRead = Request.Body.Read(bodyData, 0, bodyData.Length)) > 0)
+                using (var reader = new StreamReader(Request.Body))
                 {
-                    ms.Write(bodyData, 0, bytesRead);
+                    var body = await reader.ReadToEndAsync();
+                    return body;
                 }
-                return Encoding.UTF8.GetString(ms.ToArray());
             }
 
             return String.Empty;

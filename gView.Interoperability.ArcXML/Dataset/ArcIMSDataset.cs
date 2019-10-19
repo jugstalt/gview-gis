@@ -28,13 +28,13 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         public ArcIMSDataset() { }
 
-        //public ArcIMSDataset(string connection, string name)
-        //{
-        //    _connection = connection;
-        //    _name = name;
+        public ArcIMSDataset(string connection, string name)
+        {
+            _connection = connection;
+            _name = name;
 
-        //    _class = new ArcIMSClass(this);
-        //}
+            _class = new ArcIMSClass(this);
+        }
 
         internal ArcIMSClass WebServiceClass
         {

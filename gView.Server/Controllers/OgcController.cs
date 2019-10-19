@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using gView.Framework.system;
+﻿using gView.Framework.system;
 using gView.Interoperability.OGC;
 using gView.Interoperability.OGC.Request.WMTS;
 using gView.MapServer;
 using gView.Server.AppCode;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.Server.Controllers
 {
@@ -20,7 +18,7 @@ namespace gView.Server.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        async public Task<IActionResult> OgcRequest(string id, string service="")
+        async public Task<IActionResult> OgcRequest(string id, string service = "")
         {
             try
             {
@@ -31,10 +29,10 @@ namespace gView.Server.Controllers
                 #endregion
 
                 IServiceRequestInterpreter interpreter = null;
-                
 
 
-                switch(service.ToLower().Split(',')[0])
+
+                switch (service.ToLower().Split(',')[0])
                 {
                     case "wms":
                         interpreter = InternetMapServer.GetInterpreter(typeof(WMSRequest));
@@ -52,24 +50,20 @@ namespace gView.Server.Controllers
                 #region Request
 
                 string requestString = Request.QueryString.ToString();
-                if (Request.Method.ToLower()=="post" && Request.Body.CanRead)
+                if (Request.Method.ToLower() == "post" && Request.Body.CanRead)
                 {
-                    MemoryStream ms = new MemoryStream();
-
-                    byte[] bodyData = new byte[1024];
-                    int bytesRead;
-                    while ((bytesRead = Request.Body.Read(bodyData, 0, bodyData.Length)) > 0)
-                    {
-                        ms.Write(bodyData, 0, bytesRead);
-                    }
-                    string body = Encoding.UTF8.GetString(ms.ToArray());
+                    string body = await GetBody();
 
                     if (!String.IsNullOrWhiteSpace(body))
+                    {
                         requestString = body;
+                    }
                 }
 
                 while (requestString.StartsWith("?"))
+                {
                     requestString = requestString.Substring(1);
+                }
 
                 ServiceRequest serviceRequest = new ServiceRequest(id.ServiceName(), id.FolderName(), requestString)
                 {
@@ -98,7 +92,7 @@ namespace gView.Server.Controllers
 
 
         // https://localhost:44331/tilewmts/tor_tiles/compact/ul/31256/default/8/14099/16266.jpg
-        async public Task<IActionResult> TileWmts(string name, string cachetype, string origin, string epsg, string style, string level, string row, string col, string folder="")
+        async public Task<IActionResult> TileWmts(string name, string cachetype, string origin, string epsg, string style, string level, string row, string col, string folder = "")
         {
             if (IfMatch())
             {
@@ -148,7 +142,9 @@ namespace gView.Server.Controllers
                     var mapServerResponse = gView.Framework.system.MapServerResponse.FromString(ret);
 
                     if (mapServerResponse.Expires != null)
+                    {
                         base.AppendEtag((DateTime)mapServerResponse.Expires);
+                    }
 
                     return Result(mapServerResponse.Data, contentType);
                 }
@@ -163,10 +159,10 @@ namespace gView.Server.Controllers
         private IActionResult Result(string response, string contentType)
         {
             byte[] data = null;
-            if(response.StartsWith("base64:"))
+            if (response.StartsWith("base64:"))
             {
                 response = response.Substring("base64:".Length);
-                if(response.Contains(":"))
+                if (response.Contains(":"))
                 {
                     int pos = response.IndexOf(":");
                     contentType = response.Substring(0, pos);
@@ -188,6 +184,20 @@ namespace gView.Server.Controllers
 
             //return View("_binary");
             return File(data, contentType);
+        }
+
+        async private Task<string> GetBody()
+        {
+            if (Request.Body.CanRead)
+            {
+                using (var reader = new StreamReader(Request.Body))
+                {
+                    var body = await reader.ReadToEndAsync();
+                    return body;
+                }
+            }
+
+            return String.Empty;
         }
 
         #endregion
