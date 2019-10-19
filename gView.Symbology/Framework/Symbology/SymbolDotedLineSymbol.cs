@@ -31,6 +31,24 @@ namespace gView.Framework.Symbology
             get; set;
         }
 
+        [Browsable(true)]
+        [DisplayName("Draw Start Point")]
+        public bool DrawStartPoint { get; set; }
+        [Browsable(true)]
+        [DisplayName("Draw Ent Point")]
+        public bool DrawEndPoint { get; set; }
+        [Browsable(true)]
+        [DisplayName("Draw Step Points")]
+        public bool DrawStepPoints { get; set; }
+        [Browsable(true)]
+        [DisplayName("Step Width [px]")]
+        public int StepWidth { get; set; }
+
+        [Browsable(true)]
+        [DisplayName("Rotate Symbols")]
+        [Category("Point Symbol")]
+        public bool UseSymbolRotation { get; set; }
+
         #region ILineSymbol
 
         [Browsable(false)]
@@ -41,47 +59,133 @@ namespace gView.Framework.Symbology
 
         public void Draw(IDisplay display, IGeometry geometry)
         {
-            if(this.LineSymbol!=null)
+            try
             {
-                this.LineSymbol.Draw(display, geometry);
-            }
-            if(this.PointSymbol!=null && geometry is IPolyline)
-            {
-                double pixelStep = 20.0;
-                double step = pixelStep * (display.mapScale / (96 / 0.0254));  // [m]
+                IEnvelope dispEnvelope =
+                    display.DisplayTransformation != null ?
+                    new Envelope(display.DisplayTransformation.TransformedBounds(display)) :
+                    new Envelope(display.Envelope);
 
-                var polyline = (IPolyline)geometry;
-
-                foreach(var path in polyline)
+                //dispEnvelope.Raise(75);
+                geometry = SpatialAlgorithms.Clip.PerformClip(dispEnvelope, geometry);
+                if (geometry == null)
                 {
-                    if (path == null)
-                        continue;
+                    return;
+                }
 
-                    var length = path.Length;
-                    var pointCount = path.PointCount;
-
-                    var pointCollection = length > step ?
-                        SpatialAlgorithms.Algorithm.PathPoints(path, step, length, step) :
-                        new PointCollection();
-
-                    pointCollection.AddPoint(path[0]);
-                    pointCollection.AddPoint(path[path.PointCount - 1]);
-
-                    for (int i = 0; i < pointCount; i++)
+                if (this.LineSymbol != null)
+                {
+                    if (this.SymbolSmothingMode != SymbolSmoothing.None)
                     {
-                        if (pointCollection[i] is PointM2)
+                        this.LineSymbol.SymbolSmothingMode = this.SymbolSmothingMode;
+                    }
+                    this.LineSymbol.Draw(display, geometry);
+                }
+                if (this.PointSymbol != null && geometry is IPolyline)
+                {
+                    if(this.SymbolSmothingMode!=SymbolSmoothing.None)
+                    {
+                        this.PointSymbol.SymbolSmothingMode = this.SymbolSmothingMode;
+                    }
+                    double pixelStep = this.StepWidth;
+                    double step = pixelStep * (display.mapScale / (96 / 0.0254));  // [m]
+
+                    if (display.SpatialReference != null &&
+                        display.SpatialReference.SpatialParameters.IsGeographic)
+                    {
+                        step = (180.0 * step / Math.PI) / 6370000.0;
+                    }
+
+                    var polyline = ((IPolyline)geometry);
+
+                    foreach (var path in polyline)
+                    {
+                        if (path == null || path.PointCount == 0)
                         {
-                            ((IPointSymbol)this.PointSymbol).Angle =
-                                (float)(Convert.ToSingle(((PointM2)pointCollection[i]).M2) * 360.0 / Math.PI);
-                        }
-                        else
-                        {
-                            ((IPointSymbol)this.PointSymbol).Angle = 0;
+                            continue;
                         }
 
-                        this.PointSymbol.Draw(display, pointCollection[i]);
+                        var symbolRotation = this.UseSymbolRotation ?
+                            this.PointSymbol as ISymbolRotation :
+                            null;
+
+                        var length = path.Length;
+                        var pointCount = path.PointCount;
+                        double dx, dy;
+
+                        PointCollection pointCollection = new PointCollection();
+                        if (pointCount >= 2)
+                        {
+                            #region Step Points
+
+                            if (this.DrawStepPoints && pixelStep >= 1 && step > 0.0)
+                            {
+                                pointCollection = length > step ?
+                                    SpatialAlgorithms.Algorithm.PathPoints(path, 
+                                                                           fromStat: step, 
+                                                                           toStat: length, 
+                                                                           step: step,
+                                                                           createPointM2: true) :
+                                    new PointCollection();
+                            }
+
+                            #endregion
+
+                            #region FirstPoint
+
+                            if (this.DrawStartPoint)
+                            {
+                                dx = path[1].X - path[0].X;
+                                dy = path[1].Y - path[0].Y;
+
+                                pointCollection.AddPoint(new PointM2(path[0], 0, Math.Atan2(-dy, dx)));
+                            }
+
+                            #endregion
+
+                            #region Last Point
+
+                            if (this.DrawEndPoint)
+                            {
+                                dx = path[pointCount - 1].X - path[pointCount - 2].X;
+                                dy = path[pointCount - 1].Y - path[pointCount - 2].Y;
+                                pointCollection.AddPoint(new PointM2(path[path.PointCount - 1], length, Math.Atan2(-dy, dx)));
+                            }
+
+                            #endregion
+                        }
+                        else  // Line with one Vertex!!??  => dont ask => draw!
+                        {
+                            if (this.DrawStartPoint)
+                            {
+                                pointCollection = new PointCollection();
+                                pointCollection.AddPoint(path[0]);
+                            }
+                        }
+
+                        for (int i = 0, i_to = pointCollection.PointCount; i < i_to; i++)
+                        {
+                            if (symbolRotation != null)
+                            {
+                                if (pointCollection[i] is PointM2)
+                                {
+                                    float rotation = (float)(Convert.ToSingle(((PointM2)pointCollection[i]).M2) * 180.0 / Math.PI);
+                                    symbolRotation.Rotation = rotation;
+                                }
+                                else
+                                {
+                                    symbolRotation.Rotation = 0;
+                                }
+                            }
+
+                            this.PointSymbol.Draw(display, pointCollection[i]);
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
 
@@ -136,6 +240,13 @@ namespace gView.Framework.Symbology
             }
 
             cloneSym.LegendLabel = _legendLabel;
+
+            cloneSym.DrawStartPoint = this.DrawStartPoint;
+            cloneSym.DrawEndPoint = this.DrawEndPoint;
+            cloneSym.DrawStepPoints = this.DrawStepPoints;
+            cloneSym.StepWidth = (int)((float)this.StepWidth * fac);
+            cloneSym.UseSymbolRotation = this.UseSymbolRotation;
+
             return cloneSym;
         }
 
@@ -172,6 +283,13 @@ namespace gView.Framework.Symbology
 
             this.PointSymbol = (IPointSymbol)stream.Load("pointsymbol");
             this.LineSymbol = (ILineSymbol)stream.Load("linesymbol");
+
+            this.DrawStartPoint = (bool)stream.Load("drawstartpoint", true);
+            this.DrawEndPoint = (bool)stream.Load("drawendpoint", true);
+            this.DrawStepPoints = (bool)stream.Load("drawsteppoints", true);
+            this.StepWidth = (int)stream.Load("stepwidth", (int)20);
+
+            this.UseSymbolRotation = (bool)stream.Load("usesymbolrotation", true);
         }
 
         public void Save(IPersistStream stream)
@@ -187,6 +305,12 @@ namespace gView.Framework.Symbology
             {
                 stream.Save("linesymbol", this.LineSymbol);
             }
+
+            stream.Save("drawstartpoint", this.DrawStartPoint);
+            stream.Save("drawendpoint", this.DrawEndPoint);
+            stream.Save("drawsteppoints", this.DrawStepPoints);
+            stream.Save("stepwidth", this.StepWidth);
+            stream.Save("usesymbolrotation", this.UseSymbolRotation);
         }
 
         #endregion

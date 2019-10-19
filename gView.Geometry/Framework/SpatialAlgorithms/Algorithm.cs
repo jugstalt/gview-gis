@@ -2801,13 +2801,13 @@ namespace gView.Framework.SpatialAlgorithms
 
             return null;
         }
-        public static PointCollection PathPoints(IPath path, double fromStat, double toStat, double step)
+        public static PointCollection PathPoints(IPath path, double fromStat, double toStat, double step, bool createPointM2 = false)
         {
             PointCollection pColl = new PointCollection();
 
             for (double s = fromStat; s <= toStat; s += step)
             {
-                IPoint p = PathPoint(path, s);
+                IPoint p = PathPoint(path, s, createPointM2);
                 if (p != null)
                 {
                     pColl.AddPoint(p);
@@ -2817,7 +2817,7 @@ namespace gView.Framework.SpatialAlgorithms
             return pColl;
         }
 
-        private static PointM2 PathPoint(IPath path, double station)
+        private static Point PathPoint(IPath path, double station, bool createPointM2 = false)
         {
             if (station < 0.0)
             {
@@ -2840,7 +2840,17 @@ namespace gView.Framework.SpatialAlgorithms
                     double t = station - stat0;
                     double l = Math.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
                     double dx = (x2 - x1) / l, dy = (y2 - y1) / l;
-                    return new PointM2(x1 + dx * t, y1 + dy * t, t + l, Math.Atan2(dy, dx));
+
+                    if (createPointM2 == true)
+                    {
+                        //
+                        // -dy!! => this value is used for DisplyRotation (eg SymbolDotedLineSymbol)
+                        // geographic Y and Display Y has different Directions!!
+                        //
+                        return new PointM2(x1 + dx * t, y1 + dy * t, stat0 + t, Math.Atan2(-dy, dx));
+                    }
+
+                    return new Point(x1 + dx * t, y1 + dy * t);
                 }
                 x1 = x2; y1 = y2;
             }
