@@ -1208,14 +1208,7 @@ namespace gView.Win.DataExplorer
 
         public string Text
         {
-            get
-            {
-                return this.Text;
-            }
-            set
-            {
-                this.Text = value;
-            }
+            get; set;
         }
 
         public List<IExplorerObject> SelectedObjects

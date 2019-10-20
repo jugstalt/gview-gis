@@ -108,9 +108,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="FormNewConnection.de.resx">
-      <DependentUpon>FormNewConnection.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="FormNewConnection.resx">
       <DependentUpon>FormNewConnection.cs</DependentUpon>
     </EmbeddedResource>

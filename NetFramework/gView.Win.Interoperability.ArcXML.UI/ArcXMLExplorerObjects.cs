@@ -2,6 +2,7 @@ using gView.Framework.Globalisation;
 using gView.Framework.IO;
 using gView.Framework.system.UI;
 using gView.Framework.UI;
+using gView.Framework.system;
 using System;
 using System.Threading.Tasks;
 using System.Xml;
@@ -153,11 +154,8 @@ namespace gView.Interoperability.ArcXML.Dataset
             {
                 string connStr = dlg.ConnectionString;
                 ConfigTextStream stream = new ConfigTextStream("ArcIMS_connections", true, true);
-                string id = ConfigTextStream.ExtractValue(connStr, "server");
-                if (id.IndexOf(":") != -1)
-                {
-                    id = id.Replace(":", " (Port=") + ")";
-                }
+                string id = ConfigTextStream.ExtractValue(connStr, "server").UrlToConfigId(); ;
+
                 stream.Write(connStr, ref id);
                 stream.Close();
 

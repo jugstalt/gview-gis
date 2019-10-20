@@ -5,6 +5,7 @@ using System.Linq;
 using gView.Framework.UI;
 using gView.Framework.system.UI;
 using gView.Framework.IO;
+using gView.Framework.system;
 using gView.Interoperability.OGC.Dataset.WMS;
 using gView.Framework.Globalisation;
 using gView.Framework.OGC.UI;
@@ -167,12 +168,10 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
                 {
                     case "WMS_WFS":
                     case "WMS":
-                        Uri wmsUri = new Uri(ConfigTextStream.ExtractValue(connStr, "wms"));
-                        id = wmsUri.Host;
+                        id = ConfigTextStream.ExtractValue(connStr, "wms").UrlToConfigId();
                         break;
                     case "WFS":
-                        Uri wfsUri = new Uri(ConfigTextStream.ExtractValue(connStr, "wfs"));
-                        id = wfsUri.Host;
+                        id = ConfigTextStream.ExtractValue(connStr, "wfs").UrlToConfigId();
                         break;
                     default:
                         return;

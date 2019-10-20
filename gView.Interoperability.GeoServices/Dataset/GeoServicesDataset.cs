@@ -2,6 +2,7 @@ using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.Web;
+using gView.Framework.system;
 using gView.Interoperability.GeoServices.Rest.Json;
 using gView.MapServer;
 using System.Collections.Generic;
@@ -175,19 +176,37 @@ namespace gView.Interoperability.GeoServices.Dataset
             {
                 _class = new GeoServicesClass(this);
             }
+            _class.Themes.Clear();
+
             _themes = new List<IWebServiceTheme>();
 
-            string server = ConfigTextStream.ExtractValue(ConnectionString, "server");
-            string service = ConfigTextStream.ExtractValue(ConnectionString, "service");
+            string serviceUrl = ServiceUrl();
             string user = ConfigTextStream.ExtractValue(ConnectionString, "user");
             string pwd = ConfigTextStream.ExtractValue(ConnectionString, "pwd");
 
-            var jsonMapService = await TryPostAsync<JsonMapService>($"{service}?f=json");
-            var jsonLayers = await TryPostAsync<JsonLayers>($"{service}/layers?f=json");
+            var jsonMapService = await TryPostAsync<JsonMapService>($"{serviceUrl}?f=json");
+            var jsonLayers = await TryPostAsync<JsonLayers>($"{serviceUrl}/layers?f=json");
 
             if (jsonMapService != null)
             {
                 _class.Name = jsonMapService.MapName;
+
+                if (jsonMapService.FullExtent != null)
+                {
+                    _class.Envelope = new Envelope(
+                        jsonMapService.FullExtent.XMin,
+                        jsonMapService.FullExtent.YMin,
+                        jsonMapService.FullExtent.XMax,
+                        jsonMapService.FullExtent.YMax);
+                }
+
+                if (jsonMapService.SpatialReferenceInstance != null &&
+                    jsonMapService.SpatialReferenceInstance.Wkid > 0)
+                {
+                    var sRef = gView.Framework.Geometry.SpatialReference.FromID("epsg:" + jsonMapService.SpatialReferenceInstance.Wkid);
+                    this.SetSpatialReference(sRef);
+                    _class.SpatialReference = sRef;
+                }
 
                 if (jsonLayers?.Layers != null)
                 {
@@ -198,8 +217,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
                         if (jsonLayer.Type.ToLower() == "feature layer")
                         {
-                            var featureClass = new GeoServicesFeatureClass(this, jsonLayer);
-
+                            themeClass = new GeoServicesFeatureClass(this, jsonLayer);
                         }
 
                         if (themeClass == null)
@@ -213,7 +231,9 @@ namespace gView.Interoperability.GeoServices.Dataset
                             continue;
                         }
 
-                        theme.Visible = false;
+                        theme.Visible = true; //false;
+
+                        _class.Themes.Add(theme);
                     }
                 }
             }
@@ -242,7 +262,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         #region Helper
 
-        async private Task<T> TryPostAsync<T>(string url)
+        async internal Task<T> TryPostAsync<T>(string url)
         {
             try
             {
@@ -255,6 +275,14 @@ namespace gView.Interoperability.GeoServices.Dataset
             }
 
             return default(T);
+        }
+
+        public string ServiceUrl()
+        {
+            string server = ConfigTextStream.ExtractValue(ConnectionString, "server");
+            string service = ConfigTextStream.ExtractValue(ConnectionString, "service");
+
+            return $"{server.UrlRemoveEndingSlashes().UrlAppendPath(service)}/MapServer";
         }
 
         #endregion

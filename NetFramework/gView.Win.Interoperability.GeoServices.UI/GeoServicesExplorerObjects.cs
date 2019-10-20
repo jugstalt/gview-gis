@@ -4,7 +4,10 @@ using gView.Framework.system.UI;
 using gView.Framework.UI;
 using System;
 using System.Threading.Tasks;
+using gView.Framework.system;
 using System.Xml;
+using gView.Framework.Web;
+using gView.Interoperability.GeoServices.Rest.Json;
 
 namespace gView.Interoperability.GeoServices.Dataset
 {
@@ -153,11 +156,7 @@ namespace gView.Interoperability.GeoServices.Dataset
             {
                 string connStr = dlg.ConnectionString;
                 ConfigTextStream stream = new ConfigTextStream("GeoServices_connections", true, true);
-                string id = ConfigTextStream.ExtractValue(connStr, "server");
-                if (id.IndexOf(":") != -1)
-                {
-                    id = id.Replace(":", " (Port=") + ")";
-                }
+                string id = ConfigTextStream.ExtractValue(connStr, "server").UrlToConfigId();
                 stream.Write(connStr, ref id);
                 stream.Close();
 
@@ -252,36 +251,41 @@ namespace gView.Interoperability.GeoServices.Dataset
 
             try
             {
-                //dotNETConnector connector = new dotNETConnector();
+                string server = ConfigTextStream.ExtractValue(_connectionString, "server");
+                string usr = ConfigTextStream.ExtractValue(_connectionString, "user");
+                string pwd = ConfigTextStream.ExtractValue(_connectionString, "pwd");
 
-                //string server = ConfigTextStream.ExtractValue(_connectionString, "server");
-                //string usr = ConfigTextStream.ExtractValue(_connectionString, "user");
-                //string pwd = ConfigTextStream.ExtractValue(_connectionString, "pwd");
+                // ToDo: GetToken if usr, pwd
 
-                //if (usr != "" || pwd != "")
-                //{
-                //    connector.setAuthentification(usr, pwd);
-                //}
+                var jsonServices = await WebFunctions.DownloadObjectAsync<JsonServices>(server.UrlAppendParameters("f=json"));
 
-                //string axl = connector.SendRequest("<?xml version=\"1.0\" encoding=\"UTF-8\"?><GETCLIENTSERVICES/>", server, "catalog");
-                //if (axl == "")
-                //{
-                //    return false;
-                //}
-
-                //XmlDocument doc = new XmlDocument();
-                //doc.LoadXml(axl);
-                //foreach (XmlNode mapService in doc.SelectNodes("//SERVICE[@name]"))
-                //{
-                //    base.AddChildObject(new GeoServicesServiceExplorerObject(this, mapService.Attributes["name"].Value, _connectionString));
-                //}
-                //if (doc.SelectNodes("//SERVICE[@name]").Count == 0)
-                //{
-                //    foreach (XmlNode mapService in doc.SelectNodes("//SERVICE[@NAME]"))
-                //    {
-                //        base.AddChildObject(new GeoServicesServiceExplorerObject(this, mapService.Attributes["NAME"].Value, _connectionString));
-                //    }
-                //}
+                if (jsonServices != null)
+                {
+                    if(jsonServices.Folders!=null)
+                    {
+                        foreach(var folder in jsonServices.Folders)
+                        {
+                            base.AddChildObject(
+                                new GeoServicesFolderExplorerObject(
+                                    this,
+                                    folder,
+                                    _connectionString)
+                                );
+                        }
+                    }
+                    if (jsonServices.Services != null)
+                    {
+                        foreach (var service in jsonServices.Services)
+                        {
+                            base.AddChildObject(
+                                new GeoServicesServiceExplorerObject(
+                                    this,
+                                    service.ServiceName,
+                                    String.Empty,
+                                    _connectionString));
+                        }
+                    }
+                }
 
                 return true;
             }
@@ -369,18 +373,182 @@ namespace gView.Interoperability.GeoServices.Dataset
         #endregion
     }
 
-    //[gView.Framework.system.RegisterPlugIn("B164A6F4-42C8-4fe9-827E-48642E28C53E")]
-    public class GeoServicesServiceExplorerObject : ExplorerObjectCls, IExplorerSimpleObject
+    public class GeoServicesFolderExplorerObject : ExplorerParentObject, IExplorerSimpleObject
     {
         private IExplorerIcon _icon = new GeoServicesServiceIcon();
         private string _name = "", _connectionString = "";
         private GeoServicesClass _class = null;
         private GeoServicesConnectionExplorerObject _parent = null;
 
-        internal GeoServicesServiceExplorerObject(GeoServicesConnectionExplorerObject parent, string name, string connectionString)
+        internal GeoServicesFolderExplorerObject(GeoServicesConnectionExplorerObject parent, string name, string connectionString)
             : base(parent, typeof(GeoServicesFeatureClass), 1)
         {
             _name = name;
+            _connectionString = connectionString;
+            _parent = parent;
+        }
+
+        #region IExplorerParentObject Member
+
+        async public override Task<bool> Refresh()
+        {
+            await base.Refresh();
+
+            try
+            {
+                string server = ConfigTextStream.ExtractValue(_connectionString, "server");
+                string usr = ConfigTextStream.ExtractValue(_connectionString, "user");
+                string pwd = ConfigTextStream.ExtractValue(_connectionString, "pwd");
+
+                // ToDo: GetToken if usr, pwd
+
+                var jsonServices = await WebFunctions.DownloadObjectAsync<JsonServices>(
+                    server
+                        .UrlAppendPath(this._name)
+                        .UrlAppendParameters("f=json"));
+
+                if (jsonServices != null)
+                {
+                    if (jsonServices.Folders != null)
+                    {
+                        foreach (var folder in jsonServices.Folders)
+                        {
+                            base.AddChildObject(
+                                new GeoServicesFolderExplorerObject(
+                                    this._parent,
+                                    this._name.UrlAppendPath(folder),
+                                    _connectionString)
+                                );
+                        }
+                    }
+                    if (jsonServices.Services != null)
+                    {
+                        foreach (var service in jsonServices.Services)
+                        {
+                            base.AddChildObject(
+                                new GeoServicesServiceExplorerObject(
+                                    this._parent,
+                                    service.ServiceName,
+                                    this._name,
+                                    _connectionString));
+                        }
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show(ex.Message);
+
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region IExplorerObject Member
+
+        public string Name
+        {
+            get { return _name; }
+        }
+
+        public string FullName
+        {
+            get
+            {
+                if (_parent == null)
+                {
+                    return "";
+                }
+
+                return _parent.FullName + @"\" + _name;
+            }
+        }
+
+        public string Type
+        {
+            get { return "gView.GeoServices Folder"; }
+        }
+
+        public IExplorerIcon Icon
+        {
+            get { return _icon; }
+        }
+
+        public void Dispose()
+        {
+
+        }
+
+        async public Task<object> GetInstanceAsync()
+        {
+
+            return Task.FromResult<object>(null);
+        }
+
+        public IExplorerObject CreateInstanceByFullName(string FullName)
+        {
+            return null;
+        }
+
+        #endregion
+
+        #region ISerializableExplorerObject Member
+
+        async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        {
+            if (cache.Contains(FullName))
+            {
+                return cache[FullName];
+            }
+
+            FullName = FullName.Replace("/", @"\");
+            int lastIndex = FullName.LastIndexOf(@"\");
+            if (lastIndex == -1)
+            {
+                return null;
+            }
+
+            string cnName = FullName.Substring(0, lastIndex);
+            string svName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
+
+            GeoServicesConnectionExplorerObject cnObject = new GeoServicesConnectionExplorerObject();
+            cnObject = await cnObject.CreateInstanceByFullName(cnName, cache) as GeoServicesConnectionExplorerObject;
+
+            var childObjects = await cnObject?.ChildObjects();
+            if (cnObject == null || childObjects == null)
+            {
+                return null;
+            }
+
+            foreach (IExplorerObject exObject in childObjects)
+            {
+                if (exObject.Name == svName)
+                {
+                    cache.Append(exObject);
+                    return exObject;
+                }
+            }
+            return null;
+        }
+
+        #endregion
+    }
+
+    public class GeoServicesServiceExplorerObject : ExplorerObjectCls, IExplorerSimpleObject
+    {
+        private IExplorerIcon _icon = new GeoServicesServiceIcon();
+        private string _name = "", _connectionString = "", _folder = "";
+        private GeoServicesClass _class = null;
+        private GeoServicesConnectionExplorerObject _parent = null;
+
+        internal GeoServicesServiceExplorerObject(GeoServicesConnectionExplorerObject parent, string name, string folder, string connectionString)
+            : base(parent, typeof(GeoServicesClass), 1)
+        {
+            _name = name;
+            _folder = folder;
             _connectionString = connectionString;
             _parent = parent;
         }

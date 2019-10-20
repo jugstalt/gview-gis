@@ -37,89 +37,92 @@
             this.label4 = new System.Windows.Forms.Label();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.cmbServerType = new System.Windows.Forms.ComboBox();
+            this.cbUseHttps = new System.Windows.Forms.CheckBox();
+            this.label5 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
             // 
-            this.label1.AccessibleDescription = null;
-            this.label1.AccessibleName = null;
             resources.ApplyResources(this.label1, "label1");
-            this.label1.Font = null;
             this.label1.Name = "label1";
             // 
             // txtServer
             // 
-            this.txtServer.AccessibleDescription = null;
-            this.txtServer.AccessibleName = null;
             resources.ApplyResources(this.txtServer, "txtServer");
-            this.txtServer.BackgroundImage = null;
-            this.txtServer.Font = null;
             this.txtServer.Name = "txtServer";
             // 
             // txtUser
             // 
-            this.txtUser.AccessibleDescription = null;
-            this.txtUser.AccessibleName = null;
             resources.ApplyResources(this.txtUser, "txtUser");
-            this.txtUser.BackgroundImage = null;
-            this.txtUser.Font = null;
             this.txtUser.Name = "txtUser";
             // 
             // label3
             // 
-            this.label3.AccessibleDescription = null;
-            this.label3.AccessibleName = null;
             resources.ApplyResources(this.label3, "label3");
-            this.label3.Font = null;
             this.label3.Name = "label3";
             // 
             // txtPwd
             // 
-            this.txtPwd.AccessibleDescription = null;
-            this.txtPwd.AccessibleName = null;
             resources.ApplyResources(this.txtPwd, "txtPwd");
-            this.txtPwd.BackgroundImage = null;
-            this.txtPwd.Font = null;
             this.txtPwd.Name = "txtPwd";
             // 
             // label4
             // 
-            this.label4.AccessibleDescription = null;
-            this.label4.AccessibleName = null;
             resources.ApplyResources(this.label4, "label4");
-            this.label4.Font = null;
             this.label4.Name = "label4";
             // 
             // btnOK
             // 
-            this.btnOK.AccessibleDescription = null;
-            this.btnOK.AccessibleName = null;
             resources.ApplyResources(this.btnOK, "btnOK");
-            this.btnOK.BackgroundImage = null;
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Font = null;
             this.btnOK.Name = "btnOK";
             this.btnOK.UseVisualStyleBackColor = true;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
             // btnCancel
             // 
-            this.btnCancel.AccessibleDescription = null;
-            this.btnCancel.AccessibleName = null;
             resources.ApplyResources(this.btnCancel, "btnCancel");
-            this.btnCancel.BackgroundImage = null;
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Font = null;
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
+            // label2
+            // 
+            resources.ApplyResources(this.label2, "label2");
+            this.label2.Name = "label2";
+            // 
+            // cmbServerType
+            // 
+            this.cmbServerType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbServerType.FormattingEnabled = true;
+            this.cmbServerType.Items.AddRange(new object[] {
+            resources.GetString("cmbServerType.Items"),
+            resources.GetString("cmbServerType.Items1"),
+            resources.GetString("cmbServerType.Items2")});
+            resources.ApplyResources(this.cmbServerType, "cmbServerType");
+            this.cmbServerType.Name = "cmbServerType";
+            // 
+            // cbUseHttps
+            // 
+            resources.ApplyResources(this.cbUseHttps, "cbUseHttps");
+            this.cbUseHttps.Name = "cbUseHttps";
+            this.cbUseHttps.UseVisualStyleBackColor = true;
+            // 
+            // label5
+            // 
+            resources.ApplyResources(this.label5, "label5");
+            this.label5.Name = "label5";
+            // 
             // FormNewConnection
             // 
-            this.AccessibleDescription = null;
-            this.AccessibleName = null;
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = null;
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.cbUseHttps);
+            this.Controls.Add(this.cmbServerType);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.txtPwd);
@@ -128,9 +131,7 @@
             this.Controls.Add(this.label3);
             this.Controls.Add(this.txtServer);
             this.Controls.Add(this.label1);
-            this.Font = null;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
-            this.Icon = null;
             this.Name = "FormNewConnection";
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -147,5 +148,9 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ComboBox cmbServerType;
+        private System.Windows.Forms.CheckBox cbUseHttps;
+        private System.Windows.Forms.Label label5;
     }
 }

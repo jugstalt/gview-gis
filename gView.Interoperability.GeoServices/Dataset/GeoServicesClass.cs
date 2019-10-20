@@ -1,14 +1,17 @@
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.Web;
-using gView.MapServer;
+using gView.Interoperability.GeoServices.Rest.Json.Request;
+using gView.Interoperability.GeoServices.Rest.Json.Response;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml;
 
 namespace gView.Interoperability.GeoServices.Dataset
@@ -38,57 +41,106 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         async public Task<bool> MapRequest(gView.Framework.Carto.IDisplay display)
         {
-            //            if (_dataset == null)
-            //            {
-            //                return false;
-            //            }
 
-            //            List<IWebServiceTheme> themes = Themes;
-            //            if (themes == null)
-            //            {
-            //                return false;
-            //            }
+            if (_dataset == null)
+            {
+                return false;
+            }
 
-            //            #region Check for visible Layers
-            //            bool visFound = false;
-            //            foreach (IWebServiceTheme theme in themes)
-            //            {
-            //                if (!theme.Visible)
-            //                {
-            //                    continue;
-            //                }
+            List<IWebServiceTheme> themes = Themes;
+            if (themes == null)
+            {
+                return false;
+            }
 
-            //                if (theme.MinimumScale > 1 && theme.MinimumScale > display.mapScale)
-            //                {
-            //                    continue;
-            //                }
+            #region Check for visible Layers
 
-            //                if (theme.MaximumScale > 1 && theme.MaximumScale < display.mapScale)
-            //                {
-            //                    continue;
-            //                }
+            bool visFound = this.Themes.Where(l => l.Visible).Count() > 0;
+            if (!visFound)
+            {
+                if (_image != null)
+                {
+                    _image.Dispose();
+                    _image = null;
+                }
+                return true;
+            }
 
-            //                visFound = true;
-            //                break;
-            //            }
-            //            if (!visFound)
-            //            {
-            //                if (_image != null)
-            //                {
-            //                    _image.Dispose();
-            //                    _image = null;
-            //                }
-            //                return true;
-            //            }
-            //            #endregion
+            #endregion
 
-            //            string server = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "server");
-            //            string service = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "service");
-            //            string user = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "user");
-            //            string pwd = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "pwd");
-            //            IServiceRequestContext context = display.Map as IServiceRequestContext;
+            var serviceUrl = _dataset.ServiceUrl();
 
-            //            WebFunctions.DownloadStream()
+            //IServiceRequestContext context = display.Map as IServiceRequestContext;
+
+            var jsonExportMap = new JsonExportMap();
+            if (display?.Envelope != null)
+            {
+                var env = display.Envelope;
+                jsonExportMap.BBox = $"{env.minx.ToDoubleString()},{env.miny.ToDoubleString()},{env.maxx.ToDoubleString()},{env.maxy.ToDoubleString()}";
+            }
+
+            var sRef = display.SpatialReference ?? this.SpatialReference;
+            if (sRef != null)
+            {
+                jsonExportMap.BBoxSRef = sRef.Name.ToLower().Replace("epsg:", "");
+            }
+            jsonExportMap.Size = $"{display.iWidth},{display.iHeight}";
+
+            var layerIds = this.Themes
+                .Where(l => l.Visible && (l.Class is IWebFeatureClass || l.Class is IWebRasterClass))
+                .Select(l =>
+                {
+                    if (l.Class is IWebFeatureClass)
+                    {
+                        return ((IWebFeatureClass)l.Class).ID;
+                    }
+
+                    if (l.Class is IWebRasterClass)
+                    {
+                        return ((IWebRasterClass)l.Class).ID;
+                    }
+
+                    return String.Empty;
+                });
+
+            jsonExportMap.Layers = $"show:{String.Join(",", layerIds)}";
+
+            var urlParameters = SerializeToUrlParameters(jsonExportMap);
+
+            var response = await _dataset.TryPostAsync<JsonExportResponse>(
+                serviceUrl
+                    .UrlAppendPath("export")
+                    .UrlAppendParameters("f=json")
+                    .UrlAppendParameters(urlParameters));
+
+            bool hasImage = false;
+            if(!String.IsNullOrWhiteSpace(response.Href))
+            {
+                var bm = WebFunctions.DownloadImage(response.Href);
+                if (bm != null)
+                {
+                    hasImage = true;
+                    _image = new GeorefBitmap(bm);
+                    if (response.Extent != null)
+                    {
+                        _image.Envelope = new Envelope(response.Extent.Xmin, response.Extent.Ymin, response.Extent.Xmax, response.Extent.Ymax);
+                    }
+                    _image.SpatialReference = sRef;
+                }
+            }
+
+            if(!hasImage)
+            {
+                if (_image != null)
+                {
+                    _image.Dispose();
+                    _image = null;
+                }
+                return false;
+            }
+
+            return true;
+
 
             //            dotNETConnector connector = new dotNETConnector();
             //            if (!String.IsNullOrEmpty(user) || !String.IsNullOrEmpty(pwd))
@@ -435,7 +487,7 @@ namespace gView.Interoperability.GeoServices.Dataset
         public IEnvelope Envelope
         {
             get;
-            private set;
+            internal set;
         }
 
         public List<IWebServiceTheme> Themes
@@ -497,8 +549,8 @@ namespace gView.Interoperability.GeoServices.Dataset
             GeoServicesClass clone = new GeoServicesClass(_dataset);
             clone._clonedThemes = new List<IWebServiceTheme>();
 
-            var themes = (_clonedThemes != null) ? 
-                _clonedThemes : 
+            var themes = (_clonedThemes != null) ?
+                _clonedThemes :
                 (_dataset?._themes ?? new List<IWebServiceTheme>());
 
             foreach (IWebServiceTheme theme in themes)
@@ -509,7 +561,7 @@ namespace gView.Interoperability.GeoServices.Dataset
                 }
 
                 clone._clonedThemes.Add(LayerFactory.Create(
-                    theme.Class, 
+                    theme.Class,
                     theme as ILayer, clone) as IWebServiceTheme);
             }
             clone.BeforeMapRequest = BeforeMapRequest;
@@ -519,11 +571,6 @@ namespace gView.Interoperability.GeoServices.Dataset
         }
 
         #endregion
-
-        private string Color2AXL(System.Drawing.Color col)
-        {
-            return col.R + "," + col.G + "," + col.B;
-        }
 
         private List<XmlNode> _appendedLayers = new List<XmlNode>();
         internal List<XmlNode> AppendedLayers
@@ -537,70 +584,44 @@ namespace gView.Interoperability.GeoServices.Dataset
             get { return _layerRenderer; }
         }
 
-        async public static Task LogAsync(IServiceRequestContext context, string header, string server, string service, string axl)
-        {
-            if (context == null ||
-                context.MapServer == null ||
-                context.MapServer.LoggingEnabled(loggingMethod.request_detail_pro) == false)
-            {
-                return;
-            }
 
+        #region Helper
+
+        public string SerializeToUrlParameters(object obj)
+        {
             StringBuilder sb = new StringBuilder();
-            sb.Append("\n");
-            sb.Append(header);
-            sb.Append("\n");
-            sb.Append("Server: " + server + " Service: " + service);
-            sb.Append("\n");
-            sb.Append(axl);
 
-            await context.MapServer.LogAsync(context, "gView.Interoperability.GeoServices", loggingMethod.request_detail_pro, sb.ToString());
-        }
-        async public static Task LogAsync(IServiceRequestContext context, string header, string server, string service, StringBuilder axl)
-        {
-            if (context == null ||
-                context.MapServer == null ||
-                context.MapServer.LoggingEnabled(loggingMethod.request_detail_pro) == false)
+            if (obj != null)
             {
-                return;
-            }
-
-            await LogAsync(context, header, server, service, axl.ToString());
-        }
-        async public static Task ErrorLog(IServiceRequestContext context, string header, string server, string service, Exception ex)
-        {
-            if (context == null ||
-                context.MapServer == null ||
-                context.MapServer.LoggingEnabled(loggingMethod.error) == false)
-            {
-                return;
-            }
-
-            StringBuilder msg = new StringBuilder();
-            if (ex != null)
-            {
-                msg.Append(ex.Message + "\n");
-                Exception inner = ex;
-                while ((inner = inner.InnerException) != null)
+                foreach (var propertyInfo in obj.GetType().GetProperties())
                 {
-                    msg.Append(inner.Message + "\n");
+                    var jsonPropertyAttribute = propertyInfo.GetCustomAttribute<JsonPropertyAttribute>();
+                    if (jsonPropertyAttribute == null)
+                    {
+                        continue;
+                    }
+
+                    string val = propertyInfo.GetValue(obj)?.ToString();
+                    if (!String.IsNullOrEmpty(val))
+                    {
+                        if (propertyInfo.PropertyType == typeof(int) && val == "0")
+                        {
+                            continue;
+                        }
+
+                        if (sb.Length > 0)
+                        {
+                            sb.Append("&");
+                        }
+
+                        sb.Append(jsonPropertyAttribute.PropertyName + "=" + HttpUtility.UrlEncode(val));
+                    }
                 }
             }
 
-            await context.MapServer.LogAsync(context, server + "-" + service + ": " + header, loggingMethod.error,
-                msg.ToString() +
-                ex.Source + "\n" +
-                ex.StackTrace + "\n");
+            return sb.ToString();
         }
-    }
 
-    internal class ModifyOutputEventArgs : EventArgs
-    {
-        public XmlNode OutputNode = null;
-
-        public ModifyOutputEventArgs(XmlNode outputNode)
-        {
-            OutputNode = outputNode;
-        }
+        #endregion
     }
 }
