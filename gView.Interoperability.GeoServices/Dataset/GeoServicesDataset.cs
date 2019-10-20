@@ -218,15 +218,16 @@ namespace gView.Interoperability.GeoServices.Dataset
                         if (jsonLayer.Type.ToLower() == "feature layer")
                         {
                             themeClass = new GeoServicesFeatureClass(this, jsonLayer);
+
+                            theme = LayerFactory.Create(themeClass, _class as IWebServiceClass) as IWebServiceTheme;
+                            if (theme == null)
+                            {
+                                continue;
+                            }
                         }
+                        // ToDo Raster classes
 
                         if (themeClass == null)
-                        {
-                            continue;
-                        }
-
-                        theme = LayerFactory.Create(themeClass, _class as IWebServiceClass) as IWebServiceTheme;
-                        if (theme == null)
                         {
                             continue;
                         }

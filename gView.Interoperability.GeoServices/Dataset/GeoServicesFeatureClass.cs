@@ -11,6 +11,7 @@ namespace gView.Interoperability.GeoServices.Dataset
         public GeoServicesFeatureClass(GeoServicesDataset dataset, JsonLayer jsonLayer)
         {
             this.ID = jsonLayer.Id.ToString();
+            this.Name = jsonLayer.Name;
 
             var fields = this.Fields as Fields;
             if (fields != null && jsonLayer.Fields != null)

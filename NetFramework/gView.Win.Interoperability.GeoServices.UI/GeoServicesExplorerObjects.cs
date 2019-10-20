@@ -8,6 +8,7 @@ using gView.Framework.system;
 using System.Xml;
 using gView.Framework.Web;
 using gView.Interoperability.GeoServices.Rest.Json;
+using System.Linq;
 
 namespace gView.Interoperability.GeoServices.Dataset
 {
@@ -261,9 +262,9 @@ namespace gView.Interoperability.GeoServices.Dataset
 
                 if (jsonServices != null)
                 {
-                    if(jsonServices.Folders!=null)
+                    if (jsonServices.Folders != null)
                     {
-                        foreach(var folder in jsonServices.Folders)
+                        foreach (var folder in jsonServices.Folders)
                         {
                             base.AddChildObject(
                                 new GeoServicesFolderExplorerObject(
@@ -275,7 +276,7 @@ namespace gView.Interoperability.GeoServices.Dataset
                     }
                     if (jsonServices.Services != null)
                     {
-                        foreach (var service in jsonServices.Services)
+                        foreach (var service in jsonServices.Services.Where(s => s.Type.ToLower() == "mapserver"))
                         {
                             base.AddChildObject(
                                 new GeoServicesServiceExplorerObject(
@@ -381,7 +382,7 @@ namespace gView.Interoperability.GeoServices.Dataset
         private GeoServicesConnectionExplorerObject _parent = null;
 
         internal GeoServicesFolderExplorerObject(GeoServicesConnectionExplorerObject parent, string name, string connectionString)
-            : base(parent, typeof(GeoServicesFeatureClass), 1)
+            : base(parent, null, 1)
         {
             _name = name;
             _connectionString = connectionString;
@@ -423,11 +424,11 @@ namespace gView.Interoperability.GeoServices.Dataset
                     }
                     if (jsonServices.Services != null)
                     {
-                        foreach (var service in jsonServices.Services)
+                        foreach (var service in jsonServices.Services.Where(s => s.Type.ToLower() == "mapserver"))
                         {
                             base.AddChildObject(
                                 new GeoServicesServiceExplorerObject(
-                                    this._parent,
+                                    this,
                                     service.ServiceName,
                                     this._name,
                                     _connectionString));
@@ -542,9 +543,9 @@ namespace gView.Interoperability.GeoServices.Dataset
         private IExplorerIcon _icon = new GeoServicesServiceIcon();
         private string _name = "", _connectionString = "", _folder = "";
         private GeoServicesClass _class = null;
-        private GeoServicesConnectionExplorerObject _parent = null;
+        private IExplorerObject _parent = null;
 
-        internal GeoServicesServiceExplorerObject(GeoServicesConnectionExplorerObject parent, string name, string folder, string connectionString)
+        internal GeoServicesServiceExplorerObject(IExplorerObject parent, string name, string folder, string connectionString)
             : base(parent, typeof(GeoServicesClass), 1)
         {
             _name = name;
@@ -569,7 +570,8 @@ namespace gView.Interoperability.GeoServices.Dataset
                     return "";
                 }
 
-                return _parent.FullName + @"\" + _name;
+                return _parent.FullName +
+                    $@"\{_name}";
             }
         }
 
@@ -593,8 +595,10 @@ namespace gView.Interoperability.GeoServices.Dataset
 
             if (_class == null)
             {
-                GeoServicesDataset dataset = new GeoServicesDataset(_connectionString, _name);
-                await dataset.Open(); // kein open, weil sonst ein GET_SERVICE_INFO durchgeführt wird...
+                GeoServicesDataset dataset = new GeoServicesDataset(
+                    _connectionString,
+                    (String.IsNullOrWhiteSpace(_folder) ? "" : $"{_folder}/") + _name);
+                await dataset.Open(); 
 
                 var elements = await dataset.Elements();
                 if (elements.Count == 0)
