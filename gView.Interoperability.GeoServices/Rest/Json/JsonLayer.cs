@@ -59,6 +59,12 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         [JsonProperty("capabilities")]
         public string Capabilities { get; set; }
 
+        [JsonProperty("description")]
+        public string Description { get; set; }
+
+        [JsonProperty("copyrightText")]
+        public string CopyrightText { get; set; }
+
         //[JsonIgnore]
         //public string FullName
         //{

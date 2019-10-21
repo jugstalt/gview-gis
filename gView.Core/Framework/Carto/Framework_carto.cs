@@ -103,6 +103,12 @@ namespace gView.Framework.Carto
         bool HasErrorMessages { get; }
 
         void Compress();
+
+        string GetLayerDescription(int layerId);
+        void SetLayerDescription(int layerId, string description);
+
+        string GetLayerCopyrightText(int layerId);
+        void SetLayerCopyrightText(int layerId, string copyrightText);
     }
 
     /*
