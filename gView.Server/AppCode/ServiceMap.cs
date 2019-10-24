@@ -41,6 +41,7 @@ namespace gView.Server.AppCode
 
             serviceMap.m_name = original.Name;
             serviceMap._toc = original._toc;
+            serviceMap.Title = original.Title;
             //serviceMap._ceckLayerVisibilityBeforeDrawing = true;
             serviceMap._mapUnits = original.MapUnits;
             serviceMap._displayUnits = original.DisplayUnits;
@@ -54,6 +55,9 @@ namespace gView.Server.AppCode
             // Metadata
             await serviceMap.SetProviders(await original.GetProviders());
             serviceMap._debug = false;
+
+            serviceMap._layerDescriptions = original.LayerDescriptions;
+            serviceMap._layerCopyrightTexts = original.LayerCopyrightTexts;
 
             return serviceMap;
         }

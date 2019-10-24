@@ -64,10 +64,12 @@ namespace gView.Framework.UI.Dialogs
             this.btnDefaultLayerSRFromSpatialReference = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
             this.tabDescription = new System.Windows.Forms.TabPage();
-            this.label9 = new System.Windows.Forms.Label();
-            this.txtDescription = new System.Windows.Forms.TextBox();
-            this.label10 = new System.Windows.Forms.Label();
             this.txtCopyright = new System.Windows.Forms.TextBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.txtDescription = new System.Windows.Forms.TextBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.txtTitle = new System.Windows.Forms.TextBox();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -325,6 +327,8 @@ namespace gView.Framework.UI.Dialogs
             // 
             // tabDescription
             // 
+            this.tabDescription.Controls.Add(this.txtTitle);
+            this.tabDescription.Controls.Add(this.label11);
             this.tabDescription.Controls.Add(this.txtCopyright);
             this.tabDescription.Controls.Add(this.label10);
             this.tabDescription.Controls.Add(this.txtDescription);
@@ -333,10 +337,16 @@ namespace gView.Framework.UI.Dialogs
             this.tabDescription.Name = "tabDescription";
             this.tabDescription.UseVisualStyleBackColor = true;
             // 
-            // label9
+            // txtCopyright
             // 
-            resources.ApplyResources(this.label9, "label9");
-            this.label9.Name = "label9";
+            this.txtCopyright.AcceptsReturn = true;
+            resources.ApplyResources(this.txtCopyright, "txtCopyright");
+            this.txtCopyright.Name = "txtCopyright";
+            // 
+            // label10
+            // 
+            resources.ApplyResources(this.label10, "label10");
+            this.label10.Name = "label10";
             // 
             // txtDescription
             // 
@@ -344,16 +354,20 @@ namespace gView.Framework.UI.Dialogs
             resources.ApplyResources(this.txtDescription, "txtDescription");
             this.txtDescription.Name = "txtDescription";
             // 
-            // label10
+            // label9
             // 
-            resources.ApplyResources(this.label10, "label10");
-            this.label10.Name = "label10";
+            resources.ApplyResources(this.label9, "label9");
+            this.label9.Name = "label9";
             // 
-            // txtCopyright
+            // label11
             // 
-            this.txtCopyright.AcceptsReturn = true;
-            resources.ApplyResources(this.txtCopyright, "txtCopyright");
-            this.txtCopyright.Name = "txtCopyright";
+            resources.ApplyResources(this.label11, "label11");
+            this.label11.Name = "label11";
+            // 
+            // txtTitle
+            // 
+            resources.ApplyResources(this.txtTitle, "txtTitle");
+            this.txtTitle.Name = "txtTitle";
             // 
             // FormMapProperties
             // 
@@ -426,5 +440,7 @@ namespace gView.Framework.UI.Dialogs
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.TextBox txtDescription;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox txtTitle;
+        private System.Windows.Forms.Label label11;
     }
 }

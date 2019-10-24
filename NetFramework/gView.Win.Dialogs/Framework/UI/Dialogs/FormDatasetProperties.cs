@@ -6,30 +6,34 @@ using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using gView.Framework.Carto;
 using gView.Framework.Data;
 
 namespace gView.Framework.UI.Dialogs
 {
     public partial class FormDatasetProperties : Form
     {
-        List<DatasetItemElement> _elements = new List<DatasetItemElement>();
+        private List<DatasetItemElement> _elements = new List<DatasetItemElement>();
+        private IMap _map;
 
-        private FormDatasetProperties()
+        private FormDatasetProperties(IMap map)
         {
+            _map = map;
+
             InitializeComponent();
         }
 
-        async static public Task<FormDatasetProperties> CreateAsync(IDataset dataset)
+        async static public Task<FormDatasetProperties> CreateAsync(IMap map, IDataset dataset)
         {
-            var dlg = new FormDatasetProperties();
+            var dlg = new FormDatasetProperties(map);
 
             await dlg.AddDataset(dataset);
 
             return dlg;
         }
-        async static public Task<FormDatasetProperties> CreateAsync(List<IDataset> datasets)
+        async static public Task<FormDatasetProperties> CreateAsync(IMap map, List<IDataset> datasets)
         {
-            var dlg = new FormDatasetProperties();
+            var dlg = new FormDatasetProperties(map);
 
             foreach (IDataset dataset in datasets)
             {
@@ -69,7 +73,7 @@ namespace gView.Framework.UI.Dialogs
 
             if (e.ColumnIndex == 3)
             {
-                FormLayerProperties dlg = new FormLayerProperties(_elements[e.RowIndex].dataset, _elements[e.RowIndex].layer);
+                FormLayerProperties dlg = new FormLayerProperties(_map, _elements[e.RowIndex].dataset, _elements[e.RowIndex].layer);
                 dlg.ShowDialog();
             }
         }

@@ -103,41 +103,55 @@ namespace gView.Server.Controllers
 
                 await mapService.CheckAccess(identity, InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter)));
 
-                var map = await InternetMapServer.Instance.GetServiceMapAsync(id, folder);
-                if (map == null)
+                using (var map = await InternetMapServer.Instance.GetServiceMapAsync(id, folder))
                 {
-                    throw new Exception("unable to create map: " + id);
-                }
-
-                gView.Framework.Geometry.IEnvelope fullExtent = map.FullExtent();
-                var spatialReference = map.Display.SpatialReference;
-                int epsgCode = spatialReference != null ? spatialReference.EpsgCode : 0;
-
-                return Result(new JsonMapService()
-                {
-                    CurrentVersion = 10.61,
-                    Layers = map.MapElements.Select(e =>
+                    if (map == null)
                     {
-                        var tocElement = map.TOC.GetTOCElement(e as ILayer);
-                        return new JsonMapService.Layer()
-                        {
-                            Id = e.ID,
-                            Name = tocElement != null ? tocElement.Name : e.Title,
-                            DefaultVisibility = tocElement != null ? tocElement.LayerVisible : true,
-                            MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale > 1 ? tocElement.Layers[0].MinimumScale : 0, 0) : 0,
-                            MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale > 1 ? tocElement.Layers[0].MaximumScale : 0, 0) : 0,
-                        };
-                    }).ToArray(),
-                    SpatialReferenceInstance = epsgCode > 0 ? new JsonMapService.SpatialReference(epsgCode) : null,
-                    FullExtent = new JsonMapService.Extent()
-                    {
-                        XMin = fullExtent != null ? fullExtent.minx : 0D,
-                        YMin = fullExtent != null ? fullExtent.miny : 0D,
-                        XMax = fullExtent != null ? fullExtent.maxx : 0D,
-                        YMax = fullExtent != null ? fullExtent.maxy : 0D,
-                        SpatialReference = new JsonMapService.SpatialReference(epsgCode)
+                        throw new Exception("unable to create map: " + id);
                     }
-                });
+
+                    gView.Framework.Geometry.IEnvelope fullExtent = map.FullExtent();
+                    var spatialReference = map.Display.SpatialReference;
+                    int epsgCode = spatialReference != null ? spatialReference.EpsgCode : 0;
+
+                    return Result(new JsonMapService()
+                    {
+                        CurrentVersion = 10.61,
+                        MapName = String.IsNullOrWhiteSpace(map.Title) ? 
+                            (map.Name.Contains("/") ? map.Name.Substring(map.Name.LastIndexOf("/")+1) : map.Name) : 
+                            map.Title,
+                        CopyrightText = map.GetLayerCopyrightText(Map.MapCopyrightTextId),
+                        ServiceDescription = map.GetLayerDescription(Map.MapDescriptionId),
+                        Layers = map.MapElements.Select(e =>
+                        {
+                            var tocElement = map.TOC.GetTOCElement(e as ILayer);
+
+                            int parentLayerId =
+                                (e is IFeatureLayer && ((IFeatureLayer)e).GroupLayer != null) ?
+                                ((IFeatureLayer)e).GroupLayer.ID :
+                                -1;
+
+                            return new JsonMapService.Layer()
+                            {
+                                Id = e.ID,
+                                ParentLayerId = parentLayerId,
+                                Name = tocElement != null ? tocElement.Name : e.Title,
+                                DefaultVisibility = tocElement != null ? tocElement.LayerVisible : true,
+                                MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale > 1 ? tocElement.Layers[0].MinimumScale : 0, 0) : 0,
+                                MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale > 1 ? tocElement.Layers[0].MaximumScale : 0, 0) : 0,
+                            };
+                        }).ToArray(),
+                        SpatialReferenceInstance = epsgCode > 0 ? new JsonMapService.SpatialReference(epsgCode) : null,
+                        FullExtent = new JsonMapService.Extent()
+                        {
+                            XMin = fullExtent != null ? fullExtent.minx : 0D,
+                            YMin = fullExtent != null ? fullExtent.miny : 0D,
+                            XMax = fullExtent != null ? fullExtent.maxx : 0D,
+                            YMax = fullExtent != null ? fullExtent.maxy : 0D,
+                            SpatialReference = new JsonMapService.SpatialReference(epsgCode)
+                        }
+                    });
+                }
             });
         }
 
@@ -153,19 +167,21 @@ namespace gView.Server.Controllers
 
                 await mapService.CheckAccess(identity, InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter)));
 
-                var map = await InternetMapServer.Instance.GetServiceMapAsync(id, folder);
-                if (map == null)
+                using (var map = await InternetMapServer.Instance.GetServiceMapAsync(id, folder))
                 {
-                    throw new Exception("unable to create map: " + id);
+                    if (map == null)
+                    {
+                        throw new Exception("unable to create map: " + id);
+                    }
+
+                    var jsonLayers = new JsonLayers();
+                    jsonLayers.Layers = map.MapElements
+                        .Where(e => map.TOC.GetTOCElement(e as ILayer) != null)  // Just show layer in Toc
+                        .Select(e => JsonLayer(map, e.ID))
+                        .ToArray();
+
+                    return Result(jsonLayers);
                 }
-
-                var jsonLayers = new JsonLayers();
-                jsonLayers.Layers = map.MapElements
-                    .Where(e => map.TOC.GetTOCElement(e as ILayer) != null)  // Just show layer in Toc
-                    .Select(e => JsonLayer(map, e.ID))
-                    .ToArray();
-
-                return Result(jsonLayers);
             });
         }
 
@@ -818,6 +834,9 @@ namespace gView.Server.Controllers
                         }
                     }
                     jsonGroupLayer.Extent = extent;
+
+                    jsonGroupLayer.Description = map.GetLayerDescription(layerId);
+                    jsonGroupLayer.CopyrightText = map.GetLayerCopyrightText(layerId);
                 }
                 return jsonGroupLayer;
             }
@@ -896,6 +915,9 @@ namespace gView.Server.Controllers
                 result.GeometryType = datasetElement.Class is IFeatureClass ?
                     Interoperability.GeoServices.Rest.Json.JsonLayer.ToGeometryType(geometryType).ToString() :
                     EsriGeometryType.esriGeometryNull.ToString();
+
+                result.Description = map.GetLayerDescription(layerId);
+                result.CopyrightText = map.GetLayerCopyrightText(layerId);
 
                 return result;
             }

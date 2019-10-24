@@ -143,7 +143,7 @@ namespace gView.Framework.UI.Dialogs
 
             while ((dataset = _datasets.Next) != null)
             {
-                FormDatasetProperties datasetProps = await FormDatasetProperties.CreateAsync(dataset);
+                FormDatasetProperties datasetProps = await FormDatasetProperties.CreateAsync(_map, dataset);
                 if (datasetProps.ShowDialog() != DialogResult.OK) continue;
 
                 _map.AddDataset(dataset, 0);

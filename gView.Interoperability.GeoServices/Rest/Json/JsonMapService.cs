@@ -35,16 +35,18 @@ namespace gView.Interoperability.GeoServices.Rest.Json
             MaxRecordCount = 1000;
             MaxImageWidth = MaxImageHeight = 4096;
             SupportedExtensions = String.Empty;
+
+            this.MapName = "Layers";
         }
 
         [JsonProperty(PropertyName = "currentVersion")]
         public double CurrentVersion { get; set; }
 
+        [JsonProperty(PropertyName = "mapName")]
+        public string MapName { get; set; }
+
         [JsonProperty(PropertyName = "serviceDescription")]
         public string ServiceDescription { get; set; }
-
-        [JsonProperty(PropertyName = "mapName")]
-        public string MapName => "Layers";
 
         [JsonProperty(PropertyName = "copyrightText")]
         public string CopyrightText { get; set; }

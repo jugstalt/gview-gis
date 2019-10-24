@@ -283,6 +283,8 @@ namespace gView.Framework.Carto
             }
         }
 
+        public string Title { get; set; }
+
         public MapTools MapTool
         {
             get { return m_mapTool; }
@@ -1814,6 +1816,8 @@ namespace gView.Framework.Carto
             m_maxX = (double)stream.Load("maxx", 0.0);
             m_maxY = (double)stream.Load("maxy", 0.0);
 
+            this.Title = (string)stream.Load("title", String.Empty);
+
             m_actMinX = (double)stream.Load("act_minx", 0.0);
             m_actMinY = (double)stream.Load("act_miny", 0.0);
             m_actMaxX = (double)stream.Load("act_maxx", 0.0);
@@ -2035,7 +2039,21 @@ namespace gView.Framework.Carto
                     .Where(i => int.TryParse(i, out int x))
                     .Select(i => int.Parse(i)))
                 {
-                    this.SetLayerDescription(key, (string)stream.Load("", String.Empty));
+                    this.SetLayerDescription(key, System.Text.Encoding.Unicode.GetString(
+                        Convert.FromBase64String((string)stream.Load($"LayerDescription_{ key }", String.Empty))));
+                }
+            }
+
+            string layerCopyrightTextKeys = (string)stream.Load("LayerCopyrightTextKeys", String.Empty);
+            if (!String.IsNullOrWhiteSpace(layerCopyrightTextKeys))
+            {
+                foreach (int key in layerCopyrightTextKeys
+                    .Split(',')
+                    .Where(i => int.TryParse(i, out int x))
+                    .Select(i => int.Parse(i)))
+                {
+                    this.SetLayerCopyrightText(key, System.Text.Encoding.Unicode.GetString(
+                        Convert.FromBase64String((string)stream.Load($"LayerCopyrightText_{ key }", String.Empty))));
                 }
             }
 
@@ -2049,6 +2067,8 @@ namespace gView.Framework.Carto
             stream.Save("miny", m_minY);
             stream.Save("maxx", m_maxX);
             stream.Save("maxy", m_maxY);
+
+            stream.Save("title", this.Title ?? String.Empty);
 
             stream.Save("act_minx", m_actMinX);
             stream.Save("act_miny", m_actMinY);
@@ -2119,7 +2139,8 @@ namespace gView.Framework.Carto
 
                 foreach(var key in _layerDescriptions.Keys)
                 {
-                    stream.Save($"LayerDescription_{ key }", _layerDescriptions[key]);
+                    stream.Save($"LayerDescription_{ key }", Convert.ToBase64String(
+                        System.Text.Encoding.Unicode.GetBytes(_layerDescriptions[key])));
                 }
             }
             if(_layerCopyrightTexts!=null)
@@ -2130,9 +2151,10 @@ namespace gView.Framework.Carto
 
                 stream.Save("LayerCopyrightTextKeys", String.Join(",", copyrightTextKeys));
 
-                foreach (var key in _layerDescriptions.Keys)
+                foreach (var key in _layerCopyrightTexts.Keys)
                 {
-                    stream.Save($"LayerCopyrightText_{ key }", _layerDescriptions[key]);
+                    stream.Save($"LayerCopyrightText_{ key }", Convert.ToBase64String(
+                        System.Text.Encoding.Unicode.GetBytes(_layerCopyrightTexts[key])));
                 }
             }
         }
@@ -2400,7 +2422,7 @@ namespace gView.Framework.Carto
 
         #region Map / Layer Description
 
-        private ConcurrentDictionary<int, string> _layerDescriptions = null;
+        protected ConcurrentDictionary<int, string> _layerDescriptions = null;
         public string GetLayerDescription(int layerId)
         {
             if (_layerDescriptions!=null && _layerDescriptions.ContainsKey(layerId))
@@ -2419,7 +2441,7 @@ namespace gView.Framework.Carto
             _layerDescriptions[layerId] = description;
         }
 
-        private ConcurrentDictionary<int, string> _layerCopyrightTexts = null;
+        protected ConcurrentDictionary<int, string> _layerCopyrightTexts = null;
         public string GetLayerCopyrightText(int layerId)
         {
             if (_layerCopyrightTexts != null && _layerCopyrightTexts.ContainsKey(layerId))
@@ -2438,6 +2460,9 @@ namespace gView.Framework.Carto
             }
             _layerCopyrightTexts[layerId] = copyrightText;
         }
+
+        public ConcurrentDictionary<int, string> LayerDescriptions => _layerDescriptions;
+        public ConcurrentDictionary<int, string> LayerCopyrightTexts => _layerCopyrightTexts;
 
         #endregion
     }

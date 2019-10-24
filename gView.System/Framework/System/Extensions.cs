@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using gView.Framework.Carto;
+using gView.Framework.Data;
+using gView.Framework.UI;
+using System;
+using System.Linq;
 
 namespace gView.Framework.system
 {
@@ -23,9 +24,9 @@ namespace gView.Framework.system
         {
             parameterName = parameterName.ToLower();
 
-            foreach(var p in connectionString.Split(';'))
+            foreach (var p in connectionString.Split(';'))
             {
-                if(p.ToLower().StartsWith(parameterName+"="))
+                if (p.ToLower().StartsWith(parameterName + "="))
                 {
                     return p.Substring(parameterName.Length + 1);
                 }
@@ -125,6 +126,48 @@ namespace gView.Framework.system
             }
 
             return url;
+        }
+
+        #endregion
+
+        #region IMapDocument
+
+        static public IMap MapFromDataset(this IMapDocument doc, IDataset dataset)
+        {
+            if (dataset == null)
+            {
+                return null;
+            }
+
+            return doc?.Maps?
+                    .Where(m => m.Datasets != null && m.Datasets.Contains(dataset))
+                    .FirstOrDefault();
+        }
+
+        static public IMap MapFromLayer(this IMapDocument doc, ILayer layer)
+        {
+            if (doc?.Maps == null)
+            {
+                return null;
+            }
+
+            foreach (var map in doc.Maps)
+            {
+                if (map?.TOC?.Elements == null)
+                {
+                    continue;
+                }
+
+                foreach (var element in map.TOC.Elements)
+                {
+                    if (element.Layers.Contains(layer))
+                    {
+                        return map;
+                    }
+                }
+            }
+
+            return null;
         }
 
         #endregion

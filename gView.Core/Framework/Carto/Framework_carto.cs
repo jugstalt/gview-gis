@@ -66,6 +66,8 @@ namespace gView.Framework.Carto
         IEnumerable<IDataset> Datasets { get; } 
         string Name { get; set; }
 
+        string Title { get; set; }
+
         Task<List<IDatasetElement>> Elements(string aliasname);
         List<IDatasetElement> MapElements { get; }
         Task<List<IDatasetElement>> ActiveLayers();
@@ -129,7 +131,7 @@ namespace gView.Framework.Carto
         event BeforeRenderLayersEvent BeforeRenderLayers;
 
         string Name { get; }
-
+        string Title { get; }
         IDisplay Display { get; }
         ITOC TOC { get; }
 
@@ -146,6 +148,10 @@ namespace gView.Framework.Carto
         float ScaleSymbolFactor { get; set; }
 
         T GetModule<T>();
+
+        string GetLayerDescription(int layerId);
+
+        string GetLayerCopyrightText(int layerId);
     }
 
     public delegate void MapScaleChangedEvent(IDisplay sender);

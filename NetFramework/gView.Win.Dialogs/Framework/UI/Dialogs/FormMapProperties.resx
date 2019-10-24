@@ -893,7 +893,7 @@
     <value>4, 5, 4, 5</value>
   </data>
   <data name="tabSR.Size" type="System.Drawing.Size, System.Drawing">
-    <value>850, 776</value>
+    <value>881, 844</value>
   </data>
   <data name="tabSR.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -923,7 +923,7 @@
     <value>4, 5, 4, 5</value>
   </data>
   <data name="panelDefaultLayerSR.Size" type="System.Drawing.Size, System.Drawing">
-    <value>850, 644</value>
+    <value>881, 712</value>
   </data>
   <data name="panelDefaultLayerSR.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -944,7 +944,7 @@
     <value>Bottom, Right</value>
   </data>
   <data name="btnDefaultLayerSRFromSpatialReference.Location" type="System.Drawing.Point, System.Drawing">
-    <value>488, 88</value>
+    <value>519, 88</value>
   </data>
   <data name="btnDefaultLayerSRFromSpatialReference.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 5, 4, 5</value>
@@ -1013,7 +1013,7 @@ to ensure all layers will be projected properly.
     <value>4, 5, 4, 5</value>
   </data>
   <data name="panel5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>850, 132</value>
+    <value>881, 132</value>
   </data>
   <data name="panel5.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1037,7 +1037,7 @@ to ensure all layers will be projected properly.
     <value>4, 5, 4, 5</value>
   </data>
   <data name="tabDefLayerSR.Size" type="System.Drawing.Size, System.Drawing">
-    <value>850, 776</value>
+    <value>881, 844</value>
   </data>
   <data name="tabDefLayerSR.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -1056,6 +1056,60 @@ to ensure all layers will be projected properly.
   </data>
   <data name="&gt;&gt;tabDefLayerSR.ZOrder" xml:space="preserve">
     <value>2</value>
+  </data>
+  <data name="txtTitle.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="txtTitle.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 37</value>
+  </data>
+  <data name="txtTitle.Size" type="System.Drawing.Size, System.Drawing">
+    <value>858, 26</value>
+  </data>
+  <data name="txtTitle.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;txtTitle.Name" xml:space="preserve">
+    <value>txtTitle</value>
+  </data>
+  <data name="&gt;&gt;txtTitle.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;txtTitle.Parent" xml:space="preserve">
+    <value>tabDescription</value>
+  </data>
+  <data name="&gt;&gt;txtTitle.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="label11.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label11.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label11.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 13</value>
+  </data>
+  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
+    <value>42, 20</value>
+  </data>
+  <data name="label11.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="label11.Text" xml:space="preserve">
+    <value>Title:</value>
+  </data>
+  <data name="&gt;&gt;label11.Name" xml:space="preserve">
+    <value>label11</value>
+  </data>
+  <data name="&gt;&gt;label11.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label11.Parent" xml:space="preserve">
+    <value>tabDescription</value>
+  </data>
+  <data name="&gt;&gt;label11.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="txtCopyright.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left, Right</value>
@@ -1082,7 +1136,7 @@ to ensure all layers will be projected properly.
     <value>tabDescription</value>
   </data>
   <data name="&gt;&gt;txtCopyright.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>2</value>
   </data>
   <data name="label10.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -1115,19 +1169,19 @@ to ensure all layers will be projected properly.
     <value>tabDescription</value>
   </data>
   <data name="&gt;&gt;label10.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>3</value>
   </data>
   <data name="txtDescription.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
   </data>
   <data name="txtDescription.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 41</value>
+    <value>8, 98</value>
   </data>
   <data name="txtDescription.Multiline" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="txtDescription.Size" type="System.Drawing.Size, System.Drawing">
-    <value>863, 393</value>
+    <value>863, 336</value>
   </data>
   <data name="txtDescription.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -1142,13 +1196,13 @@ to ensure all layers will be projected properly.
     <value>tabDescription</value>
   </data>
   <data name="&gt;&gt;txtDescription.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>4</value>
   </data>
   <data name="label9.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="label9.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 18</value>
+    <value>10, 75</value>
   </data>
   <data name="label9.Size" type="System.Drawing.Size, System.Drawing">
     <value>93, 20</value>
@@ -1169,7 +1223,7 @@ to ensure all layers will be projected properly.
     <value>tabDescription</value>
   </data>
   <data name="&gt;&gt;label9.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>5</value>
   </data>
   <data name="tabDescription.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 29</value>

@@ -109,12 +109,21 @@ namespace gView.Framework.UI.Dialogs
         private GroupBox groupBox6;
         private Label label11;
         private ComboBox cmbGeometryType;
+        private TabPage tabDescription;
+        private TextBox txtCopyright;
+        private Label label12;
+        private TextBox txtDescription;
+        private Label label13;
         private List<ILayerPropertyPage> propertyPages = new List<ILayerPropertyPage>();
-  
-		public FormLayerProperties(IDataset dataset,ILayer layer)
-		{	
-			_dataset=dataset;
-			_layer=layer;
+
+        private IMap _map;
+
+		public FormLayerProperties(IMap map, IDataset dataset,ILayer layer)
+		{
+            _dataset = dataset;
+            _layer = layer;
+            _map = map;
+
             if (_layer == null) return;
             if (_layer is Layer)
             {
@@ -136,6 +145,7 @@ namespace gView.Framework.UI.Dialogs
             tabControl1.TabPages.Remove(tabWebServiceLayer);
             tabControl1.TabPages.Remove(tabFields);
             tabControl1.TabPages.Remove(tabSR);
+            tabControl1.TabPages.Remove(tabDescription);
             
             if (layer is IFeatureLayer)
             {
@@ -186,6 +196,12 @@ namespace gView.Framework.UI.Dialogs
                 if (!tabControl1.TabPages.Contains(tabWebServiceLayer)) tabControl1.TabPages.Add(tabWebServiceLayer);
                 if (!tabControl1.TabPages.Contains(tabSR)) tabControl1.TabPages.Add(tabSR);
             }
+            if(_map!=null)
+            {
+                tabControl1.TabPages.Add(tabDescription);
+                txtDescription.Text = _map.GetLayerDescription(layer.ID);
+                txtCopyright.Text = _map.GetLayerCopyrightText(layer.ID);
+            }
             
             PlugInManager compMan = new PlugInManager();
             foreach (var compType in compMan.GetPlugins(Plugins.Type.ILayerPropertyPage))
@@ -203,6 +219,8 @@ namespace gView.Framework.UI.Dialogs
                 tpage.Controls.Add(panel);
                 tabControl1.TabPages.Add(tpage);
             }
+
+            
 		}
 
 		/// <summary>
@@ -233,6 +251,9 @@ namespace gView.Framework.UI.Dialogs
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormLayerProperties));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabGeneral = new System.Windows.Forms.TabPage();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.cmbGeometryType = new System.Windows.Forms.ComboBox();
+            this.label11 = new System.Windows.Forms.Label();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.txtMaximunZoom2FeatureScale = new System.Windows.Forms.NumericUpDown();
             this.label9 = new System.Windows.Forms.Label();
@@ -307,11 +328,14 @@ namespace gView.Framework.UI.Dialogs
             this.panel2 = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
-            this.groupBox6 = new System.Windows.Forms.GroupBox();
-            this.label11 = new System.Windows.Forms.Label();
-            this.cmbGeometryType = new System.Windows.Forms.ComboBox();
+            this.tabDescription = new System.Windows.Forms.TabPage();
+            this.txtCopyright = new System.Windows.Forms.TextBox();
+            this.label12 = new System.Windows.Forms.Label();
+            this.txtDescription = new System.Windows.Forms.TextBox();
+            this.label13 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabGeneral.SuspendLayout();
+            this.groupBox6.SuspendLayout();
             this.groupBox5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.txtMaximunZoom2FeatureScale)).BeginInit();
             this.groupBox4.SuspendLayout();
@@ -339,7 +363,7 @@ namespace gView.Framework.UI.Dialogs
             this.groupBox3.SuspendLayout();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
-            this.groupBox6.SuspendLayout();
+            this.tabDescription.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -352,6 +376,7 @@ namespace gView.Framework.UI.Dialogs
             this.tabControl1.Controls.Add(this.tabWebServiceLayer);
             this.tabControl1.Controls.Add(this.tabFields);
             this.tabControl1.Controls.Add(this.tabSR);
+            this.tabControl1.Controls.Add(this.tabDescription);
             resources.ApplyResources(this.tabControl1, "tabControl1");
             this.tabControl1.Multiline = true;
             this.tabControl1.Name = "tabControl1";
@@ -367,6 +392,26 @@ namespace gView.Framework.UI.Dialogs
             resources.ApplyResources(this.tabGeneral, "tabGeneral");
             this.tabGeneral.Name = "tabGeneral";
             this.tabGeneral.UseVisualStyleBackColor = true;
+            // 
+            // groupBox6
+            // 
+            this.groupBox6.Controls.Add(this.cmbGeometryType);
+            this.groupBox6.Controls.Add(this.label11);
+            resources.ApplyResources(this.groupBox6, "groupBox6");
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.TabStop = false;
+            // 
+            // cmbGeometryType
+            // 
+            this.cmbGeometryType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbGeometryType.FormattingEnabled = true;
+            resources.ApplyResources(this.cmbGeometryType, "cmbGeometryType");
+            this.cmbGeometryType.Name = "cmbGeometryType";
+            // 
+            // label11
+            // 
+            resources.ApplyResources(this.label11, "label11");
+            this.label11.Name = "label11";
             // 
             // groupBox5
             // 
@@ -772,11 +817,11 @@ namespace gView.Framework.UI.Dialogs
             // 
             this.gvWebThemes.AllowUserToAddRows = false;
             this.gvWebThemes.AllowUserToDeleteRows = false;
+            resources.ApplyResources(this.gvWebThemes, "gvWebThemes");
             this.gvWebThemes.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Column1,
             this.Column2,
             this.Column3});
-            resources.ApplyResources(this.gvWebThemes, "gvWebThemes");
             this.gvWebThemes.Name = "gvWebThemes";
             this.gvWebThemes.RowHeadersVisible = false;
             // 
@@ -957,25 +1002,37 @@ namespace gView.Framework.UI.Dialogs
             this.btnOK.Name = "btnOK";
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
-            // groupBox6
+            // tabDescription
             // 
-            this.groupBox6.Controls.Add(this.cmbGeometryType);
-            this.groupBox6.Controls.Add(this.label11);
-            resources.ApplyResources(this.groupBox6, "groupBox6");
-            this.groupBox6.Name = "groupBox6";
-            this.groupBox6.TabStop = false;
+            this.tabDescription.Controls.Add(this.txtCopyright);
+            this.tabDescription.Controls.Add(this.label12);
+            this.tabDescription.Controls.Add(this.txtDescription);
+            this.tabDescription.Controls.Add(this.label13);
+            resources.ApplyResources(this.tabDescription, "tabDescription");
+            this.tabDescription.Name = "tabDescription";
+            this.tabDescription.UseVisualStyleBackColor = true;
             // 
-            // label11
+            // txtCopyright
             // 
-            resources.ApplyResources(this.label11, "label11");
-            this.label11.Name = "label11";
+            this.txtCopyright.AcceptsReturn = true;
+            resources.ApplyResources(this.txtCopyright, "txtCopyright");
+            this.txtCopyright.Name = "txtCopyright";
             // 
-            // cmbGeometryType
+            // label12
             // 
-            this.cmbGeometryType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbGeometryType.FormattingEnabled = true;
-            resources.ApplyResources(this.cmbGeometryType, "cmbGeometryType");
-            this.cmbGeometryType.Name = "cmbGeometryType";
+            resources.ApplyResources(this.label12, "label12");
+            this.label12.Name = "label12";
+            // 
+            // txtDescription
+            // 
+            this.txtDescription.AcceptsReturn = true;
+            resources.ApplyResources(this.txtDescription, "txtDescription");
+            this.txtDescription.Name = "txtDescription";
+            // 
+            // label13
+            // 
+            resources.ApplyResources(this.label13, "label13");
+            this.label13.Name = "label13";
             // 
             // FormLayerProperties
             // 
@@ -988,6 +1045,8 @@ namespace gView.Framework.UI.Dialogs
             this.Load += new System.EventHandler(this.FormLayerProperties_Load);
             this.tabControl1.ResumeLayout(false);
             this.tabGeneral.ResumeLayout(false);
+            this.groupBox6.ResumeLayout(false);
+            this.groupBox6.PerformLayout();
             this.groupBox5.ResumeLayout(false);
             this.groupBox5.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.txtMaximunZoom2FeatureScale)).EndInit();
@@ -1022,8 +1081,8 @@ namespace gView.Framework.UI.Dialogs
             this.groupBox3.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
-            this.groupBox6.ResumeLayout(false);
-            this.groupBox6.PerformLayout();
+            this.tabDescription.ResumeLayout(false);
+            this.tabDescription.PerformLayout();
             this.ResumeLayout(false);
 
 		}
@@ -1423,7 +1482,7 @@ namespace gView.Framework.UI.Dialogs
             }
             if (_layer is IFeatureLayer)
             {
-                if(((IFeatureLayer)_layer).FeatureClass!=null &&
+                if (((IFeatureLayer)_layer).FeatureClass != null &&
                    ((IFeatureLayer)_layer).FeatureClass.GeometryType == geometryType.Unknown)
                 {
                     ((IFeatureLayer)_layer).LayerGeometryType = (geometryType)cmbGeometryType.SelectedItem;
@@ -1457,7 +1516,7 @@ namespace gView.Framework.UI.Dialogs
                             if (row.Cells[1].Value.ToString() == field.name)
                             {
                                 field.visible = (bool)row.Cells[0].Value;
-                                
+
                                 if (field is Field)
                                 {
                                     ((Field)field).aliasname = row.Cells[3].Value.ToString();
@@ -1500,6 +1559,11 @@ namespace gView.Framework.UI.Dialogs
                         }
                     }
                 }
+            }
+            if (_map != null && _layer != null)
+            {
+                _map.SetLayerDescription(_layer.ID, txtDescription.Text);
+                _map.SetLayerCopyrightText(_layer.ID, txtCopyright.Text);
             }
         }
 

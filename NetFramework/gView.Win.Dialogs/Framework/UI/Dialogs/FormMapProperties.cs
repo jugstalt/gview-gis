@@ -88,6 +88,7 @@ namespace gView.Framework.UI.Dialogs
 
             btnBackgroundColor.BackColor = _display.BackgroundColor;
 
+            txtTitle.Text = _map.Title;
             txtDescription.Text = _map.GetLayerDescription(Map.MapDescriptionId);
             txtCopyright.Text = _map.GetLayerCopyrightText(Map.MapCopyrightTextId);
         }
@@ -132,6 +133,7 @@ namespace gView.Framework.UI.Dialogs
 
                 _map.LayerDefaultSpatialReference = _sr2.SpatialReference;
 
+                _map.Title = txtTitle.Text;
                 _map.SetLayerDescription(Map.MapDescriptionId, txtDescription.Text);
                 _map.SetLayerCopyrightText(Map.MapCopyrightTextId, txtCopyright.Text);
             }

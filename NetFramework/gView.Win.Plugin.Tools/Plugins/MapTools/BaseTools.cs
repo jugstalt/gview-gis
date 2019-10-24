@@ -15,6 +15,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -2712,7 +2713,9 @@ namespace gView.Plugins.MapTools
 
             if (layer is ILayer)
             {
-                FormLayerProperties dlg = new FormLayerProperties((IDataset)dataset, (ILayer)layer);
+                var map = _doc.MapFromDataset(dataset as IDataset) ?? _doc.MapFromLayer((ILayer)layer);
+
+                FormLayerProperties dlg = new FormLayerProperties(map, (IDataset)dataset, (ILayer)layer);
 
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {

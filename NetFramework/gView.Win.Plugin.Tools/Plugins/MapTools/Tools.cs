@@ -65,8 +65,7 @@ namespace gView.Plugins.MapTools
             {
                 List<IDataset> datasets = await dlg.Datasets();
 
-
-                FormDatasetProperties datasetProps = await FormDatasetProperties.CreateAsync(datasets);
+                FormDatasetProperties datasetProps = await FormDatasetProperties.CreateAsync(null, datasets);
                 try
                 {
                     if (((MapEvent)MapEvent).UserData == null)
