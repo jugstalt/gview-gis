@@ -2027,6 +2027,18 @@ namespace gView.Framework.Carto
                 }
             }
 
+            string layerDescriptionKeys = (string)stream.Load("LayerDescriptionKeys", String.Empty);
+            if(!String.IsNullOrWhiteSpace(layerDescriptionKeys))
+            {
+                foreach (int key in layerDescriptionKeys
+                    .Split(',')
+                    .Where(i => int.TryParse(i, out int x))
+                    .Select(i => int.Parse(i)))
+                {
+                    this.SetLayerDescription(key, (string)stream.Load("", String.Empty));
+                }
+            }
+
             return true;
         }
 
@@ -2099,7 +2111,29 @@ namespace gView.Framework.Carto
 
             if(_layerDescriptions!=null)
             {
+                var descriptionsKeys = _layerDescriptions.Keys
+                    .Where(i => !String.IsNullOrWhiteSpace(_layerDescriptions[i]))
+                    .Select(i => i.ToString());
 
+                stream.Save("LayerDescriptionKeys", String.Join(",", descriptionsKeys));
+
+                foreach(var key in _layerDescriptions.Keys)
+                {
+                    stream.Save($"LayerDescription_{ key }", _layerDescriptions[key]);
+                }
+            }
+            if(_layerCopyrightTexts!=null)
+            {
+                var copyrightTextKeys = _layerCopyrightTexts.Keys
+                    .Where(i => !String.IsNullOrWhiteSpace(_layerCopyrightTexts[i]))
+                    .Select(i => i.ToString());
+
+                stream.Save("LayerCopyrightTextKeys", String.Join(",", copyrightTextKeys));
+
+                foreach (var key in _layerDescriptions.Keys)
+                {
+                    stream.Save($"LayerCopyrightText_{ key }", _layerDescriptions[key]);
+                }
             }
         }
 

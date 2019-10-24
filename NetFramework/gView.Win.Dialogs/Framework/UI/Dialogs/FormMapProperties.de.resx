@@ -119,155 +119,345 @@
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>22, 49</value>
+    <value>33, 75</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="label1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
   </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>102, 13</value>
+    <value>155, 20</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>Referenzmaßstab 1:</value>
+  </data>
+  <data name="btnOK.Location" type="System.Drawing.Point, System.Drawing">
+    <value>32, 12</value>
+  </data>
+  <data name="btnOK.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="btnOK.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 35</value>
+  </data>
+  <data name="btnCancel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>18, 12</value>
+  </data>
+  <data name="btnCancel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="btnCancel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 35</value>
   </data>
   <data name="btnCancel.Text" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
   <data name="label2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>20, 22</value>
+    <value>30, 34</value>
+  </data>
+  <data name="label2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>55, 20</value>
   </data>
   <data name="txtName.Location" type="System.Drawing.Point, System.Drawing">
-    <value>76, 19</value>
+    <value>114, 29</value>
+  </data>
+  <data name="txtName.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
   </data>
   <data name="txtName.Size" type="System.Drawing.Size, System.Drawing">
-    <value>463, 20</value>
+    <value>692, 26</value>
   </data>
   <data name="label3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>40, 111</value>
+    <value>60, 171</value>
+  </data>
+  <data name="label3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
   </data>
   <data name="label3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>82, 13</value>
+    <value>122, 20</value>
   </data>
   <data name="label3.Text" xml:space="preserve">
     <value>Einheiten Karte:</value>
   </data>
   <data name="cmbMapUnits.Location" type="System.Drawing.Point, System.Drawing">
-    <value>128, 107</value>
+    <value>192, 165</value>
+  </data>
+  <data name="cmbMapUnits.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="cmbMapUnits.Size" type="System.Drawing.Size, System.Drawing">
+    <value>242, 28</value>
   </data>
   <data name="cmbDisplayUnits.Location" type="System.Drawing.Point, System.Drawing">
-    <value>128, 134</value>
+    <value>192, 206</value>
+  </data>
+  <data name="cmbDisplayUnits.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="cmbDisplayUnits.Size" type="System.Drawing.Size, System.Drawing">
+    <value>242, 28</value>
   </data>
   <data name="label4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>27, 137</value>
+    <value>40, 211</value>
+  </data>
+  <data name="label4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
   </data>
   <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>95, 13</value>
+    <value>142, 20</value>
   </data>
   <data name="label4.Text" xml:space="preserve">
     <value>Einheiten Anzeige:</value>
   </data>
   <data name="panel2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>457, 0</value>
+    <value>686, 0</value>
+  </data>
+  <data name="panel2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="panel2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>162, 60</value>
   </data>
   <data name="panel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 543</value>
+    <value>0, 835</value>
+  </data>
+  <data name="panel1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
   </data>
   <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>565, 39</value>
+    <value>848, 60</value>
   </data>
   <data name="btnNoAntialiasFeatures.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 70</value>
+    <value>9, 108</value>
+  </data>
+  <data name="btnNoAntialiasFeatures.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
   </data>
   <data name="btnNoAntialiasFeatures.Size" type="System.Drawing.Size, System.Drawing">
-    <value>203, 23</value>
+    <value>304, 35</value>
   </data>
   <data name="btnNoAntialiasFeatures.Text" xml:space="preserve">
     <value>Keine Glättung für alle Features setzen</value>
   </data>
   <data name="btnAntialiasFeatures.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 95</value>
+    <value>9, 146</value>
+  </data>
+  <data name="btnAntialiasFeatures.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
   </data>
   <data name="btnAntialiasFeatures.Size" type="System.Drawing.Size, System.Drawing">
-    <value>203, 23</value>
+    <value>304, 35</value>
   </data>
   <data name="btnAntialiasFeatures.Text" xml:space="preserve">
     <value>Glättung für alle Features setzen</value>
   </data>
   <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 4</value>
+    <value>4, 6</value>
+  </data>
+  <data name="label7.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
   </data>
   <data name="label7.Size" type="System.Drawing.Size, System.Drawing">
-    <value>252, 57</value>
+    <value>378, 88</value>
   </data>
   <data name="label7.Text" xml:space="preserve">
     <value>Glättungsmethode für alle Features in der Karte setzen. Achtung: diese Methoden können nicht rückgängig gemacht werden. Bitte vor dem Anwenden das Projekt speichern!
 </value>
   </data>
+  <data name="panel4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>402, 29</value>
+  </data>
+  <data name="panel4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
   <data name="panel4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>277, 121</value>
+    <value>416, 186</value>
   </data>
   <data name="btnNoAntialiasLabels.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 70</value>
+    <value>9, 108</value>
+  </data>
+  <data name="btnNoAntialiasLabels.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
   </data>
   <data name="btnNoAntialiasLabels.Size" type="System.Drawing.Size, System.Drawing">
-    <value>242, 23</value>
+    <value>363, 35</value>
   </data>
   <data name="btnNoAntialiasLabels.Text" xml:space="preserve">
     <value>Keine Glättung für alle Beschriftungen setzen</value>
   </data>
   <data name="btnAntialiasLabels.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 95</value>
+    <value>9, 146</value>
+  </data>
+  <data name="btnAntialiasLabels.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
   </data>
   <data name="btnAntialiasLabels.Size" type="System.Drawing.Size, System.Drawing">
-    <value>242, 23</value>
+    <value>363, 35</value>
   </data>
   <data name="btnAntialiasLabels.Text" xml:space="preserve">
     <value>Glättung für alle Beschriftungen setzen</value>
   </data>
   <data name="label6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 8</value>
+    <value>4, 12</value>
+  </data>
+  <data name="label6.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
   </data>
   <data name="label6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>245, 59</value>
+    <value>368, 91</value>
   </data>
   <data name="label6.Text" xml:space="preserve">
     <value>Glättungsmethode für alle Beschriftungen in der Karte setzen. Achtung: diese Methoden können nicht rückgängig gemacht werden. Bitte vor dem Anwenden das Projekt speichern!</value>
   </data>
+  <data name="panel3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 29</value>
+  </data>
+  <data name="panel3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
   <data name="panel3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>256, 121</value>
+    <value>384, 186</value>
+  </data>
+  <data name="groupBox3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 400</value>
+  </data>
+  <data name="groupBox3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="groupBox3.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="groupBox3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>826, 238</value>
   </data>
   <data name="groupBox3.Text" xml:space="preserve">
     <value>Erweiterte Werkzeuge</value>
+  </data>
+  <data name="btnTransparent.Location" type="System.Drawing.Point, System.Drawing">
+    <value>446, 245</value>
+  </data>
+  <data name="btnTransparent.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="btnTransparent.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 35</value>
+  </data>
+  <data name="btnBackgroundColor.Location" type="System.Drawing.Point, System.Drawing">
+    <value>192, 245</value>
+  </data>
+  <data name="btnBackgroundColor.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="btnBackgroundColor.Size" type="System.Drawing.Size, System.Drawing">
+    <value>244, 35</value>
+  </data>
+  <data name="label5.Location" type="System.Drawing.Point, System.Drawing">
+    <value>40, 252</value>
+  </data>
+  <data name="label5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>143, 20</value>
   </data>
   <data name="label5.Text" xml:space="preserve">
     <value>Hintergrund Farbe:</value>
   </data>
   <data name="numRefScale.Location" type="System.Drawing.Point, System.Drawing">
-    <value>128, 47</value>
+    <value>192, 72</value>
+  </data>
+  <data name="numRefScale.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="numRefScale.Size" type="System.Drawing.Size, System.Drawing">
+    <value>244, 26</value>
+  </data>
+  <data name="groupBox2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 89</value>
+  </data>
+  <data name="groupBox2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="groupBox2.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="groupBox2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>826, 302</value>
   </data>
   <data name="groupBox2.Text" xml:space="preserve">
     <value>Anzeige</value>
   </data>
+  <data name="groupBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 5</value>
+  </data>
+  <data name="groupBox1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="groupBox1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="groupBox1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>824, 75</value>
+  </data>
   <data name="groupBox1.Text" xml:space="preserve">
     <value>Karte</value>
   </data>
+  <data name="tabMap.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 29</value>
+  </data>
+  <data name="tabMap.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="tabMap.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
   <data name="tabMap.Size" type="System.Drawing.Size, System.Drawing">
-    <value>557, 517</value>
+    <value>840, 802</value>
   </data>
   <data name="tabMap.Text" xml:space="preserve">
     <value>Karte / Anzeige</value>
   </data>
+  <data name="tabSR.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 29</value>
+  </data>
+  <data name="tabSR.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
   <data name="tabSR.Size" type="System.Drawing.Size, System.Drawing">
-    <value>557, 517</value>
+    <value>840, 802</value>
   </data>
   <data name="tabSR.Text" xml:space="preserve">
     <value>Räumliches Bezugssystem</value>
   </data>
+  <data name="panelDefaultLayerSR.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 132</value>
+  </data>
+  <data name="panelDefaultLayerSR.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
   <data name="panelDefaultLayerSR.Size" type="System.Drawing.Size, System.Drawing">
-    <value>557, 431</value>
+    <value>840, 670</value>
   </data>
   <data name="btnDefaultLayerSRFromSpatialReference.Location" type="System.Drawing.Point, System.Drawing">
-    <value>316, 57</value>
+    <value>478, 88</value>
+  </data>
+  <data name="btnDefaultLayerSRFromSpatialReference.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="btnDefaultLayerSRFromSpatialReference.Size" type="System.Drawing.Size, System.Drawing">
+    <value>350, 35</value>
+  </data>
+  <data name="label8.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 15</value>
+  </data>
+  <data name="label8.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
   </data>
   <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>410, 52</value>
+    <value>617, 80</value>
   </data>
   <data name="label8.Text" xml:space="preserve">
     <value>Für alle Laye, die keine Bezugssstem besitzen, wird dieses System angewandt.
@@ -276,20 +466,38 @@ aus einer Datenquelle mit Bezugssystem kommen wird so gewärleistet, dass alle L
 richtig proziert werden.
 </value>
   </data>
+  <data name="panel5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
   <data name="panel5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>557, 86</value>
+    <value>840, 132</value>
+  </data>
+  <data name="tabDefLayerSR.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 29</value>
+  </data>
+  <data name="tabDefLayerSR.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
   </data>
   <data name="tabDefLayerSR.Size" type="System.Drawing.Size, System.Drawing">
-    <value>557, 517</value>
+    <value>840, 802</value>
   </data>
   <data name="tabDefLayerSR.Text" xml:space="preserve">
     <value>Default Bezugssystem für Layer</value>
   </data>
+  <data name="tabControl1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
   <data name="tabControl1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>565, 543</value>
+    <value>848, 835</value>
+  </data>
+  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
+    <value>9, 20</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>565, 582</value>
+    <value>848, 895</value>
+  </data>
+  <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Eigenschaften Karte</value>
