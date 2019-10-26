@@ -257,9 +257,9 @@ namespace gView.DataSources.Fdb.UI
                 _import.SchemaOnly = schemaOnly;
                 FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.Create(_import, ((FeatureClassListViewItem)datasetObject).FeatureClass);
 
-                FormTaskProgress progress = new FormTaskProgress(reporter, ImportAsync(datasetObject));
+                FormTaskProgress progress = new FormTaskProgress();
                 progress.Text = "Import Featureclass: " + ((FeatureClassListViewItem)datasetObject).Text;
-                progress.ShowDialog();
+                progress.ShowProgressDialog(reporter, ImportAsync(datasetObject));
                 _import = null;
             }
         }

@@ -577,7 +577,7 @@
     <value>4, 5, 4, 5</value>
   </data>
   <data name="panel3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>686, 54</value>
+    <value>681, 54</value>
   </data>
   <data name="panel3.TabIndex" type="System.Int32, mscorlib">
     <value>16</value>
@@ -625,13 +625,13 @@
     <value>Bottom</value>
   </data>
   <data name="panel4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 525</value>
+    <value>0, 620</value>
   </data>
   <data name="panel4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 5, 4, 5</value>
   </data>
   <data name="panel4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>686, 92</value>
+    <value>681, 92</value>
   </data>
   <data name="panel4.TabIndex" type="System.Int32, mscorlib">
     <value>17</value>
@@ -655,7 +655,7 @@
     <value>9, 20</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>686, 617</value>
+    <value>681, 712</value>
   </data>
   <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 5, 4, 5</value>

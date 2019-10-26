@@ -39,13 +39,14 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
             get { return "*.gml|*.xml"; }
         }
 
-        public Task<IExplorerFileObject> CreateInstance(IExplorerObject parent, string filename)
+        async public Task<IExplorerFileObject> CreateInstance(IExplorerObject parent, string filename)
         {
             GMLExplorerObject exObject = new GMLExplorerObject(null, filename);
-            if (exObject._dataset.State == DatasetState.opened)
-                return Task.FromResult<IExplorerFileObject>(new GMLExplorerObject(null, exObject));
-
-            return Task.FromResult<IExplorerFileObject>(null);
+            if (exObject._dataset.State != DatasetState.opened)
+            {
+                await exObject._dataset.Open();
+            }
+            return exObject;
         }
 
         #endregion
@@ -88,7 +89,7 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
             await _dataset.SetConnectionString(_filename);
             await _dataset.Open();
 
-            return Task.FromResult<object>(_dataset); 
+            return _dataset; 
         }
 
         #endregion

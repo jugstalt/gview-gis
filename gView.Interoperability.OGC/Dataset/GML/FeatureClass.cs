@@ -27,9 +27,11 @@ namespace gView.Interoperability.OGC.Dataset.GML
         async static public Task<FeatureClass> CreateAsync(Dataset dataset, string name, Fields fields)
         {
             var fc = new FeatureClass(dataset, name, fields);
-            fc.SpatialReference = await dataset.GetSpatialReference();
-            fc.Envelope = await dataset.Envelope();
-
+            if (dataset != null)
+            {
+                fc.SpatialReference = await dataset.GetSpatialReference();
+                fc.Envelope = await dataset.Envelope();
+            }
             return fc;
         }
 

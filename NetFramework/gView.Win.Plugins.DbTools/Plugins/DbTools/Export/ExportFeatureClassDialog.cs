@@ -376,9 +376,9 @@ namespace gView.Plugins.DbTools.Export
 
                 FeatureClassImportProgressReporter reporter = await FeatureClassImportProgressReporter.CreateAsync(_export, (IFeatureClass)datasetObject);
 
-                FormTaskProgress progress = new FormTaskProgress(reporter, ExportAsync_db(datasetObject));
+                FormTaskProgress progress = new FormTaskProgress();
                 progress.Text = "Export Features: " + ((IFeatureClass)datasetObject).Name;
-                progress.ShowDialog();
+                progress.ShowProgressDialog(reporter, ExportAsync_db(datasetObject));
                 _export = null;
             }
             if (datasetObject is FeatureClassListViewItem)

@@ -1,13 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using gView.Framework.Geometry;
 using gView.Framework.Data;
-using System.Xml;
-using gView.Framework.system;
+using gView.Framework.Geometry;
 using gView.Framework.OGC.GML;
+using System;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Interoperability.OGC.Dataset.GML
 {
@@ -29,9 +27,11 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 var file = new GMLFile();
 
                 file._gmlDataset = new Dataset();
-                await file._gmlDataset.SetConnectionString (filename);
+                await file._gmlDataset.SetConnectionString(filename);
                 if (!await file._gmlDataset.Open())
+                {
                     file._gmlDataset = null;
+                }
 
                 file._filename = filename;
 
@@ -55,7 +55,9 @@ namespace gView.Interoperability.OGC.Dataset.GML
         public bool Delete()
         {
             if (_gmlDataset != null)
+            {
                 return _gmlDataset.Delete();
+            }
 
             return false;
         }
@@ -74,36 +76,37 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 XmlSchemaWriter schemaWriter = new XmlSchemaWriter(featureClass);
                 string schema = schemaWriter.Write();
 
-                StreamWriter sw = new StreamWriter(xsd_filename, false, Encoding.UTF8);
-                sw.WriteLine(schema.Trim());
-                sw.Flush();
-                sw.Close();
+                using (var sw = new StreamWriter(xsd_filename, false, Encoding.UTF8))
+                {
+                    sw.WriteLine(schema.Trim());
+                }
 
-                sw = new StreamWriter(gml_filename, false, Encoding.UTF8);
-                sw.Write(@"<?xml version=""1.0"" encoding=""UTF-8""?>
+                using (var sw = new StreamWriter(gml_filename, false, Encoding.UTF8))
+                {
+                    sw.Write(@"<?xml version=""1.0"" encoding=""UTF-8""?>
 <gml:FeatureCollection xmlns:gml=""http://www.opengis.net/gml"" 
                        xmlns:xlink=""http://www.w3.org/1999/xlink"" 
                        xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" 
                        xmlns:gv=""http://www.gViewGIS.com/server"" 
                        xsi:schemaLocation=""http://www.gview.com/gml " + name + @".xsd"">".Trim());
 
-                string boundingBox = GeometryTranslator.Geometry2GML(new Envelope(), String.Empty, gmlVersion);
-                sw.WriteLine(@"
+                    string boundingBox = GeometryTranslator.Geometry2GML(new Envelope(), String.Empty, gmlVersion);
+                    sw.WriteLine(@"
    <gml:boundedBy>");
-                sw.Write(boundingBox);
-                sw.Write(@"
+                    sw.Write(boundingBox);
+                    sw.Write(@"
    </gml:boundedBy>");
 
-                sw.Write(@"
+                    sw.Write(@"
 </gml:FeatureCollection>");
 
-                sw.Flush();
-                sw.Close();
+                }
 
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                string errMsg = ex.Message;
                 return false;
             }
         }
@@ -112,14 +115,22 @@ namespace gView.Interoperability.OGC.Dataset.GML
         {
             get
             {
-                if (_doc == null) return null;
+                if (_doc == null)
+                {
+                    return null;
+                }
+
                 try
                 {
                     XmlNode envNode = _doc.SelectSingleNode("GML:FeatureCollection/GML:boundedBy", _ns);
-                    if (envNode == null) return null;
+                    if (envNode == null)
+                    {
+                        return null;
+                    }
+
                     return GeometryTranslator.GML2Geometry(envNode.InnerXml, _gmlVersion) as IEnvelope;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _errMsg = ex.Message;
                     return null;
@@ -127,12 +138,18 @@ namespace gView.Interoperability.OGC.Dataset.GML
             }
             set
             {
-                if (_doc == null || value==null) return;
+                if (_doc == null || value == null)
+                {
+                    return;
+                }
 
                 try
                 {
                     XmlNode coords = _doc.SelectSingleNode("GML:FeatureCollection/GML:boundedBy/GML:Box/GML:coordinates", _ns);
-                    if (coords == null) return;
+                    if (coords == null)
+                    {
+                        return;
+                    }
 
                     coords.InnerText =
                         value.minx.ToString(_nhi) + "," + value.miny.ToString(_nhi) + " " +
@@ -147,10 +164,16 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         private bool UpdateEnvelope(IEnvelope append)
         {
-            if (append == null) return true;
+            if (append == null)
+            {
+                return true;
+            }
 
             IEnvelope envelope = this.Envelope;
-            if (envelope == null) return false;
+            if (envelope == null)
+            {
+                return false;
+            }
 
             if (envelope.minx == 0.0 && envelope.maxx == 0.0 &&
                 envelope.miny == 0.0 && envelope.maxy == 0.0)
@@ -167,12 +190,18 @@ namespace gView.Interoperability.OGC.Dataset.GML
         }
         public bool AppendFeature(IFeatureClass fc, IFeature feature)
         {
-            if (_doc == null || fc == null || feature == null) return false;
+            if (_doc == null || fc == null || feature == null)
+            {
+                return false;
+            }
 
             XmlNode featureCollection = _doc.SelectSingleNode("GML:FeatureCollection", _ns);
-            if (featureCollection == null) return false;
+            if (featureCollection == null)
+            {
+                return false;
+            }
 
-            XmlNode featureMember = _doc.CreateElement("gml","featureMember",_ns.LookupNamespace("GML"));
+            XmlNode featureMember = _doc.CreateElement("gml", "featureMember", _ns.LookupNamespace("GML"));
             XmlNode featureclass = _doc.CreateElement("gv", fc.Name, _ns.LookupNamespace("myns"));
 
             featureMember.AppendChild(featureclass);
@@ -187,7 +216,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                     doc.LoadXml(geom);
 
                     XmlNode geomNode = _doc.CreateElement("gv", fc.ShapeFieldName.Replace("#", ""), _ns.LookupNamespace("myns"));
-                    
+
                     foreach (XmlNode node in doc.ChildNodes[0].ChildNodes)
                     {
                         geomNode.AppendChild(_doc.ImportNode(node, true));
@@ -199,7 +228,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                     }
                     featureclass.AppendChild(geomNode);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _errMsg = ex.Message;
                     return false;
@@ -209,7 +238,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
             {
                 XmlNode attrNode = _doc.CreateElement("gv", fv.Name.Replace("#", ""), _ns.LookupNamespace("myns"));
                 if (fv.Value != null)
+                {
                     attrNode.InnerText = fv.Value.ToString();
+                }
+
                 featureclass.AppendChild(attrNode);
             }
             featureCollection.AppendChild(featureMember);
@@ -219,14 +251,25 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         public bool Flush()
         {
-            if (_doc == null) return false;
+            if (_doc == null)
+            {
+                return false;
+            }
+
             try
             {
+                FileInfo fi = new FileInfo(_filename);
+                if (fi.Exists)
+                {
+                    fi.Delete();
+                }
+
                 _doc.Save(_filename);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _errMsg = ex.Message;
                 return false;
             }
         }

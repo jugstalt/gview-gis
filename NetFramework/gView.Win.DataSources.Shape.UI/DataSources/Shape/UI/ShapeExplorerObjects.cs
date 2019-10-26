@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.system.UI;
+using gView.Framework.UI;
+using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.Shape.UI
@@ -24,6 +21,7 @@ namespace gView.DataSources.Shape.UI
             : base(parent, typeof(IFeatureClass), 2)
         {
             _filename = filename;
+            OpenShape().Wait();
         }
 
         #region IExplorerFileObject Member
@@ -41,7 +39,9 @@ namespace gView.DataSources.Shape.UI
             try
             {
                 if (!(new FileInfo(filename)).Exists)
+                {
                     return Task.FromResult<IExplorerFileObject>(null);
+                }
             }
             catch
             {
@@ -99,7 +99,10 @@ namespace gView.DataSources.Shape.UI
         async public Task<object> GetInstanceAsync()
         {
             if (_shapeDataset == null)
+            {
                 await OpenShape();
+            }
+
             return ((_shape != null) ? _shape.Class : null);
         }
 
@@ -123,7 +126,9 @@ namespace gView.DataSources.Shape.UI
         async public Task<bool> RenameExplorerObject(string newName)
         {
             if (_shapeDataset == null)
+            {
                 await OpenShape();
+            }
 
             if (_shapeDataset != null)
             {
@@ -132,13 +137,18 @@ namespace gView.DataSources.Shape.UI
 
                 int pos = newName.LastIndexOf(".");
                 if (pos != -1)
+                {
                     newName = newName.Substring(0, pos);
+                }
 
                 if (_shapeDataset.Rename(name, newName))
                 {
                     _shape.Title = newName;
 
-                    if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
+                    if (ExplorerObjectRenamed != null)
+                    {
+                        ExplorerObjectRenamed(this);
+                    }
                 }
                 return false;
             }
@@ -157,7 +167,9 @@ namespace gView.DataSources.Shape.UI
         async public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
             if (_shapeDataset == null)
+            {
                 await OpenShape();
+            }
 
             if (_shapeDataset != null)
             {
@@ -166,7 +178,10 @@ namespace gView.DataSources.Shape.UI
 
                 if (_shapeDataset.Delete(name))
                 {
-                    if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+                    if (ExplorerObjectDeleted != null)
+                    {
+                        ExplorerObjectDeleted(this);
+                    }
                 }
                 return false;
             }
@@ -196,9 +211,13 @@ namespace gView.DataSources.Shape.UI
                 else
                 {
                     if (_shape.Class is IFeatureClass)
+                    {
                         _icon = new ShapeFileIcon(((IFeatureClass)_shape.Class).GeometryType);
+                    }
                     else
+                    {
                         _icon = new ShapeFileIcon(geometryType.Unknown);
+                    }
                 }
             }
             catch (Exception ex)

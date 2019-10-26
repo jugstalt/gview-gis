@@ -1,13 +1,12 @@
-using System;
-using System.IO;
-using System.Data;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Geometry;
+using gView.DataSources.Shape.Lib;
 using gView.Framework.Data;
 using gView.Framework.FDB;
-using gView.DataSources.Shape.Lib;
+using gView.Framework.Geometry;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.Shape
@@ -37,11 +36,14 @@ namespace gView.DataSources.Shape
         {
             get
             {
-                return (ISelectionSet)_selectionset;
+                return _selectionset;
             }
             set
             {
-                if (_selectionset != null && _selectionset != value) _selectionset.Clear();
+                if (_selectionset != null && _selectionset != value)
+                {
+                    _selectionset.Clear();
+                }
 
                 _selectionset = value;
             }
@@ -49,7 +51,10 @@ namespace gView.DataSources.Shape
 
         async public Task<bool> Select(IQueryFilter filter, CombinationMethod method)
         {
-            if (!(this.Class is ITableClass)) return false;
+            if (!(this.Class is ITableClass))
+            {
+                return false;
+            }
 
             ISelectionSet selSet = await ((ITableClass)this.Class).Select(filter);
 
@@ -80,20 +85,30 @@ namespace gView.DataSources.Shape
         public void FireSelectionChangedEvent()
         {
             if (FeatureSelectionChanged != null)
+            {
                 FeatureSelectionChanged(this);
+            }
         }
 
         #endregion
 
         public bool Delete()
         {
-            if (_file != null) return _file.Delete();
+            if (_file != null)
+            {
+                return _file.Delete();
+            }
+
             return false;
         }
 
         public bool Rename(string newName)
         {
-            if (_file != null) return _file.Rename(newName);
+            if (_file != null)
+            {
+                return _file.Rename(newName);
+            }
+
             return false;
         }
     }
@@ -108,7 +123,11 @@ namespace gView.DataSources.Shape
 
         public ShapeFeatureClass(SHPFile file, IDataset dataset, IIndexTree tree)
         {
-            if (file == null) return;
+            if (file == null)
+            {
+                return;
+            }
+
             _file = file;
             _dataset = dataset;
             _tree = tree;
@@ -172,12 +191,18 @@ namespace gView.DataSources.Shape
                     }
                 }
                 if (!idField)
+                {
                     filter.AddField(this.IDFieldName);
+                }
             }
             if (filter is IBufferQueryFilter)
             {
                 ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
-                if (sFilter == null) return null;
+                if (sFilter == null)
+                {
+                    return null;
+                }
+
                 return await GetFeatures(sFilter);
             }
 
@@ -218,7 +243,10 @@ namespace gView.DataSources.Shape
         public Task<int> CountFeatures()
         {
             if (_file == null)
+            {
                 return Task.FromResult(-1);
+            }
+
             return Task.FromResult((int)_file.Entities);
         }
 
@@ -280,7 +308,10 @@ namespace gView.DataSources.Shape
         {
             foreach (IField field in Fields.ToEnumerable())
             {
-                if (field.name == name) return field;
+                if (field.name == name)
+                {
+                    return field;
+                }
             }
             return null;
         }
@@ -295,7 +326,11 @@ namespace gView.DataSources.Shape
             if (filter is IBufferQueryFilter)
             {
                 ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
-                if (sFilter == null) return null;
+                if (sFilter == null)
+                {
+                    return null;
+                }
+
                 return await Select(sFilter);
             }
 
@@ -338,7 +373,11 @@ namespace gView.DataSources.Shape
 
         public static IGeometry GetGeometry2D(ShapeLib.SHPObject obj)
         {
-            if (obj == null) return null;
+            if (obj == null)
+            {
+                return null;
+            }
+
             int parts = obj.nParts;
             int verts = obj.nVertices;
             int part = 0, nextp = 0;
@@ -359,7 +398,10 @@ namespace gView.DataSources.Shape
                     X[i] = x[i];
                     Y[i] = y[i];
                 }
-                for (int i = 0; i < parts; i++) pStart[i] = pstart[i];
+                for (int i = 0; i < parts; i++)
+                {
+                    pStart[i] = pstart[i];
+                }
             }
 
             switch (obj.shpType)
@@ -508,7 +550,11 @@ namespace gView.DataSources.Shape
         {
             base.KnowsFunctions = false;
 
-            if (file == null) return;
+            if (file == null)
+            {
+                return;
+            }
+
             _file = new SHPFile(file);
 
             _filter = filter;
@@ -547,7 +593,11 @@ namespace gView.DataSources.Shape
                 f.SubFields = _filter.SubFields;
                 foreach (IField field in _file.Fields.ToEnumerable())
                 {
-                    if (field.name == "FID") continue;
+                    if (field.name == "FID")
+                    {
+                        continue;
+                    }
+
                     if (filter.WhereClause.IndexOf(" " + field.name + " ") != -1 ||
                         filter.WhereClause.IndexOf("(" + field.name + " ") != -1 ||
                         filter.WhereClause.IndexOf(" " + field.name + "=") != -1 ||
@@ -614,22 +664,35 @@ namespace gView.DataSources.Shape
             foreach (int fid in FIDs)
             {
                 uint id = _file.GetIndexFromRecNumber((uint)fid);
-                if (id > _file.Entities) continue;
+                if (id > _file.Entities)
+                {
+                    continue;
+                }
+
                 _IDs.Add((int)id);
             }
         }
         private bool AppendAttributes(IFeature feature)
         {
-            if (_dataReader == null) return true;
+            if (_dataReader == null)
+            {
+                return true;
+            }
+
             _dataReader.Clear();
             _dataReader.AddRecord((uint)feature.OID);
 
-            if (_dataReader.Table.Rows.Count == 0) return true;
+            if (_dataReader.Table.Rows.Count == 0)
+            {
+                return true;
+            }
 
             if (_filter.WhereClause != "")
             {
                 if (_dataReader.Table.Select(_filter.WhereClause).Length == 0)
+                {
                     return false;
+                }
             }
 
             foreach (DataColumn col in _dataReader.Table.Columns)
@@ -646,7 +709,9 @@ namespace gView.DataSources.Shape
         public override Task<IFeature> NextFeature()
         {
             if (_file == null)
+            {
                 return Task.FromResult<IFeature>(null);
+            }
 
             IFeature feature;
             if (_IDs == null)
@@ -654,7 +719,9 @@ namespace gView.DataSources.Shape
                 while (true)
                 {
                     if (_shape >= _file.Entities)
-                      return Task.FromResult<IFeature>(null);
+                    {
+                        return Task.FromResult<IFeature>(null);
+                    }
 
                     if (_queryShape)
                     {
@@ -662,7 +729,10 @@ namespace gView.DataSources.Shape
                         {
                             while (true)
                             {
-                                if (_shape >= _file.Entities) return null;
+                                if (_shape >= _file.Entities)
+                                {
+                                    return Task.FromResult<IFeature>(null);
+                                }
                                 //IEnvelope e = _file.ReadEnvelope((uint)_shape);
                                 feature = _file.ReadShape((uint)_shape++, _bounds);  // wenn nicht in Box -> feature.Shape==null
                                 if (feature == null || feature.Shape == null)
@@ -704,13 +774,19 @@ namespace gView.DataSources.Shape
                         ((Feature)feature).OID = ((int)_shape++) + 1;
                     }
 
-                    if (feature == null || !AppendAttributes(feature)) continue;
+                    if (feature == null || !AppendAttributes(feature))
+                    {
+                        continue;
+                    }
 
                     // DistinctFilter
                     if (_unique != null && !String.IsNullOrEmpty(_uniqueField))
                     {
                         if (_unique.Contains(feature[_uniqueField]))
+                        {
                             continue;
+                        }
+
                         _unique.Add(feature[_uniqueField]);
                     }
 
@@ -723,7 +799,9 @@ namespace gView.DataSources.Shape
                 while (true)
                 {
                     if (_shape >= _IDs.Count)
-                      return Task.FromResult<IFeature>(null);
+                    {
+                        return Task.FromResult<IFeature>(null);
+                    }
 
                     if (_queryShape)
                     {
@@ -731,9 +809,12 @@ namespace gView.DataSources.Shape
                         {
                             while (true)
                             {
-                                if (_shape >= _IDs.Count) return null;
+                                if (_shape >= _IDs.Count)
+                                {
+                                    return Task.FromResult<IFeature>(null);
+                                }
                                 //IEnvelope e = _file.ReadEnvelope((uint)_shape);
-                                feature = _file.ReadShape((uint)((int)_IDs[(int)_shape++]), _bounds); // wenn nicht in Box -> feature.Shape==null
+                                feature = _file.ReadShape((uint)_IDs[(int)_shape++], _bounds); // wenn nicht in Box -> feature.Shape==null
                                 if (feature == null || feature.Shape == null)
                                 {
                                     //_shape++;
@@ -759,16 +840,19 @@ namespace gView.DataSources.Shape
                         }
                         else
                         {
-                            feature = _file.ReadShape((uint)((int)_IDs[(int)_shape++]));
+                            feature = _file.ReadShape((uint)_IDs[(int)_shape++]);
                         }
                     }
                     else
                     {
                         feature = new Feature();
-                        ((Feature)feature).OID = ((int)_IDs[(int)_shape++]) + 1;
+                        ((Feature)feature).OID = _IDs[(int)_shape++] + 1;
                     }
 
-                    if (feature == null || !AppendAttributes(feature)) continue;
+                    if (feature == null || !AppendAttributes(feature))
+                    {
+                        continue;
+                    }
 
                     Transform(feature);
                     return Task.FromResult<IFeature>(feature);
@@ -783,9 +867,17 @@ namespace gView.DataSources.Shape
         override public void Dispose()
         {
             base.Dispose();
-            if (_dataReader != null) _dataReader.Dispose();
+            if (_dataReader != null)
+            {
+                _dataReader.Dispose();
+            }
+
             _dataReader = null;
-            if (_file != null) _file.Close();
+            if (_file != null)
+            {
+                _file.Close();
+            }
+
             _file = null;
         }
 

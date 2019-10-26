@@ -1,16 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using System.IO;
-using System.Xml;
-using gView.Framework.system;
-using gView.Framework.Carto;
-using gView.Framework.OGC.GML;
-using gView.Framework.FDB;
-using System.Threading.Tasks;
 using gView.Framework.IO;
+using gView.Framework.OGC.GML;
+using gView.Framework.system;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Interoperability.OGC.Dataset.GML
 {
@@ -42,23 +39,34 @@ namespace gView.Interoperability.OGC.Dataset.GML
         public string GmlFileName
         {
             get { return _gml_file; }
-        } 
+        }
 
         public bool Delete()
         {
             try
             {
-                if (_state != DatasetState.opened) return false;
+                if (_state != DatasetState.opened)
+                {
+                    return false;
+                }
 
                 FileInfo fi = new FileInfo(_gml_file);
-                if(fi.Exists) fi.Delete();
+                if (fi.Exists)
+                {
+                    fi.Delete();
+                }
+
                 fi = new FileInfo(_xsd_file);
-                if(fi.Exists) fi.Delete();
+                if (fi.Exists)
+                {
+                    fi.Delete();
+                }
 
                 return true;
             }
-            catch
+            catch(Exception ex)
             {
+                _errMsg = ex.Message;
                 return false;
             }
         }
@@ -67,7 +75,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
         {
             try
             {
-                if (_state != DatasetState.opened) return null;
+                if (_state != DatasetState.opened)
+                {
+                    return null;
+                }
 
                 FileInfo fi = new FileInfo(_connectionString);
                 if (fi.Exists)
@@ -86,7 +97,11 @@ namespace gView.Interoperability.OGC.Dataset.GML
         {
             get
             {
-                if (_ns == null) return String.Empty;
+                if (_ns == null)
+                {
+                    return String.Empty;
+                }
+
                 return _ns.LookupNamespace("myns");
             }
         }
@@ -125,7 +140,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
             return Task.FromResult(true);
         }
-        
+
 
         public string DatasetGroupName
         {
@@ -155,18 +170,28 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 _elements.Clear();
 
                 FileInfo fi_gml = new FileInfo(_connectionString);
-                if (!fi_gml.Exists) return false;
+                if (!fi_gml.Exists)
+                {
+                    return false;
+                }
+
                 FileInfo fi_xsd = new FileInfo(fi_gml.FullName.Substring(0, fi_gml.FullName.Length - fi_gml.Extension.Length) + ".xsd");
-                if (!fi_xsd.Exists) return false;
+                if (!fi_xsd.Exists)
+                {
+                    return false;
+                }
 
                 _gml_file = fi_gml.FullName;
                 _xsd_file = fi_xsd.FullName;
 
                 XmlDocument schema = new XmlDocument();
-                schema.Load(fi_xsd.FullName);
+                schema.LoadXml(System.IO.File.ReadAllText( fi_xsd.FullName));
                 XmlSchemaReader schemaReader = new XmlSchemaReader(schema);
                 string targetNamespace = schemaReader.TargetNamespaceURI;
-                if (targetNamespace == String.Empty) return false;
+                if (targetNamespace == String.Empty)
+                {
+                    return false;
+                }
 
                 PlugInManager compMan = new PlugInManager();
                 foreach (string elementName in schemaReader.ElementNames)
@@ -178,19 +203,24 @@ namespace gView.Interoperability.OGC.Dataset.GML
                     fc.ShapeFieldName = shapeFieldName;
                     fc.GeometryType = geomType;
                     IFeatureLayer layer = LayerFactory.Create(fc) as IFeatureLayer;
-                    if (layer == null) continue;
+                    if (layer == null)
+                    {
+                        continue;
+                    }
 
                     //layer.FeatureRenderer = compMan.getComponent(KnownObjects.Carto_UniversalGeometryRenderer) as IFeatureRenderer;
 
                     _elements.Add(layer);
                 }
 
-                XmlTextReader xmlTextReader = new XmlTextReader(fi_gml.FullName);
-                xmlTextReader.ReadToDescendant("boundedBy", "http://www.opengis.net/gml");
-                string boundedBy = xmlTextReader.ReadOuterXml();
-
                 _doc = new XmlDocument();
-                _doc.LoadXml(boundedBy);
+                using (XmlTextReader xmlTextReader = new XmlTextReader(fi_gml.FullName))
+                {
+                    xmlTextReader.ReadToDescendant("boundedBy", "http://www.opengis.net/gml");
+                    string boundedBy = xmlTextReader.ReadOuterXml();
+
+                    _doc.LoadXml(boundedBy);
+                }
                 _ns = new XmlNamespaceManager(_doc.NameTable);
                 _ns.AddNamespace("GML", "http://www.opengis.net/gml");
                 _ns.AddNamespace("WFS", "http://www.opengis.net/wfs");
@@ -214,7 +244,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 _state = DatasetState.opened;
                 return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _errMsg = ex.Message;
                 return false;
@@ -250,13 +280,20 @@ namespace gView.Interoperability.OGC.Dataset.GML
         async public Task<IDatasetElement> Element(string title)
         {
             foreach (IDatasetElement element in _elements)
+            {
                 if (element.Title == title)
+                {
                     return element;
+                }
+            }
 
             try
             {
                 DirectoryInfo di = new DirectoryInfo(_connectionString);
-                if (!di.Exists) return null;
+                if (!di.Exists)
+                {
+                    return null;
+                }
 
                 Dataset ds = new Dataset();
                 await ds.SetConnectionString(di + @"/" + title + ".gml");
@@ -279,7 +316,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         public void Dispose()
         {
-            
+
         }
 
         #endregion

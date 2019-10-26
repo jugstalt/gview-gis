@@ -1,8 +1,7 @@
+using gView.Framework.Geometry;
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Xml;
-using gView.Framework.Geometry;
 
 namespace gView.Framework.OGC.GML
 {
@@ -23,7 +22,9 @@ namespace gView.Framework.OGC.GML
 
                 ISpatialReference sRef = null;
                 if ((int)gmlVersion > 2 && geomNode.Attributes["srsName"] != null)
+                {
                     sRef = SpatialReference.FromID(geomNode.Attributes["srsName"].Value);
+                }
 
                 switch (geomNode.Name)
                 {
@@ -36,7 +37,11 @@ namespace gView.Framework.OGC.GML
                         return GML2Envelope(geomNode, sRef);
                     case "LineString":
                         IPath path = GML2Path(geomNode, sRef);
-                        if (path == null) return null;
+                        if (path == null)
+                        {
+                            return null;
+                        }
+
                         Polyline polyline = new Polyline();
                         polyline.AddPath(path);
                         return polyline;
@@ -51,15 +56,24 @@ namespace gView.Framework.OGC.GML
                         foreach (XmlNode polygonNode in geomNode.SelectNodes("polygonMember/Polygon"))
                         {
                             IPolygon polygon = GML2Polygon(polygonNode, sRef);
-                            if (polygon != null) aGeom1.AddGeometry(polygon);
+                            if (polygon != null)
+                            {
+                                aGeom1.AddGeometry(polygon);
+                            }
                         }
-                        if (aGeom1.GeometryCount == 0) return null;
+                        if (aGeom1.GeometryCount == 0)
+                        {
+                            return null;
+                        }
+
                         IPolygon mpolygon1 = (IPolygon)aGeom1[0];
                         for (int i = 1; i < aGeom1.GeometryCount; i++)
                         {
                             IPolygon p = (IPolygon)aGeom1[i];
                             for (int r = 0; r < p.RingCount; r++)
+                            {
                                 mpolygon1.AddRing(p[r]);
+                            }
                         }
                         return mpolygon1;
                     case "surfaceProperty":
@@ -67,15 +81,24 @@ namespace gView.Framework.OGC.GML
                         foreach (XmlNode polygonNode in geomNode.SelectNodes("Surface/patches/PolygonPatch"))
                         {
                             IPolygon polygon = GML2Polygon(polygonNode, sRef);
-                            if (polygon != null) aGeom2.AddGeometry(polygon);
+                            if (polygon != null)
+                            {
+                                aGeom2.AddGeometry(polygon);
+                            }
                         }
-                        if (aGeom2.GeometryCount == 0) return null;
+                        if (aGeom2.GeometryCount == 0)
+                        {
+                            return null;
+                        }
+
                         IPolygon mpolygon2 = (IPolygon)aGeom2[0];
                         for (int i = 1; i < aGeom2.GeometryCount; i++)
                         {
                             IPolygon p = (IPolygon)aGeom2[i];
                             for (int r = 0; r < p.RingCount; r++)
+                            {
                                 mpolygon2.AddRing(p[r]);
+                            }
                         }
                         return mpolygon2;
                     default:
@@ -91,14 +114,20 @@ namespace gView.Framework.OGC.GML
 
         private static IPoint GML2Point(XmlNode pointNode, ISpatialReference sRef)
         {
-            if (pointNode == null) return null;
+            if (pointNode == null)
+            {
+                return null;
+            }
 
             XmlNode coordinatesNode = pointNode.SelectSingleNode("coordinates");
             if (coordinatesNode != null)
             {
 
                 string[] xy = coordinatesNode.InnerText.Split(',');
-                if (xy.Length < 2) return null;
+                if (xy.Length < 2)
+                {
+                    return null;
+                }
 
                 IPoint p = Gml3Point(new Point(
                     double.Parse(xy[0], _nhi),
@@ -110,7 +139,10 @@ namespace gView.Framework.OGC.GML
             if (posNode != null)
             {
                 string[] xy = posNode.InnerText.Split(' ');
-                if (xy.Length < 2) return null;
+                if (xy.Length < 2)
+                {
+                    return null;
+                }
 
                 IPoint p = Gml3Point(new Point(
                     double.Parse(xy[0], _nhi),
@@ -124,7 +156,9 @@ namespace gView.Framework.OGC.GML
                 XmlNode x = coordNode.SelectSingleNode("X");
                 XmlNode y = coordNode.SelectSingleNode("Y");
                 if (x != null && y != null)
+                {
                     return Gml3Point(new Point(double.Parse(x.InnerText, _nhi), double.Parse(y.InnerText, _nhi)), sRef);
+                }
             }
             return null;
         }
@@ -135,14 +169,20 @@ namespace gView.Framework.OGC.GML
         }
         private static void CoordinatesToPointCollection(XmlNode coordinates, IPointCollection pColl, char pointSplitter, char coordSplitter, ISpatialReference sRef)
         {
-            if (coordinates == null) return;
+            if (coordinates == null)
+            {
+                return;
+            }
 
             string[] coords = coordinates.InnerText.Split(pointSplitter);
 
             foreach (string coord in coords)
             {
                 string[] xy = coord.Split(coordSplitter);
-                if (xy.Length < 2) return;
+                if (xy.Length < 2)
+                {
+                    return;
+                }
 
                 pColl.AddPoint(Gml3Point(new Point(
                     double.Parse(xy[0], _nhi),
@@ -156,11 +196,18 @@ namespace gView.Framework.OGC.GML
         }
         private static void PosListToPointCollection(XmlNode posList, IPointCollection pColl, char splitter, ISpatialReference sRef)
         {
-            if (posList == null) return;
+            if (posList == null)
+            {
+                return;
+            }
 
             string[] coords = posList.InnerText.Split(splitter);
 
-            if (coords.Length % 2 != 0) return;
+            if (coords.Length % 2 != 0)
+            {
+                return;
+            }
+
             for (int i = 0; i < coords.Length - 1; i += 2)
             {
                 pColl.AddPoint(Gml3Point(new Point(
@@ -171,7 +218,10 @@ namespace gView.Framework.OGC.GML
 
         private static IPath GML2Path(XmlNode lineStringNode, ISpatialReference sRef)
         {
-            if (lineStringNode == null) return null;
+            if (lineStringNode == null)
+            {
+                return null;
+            }
 
             XmlNode coordNode = lineStringNode.SelectSingleNode("coordinates");
             if (coordNode != null)
@@ -192,33 +242,58 @@ namespace gView.Framework.OGC.GML
 
         private static IPolyline GML2Polyline(XmlNode multiLineStringNode, ISpatialReference sRef)
         {
-            if (multiLineStringNode == null) return null;
+            if (multiLineStringNode == null)
+            {
+                return null;
+            }
 
             Polyline polyline = new Polyline();
-            if (multiLineStringNode.Name == "curveProperty")
+
+            var lineStringNodes = multiLineStringNode.SelectNodes("LineString");
+            if (lineStringNodes == null || lineStringNodes.Count == 0)
             {
-                foreach (XmlNode lineStringNode in multiLineStringNode.SelectNodes("LineString"))
+                lineStringNodes = multiLineStringNode.SelectNodes("lineStringMember/LineString");
+            }
+
+            if (lineStringNodes != null)
+            {
+                foreach (XmlNode lineStringNode in lineStringNodes)
                 {
                     IPath path = GML2Path(lineStringNode, sRef);
                     if (path != null)
+                    {
                         polyline.AddPath(path);
+                    }
                 }
             }
-            else
-            {
-                foreach (XmlNode lineStringNode in multiLineStringNode.SelectNodes("lineStringMember/LineString"))
-                {
-                    IPath path = GML2Path(lineStringNode, sRef);
-                    if (path != null)
-                        polyline.AddPath(path);
-                }
-            }
+
+            //if (multiLineStringNode.Name == "curveProperty")
+            //{
+            //    foreach (XmlNode lineStringNode in multiLineStringNode.SelectNodes("LineString"))
+            //    {
+            //        IPath path = GML2Path(lineStringNode, sRef);
+            //        if (path != null)
+            //            polyline.AddPath(path);
+            //    }
+            //}
+            //else
+            //{
+            //    foreach (XmlNode lineStringNode in multiLineStringNode.SelectNodes("lineStringMember/LineString"))
+            //    {
+            //        IPath path = GML2Path(lineStringNode, sRef);
+            //        if (path != null)
+            //            polyline.AddPath(path);
+            //    }
+            //}
             return polyline;
         }
 
         private static IPolygon GML2Polygon(XmlNode polygonNode, ISpatialReference sRef)
         {
-            if (polygonNode == null) return null;
+            if (polygonNode == null)
+            {
+                return null;
+            }
 
             Polygon polygon = new Polygon();
             if (polygonNode.Name == "Polygon")
@@ -228,14 +303,18 @@ namespace gView.Framework.OGC.GML
                     Ring ring = new Ring();
                     CoordinatesToPointCollection(coordintes, ring, sRef);
                     if (ring.PointCount > 0)
+                    {
                         polygon.AddRing(ring);
+                    }
                 }
                 foreach (XmlNode coordintes in polygonNode.SelectNodes("innerBoundaryIs/LinearRing/coordinates"))
                 {
                     Hole hole = new Hole();
                     CoordinatesToPointCollection(coordintes, hole, sRef);
                     if (hole.PointCount > 0)
+                    {
                         polygon.AddRing(hole);
+                    }
                 }
             }
             else if (polygonNode.Name == "PolygonPatch")
@@ -245,14 +324,18 @@ namespace gView.Framework.OGC.GML
                     Ring ring = new Ring();
                     PosListToPointCollection(coordintes, ring, sRef);
                     if (ring.PointCount > 0)
+                    {
                         polygon.AddRing(ring);
+                    }
                 }
                 foreach (XmlNode coordintes in polygonNode.SelectNodes("interior/LinearRing/posList"))
                 {
                     Hole hole = new Hole();
                     PosListToPointCollection(coordintes, hole, sRef);
                     if (hole.PointCount > 0)
+                    {
                         polygon.AddRing(hole);
+                    }
                 }
             }
             return polygon;
@@ -260,7 +343,10 @@ namespace gView.Framework.OGC.GML
 
         private static IEnvelope GML2Envelope(XmlNode envNode, ISpatialReference sRef)
         {
-            if (envNode == null) return null;
+            if (envNode == null)
+            {
+                return null;
+            }
 
             PointCollection pColl = new PointCollection();
 
@@ -300,7 +386,9 @@ namespace gView.Framework.OGC.GML
         public static IPoint Gml3Point(IPoint p, ISpatialReference sRef)
         {
             if (sRef == null)
+            {
                 return p;
+            }
 
             double X = p.X, Y = p.Y;
             switch (sRef.Gml3AxisX)
@@ -396,13 +484,20 @@ namespace gView.Framework.OGC.GML
         }
         private static string CoordinatesString(IPointCollection pColl, ISpatialReference sRef)
         {
-            if (pColl == null) return String.Empty;
+            if (pColl == null)
+            {
+                return String.Empty;
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.Append(@"<gml:coordinates>");
             for (int i = 0; i < pColl.PointCount; i++)
             {
-                if (i != 0) sb.Append(" ");
+                if (i != 0)
+                {
+                    sb.Append(" ");
+                }
+
                 sb.Append(CoordinateString(pColl[i], sRef));
             }
             sb.Append(@"</gml:coordinates>");
@@ -439,14 +534,21 @@ namespace gView.Framework.OGC.GML
 
         private static string Path2GML(IPath path, string srsName, ISpatialReference sRef)
         {
-            if (path == null || path.PointCount == 0) return String.Empty;
+            if (path == null || path.PointCount == 0)
+            {
+                return String.Empty;
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.Append(@"<gml:LineString");
             if (srsName != String.Empty)
+            {
                 sb.Append(@" srsName=""" + srsName + @""">");
+            }
             else
+            {
                 sb.Append(">");
+            }
 
             sb.Append(CoordinatesString(path, sRef));
 
@@ -455,7 +557,11 @@ namespace gView.Framework.OGC.GML
         }
         private static string Polyline2GML(IPolyline polyline, string srsName, ISpatialReference sRef)
         {
-            if (polyline == null) return String.Empty;
+            if (polyline == null)
+            {
+                return String.Empty;
+            }
+
             StringBuilder sb = new StringBuilder();
 
             if (polyline.PathCount == 1)
@@ -466,7 +572,9 @@ namespace gView.Framework.OGC.GML
             {
                 sb.Append(@"<gml:MultiLineString srsName=""" + srsName + @""">");
                 for (int i = 0; i < polyline.PathCount; i++)
+                {
                     sb.Append(Path2GML(polyline[i], String.Empty, sRef));
+                }
 
                 sb.Append(@"</gml:MultiLineString>");
             }
@@ -474,13 +582,20 @@ namespace gView.Framework.OGC.GML
         }
         private static string Ring2GML(IRing ring, ISpatialReference sRef)
         {
-            if (ring == null || ring.PointCount == 0) return String.Empty;
+            if (ring == null || ring.PointCount == 0)
+            {
+                return String.Empty;
+            }
 
             StringBuilder sb = new StringBuilder();
             if (ring is IHole)
+            {
                 sb.Append(@"<gml:innerBoundaryIs>");
+            }
             else
+            {
                 sb.Append(@"<gml:outerBoundaryIs>");
+            }
 
             sb.Append(@"<gml:LinearRing>");
 
@@ -488,20 +603,30 @@ namespace gView.Framework.OGC.GML
 
             sb.Append(@"</gml:LinearRing>");
             if (ring is IHole)
+            {
                 sb.Append(@"</gml:innerBoundaryIs>");
+            }
             else
+            {
                 sb.Append(@"</gml:outerBoundaryIs>");
+            }
 
             return sb.ToString();
         }
         private static string Polygon2GML(IPolygon polygon, string srsName, ISpatialReference sRef)
         {
-            if (polygon == null) return String.Empty;
+            if (polygon == null)
+            {
+                return String.Empty;
+            }
+
             StringBuilder sb = new StringBuilder();
 
             sb.Append(@"<gml:Polygon srsName=""" + srsName + @""">");
             for (int i = 0; i < polygon.RingCount; i++)
+            {
                 sb.Append(Ring2GML(polygon[i], sRef));
+            }
 
             sb.Append(@"</gml:Polygon>");
             return sb.ToString();

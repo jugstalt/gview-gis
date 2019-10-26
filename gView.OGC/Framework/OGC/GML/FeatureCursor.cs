@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Data;
-using System.Xml;
-using gView.Framework.OGC.WFS;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.WFS;
+using System;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Framework.OGC.GML
 {
@@ -29,7 +26,10 @@ namespace gView.Framework.OGC.GML
             _fc = fc;
             _gmlVersion = gmlVersion;
 
-            if (featureCollection == null || ns == null || fc == null) return;
+            if (featureCollection == null || ns == null || fc == null)
+            {
+                return;
+            }
 
             try
             {
@@ -62,7 +62,9 @@ namespace gView.Framework.OGC.GML
             while (true)
             {
                 if (_features == null || _pos >= _features.Count)
+                {
                     return Task.FromResult<IFeature>(null);
+                }
 
                 XmlNode featureNode = _features[_pos++];
 
@@ -87,7 +89,9 @@ namespace gView.Framework.OGC.GML
                         try
                         {
                             if (fieldName == _fc.IDFieldName)
+                            {
                                 feature.OID = Convert.ToInt32(fieldNode.InnerText);
+                            }
                         }
                         catch { }
                     }
@@ -98,7 +102,10 @@ namespace gView.Framework.OGC.GML
                     foreach (XmlNode gmlNode in featureNode.SelectNodes("GML:*", _ns))
                     {
                         feature.Shape = GeometryTranslator.GML2Geometry(gmlNode.OuterXml, _gmlVersion);
-                        if (feature.Shape != null) break;
+                        if (feature.Shape != null)
+                        {
+                            break;
+                        }
                     }
                 }
 
@@ -107,7 +114,9 @@ namespace gView.Framework.OGC.GML
                     _checkGeometryRelation)
                 {
                     if (!SpatialRelation.Check(_filter as ISpatialFilter, feature.Shape))
+                    {
                         continue;
+                    }
                 }
 
                 Transform(feature);
@@ -145,7 +154,10 @@ namespace gView.Framework.OGC.GML
             _fc = fc;
             _gmlVersion = gmlVersion;
 
-            if (reader == null || ns == null || fc == null) return;
+            if (reader == null || ns == null || fc == null)
+            {
+                return;
+            }
 
             try
             {
@@ -178,10 +190,14 @@ namespace gView.Framework.OGC.GML
             while (true)
             {
                 if (_reader == null)
+                {
                     return Task.FromResult<IFeature>(null);
+                }
 
                 if (!_reader.ReadToFollowing(_fc.Name, _ns.LookupNamespace("myns")))
+                {
                     return Task.FromResult<IFeature>(null);
+                }
 
                 string featureString = _reader.ReadOuterXml();
 
@@ -210,7 +226,9 @@ namespace gView.Framework.OGC.GML
                         try
                         {
                             if (fieldName == _fc.IDFieldName)
+                            {
                                 feature.OID = Convert.ToInt32(fieldNode.InnerText);
+                            }
                         }
                         catch { }
                     }
@@ -221,7 +239,10 @@ namespace gView.Framework.OGC.GML
                     foreach (XmlNode gmlNode in featureNode.SelectNodes("GML:*", _ns))
                     {
                         feature.Shape = GeometryTranslator.GML2Geometry(gmlNode.OuterXml, _gmlVersion);
-                        if (feature.Shape != null) break;
+                        if (feature.Shape != null)
+                        {
+                            break;
+                        }
                     }
                 }
 
@@ -230,7 +251,9 @@ namespace gView.Framework.OGC.GML
                     _checkGeometryRelation)
                 {
                     if (!SpatialRelation.Check(_filter as ISpatialFilter, feature.Shape))
+                    {
                         continue;
+                    }
                 }
 
                 Transform(feature);
@@ -246,7 +269,10 @@ namespace gView.Framework.OGC.GML
         {
             base.Dispose();
             if (_reader != null)
+            {
                 _reader.Close();
+            }
+
             _reader = null;
         }
 
