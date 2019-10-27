@@ -19,7 +19,7 @@ namespace gView.MapServer.Lib.UI
         {
             get
             {
-                return "server=" + Connector.MapServerConnection.ServerUrl(txtServer.Text, Convert.ToInt32(numPort.Value)) + ";user=" + txtUser.Text + ";pwd=" + txtPwd.Text;
+                return "server=" + Server.Connector.ServerConnection.ServerUrl(txtServer.Text, Convert.ToInt32(numPort.Value)) + ";user=" + txtUser.Text + ";pwd=" + txtPwd.Text;
             }
         }
         private void btnOK_Click(object sender, EventArgs e)

@@ -25,7 +25,7 @@ namespace gView.MapServer.Lib.UI
 
         private void FormAddServiceCollection_Load(object sender, EventArgs e)
         {
-            MapServerConnection service = new MapServerConnection(ConfigTextStream.ExtractValue(_connectionString, "server"));
+            ServerConnection service = new ServerConnection(ConfigTextStream.ExtractValue(_connectionString, "server"));
             string axl = service.Send("catalog", "<GETCLIENTSERVICES/>", "BB294D9C-A184-4129-9555-398AA70284BC",
                 ConfigTextStream.ExtractValue(_connectionString, "user"),
                 Identity.HashPassword(ConfigTextStream.ExtractValue(_connectionString, "pwd")));

@@ -350,7 +350,7 @@ namespace gView.MapServer.Lib.UI
 
             try
             {
-                MapServerConnection service = new MapServerConnection(ConfigTextStream.ExtractValue(_connectionString, "server"));
+                ServerConnection service = new ServerConnection(ConfigTextStream.ExtractValue(_connectionString, "server"));
                 //string axl = service.ServiceRequest("catalog", "<GETCLIENTSERVICES/>", "BB294D9C-A184-4129-9555-398AA70284BC",
                 //    ConfigTextStream.ExtractValue(_connectionString, "user"),
                 //    Identity.HashPassword(ConfigTextStream.ExtractValue(_connectionString, "pwd")));
@@ -528,7 +528,7 @@ namespace gView.MapServer.Lib.UI
                     //XmlDocument doc = new XmlDocument();
                     //doc.LoadXml(sb.ToString());
 
-                    MapServerConnection service = new MapServerConnection(ConfigTextStream.ExtractValue(_connectionString, "server"));
+                    ServerConnection service = new ServerConnection(ConfigTextStream.ExtractValue(_connectionString, "server"));
                     if (!service.AddMap(serviceNames[i], sb.ToString(),
                         ConfigTextStream.ExtractValue(_connectionString, "user"),
                         ConfigTextStream.ExtractValue(_connectionString, "pwd")))
@@ -570,7 +570,7 @@ namespace gView.MapServer.Lib.UI
                     return false;
                 }
 
-                MapServerConnection service = new MapServerConnection(ConfigTextStream.ExtractValue(_connectionString, "server"));
+                ServerConnection service = new ServerConnection(ConfigTextStream.ExtractValue(_connectionString, "server"));
                 if (!service.AddMap(dlg.ServiceName, doc.SelectSingleNode("//IServiceableDataset").OuterXml,
                     ConfigTextStream.ExtractValue(_connectionString, "user"),
                         ConfigTextStream.ExtractValue(_connectionString, "pwd")))
@@ -609,7 +609,7 @@ namespace gView.MapServer.Lib.UI
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(sb.ToString());
 
-            MapServerConnection service = new MapServerConnection(ConfigTextStream.ExtractValue(_connectionString, "server"));
+            ServerConnection service = new ServerConnection(ConfigTextStream.ExtractValue(_connectionString, "server"));
             if (!service.AddMap(collectionName, doc.SelectSingleNode("//ServiceCollection").OuterXml,
                         ConfigTextStream.ExtractValue(_connectionString, "user"),
                         ConfigTextStream.ExtractValue(_connectionString, "pwd")))
@@ -914,7 +914,7 @@ namespace gView.MapServer.Lib.UI
         {
             try
             {
-                MapServerConnection service = new MapServerConnection(ConfigTextStream.ExtractValue(_connectionString, "server"));
+                ServerConnection service = new ServerConnection(ConfigTextStream.ExtractValue(_connectionString, "server"));
                 if (!service.RemoveMap(_name,
                          ConfigTextStream.ExtractValue(_connectionString, "user"),
                          ConfigTextStream.ExtractValue(_connectionString, "pwd")))
@@ -952,7 +952,7 @@ namespace gView.MapServer.Lib.UI
             string user = ConfigTextStream.ExtractValue(_connectionString, "user");
             string pwd = ConfigTextStream.ExtractValue(_connectionString, "pwd");
 
-            MapServerConnection conn = new MapServerConnection("http://" + server);
+            ServerConnection conn = new ServerConnection("http://" + server);
             string meta = conn.QueryMetadata(_name, user, pwd);
             if (meta == String.Empty)
             {
@@ -974,7 +974,7 @@ namespace gView.MapServer.Lib.UI
             string user = ConfigTextStream.ExtractValue(_connectionString, "user");
             string pwd = ConfigTextStream.ExtractValue(_connectionString, "pwd");
 
-            MapServerConnection conn = new MapServerConnection("http://" + server);
+            ServerConnection conn = new ServerConnection("http://" + server);
 
             //StringBuilder sb = new StringBuilder();
             //StringWriter sw = new StringWriter(sb);

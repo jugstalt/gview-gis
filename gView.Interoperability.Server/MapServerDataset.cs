@@ -108,7 +108,7 @@ namespace gView.Interoperability.Server
                 _opened = true;
                 _themes.Clear();
 
-                MapServerConnection server = new MapServerConnection(ConfigTextStream.ExtractValue(_connection, "server"));
+                ServerConnection server = new ServerConnection(ConfigTextStream.ExtractValue(_connection, "server"));
                 string axl = "<ARCXML version=\"1.1\"><REQUEST><GET_SERVICE_INFO fields=\"true\" envelope=\"true\" renderer=\"false\" extensions=\"false\" gv_meta=\"true\" /></REQUEST></ARCXML>";
                 axl = server.Send(_name, axl, "BB294D9C-A184-4129-9555-398AA70284BC",
                     ConfigTextStream.ExtractValue(_connection, "user"),
@@ -501,7 +501,7 @@ namespace gView.Interoperability.Server
 #if(DEBUG)
                 //Logger.LogDebug("Start gView Mapserver Request");
 #endif
-                MapServerConnection service = new MapServerConnection(ConfigTextStream.ExtractValue(_dataset._connection, "server"));
+                ServerConnection service = new ServerConnection(ConfigTextStream.ExtractValue(_dataset._connection, "server"));
                 string resp = service.Send( _name, sb.ToString(), "BB294D9C-A184-4129-9555-398AA70284BC", user, pwd);
 
 #if(DEBUG)
@@ -683,7 +683,7 @@ namespace gView.Interoperability.Server
                 //pwd = context.ServiceRequest.Identity.HashedPassword;
             }
 
-            MapServerConnection conn = new MapServerConnection(server);
+            ServerConnection conn = new ServerConnection(server);
             string resp = conn.Send(service, axlRequest, "BB294D9C-A184-4129-9555-398AA70284BC", user, pwd);
 
             try
@@ -771,7 +771,7 @@ namespace gView.Interoperability.Server
                 //pwd = context.ServiceRequest.Identity.HashedPassword;
             }
 
-            MapServerConnection conn = new MapServerConnection(server);
+            ServerConnection conn = new ServerConnection(server);
             try
             {
                 return conn.Send(service, axlRequest, "BB294D9C-A184-4129-9555-398AA70284BC", user, pwd);

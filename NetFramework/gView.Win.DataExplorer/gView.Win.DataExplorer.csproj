@@ -463,6 +463,10 @@
       <Project>{6fd6118a-19b7-4675-bf34-7972f8399d71}</Project>
       <Name>gView.Win.Plugins.Snapping</Name>
     </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Server.UI\gView.Win.Server.UI.csproj">
+      <Project>{ca224ab6-1f65-42d0-8f38-bb4721efa5a3}</Project>
+      <Name>gView.Win.Server.UI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\gView.Win.Snapping.Core\gView.Win.Snapping.Core.csproj">
       <Project>{1075bb0d-7dfc-440c-a790-51001bcf0725}</Project>
       <Name>gView.Win.Snapping.Core</Name>

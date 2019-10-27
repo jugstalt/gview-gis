@@ -574,8 +574,8 @@ namespace gView.Plugins.MapTools
                     //gView.MapServer.Connector.MapServerInstanceTypeService proxy = new gView.MapServer.Connector.MapServerInstanceTypeService(
                     //    dlg.Server + ":" + dlg.Port.ToString());
 
-                    string serverUrl = Server.Connector.MapServerConnection.ServerUrl(dlg.Server, dlg.Port);
-                    Server.Connector.MapServerConnection service = new Server.Connector.MapServerConnection(serverUrl);
+                    string serverUrl = Server.Connector.ServerConnection.ServerUrl(dlg.Server, dlg.Port);
+                    Server.Connector.ServerConnection service = new Server.Connector.ServerConnection(serverUrl);
                     if (!service.AddMap(dlg.ServiceName, sb.ToString(), dlg.Username, dlg.Password))
                     {
                         throw new Exception("Unable to add service..." + Environment.NewLine + service.LastErrorMessage);

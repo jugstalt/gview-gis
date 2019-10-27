@@ -7,7 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using gView.Framework.UI;
 using gView.Framework.Data;
-using gView.MapServer.Connector;
+using gView.Server.Connector;
 
 namespace gView.MapServer.Lib.UI
 {
@@ -26,8 +26,8 @@ namespace gView.MapServer.Lib.UI
 
                 lstServices.Items.Clear();
 
-                MapServerConnection connection = new MapServerConnection("http://" + txtServer.Text + ":" + numPort.Value.ToString() + "/MapServer");
-                foreach (MapServerConnection.MapService service in connection.Services(txtUser.Text, txtPwd.Text))
+                ServerConnection connection = new ServerConnection("http://" + txtServer.Text + ":" + numPort.Value.ToString() + "/MapServer");
+                foreach (ServerConnection.MapService service in connection.Services(txtUser.Text, txtPwd.Text))
                 {
                     lstServices.Items.Add(new ListViewItem(service.Name, (int)service.Type));
                 }

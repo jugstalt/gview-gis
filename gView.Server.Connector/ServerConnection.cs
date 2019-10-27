@@ -11,11 +11,11 @@ using gView.Framework.system;
 // wsdl /namespace:gView.MapServer.Connector /protocol:soap /out:MapServerProxy.cs /language:cs http://localhost:8001/MapServer?wsdl
 namespace gView.Server.Connector
 {
-    public class MapServerConnection : IErrorMessage
+    public class ServerConnection : IErrorMessage
     {
         private string _url = String.Empty;
 
-        public MapServerConnection(string url)
+        public ServerConnection(string url)
         {
             _url = url;
             if (!_url.ToLower().StartsWith("http://") && !_url.ToLower().StartsWith("https://"))

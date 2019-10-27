@@ -18,6 +18,7 @@ using gView.Framework.Geometry.Tiling;
 using gView.Framework.UI.Controls.Filter;
 using gView.Server.Connector;
 using gView.Interoperability.Server;
+using System.Threading.Tasks;
 
 namespace gView.MapServer.Lib.UI
 {
@@ -172,12 +173,11 @@ namespace gView.MapServer.Lib.UI
 
             _cacheFormat = cmbCacheFormat.SelectedItem.ToString().ToLower();
 
-            Thread thread = new Thread(new ThreadStart(this.Run));
-            FormProgress dlg = new FormProgress(this, thread);
-            dlg.ShowDialog();
+            FormTaskProgress dlg = new FormTaskProgress();
+            dlg.ShowProgressDialog(this, this.Run());
         }
 
-        private void Run()
+        async private Task Run()
         {
             if (_metadata == null || _mapServerClass == null || _mapServerClass.Dataset == null || _preRenderScales.Count == 0)
                 return;
@@ -223,7 +223,7 @@ namespace gView.MapServer.Lib.UI
                 grid.AddLevel(level++, res);
             }
 
-            MapServerConnection connector = new MapServerConnection(server);
+            ServerConnection connector = new ServerConnection(server);
             ProgressReport report = new ProgressReport();
             _cancelTracker.Reset();
 
@@ -353,14 +353,14 @@ namespace gView.MapServer.Lib.UI
         #region Helper Classes
         private class RenderTileThreadPool
         {
-            MapServerConnection _connector;
+            ServerConnection _connector;
             string _service, _user, _pwd;
             int _size;
             StringBuilder _exceptions = new StringBuilder();
 
             List<Thread> _threads = new List<Thread>();
 
-            public RenderTileThreadPool(MapServerConnection connector, string service, string user, string pwd, int size)
+            public RenderTileThreadPool(ServerConnection connector, string service, string user, string pwd, int size)
             {
                 _connector = connector;
                 _service = service;
@@ -447,17 +447,21 @@ namespace gView.MapServer.Lib.UI
 
             if (envelope != null && classSRef != null && sRef != null && !sRef.Equals(classSRef))
             {
-                IGeometry geom = GeometricTransformer.Transform2D(envelope, classSRef, sRef);
-                if (geom == null)
-                    return null;
+                using (var geometricTransformer = GeometricTransformerFactory.Create())
+                {
+                    geometricTransformer.SetSpatialReferences(classSRef, sRef);
+                    IGeometry geom = geometricTransformer.Transform2D(envelope) as IGeometry;
+                    if (geom == null)
+                        return null;
 
-                envelope = geom.Envelope;
+                    envelope = geom.Envelope;
+                }
             }
             return envelope;
         }
         #endregion
 
-        private void btnImport_Click(object sender, EventArgs e)
+        async private void btnImport_Click(object sender, EventArgs e)
         {
             List<ExplorerDialogFilter> filters = new List<ExplorerDialogFilter>();
             filters.Add(new OpenDataFilter());
@@ -472,13 +476,15 @@ namespace gView.MapServer.Lib.UI
                 IEnvelope bounds = null;
                 foreach (IExplorerObject exObject in dlg.ExplorerObjects)
                 {
-                    if (exObject == null || exObject.Object == null) continue;
+                    var objectInstance = await exObject?.GetInstanceAsync();
+                    if (objectInstance == null) 
+                        continue;
 
                     IEnvelope objEnvelope = null;
 
-                    if (exObject.Object is IDataset)
+                    if (objectInstance is IDataset)
                     {
-                        foreach (IDatasetElement element in ((IDataset)exObject.Object).Elements)
+                        foreach (IDatasetElement element in await ((IDataset)objectInstance).Elements())
                         {
                             if (element == null) continue;
                             objEnvelope = ClassEnvelope(element.Class, sRef);
@@ -486,7 +492,7 @@ namespace gView.MapServer.Lib.UI
                     }
                     else
                     {
-                        objEnvelope = ClassEnvelope(exObject.Object as IClass, sRef);
+                        objEnvelope = ClassEnvelope(objectInstance as IClass, sRef);
                     }
 
                     if (objEnvelope != null)
