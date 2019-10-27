@@ -439,6 +439,10 @@
       <Project>{ed609e9d-4942-4426-bad1-8de67d23385a}</Project>
       <Name>gView.Win.Interoperability.OGC.UI</Name>
     </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Metadata.UI\gView.Win.Metadata.UI.csproj">
+      <Project>{805c4efa-6e19-43fe-92ee-ecec9e93f681}</Project>
+      <Name>gView.Win.Metadata.UI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\gView.Win.OGC.UI\gView.Win.OGC.UI.csproj">
       <Project>{fa5c7709-9cb5-4747-9302-1f108f9a3caf}</Project>
       <Name>gView.Win.OGC.UI</Name>

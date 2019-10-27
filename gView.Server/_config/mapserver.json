@@ -4,7 +4,7 @@
   "output-path": "C:\\ArcIMS\\Output",
   "output-url": "http://localhost/output",
   "onlineresource-url": "https://localhost:44331",
-  "tilecache-root": "\\\\gis3\\E$\\geonet_sys\\data\\cache\\gview",
+  "tilecache-root": "C:\\temp\\tilecache",
 
   "task-queue": {
     "max-parallel-tasks": 5,

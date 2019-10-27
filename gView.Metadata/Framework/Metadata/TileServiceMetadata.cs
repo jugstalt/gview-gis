@@ -316,7 +316,7 @@ namespace gView.Framework.Metadata
         public object PropertyPage(object initObject)
         {
             string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Metadata.UI.dll");
+            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Metadata.UI.dll");
 
             IPlugInParameter p = uiAssembly.CreateInstance("gView.Framework.Metadata.UI.TileServiceMetadataControl") as IPlugInParameter;
             if (p != null)
