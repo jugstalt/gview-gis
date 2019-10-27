@@ -439,10 +439,6 @@
       <Project>{ed609e9d-4942-4426-bad1-8de67d23385a}</Project>
       <Name>gView.Win.Interoperability.OGC.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\gView.Win.MapServer.Connector\gView.Win.MapServer.Connector.csproj">
-      <Project>{249e5894-40ca-4692-b876-9df3b1a9e481}</Project>
-      <Name>gView.Win.MapServer.Connector</Name>
-    </ProjectReference>
     <ProjectReference Include="..\gView.Win.OGC.UI\gView.Win.OGC.UI.csproj">
       <Project>{fa5c7709-9cb5-4747-9302-1f108f9a3caf}</Project>
       <Name>gView.Win.OGC.UI</Name>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Carto\gView.Carto.csproj" />
+    <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
+    <ProjectReference Include="..\gView.Data\gView.Data.csproj" />
+    <ProjectReference Include="..\gView.Geometry\gView.Geometry.csproj" />
+    <ProjectReference Include="..\gView.Metadata\gView.Metadata.csproj" />
+    <ProjectReference Include="..\gView.OGC\gView.OGC.csproj" />
+    <ProjectReference Include="..\gView.Server.Connector\gView.Server.Connector.csproj" />
+    <ProjectReference Include="..\gView.System\gView.System.csproj" />
+    <ProjectReference Include="..\gView.Web\gView.Web.csproj" />
+    <ProjectReference Include="..\gView.XML\gView.XML.csproj" />
+  </ItemGroup>
+
+</Project>

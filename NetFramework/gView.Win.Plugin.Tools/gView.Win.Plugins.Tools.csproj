@@ -407,6 +407,10 @@
       <Project>{7eaf9c21-4c1d-4996-b111-7c503217b8f5}</Project>
       <Name>gView.Offline</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\gView.Server.Connector\gView.Server.Connector.csproj">
+      <Project>{2678b2d7-4eeb-4945-8f77-6d0add3a8b48}</Project>
+      <Name>gView.Server.Connector</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\gView.Symbology\gView.Symbology.csproj">
       <Project>{c37d6d4b-5670-49b9-8592-48e9dcc0aa3c}</Project>
       <Name>gView.Symbology</Name>
@@ -434,10 +438,6 @@
     <ProjectReference Include="..\gView.Win.Globalisation\gView.Win.Globalisation.csproj">
       <Project>{68ff06ec-cebd-4ba4-a536-6c09d9714066}</Project>
       <Name>gView.Win.Globalisation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\gView.Win.MapServer.Connector\gView.Win.MapServer.Connector.csproj">
-      <Project>{249e5894-40ca-4692-b876-9df3b1a9e481}</Project>
-      <Name>gView.Win.MapServer.Connector</Name>
     </ProjectReference>
     <ProjectReference Include="..\gView.Win.Snapping.Core\gView.Win.Snapping.Core.csproj">
       <Project>{1075bb0d-7dfc-440c-a790-51001bcf0725}</Project>

@@ -218,14 +218,14 @@ namespace gView.Framework.Data
         Task RefreshClasses();
     }
 
-    //public interface IServiceableDataset : gView.Framework.IO.IPersistable
-    //{
-    //    string Name { get; }
-    //    string Provider { get; }
+    public interface IServiceableDataset : gView.Framework.IO.IPersistable
+    {
+        string Name { get; }
+        string Provider { get; }
 
-    //    List<IDataset> Datasets { get; }
-    //    bool GenerateNew();
-    //}
+        List<IDataset> Datasets { get; }
+        bool GenerateNew();
+    }
 
     public interface IRequestDependentDataset
     {
