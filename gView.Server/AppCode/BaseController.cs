@@ -183,6 +183,10 @@ namespace gView.Server.AppCode
 
         async virtual protected Task<IActionResult> SecureMethodHandler(Func<Identity, Task<IActionResult>> func, Func<Exception, IActionResult> onException = null)
         {
+            if(Globals.HasValidConfig==false)
+            {
+                return RedirectToAction("ConfigInvalid", "Home");
+            }
             try
             {
                 var identity = new Identity(this.GetAuthToken().Username);

@@ -10,6 +10,11 @@ namespace gView.Server.Controllers
     {
         public IActionResult Index()
         {
+            if (Globals.HasValidConfig == false)
+            {
+                return RedirectToAction("ConfigInvalid");
+            }
+
             var user = Globals.ExternalAuthService != null ?
                 Globals.ExternalAuthService.Perform(this.Request) :
                 null;
@@ -52,6 +57,11 @@ namespace gView.Server.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public IActionResult ConfigInvalid()
+        {
+            return View();
         }
     }
 }

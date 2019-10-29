@@ -9,6 +9,9 @@ namespace gView.Server.AppCode
     {
         private static int _maxThreads = 2, _queueLength = 100;
 
+        public static bool HasValidConfig = true;
+        public static string ConfigErrorMessage = String.Empty;
+
         public static string OutputPath
         {
             get
