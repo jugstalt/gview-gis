@@ -118,8 +118,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="txtMaximunZoom2FeatureScale.Location" type="System.Drawing.Point, System.Drawing">
+    <value>350, 24</value>
+  </data>
   <data name="label9.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 27</value>
+    <value>56, 27</value>
   </data>
   <data name="label9.Size" type="System.Drawing.Size, System.Drawing">
     <value>294, 13</value>
@@ -130,23 +133,29 @@
   <data name="groupBox5.Text" xml:space="preserve">
     <value>Zoomen auf Feature d. Layers</value>
   </data>
+  <data name="txtLabelMaxScale.Location" type="System.Drawing.Point, System.Drawing">
+    <value>350, 70</value>
+  </data>
+  <data name="txtLabelMinScale.Location" type="System.Drawing.Point, System.Drawing">
+    <value>350, 43</value>
+  </data>
   <data name="radioLabelAllScales.Text" xml:space="preserve">
     <value>Bei jedem Maßstab beschriften</value>
   </data>
   <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>153, 66</value>
+    <value>218, 66</value>
   </data>
   <data name="label7.Size" type="System.Drawing.Size, System.Drawing">
-    <value>138, 28</value>
+    <value>127, 28</value>
   </data>
   <data name="label7.Text" xml:space="preserve">
     <value>größtem Maßstab 1:</value>
   </data>
   <data name="label8.Location" type="System.Drawing.Point, System.Drawing">
-    <value>166, 46</value>
+    <value>218, 46</value>
   </data>
   <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>125, 19</value>
+    <value>127, 19</value>
   </data>
   <data name="label8.Text" xml:space="preserve">
     <value>kleinstem Maßstab 1:</value>
@@ -157,32 +166,32 @@
   <data name="groupBox4.Text" xml:space="preserve">
     <value>Beschriftung</value>
   </data>
+  <data name="radioScales.Size" type="System.Drawing.Size, System.Drawing">
+    <value>161, 24</value>
+  </data>
+  <data name="radioScales.Text" xml:space="preserve">
+    <value>Layer darstellen innerhalb:</value>
+  </data>
+  <data name="txtMaxScale.Location" type="System.Drawing.Point, System.Drawing">
+    <value>355, 83</value>
+  </data>
+  <data name="txtMinScale.Location" type="System.Drawing.Point, System.Drawing">
+    <value>355, 56</value>
+  </data>
   <data name="radioAllScales.Text" xml:space="preserve">
     <value>Layer immer darstellen</value>
   </data>
-  <data name="label2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>151, 79</value>
-  </data>
   <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>144, 28</value>
+    <value>158, 28</value>
   </data>
   <data name="label2.Text" xml:space="preserve">
     <value>größtem Maßstab 1:</value>
   </data>
-  <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>164, 59</value>
-  </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>131, 19</value>
+    <value>155, 19</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>kleinstem Maßstab 1:</value>
-  </data>
-  <data name="radioScales.Size" type="System.Drawing.Size, System.Drawing">
-    <value>189, 24</value>
-  </data>
-  <data name="radioScales.Text" xml:space="preserve">
-    <value>Layer darstellen innerhalb:</value>
   </data>
   <data name="GroupBox1.Text" xml:space="preserve">
     <value>Feature Darstellung</value>
@@ -191,13 +200,22 @@
     <value>4, 40</value>
   </data>
   <data name="tabGeneral.Size" type="System.Drawing.Size, System.Drawing">
-    <value>549, 421</value>
+    <value>569, 550</value>
   </data>
   <data name="tabGeneral.Text" xml:space="preserve">
     <value>Allgemein/Maßstabsgrenzen</value>
   </data>
+  <data name="panelRendererPropPage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>438, 516</value>
+  </data>
+  <data name="splitter1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>3, 516</value>
+  </data>
+  <data name="tvRenderer.Size" type="System.Drawing.Size, System.Drawing">
+    <value>128, 516</value>
+  </data>
   <data name="chkApplyRefscale.Location" type="System.Drawing.Point, System.Drawing">
-    <value>301, 10</value>
+    <value>299, 10</value>
   </data>
   <data name="chkApplyRefscale.Size" type="System.Drawing.Size, System.Drawing">
     <value>240, 17</value>
@@ -211,14 +229,41 @@
   <data name="chkRenderLayer.Text" xml:space="preserve">
     <value>Features aus diesem Layer darstellen</value>
   </data>
+  <data name="panel5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>569, 34</value>
+  </data>
+  <data name="tabRenderer.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 40</value>
+  </data>
+  <data name="tabRenderer.Size" type="System.Drawing.Size, System.Drawing">
+    <value>569, 550</value>
+  </data>
   <data name="tabRenderer.Text" xml:space="preserve">
     <value>Darstellung</value>
+  </data>
+  <data name="panelSelRendererPropPage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>433, 550</value>
+  </data>
+  <data name="splitter2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>8, 550</value>
+  </data>
+  <data name="tvSelRenderer.Size" type="System.Drawing.Size, System.Drawing">
+    <value>128, 550</value>
+  </data>
+  <data name="tabSelRenderer.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 40</value>
+  </data>
+  <data name="tabSelRenderer.Size" type="System.Drawing.Size, System.Drawing">
+    <value>569, 550</value>
   </data>
   <data name="tabSelRenderer.Text" xml:space="preserve">
     <value>Auswahl</value>
   </data>
+  <data name="panelLabelRendererPage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>569, 473</value>
+  </data>
   <data name="chkApplyLabelRefscale.Location" type="System.Drawing.Point, System.Drawing">
-    <value>230, 19</value>
+    <value>228, 19</value>
   </data>
   <data name="chkApplyLabelRefscale.Size" type="System.Drawing.Size, System.Drawing">
     <value>306, 17</value>
@@ -231,6 +276,15 @@
   </data>
   <data name="chkLabelLayer.Text" xml:space="preserve">
     <value>Layer beschriften</value>
+  </data>
+  <data name="groupBox2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>569, 77</value>
+  </data>
+  <data name="tabLabelling.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 40</value>
+  </data>
+  <data name="tabLabelling.Size" type="System.Drawing.Size, System.Drawing">
+    <value>569, 550</value>
   </data>
   <data name="tabLabelling.Text" xml:space="preserve">
     <value>Beschriftung</value>
@@ -268,11 +322,14 @@
   <data name="label4.Text" xml:space="preserve">
     <value>Interpolationsmethode:</value>
   </data>
+  <data name="tabRaster.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 40</value>
+  </data>
+  <data name="tabRaster.Size" type="System.Drawing.Size, System.Drawing">
+    <value>569, 550</value>
+  </data>
   <data name="tabRaster.Text" xml:space="preserve">
     <value>Raster Einstellungen</value>
-  </data>
-  <data name="dgFields.Size" type="System.Drawing.Size, System.Drawing">
-    <value>549, 291</value>
   </data>
   <data name="btnFieldsMoveDown.Location" type="System.Drawing.Point, System.Drawing">
     <value>281, 7</value>
@@ -295,9 +352,6 @@
   <data name="btnSelectAll.Text" xml:space="preserve">
     <value>Alle auswählen</value>
   </data>
-  <data name="panel4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 382</value>
-  </data>
   <data name="label6.Size" type="System.Drawing.Size, System.Drawing">
     <value>67, 13</value>
   </data>
@@ -307,26 +361,29 @@
   <data name="groupBox3.Text" xml:space="preserve">
     <value>Primäres Anzeigefeld</value>
   </data>
-  <data name="tabFields.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 40</value>
-  </data>
-  <data name="tabFields.Size" type="System.Drawing.Size, System.Drawing">
-    <value>549, 421</value>
-  </data>
   <data name="tabFields.Text" xml:space="preserve">
     <value>Felder</value>
-  </data>
-  <data name="tabSR.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 40</value>
-  </data>
-  <data name="tabSR.Size" type="System.Drawing.Size, System.Drawing">
-    <value>549, 421</value>
   </data>
   <data name="tabSR.Text" xml:space="preserve">
     <value>Räuml. Bezugssystem</value>
   </data>
+  <data name="tabControl1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>577, 594</value>
+  </data>
   <data name="button1.Text" xml:space="preserve">
     <value>Abbrechen</value>
+  </data>
+  <data name="panel2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>274, 0</value>
+  </data>
+  <data name="panel1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 594</value>
+  </data>
+  <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>577, 48</value>
+  </data>
+  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
+    <value>577, 642</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Eigenschaften für Layer</value>

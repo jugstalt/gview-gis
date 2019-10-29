@@ -114,6 +114,13 @@ namespace gView.Framework.system
                     {
                         error.Append(currentDll + ": " + ex.Message);
                         error.Append(Environment.NewLine);
+
+                        //while(ex.InnerException!=null)
+                        //{
+                        //    ex = ex.InnerException;
+                        //    error.Append("Inner: " + ex.Message);
+                        //    error.Append(Environment.NewLine);
+                        //}
                     }
                 }
             }

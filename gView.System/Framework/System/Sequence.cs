@@ -36,6 +36,14 @@ namespace gView.Framework.system
             }
         }
 
+        public void SetToIfLower(int number)
+        {
+            if (_number < number)
+            {
+                _number = number;
+            }
+        }
+
         #region IPersistable Member
 
         public void Load(IPersistStream stream)

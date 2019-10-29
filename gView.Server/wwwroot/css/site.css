@@ -288,12 +288,12 @@ ul.browseservices{
     box-shadow: 4px 4px 9px rgba(0, 0, 0, .4) !important;
 }
 
-    .gview5-form-upload .gview5-form-upload-header {
+    form .gview5-form-header {
         cursor: pointer;
     }
-    .gview5-form-upload .gview5-form-upload-header h4 {
-        padding-left:6px;
-    }
+        form .gview5-form-header h4 {
+            padding-left: 6px;
+        }
 
     .gview5-form-upload .gvies5-form-upload-body {
 

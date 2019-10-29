@@ -298,6 +298,11 @@ namespace gView.Framework.Carto
         IEnvelope TransformedBounds(IDisplay display);
     }
 
+    public interface IRefreshSequences
+    {
+        void RefreshSequences();
+    }
+
     public interface IScreen
     {
         float LargeFontsFactor { get; }

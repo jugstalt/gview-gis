@@ -287,7 +287,7 @@ namespace gView.Framework.Carto.Rendering
         {
             if (cancelTracker == null) cancelTracker = new CancelTracker();
 
-            if (_actualCartoMethod == CartographicMethod.SymbolOrder && cancelTracker.Continue)
+            if (_actualCartoMethod == CartographicMethod.SymbolOrder && _features != null && cancelTracker.Continue)
             {
                 ISymbolCollection sColl = (ISymbolCollection)_symbol;
                 foreach (ISymbolCollectionItem symbolItem in sColl.Symbols)

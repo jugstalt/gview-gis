@@ -96,8 +96,12 @@ namespace gView.Framework.UI
                 await base.Refresh();
                 _mapDocument = new MapDocument();
 
-                _mapDocument.LoadMapDocument(_filename);
+                XmlStream stream = new XmlStream("");
+                stream.ReadStream(_filename);
 
+                //_mapDocument.LoadMapDocument(_filename);
+                await stream.LoadAsync("MapDocument", _mapDocument);
+                
                 foreach (IMap map in _mapDocument.Maps)
                 {
                     base.AddChildObject(new MapExplorerObject(this, _filename, map));
@@ -105,8 +109,9 @@ namespace gView.Framework.UI
 
                 return true;
             }
-            catch
+            catch(Exception ex)
             {
+                string errMsg = ex.Message;
                 return false;
             }
         }

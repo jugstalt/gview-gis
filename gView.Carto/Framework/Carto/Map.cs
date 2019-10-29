@@ -22,7 +22,7 @@ namespace gView.Framework.Carto
     /// <summary>
     /// Zusammenfassung für Map.
     /// </summary>
-    public class Map : Display, IMap, IPersistableLoadAsync, IMetadata, IDebugging
+    public class Map : Display, IMap, IPersistableLoadAsync, IMetadata, IDebugging, IRefreshSequences
     {
         public const int MapDescriptionId = -1;
         public const int MapCopyrightTextId = -1;
@@ -2465,6 +2465,17 @@ namespace gView.Framework.Carto
         public ConcurrentDictionary<int, string> LayerCopyrightTexts => _layerCopyrightTexts;
 
         #endregion
+
+        #region IRefreshSequences
+
+        public void RefreshSequences()
+        {
+            var maxLayerId=this.MapElements.Select(e => e.ID).Max();
+
+            _layerIDSequece.SetToIfLower(maxLayerId + 1);
+        }
+
+        #endregion
     }
 
     public class Display : MapMetadata, gView.Framework.Carto.IDisplay
@@ -3348,10 +3359,12 @@ namespace gView.Framework.Carto
         private static object lockThis = new object();
         private bool _useLabelRenderer = false;
         private FeatureCounter _counter;
+        private bool _isServiceMap = false;
 
         public RenderFeatureLayerThread(Map map, IFeatureLayer layer, ICancelTracker cancelTracker, FeatureCounter counter)
         {
             _map = map;
+            _isServiceMap = map is IServiceMap;
             _layer = layer;
             _cancelTracker = ((cancelTracker == null) ? new CancelTracker() : cancelTracker);
             _counter = counter;
@@ -3576,10 +3589,12 @@ namespace gView.Framework.Carto
 
                                 _counter.Counter++;
 
-                                //  To Do: nur aufrufen, wenn Karte nicht ServiceMap oder PrintMap ist....?
-                                //if (_counter.Counter % 10000 == 0)
+                                if (_isServiceMap == false)
                                 {
-                                    _map.FireRefreshMapView();
+                                    if (_counter.Counter % 10000 == 0)
+                                    {
+                                        _map.FireRefreshMapView();
+                                    }
                                 }
                             }
                         }

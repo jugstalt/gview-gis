@@ -39,11 +39,11 @@
     </div>
     }
     <form action="@Url.Action("AddService")" method="post" enctype="multipart/form-data">
-        <div class="gview5-form-upload-header">
+        <div class="gview5-form-upload-header gview5-form-header">
             <h4>Publish</h4>
         </div>
 
-        <div class="gview5-form-upload-body hidden" >
+        <div class="gview5-form-upload-body gview5-form-body hidden" >
             <div class="attribute">
                 <div>
                     <div class="label">Service Name</div>
@@ -64,6 +64,28 @@
             <button type="submit" class="btn btn-primary">Publish Service</button>
         </div>
     </form>
+    <br/>
+    @if (Model.IsManager)
+    {
+    <form action="@Url.Action("CreateFolder")" method="post" enctype="multipart/form-data">
+        <div class="gview5-form-newfolder-header gview5-form-header">
+            <h4>Create Folder</h4>
+        </div>
+
+        <div class="gview5-form-newfolder-body gview5-form-body hidden">
+            <div class="attribute">
+                <div>
+                    <div class="label">Folder Name</div>
+                    <input id="folder-name-input" name="newFolder" class="form-control" autofocus placeholder="Name..." value="" />
+                </div>
+
+                <input type="hidden" name="folder" value="@Model.Folder" />
+                <br />
+                <button type="submit" class="btn btn-primary">Create New Folder</button>
+            </div>
+        </div>
+    </form>
+    }
 </div>
     }
 </div>
@@ -111,9 +133,10 @@
                     });
                 });
 
-            $('.gview5-form-upload .gview5-form-upload-header')
+            $('.gview5-form-header')
                 .click(function (e) {
-                    $('.gview5-form-upload .gview5-form-upload-body').toggleClass('hidden');
+                    console.log('click');
+                    $(this).closest('form').find('.gview5-form-body').toggleClass('hidden');
                 });
             
             $('#mxl-file-upload')

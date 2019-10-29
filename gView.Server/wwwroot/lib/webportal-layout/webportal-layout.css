@@ -43,6 +43,16 @@
     text-align: left;
 }
 
+.webportal-main-anonymous {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    right: 0px;
+    left: 0px;
+    overflow: auto;
+    padding: 0px 4px;
+}
+
 .webportal-layout-main {
     position: absolute;
     top: 0px;
@@ -93,8 +103,9 @@
             .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item a {
                 color: white;
                 text-decoration: none;
-                background-color:transparent;
+                background-color: transparent;
             }
+
                 .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item a:hover {
                     background-color: transparent;
                 }
@@ -102,19 +113,20 @@
             .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item img {
                 margin-right: 5px;
                 vertical-align: middle;
+                max-width: 26px;
             }
 
             .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item .webportal-layout-sidebar-item-firstletter {
-                display:inline-block;
-                width:28px;
-                height:28px;
-                text-align:center;
-                border-radius:50px;
-                background-color:#666;
-                padding:3px;
-                box-sizing:border-box;
-                margin-right:5px;
-                border:1px solid #fff;
+                display: inline-block;
+                width: 28px;
+                height: 28px;
+                text-align: center;
+                border-radius: 50px;
+                background-color: #666;
+                padding: 3px;
+                box-sizing: border-box;
+                margin-right: 5px;
+                border: 1px solid #fff;
             }
 
             .webportal-layout-sidebar .webportal-layout-sidebar-items .webportal-layout-sidebar-item hr {
@@ -145,41 +157,43 @@
                 }
 
 
-.webportal-layout-sidebar .collapse-button {
-    height:32px;
-    font-size:20px;
-    color:#fff;
-    text-align:right;
-    padding: 1px 15px;
-    cursor:pointer;
-}
-
-    .webportal-layout-sidebar .collapse-button:hover {
-        background-color: #337ab7;
+    .webportal-layout-sidebar .collapse-button {
+        height: 32px;
+        font-size: 20px;
+        color: #fff;
+        text-align: right;
+        padding: 1px 15px;
+        cursor: pointer;
     }
 
-    .webportal-layout-sidebar .collapse-button::before {
-        content: "«"
-    }
+        .webportal-layout-sidebar .collapse-button:hover {
+            background-color: #337ab7;
+        }
+
+        .webportal-layout-sidebar .collapse-button::before {
+            content: "«"
+        }
 
 body.sidebar-collapsed .webportal-layout-sidebar .collapse-button::before {
     content: "»"
 }
 
 .webportal-layout-container.page-has-header .webportal-layout-main,
-.webportal-layout-container.page-has-header .webportal-layout-sidebar {
+.webportal-layout-container.page-has-header .webportal-layout-sidebar,
+.webportal-layout-container.page-has-header .webportal-main-anonymous {
     top: 57px;
 }
 
 .webportal-layout-container.page-has-footer .webportal-layout-main,
-.webportal-layout-container.page-has-footer .webportal-layout-sidebar {
+.webportal-layout-container.page-has-footer .webportal-layout-sidebar,
+.webportal-layout-container.page-has-footer .webportal-main-anonymous {
     bottom: 37px;
 }
 
 @media (max-width: 768px) {
     .navbar-collapse {
-        background-color: #333;
-        color: #eee;
+        /*background-color: #333;
+        color: #eee;*/
     }
 
     .webportal-layout-header {
@@ -187,7 +201,8 @@ body.sidebar-collapsed .webportal-layout-sidebar .collapse-button::before {
     }
 
     .webportal-layout-container.page-has-header .webportal-layout-main,
-    .webportal-layout-container.page-has-header .webportal-layout-sidebar {
+    .webportal-layout-container.page-has-header .webportal-layout-sidebar,
+    .webportal-layout-container.page-has-header .webportal-main-anonymous {
         top: 50px;
     }
 }
@@ -208,14 +223,15 @@ body.sidebar-collapsed .webportal-layout-sidebar {
 
 
 body.hide-header .webportal-layout-header {
-    min-height:0px !important;
-    height:0px !important;
-    overflow:hidden;
-    padding:0px;
+    min-height: 0px !important;
+    height: 0px !important;
+    overflow: hidden;
+    padding: 0px;
 }
 
 body.hide-header .webportal-layout-container.page-has-header .webportal-layout-main,
-body.hide-header .webportal-layout-container.page-has-header .webportal-layout-sidebar {
+body.hide-header .webportal-layout-container.page-has-header .webportal-layout-sidebar,
+body.hide-header .webportal-layout-container.page-has-header .webportal-main-anonymous {
     top: 0px;
 }
 
@@ -225,17 +241,16 @@ body.hide-header .webportal-layout-container.page-has-header .webportal-layout-s
 }
 
 .webportal-layout-main,
-.webportal-layout-sidebar {
-    transition: top/*,left,width*/ .15s ease-in;
+.webportal-layout-sidebar,
+.webportal-main-anonymous {
+    transition: top /*,left,width*/ .15s ease-in;
 }
 
 /***** Bootstrap Overrides *******/
 .navbar-brand {
-    cursor:pointer;
-}
-.navbar-brand:hover {
-    color:black;
+    cursor: pointer;
 }
 
-
-
+    .navbar-brand:hover {
+        color: black;
+    }
