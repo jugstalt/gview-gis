@@ -1,5 +1,6 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.IO;
 using gView.Framework.UI;
 using System;
 using System.Linq;
@@ -168,6 +169,14 @@ namespace gView.Framework.system
             }
 
             return null;
+        }
+
+        static public void TemporaryRestore(this IMapDocument doc)
+        {
+            if(doc is IPersistableTemporaryRestore)
+            {
+                ((IPersistableTemporaryRestore)doc).TemporaryRestore();
+            }
         }
 
         #endregion

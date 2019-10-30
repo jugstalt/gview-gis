@@ -73,7 +73,7 @@ namespace gView.Framework.UI.Dialogs
 
             if (e.ColumnIndex == 3)
             {
-                FormLayerProperties dlg = new FormLayerProperties(_map, _elements[e.RowIndex].dataset, _elements[e.RowIndex].layer);
+                FormLayerProperties dlg = new FormLayerProperties(null, _map, _elements[e.RowIndex].dataset, _elements[e.RowIndex].layer);
                 dlg.ShowDialog();
             }
         }

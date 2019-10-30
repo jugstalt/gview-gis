@@ -1,80 +1,91 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using gView.Framework.Carto;
 using gView.Framework.Data;
-using gView.Framework.UI;
+using gView.Framework.Data.Relations;
 using gView.Framework.IO;
 using gView.Framework.system;
-using System.Xml;
 using gView.Framework.UI.Controls;
-using gView.Framework.Data.Relations;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.Framework.UI
 {
-	public class MapDocument : IMapDocument,IPersistableLoadAsync
-	{
-		List<IMap> _maps;
-		private int _focusMapIndex=-1;
-		private IDocumentWindow _docWindow;
+    public class MapDocument : IMapDocument, IPersistableLoadAsync, IPersistableTemporaryRestore
+    {
+        List<IMap> _maps;
+        private int _focusMapIndex = -1;
+        private IDocumentWindow _docWindow;
         private IMapApplication _application;
         private ITableRelations _tableRelations;
 
-		public event LayerAddedEvent LayerAdded;
+        public event LayerAddedEvent LayerAdded;
         public event LayerRemovedEvent LayerRemoved;
-		public event MapAddedEvent MapAdded;
-		public event MapDeletedEvent MapDeleted;
+        public event MapAddedEvent MapAdded;
+        public event MapDeletedEvent MapDeleted;
         public event MapScaleChangedEvent MapScaleChanged;
         public event AfterSetFocusMapEvent AfterSetFocusMap;
 
-		public MapDocument() 
-		{
-			_maps=new List<IMap>();
+        public MapDocument()
+        {
+            _maps = new List<IMap>();
             _tableRelations = new TableRelations(this);
-		}
+        }
 
         public MapDocument(IMapApplication application) : this()
         {
             _application = application;
         }
 
-		public bool LoadMapDocument(string path) 
-		{
-			XmlStream stream=new XmlStream("");
-			if(stream.ReadStream(path)) 
-			{
-				while(_maps.Count>0)
-				{
-					this.RemoveMap((IMap)_maps[0]);
-				}
+        public bool LoadMapDocument(string path)
+        {
+            XmlStream stream = new XmlStream("");
+            if (stream.ReadStream(path))
+            {
+                while (_maps.Count > 0)
+                {
+                    this.RemoveMap((IMap)_maps[0]);
+                }
 
-				stream.Load("MapDocument",null,this);
+                stream.Load("MapDocument", null, this);
 
                 if (_maps.Count > 0)
+                {
                     FocusMap = _maps[0];
+                }
                 else
+                {
                     FocusMap = null;
+                }
 
-				return true;
-			}
-			return false;
-		}
+                return true;
+            }
+            return false;
+        }
 
         public IMap GetMap(string name)
         {
-            if (_maps == null) return null;
+            if (_maps == null)
+            {
+                return null;
+            }
 
             foreach (IMap map in _maps)
             {
-                if (map.Name == name) return map;
+                if (map.Name == name)
+                {
+                    return map;
+                }
             }
             return null;
         }
 
         public bool AddMap(IMap map)
         {
-            if (_maps.Contains(map)) return true;
+            if (_maps.Contains(map))
+            {
+                return true;
+            }
 
             int c = 1;
             string alias = map.Name, alias2 = alias;
@@ -95,83 +106,104 @@ namespace gView.Framework.UI
             }
 
             if (MapAdded != null)
+            {
                 MapAdded(map);
+            }
 
             return true;
         }
 
-		public bool RemoveMap(IMap map) 
-		{
-			if(_maps.Contains(map)) 
-			{
-				_maps.Remove(map);
-				if(MapDeleted!=null) MapDeleted(map);
-			}
+        public bool RemoveMap(IMap map)
+        {
+            if (_maps.Contains(map))
+            {
+                _maps.Remove(map);
+                if (MapDeleted != null)
+                {
+                    MapDeleted(map);
+                }
+            }
             return true;
-		}
+        }
 
-		private void map_LayerAdded(IMap sender,ILayer dataset) 
-		{
-			if(LayerAdded!=null) 
-				LayerAdded(sender,dataset);
-		}
+        private void map_LayerAdded(IMap sender, ILayer dataset)
+        {
+            if (LayerAdded != null)
+            {
+                LayerAdded(sender, dataset);
+            }
+        }
 
         void map_LayerRemoved(IMap sender, ILayer layer)
         {
             if (LayerRemoved != null)
+            {
                 LayerRemoved(sender, layer);
+            }
         }
 
         private void Display_MapScaleChanged(IDisplay sender)
         {
-            if (MapScaleChanged != null) MapScaleChanged(sender);
+            if (MapScaleChanged != null)
+            {
+                MapScaleChanged(sender);
+            }
         }
 
-		#region IMapDocument Member
+        #region IMapDocument Member
 
-		public IEnumerable<IMap> Maps
-		{
-			get
-			{
-				List<IMap> e=new List<IMap>();
-				foreach(IMap map in _maps) 
-				{
-					e.Add(map);
-				}
-				return e;
-			}
-		}
+        public IEnumerable<IMap> Maps
+        {
+            get
+            {
+                List<IMap> e = new List<IMap>();
+                foreach (IMap map in _maps)
+                {
+                    e.Add(map);
+                }
+                return e;
+            }
+        }
 
-		public IMap FocusMap
-		{
-			get
-			{
-				if(_focusMapIndex<0 || _focusMapIndex>=_maps.Count) return null;
-				return (IMap)_maps[_focusMapIndex];
-			}
-			set 
-			{
+        public IMap FocusMap
+        {
+            get
+            {
+                if (_focusMapIndex < 0 || _focusMapIndex >= _maps.Count)
+                {
+                    return null;
+                }
+
+                return (IMap)_maps[_focusMapIndex];
+            }
+            set
+            {
                 if (value == null)
                 {
                     _focusMapIndex = -1;
                     return;
                 }
-				if(!_maps.Contains(value)) 
-				{
-					this.AddMap(value);
-				}
-                
+                if (!_maps.Contains(value))
+                {
+                    this.AddMap(value);
+                }
+
                 foreach (IMap map in _maps)
                 {
-                    if (!(map is Map)) continue;
-                    ((Map)map).DisposeGraphicsAndImage();
+                    if (!(map is Map))
+                    {
+                        continue;
+                    } ((Map)map).DisposeGraphicsAndImage();
                 }
-                
-				_focusMapIndex=_maps.IndexOf(value);
 
-                if (AfterSetFocusMap != null) AfterSetFocusMap(this.FocusMap);
-			}
-		}
+                _focusMapIndex = _maps.IndexOf(value);
+
+                if (AfterSetFocusMap != null)
+                {
+                    AfterSetFocusMap(this.FocusMap);
+                }
+            }
+        }
 
         public IDocumentWindow DocumentWindow
         {
@@ -184,27 +216,33 @@ namespace gView.Framework.UI
             get { return GetMap(name); }
         }
 
-		public IMap this[IDatasetElement layer] 
-		{
-			get 
-			{
-				foreach(IMap map in _maps) 
-				{
+        public IMap this[IDatasetElement layer]
+        {
+            get
+            {
+                foreach (IMap map in _maps)
+                {
                     if (layer is IGroupLayer)
                     {
                         foreach (IDatasetElement element in map.MapElements)
                         {
-                            if (layer == element) return map;
+                            if (layer == element)
+                            {
+                                return map;
+                            }
                         }
                     }
                     else
                     {
-                        if (map[layer] != null) return map;
+                        if (map[layer] != null)
+                        {
+                            return map;
+                        }
                     }
-				}
-				return null;
-			}
-		}
+                }
+                return null;
+            }
+        }
 
         public IApplication Application
         {
@@ -216,37 +254,41 @@ namespace gView.Framework.UI
             get { return _tableRelations; }
         }
 
-		#endregion
+        #endregion
 
-		#region IPersistable Member
+        #region IPersistable Member
 
-		public string PersistID
-		{
-			get
-			{
-                return "";	
-			}
-		}
+        public string PersistID
+        {
+            get
+            {
+                return "";
+            }
+        }
 
-		async public Task<bool> LoadAsync(IPersistStream stream)
-		{
+        async public Task<bool> LoadAsync(IPersistStream stream)
+        {
             while (_maps.Count > 0)
             {
                 this.RemoveMap((IMap)_maps[0]);
             }
 
-			_focusMapIndex=(int)stream.Load("focusMapIndex",(int)0);
+            _focusMapIndex = (int)stream.Load("focusMapIndex", (int)0);
 
-			IMap map;
+            IMap map;
             while ((map = (await stream.LoadAsync<IMap>("IMap", new gView.Framework.Carto.Map()))) != null)
             {
-				this.AddMap(map);
-			}
+                this.AddMap(map);
+            }
 
             if (_maps.Count > 0)
+            {
                 FocusMap = _maps[0];
+            }
             else
+            {
                 FocusMap = null;
+            }
 
             if (this.Application is IGUIApplication)
             {
@@ -257,16 +299,16 @@ namespace gView.Framework.UI
             _tableRelations = (TableRelations)stream.Load("TableRelations", new TableRelations(this), new TableRelations(this));
 
             return true;
-		}
+        }
 
-		public void Save(IPersistStream stream)
-		{
-			stream.Save("focusMapIndex",_focusMapIndex);
+        public void Save(IPersistStream stream)
+        {
+            stream.Save("focusMapIndex", _focusMapIndex);
 
-			foreach(IMap map in _maps) 
-			{
-				stream.Save("IMap",map);
-			}
+            foreach (IMap map in _maps)
+            {
+                stream.Save("IMap", map);
+            }
 
             if (this.Application is IGUIApplication)
             {
@@ -275,10 +317,74 @@ namespace gView.Framework.UI
                 stream.Save("Toolbars", new ToolbarsPersist(this.Application as IGUIApplication));
             }
             if (_tableRelations != null)
+            {
                 stream.Save("TableRelations", _tableRelations);
-		}
+            }
+        }
 
-		#endregion
+        #endregion
+
+        #region IPersistableTemporaryRestore
+
+        private static object _temporaryRestoreLocker = new object();
+        public void TemporaryRestore()
+        {
+            try
+            {
+                if (!(this.Application is IMapApplication))
+                {
+                    return;
+                }
+
+                var mapApplication = (IMapApplication)this.Application;
+                FileInfo fi = new FileInfo(mapApplication.DocumentFilename);
+                if (fi.Name.ToLower() == "newdocument.mxl" || fi.Extension.ToLower() != ".mxl")
+                {
+                    return;
+                }
+
+                // Run and forget...
+                Task.Run(() =>
+                {
+                    lock (_temporaryRestoreLocker)
+                    {
+                        try
+                        {
+                            mapApplication.SaveMapDocument(mapApplication.DocumentFilename + ".restore", true);
+                        }
+                        catch { }
+                    }
+                });
+                
+            }
+            catch { }
+        }
+
+        public void RemoveTemporeryRestore()
+        {
+            try
+            {
+                if (!(this.Application is IMapApplication))
+                {
+                    return;
+                }
+
+                var mapApplication = (IMapApplication)this.Application;
+                FileInfo fi = new FileInfo(mapApplication.DocumentFilename + ".restore");
+
+                if (fi.Exists)
+                {
+                    lock (_temporaryRestoreLocker)
+                    {
+                        fi.MoveTo(fi.FullName + "_");
+                        //fi.Delete();
+                    }
+                }
+            }
+            catch { }
+        }
+
+        #endregion
     }
 
     internal class ToolsPersist : IPersistable
@@ -295,23 +401,33 @@ namespace gView.Framework.UI
         public void Load(IPersistStream stream)
         {
             if (_application == null)
+            {
                 return;
+            }
 
             while (true)
             {
                 ToolPersist toolper = stream.Load("Tool", null, new ToolPersist(_application)) as ToolPersist;
-                if (toolper == null) break;
+                if (toolper == null)
+                {
+                    break;
+                }
             }
         }
 
         public void Save(IPersistStream stream)
         {
             if (_application == null)
+            {
                 return;
+            }
 
             foreach (ITool tool in _application.Tools)
             {
-                if (!(tool is IPersistable)) continue;
+                if (!(tool is IPersistable))
+                {
+                    continue;
+                }
 
                 stream.Save("Tool", new ToolPersist(tool));
             }
@@ -338,7 +454,9 @@ namespace gView.Framework.UI
         public void Load(IPersistStream stream)
         {
             if (_app == null)
+            {
                 return;
+            }
 
             try
             {
@@ -346,8 +464,9 @@ namespace gView.Framework.UI
                 ITool tool = _app.Tool(guid);
 
                 if (!(tool is IPersistable))
+                {
                     return;
-                ((IPersistable)tool).Load(stream);
+                } ((IPersistable)tool).Load(stream);
             }
             catch { }
         }
@@ -355,7 +474,9 @@ namespace gView.Framework.UI
         public void Save(IPersistStream stream)
         {
             if (_tool == null || !(_tool is IPersistable))
+            {
                 return;
+            }
 
             stream.Save("GUID", PlugInManager.PlugInID(_tool).ToString());
             ((IPersistable)_tool).Save(stream);
@@ -378,12 +499,17 @@ namespace gView.Framework.UI
         public void Load(IPersistStream stream)
         {
             if (_application == null)
+            {
                 return;
+            }
 
             while (true)
             {
                 ToolbarPersist toolbarper = stream.Load("Toolbar", null, new ToolbarPersist(_application)) as ToolbarPersist;
-                if (toolbarper == null) break;
+                if (toolbarper == null)
+                {
+                    break;
+                }
             }
 
             return;
@@ -392,14 +518,19 @@ namespace gView.Framework.UI
         public void Save(IPersistStream stream)
         {
             if (_application == null)
+            {
                 return;
+            }
 
-            List<IToolbar> toolbars=_application.Toolbars;
+            List<IToolbar> toolbars = _application.Toolbars;
             toolbars.Sort(new ToolbarPositionComparer());
 
             foreach (IToolbar toolbar in toolbars)
             {
-                if (!(toolbar is IPersistable)) continue;
+                if (!(toolbar is IPersistable))
+                {
+                    continue;
+                }
 
                 stream.Save("Toolbar", new ToolbarPersist(toolbar));
             }
@@ -418,7 +549,10 @@ namespace gView.Framework.UI
                 ToolbarStrip strip1 = x as ToolbarStrip;
                 ToolbarStrip strip2 = y as ToolbarStrip;
 
-                if (strip1 == null || strip2 == null) return 0;
+                if (strip1 == null || strip2 == null)
+                {
+                    return 0;
+                }
 
                 if (strip1.Location.Y < strip2.Location.Y)
                 {
@@ -427,9 +561,14 @@ namespace gView.Framework.UI
                 else if (strip1.Location.Y == strip2.Location.Y)
                 {
                     if (strip1.Location.X < strip2.Location.X)
+                    {
                         return -1;
+                    }
                     else if (strip1.Location.X > strip2.Location.X)
+                    {
                         return 1;
+                    }
+
                     return 0;
                 }
                 else
@@ -461,7 +600,9 @@ namespace gView.Framework.UI
         public void Load(IPersistStream stream)
         {
             if (_app == null)
+            {
                 return;
+            }
 
             try
             {
@@ -469,8 +610,9 @@ namespace gView.Framework.UI
                 IToolbar toolbar = _app.Toolbar(guid);
 
                 if (!(toolbar is IPersistable))
+                {
                     return;
-                ((IPersistable)toolbar).Load(stream);
+                } ((IPersistable)toolbar).Load(stream);
             }
             catch { }
         }
@@ -478,7 +620,9 @@ namespace gView.Framework.UI
         public void Save(IPersistStream stream)
         {
             if (_toolbar == null || !(_toolbar is IPersistable))
+            {
                 return;
+            }
 
             stream.Save("GUID", PlugInManager.PlugInID(_toolbar).ToString());
             ((IPersistable)_toolbar).Save(stream);
@@ -501,24 +645,33 @@ namespace gView.Framework.UI
         public void Load(IPersistStream stream)
         {
             if (_application == null)
+            {
                 return;
+            }
 
             if (_application == null)
+            {
                 return;
+            }
 
             while (true)
             {
                 ModulePersist moduleper = stream.Load("Module", null, new ModulePersist(_application)) as ModulePersist;
-                if (moduleper == null) break;
+                if (moduleper == null)
+                {
+                    break;
+                }
             }
         }
 
         public void Save(IPersistStream stream)
         {
             if (_application == null)
+            {
                 return;
+            }
 
-            PlugInManager compMan=new PlugInManager();
+            PlugInManager compMan = new PlugInManager();
             foreach (Type compType in compMan.GetPlugins(Plugins.Type.IMapApplicationModule))
             {
                 IMapApplicationModule module = _application.IMapApplicationModule(PlugInManager.PluginIDFromType(compType));
@@ -552,7 +705,9 @@ namespace gView.Framework.UI
         public void Load(IPersistStream stream)
         {
             if (_app == null)
+            {
                 return;
+            }
 
             try
             {
@@ -560,8 +715,9 @@ namespace gView.Framework.UI
                 IMapApplicationModule module = _app.IMapApplicationModule(guid);
 
                 if (!(module is IPersistable))
+                {
                     return;
-                ((IPersistable)module).Load(stream);
+                } ((IPersistable)module).Load(stream);
             }
             catch { }
         }
@@ -569,7 +725,9 @@ namespace gView.Framework.UI
         public void Save(IPersistStream stream)
         {
             if (_module == null || !(_module is IPersistable))
+            {
                 return;
+            }
 
             stream.Save("GUID", PlugInManager.PlugInID(_module).ToString());
             ((IPersistable)_module).Save(stream);

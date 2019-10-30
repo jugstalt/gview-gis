@@ -40,6 +40,13 @@ namespace gView.Framework.IO
     {
         object this[string key] { get; set; }
     }
+
+    public interface IPersistableTemporaryRestore
+    {
+        void TemporaryRestore();
+        void RemoveTemporeryRestore();
+    }
+
     public interface IXmlString
     {
         string ToXmlString();

@@ -149,11 +149,11 @@ namespace gView.Plugins.MapTools
             }
         }
 
-        public Task<bool> OnEvent(object MapEvent)
+        async public Task<bool> OnEvent(object MapEvent)
         {
             if (_doc == null)
             {
-                return Task.FromResult(true);
+                return true;
             }
 
             System.Windows.Forms.OpenFileDialog dlg = new OpenFileDialog();
@@ -163,11 +163,32 @@ namespace gView.Plugins.MapTools
             {
                 if (_doc.Application is IMapApplication)
                 {
-                    ((IMapApplication)_doc.Application).LoadMapDocument(dlg.FileName);
+                    FileInfo fi = new FileInfo(dlg.FileName);
+                    FileInfo restoreFi = new FileInfo(dlg.FileName + ".restore");
+
+                    if (restoreFi.Exists && restoreFi.LastWriteTimeUtc > fi.LastWriteTimeUtc)
+                    {
+                        StringBuilder msg = new StringBuilder();
+                        msg.Append("For the specified file there is a 'restore' file that is newer than the actual project file. This may indicate that the project did not finish properly before the program was last closed. The program may have crashed last time!");
+                        msg.Append(Environment.NewLine);
+                        msg.Append(Environment.NewLine);
+                        msg.Append("Note: if you no longer want to show this message, open the project and then save it again.");
+                        msg.Append(Environment.NewLine);
+                        msg.Append(Environment.NewLine);
+                        msg.Append("Do you want to load the 'restore' file instead of the project?");
+
+                        if(MessageBox.Show(msg.ToString(), "Load restore file?", MessageBoxButtons.YesNo, MessageBoxIcon.Information)== DialogResult.Yes)
+                        {
+                            await ((IMapApplication)_doc.Application).LoadMapDocument(restoreFi.FullName);
+                            return true;
+                        }
+                    }
+                        
+                    await ((IMapApplication)_doc.Application).LoadMapDocument(dlg.FileName);
                 }
             }
 
-            return Task.FromResult(true);
+            return true;
         }
 
         public gView.Framework.UI.ToolType toolType
@@ -2715,7 +2736,7 @@ namespace gView.Plugins.MapTools
             {
                 var map = _doc.MapFromDataset(dataset as IDataset) ?? _doc.MapFromLayer((ILayer)layer);
 
-                FormLayerProperties dlg = new FormLayerProperties(map, (IDataset)dataset, (ILayer)layer);
+                FormLayerProperties dlg = new FormLayerProperties(_doc, map, (IDataset)dataset, (ILayer)layer);
 
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {

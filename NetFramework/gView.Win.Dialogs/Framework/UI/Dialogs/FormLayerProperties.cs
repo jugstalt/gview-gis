@@ -1,51 +1,47 @@
-using System;
-using System.Xml;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
-using gView.Framework;
-using gView.Framework.Geometry;
-using gView.Framework.Data;
 using gView.Framework.Carto;
-using gView.Framework.UI;
-using gView.Framework.system;
-using System.Collections.Generic;
 using gView.Framework.Carto.Rendering;
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.system;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
-	/// <summary>
-	/// Zusammenfassung für FormLayerProperties.
-	/// </summary>
-	public class FormLayerProperties : System.Windows.Forms.Form
-	{
-		/// <summary>
-		/// Erforderliche Designervariable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
-		private IDataset _dataset;
-		private System.Windows.Forms.TabControl tabControl1;
-		private System.Windows.Forms.Panel panel1;
-		private System.Windows.Forms.TabPage tabRenderer;
-		private System.Windows.Forms.Button btnOK;
-		private System.Windows.Forms.Panel panel2;
+    /// <summary>
+    /// Zusammenfassung für FormLayerProperties.
+    /// </summary>
+    public class FormLayerProperties : System.Windows.Forms.Form
+    {
+        /// <summary>
+        /// Erforderliche Designervariable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
+        private IDataset _dataset;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.TabPage tabRenderer;
+        private System.Windows.Forms.Button btnOK;
+        private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Button button1;
-		private System.Windows.Forms.Panel panelRendererPropPage;
-		private System.Windows.Forms.TabPage tabGeneral;
-		private System.Windows.Forms.GroupBox GroupBox1;
+        private System.Windows.Forms.Panel panelRendererPropPage;
+        private System.Windows.Forms.TabPage tabGeneral;
+        private System.Windows.Forms.GroupBox GroupBox1;
         private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.RadioButton radioAllScales;
-		private System.Windows.Forms.RadioButton radioScales;
-		private System.Windows.Forms.TabPage tabSR;
-		private ILayer _layer;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.RadioButton radioAllScales;
+        private System.Windows.Forms.RadioButton radioScales;
+        private System.Windows.Forms.TabPage tabSR;
+        private ILayer _layer;
         private TabPage tabLabelling;
         private GroupBox groupBox2;
         private CheckBox chkLabelLayer;
         private ComboBox cmbLabelRenderer;
         private Label label3;
-		private IFeatureRenderer _renderer;
+        private IFeatureRenderer _renderer;
         private IFeatureRenderer _selRenderer;
         private Panel panelLabelRendererPage;
         private TabPage tabRaster;
@@ -116,15 +112,22 @@ namespace gView.Framework.UI.Dialogs
         private Label label13;
         private List<ILayerPropertyPage> propertyPages = new List<ILayerPropertyPage>();
 
+        private IMapDocument _mapDocument;
         private IMap _map;
 
-		public FormLayerProperties(IMap map, IDataset dataset,ILayer layer)
-		{
+
+        public FormLayerProperties(IMapDocument mapDocument, IMap map, IDataset dataset, ILayer layer)
+        {
+            _mapDocument = mapDocument;
             _dataset = dataset;
             _layer = layer;
             _map = map;
 
-            if (_layer == null) return;
+            if (_layer == null)
+            {
+                return;
+            }
+
             if (_layer is Layer)
             {
                 _groupLayer = _layer.GroupLayer;
@@ -132,8 +135,8 @@ namespace gView.Framework.UI.Dialogs
             }
 
             //this.Text = "Layer Properties";
-            
-			InitializeComponent();
+
+            InitializeComponent();
 
             this.Text += ": " + layer.Title;
 
@@ -146,13 +149,16 @@ namespace gView.Framework.UI.Dialogs
             tabControl1.TabPages.Remove(tabFields);
             tabControl1.TabPages.Remove(tabSR);
             tabControl1.TabPages.Remove(tabDescription);
-            
+
             if (layer is IFeatureLayer)
             {
                 if (layer.Class is IFeatureClass)
                 {
-                    if(!(layer is IRasterCatalogLayer)) tabControl1.TabPages.Add(tabRenderer);
-                
+                    if (!(layer is IRasterCatalogLayer))
+                    {
+                        tabControl1.TabPages.Add(tabRenderer);
+                    }
+
                     tabControl1.TabPages.Add(tabSelRenderer);
                     tabControl1.TabPages.Add(tabLabelling);
                     tabControl1.TabPages.Add(tabFields);
@@ -163,7 +169,7 @@ namespace gView.Framework.UI.Dialogs
                 }
 
                 tabControl1.TabPages.Add(tabSR);
-                
+
                 if (((IFeatureLayer)layer).FeatureRenderer != null)
                 {
                     _renderer = (IFeatureRenderer)((IFeatureLayer)layer).FeatureRenderer.Clone();
@@ -184,33 +190,53 @@ namespace gView.Framework.UI.Dialogs
             }
             if (layer is IGroupLayer)
             {
-                
+
             }
             if (layer is IRasterLayer)
             {
-                if (!tabControl1.TabPages.Contains(tabRaster)) tabControl1.TabPages.Add(tabRaster);
-                if (!tabControl1.TabPages.Contains(tabSR)) tabControl1.TabPages.Add(tabSR);
+                if (!tabControl1.TabPages.Contains(tabRaster))
+                {
+                    tabControl1.TabPages.Add(tabRaster);
+                }
+
+                if (!tabControl1.TabPages.Contains(tabSR))
+                {
+                    tabControl1.TabPages.Add(tabSR);
+                }
             }
             if (layer is IWebServiceLayer)
             {
-                if (!tabControl1.TabPages.Contains(tabWebServiceLayer)) tabControl1.TabPages.Add(tabWebServiceLayer);
-                if (!tabControl1.TabPages.Contains(tabSR)) tabControl1.TabPages.Add(tabSR);
+                if (!tabControl1.TabPages.Contains(tabWebServiceLayer))
+                {
+                    tabControl1.TabPages.Add(tabWebServiceLayer);
+                }
+
+                if (!tabControl1.TabPages.Contains(tabSR))
+                {
+                    tabControl1.TabPages.Add(tabSR);
+                }
             }
-            if(_map!=null)
+            if (_map != null)
             {
                 tabControl1.TabPages.Add(tabDescription);
                 txtDescription.Text = _map.GetLayerDescription(layer.ID);
                 txtCopyright.Text = _map.GetLayerCopyrightText(layer.ID);
             }
-            
+
             PlugInManager compMan = new PlugInManager();
             foreach (var compType in compMan.GetPlugins(Plugins.Type.ILayerPropertyPage))
             {
                 ILayerPropertyPage page = compMan.CreateInstance<ILayerPropertyPage>(compType);
-                if (page == null || !page.ShowWith(dataset,layer)) continue;
+                if (page == null || !page.ShowWith(dataset, layer))
+                {
+                    continue;
+                }
 
                 Panel panel = page.PropertyPage(dataset, layer);
-                if (panel == null) continue;
+                if (panel == null)
+                {
+                    continue;
+                }
 
                 panel.Dock = DockStyle.Fill;
                 propertyPages.Add(page);
@@ -220,34 +246,34 @@ namespace gView.Framework.UI.Dialogs
                 tabControl1.TabPages.Add(tpage);
             }
 
-            
-		}
 
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			_dataset=null;
-			_layer=null;
+        }
 
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            _dataset = null;
+            _layer = null;
 
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormLayerProperties));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabGeneral = new System.Windows.Forms.TabPage();
@@ -1085,16 +1111,19 @@ namespace gView.Framework.UI.Dialogs
             this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
 
-		}
-		#endregion
+        }
+        #endregion
 
-		private void FormLayerProperties_Load(object sender, System.EventArgs e)
-		{
-			if(_layer==null) return;
-			
-			//radioAllScales.Enabled=radioScales.Enabled=txtMinScale.Enabled=txtMaxScale.Enabled=
-			//	(_layer.FeatureRenderer!=null);
-			
+        private void FormLayerProperties_Load(object sender, System.EventArgs e)
+        {
+            if (_layer == null)
+            {
+                return;
+            }
+
+            //radioAllScales.Enabled=radioScales.Enabled=txtMinScale.Enabled=txtMaxScale.Enabled=
+            //	(_layer.FeatureRenderer!=null);
+
             //if(_layer.MinimumScale<0) _layer.MinimumScale=0;
             //if(_layer.MaximumScale<0) _layer.MaximumScale=0;
             //if(_layer.MinimumScale>0 || _layer.MaximumScale>0) 
@@ -1112,7 +1141,7 @@ namespace gView.Framework.UI.Dialogs
             txtMaxScale.Value = (decimal)Math.Abs(_layer.MinimumScale);
             txtLabelMinScale.Value = (decimal)Math.Abs(_layer.MaximumLabelScale);
             txtLabelMaxScale.Value = (decimal)Math.Abs(_layer.MinimumLabelScale);
-            txtMaximunZoom2FeatureScale.Value = (decimal)Math.Max(_layer.MaximumZoomToFeatureScale,1);
+            txtMaximunZoom2FeatureScale.Value = (decimal)Math.Max(_layer.MaximumZoomToFeatureScale, 1);
 
             radioAllScales.Checked = _layer.MinimumScale <= 0 && _layer.MaximumScale <= 0;
             radioLabelAllScales.Checked = _layer.MinimumLabelScale <= 0 && _layer.MaximumLabelScale <= 0;
@@ -1127,7 +1156,7 @@ namespace gView.Framework.UI.Dialogs
                 }
 
                 cmbGeometryType.SelectedItem = ((IFeatureLayer)_layer).LayerGeometryType;
-                if(((IFeatureLayer)_layer).FeatureClass!=null &&
+                if (((IFeatureLayer)_layer).FeatureClass != null &&
                    ((IFeatureLayer)_layer).FeatureClass.GeometryType != geometryType.Unknown)
                 {
                     cmbGeometryType.Enabled = false;
@@ -1146,28 +1175,30 @@ namespace gView.Framework.UI.Dialogs
 				tabSR.Controls.Add(sr.panelReferenceSystem);
 			}
 			*/
-			if(_layer is IFeatureLayer) 
-			{
-				if(((IFeatureLayer)_layer).FeatureClass!=null) 
-				{
-					FormSpatialReference sr=new FormSpatialReference(((IFeatureLayer)_layer).FeatureClass.SpatialReference);
+            if (_layer is IFeatureLayer)
+            {
+                if (((IFeatureLayer)_layer).FeatureClass != null)
+                {
+                    FormSpatialReference sr = new FormSpatialReference(((IFeatureLayer)_layer).FeatureClass.SpatialReference);
                     sr.canModify = false;
-					tabSR.Controls.Add(sr.panelReferenceSystem);
-				}
+                    tabSR.Controls.Add(sr.panelReferenceSystem);
+                }
                 MakeRendererTree();
                 MakeSelectionRendererTree();
                 MakeLabelRendererCombo();
                 MakeFieldTab();
-			}
+            }
             if (_layer is IRasterLayer)
             {
                 foreach (InterpolationMethod mode in Enum.GetValues(typeof(InterpolationMethod)))
                 {
                     cmbInterpolationMode.Items.Add(mode);
                     if (mode == ((IRasterLayer)_layer).InterpolationMethod)
+                    {
                         cmbInterpolationMode.SelectedItem = mode;
+                    }
                 }
-                tbTransparency.Value = (int)Math.Max(Math.Min((int)(((IRasterLayer)_layer).Transparency * 100f),100),0);
+                tbTransparency.Value = (int)Math.Max(Math.Min((int)(((IRasterLayer)_layer).Transparency * 100f), 100), 0);
                 lblTransPercent.Text = tbTransparency.Value.ToString() + "%";
 
                 btnTranscolor.BackColor = ((IRasterLayer)_layer).TransparentColor;
@@ -1197,102 +1228,139 @@ namespace gView.Framework.UI.Dialogs
                     tabSR.Controls.Add(sr.panelReferenceSystem);
                 }
             }
-		}
+        }
 
-		#region RendererPage
+        #region RendererPage
 
-		private void MakeRendererTree() 
-		{
-			if(_dataset==null || _layer==null) return;
-			if(!(_dataset is IFeatureDataset)) return;
-			if(!(_layer is IFeatureLayer)) return;
+        private void MakeRendererTree()
+        {
+            if (_dataset == null || _layer == null)
+            {
+                return;
+            }
 
-			tvRenderer.Nodes.Clear();
-            if(_dataset is IImageDataset)
-			{
-				TreeNode node=new TreeNode(_dataset.DatasetGroupName);
-				tvRenderer.Nodes.Add(node);
-				node.Nodes.Add(new RendererNode(null));
-				if(_renderer==null) 
-					tvRenderer.SelectedNode=node.Nodes[0];
-			}
+            if (!(_dataset is IFeatureDataset))
+            {
+                return;
+            }
 
-			PlugInManager compManager=new PlugInManager();
-			foreach(var pluginType in compManager.GetPlugins(Plugins.Type.IFeatureRenderer)) 
-			{
-				IFeatureRenderer renderer=compManager.CreateInstance<IFeatureRenderer>(pluginType);
+            if (!(_layer is IFeatureLayer))
+            {
+                return;
+            }
 
-                if (renderer == null) continue;
-                if (!renderer.CanRender(_layer as IFeatureLayer, null)) continue;
+            tvRenderer.Nodes.Clear();
+            if (_dataset is IImageDataset)
+            {
+                TreeNode node = new TreeNode(_dataset.DatasetGroupName);
+                tvRenderer.Nodes.Add(node);
+                node.Nodes.Add(new RendererNode(null));
+                if (_renderer == null)
+                {
+                    tvRenderer.SelectedNode = node.Nodes[0];
+                }
+            }
 
-				TreeNode parent=null;
-				foreach(TreeNode cat in tvRenderer.Nodes) 
-				{
-					if(cat.Text==renderer.Category) 
-					{
-						parent=cat;
-						break;
-					}
-				}
-				if(parent==null) 
-				{
-					parent=new TreeNode(renderer.Category);
-					tvRenderer.Nodes.Add(parent);
-				}
+            PlugInManager compManager = new PlugInManager();
+            foreach (var pluginType in compManager.GetPlugins(Plugins.Type.IFeatureRenderer))
+            {
+                IFeatureRenderer renderer = compManager.CreateInstance<IFeatureRenderer>(pluginType);
 
-				if(_renderer!=null) 
-				{
-					if(_renderer.GetType().Equals(renderer.GetType()))
-						renderer=_renderer;
-				}
+                if (renderer == null)
+                {
+                    continue;
+                }
 
-				TreeNode rNode=new RendererNode(renderer);
-				parent.Nodes.Add(rNode);
-				
-				if(_renderer!=null) 
-				{
-					if(_renderer.GetType().Equals(renderer.GetType())) 
-						tvRenderer.SelectedNode=rNode;
-				}
-			}
+                if (!renderer.CanRender(_layer as IFeatureLayer, null))
+                {
+                    continue;
+                }
+
+                TreeNode parent = null;
+                foreach (TreeNode cat in tvRenderer.Nodes)
+                {
+                    if (cat.Text == renderer.Category)
+                    {
+                        parent = cat;
+                        break;
+                    }
+                }
+                if (parent == null)
+                {
+                    parent = new TreeNode(renderer.Category);
+                    tvRenderer.Nodes.Add(parent);
+                }
+
+                if (_renderer != null)
+                {
+                    if (_renderer.GetType().Equals(renderer.GetType()))
+                    {
+                        renderer = _renderer;
+                    }
+                }
+
+                TreeNode rNode = new RendererNode(renderer);
+                parent.Nodes.Add(rNode);
+
+                if (_renderer != null)
+                {
+                    if (_renderer.GetType().Equals(renderer.GetType()))
+                    {
+                        tvRenderer.SelectedNode = rNode;
+                    }
+                }
+            }
 
             chkRenderLayer.Checked = ((IFeatureLayer)_layer).FeatureRenderer != null;
             chkApplyRefscale.Checked = ((IFeatureLayer)_layer).ApplyRefScale;
             chkApplyLabelRefscale.Checked = ((IFeatureLayer)_layer).ApplyLabelRefScale;
-		}
+        }
 
-		private void tvRenderer_AfterSelect(object sender, System.Windows.Forms.TreeViewEventArgs e)
-		{
-			TreeNode sel=tvRenderer.SelectedNode;
-			if(!(sel is RendererNode)) 
-			{
-				tvRenderer.SelectedNode=((TreeNode)sel).Nodes[0];
-				return;
-			}
+        private void tvRenderer_AfterSelect(object sender, System.Windows.Forms.TreeViewEventArgs e)
+        {
+            TreeNode sel = tvRenderer.SelectedNode;
+            if (!(sel is RendererNode))
+            {
+                tvRenderer.SelectedNode = ((TreeNode)sel).Nodes[0];
+                return;
+            }
 
-			panelRendererPropPage.Controls.Clear();;
-			
-			IFeatureRenderer renderer=(IFeatureRenderer)((RendererNode)sel).FeatureRenderer;
-			if(renderer!=null) 
-			{
-				if(renderer is IPropertyPage) 
-				{
+            panelRendererPropPage.Controls.Clear(); ;
+
+            IFeatureRenderer renderer = (IFeatureRenderer)((RendererNode)sel).FeatureRenderer;
+            if (renderer != null)
+            {
+                if (renderer is IPropertyPage)
+                {
                     Control control = ((IPropertyPage)renderer).PropertyPage(_layer) as Control;
                     if (control != null)
+                    {
                         panelRendererPropPage.Controls.Add(control);
-				}
-			}
-			_renderer=renderer;
+                    }
+                }
+            }
+            _renderer = renderer;
             chkRenderLayer.Checked = true;
-		}
-		#endregion
+        }
+        #endregion
 
         #region SelectionRendererPage
         private void MakeSelectionRendererTree()
         {
-            if (_dataset == null || _layer == null) return;
-            if (!(_dataset is IFeatureDataset)) return;
-            if (!(_layer is IFeatureLayer)) return;
+            if (_dataset == null || _layer == null)
+            {
+                return;
+            }
+
+            if (!(_dataset is IFeatureDataset))
+            {
+                return;
+            }
+
+            if (!(_layer is IFeatureLayer))
+            {
+                return;
+            }
 
             tvSelRenderer.Nodes.Clear();
             if (_dataset is IImageDataset)
@@ -1301,7 +1369,9 @@ namespace gView.Framework.UI.Dialogs
                 tvSelRenderer.Nodes.Add(node);
                 node.Nodes.Add(new RendererNode(null));
                 if (_renderer == null)
+                {
                     tvSelRenderer.SelectedNode = node.Nodes[0];
+                }
             }
 
             PlugInManager compManager = new PlugInManager();
@@ -1309,8 +1379,15 @@ namespace gView.Framework.UI.Dialogs
             {
                 IFeatureRenderer selRenderer = compManager.CreateInstance<IFeatureRenderer>(pluginType);
 
-                if (selRenderer == null) continue;
-                if (!selRenderer.CanRender(_layer as IFeatureLayer, null)) continue;
+                if (selRenderer == null)
+                {
+                    continue;
+                }
+
+                if (!selRenderer.CanRender(_layer as IFeatureLayer, null))
+                {
+                    continue;
+                }
 
                 TreeNode parent = null;
                 foreach (TreeNode cat in tvSelRenderer.Nodes)
@@ -1330,7 +1407,9 @@ namespace gView.Framework.UI.Dialogs
                 if (_selRenderer != null)
                 {
                     if (_selRenderer.GetType().Equals(selRenderer.GetType()))
+                    {
                         selRenderer = _selRenderer;
+                    }
                 }
 
                 TreeNode rNode = new RendererNode(selRenderer);
@@ -1339,7 +1418,9 @@ namespace gView.Framework.UI.Dialogs
                 if (_selRenderer != null)
                 {
                     if (_selRenderer.GetType().Equals(selRenderer.GetType()))
+                    {
                         tvSelRenderer.SelectedNode = rNode;
+                    }
                 }
             }
         }
@@ -1363,30 +1444,46 @@ namespace gView.Framework.UI.Dialogs
                     Control control = ((IPropertyPage)selRenderer).PropertyPage(_layer) as Control;
 
                     if (control != null)
+                    {
                         panelSelRendererPropPage.Controls.Add(control);
+                    }
                 }
             }
             _selRenderer = selRenderer;
         }
-		
+
         #endregion
 
         #region LabelRendererPage
         private void MakeLabelRendererCombo()
         {
-            if (_dataset == null || _layer == null) return;
-            if (!(_dataset is IFeatureDataset)) return;
-            if (!(_layer is IFeatureLayer)) return;
+            if (_dataset == null || _layer == null)
+            {
+                return;
+            }
+
+            if (!(_dataset is IFeatureDataset))
+            {
+                return;
+            }
+
+            if (!(_layer is IFeatureLayer))
+            {
+                return;
+            }
 
             cmbLabelRenderer.Items.Clear();
-            PlugInManager compManager=new PlugInManager();
+            PlugInManager compManager = new PlugInManager();
             foreach (var pluginType in compManager.GetPlugins(Plugins.Type.ILabelRenderer))
             {
                 ILabelRenderer renderer = compManager.CreateInstance<ILabelRenderer>(pluginType);
-                if (renderer == null) continue;
+                if (renderer == null)
+                {
+                    continue;
+                }
 
                 LabelRendererItem item;
-                if (_labelRenderer!=null && 
+                if (_labelRenderer != null &&
                     renderer.GetType().Equals(_labelRenderer.GetType()))
                 {
                     item = new LabelRendererItem(_labelRenderer);
@@ -1398,13 +1495,18 @@ namespace gView.Framework.UI.Dialogs
 
                 cmbLabelRenderer.Items.Add(item);
                 if (item.LabelRenderer == _labelRenderer)
+                {
                     cmbLabelRenderer.SelectedItem = item;
+                }
             }
         }
 
         private void cmbLabelRenderer_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (!(cmbLabelRenderer.SelectedItem is LabelRendererItem)) return;
+            if (!(cmbLabelRenderer.SelectedItem is LabelRendererItem))
+            {
+                return;
+            }
 
             panelLabelRendererPage.Controls.Clear();
             _labelRenderer = ((LabelRendererItem)cmbLabelRenderer.SelectedItem).LabelRenderer;
@@ -1414,7 +1516,9 @@ namespace gView.Framework.UI.Dialogs
                 {
                     Control control = ((IPropertyPage)_labelRenderer).PropertyPage(_layer) as Control;
                     if (control != null)
+                    {
                         panelLabelRendererPage.Controls.Add(control);
+                    }
                 }
             }
         }
@@ -1424,9 +1528,16 @@ namespace gView.Framework.UI.Dialogs
         #region Fields
         private void MakeFieldTab()
         {
-            if (!(_layer is IFeatureLayer)) return;
+            if (!(_layer is IFeatureLayer))
+            {
+                return;
+            }
+
             IFeatureLayer fLayer = _layer as IFeatureLayer;
-            if (fLayer.FeatureClass == null || fLayer.FeatureClass.Fields == null) return;
+            if (fLayer.FeatureClass == null || fLayer.FeatureClass.Fields == null)
+            {
+                return;
+            }
 
             foreach (IField field in fLayer.Fields.ToEnumerable())
             {
@@ -1526,7 +1637,9 @@ namespace gView.Framework.UI.Dialogs
                             }
                         }
                         if (cmbPrimaryField.SelectedItem != null && field.name == cmbPrimaryField.SelectedItem.ToString())
+                        {
                             fLayer.Fields.PrimaryDisplayField = field;
+                        }
                     }
                 }
                 fLayer.ApplyRefScale = chkApplyRefscale.Checked;
@@ -1565,18 +1678,24 @@ namespace gView.Framework.UI.Dialogs
                 _map.SetLayerDescription(_layer.ID, txtDescription.Text);
                 _map.SetLayerCopyrightText(_layer.ID, txtCopyright.Text);
             }
+
+            _mapDocument.TemporaryRestore();
         }
 
-		private void btnOK_Click(object sender, System.EventArgs e)
-		{
-			CommitSettings();
+        private void btnOK_Click(object sender, System.EventArgs e)
+        {
+            CommitSettings();
 
             foreach (ILayerPropertyPage page in propertyPages)
+            {
                 page.Commit();
+            }
 
             if (_layer != null)
+            {
                 _layer.FirePropertyChanged();
-		}
+            }
+        }
 
         private void tbTransparency_Scroll(object sender, EventArgs e)
         {
@@ -1602,8 +1721,10 @@ namespace gView.Framework.UI.Dialogs
             ColorDialog dlg = new ColorDialog();
             dlg.Color = btnTranscolor.BackColor;
 
-            if (dlg.Color.A == 0) 
+            if (dlg.Color.A == 0)
+            {
                 dlg.Color = Color.FromArgb(255, dlg.Color);
+            }
 
             if (dlg.ShowDialog() == DialogResult.OK)
             {
@@ -1615,7 +1736,7 @@ namespace gView.Framework.UI.Dialogs
         {
             foreach (DataGridViewRow row in dgFields.Rows)
             {
-                row.Cells[0] .Value= true;
+                row.Cells[0].Value = true;
             }
         }
 
@@ -1644,7 +1765,7 @@ namespace gView.Framework.UI.Dialogs
         private void btnFieldsMoveDown_Click(object sender, EventArgs e)
         {
             if (dgFields.CurrentCellAddress.Y >= 0 &&
-                dgFields.CurrentCellAddress.Y < dgFields.Rows.Count-1)
+                dgFields.CurrentCellAddress.Y < dgFields.Rows.Count - 1)
             {
                 DataGridViewRow row0 = dgFields.Rows[dgFields.CurrentCellAddress.Y + 1];
                 DataGridViewRow row1 = dgFields.Rows[dgFields.CurrentCellAddress.Y];
@@ -1674,30 +1795,30 @@ namespace gView.Framework.UI.Dialogs
         {
             btnTranscolor.BackColor = Color.Transparent;
         }
-	}
+    }
 
-	internal class RendererNode : TreeNode 
-	{
-		IFeatureRenderer _renderer;
+    internal class RendererNode : TreeNode
+    {
+        IFeatureRenderer _renderer;
 
-		public RendererNode(IFeatureRenderer renderer) 
-		{
-			_renderer=renderer;
+        public RendererNode(IFeatureRenderer renderer)
+        {
+            _renderer = renderer;
 
-			if(_renderer!=null) 
-			{
-				base.Text=renderer.Name;
-			} 
-			else 
-			{
-				base.Text="Default";
-			}
-		}
-		public IFeatureRenderer FeatureRenderer 
-		{
-			get { return _renderer; }
-		}
-	}
+            if (_renderer != null)
+            {
+                base.Text = renderer.Name;
+            }
+            else
+            {
+                base.Text = "Default";
+            }
+        }
+        public IFeatureRenderer FeatureRenderer
+        {
+            get { return _renderer; }
+        }
+    }
 
     internal class LabelRendererItem
     {
@@ -1718,7 +1839,11 @@ namespace gView.Framework.UI.Dialogs
 
         public override string ToString()
         {
-            if (_renderer == null) return "null";
+            if (_renderer == null)
+            {
+                return "null";
+            }
+
             return _renderer.Name;
         }
     }
