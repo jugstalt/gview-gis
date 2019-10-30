@@ -2,6 +2,7 @@
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.Symbology.UI;
+using gView.Framework.system;
 using gView.Framework.UI;
 using System;
 using System.ComponentModel;
@@ -210,8 +211,10 @@ namespace gView.Framework.Symbology
         #endregion
 
         #region IClone2
-        public object Clone(IDisplay display)
+        public object Clone(CloneOptions options)
         {
+            var display = options?.Display;
+
             if (display == null)
             {
                 return Clone();
@@ -221,6 +224,7 @@ namespace gView.Framework.Symbology
             if (display.refScale > 1 && display.mapScale >= 1)
             {
                 fac = (float)(display.refScale / display.mapScale);
+                fac = options.RefScaleFactor(fac);
             }
 
             if (display.dpi != 96.0)
@@ -231,12 +235,12 @@ namespace gView.Framework.Symbology
             SymbolDotedLineSymbol cloneSym = new SymbolDotedLineSymbol();
             if (this.LineSymbol != null)
             {
-                cloneSym.LineSymbol = this.LineSymbol.Clone(display) as ILineSymbol;
+                cloneSym.LineSymbol = this.LineSymbol.Clone(options) as ILineSymbol;
             }
 
             if (this.PointSymbol != null)
             {
-                cloneSym.PointSymbol = this.PointSymbol.Clone(display) as IPointSymbol;
+                cloneSym.PointSymbol = this.PointSymbol.Clone(options) as IPointSymbol;
             }
 
             cloneSym.LegendLabel = _legendLabel;

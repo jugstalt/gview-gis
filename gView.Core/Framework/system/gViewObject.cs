@@ -148,9 +148,32 @@ namespace gView.Framework.system
 		object Clone();
 	}
 
+    public class CloneOptions
+    {
+        public CloneOptions(IDisplay display, float maxRefScaleFactor = 0f, float maxLabelRefscaleFactor = 0f)
+        {
+            this.Display = display;
+            this.MaxRefScaleFactor = maxRefScaleFactor <= float.Epsilon ? float.MaxValue : maxRefScaleFactor;
+            this.MaxLabelRefScaleFactor = maxLabelRefscaleFactor <= float.Epsilon ? float.MaxValue : maxLabelRefscaleFactor;
+        }
+        public IDisplay Display { get; private set; }
+
+        public float MaxRefScaleFactor { get; private set; }
+        public float MaxLabelRefScaleFactor { get; private set; }
+
+        public float RefScaleFactor(float factor)
+        {
+            return Math.Min(factor, this.MaxRefScaleFactor);
+        }
+        public float LabelRefScaleFactor(float factor)
+        {
+            return Math.Min(factor, this.MaxLabelRefScaleFactor);
+        }
+    }
+
     public interface IClone2
     {
-        object Clone(IDisplay display);
+        object Clone(CloneOptions options);
         void Release();
     }
 

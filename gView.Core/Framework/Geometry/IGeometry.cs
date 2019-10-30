@@ -199,6 +199,8 @@ namespace gView.Framework.Geometry
         IEnumerable<IRing> Rings { get; }
         IEnumerable<IHole> Holes { get; }
 
+        int TotalPointCount { get; }
+
         double Area { get; }
 
         double Distance2D(IPolygon p);

@@ -578,7 +578,7 @@ namespace gView.Framework.Carto.Rendering
         #endregion
 
         #region IClone2
-        public object Clone(IDisplay display)
+        public object Clone(CloneOptions options)
         {
             ValueMapRenderer renderer = new ValueMapRenderer();
             renderer._valueField = _valueField;
@@ -587,7 +587,7 @@ namespace gView.Framework.Carto.Rendering
             foreach (string key in _symbolTable.Keys)
             {
                 ISymbol symbol = (ISymbol)_symbolTable[key];
-                if (symbol != null) symbol = (ISymbol)symbol.Clone(_useRefscale ? display : null);
+                if (symbol != null) symbol = (ISymbol)symbol.Clone(_useRefscale ? options : null);
                 renderer._symbolTable.Add(key, symbol);
             }
             renderer._geometryType = _geometryType;

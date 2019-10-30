@@ -117,13 +117,13 @@ namespace gView.Framework.Carto.Rendering
 
         #region IClone2 Member
 
-        public object Clone(IDisplay display)
+        public object Clone(CloneOptions options)
         {
             ScaleDependentLabelRenderer scaledependentRenderer = new ScaleDependentLabelRenderer();
             foreach (ILabelRenderer renderer in _renderers)
             {
                 if (renderer == null) continue;
-                scaledependentRenderer._renderers.Add(renderer.Clone(display) as ILabelRenderer);
+                scaledependentRenderer._renderers.Add(renderer.Clone(options) as ILabelRenderer);
             }
 
             return scaledependentRenderer;
@@ -423,10 +423,10 @@ namespace gView.Framework.Carto.Rendering
 
             #region IClone2 Member
 
-            public object Clone(IDisplay display)
+            public object Clone(CloneOptions options)
             {
                 if (_renderer == null) return null;
-                ILabelRenderer renderer = _renderer.Clone(display) as ILabelRenderer;
+                ILabelRenderer renderer = _renderer.Clone(options) as ILabelRenderer;
                 if (renderer == null) return null;
 
                 ScaleRenderer scaleRenderer = new ScaleRenderer(renderer);

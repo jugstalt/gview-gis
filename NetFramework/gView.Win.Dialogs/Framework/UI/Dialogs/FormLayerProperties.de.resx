@@ -200,13 +200,13 @@
     <value>4, 40</value>
   </data>
   <data name="tabGeneral.Size" type="System.Drawing.Size, System.Drawing">
-    <value>569, 550</value>
+    <value>549, 550</value>
   </data>
   <data name="tabGeneral.Text" xml:space="preserve">
     <value>Allgemein/Maßstabsgrenzen</value>
   </data>
   <data name="panelRendererPropPage.Size" type="System.Drawing.Size, System.Drawing">
-    <value>438, 516</value>
+    <value>418, 516</value>
   </data>
   <data name="splitter1.Size" type="System.Drawing.Size, System.Drawing">
     <value>3, 516</value>
@@ -214,14 +214,8 @@
   <data name="tvRenderer.Size" type="System.Drawing.Size, System.Drawing">
     <value>128, 516</value>
   </data>
-  <data name="chkApplyRefscale.Location" type="System.Drawing.Point, System.Drawing">
-    <value>299, 10</value>
-  </data>
-  <data name="chkApplyRefscale.Size" type="System.Drawing.Size, System.Drawing">
-    <value>240, 17</value>
-  </data>
-  <data name="chkApplyRefscale.Text" xml:space="preserve">
-    <value>Referenzmaßstab für diesen Layer anwenden</value>
+  <data name="cmbApplyRefScale.Location" type="System.Drawing.Point, System.Drawing">
+    <value>245, 7</value>
   </data>
   <data name="chkRenderLayer.Size" type="System.Drawing.Size, System.Drawing">
     <value>200, 17</value>
@@ -230,19 +224,19 @@
     <value>Features aus diesem Layer darstellen</value>
   </data>
   <data name="panel5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>569, 34</value>
+    <value>549, 34</value>
   </data>
   <data name="tabRenderer.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 40</value>
   </data>
   <data name="tabRenderer.Size" type="System.Drawing.Size, System.Drawing">
-    <value>569, 550</value>
+    <value>549, 550</value>
   </data>
   <data name="tabRenderer.Text" xml:space="preserve">
     <value>Darstellung</value>
   </data>
   <data name="panelSelRendererPropPage.Size" type="System.Drawing.Size, System.Drawing">
-    <value>433, 550</value>
+    <value>413, 550</value>
   </data>
   <data name="splitter2.Size" type="System.Drawing.Size, System.Drawing">
     <value>8, 550</value>
@@ -254,16 +248,16 @@
     <value>4, 40</value>
   </data>
   <data name="tabSelRenderer.Size" type="System.Drawing.Size, System.Drawing">
-    <value>569, 550</value>
+    <value>549, 550</value>
   </data>
   <data name="tabSelRenderer.Text" xml:space="preserve">
     <value>Auswahl</value>
   </data>
   <data name="panelLabelRendererPage.Size" type="System.Drawing.Size, System.Drawing">
-    <value>569, 473</value>
+    <value>549, 473</value>
   </data>
   <data name="chkApplyLabelRefscale.Location" type="System.Drawing.Point, System.Drawing">
-    <value>228, 19</value>
+    <value>208, 19</value>
   </data>
   <data name="chkApplyLabelRefscale.Size" type="System.Drawing.Size, System.Drawing">
     <value>306, 17</value>
@@ -278,13 +272,13 @@
     <value>Layer beschriften</value>
   </data>
   <data name="groupBox2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>569, 77</value>
+    <value>549, 77</value>
   </data>
   <data name="tabLabelling.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 40</value>
   </data>
   <data name="tabLabelling.Size" type="System.Drawing.Size, System.Drawing">
-    <value>569, 550</value>
+    <value>549, 550</value>
   </data>
   <data name="tabLabelling.Text" xml:space="preserve">
     <value>Beschriftung</value>
@@ -326,10 +320,22 @@
     <value>4, 40</value>
   </data>
   <data name="tabRaster.Size" type="System.Drawing.Size, System.Drawing">
-    <value>569, 550</value>
+    <value>549, 550</value>
   </data>
   <data name="tabRaster.Text" xml:space="preserve">
     <value>Raster Einstellungen</value>
+  </data>
+  <data name="gvWebThemes.Size" type="System.Drawing.Size, System.Drawing">
+    <value>549, 550</value>
+  </data>
+  <data name="tabWebServiceLayer.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 40</value>
+  </data>
+  <data name="tabWebServiceLayer.Size" type="System.Drawing.Size, System.Drawing">
+    <value>549, 550</value>
+  </data>
+  <data name="dgFields.Size" type="System.Drawing.Size, System.Drawing">
+    <value>549, 420</value>
   </data>
   <data name="btnFieldsMoveDown.Location" type="System.Drawing.Point, System.Drawing">
     <value>281, 7</value>
@@ -352,6 +358,12 @@
   <data name="btnSelectAll.Text" xml:space="preserve">
     <value>Alle auswählen</value>
   </data>
+  <data name="panel4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 511</value>
+  </data>
+  <data name="panel4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>549, 39</value>
+  </data>
   <data name="label6.Size" type="System.Drawing.Size, System.Drawing">
     <value>67, 13</value>
   </data>
@@ -361,29 +373,62 @@
   <data name="groupBox3.Text" xml:space="preserve">
     <value>Primäres Anzeigefeld</value>
   </data>
+  <data name="panel3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>549, 91</value>
+  </data>
+  <data name="tabFields.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 40</value>
+  </data>
+  <data name="tabFields.Size" type="System.Drawing.Size, System.Drawing">
+    <value>549, 550</value>
+  </data>
   <data name="tabFields.Text" xml:space="preserve">
     <value>Felder</value>
+  </data>
+  <data name="tabSR.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 40</value>
+  </data>
+  <data name="tabSR.Size" type="System.Drawing.Size, System.Drawing">
+    <value>549, 550</value>
   </data>
   <data name="tabSR.Text" xml:space="preserve">
     <value>Räuml. Bezugssystem</value>
   </data>
+  <data name="txtCopyright.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 428</value>
+  </data>
+  <data name="txtCopyright.Size" type="System.Drawing.Size, System.Drawing">
+    <value>543, 139</value>
+  </data>
+  <data name="label12.Location" type="System.Drawing.Point, System.Drawing">
+    <value>5, 412</value>
+  </data>
+  <data name="txtDescription.Size" type="System.Drawing.Size, System.Drawing">
+    <value>543, 379</value>
+  </data>
+  <data name="tabDescription.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 40</value>
+  </data>
+  <data name="tabDescription.Size" type="System.Drawing.Size, System.Drawing">
+    <value>549, 550</value>
+  </data>
   <data name="tabControl1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>577, 594</value>
+    <value>557, 594</value>
   </data>
   <data name="button1.Text" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
   <data name="panel2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>274, 0</value>
+    <value>254, 0</value>
   </data>
   <data name="panel1.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 594</value>
   </data>
   <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>577, 48</value>
+    <value>557, 48</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>577, 642</value>
+    <value>557, 642</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Eigenschaften für Layer</value>

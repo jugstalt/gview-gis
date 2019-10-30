@@ -176,6 +176,9 @@ namespace gView.Framework.XML
             }
         }
 
+        public float MaxRefScaleFactor { get; set; }
+        public float MaxLabelRefScaleFactor { get; set; }
+
         public FeatureLayerJoins Joins
         {
             get { return null; }

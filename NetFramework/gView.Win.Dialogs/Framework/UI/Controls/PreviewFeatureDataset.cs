@@ -258,6 +258,9 @@ namespace gView.Framework.UI.Controls
             }
         }
 
+        public float MaxRefScaleFactor { get; set; }
+        public float MaxLabelRefScaleFactor { get; set; }
+
         public IFeatureClass FeatureClass
         {
             get { return _fc; }

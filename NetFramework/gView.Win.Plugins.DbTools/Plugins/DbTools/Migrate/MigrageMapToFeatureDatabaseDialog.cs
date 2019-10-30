@@ -135,19 +135,20 @@ namespace gView.Plugins.DbTools.Migrate
                     IFeatureLayer layer = LayerFactory.Create(destDatasetElement.Class) as IFeatureLayer;
                     if (layer != null)
                     {
+                        var cloneOptions = new CloneOptions(migMap.Display);
                         if (sourceLayer.FeatureRenderer != null)
                         {
-                            layer.FeatureRenderer = sourceLayer.FeatureRenderer.Clone(migMap.Display) as IFeatureRenderer;
+                            layer.FeatureRenderer = sourceLayer.FeatureRenderer.Clone(cloneOptions) as IFeatureRenderer;
                         }
 
                         if (sourceLayer.LabelRenderer != null)
                         {
-                            layer.LabelRenderer = sourceLayer.LabelRenderer.Clone(migMap.Display) as ILabelRenderer;
+                            layer.LabelRenderer = sourceLayer.LabelRenderer.Clone(cloneOptions) as ILabelRenderer;
                         }
 
                         if (sourceLayer.SelectionRenderer != null)
                         {
-                            layer.SelectionRenderer = sourceLayer.SelectionRenderer.Clone(migMap.Display) as IFeatureRenderer;
+                            layer.SelectionRenderer = sourceLayer.SelectionRenderer.Clone(cloneOptions) as IFeatureRenderer;
                         }
 
                         layer.MinimumLabelScale = sourceLayer.MinimumLabelScale;

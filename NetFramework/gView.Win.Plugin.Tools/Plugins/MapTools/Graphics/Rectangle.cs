@@ -327,7 +327,7 @@ namespace gView.Plugins.MapTools.Graphics
         {
             if (display == null || display.GraphicsContext == null) return;
 
-            SimpleTextSymbol sym = _symbol.Clone(display) as SimpleTextSymbol;
+            SimpleTextSymbol sym = _symbol.Clone(new CloneOptions(display)) as SimpleTextSymbol;
             sym.Text = _text;
             sym.Angle = (float)this.Rotation;
 

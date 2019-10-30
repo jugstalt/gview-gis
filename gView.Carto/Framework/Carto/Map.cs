@@ -3529,7 +3529,9 @@ namespace gView.Framework.Carto
                     // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
                     if (layer.FeatureRenderer != null && layer.FeatureRenderer.HasEffect(layer, _map))
                     {
-                        renderer = (layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale) ? (IFeatureRenderer)layer.FeatureRenderer.Clone(display) : layer.FeatureRenderer;
+                        renderer = (layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale) ? 
+                            (IFeatureRenderer)layer.FeatureRenderer.Clone(new CloneOptions(display, maxRefScaleFactor: layer.MaxRefScaleFactor)) : 
+                            layer.FeatureRenderer;
                     }
                     if (layer.LabelRenderer != null && _useLabelRenderer)
                     {
@@ -3541,7 +3543,7 @@ namespace gView.Framework.Carto
                         }
                         else
                         {
-                            labelRenderer = (ILabelRenderer)layer.LabelRenderer.Clone(display);
+                            labelRenderer = (ILabelRenderer)layer.LabelRenderer.Clone(new CloneOptions(display, maxLabelRefscaleFactor: layer.MaxLabelRefScaleFactor));
                         }
                     }
                 }
@@ -3711,7 +3713,7 @@ namespace gView.Framework.Carto
                     // Beim Clonen sprerren...
                     // Da sonst bei der Servicemap bei gleichzeitigen Requests
                     // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
-                    labelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone(_map);
+                    labelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone(new CloneOptions(_map));
                 }
 
                 #endregion
@@ -4194,7 +4196,7 @@ namespace gView.Framework.Carto
                 // Beim Clonen sprerren...
                 // Da sonst bei der Servicemap bei gleichzeitigen Requests
                 // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
-                selectionRenderer = (IFeatureRenderer)_layer.SelectionRenderer.Clone(_map);
+                selectionRenderer = (IFeatureRenderer)_layer.SelectionRenderer.Clone(new CloneOptions(_map));
             }
 
             #endregion

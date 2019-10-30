@@ -376,7 +376,12 @@ namespace gView.Framework.UI
                 {
                     lock (_temporaryRestoreLocker)
                     {
-                        fi.MoveTo(fi.FullName + "_");
+                        var fi2 = new FileInfo(fi.FullName + "_");
+                        if(fi2.Exists)
+                        {
+                            fi2.Delete();
+                        }
+                        fi.MoveTo(fi2.FullName);
                         //fi.Delete();
                     }
                 }

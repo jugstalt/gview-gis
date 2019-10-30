@@ -1,18 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Drawing;
-using System.ComponentModel;
-using gView.Framework.UI;
-using gView.Framework.Carto;
+﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using System.Xml;
-using gView.Framework.system;
-using System.Reflection;
 using gView.Framework.Symbology.UI;
+using gView.Framework.system;
+using gView.Framework.UI;
 using gView.Symbology.Framework.Symbology.IO;
-using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Reflection;
+using System.Text;
+using System.Xml;
 
 namespace gView.Framework.Symbology
 {
@@ -47,8 +46,16 @@ namespace gView.Framework.Symbology
             get { return _font; }
             set
             {
-                if (_font == value) return;
-                if (_font != null) _font.Dispose();
+                if (_font == value)
+                {
+                    return;
+                }
+
+                if (_font != null)
+                {
+                    _font.Dispose();
+                }
+
                 _font = value;
                 _measureTextWidth = null;
             }
@@ -171,7 +178,9 @@ namespace gView.Framework.Symbology
         public IDisplayCharacterRanges MeasureCharacterWidth(IDisplay display)
         {
             if (_measureTextWidth != null)
+            {
                 return _measureTextWidth;
+            }
 
             StringFormat format = stringFormatFromAlignment;
             IDisplayCharacterRanges ranges = new DisplayCharacterRanges(display.GraphicsContext, _font, format, _text);
@@ -181,7 +190,10 @@ namespace gView.Framework.Symbology
 
         public List<IAnnotationPolygonCollision> AnnotationPolygon(IDisplay display, IGeometry geometry)
         {
-            if (_font == null || _text == null || display.GraphicsContext == null) return null;
+            if (_font == null || _text == null || display.GraphicsContext == null)
+            {
+                return null;
+            }
 
             List<IAnnotationPolygonCollision> polygons = new List<IAnnotationPolygonCollision>();
             if (geometry is IPoint)
@@ -218,7 +230,9 @@ namespace gView.Framework.Symbology
             else if (geometry is IDisplayPath)
             {
                 if (String.IsNullOrEmpty(_text))
+                {
                     return null;
+                }
 
                 IDisplayPath path = (IDisplayPath)geometry;
 
@@ -228,13 +242,19 @@ namespace gView.Framework.Symbology
                 IDisplayCharacterRanges ranges = this.MeasureCharacterWidth(display);
                 float sizeW = ranges.Width;
                 float stat0 = path.Chainage, stat1 = stat0 + sizeW, stat = stat0;
-                if (stat0 < 0) return null;
+                if (stat0 < 0)
+                {
+                    return null;
+                }
 
                 #region Richtung des Textes
                 PointF? p1_ = path.PointAt(stat0); //SpatialAlgorithms.Algorithm.DisplayPathPoint(path, stat0);
                 PointF? p2_ = path.PointAt(stat1); //SpatialAlgorithms.Algorithm.DisplayPathPoint(path, stat1);
                 if (p1_ == null || p2_ == null)
+                {
                     return null;
+                }
+
                 if (((PointF)p1_).X > ((PointF)p2_).X)
                 {
                     #region Swap Path Direction
@@ -258,7 +278,10 @@ namespace gView.Framework.Symbology
                         p1 = path.PointAt(stat); //SpatialAlgorithms.Algorithm.DisplayPathPoint(path, stat);
                         p2 = path.PointAt(stat + cSize.Width);
                         if (p1 == null || p2 == null)
+                        {
                             return null;
+                        }
+
                         angle = (float)(Math.Atan2(((PointF)p2).Y - ((PointF)p1).Y, ((PointF)p2).X - ((PointF)p1).X) * 180.0 / Math.PI);
 
                         //float ccc = 0f;
@@ -296,7 +319,10 @@ namespace gView.Framework.Symbology
                             stat += cSize.Width / 10.0f;
                             counter++;
                             if (counter > 7)
+                            {
                                 return null;
+                            }
+
                             continue;
                         }
                         charPolygons.Add(polygon);
@@ -346,7 +372,10 @@ namespace gView.Framework.Symbology
                 for (int iPath = 0; iPath < pLine.PathCount; iPath++)
                 {
                     IPath path = pLine[iPath];
-                    if (path.PointCount == 0) continue;
+                    if (path.PointCount == 0)
+                    {
+                        continue;
+                    }
 
                     #region Simple Method
                     IPoint p1 = path[0], p2;
@@ -355,9 +384,19 @@ namespace gView.Framework.Symbology
                         p2 = path[iPoint];
                         double angle = -Math.Atan2(p2.Y - p1.Y, p2.X - p1.X) * 180.0 / Math.PI;
                         if (display.DisplayTransformation.UseTransformation)
+                        {
                             angle -= display.DisplayTransformation.DisplayRotation;
-                        if (angle < 0) angle += 360;
-                        if (angle > 90 && angle < 270) angle -= 180;
+                        }
+
+                        if (angle < 0)
+                        {
+                            angle += 360;
+                        }
+
+                        if (angle > 90 && angle < 270)
+                        {
+                            angle -= 180;
+                        }
 
                         StringFormat format = stringFormatFromAlignment;
                         double x, y;
@@ -496,7 +535,10 @@ namespace gView.Framework.Symbology
 
         public void Draw(IDisplay display, IGeometry geometry)
         {
-            if (_font == null) return;
+            if (_font == null)
+            {
+                return;
+            }
 
             if (geometry is IPoint)
             {
@@ -528,7 +570,9 @@ namespace gView.Framework.Symbology
             else if (geometry is IDisplayPath && ((IDisplayPath)geometry).AnnotationPolygonCollision is AnnotationPolygonCollection)
             {
                 if (String.IsNullOrEmpty(_text))
+                {
                     return;
+                }
 
                 IDisplayPath path = (IDisplayPath)geometry;
                 AnnotationPolygonCollection apc = path.AnnotationPolygonCollision as AnnotationPolygonCollection;
@@ -663,7 +707,10 @@ namespace gView.Framework.Symbology
                 for (int iPath = 0; iPath < pLine.PathCount; iPath++)
                 {
                     IPath path = pLine[iPath];
-                    if (path.PointCount == 0) continue;
+                    if (path.PointCount == 0)
+                    {
+                        continue;
+                    }
 
                     #region Parallel Text
                     IPoint p1 = path[0], p2;
@@ -672,9 +719,19 @@ namespace gView.Framework.Symbology
                         p2 = path[iPoint];
                         double angle = -Math.Atan2(p2.Y - p1.Y, p2.X - p1.X) * 180.0 / Math.PI;
                         if (display.DisplayTransformation.UseTransformation)
+                        {
                             angle -= display.DisplayTransformation.DisplayRotation;
-                        if (angle < 0) angle += 360;
-                        if (angle > 90 && angle < 270) angle -= 180;
+                        }
+
+                        if (angle < 0)
+                        {
+                            angle += 360;
+                        }
+
+                        if (angle > 90 && angle < 270)
+                        {
+                            angle -= 180;
+                        }
 
                         StringFormat format = stringFormatFromAlignment;
                         double x, y;
@@ -725,9 +782,17 @@ namespace gView.Framework.Symbology
 
         virtual public void Release()
         {
-            if (_font != null) _font.Dispose();
+            if (_font != null)
+            {
+                _font.Dispose();
+            }
+
             _font = null;
-            if (_brush != null) _brush.Dispose();
+            if (_brush != null)
+            {
+                _brush.Dispose();
+            }
+
             _brush = null;
         }
 
@@ -759,7 +824,11 @@ namespace gView.Framework.Symbology
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(soap);
                 XmlNode sizeNode = doc.SelectSingleNode("//Size");
-                if (sizeNode != null) sizeNode.InnerText = sizeNode.InnerText.Replace(".", ",");
+                if (sizeNode != null)
+                {
+                    sizeNode.InnerText = sizeNode.InnerText.Replace(".", ",");
+                }
+
                 soap = doc.OuterXml;
                 //
                 //
@@ -821,9 +890,14 @@ namespace gView.Framework.Symbology
 
         #region IClone2 Members
 
-        virtual public object Clone(IDisplay display)
+        virtual public object Clone(CloneOptions options)
         {
-            if (display == null) return this.Clone();
+            var display = options?.Display;
+
+            if (display == null)
+            {
+                return this.Clone();
+            }
 
             float fac = 1;
             if (display.refScale > 1)
@@ -831,9 +905,12 @@ namespace gView.Framework.Symbology
                 fac = ReferenceScaleHelper.RefscaleFactor(
                     (float)(display.refScale / display.mapScale),
                     _font.Size, MinFontSize, MaxFontSize);
+                fac = options.LabelRefScaleFactor(fac);
             }
             if (display.dpi != 96.0)
+            {
                 fac *= (float)(display.dpi / 96.0);
+            }
 
             SimpleTextSymbol tSym = new SimpleTextSymbol(new Font(_font.Name, Math.Max(_font.Size * fac, 2), _font.Style), _brush.Color);
             tSym.HorizontalOffset = HorizontalOffset * fac;
@@ -975,7 +1052,9 @@ namespace gView.Framework.Symbology
                             gr.DrawString(subText, subFont, brush, xOffset, yOffset, format);
                             var size = gr.MeasureString(subText, subFont);
                             if (!String.IsNullOrWhiteSpace(subText))
+                            {
                                 xOffset += size.Width - subFont.Size * .2f;
+                            }
 
                             if (superScript)
                             {
@@ -1064,7 +1143,11 @@ namespace gView.Framework.Symbology
         override public void Release()
         {
             base.Release();
-            if (_outlinebrush != null) _outlinebrush.Dispose();
+            if (_outlinebrush != null)
+            {
+                _outlinebrush.Dispose();
+            }
+
             _outlinebrush = null;
         }
 
@@ -1078,15 +1161,25 @@ namespace gView.Framework.Symbology
 
         #region IClone2 Members
 
-        override public object Clone(IDisplay display)
+        override public object Clone(CloneOptions options)
         {
-            if (display == null) return this.Clone();
+            var display = options?.Display;
+
+            if (display == null)
+            {
+                return this.Clone();
+            }
 
             float fac = 1;
             if (display.refScale > 1)
+            {
                 fac = (float)(display.refScale / display.mapScale);
+            }
+
             if (display.dpi != 96.0)
+            {
                 fac *= (float)(display.dpi / 96.0);
+            }
 
             GlowingTextSymbol tSym = new GlowingTextSymbol(new Font(_font.Name, Math.Max(_font.Size * fac, 2f), _font.Style), _brush.Color, _outlinebrush.Color);
             tSym.HorizontalOffset = HorizontalOffset * fac;
@@ -1163,7 +1256,11 @@ namespace gView.Framework.Symbology
                             {
                                 for (int y = _outlineWidth; y >= -_outlineWidth; y--)
                                 {
-                                    if (x == 0 && y == 0) continue;
+                                    if (x == 0 && y == 0)
+                                    {
+                                        continue;
+                                    }
+
                                     DrawString(display.GraphicsContext, text, _font, _outlinebrush, (float)_xOffset + x, (float)_yOffset + y, format);
                                 }
                             }
@@ -1216,7 +1313,11 @@ namespace gView.Framework.Symbology
         override public void Release()
         {
             base.Release();
-            if (_outlinebrush != null) _outlinebrush.Dispose();
+            if (_outlinebrush != null)
+            {
+                _outlinebrush.Dispose();
+            }
+
             _outlinebrush = null;
         }
 
@@ -1230,15 +1331,25 @@ namespace gView.Framework.Symbology
 
         #region IClone2 Members
 
-        override public object Clone(IDisplay display)
+        override public object Clone(CloneOptions options)
         {
-            if (display == null) return this.Clone();
+            var display = options?.Display;
+
+            if (display == null)
+            {
+                return this.Clone();
+            }
 
             float fac = 1;
             if (display.refScale > 1)
+            {
                 fac = (float)(display.refScale / display.mapScale);
+            }
+
             if (display.dpi != 96.0)
+            {
                 fac *= (float)(display.dpi / 96.0);
+            }
 
             BlockoutTextSymbol tSym = new BlockoutTextSymbol(new Font(_font.Name, Math.Max(_font.Size * fac, 2f), _font.Style), _brush.Color, _outlinebrush.Color);
             tSym.HorizontalOffset = HorizontalOffset * fac;

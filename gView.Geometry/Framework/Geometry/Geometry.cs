@@ -2321,6 +2321,20 @@ namespace gView.Framework.Geometry
             }
         }
 
+        public int TotalPointCount
+        {
+            get
+            {
+                if (_rings == null)
+                    return 0;
+
+                return _rings
+                    .Where(r => r != null)
+                    .Select(r => r.PointCount)
+                    .Sum();
+            }
+        }
+
         public void CloseAllRings()
         {
             if (_rings != null)

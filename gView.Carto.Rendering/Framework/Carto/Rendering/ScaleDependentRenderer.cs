@@ -166,13 +166,13 @@ namespace gView.Framework.Carto.Rendering
 
         #region IClone2 Member
 
-        public object Clone(IDisplay display)
+        public object Clone(CloneOptions options)
         {
             ScaleDependentRenderer scaledependentRenderer = new ScaleDependentRenderer();
             foreach (IFeatureRenderer renderer in _renderers)
             {
                 if (renderer == null) continue;
-                scaledependentRenderer._renderers.Add(renderer.Clone(display) as IFeatureRenderer);
+                scaledependentRenderer._renderers.Add(renderer.Clone(options) as IFeatureRenderer);
             }
 
             scaledependentRenderer.UseReferenceScale = _useRefScale;
@@ -403,10 +403,10 @@ namespace gView.Framework.Carto.Rendering
 
             #region IClone2 Member
 
-            public object Clone(IDisplay display)
+            public object Clone(CloneOptions options)
             {
                 if (_renderer == null) return null;
-                IFeatureRenderer renderer = _renderer.Clone(display) as IFeatureRenderer;
+                IFeatureRenderer renderer = _renderer.Clone(options) as IFeatureRenderer;
                 if (renderer == null) return null;
 
                 ScaleRenderer scaleRenderer = new ScaleRenderer(renderer);

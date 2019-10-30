@@ -134,13 +134,13 @@ namespace gView.Framework.Carto.Rendering
 
         #region IClone2 Member
 
-        public object Clone(IDisplay display)
+        public object Clone(CloneOptions options)
         {
             FeatureGroupRenderer grouprenderer = new FeatureGroupRenderer();
             foreach (IFeatureRenderer renderer in _renderers)
             {
                 if (renderer == null) continue;
-                grouprenderer._renderers.Add(renderer.Clone(display) as IFeatureRenderer);
+                grouprenderer._renderers.Add(renderer.Clone(options) as IFeatureRenderer);
             }
 
             grouprenderer.UseReferenceScale = _useRefScale;

@@ -249,12 +249,12 @@ namespace gView.Framework.Carto.Rendering
 
         #region IClone2 Member
 
-        public object Clone(IDisplay display)
+        public object Clone(CloneOptions options)
         {
             QuantityRenderer renderer = new QuantityRenderer();
             renderer._valueField = _valueField;
             if (_defaultSymbol != null)
-                renderer._defaultSymbol = (ISymbol)_defaultSymbol.Clone(_useRefscale ? display : null);
+                renderer._defaultSymbol = (ISymbol)_defaultSymbol.Clone(_useRefscale ? options : null);
 
             foreach (QuantityClass qClass in _quantityClasses)
             {
@@ -266,7 +266,7 @@ namespace gView.Framework.Carto.Rendering
                 else
                 {
                     renderer._quantityClasses.Add(new QuantityClass(qClass.Min, qClass.Max,
-                        (ISymbol)qClass.Symbol.Clone(_useRefscale ? display : null)));
+                        (ISymbol)qClass.Symbol.Clone(_useRefscale ? options : null)));
                 }
             }
             renderer._geometryType = _geometryType;

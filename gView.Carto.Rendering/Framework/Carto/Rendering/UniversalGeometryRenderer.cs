@@ -143,11 +143,11 @@ namespace gView.Framework.Carto.Rendering
 
         #region IClone2 Member
 
-        public object Clone(IDisplay display)
+        public object Clone(CloneOptions options)
         {
             UniversalGeometryRenderer renderer = new UniversalGeometryRenderer();
             if (_symbol != null)
-                renderer._symbol = (UniversalGeometrySymbol)_symbol.Clone(_useRefScale ? display : null);
+                renderer._symbol = (UniversalGeometrySymbol)_symbol.Clone(_useRefScale ? options : null);
 
             renderer._symbolRotation = (SymbolRotation)_symbolRotation.Clone();
 
@@ -429,12 +429,12 @@ namespace gView.Framework.Carto.Rendering
 
         #region IClone2 Member
 
-        public object Clone(IDisplay display)
+        public object Clone(CloneOptions options)
         {
             UniversalGeometrySymbol symbol = new UniversalGeometrySymbol();
-            symbol._pointSymbol = (ISymbol)_pointSymbol.Clone(display);
-            symbol._lineSymbol = (ISymbol)_lineSymbol.Clone(display);
-            symbol._polygonSymbol = (ISymbol)_polygonSymbol.Clone(display);
+            symbol._pointSymbol = (ISymbol)_pointSymbol.Clone(options);
+            symbol._lineSymbol = (ISymbol)_lineSymbol.Clone(options);
+            symbol._polygonSymbol = (ISymbol)_polygonSymbol.Clone(options);
 
             return symbol;
         }

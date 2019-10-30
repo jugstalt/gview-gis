@@ -695,6 +695,9 @@ namespace gView.Framework.Data
         bool ApplyRefScale { get; set; }
         bool ApplyLabelRefScale { get; set; }
 
+        float MaxRefScaleFactor { get; set; }
+        float MaxLabelRefScaleFactor { get; set; }
+
         IFeatureClass FeatureClass { get; }
         IQueryFilter FilterQuery { get; set; }
 

@@ -837,6 +837,9 @@ namespace gView.Framework.Data
                 _applyRefScale = layer.ApplyRefScale;
                 _applyLabelRefScale = layer.ApplyLabelRefScale;
 
+                this.MaxRefScaleFactor = layer.MaxRefScaleFactor;
+                this.MaxLabelRefScaleFactor = layer.MaxLabelRefScaleFactor;
+
                 _fields.CopyFrom(layer.Fields, this.Class);
                 _geometryType = layer.LayerGeometryType;
 
@@ -984,6 +987,9 @@ namespace gView.Framework.Data
             }
         }
 
+        public float MaxRefScaleFactor { get; set; }
+        public float MaxLabelRefScaleFactor { get; set; }
+
         public IFields Fields
         {
             get { return _fields; }
@@ -1030,6 +1036,10 @@ namespace gView.Framework.Data
 
             _applyRefScale = (bool)stream.Load("applyRefScale", true);
             _applyLabelRefScale = (bool)stream.Load("applyLRefScale", true);
+
+            this.MaxRefScaleFactor = (float)stream.Load("maxRefScaleFactor", 0f);
+            this.MaxLabelRefScaleFactor = (float)stream.Load("maxLabelRefScaleFactor", 0f);
+
             _geometryType = (geometryType)stream.Load("geomType", (int)geometryType.Unknown);
 
             string filterQuery = (string)stream.Load("FilterQuery", "");
@@ -1062,6 +1072,11 @@ namespace gView.Framework.Data
                 stream.Save("applyRefScale", _applyRefScale);
             if (_applyLabelRefScale == false)
                 stream.Save("applyLRefScale", _applyLabelRefScale);
+            if (this.MaxRefScaleFactor > 0D)
+                stream.Save("maxRefScaleFactor", this.MaxRefScaleFactor);
+            if (this.MaxLabelRefScaleFactor > 0D)
+                stream.Save("maxLabelRefScaleFactor", this.MaxLabelRefScaleFactor);
+
             if (_geometryType != geometryType.Unknown)
                 stream.Save("geomType", (int)_geometryType);
 

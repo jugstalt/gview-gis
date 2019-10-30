@@ -640,7 +640,7 @@ namespace gView.Framework.Symbology.UI
 
             if (display.refScale > 1 && !(this is Ghost))
             {
-                ISymbol sym = _symbol.Clone(display) as ISymbol;
+                ISymbol sym = _symbol.Clone(new CloneOptions(display)) as ISymbol;
                 if (sym != null)
                 {
                     display.Draw(sym, geometry);

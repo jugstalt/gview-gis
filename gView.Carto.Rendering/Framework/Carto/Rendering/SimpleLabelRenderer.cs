@@ -172,7 +172,10 @@ namespace gView.Framework.Carto.Rendering
             }
             else
             {
-                filter.AddField(_fieldname);
+                if (layer.FeatureClass.FindField(_fieldname) != null)
+                {
+                    filter.AddField(_fieldname);
+                }
             }
             if (_sizeField != String.Empty)
             {
@@ -501,6 +504,7 @@ namespace gView.Framework.Carto.Rendering
 
         #endregion
 
+        private const int MaxPolygonTotalPointCount= 10000;  // Labelling is too expensive for complex polygons
         private bool LabelPolygon(IDisplay disp, IPolygon polygon)
         {
             //var center = new MultiPoint();
@@ -511,25 +515,28 @@ namespace gView.Framework.Carto.Rendering
             //env.Raise(70.0);
             if (polygon is ITopologicalOperation)
             {
-                //if (disp.GeometricTransformer != null)
-                //{
-                //    object e = disp.GeometricTransformer.InvTransform2D(env);
-                //    if (e is IGeometry) env = ((IGeometry)e).Envelope;
-                //}
                 try
                 {
                     double tolerance = 1.0 * disp.mapScale / disp.dpm;  // 1 Pixel
 
                     // Wichtig bei Flächen mit sehr vielen Vertices... Bundesländer, Länder Thema kann sonst beim Clippen abstürzen
-                    polygon = SpatialAlgorithms.Algorithm.SnapOutsidePointsToEnvelope(polygon, env);
-                    polygon = (IPolygon)SpatialAlgorithms.Algorithm.Generalize(polygon, tolerance);
-
-                    //var center = new MultiPoint();
-                    //center.AddPoint(polygon.Envelope.Center);
-                    //return LabelPointCollection(disp, polygon, center);
+                    //if (polygon.TotalPointCount > MaxPolygonTotalPointCount)
+                    //{
+                        //polygon = SpatialAlgorithms.Algorithm.SnapOutsidePointsToEnvelope(polygon, env);
+                        //polygon = (IPolygon)SpatialAlgorithms.Algorithm.Generalize(polygon, tolerance);
+                    //}
+                    // For testing polygons with many vertices an clipping
+                    // polygon = (IPolygon)SpatialAlgorithms.Algorithm.InterpolatePoints(polygon, 2, true);
 
                     IGeometry g;
-                    ((ITopologicalOperation)polygon).Clip(env, out g);
+                    if (polygon.TotalPointCount > MaxPolygonTotalPointCount)
+                    {
+                        g = polygon;
+                    }
+                    else
+                    {
+                        ((ITopologicalOperation)polygon).Clip(env, out g);
+                    }
                     if (g == null)
                     {
                         return false;
@@ -550,8 +557,15 @@ namespace gView.Framework.Carto.Rendering
                 return false;
             }
 
-            IMultiPoint pColl = gView.Framework.SpatialAlgorithms.Algorithm.PolygonLabelPoints(polygon);
-            return LabelPointCollection(disp, polygon, pColl);
+            if (polygon.TotalPointCount < MaxPolygonTotalPointCount)
+            {
+                IMultiPoint pColl = gView.Framework.SpatialAlgorithms.Algorithm.PolygonLabelPoints(polygon);
+                return LabelPointCollection(disp, polygon, pColl);
+            }
+            else
+            {
+                return false;
+            }
         }
 
         private bool LabelPointCollection(IDisplay disp, IPolygon polygon, IMultiPoint pColl)
@@ -645,10 +659,10 @@ namespace gView.Framework.Carto.Rendering
 
         #region IClone2 Members
 
-        public object Clone(IDisplay display)
+        public object Clone(CloneOptions options)
         {
             SimpleLabelRenderer renderer = new SimpleLabelRenderer(
-                (ITextSymbol)((_symbol is IClone2) ? _symbol.Clone(display) : null),
+                (ITextSymbol)((_symbol is IClone2) ? _symbol.Clone(options) : null),
                 _fieldname);
 
             renderer._howManyLabels = _howManyLabels;

@@ -269,7 +269,7 @@ namespace gView.Interoperability.OGC.SLD
 
         #region IClone2 Member
 
-        public object Clone(IDisplay display)
+        public object Clone(CloneOptions options)
         {
             SLDRenderer clone = new SLDRenderer();
 
@@ -278,7 +278,7 @@ namespace gView.Interoperability.OGC.SLD
             foreach (Rule rule in _rules)
             {
                 if (rule == null) continue;
-                clone._rules.Add(rule.Clone(display) as Rule);
+                clone._rules.Add(rule.Clone(options) as Rule);
             }
             return clone;
         }
@@ -539,11 +539,11 @@ namespace gView.Interoperability.OGC.SLD
 
             #region IClone2 Member
 
-            public object Clone(IDisplay display)
+            public object Clone(CloneOptions options)
             {
                 Rule clone = new Rule();
                 if (_symbol != null)
-                    clone.Symbol = _symbol.Clone(display) as ISymbol;
+                    clone.Symbol = _symbol.Clone(options) as ISymbol;
                 clone.Filter = _filter;
                 clone.filterType = _filterType;
                 clone.MinScale = _minScale;

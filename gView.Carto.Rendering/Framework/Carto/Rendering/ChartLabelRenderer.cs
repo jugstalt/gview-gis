@@ -611,21 +611,23 @@ namespace gView.Framework.Carto.Rendering
 
         #region IClone2 Member
 
-        public object Clone(IDisplay display)
+        public object Clone(CloneOptions options)
         {
             ChartLabelRenderer clone= new ChartLabelRenderer();
 
             foreach (string key in _symbolTable.Keys)
             {
                 ISymbol symbol = (ISymbol)_symbolTable[key];
-                if (symbol != null) symbol = (ISymbol)symbol.Clone(display);
+                if (symbol != null) symbol = (ISymbol)symbol.Clone(options);
                 clone._symbolTable.Add(key, symbol);
             }
             clone._labelPriority = _labelPriority;
             clone._type = _type;
-            clone._outlineSymbol = (_outlineSymbol != null) ? (ILineSymbol)_outlineSymbol.Clone(display) : null;
+            clone._outlineSymbol = (_outlineSymbol != null) ? (ILineSymbol)_outlineSymbol.Clone(options) : null;
 
             double fac = 1.0;
+
+            var display = options?.Display;
 
             if (display != null && display.refScale > 1)
                 fac = display.refScale / Math.Max(display.mapScale, 1D);

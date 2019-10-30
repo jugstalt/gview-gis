@@ -222,13 +222,13 @@ namespace gView.Framework.Carto.Rendering
 
         #region IClone2 Member
 
-        public object Clone(IDisplay display)
+        public object Clone(CloneOptions options)
         {
             NetworkRenderer networkrenderer = new NetworkRenderer(false);
             foreach (IFeatureRenderer renderer in _renderers)
             {
                 if (renderer == null) continue;
-                networkrenderer._renderers.Add(renderer.Clone(display) as IFeatureRenderer);
+                networkrenderer._renderers.Add(renderer.Clone(options) as IFeatureRenderer);
             }
 
             networkrenderer.UseReferenceScale = _useRefScale;

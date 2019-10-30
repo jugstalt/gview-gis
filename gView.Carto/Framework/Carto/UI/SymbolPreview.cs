@@ -90,7 +90,7 @@ namespace gView.Framework.Carto.UI
                 }
             }
 
-            ISymbol sym = symbol.Clone(display) as ISymbol;
+            ISymbol sym = symbol.Clone(new CloneOptions(display)) as ISymbol;
             if (sym != null)
             {
                 if (sym is ITextSymbol)

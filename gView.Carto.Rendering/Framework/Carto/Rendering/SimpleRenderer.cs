@@ -434,11 +434,11 @@ namespace gView.Framework.Carto.Rendering
         #endregion
 
         #region IClone2
-        public object Clone(IDisplay display)
+        public object Clone(CloneOptions options)
         {
             SimpleRenderer renderer = new SimpleRenderer();
             if (_symbol != null)
-                renderer._symbol = (ISymbol)_symbol.Clone(_useRefScale ? display : null);
+                renderer._symbol = (ISymbol)_symbol.Clone(_useRefScale ? options : null);
 
             renderer._symbolRotation = (SymbolRotation)_symbolRotation.Clone();
             renderer._rotate = _rotate;

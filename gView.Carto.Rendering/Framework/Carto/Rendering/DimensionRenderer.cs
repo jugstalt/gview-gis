@@ -39,11 +39,11 @@ namespace gView.Framework.Carto.Rendering
 
             if (renderer != null && renderer._textSymbol != null)
             {
-                _textSymbol = renderer._textSymbol.Clone(_useRefScale ? display : null) as ITextSymbol;
+                _textSymbol = renderer._textSymbol.Clone(_useRefScale ? new CloneOptions(display) : null) as ITextSymbol;
             }
             if (renderer != null && renderer._lineSymbol != null)
             {
-                _lineSymbol = renderer._lineSymbol.Clone(_useRefScale ? display : null) as ILineSymbol;
+                _lineSymbol = renderer._lineSymbol.Clone(_useRefScale ? new CloneOptions(display) : null) as ILineSymbol;
             }
 
             _format = renderer._format;
@@ -260,9 +260,9 @@ namespace gView.Framework.Carto.Rendering
 
         #region IClone2 Member
 
-        public object Clone(IDisplay display)
+        public object Clone(CloneOptions options)
         {
-            DimensionRenderer renderer = new DimensionRenderer(display, this);
+            DimensionRenderer renderer = new DimensionRenderer(options?.Display, this);
             return renderer;
         }
 
