@@ -4,13 +4,9 @@ using gView.Interoperability.GeoServices.Rest.Json;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
@@ -32,7 +28,9 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
             {
                 var toc = _map?.TOC;
                 if (toc == null || toc.Elements == null)
+                {
                     return;
+                }
 
                 foreach (var tocElement in toc.Elements)
                 {
@@ -42,7 +40,7 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
                         continue;
                     }
 
-                    if(tocElement.Layers.Count>1)
+                    if (tocElement.Layers.Count > 1)
                     {
                         throw new Exception($"More than one layer assigned to TOC Element {tocElement.Name}. This is not allowed with this Method.");
                     }
@@ -55,8 +53,8 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
                         String.Empty
                     }));
                 }
-            } 
-            catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -105,24 +103,62 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
             {
                 MessageBox.Show(ex.Message, "Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
+            UpdateUI();
         }
 
         private void btnApply_Click(object sender, EventArgs e)
         {
+            if (btnApply.Enabled == false)
+            {
+                return;
+            }
+
             foreach (TocElementListViewitem item in lstLayers.Items)
             {
-                if(int.TryParse(item.SubItems[3].Text, out int geoServiceLayerId))
+                if (int.TryParse(item.SubItems[3].Text, out int geoServiceLayerId))
                 {
                     item.TOCElement.Layers.First().ID = geoServiceLayerId;
                 }
             }
 
-            if(_map is IRefreshSequences)
+            if (_map is IRefreshSequences)
             {
                 ((IRefreshSequences)_map).RefreshSequences();
             }
             this.Close();
         }
+
+        #region UI Helper
+
+        private void UpdateUI()
+        {
+            bool enableApplyButton =
+                lstLayers.Items.Count > 0;
+
+            List<int> ids = new List<int>();
+            foreach (ListViewItem item in lstLayers.Items)
+            {
+                if (int.TryParse(item.SubItems[3].Text, out int layerId) == true)
+                {
+                    if(ids.Contains(layerId))  // Must be unique
+                    {
+                        enableApplyButton = false;
+                        break;
+                    }
+                    ids.Add(layerId);
+                } 
+                else 
+                {
+                    enableApplyButton = false;
+                    break;
+                }
+            }
+
+            btnApply.Enabled = enableApplyButton;
+        }
+
+        #endregion
 
         #region Helper
 
@@ -130,7 +166,7 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
         {
             string name = tocElement.Name;
 
-            while(tocElement.ParentGroup!=null)
+            while (tocElement.ParentGroup != null)
             {
                 name = tocElement.ParentGroup.Name + "/" + name;
                 tocElement = tocElement.ParentGroup;
@@ -143,10 +179,10 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
         {
             string name = layer.Name;
 
-            while(layer!=null && layer.ParentLayer!=null)
+            while (layer != null && layer.ParentLayer != null)
             {
                 layer = layers.LayerById(layer.ParentLayer.Id);
-                if(layer!=null)
+                if (layer != null)
                 {
                     name = layer.Name + "/" + name;
                 }
@@ -157,10 +193,12 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
 
         private ListViewItem GetItem(string layerFullname)
         {
-            foreach(ListViewItem item in lstLayers.Items)
+            foreach (ListViewItem item in lstLayers.Items)
             {
                 if (item.SubItems[1].Text == layerFullname)
+                {
                     return item;
+                }
             }
 
             return null;

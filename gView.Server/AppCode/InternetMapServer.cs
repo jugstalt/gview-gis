@@ -36,62 +36,72 @@ namespace gView.Server.AppCode
 
         async static public Task Init(string rootPath, int port = 80)
         {
-            
+
             Globals.AppRootPath = rootPath;
 
-            var mapServerConfig = JsonConvert.DeserializeObject<MapServerConfig>(File.ReadAllText(rootPath + "/_config/mapserver.json"));
-
-            OutputPath = mapServerConfig.OuputPath.ToPlattformPath();
-            OutputUrl = mapServerConfig.OutputUrl;
-            OnlineResource = mapServerConfig.OnlineResourceUrl;
-            TileCachePath = mapServerConfig.TileCacheRoot;
-
-            Globals.ForceHttps = mapServerConfig.ForceHttps.HasValue && mapServerConfig.ForceHttps.Value == false ? false : true;  // default: true
-
-            if (mapServerConfig.TaskQueue != null)
+            try
             {
-                Globals.MaxThreads = Math.Max(1, mapServerConfig.TaskQueue.MaxParallelTasks);
-                Globals.QueueLength = Math.Max(10, mapServerConfig.TaskQueue.MaxQueueLength);
-            }
+                var mapServerConfig = JsonConvert.DeserializeObject<MapServerConfig>(File.ReadAllText(rootPath + "/_config/mapserver.json"));
 
-            Instance = new MapServerInstance(port);
+                Globals.HasValidConfig = true;
 
-            ServicesPath = mapServerConfig.ServiceFolder + "/services";
-            Globals.LoginManagerRootPath = mapServerConfig.ServiceFolder + "/_login";
-            Globals.LoggingRootPath = mapServerConfig.ServiceFolder + "/log";
+                OutputPath = mapServerConfig.OuputPath.ToPlattformPath();
+                OutputUrl = mapServerConfig.OutputUrl;
+                OnlineResource = mapServerConfig.OnlineResourceUrl;
+                TileCachePath = mapServerConfig.TileCacheRoot;
 
-            Globals.AllowFormsLogin = mapServerConfig.AllowFormsLogin == false ? false : true;
+                Globals.ForceHttps = mapServerConfig.ForceHttps.HasValue && mapServerConfig.ForceHttps.Value == false ? false : true;  // default: true
 
-            if(mapServerConfig.ExternalAuthService!=null && mapServerConfig.ExternalAuthService.IsValid)
-            {
-                Globals.ExternalAuthService=mapServerConfig.ExternalAuthService;
-            }
+                if (mapServerConfig.TaskQueue != null)
+                {
+                    Globals.MaxThreads = Math.Max(1, mapServerConfig.TaskQueue.MaxParallelTasks);
+                    Globals.QueueLength = Math.Max(10, mapServerConfig.TaskQueue.MaxQueueLength);
+                }
 
-            foreach (string createDirectroy in new string[] {
+                Instance = new MapServerInstance(port);
+
+                ServicesPath = mapServerConfig.ServiceFolder + "/services";
+                Globals.LoginManagerRootPath = mapServerConfig.ServiceFolder + "/_login";
+                Globals.LoggingRootPath = mapServerConfig.ServiceFolder + "/log";
+
+                Globals.AllowFormsLogin = mapServerConfig.AllowFormsLogin == false ? false : true;
+
+                if (mapServerConfig.ExternalAuthService != null && mapServerConfig.ExternalAuthService.IsValid)
+                {
+                    Globals.ExternalAuthService = mapServerConfig.ExternalAuthService;
+                }
+
+                foreach (string createDirectroy in new string[] {
                 ServicesPath,
                 Globals.LoginManagerRootPath,
                 Globals.LoginManagerRootPath+"/manage",
                 Globals.LoginManagerRootPath+"/token",
                 Globals.LoggingRootPath
             })
-            {
-                if (!new DirectoryInfo(createDirectroy).Exists)
                 {
-                    new DirectoryInfo(createDirectroy).Create();
+                    if (!new DirectoryInfo(createDirectroy).Exists)
+                    {
+                        new DirectoryInfo(createDirectroy).Create();
+                    }
                 }
+
+                await AddServices(String.Empty);
+
+
+                var pluginMananger = new PlugInManager();
+                foreach (Type interpreterType in pluginMananger.GetPlugins(typeof(IServiceRequestInterpreter)))
+                {
+                    Interpreters.Add(interpreterType);
+                }
+
+                //ThreadQueue = new ThreadQueue<IServiceRequestContext>(Globals.MaxThreads, Globals.QueueLength);
+                TaskQueue = new TaskQueue<IServiceRequestContext>(Globals.MaxThreads, Globals.QueueLength);
             }
-
-            await AddServices(String.Empty);
-
-
-            var pluginMananger = new PlugInManager();
-            foreach (Type interpreterType in pluginMananger.GetPlugins(typeof(IServiceRequestInterpreter)))
+            catch (Exception ex)
             {
-                Interpreters.Add(interpreterType);
+                Globals.HasValidConfig = false;
+                Globals.ConfigErrorMessage = ex.Message;
             }
-
-            //ThreadQueue = new ThreadQueue<IServiceRequestContext>(Globals.MaxThreads, Globals.QueueLength);
-            TaskQueue = new TaskQueue<IServiceRequestContext>(Globals.MaxThreads, Globals.QueueLength);
         }
 
         async private static Task AddServices(string folder)

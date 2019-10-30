@@ -1,0 +1,16 @@
+﻿
+@{
+    ViewData["Title"] = "ConfigInvalid";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Config Invalid</h2>
+
+<p>
+    The gView Server Configuration is not valid. Please try to correct the issue.
+</p>
+
+<div class="gview5-error-message">
+    @gView.Server.AppCode.Globals.ConfigErrorMessage
+</div>
+
