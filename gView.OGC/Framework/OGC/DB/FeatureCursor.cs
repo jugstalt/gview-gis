@@ -1,5 +1,6 @@
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using gView.Framework.system;
 using System;
 using System.Data;
 using System.Data.Common;
@@ -21,7 +22,7 @@ namespace gView.Framework.OGC.DB
             : base((fc != null) ? fc.SpatialReference : null,
                    (filter != null) ? filter.FeatureSpatialReference : null)
         {
-
+            base.CancelTracker = filter?.CancelTracker;
         }
 
         async static public Task<IFeatureCursor> Create(OgcSpatialFeatureclass fc, IQueryFilter filter)
@@ -198,8 +199,20 @@ namespace gView.Framework.OGC.DB
                 }
                 if (_conn != null && _conn.State != ConnectionState.Closed)
                 {
-                    _conn.Close();
-                    _conn = null;
+                    //if (base.CancelTracker != null && base.CancelTracker.Continue == false)
+                    //{
+                    //    // run & forget for a better UI experience
+                    //    Task.Run(() =>
+                    //    {
+                    //        _conn.Close();
+                    //        _conn = null;
+                    //    });
+                    //}
+                    //else
+                    {
+                        _conn.Close();
+                        _conn = null;
+                    }
                 }
             }
         }

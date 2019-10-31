@@ -37,6 +37,7 @@ namespace gView.Framework.Carto
         public virtual event StartRefreshMapEvent StartRefreshMap;
         public event NewExtentRenderedEvent NewExtentRendered;
         public event EventHandler MapRenamed;
+        public event UserIntefaceEvent OnUserInterface;
 
         public ImageMerger2 m_imageMerger;
         public TOC _toc;
@@ -2420,6 +2421,11 @@ namespace gView.Framework.Carto
 
         #endregion
 
+        internal void FireOnUserInterface(bool lockUI)
+        {
+            this.OnUserInterface?.Invoke(this, lockUI);
+        }
+
         #region Map / Layer Description
 
         protected ConcurrentDictionary<int, string> _layerDescriptions = null;
@@ -3446,6 +3452,7 @@ namespace gView.Framework.Carto
         {
             try
             {
+                _map.FireOnUserInterface(true);
                 if ((
                     layer.FeatureRenderer == null ||
                     layer.FeatureRenderer.HasEffect(layer, _map) == false)
@@ -3482,6 +3489,7 @@ namespace gView.Framework.Carto
                 //filter.FuzzyQuery = true;
                 filter.SpatialRelation = spatialRelation.SpatialRelationMapEnvelopeIntersects;
                 filter.MapScale = _map.Display.mapScale;
+                filter.CancelTracker = _cancelTracker;
 
                 if (layer.FilterQuery != null)
                 {
@@ -3529,8 +3537,8 @@ namespace gView.Framework.Carto
                     // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
                     if (layer.FeatureRenderer != null && layer.FeatureRenderer.HasEffect(layer, _map))
                     {
-                        renderer = (layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale) ? 
-                            (IFeatureRenderer)layer.FeatureRenderer.Clone(new CloneOptions(display, maxRefScaleFactor: layer.MaxRefScaleFactor)) : 
+                        renderer = (layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale) ?
+                            (IFeatureRenderer)layer.FeatureRenderer.Clone(new CloneOptions(display, maxRefScaleFactor: layer.MaxRefScaleFactor)) :
                             layer.FeatureRenderer;
                     }
                     if (layer.LabelRenderer != null && _useLabelRenderer)
@@ -3566,6 +3574,8 @@ namespace gView.Framework.Carto
 
                 using (IFeatureCursor fCursor = await fClass.GetFeatures(MapHelper.MapQueryFilter(filter)))
                 {
+                    _map.FireOnUserInterface(false);
+
                     if (fCursor != null)
                     {
                         IFeature feature;
@@ -3648,6 +3658,10 @@ namespace gView.Framework.Carto
                     _map.AddException(new Exception("RenderFeatureLayerThread: " + ((layer != null) ? layer.Title : String.Empty) + "\n" + ex.Message, ex));
                 }
             }
+            finally
+            {
+                _map.FireOnUserInterface(false);
+            }
         }
     }
 
@@ -3713,7 +3727,7 @@ namespace gView.Framework.Carto
                     // Beim Clonen sprerren...
                     // Da sonst bei der Servicemap bei gleichzeitigen Requests
                     // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
-                    labelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone(new CloneOptions(_map));
+                    labelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone(new CloneOptions(_map, maxLabelRefscaleFactor: _layer.MaxLabelRefScaleFactor));
                 }
 
                 #endregion
@@ -4196,7 +4210,7 @@ namespace gView.Framework.Carto
                 // Beim Clonen sprerren...
                 // Da sonst bei der Servicemap bei gleichzeitigen Requests
                 // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
-                selectionRenderer = (IFeatureRenderer)_layer.SelectionRenderer.Clone(new CloneOptions(_map));
+                selectionRenderer = (IFeatureRenderer)_layer.SelectionRenderer.Clone(new CloneOptions(_map, maxLabelRefscaleFactor: _layer.MaxRefScaleFactor));
             }
 
             #endregion

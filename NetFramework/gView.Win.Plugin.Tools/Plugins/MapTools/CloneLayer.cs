@@ -1,14 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+using gView.Framework.Carto;
+using gView.Framework.Carto.UI;
 using gView.Framework.Data;
-using System.Windows.Forms;
 using gView.Framework.Globalisation;
-using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Plugins.MapTools.Dialogs;
-using gView.Framework.Carto.UI;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools
 {
@@ -26,8 +23,11 @@ namespace gView.Plugins.MapTools
 
         public bool Enable(object element)
         {
-            if (_doc!=null && _doc.Application is IMapApplication &&
-                    ((IMapApplication)_doc.Application).ReadOnly == true) return false;
+            if (_doc != null && _doc.Application is IMapApplication &&
+                    ((IMapApplication)_doc.Application).ReadOnly == true)
+            {
+                return false;
+            }
 
             //LicenseTypes lt = _doc.Application.ComponentLicenseType("gview.desktop;gview.map");
             //if (lt == LicenseTypes.Licensed || lt == LicenseTypes.Express)
@@ -40,7 +40,10 @@ namespace gView.Plugins.MapTools
         public bool Visible(object element)
         {
             if (_doc != null && _doc.Application is IMapApplication &&
-                    ((IMapApplication)_doc.Application).ReadOnly == true) return false;
+                    ((IMapApplication)_doc.Application).ReadOnly == true)
+            {
+                return false;
+            }
 
             //LicenseTypes lt = _doc.Application.ComponentLicenseType("gview.desktop;gview.map");
             //if (lt == LicenseTypes.Licensed || lt == LicenseTypes.Express)
@@ -54,24 +57,32 @@ namespace gView.Plugins.MapTools
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = hook as IMapDocument;
+            }
         }
 
         public Task<bool> OnEvent(object element, object dataset)
         {
             if (!(element is IDatasetElement) || !(dataset is IDataset))
-                return Task.FromResult(true); 
-
-            TOC toc= _doc.FocusMap.TOC as TOC;
-            if(toc==null)
+            {
                 return Task.FromResult(true);
+            }
+
+            TOC toc = _doc.FocusMap.TOC as TOC;
+            if (toc == null)
+            {
+                return Task.FromResult(true);
+            }
 
             ITOCElement tocElement = toc.GetTOCElement(((IDatasetElement)element).Class);
             if (tocElement == null)
+            {
                 return Task.FromResult(true);
+            }
 
             ILayer newLayer = LayerFactory.Create(((IDatasetElement)element).Class);
-            
+
             if (newLayer is IFeatureLayer && element is IFeatureLayer)
             {
                 if (((IFeatureLayer)element).Joins != null)
@@ -84,14 +95,21 @@ namespace gView.Plugins.MapTools
                     filter.WhereClause = ((IFeatureLayer)element).FilterQuery.WhereClause;
                     ((IFeatureLayer)newLayer).FilterQuery = filter;
                 }
+
+                ((IFeatureLayer)newLayer).FeatureRenderer = ((IFeatureLayer)element).FeatureRenderer.Clone() as IFeatureRenderer ?? ((IFeatureLayer)newLayer).FeatureRenderer;
+                ((IFeatureLayer)newLayer).LabelRenderer = ((IFeatureLayer)element).LabelRenderer?.Clone() as ILabelRenderer ?? ((IFeatureLayer)newLayer).LabelRenderer;
             }
             if (newLayer == null)
+            {
                 return Task.FromResult(true);
+            }
 
             _doc.FocusMap.AddLayer(newLayer);
 
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(Framework.Carto.DrawPhase.All);
+            }
 
             return Task.FromResult(true);
         }
@@ -124,10 +142,13 @@ namespace gView.Plugins.MapTools
         public bool Enable(object element)
         {
             if (_doc != null && _doc.Application is IMapApplication &&
-                    ((IMapApplication)_doc.Application).ReadOnly == true) return false;
+                    ((IMapApplication)_doc.Application).ReadOnly == true)
+            {
+                return false;
+            }
 
-            return (element is IFeatureLayer && 
-                _doc != null && _doc.FocusMap != null && _doc.FocusMap.TOC != null && element != null); 
+            return (element is IFeatureLayer &&
+                _doc != null && _doc.FocusMap != null && _doc.FocusMap.TOC != null && element != null);
         }
 
         public bool Visible(object element)
@@ -138,28 +159,40 @@ namespace gView.Plugins.MapTools
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = hook as IMapDocument;
+            }
         }
 
         public Task<bool> OnEvent(object element, object dataset)
         {
             if (!(element is IDatasetElement) || !(dataset is IDataset))
+            {
                 return Task.FromResult(true);
+            }
 
             TOC toc = _doc.FocusMap.TOC as TOC;
             if (toc == null)
+            {
                 return Task.FromResult(true);
+            }
 
             ITOCElement tocElement = toc.GetTOCElement(((IDatasetElement)element).Class);
             if (tocElement == null)
+            {
                 return Task.FromResult(true);
+            }
+
             ITOCElement parentTocElement = tocElement.ParentGroup;
 
             //IDatasetElement e = ((IDataset)dataset)[((IDatasetElement)element).Title];
             //if (e == null) return;
- 
+
             if (!(element is ILayer))
+            {
                 return Task.FromResult(true);
+            }
+
             FormSplitLayerWithFilter dlg = new FormSplitLayerWithFilter(_doc, element as ILayer);
 
             if (dlg.ShowDialog() == DialogResult.OK)
@@ -187,7 +220,9 @@ namespace gView.Plugins.MapTools
                 }
 
                 if (_doc.Application is IMapApplication)
+                {
                     ((IMapApplication)_doc.Application).RefreshActiveMap(Framework.Carto.DrawPhase.All);
+                }
             }
 
             return Task.FromResult(true);

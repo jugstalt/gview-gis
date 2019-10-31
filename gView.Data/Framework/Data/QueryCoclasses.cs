@@ -62,6 +62,7 @@ namespace gView.Framework.Data
             this.Limit = filter.Limit;
 
             this.IgnoreUndefinedFields = filter.IgnoreUndefinedFields;
+            this.CancelTracker = filter.CancelTracker;
 
             filter.CopyUserDataTo(this);
         }
@@ -95,6 +96,7 @@ namespace gView.Framework.Data
             copyto.m_fieldPrefix = m_fieldPrefix;
             copyto.m_fieldPostfix = m_fieldPostfix;
             copyto._featureSRef = _featureSRef;
+            copyto.CancelTracker = CancelTracker;
 
             this.CopyUserDataTo(copyto);
         }
@@ -129,6 +131,9 @@ namespace gView.Framework.Data
 
             m_fields.Add(fieldname);
         }
+
+        public ICancelTracker CancelTracker { get; set; }
+
         public virtual void AddField(string fieldname, string alias)
         {
             AddField(fieldname);

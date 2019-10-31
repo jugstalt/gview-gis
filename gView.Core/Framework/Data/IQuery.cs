@@ -32,6 +32,8 @@ namespace gView.Framework.Data
         ISpatialReference FeatureSpatialReference { get; set; }
         ISpatialReference ContextLayerDefaultSpatialReference { get; set; }
 
+        ICancelTracker CancelTracker { get; set; }
+
         bool IgnoreUndefinedFields { get; set; }
 
         double MapScale { get; set; }

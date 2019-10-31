@@ -46,7 +46,7 @@ namespace gView.Framework.UI.Controls
         private Image _image = null;
         private object lockThis = new object();
         private System.Windows.Forms.Timer timerResize;
-        private bool _mouseWheel = true;
+        private bool _mouseWheel = true, _uiLocked = false;
         private ContextMenuStrip _contextMenu = null;
         private System.Windows.Forms.Timer timerWheel;
         private Panel panelCopyright;
@@ -160,9 +160,35 @@ namespace gView.Framework.UI.Controls
                     //m_map.NewBitmap+=new NewBitmapEvent(NewBitmapCreated);
                     _map.DoRefreshMapView += new DoRefreshMapViewEvent(MakeMapViewRefresh);
                     //m_map.DrawingLayer+=new gView.Framework.Carto.DrawingLayerEvent(OnDrawingLayer);
+                    
+                    _map.OnUserInterface -= _map_OnUserInterface;
+                    _map.OnUserInterface += _map_OnUserInterface;
                 }
             }
         }
+
+        private delegate void OnUserInterfaceCallback(IMap sender, bool lockUI);
+        private void _map_OnUserInterface(IMap sender, bool lockUI)
+        {
+            if (this.InvokeRequired)
+            {
+                var d = new OnUserInterfaceCallback(_map_OnUserInterface);
+                this.Invoke(d, new object[] { sender, lockUI });
+            }
+            else
+            {
+                _uiLocked = lockUI;
+                if (lockUI)
+                {
+                    this.Cursor = Cursors.WaitCursor;
+                }
+                else
+                {
+                    this.Cursor = Cursors.Default;
+                }
+            }
+        }
+
         public NavigationType MouseNavigationType
         {
             get { return _navType; }
@@ -399,9 +425,19 @@ namespace gView.Framework.UI.Controls
 
         private bool _cancelling = false;
 
-        private void CancelDrawing()
+        private void CancelDrawing(bool runAndForget=false)
         {
-            CancelDrawing(DrawPhase.All);
+            if (runAndForget)
+            {
+                Task.Run(() =>
+                {
+                    CancelDrawing(DrawPhase.All);
+                });
+            }
+            else
+            {
+                CancelDrawing(DrawPhase.All);
+            }
         }
         public void CancelDrawing(DrawPhase phase)
         {
@@ -488,6 +524,7 @@ namespace gView.Framework.UI.Controls
                     _refreshMapThread.Join();
                 }
 
+                _cancelTracker = new CancelTracker();  // a new CancelTracker for every request!?
                 _cancelTracker.Reset();
                 _refreshMapThread = new Thread(async () =>
                   {
@@ -625,14 +662,6 @@ namespace gView.Framework.UI.Controls
             }
 
             _map.Display.Image2World(ref x, ref y);
-            //IEnvelope env = _map.Display.Envelope;
-            //double minx = env.minx,
-            //        miny = env.miny,
-            //        maxx = env.maxx,
-            //        maxy = env.maxy;
-
-            //x = minx + Math.Abs(maxx - minx) * x / this.Width;
-            //y = miny + Math.Abs(maxy - miny) * (this.Height - y) / this.Height;
         }
         private IEnvelope Image2World(IEnvelope envelope)
         {
@@ -700,22 +729,13 @@ namespace gView.Framework.UI.Controls
 
             System.Drawing.Graphics gr = System.Drawing.Graphics.FromHwnd(this.Handle);
             rop2.DrawXORRectangle(gr, x - 1, y - 1, x + 5, y + 5);
-            //rop2.DrawXORRectangle(gr, x + 1, y - 3, x, y + 3);
-
-            //System.Drawing.Point p1 = new System.Drawing.Point(x - 3, y);
-            //System.Drawing.Point p2 = new System.Drawing.Point(x + 4, y);
-            //System.Drawing.Point p3 = new System.Drawing.Point(x, y - 3);
-            //System.Drawing.Point p4 = new System.Drawing.Point(x, y + 4);
-
-            //ControlPaint.DrawReversibleLine(p1, p2, Color.Red);
-            //ControlPaint.DrawReversibleLine(p3, p4, Color.Red);
         }
 
         #region MouseEvents
 
         private void this_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (_cancelling)
+            if (_cancelling || _uiLocked)
             {
                 return;
             }
@@ -776,12 +796,12 @@ namespace gView.Framework.UI.Controls
                     break;
                 case ToolType.smartnavigation:
                     //CancelDrawing(DrawPhase.All);
-                    CancelDrawing();
+                    CancelDrawing(true);
                     break;
                 case ToolType.pan:
                     if (_navType == NavigationType.Standard)
                     {
-                        CancelDrawing(); //CancelDrawing(DrawPhase.All);
+                        CancelDrawing(true); //CancelDrawing(DrawPhase.All);
                     }
 
                     break;
@@ -816,6 +836,11 @@ namespace gView.Framework.UI.Controls
 
         void MapView_MouseWheel(object sender, MouseEventArgs e)
         {
+            if(_uiLocked)
+            {
+                return;
+            }
+
             timerWheel.Stop();
             if (this.Width == 0 || this.Height == 0)
             {
@@ -837,7 +862,7 @@ namespace gView.Framework.UI.Controls
             }
             //if (_canceled)
             //    CancelDrawing(DrawPhase.All);
-            CancelDrawing();
+            CancelDrawing(true);
 
             bool first = (_wheelImageStartEnv == null);
 
@@ -903,6 +928,7 @@ namespace gView.Framework.UI.Controls
 
         public void Wheel(double X, double Y, double diff_w)
         {
+            if(_uiLocked) { return; }
             timerWheel.Stop();
 
             bool first = (_wheelImageStartEnv == null);
@@ -965,7 +991,7 @@ namespace gView.Framework.UI.Controls
         int _iSnapX = int.MinValue, _iSnapY = int.MinValue;
         private void this_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (_cancelling)
+            if (_cancelling || _uiLocked)
             {
                 return;
             }
@@ -1150,7 +1176,7 @@ namespace gView.Framework.UI.Controls
 
         async private void Pan_MouseMove(System.Windows.Forms.MouseEventArgs e)
         {
-            if (_image == null)
+            if (_image == null || _uiLocked)
             {
                 return;
             }

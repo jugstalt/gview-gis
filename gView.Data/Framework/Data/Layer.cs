@@ -1911,6 +1911,8 @@ namespace gView.Framework.Data
             }
         }
 
+        protected ICancelTracker CancelTracker { get; set; }
+
         #region IFeatureCursor Member
 
         abstract public Task<IFeature> NextFeature();

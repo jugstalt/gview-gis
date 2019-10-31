@@ -56,7 +56,21 @@ namespace gView.Framework.Symbology
         public string Name => "Symbol Doted Line";
 
         [Browsable(false)]
-        public SymbolSmoothing SymbolSmothingMode { get; set; }
+        public SymbolSmoothing SymbolSmothingMode
+        {
+            set
+            {
+                if (this.LineSymbol != null)
+                {
+                    this.LineSymbol.SymbolSmothingMode = value;
+                }
+
+                if (this.PointSymbol != null)
+                {
+                    this.PointSymbol.SymbolSmothingMode = value;
+                }
+            }
+        }
 
         public void Draw(IDisplay display, IGeometry geometry)
         {
@@ -76,18 +90,18 @@ namespace gView.Framework.Symbology
 
                 if (this.LineSymbol != null)
                 {
-                    if (this.SymbolSmothingMode != SymbolSmoothing.None)
-                    {
-                        this.LineSymbol.SymbolSmothingMode = this.SymbolSmothingMode;
-                    }
+                    //if (this.SymbolSmothingMode != SymbolSmoothing.None)
+                    //{
+                    //    this.LineSymbol.SymbolSmothingMode = this.SymbolSmothingMode;
+                    //}
                     this.LineSymbol.Draw(display, geometry);
                 }
                 if (this.PointSymbol != null && geometry is IPolyline)
                 {
-                    if(this.SymbolSmothingMode!=SymbolSmoothing.None)
-                    {
-                        this.PointSymbol.SymbolSmothingMode = this.SymbolSmothingMode;
-                    }
+                    //if (this.SymbolSmothingMode != SymbolSmoothing.None)
+                    //{
+                    //    this.PointSymbol.SymbolSmothingMode = this.SymbolSmothingMode;
+                    //}
                     double pixelStep = this.StepWidth;
                     double step = pixelStep * (display.mapScale / (96 / 0.0254));  // [m]
 
@@ -122,9 +136,9 @@ namespace gView.Framework.Symbology
                             if (this.DrawStepPoints && pixelStep >= 1 && step > 0.0)
                             {
                                 pointCollection = length > step ?
-                                    SpatialAlgorithms.Algorithm.PathPoints(path, 
-                                                                           fromStat: step, 
-                                                                           toStat: length, 
+                                    SpatialAlgorithms.Algorithm.PathPoints(path,
+                                                                           fromStat: step,
+                                                                           toStat: length,
                                                                            step: step,
                                                                            createPointM2: true) :
                                     new PointCollection();

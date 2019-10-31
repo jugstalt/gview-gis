@@ -109,7 +109,7 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools
 
         public int SortOrder
         {
-            get { return 201; }
+            get { return 82; }
         }
 
         #endregion

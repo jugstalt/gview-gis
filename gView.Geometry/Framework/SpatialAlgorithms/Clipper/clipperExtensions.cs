@@ -1,13 +1,8 @@
 ﻿using gView.Framework.Geometry;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gView.Framework.SpatialAlgorithms.Clipper
 {
-    using ClipperPolygon = List<IntPoint>;
     using ClipperPolygons = List<List<IntPoint>>;
 
     public static class ClipperExtensions
@@ -16,8 +11,13 @@ namespace gView.Framework.SpatialAlgorithms.Clipper
 
         static public ClipperPolygons ToClipperPolygons(this IPolygon polygon)
         {
+            if (polygon == null)
+            {
+                return null;
+            }
+
             Clipper c = new Clipper();
-            ClipperPolygons polygons = new ClipperPolygons(), result=new ClipperPolygons();
+            ClipperPolygons polygons = new ClipperPolygons(), result = new ClipperPolygons();
 
             for (int r = 0, r_to = polygon.RingCount; r < r_to; r++)
             {
@@ -25,7 +25,7 @@ namespace gView.Framework.SpatialAlgorithms.Clipper
                 ring.Close();
 
                 var ringPoints = new List<IntPoint>();
-                for(int p=0,p_to=ring.PointCount;p<p_to;p++)
+                for (int p = 0, p_to = ring.PointCount; p < p_to; p++)
                 {
                     ringPoints.Add(ring[p].ToClipperPointer());
                 }
@@ -34,7 +34,9 @@ namespace gView.Framework.SpatialAlgorithms.Clipper
 
             c.AddPaths(polygons, PolyType.ptSubject, true);
             if (c.Execute(ClipType.ctUnion, result) == true)
+            {
                 return result;
+            }
 
             return null;
         }
@@ -64,11 +66,11 @@ namespace gView.Framework.SpatialAlgorithms.Clipper
         {
             Polygon result = new Polygon();
 
-            foreach(var clipperRing in clipperPolygons)
+            foreach (var clipperRing in clipperPolygons)
             {
                 var ring = new Ring();
 
-                foreach(var clipperPoint in clipperRing)
+                foreach (var clipperPoint in clipperRing)
                 {
                     ring.AddPoint(clipperPoint.ToPoint());
                 }
@@ -91,14 +93,16 @@ namespace gView.Framework.SpatialAlgorithms.Clipper
         {
             Clipper c = new Clipper();
 
-            foreach(var polygon in polygons)
+            foreach (var polygon in polygons)
             {
                 c.AddPaths(polygon.ToClipperPolygons(), PolyType.ptSubject, true);
             }
 
             ClipperPolygons result = new ClipperPolygons();
             if (c.Execute(ClipType.ctUnion, result, PolyFillType.pftPositive) == true)
+            {
                 return result.ToPolygon();
+            }
 
             return null;
         }
@@ -114,7 +118,9 @@ namespace gView.Framework.SpatialAlgorithms.Clipper
 
             ClipperPolygons result = new ClipperPolygons();
             if (c.Execute(ClipType.ctIntersection, result) == true)
+            {
                 return result.ToPolygon();
+            }
 
             return clippee;
         }

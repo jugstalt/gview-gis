@@ -1,3 +1,8 @@
+using gView.Framework.Carto;
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.system;
+using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,11 +11,6 @@ using System.Drawing;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
-using gView.Framework.system;
-using gView.Framework.Carto;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -25,8 +25,11 @@ namespace gView.Plugins.MapTools.Dialogs
 
         public FormQuery(FormIdentify parent)
         {
-            if (parent == null) return;
-            
+            if (parent == null)
+            {
+                return;
+            }
+
             InitializeComponent();
 
             _parent = parent;
@@ -36,15 +39,21 @@ namespace gView.Plugins.MapTools.Dialogs
                 //this.TopMost = true;
                 //this.Parent = parent._doc.Application.ApplicationWindow;
                 if (parent._doc.Application is IMapApplication)
+                {
                     this.Owner = ((IMapApplication)parent._doc.Application).ApplicationWindow as Form;
+                }
             }
 
             _combo = this.QueryCombo;
-            if (_combo == null) return;
+            if (_combo == null)
+            {
+                return;
+            }
+
             _combo.SelectedItemChanged += new QueryThemeCombo.SelectedItemChangedEvent(QueryCombo_SelectedItemChanged);
 
             this.ThemeMode = _combo.ThemeMode;
-            
+
             _worker.DoWork += new DoWorkEventHandler(worker_DoWork);
             _worker2.DoWork += new DoWorkEventHandler(worker2_DoWork);
         }
@@ -85,7 +94,10 @@ namespace gView.Plugins.MapTools.Dialogs
             {
                 if (_parent == null || _parent.MapDocument == null ||
                     _parent.MapDocument.FocusMap == null ||
-                    _parent.MapDocument.FocusMap.Display == null) return;
+                    _parent.MapDocument.FocusMap.Display == null)
+                {
+                    return;
+                }
 
                 ISpatialReference sRef =
                     (_parent.MapDocument.FocusMap.Display.SpatialReference != null) ?
@@ -95,39 +107,68 @@ namespace gView.Plugins.MapTools.Dialogs
                 StartProgress();
 
                 List<IDatasetElement> elements = e.Argument as List<IDatasetElement>;
-                if (elements == null) return;
+                if (elements == null)
+                {
+                    return;
+                }
 
                 foreach (IDatasetElement element in elements)
                 {
-                    if (!(element is IFeatureLayer)) continue;
+                    if (!(element is IFeatureLayer))
+                    {
+                        continue;
+                    }
+
                     IFeatureLayer layer = element as IFeatureLayer;
-                    if (!(element.Class is IFeatureClass)) continue;
+                    if (!(element.Class is IFeatureClass))
+                    {
+                        continue;
+                    }
+
                     IFeatureClass fc = element.Class as IFeatureClass;
-                    if (fc.Fields == null) continue;
+                    if (fc.Fields == null)
+                    {
+                        continue;
+                    }
 
                     string val = _queryVal.Replace("*", "%");
                     string sval = _useWildcards ? AppendWildcards(val) : val;
-                    
+
                     //
                     // Collect Fields
                     //
                     Fields queryFields = new Fields();
                     foreach (IField field in fc.Fields.ToEnumerable())
                     {
-                        if (field.type == FieldType.binary || field.type == FieldType.Shape) continue;
-                        if (field.name.Contains(":")) continue;  // No Joined Fields
+                        if (field.type == FieldType.binary || field.type == FieldType.Shape)
+                        {
+                            continue;
+                        }
 
-                        if (_searchType==SearchType.allfields)
+                        if (field.name.Contains(":"))
+                        {
+                            continue;  // No Joined Fields
+                        }
+
+                        if (_searchType == SearchType.allfields)
+                        {
                             queryFields.Add(field);
+                        }
                         else if (_searchType == SearchType.field)
                         {
-                            if (field.aliasname == _queryField) queryFields.Add(field);
+                            if (field.aliasname == _queryField)
+                            {
+                                queryFields.Add(field);
+                            }
                         }
                         else if (_searchType == SearchType.displayfield)
                         {
                         }
                     }
-                    if (queryFields.Count == 0) continue;
+                    if (queryFields.Count == 0)
+                    {
+                        continue;
+                    }
 
                     //
                     // Build SQL Where Clause
@@ -139,7 +180,12 @@ namespace gView.Plugins.MapTools.Dialogs
                         {
                             case FieldType.character:
                             case FieldType.String:
-                                if (sql.Length > 0) sql.Append(" OR ");
+                            case FieldType.NString:
+                                if (sql.Length > 0)
+                                {
+                                    sql.Append(" OR ");
+                                }
+
                                 sql.Append(field.name);
                                 sql.Append(sval.IndexOf("%") == -1 ? "=" : " like ");
                                 sql.Append("'" + sval + "'");
@@ -151,20 +197,34 @@ namespace gView.Plugins.MapTools.Dialogs
                             case FieldType.Float:
                                 if (IsNumeric(val))
                                 {
-                                    if (sql.Length > 0) sql.Append(" OR ");
+                                    if (sql.Length > 0)
+                                    {
+                                        sql.Append(" OR ");
+                                    }
+
                                     sql.Append(field.name + "=" + val);
                                 }
                                 break;
                         }
                     }
-                    if (sql.Length == 0) continue;
+                    if (sql.Length == 0)
+                    {
+                        continue;
+                    }
 
-                    if (!_cancelTracker.Continue) return;
-                    string title=fc.Name;
+                    if (!_cancelTracker.Continue)
+                    {
+                        return;
+                    }
+
+                    string title = fc.Name;
                     if (_focusMap != null && _focusMap.TOC != null)
                     {
                         ITOCElement tocElement = _focusMap.TOC.GetTOCElement(element as ILayer);
-                        if (tocElement != null) title = tocElement.Name;
+                        if (tocElement != null)
+                        {
+                            title = tocElement.Name;
+                        }
                     }
                     //
                     // Query
@@ -178,7 +238,10 @@ namespace gView.Plugins.MapTools.Dialogs
                     SetMsgText("", 2);
                     using (IFeatureCursor cursor = (await fc.Search(filter)) as IFeatureCursor)
                     {
-                        if (cursor == null) continue;
+                        if (cursor == null)
+                        {
+                            continue;
+                        }
 
                         int counter = 0;
                         IFeature feature;
@@ -199,9 +262,15 @@ namespace gView.Plugins.MapTools.Dialogs
                                 features = new List<IFeature>();
                             }
                         }
-                        if (features.Count > 0) this.AddFeature(features, sRef, layer, title, null, null, null);
+                        if (features.Count > 0)
+                        {
+                            this.AddFeature(features, sRef, layer, title, null, null, null);
+                        }
 
-                        if (_mode == IdentifyMode.topmost && counter > 0) break;
+                        if (_mode == IdentifyMode.topmost && counter > 0)
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -215,7 +284,7 @@ namespace gView.Plugins.MapTools.Dialogs
             }
         }
 
-        private bool IsNumeric(string val) 
+        private bool IsNumeric(string val)
         {
             double num;
             return double.TryParse(val, out num);
@@ -223,7 +292,11 @@ namespace gView.Plugins.MapTools.Dialogs
 
         private string AppendWildcards(string val)
         {
-            if (val.Length == 0) return "%";
+            if (val.Length == 0)
+            {
+                return "%";
+            }
+
             val = "%" + val + "%";
             return val.Replace("%%", "%");
         }
@@ -235,11 +308,17 @@ namespace gView.Plugins.MapTools.Dialogs
 
         async void worker2_DoWork(object sender, DoWorkEventArgs e)
         {
-            if (_theme == null || _theme.Nodes == null || _theme.Nodes.Count == 0 || _userdefValues == null) return;
+            if (_theme == null || _theme.Nodes == null || _theme.Nodes.Count == 0 || _userdefValues == null)
+            {
+                return;
+            }
 
             if (_parent == null || _parent.MapDocument == null ||
                     _parent.MapDocument.FocusMap == null ||
-                    _parent.MapDocument.FocusMap.Display == null) return;
+                    _parent.MapDocument.FocusMap.Display == null)
+            {
+                return;
+            }
 
             ISpatialReference sRef =
                 (_parent.MapDocument.FocusMap.Display.SpatialReference != null) ?
@@ -252,10 +331,17 @@ namespace gView.Plugins.MapTools.Dialogs
 
                 foreach (QueryThemeTable table in _theme.Nodes)
                 {
-                    if (table.QueryFieldDef == null) continue;
+                    if (table.QueryFieldDef == null)
+                    {
+                        continue;
+                    }
 
-                    IFeatureLayer layer = table.GetLayer(_parent._doc) as  IFeatureLayer;
-                    if (layer == null || !(layer.Class is IFeatureClass)) continue;
+                    IFeatureLayer layer = table.GetLayer(_parent._doc) as IFeatureLayer;
+                    if (layer == null || !(layer.Class is IFeatureClass))
+                    {
+                        continue;
+                    }
+
                     IFeatureClass fc = layer.Class as IFeatureClass;
 
                     #region SQL
@@ -271,13 +357,23 @@ namespace gView.Plugins.MapTools.Dialogs
                         }
 
                         string val = "";
-                        if (!_userdefValues.TryGetValue((int)fieldDef["Prompt"], out val)) continue;
-                        if (val == "") continue;
+                        if (!_userdefValues.TryGetValue((int)fieldDef["Prompt"], out val))
+                        {
+                            continue;
+                        }
+
+                        if (val == "")
+                        {
+                            continue;
+                        }
 
                         val = val.Replace("*", "%");
 
                         IField field = fc.FindField(fieldDef["Field"].ToString());
-                        if (field == null) continue;
+                        if (field == null)
+                        {
+                            continue;
+                        }
 
                         switch (field.type)
                         {
@@ -288,7 +384,11 @@ namespace gView.Plugins.MapTools.Dialogs
                             case FieldType.integer:
                                 if (IsNumeric(val))
                                 {
-                                    if (sql.Length > 0) sql.Append(logic);
+                                    if (sql.Length > 0)
+                                    {
+                                        sql.Append(logic);
+                                    }
+
                                     sql.Append(field.name + fieldDef["Operator"] + val);
                                 }
                                 break;
@@ -303,24 +403,38 @@ namespace gView.Plugins.MapTools.Dialogs
                                 {
                                     v += "%";
                                 }
-                                if (sql.Length > 0) sql.Append(logic);
+                                if (sql.Length > 0)
+                                {
+                                    sql.Append(logic);
+                                }
+
                                 sql.Append(field.name + op + "'" + v + "'");
                                 break;
                         }
                     }
-                    if (sql.Length == 0) continue;
+                    if (sql.Length == 0)
+                    {
+                        continue;
+                    }
+
                     sql.Insert(0, "(");
                     sql.Append(")");
                     #endregion
 
-                    if (!_cancelTracker.Continue) return;
+                    if (!_cancelTracker.Continue)
+                    {
+                        return;
+                    }
 
                     #region Layer Title
                     string title = fc.Name;
                     if (_focusMap != null && _focusMap.TOC != null)
                     {
                         ITOCElement tocElement = _focusMap.TOC.GetTOCElement(layer);
-                        if (tocElement != null) title = tocElement.Name;
+                        if (tocElement != null)
+                        {
+                            title = tocElement.Name;
+                        }
                     }
                     #endregion
 
@@ -335,10 +449,15 @@ namespace gView.Plugins.MapTools.Dialogs
                         foreach (IField field in layer.Fields.ToEnumerable())
                         {
                             if (table.VisibleFieldDef.PrimaryDisplayField == field.name)
+                            {
                                 primaryDisplayField = field;
+                            }
 
-                            DataRow [] r = table.VisibleFieldDef.Select("Visible=true AND Name='" + field.name + "'");
-                            if (r.Length == 0) continue;
+                            DataRow[] r = table.VisibleFieldDef.Select("Visible=true AND Name='" + field.name + "'");
+                            if (r.Length == 0)
+                            {
+                                continue;
+                            }
 
                             Field f = new Field(field);
                             f.visible = true;
@@ -358,11 +477,22 @@ namespace gView.Plugins.MapTools.Dialogs
                     {
                         foreach (IField field in fields.ToEnumerable())
                         {
-                            if (!field.visible) continue;
+                            if (!field.visible)
+                            {
+                                continue;
+                            }
+
                             filter.AddField(field.name);
                         }
-                        if (primaryDisplayField != null) filter.AddField(primaryDisplayField.name);
-                        if (layer is IFeatureLayer && ((IFeatureLayer)layer).FeatureClass != null) filter.AddField(((IFeatureLayer)layer).FeatureClass.ShapeFieldName);
+                        if (primaryDisplayField != null)
+                        {
+                            filter.AddField(primaryDisplayField.name);
+                        }
+
+                        if (layer is IFeatureLayer && ((IFeatureLayer)layer).FeatureClass != null)
+                        {
+                            filter.AddField(((IFeatureLayer)layer).FeatureClass.ShapeFieldName);
+                        }
                     }
 
                     filter.WhereClause = sql.ToString();
@@ -375,7 +505,10 @@ namespace gView.Plugins.MapTools.Dialogs
                     #region Query
                     using (IFeatureCursor cursor = await fc.Search(filter) as IFeatureCursor)
                     {
-                        if (cursor == null) continue;
+                        if (cursor == null)
+                        {
+                            continue;
+                        }
 
                         int counter = 0;
                         IFeature feature;
@@ -393,15 +526,17 @@ namespace gView.Plugins.MapTools.Dialogs
                             {
                                 SetMsgText(counter + " Features...", 2);
                                 ManualResetEvent resetEvent = new ManualResetEvent(false);
-                                
+
                                 this.AddFeature(features, sRef, layer, title, fields, primaryDisplayField, resetEvent);
                                 features = new List<IFeature>();
 
                                 resetEvent.WaitOne();
                             }
                         }
-                        if (features.Count > 0) this.AddFeature(features, sRef, layer, title, fields, primaryDisplayField, null);
-
+                        if (features.Count > 0)
+                        {
+                            this.AddFeature(features, sRef, layer, title, fields, primaryDisplayField, null);
+                        }
                     }
                     #endregion
                 }
@@ -434,7 +569,7 @@ namespace gView.Plugins.MapTools.Dialogs
                 progressDisk.Start(100);
             }
         }
-        
+
         private delegate void StopProgressCallback();
         private void StopProgress()
         {
@@ -469,7 +604,10 @@ namespace gView.Plugins.MapTools.Dialogs
                     _parent.AddFeature(feature, sRef, layer, category, fields, primaryDisplayField);
                 }
                 features.Clear();
-                if (resetEvent != null) resetEvent.Set();
+                if (resetEvent != null)
+                {
+                    resetEvent.Set();
+                }
             }
         }
 
@@ -484,16 +622,23 @@ namespace gView.Plugins.MapTools.Dialogs
             else
             {
                 if (msg == 1)
+                {
                     lblMsg1.Text = text;
+                }
                 else if (msg == 2)
+                {
                     lblMsg2.Text = text;
+                }
             }
         }
         #endregion
 
         private void btnQuery_Click(object sender, EventArgs e)
         {
-            if (_parent == null || _combo == null) return;
+            if (_parent == null || _combo == null)
+            {
+                return;
+            }
 
             if (_combo.ThemeMode == QueryThemeMode.Default)
             {
@@ -504,16 +649,26 @@ namespace gView.Plugins.MapTools.Dialogs
                 _mode = _parent.Mode;
 
                 if (btnAllFields.Checked)
+                {
                     _searchType = SearchType.allfields;
+                }
                 else if (btnField.Checked)
+                {
                     _searchType = SearchType.field;
+                }
                 else if (btnDisplayField.Checked)
+                {
                     _searchType = SearchType.displayfield;
+                }
                 else
+                {
                     return;
+                }
 
                 if (!cmbQueryText.Items.Contains(_queryVal))
+                {
                     cmbQueryText.Items.Add(_queryVal);
+                }
 
                 _cancelTracker.Reset();
                 btnQuery.Enabled = false;
@@ -522,19 +677,29 @@ namespace gView.Plugins.MapTools.Dialogs
             }
             else
             {
-                if (_combo.UserDefinedQueries == null) return;
+                if (_combo.UserDefinedQueries == null)
+                {
+                    return;
+                }
+
                 foreach (QueryTheme theme in _combo.UserDefinedQueries.Queries)
                 {
                     if (theme.Text == lblQueryName.Text)
                     {
-                        if (theme.PromptDef == null) return;
+                        if (theme.PromptDef == null)
+                        {
+                            return;
+                        }
+
                         _userdefValues = new Dictionary<int, string>();
                         foreach (DataRow row in theme.PromptDef.Rows)
                         {
                             foreach (Control ctrl in panelCustomFields.Controls)
                             {
                                 if (ctrl.Name == "txt" + row["ID"].ToString())
+                                {
                                     _userdefValues.Add((int)row["ID"], ctrl.Text);
+                                }
                             }
                         }
                         _theme = theme;
@@ -565,7 +730,7 @@ namespace gView.Plugins.MapTools.Dialogs
             }
             else
             {
-                
+
                 cmbField.Enabled = true;
 
                 FillFieldsCombo();
@@ -583,7 +748,7 @@ namespace gView.Plugins.MapTools.Dialogs
             }
             set
             {
-                
+
             }
         }
 
@@ -600,28 +765,46 @@ namespace gView.Plugins.MapTools.Dialogs
 
             cmbField.Items.Clear();
             List<IDatasetElement> elements = _parent.AllQueryableLayers;
-            if (elements == null) return;
+            if (elements == null)
+            {
+                return;
+            }
 
             foreach (IDatasetElement element in elements)
             {
-                if (!(element.Class is IFeatureClass)) continue;
+                if (!(element.Class is IFeatureClass))
+                {
+                    continue;
+                }
 
                 IFeatureClass fc = element.Class as IFeatureClass;
-                if (fc.Fields == null) continue;
+                if (fc.Fields == null)
+                {
+                    continue;
+                }
 
                 foreach (IField field in fc.Fields.ToEnumerable())
                 {
-                    if (field.type == FieldType.binary || field.type == FieldType.Shape) continue;
+                    if (field.type == FieldType.binary || field.type == FieldType.Shape)
+                    {
+                        continue;
+                    }
 
                     if (!cmbField.Items.Contains(field.aliasname))
+                    {
                         cmbField.Items.Add(field.aliasname);
+                    }
                 }
             }
-            if (selected!=null && cmbField.Items.Contains(selected))
+            if (selected != null && cmbField.Items.Contains(selected))
+            {
                 cmbField.SelectedItem = selected;
+            }
 
             if (cmbField.SelectedIndex == -1 && cmbField.Items.Count > 0)
+            {
                 cmbField.SelectedIndex = 0;
+            }
         }
 
         private void cmbField_DropDown(object sender, EventArgs e)
@@ -638,7 +821,10 @@ namespace gView.Plugins.MapTools.Dialogs
         {
             get
             {
-                if (_parent == null || _parent._doc == null || !(_parent._doc.Application is IGUIApplication)) return null;
+                if (_parent == null || _parent._doc == null || !(_parent._doc.Application is IGUIApplication))
+                {
+                    return null;
+                }
 
                 return ((IGUIApplication)_parent._doc.Application).Tool(new Guid("51A2CF81-E343-4c58-9A42-9207C8DFBC01")) as QueryThemeCombo;
             }
@@ -647,24 +833,39 @@ namespace gView.Plugins.MapTools.Dialogs
         #region CustomQuery 
         private QueryTheme GetQueryTheme(string name)
         {
-            if (_combo == null || _combo.UserDefinedQueries == null) return null;
+            if (_combo == null || _combo.UserDefinedQueries == null)
+            {
+                return null;
+            }
 
             foreach (QueryTheme theme in _combo.UserDefinedQueries.Queries)
             {
-                if (theme.Text == name) return theme;
+                if (theme.Text == name)
+                {
+                    return theme;
+                }
             }
             return null;
         }
         private void BuildQueryForm()
         {
             panelCustomFields.Controls.Clear();
-            if (_combo == null) return;
+            if (_combo == null)
+            {
+                return;
+            }
 
             QueryTheme query = GetQueryTheme(_combo.Text);
-            if (query == null) return;
+            if (query == null)
+            {
+                return;
+            }
 
             lblQueryName.Text = query.Text;
-            if (query.PromptDef == null) return;
+            if (query.PromptDef == null)
+            {
+                return;
+            }
 
             int y = 5;
             foreach (DataRow row in query.PromptDef.Rows)
@@ -677,7 +878,11 @@ namespace gView.Plugins.MapTools.Dialogs
                 panelCustomFields.Controls.Add(label);
 
                 Control txtBox = CustomInputControl.Create(row);
-                if (txtBox == null) continue;
+                if (txtBox == null)
+                {
+                    continue;
+                }
+
                 txtBox.Location = new System.Drawing.Point(163, y);
                 txtBox.Size = new Size(190, 21);
                 txtBox.Name = "txt" + row["ID"].ToString();
@@ -687,9 +892,15 @@ namespace gView.Plugins.MapTools.Dialogs
         }
         private void QueryCombo_SelectedItemChanged(string text)
         {
-            if (_combo == null) return;
+            if (_combo == null)
+            {
+                return;
+            }
+
             if (_combo.ThemeMode == QueryThemeMode.Custom && text != lblQueryName.Text)
+            {
                 BuildQueryForm();
+            }
         }
         #endregion
     }
@@ -698,7 +909,10 @@ namespace gView.Plugins.MapTools.Dialogs
     {
         static public Control Create(DataRow row)
         {
-            if (row == null) return null;
+            if (row == null)
+            {
+                return null;
+            }
 
             return new CustomQueryTextBox(row);
         }
@@ -707,7 +921,7 @@ namespace gView.Plugins.MapTools.Dialogs
     {
         string UserText { get; }
     }
-    internal class CustomQueryTextBox : TextBox,ICustomInputControl
+    internal class CustomQueryTextBox : TextBox, ICustomInputControl
     {
         private int _promptID = -1;
 

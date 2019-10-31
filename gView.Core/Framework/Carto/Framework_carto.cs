@@ -33,6 +33,7 @@ namespace gView.Framework.Carto
     public delegate void TOCChangedEvent(IMap sender);
     public delegate void NewExtentRenderedEvent(IMap sender, IEnvelope extent);
     public delegate void DrawingLayerFinishedEvent(IMap sender, ITimeEvent timeEvent);
+    public delegate void UserIntefaceEvent(IMap sender, bool lockUI);
 
     public interface IMap : IDisposable, IClone, IMetadata, IDataCopyright, IPersistableLoadAsync
     {
@@ -46,6 +47,7 @@ namespace gView.Framework.Carto
         event DrawingLayerFinishedEvent DrawingLayerFinished;
         event StartRefreshMapEvent StartRefreshMap;
         event EventHandler MapRenamed;
+        event UserIntefaceEvent OnUserInterface;
 
         void AddDataset(IDataset dataset, int order);
         void RemoveDataset(IDataset dataset);

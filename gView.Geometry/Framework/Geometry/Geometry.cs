@@ -3249,17 +3249,17 @@ namespace gView.Framework.Geometry
             IPolygon mPolygon = this.MergedPolygonGeometries;
 
             List<IPolygon> polygons = new List<IPolygon>();
-            if (mPoint != null)
+            if (mPoint != null && mPoint.PointCount > 0)
             {
                 polygons.Add(((ITopologicalOperation)mPoint).Buffer(distance));
             }
 
-            if (mPolyline != null)
+            if (mPolyline != null && mPolyline.PathCount > 0)
             {
                 polygons.Add(((ITopologicalOperation)mPolyline).Buffer(distance));
             }
 
-            if (mPolygon != null)
+            if (mPolygon != null && mPolygon.RingCount > 0)
             {
                 polygons.Add(((ITopologicalOperation)mPolygon).Buffer(distance));
             }

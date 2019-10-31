@@ -1334,6 +1334,7 @@ namespace gView.Framework.Symbology
             pSym.HorizontalOffset = HorizontalOffset * fac;
             pSym.VerticalOffset = VerticalOffset * fac;
             pSym.LegendLabel = _legendLabel;
+            pSym.Smoothingmode = this.Smoothingmode;
 
             return pSym;
         }
