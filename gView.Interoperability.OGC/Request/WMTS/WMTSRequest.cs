@@ -12,7 +12,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Request.WMTS
@@ -27,7 +26,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
         public WMTSRequest()
         {
-            if(_emptyPic==null)
+            if (_emptyPic == null)
             {
                 try
                 {
@@ -70,7 +69,9 @@ namespace gView.Interoperability.OGC.Request.WMTS
             using (var serviceMap = await context.CreateServiceMapInstance())
             {
                 if (context == null || context.ServiceRequest == null || serviceMap == null)
+                {
                     return;
+                }
 
                 if (_mapServer == null)
                 {
@@ -107,7 +108,9 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     string cacheFormat = args[0].ToLower();
                     if (args[1].ToLower() != "ul" &&
                         args[1].ToLower() != "ll")
+                    {
                         throw new ArgumentException();
+                    }
 
                     int epsg = int.Parse(args[2]);
                     string style = args[3].ToLower();
@@ -115,7 +118,10 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     int row = int.Parse(args[5]);
                     int col = int.Parse(args[6].Split('.')[0]);
                     string format = ".png";
-                    if (args[6].ToLower().EndsWith(".jpg")) format = ".jpg";
+                    if (args[6].ToLower().EndsWith(".jpg"))
+                    {
+                        format = ".jpg";
+                    }
 
                     byte[] imageData = null;
                     if (scale > 0)
@@ -134,7 +140,9 @@ namespace gView.Interoperability.OGC.Request.WMTS
                             //throw new NotImplementedException("Not in .Net Standard...");
                             ImageProcessingFilters filter;
                             if (Enum.TryParse<ImageProcessingFilters>(style, true, out filter))
+                            {
                                 imageData = ImageProcessing.ApplyFilter(imageData, filter, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
+                            }
                         }
                     }
 
@@ -156,19 +164,28 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
         private string MapName(IServiceRequestContext context)
         {
+            if (!String.IsNullOrWhiteSpace(context.ServiceRequest.Folder))
+            {
+                return $"{ context.ServiceRequest.Folder }/{ context.ServiceRequest.Service }";
+            }
+
             return context.ServiceRequest.Service;
         }
 
         async private Task<byte[]> GetTile(IServiceRequestContext context, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation)
         {
             if (!metadata.EPSGCodes.Contains(epsg))
+            {
                 throw new ArgumentException("Wrong epsg argument");
+            }
 
             //if (!metadata.Scales.Contains(scale))
             //    throw new ArgumentException("Wrong scale argument");
             scale = metadata.Scales.GetScale(scale);
             if (scale <= 0.0)
+            {
                 throw new ArgumentException("Wrong scale argument");
+            }
 
             //IEnvelope bounds = metadata.GetEPSGEnvelope(epsg);
             //if (bounds == null || bounds.Width == 0.0 || bounds.Height == 0.0)
@@ -176,11 +193,19 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
             format = format.ToLower();
             if (format != ".png" && format != ".jpg")
+            {
                 throw new Exception("Unsupported image format");
+            }
+
             if (format == ".png" && metadata.FormatPng == false)
+            {
                 throw new Exception("Format image/png not supported");
+            }
+
             if (format == ".jpg" && metadata.FormatJpg == false)
+            {
                 throw new Exception("Format image/jpeg no supported");
+            }
 
             string path = _mapServer.TileCachePath + @"/" + MapName(context) + @"/_alllayers/" +
                 TileServiceMetadata.TilePath(orientation, epsg, scale, row, col) + format;
@@ -206,29 +231,45 @@ namespace gView.Interoperability.OGC.Request.WMTS
         async private Task<byte[]> GetCompactTile(IServiceRequestContext context, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation)
         {
             if (!metadata.EPSGCodes.Contains(epsg))
+            {
                 throw new ArgumentException("Wrong epsg argument");
+            }
 
             if (orientation != GridOrientation.UpperLeft)
+            {
                 throw new ArgumentException("Compact Tiles Orientation must bei Upper Left!");
+            }
 
             scale = metadata.Scales.GetScale(scale);
             if (scale <= 0.0)
+            {
                 throw new ArgumentException("Wrong scale argument");
+            }
 
             //IEnvelope bounds = metadata.GetEGPSEnvelope(epsg);
             //if (bounds == null || bounds.Width == 0.0 || bounds.Height == 0.0)
             //    throw new Exception("No bounds defined for EPSG:" + epsg);
             IPoint origin = metadata.GetOriginUpperLeft(epsg);
             if (origin == null)
+            {
                 throw new Exception("No origin defined for EPSG:" + epsg);
+            }
 
             format = format.ToLower();
             if (format != ".png" && format != ".jpg")
+            {
                 throw new Exception("Unsupported image format");
+            }
+
             if (format == ".png" && metadata.FormatPng == false)
+            {
                 throw new Exception("Format image/png not supported");
+            }
+
             if (format == ".jpg" && metadata.FormatJpg == false)
+            {
                 throw new Exception("Format image/jpeg no supported");
+            }
 
             string path = _mapServer.TileCachePath + @"/" + MapName(context) + @"/_alllayers\compact\" +
                 TileServiceMetadata.ScalePath(orientation, epsg, scale);
@@ -258,7 +299,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     map.Display.iWidth = metadata.TileWidth;
                     map.Display.iHeight = metadata.TileHeight;
 
-                    double res = (double)scale / (metadata.Dpi / 0.0254);
+                    double res = scale / (metadata.Dpi / 0.0254);
                     if (map.Display.MapUnits != GeoUnits.Meters)
                     {
                         GeoUnitConverter converter = new GeoUnitConverter();
@@ -318,7 +359,9 @@ namespace gView.Interoperability.OGC.Request.WMTS
                 int tileLength = tilePositionResult.tileLength, tilePosition = tilePositionResult.position;
 
                 if (tilePosition < 0)
+                {
                     return CreateEmpty(format);
+                }
 
                 using (FileStream fs = File.Open(bundleFilename, FileMode.Open, FileAccess.Read, FileShare.Read)) //new FileStream(bundleFilename, FileMode.Open, FileAccess.Read))
                 {
@@ -338,7 +381,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     using (System.Drawing.Graphics gr = Graphics.FromImage(bm))
                     using (System.Drawing.Font font = new Font("Arial", 9f))
                     {
-                        gr.DrawString(ex.Message, font, Brushes.Red, new RectangleF(0f, 0f, (float)bm.Width, (float)bm.Height));
+                        gr.DrawString(ex.Message, font, Brushes.Red, new RectangleF(0f, 0f, bm.Width, bm.Height));
 
                         MemoryStream ms = new MemoryStream();
                         bm.Save(ms, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
@@ -460,18 +503,38 @@ namespace gView.Interoperability.OGC.Request.WMTS
             {
                 IEnvelope extent = metadata.GetEPSGEnvelope(epsg);
                 if (extent == null)
+                {
                     continue;
+                }
+
                 IPoint origin = metadata.GetOriginUpperLeft(epsg);
                 if (origin == null)
+                {
                     continue;
+                }
 
                 ISpatialReference sRef = SpatialReference.FromID("epsg:" + epsg);
                 IEnvelope extent4326 = GeometricTransformerFactory.Transform2D(extent, sRef, sRef4326).Envelope;
 
-                if (double.IsInfinity(extent4326.minx)) extent4326.minx = -180D;
-                if (double.IsInfinity(extent4326.miny)) extent4326.miny = -90D;
-                if (double.IsInfinity(extent4326.maxx)) extent4326.maxx = 180D;
-                if (double.IsInfinity(extent4326.maxy)) extent4326.maxy = 90D;
+                if (double.IsInfinity(extent4326.minx))
+                {
+                    extent4326.minx = -180D;
+                }
+
+                if (double.IsInfinity(extent4326.miny))
+                {
+                    extent4326.miny = -90D;
+                }
+
+                if (double.IsInfinity(extent4326.maxx))
+                {
+                    extent4326.maxx = 180D;
+                }
+
+                if (double.IsInfinity(extent4326.maxy))
+                {
+                    extent4326.maxy = 90D;
+                }
 
                 foreach (string cacheType in new string[] { "classic", "compact" })
                 {
@@ -479,7 +542,9 @@ namespace gView.Interoperability.OGC.Request.WMTS
                         TileServiceMetadata.EpsgPath(GridOrientation.UpperLeft, epsg);
 
                     if (!new DirectoryInfo(epsgPath).Exists)
+                    {
                         continue;
+                    }
 
                     #region Layer
 
@@ -497,7 +562,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     //    Title = new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType[] { new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType() { Value = "Default Style" } },
                     //    Identifier = new gView.Framework.OGC.WMTS.Version_1_0_0.CodeType() { Value = "default" }
                     //});
-                    foreach(var styleVal in Enum.GetValues(typeof(ImageProcessingFilters)))
+                    foreach (var styleVal in Enum.GetValues(typeof(ImageProcessingFilters)))
                     {
                         string name = Enum.GetName(typeof(ImageProcessingFilters), styleVal);
                         styles.Add(new Framework.OGC.WMTS.Version_1_0_0.Style()
@@ -541,8 +606,16 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     };
 
                     List<string> formats = new List<string>();
-                    if (metadata.FormatJpg) formats.Add("image/jpg");
-                    if (metadata.FormatPng) formats.Add("image/png");
+                    if (metadata.FormatJpg)
+                    {
+                        formats.Add("image/jpg");
+                    }
+
+                    if (metadata.FormatPng)
+                    {
+                        formats.Add("image/png");
+                    }
+
                     layer.Format = formats.ToArray();
 
                     List<Framework.OGC.WMTS.Version_1_0_0.URLTemplateType> resourceURLs = new List<Framework.OGC.WMTS.Version_1_0_0.URLTemplateType>();
@@ -597,7 +670,9 @@ namespace gView.Interoperability.OGC.Request.WMTS
                             TileServiceMetadata.ScalePath(GridOrientation.UpperLeft, epsg, metadata.Scales[s]);
 
                         if (!new DirectoryInfo(scalePath).Exists)
+                        {
                             break;
+                        }
 
                         double resolution = metadata.Scales[s] / (metadata.Dpi / inchMeter);
 
@@ -685,7 +760,9 @@ namespace gView.Interoperability.OGC.Request.WMTS
                 scaleArgument = scaleArgument.Substring(1);
                 int index = int.Parse(scaleArgument);
                 if (index < 0 || index >= metadata.Scales.Count())
+                {
                     return 0D;
+                }
 
                 return metadata.Scales[int.Parse(scaleArgument)];
             }
@@ -709,9 +786,13 @@ namespace gView.Interoperability.OGC.Request.WMTS
                 {
                     int pos = argument.IndexOf("=");
                     if (pos > 0)
+                    {
                         nvc.Add(argument.Substring(0, pos), argument.Substring(pos + 1));
+                    }
                     else
+                    {
                         nvc.Add(argument, String.Empty);
+                    }
                 }
             }
 
@@ -738,7 +819,9 @@ namespace gView.Interoperability.OGC.Request.WMTS
             async public Task<(int position, int tileLength)> TilePosition(int row, int col)
             {
                 if (row < 0 || row > 128 || col < 0 || col > 128)
+                {
                     throw new ArgumentException("Compact Tile Index out of range");
+                }
 
                 int indexPosition = ((row * 128) + col) * 8;
 
