@@ -174,13 +174,25 @@ namespace gView.MapServer.Lib.UI
             _cacheFormat = cmbCacheFormat.SelectedItem.ToString().ToLower();
 
             FormTaskProgress dlg = new FormTaskProgress();
-            dlg.ShowProgressDialog(this, this.Run());
+            dlg.ShowProgressDialog(this, this.RunAndWait());
         }
 
-        async private Task Run()
+        async private Task RunAndWait()
+        {
+            Thread thread = new Thread(new ThreadStart(RunThread));
+            thread.Start();
+
+            while(thread.IsAlive)
+            {
+                await Task.Delay(100);
+            }
+        }
+        private void RunThread()
         {
             if (_metadata == null || _mapServerClass == null || _mapServerClass.Dataset == null || _preRenderScales.Count == 0)
                 return;
+
+            //await Task.Delay(1000);
 
             string server = ConfigTextStream.ExtractValue(_mapServerClass.Dataset.ConnectionString, "server");
             string service = ConfigTextStream.ExtractValue(_mapServerClass.Dataset.ConnectionString, "service");

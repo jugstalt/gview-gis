@@ -17,6 +17,11 @@
     </tr>
     @foreach (var interpeter in Model.Interpreters)
     {
+        if(interpeter.Capabilities==null)
+        {
+            continue;
+        }
+
         <tr class="interpreter">
             <td colspan="3" class="interpreter-name">
                 @(interpeter.IdentityLongName)
