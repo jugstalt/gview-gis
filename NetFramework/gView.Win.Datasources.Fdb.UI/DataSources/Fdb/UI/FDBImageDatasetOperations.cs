@@ -391,7 +391,7 @@ namespace gView.DataSources.Fdb.UI
             PlugInManager compMan = new PlugInManager();
             foreach (var dsType in compMan.GetPlugins(Plugins.Type.IDataset))
             {
-                IRasterFileDataset rds = compMan.CreateInstance<IRasterFileDataset>(dsType);
+                IRasterFileDataset rds = compMan.CreateInstance<IDataset>(dsType) as IRasterFileDataset;
                 if (rds == null) continue;
 
                 if (rds.SupportsFormat(fi.Extension) < 0) continue;

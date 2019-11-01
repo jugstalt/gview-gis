@@ -1,13 +1,8 @@
+using gView.Framework.Data;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using gView.Framework.system;
-using System.Xml;
-using gView.Framework.Data;
 
 namespace gView.DataSources.Fdb.UI.MSSql
 {
@@ -31,11 +26,14 @@ namespace gView.DataSources.Fdb.UI.MSSql
             get
             {
                 string filter = txtFilter.Text.Trim();
-                if (filter.EndsWith("*")) filter = filter.Substring(0, filter.Length - 1);
+                if (filter.EndsWith("*"))
+                {
+                    filter = filter.Substring(0, filter.Length - 1);
+                }
 
                 string[] filters = new string[lstFormats.CheckedItems.Count];
 
-                for(int i=0;i<lstFormats.CheckedItems.Count;i++)
+                for (int i = 0; i < lstFormats.CheckedItems.Count; i++)
                 {
                     filters[i] = filter + lstFormats.CheckedItems[i].Text;
                 }
@@ -55,10 +53,15 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                     int pos = extension.LastIndexOf(".");
                     if (pos > 0)
+                    {
                         extension = extension.Substring(pos, extension.Length - pos);
+                    }
 
-                    if(ret.ContainsKey(extension))
-                        throw new Exception("You can't select a second provider for '"+extension+"'");
+                    if (ret.ContainsKey(extension))
+                    {
+                        throw new Exception("You can't select a second provider for '" + extension + "'");
+                    }
+
                     ret.Add(extension, item.ProviderGuid);
                 }
 
@@ -91,9 +94,13 @@ namespace gView.DataSources.Fdb.UI.MSSql
             else
             {
                 if (e.NewValue == CheckState.Checked)
+                {
                     btnOK.Enabled = true;
+                }
                 else
+                {
                     btnOK.Enabled = lstFormats.CheckedItems.Count > 1;
+                }
             }
         }
         #endregion
@@ -104,12 +111,18 @@ namespace gView.DataSources.Fdb.UI.MSSql
             PlugInManager compMan = new PlugInManager();
             foreach (var dsType in compMan.GetPlugins(Plugins.Type.IDataset))
             {
-                IRasterFileDataset rds = compMan.CreateInstance<IRasterFileDataset>(dsType);
-                if (rds == null) continue;
+                IRasterFileDataset rds = compMan.CreateInstance<IDataset>(dsType) as IRasterFileDataset;
+                if (rds == null)
+                {
+                    continue;
+                }
 
                 foreach (string format in rds.SupportedFileFilter.Split('|'))
                 {
-                    if (format == String.Empty) continue;
+                    if (format == String.Empty)
+                    {
+                        continue;
+                    }
 
                     int priority = rds.SupportsFormat(format.Replace("*", ""));
                     //FormatListItem item = FindFormatItem(format);
@@ -134,7 +147,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
         {
             foreach (FormatListItem item in lstFormats.Items)
             {
-                if (format.ToLower() == item.Format.ToLower()) return item;
+                if (format.ToLower() == item.Format.ToLower())
+                {
+                    return item;
+                }
             }
             return null;
         }

@@ -1674,58 +1674,61 @@ namespace gView.Framework.Carto
             {
                 ILayer child;
 
-                while ((child = await cursor.NextRasterLayer()) != null)
-                //foreach (ILayer child in ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
+                if (cursor != null)
                 {
-                    if (!cancelTracker.Continue)
+                    while ((child = await cursor.NextRasterLayer()) != null)
+                    //foreach (ILayer child in ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
                     {
-                        break;
-                    }
-
-                    if (child.Class is IParentRasterLayer)
-                    {
-                        await DrawRasterParentLayer((IParentRasterLayer)child.Class, cancelTracker, rootLayer);
-                        continue;
-                    }
-                    if (!(child is IRasterLayer))
-                    {
-                        continue;
-                    }
-
-                    IRasterLayer cLayer = (IRasterLayer)child;
-
-                    RenderRasterLayerThread rlt = new RenderRasterLayerThread(this, cLayer, rootLayer, cancelTracker);
-
-                    //Thread thread = new Thread(new ThreadStart(rlt.Render));
-                    //thread.Start();
-
-                    if (DrawingLayer != null && cancelTracker.Continue)
-                    {
-                        if (rLayer is ILayer)
+                        if (!cancelTracker.Continue)
                         {
-                            DrawingLayer(((ILayer)rLayer).Title);
+                            break;
                         }
-                    }
 
-                    await rlt.Render();
+                        if (child.Class is IParentRasterLayer)
+                        {
+                            await DrawRasterParentLayer((IParentRasterLayer)child.Class, cancelTracker, rootLayer);
+                            continue;
+                        }
+                        if (!(child is IRasterLayer))
+                        {
+                            continue;
+                        }
 
-                    // WarteSchleife
-                    //int counter = 0;
+                        IRasterLayer cLayer = (IRasterLayer)child;
 
-                    //while (thread.IsAlive)
-                    //{
-                    //    Thread.Sleep(100);
-                    //    if (DoRefreshMapView != null && (counter % 10) == 0 && cancelTracker.Continue) DoRefreshMapView();
-                    //    counter++;
-                    //}
-                    if (DoRefreshMapView != null && cancelTracker.Continue)
-                    {
-                        DoRefreshMapView();
-                    }
+                        RenderRasterLayerThread rlt = new RenderRasterLayerThread(this, cLayer, rootLayer, cancelTracker);
 
-                    if (child.Class is IDisposable)
-                    {
-                        ((IDisposable)child.Class).Dispose();
+                        //Thread thread = new Thread(new ThreadStart(rlt.Render));
+                        //thread.Start();
+
+                        if (DrawingLayer != null && cancelTracker.Continue)
+                        {
+                            if (rLayer is ILayer)
+                            {
+                                DrawingLayer(((ILayer)rLayer).Title);
+                            }
+                        }
+
+                        await rlt.Render();
+
+                        // WarteSchleife
+                        //int counter = 0;
+
+                        //while (thread.IsAlive)
+                        //{
+                        //    Thread.Sleep(100);
+                        //    if (DoRefreshMapView != null && (counter % 10) == 0 && cancelTracker.Continue) DoRefreshMapView();
+                        //    counter++;
+                        //}
+                        if (DoRefreshMapView != null && cancelTracker.Continue)
+                        {
+                            DoRefreshMapView();
+                        }
+
+                        if (child.Class is IDisposable)
+                        {
+                            ((IDisposable)child.Class).Dispose();
+                        }
                     }
                 }
             }

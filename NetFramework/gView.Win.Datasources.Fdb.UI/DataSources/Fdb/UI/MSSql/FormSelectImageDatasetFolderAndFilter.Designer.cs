@@ -81,6 +81,7 @@
             this.lstFormats.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
             this.columnHeader2});
+            this.lstFormats.HideSelection = false;
             this.lstFormats.Name = "lstFormats";
             this.lstFormats.UseCompatibleStateImageBehavior = false;
             this.lstFormats.View = System.Windows.Forms.View.Details;
