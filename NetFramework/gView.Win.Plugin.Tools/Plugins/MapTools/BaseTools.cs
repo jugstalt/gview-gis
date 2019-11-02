@@ -238,7 +238,7 @@ namespace gView.Plugins.MapTools
 
         #region ITool Member
 
-        public object Image
+        virtual public object Image
         {
             get
             {
@@ -348,6 +348,18 @@ namespace gView.Plugins.MapTools
 
     }
 
+    [RegisterPlugInAttribute("7DC2ECC7-DC8C-49B4-9AA6-DBEEB0026E0A")]
+    public class SaveDocumentBackstage : SaveDocument
+    {
+        public override object Image
+        {
+            get
+            {
+                return gView.Win.Plugin.Tools.Properties.Resources.save_16_w;
+            }
+        }
+    }
+
     [RegisterPlugInAttribute("17D0A3C1-5EE9-4ddd-9402-E6E9EAB1CD06")]
     public class SaveDocumentAs : gView.Framework.UI.ITool
     {
@@ -359,7 +371,7 @@ namespace gView.Plugins.MapTools
         {
             get
             {
-                return null;
+                return gView.Win.Plugin.Tools.Properties.Resources.save_as_16_w;
             }
         }
 
@@ -466,8 +478,7 @@ namespace gView.Plugins.MapTools
         {
             get
             {
-                Buttons dlg = new Buttons();
-                return dlg.imageList1.Images[14];
+                return gView.Win.Plugin.Tools.Properties.Resources.exit_16_w;
             }
         }
 

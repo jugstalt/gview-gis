@@ -1,18 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using gView.Framework.UI;
+using gView.Framework.UI.Events;
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using gView.Framework.UI;
-using gView.Framework.UI.Events;
 
 namespace gView.Plugins.MapTools.Controls
 {
@@ -34,7 +24,9 @@ namespace gView.Plugins.MapTools.Controls
         private void btnNewDocument_Click(object sender, RoutedEventArgs e)
         {
             if (_mapDocument == null)
+            {
                 return;
+            }
 
             if (OnButtonClick == null)
             {
@@ -47,17 +39,19 @@ namespace gView.Plugins.MapTools.Controls
             HideBackstageMenu();
         }
 
-        private void btnLoadMapDocument_Click(object sender, RoutedEventArgs e)
+        async private void btnLoadMapDocument_Click(object sender, RoutedEventArgs e)
         {
             if (_mapDocument == null)
+            {
                 return;
+            }
 
             HideBackstageMenu();
 
             LoadDocument tool = new LoadDocument();
             tool.OnCreate(_mapDocument);
 
-            tool.OnEvent(new MapEvent(_mapDocument.FocusMap));
+            await tool.OnEvent(new MapEvent(_mapDocument.FocusMap));
         }
 
         private void btnNewMap_Click(object sender, RoutedEventArgs e)
@@ -68,7 +62,9 @@ namespace gView.Plugins.MapTools.Controls
         async private void btnAddData_Click(object sender, RoutedEventArgs e)
         {
             if (_mapDocument == null)
+            {
                 return;
+            }
 
             HideBackstageMenu();
 
@@ -81,7 +77,9 @@ namespace gView.Plugins.MapTools.Controls
         private void HideBackstageMenu()
         {
             if (OnButtonClick != null)
+            {
                 OnButtonClick(this, new EventArgs());
+            }
             else
             {
                 if (_mapDocument != null && _mapDocument.Application is IGUIApplication)
@@ -89,6 +87,6 @@ namespace gView.Plugins.MapTools.Controls
                     ((IGUIApplication)_mapDocument.Application).HideBackstageMenu();
                 }
             }
-        }    
+        }
     }
 }

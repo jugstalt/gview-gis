@@ -14,7 +14,7 @@
                 </LinearGradientBrush>
             </Button.Background>
             <StackPanel Orientation="Vertical">
-                <Image Source="pack://application:,,,/gView.Plugins.Tools;component/Images/new.png" MinWidth="24" MinHeight="24" Width="48" Height="48" />
+                <Image Source="pack://application:,,,/gView.Win.Plugin.Tools;component/Images/new.png" MinWidth="24" MinHeight="24" Width="48" Height="48" />
                 <TextBlock Text="New Empty Map Document" />
             </StackPanel>
         </Button>
@@ -26,7 +26,7 @@
                 </LinearGradientBrush>
             </Button.Background>
             <StackPanel Orientation="Vertical">
-                <Image Source="pack://application:,,,/gView.Plugins.Tools;component/Images/add_data.png" MinWidth="24" MinHeight="24" Width="48" Height="48" />
+                <Image Source="pack://application:,,,/gView.Win.Plugin.Tools;component/Images/add_data.png" MinWidth="24" MinHeight="24" Width="48" Height="48" />
                 <TextBlock Text="Add Data" />
             </StackPanel>
         </Button>
@@ -38,7 +38,7 @@
                 </LinearGradientBrush>
             </Button.Background>
             <StackPanel Orientation="Vertical">
-                <Image Source="pack://application:,,,/gView.Plugins.Tools;component/Images/open48.png" MinWidth="24" MinHeight="24" Width="48" Height="48" />
+                <Image Source="pack://application:,,,/gView.Win.Plugin.Tools;component/Images/open48.png" MinWidth="24" MinHeight="24" Width="48" Height="48" />
                 <TextBlock Text="Load Map Document" />
             </StackPanel>
         </Button>

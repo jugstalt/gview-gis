@@ -689,5 +689,28 @@
   <ItemGroup>
     <None Include="Resources\zoom2selection.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\exit-26-w.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\exit-16-w.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\save-16-w.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\save-as-16-w.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\add_data.png" />
+    <Resource Include="Images\new.png" />
+    <Resource Include="Images\open48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\plugins-16-w.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\new-16-w.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

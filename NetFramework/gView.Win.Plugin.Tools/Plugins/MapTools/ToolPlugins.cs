@@ -32,7 +32,10 @@ namespace gView.Plugins.Tools.MapTools
 
         public object Image
         {
-            get { return null; }
+            get
+            {
+                return gView.Win.Plugin.Tools.Properties.Resources.plugins_16_w;
+            }
         }
 
         public void OnCreate(object hook)
