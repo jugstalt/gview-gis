@@ -166,7 +166,8 @@ namespace gView.Framework.system
 
             foreach (var pluginType in _pluginTypes.Values)
             {
-                foreach (var interfaceType in pluginType.GetInterfaces().Where(t => t.ToString().ToLower().StartsWith("gview.framework.")))
+                foreach (var interfaceType in pluginType.GetInterfaces()
+                    .Where(t => t.ToString().ToLower().StartsWith("gview.framework.")))
                 {
                     if (interfaceType.ToString().Substring(interfaceType.ToString().LastIndexOf(".") + 1).ToLower() == type.ToString().ToLower())
                     {
@@ -192,9 +193,10 @@ namespace gView.Framework.system
                 List<Type> types = new List<Type>();
                 foreach (var pluginType in _pluginTypes.Values)
                 {
-                    foreach (var interfaceType in pluginType.GetInterfaces().Where(t => t.ToString().ToLower().StartsWith("gview.framework.")))
+                    foreach (var interfaceType in pluginType.GetInterfaces()
+                        .Where(t => t.ToString().ToLower().StartsWith("gview.framework.")))
                     {
-                        if (types.Contains(interfaceType))
+                        if (!types.Contains(interfaceType))
                         {
                             types.Add(interfaceType);
                         }

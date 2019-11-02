@@ -3,6 +3,7 @@
 <MapApplication>
   <Menubar>
     <Menu name="File">
+      <MenuItem_ guid="1a5381bb-95ed-4f92-90b7-c9ec947c9fec" />
       <MenuItem guid="97F8675C-E01F-451e-AAE0-DC29CD547EB5" />
     </Menu>
     <Menu name="QuickAccess">

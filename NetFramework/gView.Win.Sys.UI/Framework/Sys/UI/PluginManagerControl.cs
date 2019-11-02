@@ -17,7 +17,7 @@ namespace gView.Framework.system.UI
             InitializeComponent();
 
             PlugInManager pm = new PlugInManager();
-            foreach (Type type in pm.GetPluginTypes)
+            foreach (Type type in pm.GetPluginTypes.OrderBy(t=>t.ToString()))
             {
                 TypeNode node = new TypeNode(type);
  

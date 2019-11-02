@@ -462,8 +462,12 @@ namespace gView.Win.Carto
         }
         internal void HideBackstageMenu()
         {
-            ribbon.SelectedTabIndex = 0;
-            ribbon.Refresh();
+            //ribbon.SelectedTabIndex = 0;
+            var backstage = ribbon.Menu as Fluent.Backstage;
+            if (backstage != null)
+            {
+                backstage.IsOpen = false;
+            }
         }
 
         void _toc_SelectionChanged(object sender, EventArgs e)
