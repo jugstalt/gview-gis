@@ -463,6 +463,7 @@ namespace gView.Win.Carto
         internal void HideBackstageMenu()
         {
             ribbon.SelectedTabIndex = 0;
+            ribbon.Refresh();
         }
 
         void _toc_SelectionChanged(object sender, EventArgs e)
@@ -684,6 +685,8 @@ namespace gView.Win.Carto
                             {
                                 Fluent.BackstageTabItem backItem = new Fluent.BackstageTabItem();
                                 backItem.Header = tool.Name;
+                                backItem.Icon = 
+                                    ImageFactory.FromBitmap(tool.Image as System.Drawing.Image);
 
                                 object control = ((IToolControl)tool).Control;
                                 if (control is System.Windows.Forms.Control)
