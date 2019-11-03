@@ -1,18 +1,12 @@
+using gView.DataSources.Fdb.MSAccess;
+using gView.DataSources.Fdb.MSSql;
+using gView.Framework.Data;
+using gView.Framework.FDB;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using System.Data;
-using System.Drawing.Imaging;
-using gView.Framework.FDB;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
-using gView.DataSources.Raster.File;
-using gView.DataSources.Raster;
-using gView.Framework.system;
-using System.Xml;
-using gView.DataSources.Fdb.MSSql;
-using gView.DataSources.Fdb.MSAccess;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.UI
@@ -31,7 +25,7 @@ namespace gView.DataSources.Fdb.UI
         private IImageDB _fdb = null;
         private CancelTracker _cancelTracker;
 
-        public FDBImageDataset(IImageDB fdb,string dsname)
+        public FDBImageDataset(IImageDB fdb, string dsname)
         {
             _fdb = fdb;
             _dsname = dsname;
@@ -79,7 +73,10 @@ namespace gView.DataSources.Fdb.UI
             }
             string imageSpace = tab.Rows[0]["ImageSpace"].ToString();
 
-            if (imageSpace.Equals("unmanaged")) return true;
+            if (imageSpace.Equals("unmanaged"))
+            {
+                return true;
+            }
 
             if (imageSpace.Equals(System.DBNull.Value) || imageSpace.Equals("database") || imageSpace.Equals(""))
             {
@@ -93,12 +90,12 @@ namespace gView.DataSources.Fdb.UI
             return false;
         }
 
-        public bool UpdateImageDatasetBitmap(int image_id)
+        public Task<bool> UpdateImageDatasetBitmap(int image_id)
         {
             /*
             try
             {
-                string filename = (string)_conn.QuerySingleField("SELECT PATH FROM FC_" + _dsname + "_IMAGE_POLYGONS WHERE FDB_OID=" + image_id, "PATH");
+                string filename = (string)await _conn.QuerySingleField("SELECT PATH FROM FC_" + _dsname + "_IMAGE_POLYGONS WHERE FDB_OID=" + image_id, "PATH");
                 if (filename == null)
                 {
                     _errMsg = "Can't find File with OID=" + image_id;
@@ -177,13 +174,17 @@ namespace gView.DataSources.Fdb.UI
                 _errMsg = ex.Message;
                 return false;
             }
-             * */
-            return false;
+            */
+            _errMsg = "This method is not implemented any more...";
+            return Task.FromResult(false);
         }
 
         async public Task<bool> DeleteImageDatasetItem(int image_id, bool bitmapOnly)
         {
-            if (image_id == -1) return false;
+            if (image_id == -1)
+            {
+                return false;
+            }
 
             var isImageDatasetResult = await _fdb.IsImageDataset(_dsname);
             string imageSpace = isImageDatasetResult.imageSpace;
@@ -192,9 +193,12 @@ namespace gView.DataSources.Fdb.UI
                 return false;
             }
 
-            if (imageSpace.Equals(System.DBNull.Value)) imageSpace = "database";
+            if (imageSpace.Equals(System.DBNull.Value))
+            {
+                imageSpace = "database";
+            }
 
-            DataTable tab = await _conn.Select("*", "FC_" + _dsname + "_IMAGE_POLYGONS", "FDB_OID=" + image_id, "", ((bitmapOnly) ? false : true));
+            DataTable tab = await _conn.Select("*", "FC_" + _dsname + "_IMAGE_POLYGONS", "FDB_OID=" + image_id, ""/*, ((bitmapOnly) ? false : true)*/);
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -213,36 +217,47 @@ namespace gView.DataSources.Fdb.UI
             if (!bitmapOnly)
             {
                 row.Delete();
-                if (!_conn.Update(tab))
+                if(!_conn.ExecuteNoneQuery($"DELETE FROM FC_{ _dsname }_IMAGE_POLYGONS WHERE FDB_OID={ image_id }"))
+                //if (!_conn.Update(tab))
                 {
                     _errMsg = _conn.errorMessage;
                     return false;
                 }
             }
-            if (!managed) return true;
+            if (!managed)
+            {
+                return true;
+            }
 
             switch (imageSpace.ToLower())
             {
                 case "":
                 case "database":
-                    DataTable images = await _conn.Select("ID", _dsname + "_IMAGE_DATA", "IMAGE_ID=" + image_id, "", true);
-                    if (images == null)
+                    if (!_conn.ExecuteNoneQuery($"DELETE FROM { _dsname }_IMAGE_DATA WHERE IMAGE_ID={ image_id }"))
                     {
                         _errMsg = _conn.errorMessage;
                         return false;
                     }
-                    if (images.Rows.Count > 0)
-                    {
-                        foreach (DataRow r in images.Rows)
-                        {
-                            r.Delete();
-                        }
-                        if (_conn.Update(images))
-                        {
-                            _errMsg = _conn.errorMessage;
-                            return false;
-                        }
-                    }
+
+                    //DataTable images = await _conn.Select("ID", _dsname + "_IMAGE_DATA", "IMAGE_ID=" + image_id, "");
+                    //if (images == null)
+                    //{
+                    //    _errMsg = _conn.errorMessage;
+                    //    return false;
+                    //}
+                    //if (images.Rows.Count > 0)
+                    //{
+                    //    foreach (DataRow r in images.Rows)
+                    //    {
+                    //        r.Delete();
+
+                    //    }
+                    //    if (_conn.Update(images))
+                    //    {
+                    //        _errMsg = _conn.errorMessage;
+                    //        return false;
+                    //    }
+                    //}
                     break;
                 default:
                     try
@@ -265,14 +280,20 @@ namespace gView.DataSources.Fdb.UI
             return true;
         }
 
-        public int GetImageDatasetItemID(string image_path)
+        async public Task<int> GetImageDatasetItemID(string image_path)
         {
-            if (_conn == null) return -1;
+            if (_conn == null)
+            {
+                return -1;
+            }
 
-            object ID = _conn.QuerySingleField("SELECT FDB_OID FROM FC_" + _dsname + "_IMAGE_POLYGONS WHERE PATH='" + image_path + "'", "FDB_OID");
-            if (ID == null) return -1;
+            object ID = await _conn.QuerySingleField("SELECT FDB_OID FROM FC_" + _dsname + "_IMAGE_POLYGONS WHERE PATH='" + image_path + "'", "FDB_OID");
+            if (ID == null)
+            {
+                return -1;
+            }
 
-            return (int)ID;
+            return Convert.ToInt32(ID);
         }
         #endregion
 
@@ -281,7 +302,7 @@ namespace gView.DataSources.Fdb.UI
         private int _levels = 4;
         private bool _managed = false;
 
-        async public Task<bool> Import(string path, Dictionary<string,Guid> providers)
+        async public Task<bool> Import(string path, Dictionary<string, Guid> providers)
         {
             //_cancelTracker.Reset();
             if (!_cancelTracker.Continue)
@@ -298,7 +319,11 @@ namespace gView.DataSources.Fdb.UI
 
             AccessFDB fdb = (AccessFDB)_fdb;
 
-            if (ReportAction != null) ReportAction(this, "Open Raster Polygon Class...");
+            if (ReportAction != null)
+            {
+                ReportAction(this, "Open Raster Polygon Class...");
+            }
+
             IFeatureClass rasterFC = await fdb.GetFeatureclass(_dsname, _dsname + "_IMAGE_POLYGONS");
             if (rasterFC == null)
             {
@@ -318,8 +343,10 @@ namespace gView.DataSources.Fdb.UI
             }
             else if (fi.Exists)
             {
-                if (!await InsertImage(fdb, rasterFC, fi, providers)) 
+                if (!await InsertImage(fdb, rasterFC, fi, providers))
+                {
                     return false;
+                }
                 //if (_recalculateExtent) fdb.CalculateSpatialIndex(rasterFC, 100);
             }
 
@@ -332,22 +359,32 @@ namespace gView.DataSources.Fdb.UI
             return true;
         }
 
-        async private Task SearchImages(IFeatureUpdater fdb, IFeatureClass rasterFC, DirectoryInfo di, Dictionary<string,Guid> providers)
+        async private Task SearchImages(IFeatureUpdater fdb, IFeatureClass rasterFC, DirectoryInfo di, Dictionary<string, Guid> providers)
         {
             if (!_cancelTracker.Continue)
             {
                 return;
             }
 
-            if (ReportAction != null) ReportAction(this, "Scan Directory: "+di.FullName);
+            if (ReportAction != null)
+            {
+                ReportAction(this, "Scan Directory: " + di.FullName);
+            }
+
             foreach (string filter in _formats)
             {
                 int count = 0;
                 foreach (FileInfo fi in di.GetFiles("*." + filter))
                 {
-                    if (_cancelTracker != null && !_cancelTracker.Continue) return;
+                    if (_cancelTracker != null && !_cancelTracker.Continue)
+                    {
+                        return;
+                    }
+
                     if (await InsertImage(fdb, rasterFC, fi, providers))
+                    {
                         count++;
+                    }
 
                     if (!_cancelTracker.Continue)
                     {
@@ -369,8 +406,15 @@ namespace gView.DataSources.Fdb.UI
                 return false;
             }
 
-            if (ReportAction != null) ReportAction(this, "Insert Image: " + fi.FullName);
-            if (ReportProgress != null) ReportProgress(this, 1);
+            if (ReportAction != null)
+            {
+                ReportAction(this, "Insert Image: " + fi.FullName);
+            }
+
+            if (ReportProgress != null)
+            {
+                ReportProgress(this, 1);
+            }
 
             System.Drawing.Imaging.ImageFormat format = System.Drawing.Imaging.ImageFormat.Jpeg;
             switch (fi.Extension.ToLower())
@@ -392,13 +436,22 @@ namespace gView.DataSources.Fdb.UI
             foreach (var dsType in compMan.GetPlugins(Plugins.Type.IDataset))
             {
                 IRasterFileDataset rds = compMan.CreateInstance<IDataset>(dsType) as IRasterFileDataset;
-                if (rds == null) continue;
+                if (rds == null)
+                {
+                    continue;
+                }
 
-                if (rds.SupportsFormat(fi.Extension) < 0) continue;
+                if (rds.SupportsFormat(fi.Extension) < 0)
+                {
+                    continue;
+                }
+
                 if (providers != null && providers.ContainsKey(fi.Extension.ToLower()))
                 {
                     if (!providers[fi.Extension.ToLower()].Equals(PlugInManager.PlugInID(rds)))
+                    {
                         continue;
+                    }
                 }
                 rFileDatasets.Add(rds);
             }
@@ -454,10 +507,12 @@ namespace gView.DataSources.Fdb.UI
             {
                 if (rasterLayer.RasterClass is IRasterFile &&
                     ((IRasterFile)rasterLayer.RasterClass).WorldFile != null)
+                {
                     rasterFile = (IRasterFile)rasterLayer.RasterClass;
+                }
                 else
                 {
-                    IRasterClass c = (IRasterClass)rasterLayer.RasterClass;
+                    IRasterClass c = rasterLayer.RasterClass;
                     cellX = Math.Sqrt(c.dx1 * c.dx1 + c.dx2 * c.dx2);
                     cellY = Math.Sqrt(c.dy1 * c.dy1 + c.dy2 * c.dy2);
                 }
@@ -513,9 +568,14 @@ namespace gView.DataSources.Fdb.UI
 
             string fullName = fi.FullName.Replace(@"\", @"\\");
             if (_fdb is AccessFDB)
+            {
                 filter.WhereClause = ((AccessFDB)_fdb).DbColName("PATH") + "='" + fullName + "'";
+            }
             else
+            {
                 filter.WhereClause = "PATH='" + fullName + "'";
+            }
+
             int deleteOID = -1;
             using (IFeatureCursor cursor = await rasterFC.GetFeatures(filter))
             {
@@ -523,15 +583,17 @@ namespace gView.DataSources.Fdb.UI
                 if (existingFeature != null)
                 {
                     DateTime dt1 = (DateTime)existingFeature["LAST_MODIFIED"];
-                    if (Math.Abs(((TimeSpan)(dt1 - fi.LastWriteTimeUtc)).TotalSeconds) > 1.0)
+                    if (Math.Abs((dt1 - fi.LastWriteTimeUtc).TotalSeconds) > 1.0)
+                    {
                         deleteOID = existingFeature.OID;
+                    }
                     else if (fiWorld != null &&
                         existingFeature["PATH2"] != System.DBNull.Value &&
                         existingFeature["PATH2"].ToString() != String.Empty)
                     {
                         DateTime dt2 = (DateTime)existingFeature["LAST_MODIFIED2"];
                         if (existingFeature["PATH2"].ToString().ToLower() != fiWorld.FullName.ToLower() ||
-                            Math.Abs(((TimeSpan)(dt2 - fiWorld.LastWriteTimeUtc)).TotalSeconds) > 1.0)
+                            Math.Abs((dt2 - fiWorld.LastWriteTimeUtc).TotalSeconds) > 1.0)
                         {
                             deleteOID = existingFeature.OID;
                         }
@@ -589,9 +651,14 @@ namespace gView.DataSources.Fdb.UI
                     QueryFilter qfilter = new QueryFilter();
                     qfilter.SubFields = "FDB_OID";
                     if (_fdb is AccessFDB)
+                    {
                         filter.WhereClause = ((AccessFDB)_fdb).DbColName("PATH") + "='" + fi.FullName + "'";
+                    }
                     else
+                    {
                         qfilter.WhereClause = "PATH='" + fi.FullName + "'";
+                    }
+
                     IFeatureCursor cursor = await ((SqlFDB)fdb).Query(rasterFC, qfilter);
                     if (cursor != null)
                     {
@@ -615,7 +682,11 @@ namespace gView.DataSources.Fdb.UI
         #region Remove Unexisting
         async public Task<bool> RemoveUnexisting()
         {
-            if (!(_fdb is AccessFDB)) return false;
+            if (!(_fdb is AccessFDB))
+            {
+                return false;
+            }
+
             IFeatureClass rasterFC = await ((AccessFDB)_fdb).GetFeatureclass(_dsname, _dsname + "_IMAGE_POLYGONS");
             if (rasterFC == null)
             {
@@ -626,8 +697,15 @@ namespace gView.DataSources.Fdb.UI
                 }
             }
 
-            if (ReportAction != null) ReportAction(this, "Remove unexisting");
-            if (ReportProgress != null) ReportProgress(this, 1);
+            if (ReportAction != null)
+            {
+                ReportAction(this, "Remove unexisting");
+            }
+
+            if (ReportProgress != null)
+            {
+                ReportProgress(this, 1);
+            }
 
             QueryFilter filter = new QueryFilter();
             filter.AddField("FDB_OID");
@@ -703,8 +781,16 @@ namespace gView.DataSources.Fdb.UI
                 int xx = x.SupportsFormat(_extension);
                 int yy = y.SupportsFormat(_extension);
 
-                if (xx > yy) return -1;
-                if (xx < yy) return 1;
+                if (xx > yy)
+                {
+                    return -1;
+                }
+
+                if (xx < yy)
+                {
+                    return 1;
+                }
+
                 return 0;
             }
 
