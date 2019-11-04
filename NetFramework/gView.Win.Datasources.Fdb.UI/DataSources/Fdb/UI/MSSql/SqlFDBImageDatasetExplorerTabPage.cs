@@ -1,3 +1,4 @@
+using gView.DataSources.Fdb.ImageDataset;
 using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
@@ -243,14 +244,15 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                     if (fi.Exists)
                     {
-                        DateTime t = (DateTime)row["LAST_MODIFIED"];
+                        DateTime t = ((DateTime)row["LAST_MODIFIED"]).ToUTC();
+
                         int span = (int)Math.Abs((fi.LastWriteTimeUtc - t).TotalSeconds);
                         try
                         {
                             FileInfo fi2 = new FileInfo(row["PATH2"].ToString());
                             if (fi2.Exists)
                             {
-                                t = (DateTime)row["LAST_MODIFIED2"];
+                                t = ((DateTime)row["LAST_MODIFIED2"]).ToUTC();
                                 span = Math.Max((int)Math.Abs((fi2.LastWriteTimeUtc - t).TotalSeconds), span);
                             }
                         }
@@ -832,17 +834,17 @@ namespace gView.DataSources.Fdb.UI.MSSql
             _report.featureMax = max;
             import.ReportAction += new FDBImageDataset.ReportActionEvent(import_ReportAction);
             import.ReportProgress += new FDBImageDataset.ReportProgressEvent(import_ReportProgress);
-            import.ReportRequest += new FDBImageDataset.ReportRequestEvent(import_ReportRequest);
+            //import.ReportRequest += new FDBImageDataset.ReportRequestEvent(import_ReportRequest);
         }
 
-        void import_ReportRequest(FDBImageDataset sender, RequestArgs args)
-        {
-            args.Result = MessageBox.Show(
-                args.Request,
-                "Warning",
-                args.Buttons,
-                MessageBoxIcon.Warning);
-        }
+        //void import_ReportRequest(FDBImageDataset sender, RequestArgs args)
+        //{
+        //    args.Result = MessageBox.Show(
+        //        args.Request,
+        //        "Warning",
+        //        args.Buttons,
+        //        MessageBoxIcon.Warning);
+        //}
 
         void import_ReportProgress(FDBImageDataset sender, int progress)
         {

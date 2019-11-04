@@ -180,5 +180,23 @@ namespace gView.Framework.system
         }
 
         #endregion
+
+        #region DateTime
+
+        static public DateTime ToUTC(this DateTime dt)
+        {
+            switch(dt.Kind)
+            {
+                case DateTimeKind.Unspecified:
+                    dt = new DateTime(dt.Ticks, DateTimeKind.Local);
+                    return dt.ToUniversalTime();
+                case DateTimeKind.Local:
+                    return dt.ToUniversalTime();
+                default:
+                    return dt;
+            }
+        }
+
+        #endregion
     }
 }
