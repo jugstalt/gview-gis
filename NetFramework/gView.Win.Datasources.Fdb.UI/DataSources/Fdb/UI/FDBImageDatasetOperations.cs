@@ -298,6 +298,7 @@ namespace gView.DataSources.Fdb.UI
         #endregion
 
         #region Import
+
         private string[] _formats = "jpg|png|tif|tiff|sid|jp2".Split('|');
         private int _levels = 4;
         private bool _managed = false;

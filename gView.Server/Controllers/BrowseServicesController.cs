@@ -255,9 +255,9 @@ namespace gView.Server.Controllers
                 {
                     return await Index(folder, service.ServiceName(), mse.Message);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    return await Index(folder, service.ServiceName(), "Unknown error");
+                    return await Index(folder, service.ServiceName(), "Unknown error: " + ex.Message);
                 }
             });
         }

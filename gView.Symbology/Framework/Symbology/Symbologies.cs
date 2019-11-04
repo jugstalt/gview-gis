@@ -906,7 +906,7 @@ namespace gView.Framework.Symbology
 
         public void Load(IPersistStream stream)
         {
-            Visible = (bool)stream.Load("visible");
+            Visible = (bool)stream.Load("visible", false);
             Symbol = (ISymbol)stream.Load("ISymbol");
         }
 
@@ -1731,11 +1731,11 @@ namespace gView.Framework.Symbology
             }
             catch { }
 
-            _char = (char)stream.Load("char");
-            _brush.Color = Color.FromArgb((int)stream.Load("color"));
-            HorizontalOffset = (float)stream.Load("x");
-            VerticalOffset = (float)stream.Load("y");
-            Angle = (float)stream.Load("a");
+            _char = (char)stream.Load("char", 'A');
+            _brush.Color = Color.FromArgb((int)stream.Load("color", Color.Black.ToArgb()));
+            HorizontalOffset = (float)stream.Load("x", 0f);
+            VerticalOffset = (float)stream.Load("y", 0f);
+            Angle = (float)stream.Load("a", 0f);
 
             this.MaxSymbolSize = (float)stream.Load("maxsymbolsize", 0f);
             this.MinSymbolSize = (float)stream.Load("minsymbolsize", 0f);
@@ -2151,9 +2151,9 @@ namespace gView.Framework.Symbology
             base.Load(stream);
 
             Filename = (string)stream.Load("fn", String.Empty);
-            HorizontalOffset = (float)stream.Load("x");
-            VerticalOffset = (float)stream.Load("y");
-            Angle = (float)stream.Load("a");
+            HorizontalOffset = (float)stream.Load("x", 0f);
+            VerticalOffset = (float)stream.Load("y", 0f);
+            Angle = (float)stream.Load("a", 0f);
             SizeX = (float)stream.Load("sx", 10f);
             SizeY = (float)stream.Load("sy", 10f);
         }

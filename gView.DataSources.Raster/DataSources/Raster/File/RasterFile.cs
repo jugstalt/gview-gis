@@ -982,6 +982,11 @@ namespace gView.DataSources.Raster.File
 
                 IPolygon cPolygon = (IPolygon)clipped;
 
+                if (cPolygon.RingCount == 0 || cPolygon[0].Area == 0D)
+                {
+                    return;
+                }
+
                 // geclipptes Polygon transformieren -> Bild
                 vector2[] vecs = new vector2[cPolygon[0].PointCount];
                 for (int i = 0; i < cPolygon[0].PointCount; i++)

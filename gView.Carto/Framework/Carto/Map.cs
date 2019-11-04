@@ -1674,6 +1674,9 @@ namespace gView.Framework.Carto
             {
                 ILayer child;
 
+                int rasterCounter = 0;
+                DateTime rasterCounterTime = DateTime.Now;
+
                 if (cursor != null)
                 {
                     while ((child = await cursor.NextRasterLayer()) != null)
@@ -1698,9 +1701,6 @@ namespace gView.Framework.Carto
 
                         RenderRasterLayerThread rlt = new RenderRasterLayerThread(this, cLayer, rootLayer, cancelTracker);
 
-                        //Thread thread = new Thread(new ThreadStart(rlt.Render));
-                        //thread.Start();
-
                         if (DrawingLayer != null && cancelTracker.Continue)
                         {
                             if (rLayer is ILayer)
@@ -1711,24 +1711,24 @@ namespace gView.Framework.Carto
 
                         await rlt.Render();
 
-                        // WarteSchleife
-                        //int counter = 0;
-
-                        //while (thread.IsAlive)
-                        //{
-                        //    Thread.Sleep(100);
-                        //    if (DoRefreshMapView != null && (counter % 10) == 0 && cancelTracker.Continue) DoRefreshMapView();
-                        //    counter++;
-                        //}
-                        if (DoRefreshMapView != null && cancelTracker.Continue)
+                        if (rasterCounter++ % 10 == 0 && (DateTime.Now - rasterCounterTime).TotalMilliseconds > 500D)
                         {
-                            DoRefreshMapView();
+                            if (DoRefreshMapView != null && cancelTracker.Continue)
+                            {
+                                DoRefreshMapView();
+                            }
+                            rasterCounterTime = DateTime.Now;
                         }
 
                         if (child.Class is IDisposable)
                         {
                             ((IDisposable)child.Class).Dispose();
                         }
+                    }
+
+                    if (DoRefreshMapView != null && cancelTracker.Continue)
+                    {
+                        DoRefreshMapView();
                     }
                 }
             }
