@@ -519,9 +519,19 @@ namespace gView.Framework.UI.Controls
                     StartRequest();
                 }
 
-                if (_refreshMapThread != null)
+                if (_refreshMapThread != null && _refreshMapThread.IsAlive)
                 {
-                    _refreshMapThread.Join();
+                    while (true)
+                    {
+                        if (!_refreshMapThread.IsAlive || _refreshMapThread.Join(1000))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            _refreshMapThread.Abort();
+                        }
+                    }
                 }
 
                 _cancelTracker = new CancelTracker();  // a new CancelTracker for every request!?

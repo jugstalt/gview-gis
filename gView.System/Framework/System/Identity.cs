@@ -11,14 +11,16 @@ namespace gView.Framework.system
         private List<string> _roles;
         private string _hashedPassword = String.Empty;
 
-        public Identity(string username)
-            : this(username, null)
+        public Identity(string username, bool isAdministrator = false)
+            : this(username, null, isAdministrator)
         {
         }
-        public Identity(string username, List<string> roles)
+        public Identity(string username, List<string> roles, bool isAdministrator = false)
         {
             _name = String.IsNullOrWhiteSpace(username) ? AnonyomousUsername : username;
             _roles = (roles != null) ? roles : new List<string>();
+
+            this.IsAdministrator = isAdministrator;
         }
 
         public string UserName
@@ -48,6 +50,8 @@ namespace gView.Framework.system
             }
             return sb.ToString();
         }
+
+        public bool IsAdministrator { get; private set; }
 
         //public string HashedPassword
         //{

@@ -27,5 +27,20 @@ namespace gView.Plugins.MapTools.Dialogs
         {
             get { return chkSelectionRenderer.Checked; }
         }
+
+        public bool RenderScales
+        {
+            get { return chkRenderScales.Checked; }
+        }
+
+        public bool LabelScales
+        {
+            get { return chkLabelScales.Checked; }
+        }
+
+        public bool FilterQuery
+        {
+            get { return chkFilterQuery.Checked; }
+        }
     }
 }

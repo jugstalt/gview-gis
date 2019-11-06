@@ -189,7 +189,8 @@ namespace gView.Server.AppCode
             }
             try
             {
-                var identity = new Identity(this.GetAuthToken().Username);
+                var authToken = this.GetAuthToken();
+                var identity = new Identity(authToken.Username, authToken.IsManageUser);
 
                 return await func(identity);
             }

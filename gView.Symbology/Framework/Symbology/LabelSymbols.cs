@@ -1174,6 +1174,7 @@ namespace gView.Framework.Symbology
             if (display.refScale > 1)
             {
                 fac = (float)(display.refScale / display.mapScale);
+                fac = options.LabelRefScaleFactor(fac);
             }
 
             if (display.dpi != 96.0)
@@ -1193,6 +1194,7 @@ namespace gView.Framework.Symbology
 
             return tSym;
         }
+
         #endregion
 
         #region IPersistable Members
@@ -1250,11 +1252,22 @@ namespace gView.Framework.Symbology
 
                     if (level < 0 || level == 0)
                     {
-                        if (_outlineWidth > 0)
+                        var outlineWidth = _outlineWidth;
+                        if (outlineWidth == 0)
                         {
-                            for (int x = _outlineWidth; x >= -_outlineWidth; x--)
+                            outlineWidth = (int)Math.Max(1f, Font.Size / 10f);
+                        }
+
+                        //if(display.GraphicsContext.TextRenderingHint== System.Drawing.Text.TextRenderingHint.AntiAlias)
+                        //{
+                        //    outlineWidth = Math.Max(2, outlineWidth);
+                        //}
+
+                        if (outlineWidth > 0)
+                        {
+                            for (int x = outlineWidth; x >= -outlineWidth; x--)
                             {
-                                for (int y = _outlineWidth; y >= -_outlineWidth; y--)
+                                for (int y = outlineWidth; y >= -outlineWidth; y--)
                                 {
                                     if (x == 0 && y == 0)
                                     {
@@ -1344,6 +1357,7 @@ namespace gView.Framework.Symbology
             if (display.refScale > 1)
             {
                 fac = (float)(display.refScale / display.mapScale);
+                fac = options.LabelRefScaleFactor(fac);
             }
 
             if (display.dpi != 96.0)

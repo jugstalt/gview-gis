@@ -1,18 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.Data;
 using gView.Framework.Carto;
+using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Framework.system;
 using gView.Framework.Globalisation;
+using gView.Framework.UI;
 using gView.Framework.UI.Controls.Filter;
 using gView.Framework.UI.Dialogs;
 using gView.Plugins.MapTools.Dialogs;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools
 {
@@ -24,17 +22,26 @@ namespace gView.Plugins.MapTools
 
         public string Name
         {
-            get { return LocalizedResources.GetResString("Tools.ImportRenderer", "Import Renderer..."); ; }
+            get { return LocalizedResources.GetResString("Tools.ImportRenderer", "Import Renderer & Properties..."); ; }
         }
 
         public bool Enable(object element)
         {
-            if (_doc == null || _doc.Application == null) return false;
+            if (_doc == null || _doc.Application == null)
+            {
+                return false;
+            }
 
             if (_doc.Application is IMapApplication &&
-                    ((IMapApplication)_doc.Application).ReadOnly == true) return false;
+                    ((IMapApplication)_doc.Application).ReadOnly == true)
+            {
+                return false;
+            }
 
-            if (element is IFeatureLayer) return true;
+            if (element is IFeatureLayer)
+            {
+                return true;
+            }
 
             return false;
         }
@@ -78,20 +85,60 @@ namespace gView.Plugins.MapTools
                 var instatnce = await exObject?.GetInstanceAsync();
 
                 if (!(instatnce is ITOCElement))
+                {
                     return true;
+                }
 
                 IFeatureLayer source = ((ITOCElement)instatnce).Layers[0] as IFeatureLayer;
                 if (source == null)
+                {
                     return true;
+                }
 
                 IFeatureLayer dest = (IFeatureLayer)element;
 
                 Dialogs.FormImportRenderers dlg2 = new Dialogs.FormImportRenderers();
                 if (dlg2.ShowDialog() == DialogResult.OK)
                 {
-                    if (dlg2.FeatureRenderer) dest.FeatureRenderer = source.FeatureRenderer;
-                    if (dlg2.LabelRenderer) dest.LabelRenderer = source.LabelRenderer;
-                    if (dlg2.SelectionRenderer) dest.SelectionRenderer = source.SelectionRenderer;
+                    if (dlg2.FeatureRenderer)
+                    {
+                        dest.FeatureRenderer = source.FeatureRenderer;
+                    }
+
+                    if (dlg2.LabelRenderer)
+                    {
+                        dest.LabelRenderer = source.LabelRenderer;
+                    }
+
+                    if (dlg2.SelectionRenderer)
+                    {
+                        dest.SelectionRenderer = source.SelectionRenderer;
+                    }
+
+                    if (dlg2.RenderScales)
+                    {
+                        dest.MinimumScale = source.MinimumScale;
+                        dest.MaximumScale = source.MaximumScale;
+                        if(dlg2.FeatureRenderer)
+                        {
+                            dest.MaxRefScaleFactor = source.MaxRefScaleFactor;
+                        }
+                    }
+
+                    if(dlg2.LabelScales)
+                    {
+                        dest.MinimumLabelScale = source.MinimumLabelScale;
+                        dest.MaximumLabelScale = source.MaximumLabelScale;
+                        if(dlg2.LabelRenderer)
+                        {
+                            dest.MaxLabelRefScaleFactor = source.MaxLabelRefScaleFactor;
+                        }
+                    }
+
+                    if (dlg2.FilterQuery)
+                    {
+                        dest.FilterQuery = source.FilterQuery;
+                    }
                 }
 
             }
@@ -125,11 +172,17 @@ namespace gView.Plugins.MapTools
 
         public bool Enable(object element)
         {
-            if (_doc == null) return false;
+            if (_doc == null)
+            {
+                return false;
+            }
+
             if ((element is IFeatureLayer && ((IFeatureLayer)element).FeatureClass != null) ||
                     (element is IRasterLayer && ((IRasterLayer)element).RasterClass != null) ||
                     (element is IWebServiceLayer && ((IWebServiceLayer)element).WebServiceClass != null))
+            {
                 return true;
+            }
 
             return false;
         }
@@ -142,13 +195,17 @@ namespace gView.Plugins.MapTools
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = (IMapDocument)hook;
+            }
         }
 
         public Task<bool> OnEvent(object element, object dataset)
         {
             if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null)
+            {
                 return Task.FromResult(true);
+            }
 
             if (element is IFeatureLayer && ((IFeatureLayer)element).FeatureClass != null && ((IFeatureLayer)element).FeatureClass.Envelope != null)
             {
@@ -157,7 +214,9 @@ namespace gView.Plugins.MapTools
                 {
                     IGeometry geom = GeometricTransformerFactory.Transform2D(envelope, ((IFeatureLayer)element).FeatureClass.SpatialReference, _doc.FocusMap.Display.SpatialReference);
                     if (geom == null)
+                    {
                         return Task.FromResult(true);
+                    }
 
                     envelope = geom.Envelope;
                 }
@@ -170,7 +229,9 @@ namespace gView.Plugins.MapTools
                 {
                     IGeometry geom = GeometricTransformerFactory.Transform2D(envelope, ((IRasterLayer)element).RasterClass.SpatialReference, _doc.FocusMap.Display.SpatialReference);
                     if (geom == null)
+                    {
                         return Task.FromResult(true);
+                    }
 
                     envelope = geom.Envelope;
                 }
@@ -183,7 +244,9 @@ namespace gView.Plugins.MapTools
                 {
                     IGeometry geom = GeometricTransformerFactory.Transform2D(envelope, ((IWebServiceLayer)element).WebServiceClass.SpatialReference, _doc.FocusMap.Display.SpatialReference);
                     if (geom == null)
+                    {
                         return Task.FromResult(true);
+                    }
 
                     envelope = geom.Envelope;
                 }
@@ -194,7 +257,9 @@ namespace gView.Plugins.MapTools
                 return Task.FromResult(true);
             }
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.All);
+            }
 
             return Task.FromResult(true);
         }
@@ -237,15 +302,19 @@ namespace gView.Plugins.MapTools
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = (IMapDocument)hook;
+            }
         }
 
         public Task<bool> OnEvent(object element, object parent)
         {
-            if(_doc==null || !(_doc.Application is IMapApplication) || !(element is IMap))
+            if (_doc == null || !(_doc.Application is IMapApplication) || !(element is IMap))
+            {
                 return Task.FromResult(true);
+            }
 
-            FormMapProperties dlg=new FormMapProperties(
+            FormMapProperties dlg = new FormMapProperties(
                 (IMapApplication)_doc.Application,
                 (IMap)element,
                 ((IMap)element).Display);
@@ -297,7 +366,9 @@ namespace gView.Plugins.MapTools
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = (IMapDocument)hook;
+            }
         }
 
         public Task<bool> OnEvent(object element, object parent)
@@ -308,7 +379,9 @@ namespace gView.Plugins.MapTools
                 string name = LocalizedResources.GetResString("Tools.Map", "Map") + " " + (counter);
 
                 while (_doc[name] != null)
+                {
                     name = LocalizedResources.GetResString("Tools.Map", "Map") + " " + (++counter);
+                }
 
                 Map map = new Map();
                 map.Name = name;
@@ -361,7 +434,9 @@ namespace gView.Plugins.MapTools
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = (IMapDocument)hook;
+            }
         }
 
         public Task<bool> OnEvent(object element, object parent)
@@ -419,7 +494,9 @@ namespace gView.Plugins.MapTools
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = (IMapDocument)hook;
+            }
         }
 
         public Task<bool> OnEvent(object element, object parent)
@@ -471,12 +548,21 @@ namespace gView.Plugins.MapTools
 
         public bool Enable(object element)
         {
-            if (_doc == null || _doc.Application == null) return false;
+            if (_doc == null || _doc.Application == null)
+            {
+                return false;
+            }
 
             if (_doc.Application is IMapApplication &&
-                    ((IMapApplication)_doc.Application).ReadOnly == true) return false;
+                    ((IMapApplication)_doc.Application).ReadOnly == true)
+            {
+                return false;
+            }
 
-            if (element is IFeatureLayer) return true;
+            if (element is IFeatureLayer)
+            {
+                return true;
+            }
 
             return false;
         }
@@ -497,7 +583,9 @@ namespace gView.Plugins.MapTools
         public Task<bool> OnEvent(object element, object parent)
         {
             if (!(element is IFeatureLayer) || _doc == null || _doc.FocusMap == null)
+            {
                 return Task.FromResult(true);
+            }
 
             if (_doc.Application is IGUIApplication)
             {

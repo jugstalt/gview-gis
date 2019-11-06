@@ -98,6 +98,15 @@ namespace gView.Plugins.MapTools
 
                 ((IFeatureLayer)newLayer).FeatureRenderer = ((IFeatureLayer)element).FeatureRenderer.Clone() as IFeatureRenderer ?? ((IFeatureLayer)newLayer).FeatureRenderer;
                 ((IFeatureLayer)newLayer).LabelRenderer = ((IFeatureLayer)element).LabelRenderer?.Clone() as ILabelRenderer ?? ((IFeatureLayer)newLayer).LabelRenderer;
+
+                ((IFeatureLayer)newLayer).MinimumScale = ((IFeatureLayer)element).MinimumScale;
+                ((IFeatureLayer)newLayer).MaximumScale = ((IFeatureLayer)element).MaximumScale;
+
+                ((IFeatureLayer)newLayer).MinimumLabelScale = ((IFeatureLayer)element).MinimumLabelScale;
+                ((IFeatureLayer)newLayer).MaximumLabelScale = ((IFeatureLayer)element).MaximumLabelScale;
+
+                ((IFeatureLayer)newLayer).MaxRefScaleFactor = ((IFeatureLayer)element).MaxRefScaleFactor;
+                ((IFeatureLayer)newLayer).MaxLabelRefScaleFactor = ((IFeatureLayer)element).MaxLabelRefScaleFactor;
             }
             if (newLayer == null)
             {

@@ -9,7 +9,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml;
 
 namespace gView.Server.AppCode
 {
@@ -53,21 +52,39 @@ namespace gView.Server.AppCode
 
         public bool AddMap(IMap map)
         {
-            if (InternetMapServer.Instance == null) return false;
-            if (map == null || _maps.Contains(map)) return true;
+            if (InternetMapServer.Instance == null)
+            {
+                return false;
+            }
+
+            if (map == null || _maps.Contains(map))
+            {
+                return true;
+            }
 
             _maps.Add(map);
-            if (MapAdded != null) MapAdded(map);
+            if (MapAdded != null)
+            {
+                MapAdded(map);
+            }
+
             return true;
         }
 
         public bool RemoveMap(IMap map)
         {
-            if (map == null || !_maps.Contains(map)) return false;
+            if (map == null || !_maps.Contains(map))
+            {
+                return false;
+            }
 
             _maps = new ConcurrentBag<IMap>(_maps.Except(new[] { map }));
 
-            if (MapDeleted != null) MapDeleted(map);
+            if (MapDeleted != null)
+            {
+                MapDeleted(map);
+            }
+
             return true;
         }
 
@@ -75,7 +92,9 @@ namespace gView.Server.AppCode
         {
             var map = this[mapName];
             if (map != null)
+            {
                 return RemoveMap(map);
+            }
 
             return true;
         }
@@ -87,7 +106,9 @@ namespace gView.Server.AppCode
                 foreach (IMap map in _maps)
                 {
                     if (map.Name == mapName)
+                    {
                         return map;
+                    }
                 }
                 return null;
             }
@@ -102,7 +123,9 @@ namespace gView.Server.AppCode
                     foreach (IDatasetElement element in map.MapElements)
                     {
                         if (element == layer)
+                        {
                             return map;
+                        }
                     }
                 }
                 return null;
@@ -188,7 +211,7 @@ namespace gView.Server.AppCode
 
         public IEnumerable<IMapApplicationModule> GetMapModules(IMap map)
         {
-            if(_mapModules.ContainsKey(map))
+            if (_mapModules.ContainsKey(map))
             {
                 return _mapModules[map];
             }
@@ -226,26 +249,34 @@ namespace gView.Server.AppCode
         public void Load(IPersistStream stream)
         {
             if (_map == null)
+            {
                 return;
+            }
 
             while (true)
             {
                 ModulePersist module = stream.Load("Module", null, new ModulePersist()) as ModulePersist;
                 if (module == null)
+                {
                     break;
+                }
 
                 if (module.Module != null)
+                {
                     _modules.Add(module.Module);
+                }
             }
         }
 
         public void Save(IPersistStream stream)
         {
             if (_map == null)
+            {
                 return;
+            }
 
             PlugInManager pluginManager = new PlugInManager();
-            foreach(IMapApplicationModule module in _modules)
+            foreach (IMapApplicationModule module in _modules)
             {
                 if (module is IPersistable)
                 {
@@ -281,9 +312,9 @@ namespace gView.Server.AppCode
                 _module = (IMapApplicationModule)PlugInManager.Create(guid);
 
                 if (!(_module is IPersistable))
+                {
                     return;
-
-                ((IPersistable)_module).Load(stream);
+                } ((IPersistable)_module).Load(stream);
             }
             catch { }
         }
@@ -291,7 +322,9 @@ namespace gView.Server.AppCode
         public void Save(IPersistStream stream)
         {
             if (_module == null || !(_module is IPersistable))
+            {
                 return;
+            }
 
             stream.Save("GUID", PlugInManager.PlugInID(_module).ToString());
             ((IPersistable)_module).Save(stream);

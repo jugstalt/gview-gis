@@ -6,6 +6,9 @@ window.gview.server = function () {
 
     var setRootUrl = function (url) {
         rootUrl = url;
+        if (rootUrl[rootUrl.length - 1] !== '/') {
+            rootUrl += '/';
+        }
     };
 
     //
@@ -14,7 +17,7 @@ window.gview.server = function () {
 
     var get = function (options) {
         $.ajax({
-            url: options.url.indexOf(rootUrl) === 0 ? options.url : rootUrl + options.url,
+            url: options.url.indexOf(rootUrl) === 0 ? options.url : rootUrl + (options.url[0] === '/' ? options.url.substr(1) : options.url),
             type: options.type || 'get',
             data: options.data || null,
             success: options.success || function (result) { gview.server.alert(result); },

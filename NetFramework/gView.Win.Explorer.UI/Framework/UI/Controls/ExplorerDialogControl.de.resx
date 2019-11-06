@@ -112,31 +112,46 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="label2.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
+  </data>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="cmbFilters.Size" type="System.Drawing.Size, System.Drawing">
+    <value>364, 21</value>
   </data>
   <data name="label1.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="txtElement.Size" type="System.Drawing.Size, System.Drawing">
+    <value>365, 20</value>
+  </data>
+  <data name="panel1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 316</value>
+  </data>
+  <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>570, 69</value>
+  </data>
   <data name="toolStripButton1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAZpJREFUOE+9k88r
-        w3EYx5/LrtrNRTn4B8jNwZW4uHBWDsIopRG1GCFahMwOLFJrKUt+LMkmLDFZhF0m0ZREm/JjEm+f57PP
-        frUfDsq3Ppfv93m9n+f9fj5fon96IPrwSX98VtIeW8jtnSEcThMOpgieCcLuGGHHRA4GaxA9GUUYvnaX
-        ATADnyYgYgReu4FwqwRicFYR7hwHX/QSxFNDRjijCI8NBkNNEsR9HXBXHRs3RUhZSLXCnvFYD9+cBkfm
-        RAZ74zKDNIG1PsKKgWDrpJBMlANDsErCgCVxviaBj6E0gW+vqHszYKlLbYXTxlWJTD8ukAVGsALv+6Iu
-        3AK7XgnwmLgskKuTAjlg3JTj2SXqRE62DiXgGhUvTjRgz8lwcmDcmWEEivHgZMuVWGxXAlvDBPYlJxGe
-        o3dApzZSK4oTMPxFuHWw5VLMtymBzUFCxEPYHhEffoFxno+AXdT5C2HVKQHnAElfPEmuzgzjNA8XC6Lu
-        TIvZZiWwbqTQai9hoz96Ynte7iG5Kk6bA2PPPDZ3ZtjcqO7BX//mHw9t2eg1JmZeAAAAAElFTkSuQmCC
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGTSURBVDhPvZLfK4NRGMefm91qd26UC/8AuXPhlrhxw7Vy
+        IYxSGlGLEaJFyOyCRWotRfJjSTZhicki7GZLNCXRpvyYxNd5znte2xrtQnnq6T3vOc/n+/w4h/7LoDzT
+        gk4yHjnIF5giHEwS9icI/jHCzghh20ZLIgRV0JzXEko1hi99JQDswLsNSFiB504g3iwBHf5VhDN/g09m
+        CeKh7kdYdz6TMBuXLcFYgwRxWwPcVOpBaUKpe8I1455xX4vgjAGH9uQMdkflDDIEVnsIyxaCq51iUoCD
+        Ea2QMOBI+sc48DaQIfAZEHEvFix0qCp42ogUyczZYETL8LonvvEmuM1KgMvERZ4sOxuMq1I8esVazMnV
+        pgS8w2Lj2CB7ToVTXYcRLsSdh//LMd+qBDYHtb5kJQLW3oBJ3Uh1GoxQAa6XRFykGLMtSmCjn5DwE7aG
+        xEEWGGe5CLtFXCgfTpMS8PSR7IsryQbjJAfncyLu1IjpRiWwZqXYSjdhvVdz/Z4Xu0heFU+bB8Y9c9mc
+        mWF7vXoHfzOiLw9t2eg8dUuJAAAAAElFTkSuQmCC
 </value>
+  </data>
+  <data name="toolStrip1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>460, -1</value>
   </data>
   <data name="label3.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -149,5 +164,17 @@
   </data>
   <data name="label3.Text" xml:space="preserve">
     <value>Suchen in:</value>
+  </data>
+  <data name="catalogComboBox1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>390, 25</value>
+  </data>
+  <data name="panel3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>570, 30</value>
+  </data>
+  <data name="contentsList1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>570, 286</value>
+  </data>
+  <data name="$this.Size" type="System.Drawing.Size, System.Drawing">
+    <value>570, 385</value>
   </data>
 </root>

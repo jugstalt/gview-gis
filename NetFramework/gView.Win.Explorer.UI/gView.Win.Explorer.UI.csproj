@@ -241,6 +241,9 @@
     <EmbeddedResource Include="Framework\UI\Controls\ProgressDisk.resx">
       <DependentUpon>ProgressDisk.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Framework\UI\Dialogs\ExplorerDialog.de-DE.resx">
+      <DependentUpon>ExplorerDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Framework\UI\Dialogs\ExplorerDialog.de.resx">
       <DependentUpon>ExplorerDialog.cs</DependentUpon>
     </EmbeddedResource>

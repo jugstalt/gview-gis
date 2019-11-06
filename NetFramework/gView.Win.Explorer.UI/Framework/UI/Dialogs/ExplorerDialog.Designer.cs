@@ -36,52 +36,33 @@
             // 
             // btnOK
             // 
-            this.btnOK.AccessibleDescription = null;
-            this.btnOK.AccessibleName = null;
             resources.ApplyResources(this.btnOK, "btnOK");
-            this.btnOK.BackgroundImage = null;
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Font = null;
             this.btnOK.Name = "btnOK";
             this.btnOK.UseVisualStyleBackColor = true;
             // 
             // btnCancel
             // 
-            this.btnCancel.AccessibleDescription = null;
-            this.btnCancel.AccessibleName = null;
             resources.ApplyResources(this.btnCancel, "btnCancel");
-            this.btnCancel.BackgroundImage = null;
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Font = null;
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
             // explorerDialogControl1
             // 
-            this.explorerDialogControl1.AccessibleDescription = null;
-            this.explorerDialogControl1.AccessibleName = null;
             resources.ApplyResources(this.explorerDialogControl1, "explorerDialogControl1");
-            this.explorerDialogControl1.BackgroundImage = null;
             this.explorerDialogControl1.Filters = null;
-            this.explorerDialogControl1.Font = null;
             this.explorerDialogControl1.IsOpenDialog = true;
             this.explorerDialogControl1.MultiSelection = true;
             this.explorerDialogControl1.Name = "explorerDialogControl1";
             // 
             // ExplorerDialog
             // 
-            this.AccessibleDescription = null;
-            this.AccessibleName = null;
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = null;
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.explorerDialogControl1);
-            this.Font = null;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Icon = null;
-            this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "ExplorerDialog";
             this.ShowIcon = false;

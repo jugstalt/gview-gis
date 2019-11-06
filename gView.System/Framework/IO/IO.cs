@@ -186,7 +186,7 @@ namespace gView.Framework.IO
                 return false;
             }
         }
-        public bool ReadStream(TextReader stream)
+        public bool ReadStream(TextReader stream, string cultureName = null)
         {
             try
             {
@@ -198,7 +198,7 @@ namespace gView.Framework.IO
                 {
                     if (node.NodeType == XmlNodeType.Element)
                     {
-                        _parent = new XmlNodePlus(node);
+                        _parent = new XmlNodePlus(node, cultureName);
                         return true;
                     }
                 }
@@ -1482,17 +1482,18 @@ namespace gView.Framework.IO
 		private XmlNode _node;
 		private Hashtable _hash;
         private NumberFormatInfo _nhi = global::System.Globalization.CultureInfo.CurrentCulture.NumberFormat;
-        
-		public XmlNodePlus(XmlNode node) 
-		{
-			_node=node;
-			_hash=new Hashtable();
 
-            if (_node.Attributes["culture"] != null)
+        public XmlNodePlus(XmlNode node, string cultureName = null)
+        {
+            _node = node;
+            _hash = new Hashtable();
+
+            cultureName = _node.Attributes["culture"]?.Value ?? cultureName;
+            if (cultureName != null)
             {
                 foreach (CultureInfo cu in global::System.Globalization.CultureInfo.GetCultures(CultureTypes.AllCultures))
                 {
-                    if (cu.TextInfo.CultureName == _node.Attributes["culture"].Value)
+                    if (cu.TextInfo.CultureName == cultureName)
                     {
                         _nhi = cu.NumberFormat;
                         break;

@@ -239,6 +239,7 @@ namespace gView.Framework.system
         string UserName { get; }
         List<string> UserRoles { get; }
         //string HashedPassword { get; }
+        bool IsAdministrator { get; }
     }
 
     public interface IUserData

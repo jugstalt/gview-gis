@@ -84,7 +84,8 @@ namespace gView.Server.AppCode
                 {
                     if (Display.MakeTransparent &&
                         format != ImageFormat.Jpeg &&
-                        format != ImageFormat.Gif)
+                        format != ImageFormat.Gif &&
+                        _image.PixelFormat != PixelFormat.Format32bppArgb)  // dont make this transparent, this should be transparent from beginning !!!
                     {
                         _image.MakeTransparent(Display.TransparentColor);
                     }
@@ -133,7 +134,8 @@ namespace gView.Server.AppCode
                 {
                     if (Display.MakeTransparent &&
                         format != ImageFormat.Jpeg &&
-                        format != ImageFormat.Gif)
+                        format != ImageFormat.Gif &&
+                        _image.PixelFormat != PixelFormat.Format32bppArgb)   // dont make this transparent, this should be transparent from beginning !!!
                     {
                         _image.MakeTransparent(Display.TransparentColor);
                     }

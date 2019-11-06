@@ -36,15 +36,15 @@
             this.txtElement = new System.Windows.Forms.TextBox();
             this.panel3 = new System.Windows.Forms.Panel();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.label3 = new System.Windows.Forms.Label();
-            this.catalogComboBox1 = new gView.Framework.UI.Controls.CatalogComboBox();
-            this.contentsList1 = new gView.Framework.UI.Controls.ContentsList();
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.toolStripSplitButton1 = new System.Windows.Forms.ToolStripSplitButton();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.btnFavorites = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolAddToFavorites = new System.Windows.Forms.ToolStripMenuItem();
+            this.label3 = new System.Windows.Forms.Label();
+            this.catalogComboBox1 = new gView.Framework.UI.Controls.CatalogComboBox();
+            this.contentsList1 = new gView.Framework.UI.Controls.ContentsList();
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
             this.toolStrip1.SuspendLayout();
@@ -52,11 +52,11 @@
             // 
             // panel1
             // 
-            resources.ApplyResources(this.panel1, "panel1");
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.cmbFilters);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.txtElement);
+            resources.ApplyResources(this.panel1, "panel1");
             this.panel1.Name = "panel1";
             // 
             // label2
@@ -85,10 +85,10 @@
             // 
             // panel3
             // 
-            resources.ApplyResources(this.panel3, "panel3");
             this.panel3.Controls.Add(this.toolStrip1);
             this.panel3.Controls.Add(this.label3);
             this.panel3.Controls.Add(this.catalogComboBox1);
+            resources.ApplyResources(this.panel3, "panel3");
             this.panel3.Name = "panel3";
             // 
             // toolStrip1
@@ -103,6 +103,53 @@
             this.btnFavorites});
             this.toolStrip1.Name = "toolStrip1";
             // 
+            // toolStripButton1
+            // 
+            this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            resources.ApplyResources(this.toolStripButton1, "toolStripButton1");
+            this.toolStripButton1.Name = "toolStripButton1";
+            this.toolStripButton1.Click += new System.EventHandler(this.btnMoveUp_Click);
+            // 
+            // toolStripSplitButton1
+            // 
+            this.toolStripSplitButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripSplitButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem1,
+            this.toolStripMenuItem2});
+            this.toolStripSplitButton1.Image = global::gView.Win.Explorer.UI.Properties.Resources.ExplorerStyle;
+            resources.ApplyResources(this.toolStripSplitButton1, "toolStripSplitButton1");
+            this.toolStripSplitButton1.Name = "toolStripSplitButton1";
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Image = global::gView.Win.Explorer.UI.Properties.Resources.ExplorerStyle_list;
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            resources.ApplyResources(this.toolStripMenuItem1, "toolStripMenuItem1");
+            this.toolStripMenuItem1.Click += new System.EventHandler(this.btnList_Click);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Image = global::gView.Win.Explorer.UI.Properties.Resources.ExplorerStyle_details;
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            resources.ApplyResources(this.toolStripMenuItem2, "toolStripMenuItem2");
+            this.toolStripMenuItem2.Click += new System.EventHandler(this.btnDetails_Click);
+            // 
+            // btnFavorites
+            // 
+            this.btnFavorites.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnFavorites.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolAddToFavorites});
+            this.btnFavorites.Image = global::gView.Win.Explorer.UI.Properties.Resources.folder_heart;
+            this.btnFavorites.Name = "btnFavorites";
+            resources.ApplyResources(this.btnFavorites, "btnFavorites");
+            // 
+            // toolAddToFavorites
+            // 
+            this.toolAddToFavorites.Image = global::gView.Win.Explorer.UI.Properties.Resources.folder_heart;
+            this.toolAddToFavorites.Name = "toolAddToFavorites";
+            resources.ApplyResources(this.toolAddToFavorites, "toolAddToFavorites");
+            this.toolAddToFavorites.Click += new System.EventHandler(this.toolAddToFavorites_Click);
+            // 
             // label3
             // 
             resources.ApplyResources(this.label3, "label3");
@@ -116,61 +163,13 @@
             // 
             // contentsList1
             // 
-            resources.ApplyResources(this.contentsList1, "contentsList1");
             this.contentsList1.AllowContextMenu = true;
-            //this.contentsList1.ExplorerObject = null;
+            resources.ApplyResources(this.contentsList1, "contentsList1");
             this.contentsList1.Filter = null;
             this.contentsList1.IsOpenDialog = true;
             this.contentsList1.MultiSelection = true;
             this.contentsList1.Name = "contentsList1";
             this.contentsList1.View = System.Windows.Forms.View.Details;
-            // 
-            // toolStripButton1
-            // 
-            resources.ApplyResources(this.toolStripButton1, "toolStripButton1");
-            this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Click += new System.EventHandler(this.btnMoveUp_Click);
-            // 
-            // toolStripSplitButton1
-            // 
-            resources.ApplyResources(this.toolStripSplitButton1, "toolStripSplitButton1");
-            this.toolStripSplitButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripSplitButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItem1,
-            this.toolStripMenuItem2});
-            this.toolStripSplitButton1.Image = global::gView.Win.Explorer.UI.Properties.Resources.ExplorerStyle;
-            this.toolStripSplitButton1.Name = "toolStripSplitButton1";
-            // 
-            // toolStripMenuItem1
-            // 
-            resources.ApplyResources(this.toolStripMenuItem1, "toolStripMenuItem1");
-            this.toolStripMenuItem1.Image = global::gView.Win.Explorer.UI.Properties.Resources.ExplorerStyle_list;
-            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Click += new System.EventHandler(this.btnList_Click);
-            // 
-            // toolStripMenuItem2
-            // 
-            resources.ApplyResources(this.toolStripMenuItem2, "toolStripMenuItem2");
-            this.toolStripMenuItem2.Image = global::gView.Win.Explorer.UI.Properties.Resources.ExplorerStyle_details;
-            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Click += new System.EventHandler(this.btnDetails_Click);
-            // 
-            // btnFavorites
-            // 
-            resources.ApplyResources(this.btnFavorites, "btnFavorites");
-            this.btnFavorites.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnFavorites.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolAddToFavorites});
-            this.btnFavorites.Image = global::gView.Win.Explorer.UI.Properties.Resources.folder_heart;
-            this.btnFavorites.Name = "btnFavorites";
-            // 
-            // toolAddToFavorites
-            // 
-            resources.ApplyResources(this.toolAddToFavorites, "toolAddToFavorites");
-            this.toolAddToFavorites.Image = global::gView.Win.Explorer.UI.Properties.Resources.folder_heart;
-            this.toolAddToFavorites.Name = "toolAddToFavorites";
-            this.toolAddToFavorites.Click += new System.EventHandler(this.toolAddToFavorites_Click);
             // 
             // ExplorerDialogControl
             // 

@@ -271,8 +271,7 @@ namespace gView.Server.Controllers
             {
                 try
                 {
-                    var authToken = base.GetAuthToken();
-                    if (!authToken.IsManageUser)
+                    if (!identity.IsAdministrator)
                     {
                         throw new MapServerException("Not allowed");
                     }

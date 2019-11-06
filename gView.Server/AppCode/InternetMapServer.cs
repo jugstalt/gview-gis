@@ -407,7 +407,7 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                await Logger.LogAsync(mapName, loggingMethod.error, "LoadConfig: " + ex.Message);
+                await Logger.LogAsync(mapName, loggingMethod.error, "RemoveConfig: " + ex.Message);
                 return false;
             }
         }
@@ -518,7 +518,7 @@ namespace gView.Server.AppCode
 
             using (StringReader sr = new StringReader(mapXml))
             {
-                if (!xmlStream.ReadStream(sr))
+                if (!xmlStream.ReadStream(sr, String.Empty))  // invariant culture
                 {
                     throw new MapServerException("Unable to read MapXML");
                 }
@@ -847,6 +847,11 @@ namespace gView.Server.AppCode
             if (folderService == null)
             {
                 throw new MapServerException("Unknown folder: " + folder);
+            }
+
+            if (identity != null && identity.IsAdministrator)
+            {
+                return;
             }
 
             if (!await folderService.HasPublishAccess(identity))
