@@ -174,6 +174,8 @@ namespace gView.Framework.Symbology
             set { _align = value; }
         }
 
+        public TextSymbolAlignment[] SecondaryTextSymbolAlignments { get; set; }
+
         private IDisplayCharacterRanges _measureTextWidth = null;
         public IDisplayCharacterRanges MeasureCharacterWidth(IDisplay display)
         {
@@ -199,14 +201,19 @@ namespace gView.Framework.Symbology
             if (geometry is IPoint)
             {
                 #region IPoint
+                
                 double x = ((IPoint)geometry).X;
                 double y = ((IPoint)geometry).Y;
                 display.World2Image(ref x, ref y);
 
-                AnnotationPolygon polygon = AnnotationPolygon(display, (float)x, (float)y);
-                polygon.Rotate((float)x, (float)y, Angle);
+                var annotationPolygons = AnnotationPolygons(display, (float)x, (float)y);
+                foreach (var annotatoinPolygon in annotationPolygons)
+                {
+                    annotatoinPolygon.Rotate((float)x, (float)y, Angle);
+                }
 
-                polygons.Add(polygon);
+                polygons.AddRange(annotationPolygons);
+
                 #endregion
             }
             else if (geometry is IMultiPoint)
@@ -220,10 +227,13 @@ namespace gView.Framework.Symbology
 
                     display.World2Image(ref x, ref y);
 
-                    AnnotationPolygon polygon = AnnotationPolygon(display, (float)x, (float)y);
-                    polygon.Rotate((float)x, (float)y, Angle);
+                    var annotationPolygons = AnnotationPolygons(display, (float)x, (float)y);
+                    foreach (var annotatoinPolygon in annotationPolygons)
+                    {
+                        annotatoinPolygon.Rotate((float)x, (float)y, Angle);
+                    }
 
-                    polygons.Add(polygon);
+                    polygons.AddRange(annotationPolygons);
                 }
                 #endregion
             }
@@ -417,10 +427,12 @@ namespace gView.Framework.Symbology
                         }
                         display.World2Image(ref x, ref y);
 
-                        AnnotationPolygon polygon = AnnotationPolygon(display, (float)x, (float)y);
-                        polygon.Rotate((float)x, (float)y, Angle + angle);
+                        var annotationPolygons = AnnotationPolygons(display, (float)x, (float)y);
+                        foreach(var annotatoinPolygon in annotationPolygons) {
+                            annotatoinPolygon.Rotate((float)x, (float)y, Angle + angle);
+                        }
 
-                        polygons.Add(polygon);
+                        polygons.AddRange(annotationPolygons);
                         p1 = p2;
                     }
                     #endregion
@@ -431,16 +443,39 @@ namespace gView.Framework.Symbology
         }
         #endregion
 
-        private AnnotationPolygon AnnotationPolygon(IDisplay display, float x, float y)
+        private IEnumerable<AnnotationPolygon> AnnotationPolygons(IDisplay display, float x, float y)
         {
-            return AnnotationPolygon(display, _text, x, y);
+            return AnnotationPolygons(display, _text, x, y);
         }
-        private AnnotationPolygon AnnotationPolygon(IDisplay display, string text, float x, float y)
+        private IEnumerable<AnnotationPolygon> AnnotationPolygons(IDisplay display, string text, float x, float y)
         {
             SizeF size = display.GraphicsContext.MeasureString(text, _font);
 
+            if (this.SecondaryTextSymbolAlignments == null || this.SecondaryTextSymbolAlignments.Length == 0)
+            {
+                return
+                    new AnnotationPolygon[] {
+                        AnnotationPolygon(display, size, x, y, _align)
+                    };
+            }
+            else
+            {
+                List<AnnotationPolygon> polygons = new List<AnnotationPolygon>();
+                polygons.Add(AnnotationPolygon(display, size, x, y, _align));
+
+                foreach (var secondaryAlignment in this.SecondaryTextSymbolAlignments)
+                {
+                    polygons.Add(AnnotationPolygon(display, size, x, y, secondaryAlignment));
+                }
+
+                return polygons;
+            }
+        }
+
+        private AnnotationPolygon AnnotationPolygon(IDisplay display, SizeF size, float x, float y, TextSymbolAlignment alignment)
+        {
             float x1 = 0, y1 = 0;
-            switch (_align)
+            switch (alignment)
             {
                 case TextSymbolAlignment.rightAlignOver:
                     x1 = x - size.Width;

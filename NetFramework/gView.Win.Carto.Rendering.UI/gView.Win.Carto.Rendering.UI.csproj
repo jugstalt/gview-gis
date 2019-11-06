@@ -158,6 +158,12 @@
     <Compile Include="Framework\Carto\Rendering\UI\PropertyForm_ValueMapRenderer_Dialog_InsertValue.Designer.cs">
       <DependentUpon>PropertyForm_ValueMapRenderer_Dialog_InsertValue.cs</DependentUpon>
     </Compile>
+    <Compile Include="Framework\Carto\Rendering\UI\SymbolAlignmentPriorityControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\Carto\Rendering\UI\SymbolAlignmentPriorityControl.Designer.cs">
+      <DependentUpon>SymbolAlignmentPriorityControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -322,6 +328,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Framework\Carto\Rendering\UI\PropertyForm_ValueMapRenderer_Dialog_InsertValue.resx">
       <DependentUpon>PropertyForm_ValueMapRenderer_Dialog_InsertValue.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\Carto\Rendering\UI\SymbolAlignmentPriorityControl.resx">
+      <DependentUpon>SymbolAlignmentPriorityControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -594,6 +594,31 @@ namespace gView.Framework.Symbology
             }
         }
 
+        public TextSymbolAlignment[] SecondaryTextSymbolAlignments
+        {
+            get
+            {
+                foreach (SymbolCollectionItem item in _symbols)
+                {
+                    if (item.Symbol is ITextSymbol)
+                    {
+                        return ((ITextSymbol)item.Symbol).SecondaryTextSymbolAlignments;
+                    }
+                }
+                return new TextSymbolAlignment[0];
+            }
+            set
+            {
+                foreach (SymbolCollectionItem item in _symbols)
+                {
+                    if (item.Symbol is ITextSymbol)
+                    {
+                        ((ITextSymbol)item.Symbol).SecondaryTextSymbolAlignments = value;
+                    }
+                }
+            }
+        }
+
         public IDisplayCharacterRanges MeasureCharacterWidth(IDisplay display)
         {
             foreach (SymbolCollectionItem item in _symbols)

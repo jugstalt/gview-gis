@@ -41,6 +41,7 @@ namespace gView.Framework.Carto.Rendering.UI
             this.gbOrientation = new System.Windows.Forms.GroupBox();
             this.btnOrientation = new System.Windows.Forms.Button();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.symbolAlignmentPriorityControl = new gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI.SymbolAlignmentPriorityControl();
             this.radioButton5 = new System.Windows.Forms.RadioButton();
             this.radioButton3 = new System.Windows.Forms.RadioButton();
             this.radioButton9 = new System.Windows.Forms.RadioButton();
@@ -148,6 +149,7 @@ namespace gView.Framework.Carto.Rendering.UI
             // 
             // groupBox5
             // 
+            this.groupBox5.Controls.Add(this.symbolAlignmentPriorityControl);
             this.groupBox5.Controls.Add(this.radioButton5);
             this.groupBox5.Controls.Add(this.radioButton3);
             this.groupBox5.Controls.Add(this.radioButton9);
@@ -160,6 +162,12 @@ namespace gView.Framework.Carto.Rendering.UI
             resources.ApplyResources(this.groupBox5, "groupBox5");
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.TabStop = false;
+            // 
+            // symbolAlignmentPriorityControl
+            // 
+            resources.ApplyResources(this.symbolAlignmentPriorityControl, "symbolAlignmentPriorityControl");
+            this.symbolAlignmentPriorityControl.Name = "symbolAlignmentPriorityControl";
+            this.symbolAlignmentPriorityControl.PrimarySymbolAlignment = gView.Framework.Symbology.TextSymbolAlignment.rightAlignOver;
             // 
             // radioButton5
             // 
@@ -326,5 +334,6 @@ namespace gView.Framework.Carto.Rendering.UI
         private System.Windows.Forms.RadioButton radioButton1;
         private System.Windows.Forms.RadioButton radioButton6;
         private System.Windows.Forms.RadioButton radioButton7;
+        private Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI.SymbolAlignmentPriorityControl symbolAlignmentPriorityControl;
     }
 }

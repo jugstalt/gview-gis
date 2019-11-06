@@ -166,6 +166,8 @@ namespace gView.Framework.Carto.Rendering.UI
                 ((ILabel)_renderer.TextSymbol).TextSymbolAlignment = align;
             }
             DrawPreview();
+
+            symbolAlignmentPriorityControl.PrimarySymbolAlignment = align;
         }
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
         {
@@ -277,6 +279,8 @@ namespace gView.Framework.Carto.Rendering.UI
         }
 
         #endregion
+
+       
     }
 
     internal class LabelFieldItem

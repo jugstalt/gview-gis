@@ -94,7 +94,7 @@ namespace gView.Framework.Symbology
     }
 
     public enum TextSymbolAlignment { rightAlignOver, Over, leftAlignOver, rightAlignCenter, Center, leftAlignCenter, rightAlignUnder, Under, leftAlignUnder }
-
+    
     public class AnnotationPolygonEnvelope
     {
         private float _minx, _miny, _maxx, _maxy;
@@ -412,6 +412,8 @@ namespace gView.Framework.Symbology
     {
         string Text { get; set; }
         TextSymbolAlignment TextSymbolAlignment { get; set; }
+
+        TextSymbolAlignment[] SecondaryTextSymbolAlignments { get; set; }
 
         IDisplayCharacterRanges MeasureCharacterWidth(IDisplay display);
 
