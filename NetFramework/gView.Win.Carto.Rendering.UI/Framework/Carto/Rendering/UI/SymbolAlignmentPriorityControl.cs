@@ -20,7 +20,7 @@ namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI
 
         #region Properties 
 
-        private TextSymbolAlignment _primaryAlignment;
+        private TextSymbolAlignment _primaryAlignment = TextSymbolAlignment.leftAlignOver;
         public TextSymbolAlignment PrimarySymbolAlignment
         {
             get { return _primaryAlignment; }
@@ -43,6 +43,46 @@ namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI
             }
         }
 
+        public IEnumerable<TextSymbolAlignment> SecondarySymbolAlignments
+        {
+            get
+            {
+                List<TextSymbolAlignment> result = new List<TextSymbolAlignment>();
+
+                for (int p = 1; p <= 9; p++)
+                {
+                    foreach (PriorityButton button in panelContent.Controls)
+                    {
+                        if (button.Text == p.ToString())
+                        {
+                            result.Add(button.SymbolAlignment);
+                        }
+                    }
+                }
+
+                return result.Count > 1 ? result.ToArray() : null;
+            }
+            set
+            {
+                this.PrimarySymbolAlignment = _primaryAlignment; // set all to default;
+
+                if (value != null)
+                {
+                    foreach (var symbolAlignment in value)
+                    {
+                        foreach (PriorityButton button in panelContent.Controls)
+                        {
+                            if (button.SymbolAlignment == symbolAlignment && button.SymbolAlignment != _primaryAlignment)
+                            {
+                                button.Text = (GetMaxPriorty() + 1).ToString();
+                                button.BackColor = Color.LightGreen;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -50,6 +90,8 @@ namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI
 
 
         #endregion
+
+        public event EventHandler OnPriorityChanged;
 
         private void SymbolAlignmentPriorityControl_Load(object sender, EventArgs e)
         {
@@ -101,6 +143,8 @@ namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI
                     button.BackColor = Color.LightGreen;
                 }
             }
+
+            OnPriorityChanged?.Invoke(this, new EventArgs());
         }
 
         private void btnReset_Click(object sender, EventArgs e)
@@ -110,6 +154,8 @@ namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI
                 button.Text = "0";
                 button.BackColor = Color.White;
             }
+
+            OnPriorityChanged?.Invoke(this, new EventArgs());
         }
 
         #region Helper

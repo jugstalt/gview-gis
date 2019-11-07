@@ -11,6 +11,7 @@ using gView.Framework.Symbology;
 using gView.Framework.UI;
 using gView.Framework.Carto.UI;
 using gView.Framework.Symbology.UI;
+using System.Linq;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -49,8 +50,12 @@ namespace gView.Framework.Carto.Rendering.UI
                     cmbFields.SelectedIndex = cmbFields.Items.Count - 1;
             }
 
+            gbPlacement.Visible = _renderer.TextSymbol != null;
+
             if (_renderer.TextSymbol != null)
             {
+                var secondaryAlignments = _renderer.TextSymbol.SecondaryTextSymbolAlignments;
+
                 switch (_renderer.TextSymbol.TextSymbolAlignment)
                 {
                     case TextSymbolAlignment.rightAlignOver:
@@ -81,6 +86,9 @@ namespace gView.Framework.Carto.Rendering.UI
                         radioButton9.Checked = true;
                         break;
                 }
+
+                symbolAlignmentPriorityControl.PrimarySymbolAlignment = _renderer.TextSymbol.TextSymbolAlignment;
+                symbolAlignmentPriorityControl.SecondarySymbolAlignments = secondaryAlignments;
             }
             DrawPreview();
 
@@ -161,13 +169,17 @@ namespace gView.Framework.Carto.Rendering.UI
         private void SetSymbolAlignment(TextSymbolAlignment align)
         {
             if (_renderer == null) return;
+
+            symbolAlignmentPriorityControl.PrimarySymbolAlignment = align;
+
             if (_renderer.TextSymbol is ILabel)
             {
                 ((ILabel)_renderer.TextSymbol).TextSymbolAlignment = align;
+                ((ILabel)_renderer.TextSymbol).SecondaryTextSymbolAlignments =
+                    symbolAlignmentPriorityControl.SecondarySymbolAlignments?.ToArray();
             }
-            DrawPreview();
 
-            symbolAlignmentPriorityControl.PrimarySymbolAlignment = align;
+            DrawPreview();
         }
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
         {
@@ -212,6 +224,15 @@ namespace gView.Framework.Carto.Rendering.UI
         private void radioButton9_CheckedChanged(object sender, EventArgs e)
         {
             SetSymbolAlignment(TextSymbolAlignment.leftAlignUnder);
+        }
+
+        private void symbolAlignmentPriorityControl_OnPriorityChanged(object sender, EventArgs e)
+        {
+            if(_renderer?.TextSymbol is ILabel)
+            {
+                ((ILabel)_renderer.TextSymbol).SecondaryTextSymbolAlignments = 
+                    symbolAlignmentPriorityControl.SecondarySymbolAlignments?.ToArray();
+            }
         }
 
         private void panelPreview_Paint(object sender, PaintEventArgs e)
@@ -278,9 +299,8 @@ namespace gView.Framework.Carto.Rendering.UI
             return panel1;
         }
 
-        #endregion
 
-       
+        #endregion
     }
 
     internal class LabelFieldItem

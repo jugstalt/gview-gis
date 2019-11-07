@@ -542,6 +542,27 @@ namespace gView.Framework.Symbology
                 sSym.Symbol.Draw(display, geometry);
             }
         }
+
+        public void Draw(IDisplay display, IGeometry geometry, TextSymbolAlignment symbolAlignment)
+        {
+            foreach (SymbolCollectionItem sSym in _symbols)
+            {
+                if (sSym.Symbol == null || !sSym.Visible)
+                {
+                    continue;
+                }
+
+                if (sSym.Symbol is ITextSymbol)
+                {
+                    ((ITextSymbol)sSym.Symbol).Draw(display, geometry, symbolAlignment);
+                }
+                else
+                {
+                    sSym.Symbol.Draw(display, geometry);
+                }
+            }
+        }
+
         #endregion
 
         #region ILabel
@@ -631,7 +652,7 @@ namespace gView.Framework.Symbology
             return null;
         }
 
-        public List<IAnnotationPolygonCollision> AnnotationPolygon(IDisplay display, IGeometry geometry)
+        public List<IAnnotationPolygonCollision> AnnotationPolygon(IDisplay display, IGeometry geometry, TextSymbolAlignment symbolAlignment)
         {
             List<IAnnotationPolygonCollision> aPolygons = new List<IAnnotationPolygonCollision>();
 
@@ -639,7 +660,7 @@ namespace gView.Framework.Symbology
             {
                 if (item.Symbol is ILabel)
                 {
-                    List<IAnnotationPolygonCollision> pList = ((ILabel)item.Symbol).AnnotationPolygon(display, geometry);
+                    List<IAnnotationPolygonCollision> pList = ((ILabel)item.Symbol).AnnotationPolygon(display, geometry, symbolAlignment);
                     if (pList == null)
                     {
                         continue;

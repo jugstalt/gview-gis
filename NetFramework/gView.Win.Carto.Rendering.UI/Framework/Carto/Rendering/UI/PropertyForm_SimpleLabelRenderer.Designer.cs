@@ -40,7 +40,7 @@ namespace gView.Framework.Carto.Rendering.UI
             this.panel1 = new System.Windows.Forms.Panel();
             this.gbOrientation = new System.Windows.Forms.GroupBox();
             this.btnOrientation = new System.Windows.Forms.Button();
-            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.gbPlacement = new System.Windows.Forms.GroupBox();
             this.symbolAlignmentPriorityControl = new gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI.SymbolAlignmentPriorityControl();
             this.radioButton5 = new System.Windows.Forms.RadioButton();
             this.radioButton3 = new System.Windows.Forms.RadioButton();
@@ -60,7 +60,7 @@ namespace gView.Framework.Carto.Rendering.UI
             this.groupBox2.SuspendLayout();
             this.panel1.SuspendLayout();
             this.gbOrientation.SuspendLayout();
-            this.groupBox5.SuspendLayout();
+            this.gbPlacement.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -126,7 +126,7 @@ namespace gView.Framework.Carto.Rendering.UI
             // panel1
             // 
             this.panel1.Controls.Add(this.gbOrientation);
-            this.panel1.Controls.Add(this.groupBox5);
+            this.panel1.Controls.Add(this.gbPlacement);
             this.panel1.Controls.Add(this.groupBox3);
             this.panel1.Controls.Add(this.groupBox1);
             this.panel1.Controls.Add(this.groupBox2);
@@ -147,27 +147,29 @@ namespace gView.Framework.Carto.Rendering.UI
             this.btnOrientation.UseVisualStyleBackColor = true;
             this.btnOrientation.Click += new System.EventHandler(this.btnOrientation_Click);
             // 
-            // groupBox5
+            // gbPlacement
             // 
-            this.groupBox5.Controls.Add(this.symbolAlignmentPriorityControl);
-            this.groupBox5.Controls.Add(this.radioButton5);
-            this.groupBox5.Controls.Add(this.radioButton3);
-            this.groupBox5.Controls.Add(this.radioButton9);
-            this.groupBox5.Controls.Add(this.radioButton4);
-            this.groupBox5.Controls.Add(this.radioButton2);
-            this.groupBox5.Controls.Add(this.radioButton8);
-            this.groupBox5.Controls.Add(this.radioButton1);
-            this.groupBox5.Controls.Add(this.radioButton6);
-            this.groupBox5.Controls.Add(this.radioButton7);
-            resources.ApplyResources(this.groupBox5, "groupBox5");
-            this.groupBox5.Name = "groupBox5";
-            this.groupBox5.TabStop = false;
+            this.gbPlacement.Controls.Add(this.symbolAlignmentPriorityControl);
+            this.gbPlacement.Controls.Add(this.radioButton5);
+            this.gbPlacement.Controls.Add(this.radioButton3);
+            this.gbPlacement.Controls.Add(this.radioButton9);
+            this.gbPlacement.Controls.Add(this.radioButton4);
+            this.gbPlacement.Controls.Add(this.radioButton2);
+            this.gbPlacement.Controls.Add(this.radioButton8);
+            this.gbPlacement.Controls.Add(this.radioButton1);
+            this.gbPlacement.Controls.Add(this.radioButton6);
+            this.gbPlacement.Controls.Add(this.radioButton7);
+            resources.ApplyResources(this.gbPlacement, "gbPlacement");
+            this.gbPlacement.Name = "gbPlacement";
+            this.gbPlacement.TabStop = false;
             // 
             // symbolAlignmentPriorityControl
             // 
             resources.ApplyResources(this.symbolAlignmentPriorityControl, "symbolAlignmentPriorityControl");
             this.symbolAlignmentPriorityControl.Name = "symbolAlignmentPriorityControl";
             this.symbolAlignmentPriorityControl.PrimarySymbolAlignment = gView.Framework.Symbology.TextSymbolAlignment.rightAlignOver;
+            this.symbolAlignmentPriorityControl.SecondarySymbolAlignments = null;
+            this.symbolAlignmentPriorityControl.OnPriorityChanged += new System.EventHandler(this.symbolAlignmentPriorityControl_OnPriorityChanged);
             // 
             // radioButton5
             // 
@@ -298,8 +300,8 @@ namespace gView.Framework.Carto.Rendering.UI
             this.groupBox2.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.gbOrientation.ResumeLayout(false);
-            this.groupBox5.ResumeLayout(false);
-            this.groupBox5.PerformLayout();
+            this.gbPlacement.ResumeLayout(false);
+            this.gbPlacement.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
@@ -324,7 +326,7 @@ namespace gView.Framework.Carto.Rendering.UI
         private System.Windows.Forms.Button btnRotation;
         private System.Windows.Forms.GroupBox gbOrientation;
         private System.Windows.Forms.Button btnOrientation;
-        private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.GroupBox gbPlacement;
         private System.Windows.Forms.RadioButton radioButton5;
         private System.Windows.Forms.RadioButton radioButton3;
         private System.Windows.Forms.RadioButton radioButton9;

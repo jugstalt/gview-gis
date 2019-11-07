@@ -427,7 +427,7 @@
     <value>gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI.SymbolAlignmentPriorityControl, gView.Win.Carto.Rendering.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;symbolAlignmentPriorityControl.Parent" xml:space="preserve">
-    <value>groupBox5</value>
+    <value>gbPlacement</value>
   </data>
   <data name="&gt;&gt;symbolAlignmentPriorityControl.ZOrder" xml:space="preserve">
     <value>0</value>
@@ -457,7 +457,7 @@
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;radioButton5.Parent" xml:space="preserve">
-    <value>groupBox5</value>
+    <value>gbPlacement</value>
   </data>
   <data name="&gt;&gt;radioButton5.ZOrder" xml:space="preserve">
     <value>1</value>
@@ -487,7 +487,7 @@
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;radioButton3.Parent" xml:space="preserve">
-    <value>groupBox5</value>
+    <value>gbPlacement</value>
   </data>
   <data name="&gt;&gt;radioButton3.ZOrder" xml:space="preserve">
     <value>2</value>
@@ -517,7 +517,7 @@
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;radioButton9.Parent" xml:space="preserve">
-    <value>groupBox5</value>
+    <value>gbPlacement</value>
   </data>
   <data name="&gt;&gt;radioButton9.ZOrder" xml:space="preserve">
     <value>3</value>
@@ -547,7 +547,7 @@
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;radioButton4.Parent" xml:space="preserve">
-    <value>groupBox5</value>
+    <value>gbPlacement</value>
   </data>
   <data name="&gt;&gt;radioButton4.ZOrder" xml:space="preserve">
     <value>4</value>
@@ -577,7 +577,7 @@
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;radioButton2.Parent" xml:space="preserve">
-    <value>groupBox5</value>
+    <value>gbPlacement</value>
   </data>
   <data name="&gt;&gt;radioButton2.ZOrder" xml:space="preserve">
     <value>5</value>
@@ -607,7 +607,7 @@
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;radioButton8.Parent" xml:space="preserve">
-    <value>groupBox5</value>
+    <value>gbPlacement</value>
   </data>
   <data name="&gt;&gt;radioButton8.ZOrder" xml:space="preserve">
     <value>6</value>
@@ -637,7 +637,7 @@
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;radioButton1.Parent" xml:space="preserve">
-    <value>groupBox5</value>
+    <value>gbPlacement</value>
   </data>
   <data name="&gt;&gt;radioButton1.ZOrder" xml:space="preserve">
     <value>7</value>
@@ -667,7 +667,7 @@
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;radioButton6.Parent" xml:space="preserve">
-    <value>groupBox5</value>
+    <value>gbPlacement</value>
   </data>
   <data name="&gt;&gt;radioButton6.ZOrder" xml:space="preserve">
     <value>8</value>
@@ -697,39 +697,39 @@
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;radioButton7.Parent" xml:space="preserve">
-    <value>groupBox5</value>
+    <value>gbPlacement</value>
   </data>
   <data name="&gt;&gt;radioButton7.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
-  <data name="groupBox5.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="gbPlacement.Location" type="System.Drawing.Point, System.Drawing">
     <value>512, 231</value>
   </data>
-  <data name="groupBox5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="gbPlacement.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 5, 4, 5</value>
   </data>
-  <data name="groupBox5.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="gbPlacement.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 5, 4, 5</value>
   </data>
-  <data name="groupBox5.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="gbPlacement.Size" type="System.Drawing.Size, System.Drawing">
     <value>262, 201</value>
   </data>
-  <data name="groupBox5.TabIndex" type="System.Int32, mscorlib">
+  <data name="gbPlacement.TabIndex" type="System.Int32, mscorlib">
     <value>12</value>
   </data>
-  <data name="groupBox5.Text" xml:space="preserve">
-    <value>Primary Placement / Sec. Proirity</value>
+  <data name="gbPlacement.Text" xml:space="preserve">
+    <value>Primary Placement / Proirity</value>
   </data>
-  <data name="&gt;&gt;groupBox5.Name" xml:space="preserve">
-    <value>groupBox5</value>
+  <data name="&gt;&gt;gbPlacement.Name" xml:space="preserve">
+    <value>gbPlacement</value>
   </data>
-  <data name="&gt;&gt;groupBox5.Type" xml:space="preserve">
+  <data name="&gt;&gt;gbPlacement.Type" xml:space="preserve">
     <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;groupBox5.Parent" xml:space="preserve">
+  <data name="&gt;&gt;gbPlacement.Parent" xml:space="preserve">
     <value>panel1</value>
   </data>
-  <data name="&gt;&gt;groupBox5.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;gbPlacement.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
   <data name="cmbLabelPriority.Items" xml:space="preserve">

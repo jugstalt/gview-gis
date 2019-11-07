@@ -417,7 +417,7 @@ namespace gView.Framework.Symbology
 
         IDisplayCharacterRanges MeasureCharacterWidth(IDisplay display);
 
-        List<IAnnotationPolygonCollision> AnnotationPolygon(IDisplay display, IGeometry geometry);
+        List<IAnnotationPolygonCollision> AnnotationPolygon(IDisplay display, IGeometry geometry, TextSymbolAlignment symbolAlignment);
     }
 
     public interface ITextSymbol : ISymbol, ILabel, ISymbolTransformation, ISymbolRotation
@@ -426,6 +426,8 @@ namespace gView.Framework.Symbology
 
         float MaxFontSize { get; set; }
         float MinFontSize { get; set; }
+
+        void Draw(IDisplay display, IGeometry geometry, TextSymbolAlignment symbolAlignment);
     }
 
     public enum RotationType { geographic, aritmetic }
