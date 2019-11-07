@@ -115,19 +115,25 @@ namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI
             {
                 for (int x = 0; x < 3; x++)
                 {
-                    var button = new PriorityButton(GetAlignment(y * 3 + x))
+                    var symbolAlignment = GetAlignment(y * 3 + x);
+                    var button = GetPriorityButton(symbolAlignment);
+
+                    if (button == null)
                     {
-                        Width = buttonWidth,
-                        Height = buttonHeight,
-                        Left = x * buttonWidth,
-                        Top = y * buttonHeight,
-                        Text = "0",
-                        BackColor = Color.White
-                    };
+                        button = new PriorityButton(symbolAlignment)
+                        {
+                            Text = "0",
+                            BackColor = Color.White
+                        };
 
-                    button.Click += Button_Click;
+                        button.Click += Button_Click;
+                        panelContent.Controls.Add(button);
+                    }
 
-                    panelContent.Controls.Add(button);
+                    button.Width = buttonWidth;
+                    button.Height = buttonHeight;
+                    button.Left = x * buttonWidth;
+                    button.Top = y * buttonHeight;
                 }
             }
         }
@@ -196,6 +202,19 @@ namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI
             }
 
             return max;
+        }
+
+        private PriorityButton GetPriorityButton(TextSymbolAlignment symbolAlignment)
+        {
+            foreach(PriorityButton button in panelContent.Controls)
+            {
+                if(button.SymbolAlignment==symbolAlignment)
+                {
+                    return button;
+                }
+            }
+
+            return null;
         }
 
         #endregion

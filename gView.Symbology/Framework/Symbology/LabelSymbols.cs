@@ -162,7 +162,8 @@ namespace gView.Framework.Symbology
                 if (_text != value)
                 {
                     _measureTextWidth = null;
-                    _text = value;
+                    _measureStringSize = null;
+                    _text =  PrepareText(value);
                 }
             }
         }
@@ -173,6 +174,7 @@ namespace gView.Framework.Symbology
             set { _align = value; }
         }
 
+        [Browsable(false)]
         public TextSymbolAlignment[] SecondaryTextSymbolAlignments { get; set; }
 
         private IDisplayCharacterRanges _measureTextWidth = null;
@@ -438,9 +440,30 @@ namespace gView.Framework.Symbology
         {
             return AnnotationPolygon(display, _text, x, y, symbolAlignment);
         }
+
+        private SizeF? _measureStringSize = null;
+
+        private SizeF MeasureStringSize(IDisplay display, string text)
+        {
+            if (text == _text && _measureStringSize != null)
+            {
+                return (SizeF)_measureStringSize;
+            } 
+            else
+            {
+                SizeF size = display.GraphicsContext.MeasureString(text, _font);
+                if(text==_text)
+                {
+                    _measureStringSize = size;
+                }
+                return size;
+            }
+        }
+
         private AnnotationPolygon AnnotationPolygon(IDisplay display, string text, float x, float y, TextSymbolAlignment symbolAlignment)
         {
-            SizeF size = display.GraphicsContext.MeasureString(text, _font);
+
+            var size = MeasureStringSize(display, text);
 
             return AnnotationPolygon(display, size, x, y, symbolAlignment);
         }
@@ -876,6 +899,7 @@ namespace gView.Framework.Symbology
                 {
                     this.SecondaryTextSymbolAlignments = secAlignments.Split(',')
                         .Select(s => (TextSymbolAlignment)int.Parse(s))
+                        .Distinct()
                         .ToArray();
                 }
                 catch { }
@@ -909,9 +933,9 @@ namespace gView.Framework.Symbology
             stream.Save("Angle", Angle);
             stream.Save("Alignment", (int)_align);
 
-            if(this.SecondaryTextSymbolAlignments!=null && this.SecondaryTextSymbolAlignments.Length>0)
+            if (this.SecondaryTextSymbolAlignments != null && this.SecondaryTextSymbolAlignments.Distinct().Count() > 1)
             {
-                var secAlignments=String.Join(",", this.SecondaryTextSymbolAlignments.Select(s => ((int)s).ToString()));
+                var secAlignments = String.Join(",", this.SecondaryTextSymbolAlignments.Select(s => ((int)s).ToString()).Distinct());
                 stream.Save("secAlignments", secAlignments);
             }
 
@@ -1030,11 +1054,23 @@ namespace gView.Framework.Symbology
 
         protected void DrawString(System.Drawing.Graphics/*IGraphicsEngine*/ gr, string text, Font font, SolidBrush brush, float xOffset, float yOffset, StringFormat format)
         {
+            float alignXOffset = xOffset,
+                  alignYOffset = yOffset;
+
+            if(format.Alignment== StringAlignment.Far)
+            {
+                alignXOffset = -alignXOffset;
+            }
+            if(format.LineAlignment== StringAlignment.Near)
+            {
+                alignYOffset = -alignYOffset;
+            }
+
             if (IncludesSuperScript == true)
             {
                 if (!text.Contains("^"))
                 {
-                    gr.DrawString(text, font, brush, xOffset, yOffset, format);
+                    gr.DrawString(text, font, brush, alignXOffset, alignYOffset, format);
                 }
                 else
                 {
@@ -1084,20 +1120,20 @@ namespace gView.Framework.Symbology
 
                         using (var subFont = new Font(font.Name, fontSize))
                         {
-                            gr.DrawString(subText, subFont, brush, xOffset, yOffset, format);
+                            gr.DrawString(subText, subFont, brush, alignXOffset, alignYOffset, format);
                             var size = gr.MeasureString(subText, subFont);
                             if (!String.IsNullOrWhiteSpace(subText))
                             {
-                                xOffset += size.Width - subFont.Size * .2f;
+                                alignXOffset += size.Width - subFont.Size * .2f;
                             }
 
                             if (superScript)
                             {
-                                yOffset -= subFont.Size * .4f;
+                                alignYOffset -= subFont.Size * .4f;
                             }
                             else
                             {
-                                yOffset += (subFont.Size / .9f) * .4f;
+                                alignYOffset += (subFont.Size / .9f) * .4f;
                             }
                         }
 
@@ -1122,8 +1158,27 @@ namespace gView.Framework.Symbology
             }
             else
             {
-                gr.DrawString(text, font, brush, xOffset, yOffset, format);
+                gr.DrawString(text, font, brush, alignXOffset, alignYOffset, format);
             }
+        }
+
+        private bool _wrapText = false;
+        protected string PrepareText(string text)
+        {
+            if (IncludesSuperScript == true)
+            {
+                return text;
+            }
+
+            if(_wrapText==true)
+            {
+                text = text
+                    .Replace(" ", "\n")
+                    .Replace("-", "-\n")
+                    .Replace("/", "/\n");
+            }
+
+            return text;
         }
 
         #endregion
@@ -1226,6 +1281,7 @@ namespace gView.Framework.Symbology
             tSym.GlowingSmoothingmode = this.GlowingSmoothingmode;
             tSym.GlowingWidth = this.GlowingWidth;
             tSym.IncludesSuperScript = this.IncludesSuperScript;
+            tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
 
             return tSym;
         }
@@ -1407,6 +1463,7 @@ namespace gView.Framework.Symbology
             tSym._align = _align;
             tSym.Smoothingmode = this.Smoothingmode;
             tSym.IncludesSuperScript = this.IncludesSuperScript;
+            tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
 
             return tSym;
         }

@@ -117,21 +117,78 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="&gt;&gt;btnExpression.Name" xml:space="preserve">
+    <value>btnExpression</value>
+  </data>
+  <data name="&gt;&gt;btnExpression.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btnExpression.Parent" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
+  <data name="&gt;&gt;btnExpression.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;label1.Name" xml:space="preserve">
+    <value>label1</value>
+  </data>
+  <data name="&gt;&gt;label1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label1.Parent" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
+  <data name="&gt;&gt;label1.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;cmbFields.Name" xml:space="preserve">
+    <value>cmbFields</value>
+  </data>
+  <data name="&gt;&gt;cmbFields.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;cmbFields.Parent" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
+  <data name="&gt;&gt;cmbFields.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="groupBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 12</value>
+  </data>
+  <data name="groupBox1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>495, 47</value>
+  </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="groupBox1.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="groupBox1.Text" xml:space="preserve">
+    <value>Text String</value>
+  </data>
+  <data name="&gt;&gt;groupBox1.Name" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
+  <data name="&gt;&gt;groupBox1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;groupBox1.Parent" xml:space="preserve">
+    <value>panel1</value>
+  </data>
+  <data name="&gt;&gt;groupBox1.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="btnExpression.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="btnExpression.Location" type="System.Drawing.Point, System.Drawing">
-    <value>555, 23</value>
-  </data>
-  <data name="btnExpression.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>370, 15</value>
   </data>
   <data name="btnExpression.Size" type="System.Drawing.Size, System.Drawing">
-    <value>178, 35</value>
+    <value>119, 23</value>
   </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="btnExpression.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
   </data>
@@ -157,13 +214,10 @@
     <value>NoControl</value>
   </data>
   <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 31</value>
-  </data>
-  <data name="label1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
+    <value>7, 20</value>
   </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>90, 20</value>
+    <value>61, 13</value>
   </data>
   <data name="label1.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -184,13 +238,10 @@
     <value>1</value>
   </data>
   <data name="cmbFields.Location" type="System.Drawing.Point, System.Drawing">
-    <value>111, 26</value>
-  </data>
-  <data name="cmbFields.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>74, 17</value>
   </data>
   <data name="cmbFields.Size" type="System.Drawing.Size, System.Drawing">
-    <value>433, 28</value>
+    <value>290, 21</value>
   </data>
   <data name="cmbFields.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -207,47 +258,74 @@
   <data name="&gt;&gt;cmbFields.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="groupBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>18, 18</value>
+  <data name="&gt;&gt;btnSymbol.Name" xml:space="preserve">
+    <value>btnSymbol</value>
   </data>
-  <data name="groupBox1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+  <data name="&gt;&gt;btnSymbol.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="groupBox1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+  <data name="&gt;&gt;btnSymbol.Parent" xml:space="preserve">
+    <value>groupBox2</value>
   </data>
-  <data name="groupBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>742, 72</value>
-  </data>
-  <data name="groupBox1.TabIndex" type="System.Int32, mscorlib">
+  <data name="&gt;&gt;btnSymbol.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="groupBox1.Text" xml:space="preserve">
-    <value>Text String</value>
+  <data name="&gt;&gt;panelPreview.Name" xml:space="preserve">
+    <value>panelPreview</value>
   </data>
-  <data name="&gt;&gt;groupBox1.Name" xml:space="preserve">
-    <value>groupBox1</value>
+  <data name="&gt;&gt;panelPreview.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;groupBox1.Type" xml:space="preserve">
+  <data name="&gt;&gt;panelPreview.Parent" xml:space="preserve">
+    <value>groupBox2</value>
+  </data>
+  <data name="&gt;&gt;panelPreview.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;btnRotation.Name" xml:space="preserve">
+    <value>btnRotation</value>
+  </data>
+  <data name="&gt;&gt;btnRotation.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btnRotation.Parent" xml:space="preserve">
+    <value>groupBox2</value>
+  </data>
+  <data name="&gt;&gt;btnRotation.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="groupBox2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>13, 150</value>
+  </data>
+  <data name="groupBox2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>318, 187</value>
+  </data>
+  <data name="groupBox2.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="groupBox2.Text" xml:space="preserve">
+    <value>Symbol</value>
+  </data>
+  <data name="&gt;&gt;groupBox2.Name" xml:space="preserve">
+    <value>groupBox2</value>
+  </data>
+  <data name="&gt;&gt;groupBox2.Type" xml:space="preserve">
     <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;groupBox1.Parent" xml:space="preserve">
+  <data name="&gt;&gt;groupBox2.Parent" xml:space="preserve">
     <value>panel1</value>
   </data>
-  <data name="&gt;&gt;groupBox1.ZOrder" xml:space="preserve">
-    <value>3</value>
+  <data name="&gt;&gt;groupBox2.ZOrder" xml:space="preserve">
+    <value>4</value>
   </data>
   <data name="btnSymbol.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="btnSymbol.Location" type="System.Drawing.Point, System.Drawing">
-    <value>309, 196</value>
-  </data>
-  <data name="btnSymbol.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>206, 127</value>
   </data>
   <data name="btnSymbol.Size" type="System.Drawing.Size, System.Drawing">
-    <value>153, 35</value>
+    <value>102, 23</value>
   </data>
   <data name="btnSymbol.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -268,13 +346,10 @@
     <value>0</value>
   </data>
   <data name="panelPreview.Location" type="System.Drawing.Point, System.Drawing">
-    <value>27, 29</value>
-  </data>
-  <data name="panelPreview.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>18, 19</value>
   </data>
   <data name="panelPreview.Size" type="System.Drawing.Size, System.Drawing">
-    <value>274, 249</value>
+    <value>183, 162</value>
   </data>
   <data name="panelPreview.TabIndex" type="System.Int32, mscorlib">
     <value>10</value>
@@ -295,13 +370,10 @@
     <value>NoControl</value>
   </data>
   <data name="btnRotation.Location" type="System.Drawing.Point, System.Drawing">
-    <value>309, 241</value>
-  </data>
-  <data name="btnRotation.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>206, 157</value>
   </data>
   <data name="btnRotation.Size" type="System.Drawing.Size, System.Drawing">
-    <value>153, 37</value>
+    <value>102, 24</value>
   </data>
   <data name="btnRotation.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
@@ -321,47 +393,14 @@
   <data name="&gt;&gt;btnRotation.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="groupBox2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>20, 231</value>
-  </data>
-  <data name="groupBox2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
-  </data>
-  <data name="groupBox2.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
-  </data>
-  <data name="groupBox2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>477, 288</value>
-  </data>
-  <data name="groupBox2.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="groupBox2.Text" xml:space="preserve">
-    <value>Symbol</value>
-  </data>
-  <data name="&gt;&gt;groupBox2.Name" xml:space="preserve">
-    <value>groupBox2</value>
-  </data>
-  <data name="&gt;&gt;groupBox2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;groupBox2.Parent" xml:space="preserve">
-    <value>panel1</value>
-  </data>
-  <data name="&gt;&gt;groupBox2.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
   <data name="btnOrientation.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="btnOrientation.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 28</value>
-  </data>
-  <data name="btnOrientation.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>6, 18</value>
   </data>
   <data name="btnOrientation.Size" type="System.Drawing.Size, System.Drawing">
-    <value>231, 35</value>
+    <value>160, 23</value>
   </data>
   <data name="btnOrientation.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -382,16 +421,10 @@
     <value>0</value>
   </data>
   <data name="gbOrientation.Location" type="System.Drawing.Point, System.Drawing">
-    <value>512, 442</value>
-  </data>
-  <data name="gbOrientation.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
-  </data>
-  <data name="gbOrientation.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>341, 287</value>
   </data>
   <data name="gbOrientation.Size" type="System.Drawing.Size, System.Drawing">
-    <value>249, 77</value>
+    <value>175, 50</value>
   </data>
   <data name="gbOrientation.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -412,10 +445,13 @@
     <value>0</value>
   </data>
   <data name="symbolAlignmentPriorityControl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>125, 27</value>
+    <value>72, 17</value>
+  </data>
+  <data name="symbolAlignmentPriorityControl.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>1, 1, 1, 1</value>
   </data>
   <data name="symbolAlignmentPriorityControl.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 166</value>
+    <value>94, 109</value>
   </data>
   <data name="symbolAlignmentPriorityControl.TabIndex" type="System.Int32, mscorlib">
     <value>10</value>
@@ -439,13 +475,10 @@
     <value>NoControl</value>
   </data>
   <data name="radioButton5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>51, 63</value>
-  </data>
-  <data name="radioButton5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>34, 41</value>
   </data>
   <data name="radioButton5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>21, 20</value>
+    <value>14, 13</value>
   </data>
   <data name="radioButton5.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -469,13 +502,10 @@
     <value>NoControl</value>
   </data>
   <data name="radioButton3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>81, 34</value>
-  </data>
-  <data name="radioButton3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>54, 22</value>
   </data>
   <data name="radioButton3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>21, 20</value>
+    <value>14, 13</value>
   </data>
   <data name="radioButton3.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -499,13 +529,10 @@
     <value>NoControl</value>
   </data>
   <data name="radioButton9.Location" type="System.Drawing.Point, System.Drawing">
-    <value>81, 92</value>
-  </data>
-  <data name="radioButton9.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>54, 60</value>
   </data>
   <data name="radioButton9.Size" type="System.Drawing.Size, System.Drawing">
-    <value>21, 20</value>
+    <value>14, 13</value>
   </data>
   <data name="radioButton9.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
@@ -529,13 +556,10 @@
     <value>NoControl</value>
   </data>
   <data name="radioButton4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>21, 63</value>
-  </data>
-  <data name="radioButton4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>14, 41</value>
   </data>
   <data name="radioButton4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>21, 20</value>
+    <value>14, 13</value>
   </data>
   <data name="radioButton4.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -559,13 +583,10 @@
     <value>NoControl</value>
   </data>
   <data name="radioButton2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>51, 34</value>
-  </data>
-  <data name="radioButton2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>34, 22</value>
   </data>
   <data name="radioButton2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>21, 20</value>
+    <value>14, 13</value>
   </data>
   <data name="radioButton2.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -589,13 +610,10 @@
     <value>NoControl</value>
   </data>
   <data name="radioButton8.Location" type="System.Drawing.Point, System.Drawing">
-    <value>51, 92</value>
-  </data>
-  <data name="radioButton8.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>34, 60</value>
   </data>
   <data name="radioButton8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>21, 20</value>
+    <value>14, 13</value>
   </data>
   <data name="radioButton8.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -619,13 +637,10 @@
     <value>NoControl</value>
   </data>
   <data name="radioButton1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>21, 34</value>
-  </data>
-  <data name="radioButton1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>14, 22</value>
   </data>
   <data name="radioButton1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>21, 20</value>
+    <value>14, 13</value>
   </data>
   <data name="radioButton1.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -649,13 +664,10 @@
     <value>NoControl</value>
   </data>
   <data name="radioButton6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>81, 63</value>
-  </data>
-  <data name="radioButton6.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>54, 41</value>
   </data>
   <data name="radioButton6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>21, 20</value>
+    <value>14, 13</value>
   </data>
   <data name="radioButton6.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -679,13 +691,10 @@
     <value>NoControl</value>
   </data>
   <data name="radioButton7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>21, 92</value>
-  </data>
-  <data name="radioButton7.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>14, 60</value>
   </data>
   <data name="radioButton7.Size" type="System.Drawing.Size, System.Drawing">
-    <value>21, 20</value>
+    <value>14, 13</value>
   </data>
   <data name="radioButton7.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
@@ -703,16 +712,10 @@
     <value>9</value>
   </data>
   <data name="gbPlacement.Location" type="System.Drawing.Point, System.Drawing">
-    <value>512, 231</value>
-  </data>
-  <data name="gbPlacement.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
-  </data>
-  <data name="gbPlacement.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>341, 150</value>
   </data>
   <data name="gbPlacement.Size" type="System.Drawing.Size, System.Drawing">
-    <value>262, 201</value>
+    <value>175, 131</value>
   </data>
   <data name="gbPlacement.TabIndex" type="System.Int32, mscorlib">
     <value>12</value>
@@ -732,6 +735,99 @@
   <data name="&gt;&gt;gbPlacement.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
+  <data name="&gt;&gt;cmbLabelPriority.Name" xml:space="preserve">
+    <value>cmbLabelPriority</value>
+  </data>
+  <data name="&gt;&gt;cmbLabelPriority.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;cmbLabelPriority.Parent" xml:space="preserve">
+    <value>groupBox3</value>
+  </data>
+  <data name="&gt;&gt;cmbLabelPriority.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;label3.Name" xml:space="preserve">
+    <value>label3</value>
+  </data>
+  <data name="&gt;&gt;label3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label3.Parent" xml:space="preserve">
+    <value>groupBox3</value>
+  </data>
+  <data name="&gt;&gt;label3.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;label2.Name" xml:space="preserve">
+    <value>label2</value>
+  </data>
+  <data name="&gt;&gt;label2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2.Parent" xml:space="preserve">
+    <value>groupBox3</value>
+  </data>
+  <data name="&gt;&gt;label2.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;cmbHowManyLabels.Name" xml:space="preserve">
+    <value>cmbHowManyLabels</value>
+  </data>
+  <data name="&gt;&gt;cmbHowManyLabels.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;cmbHowManyLabels.Parent" xml:space="preserve">
+    <value>groupBox3</value>
+  </data>
+  <data name="&gt;&gt;cmbHowManyLabels.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="groupBox3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>13, 65</value>
+  </data>
+  <data name="groupBox3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>376, 79</value>
+  </data>
+  <data name="groupBox3.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;groupBox3.Name" xml:space="preserve">
+    <value>groupBox3</value>
+  </data>
+  <data name="&gt;&gt;groupBox3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;groupBox3.Parent" xml:space="preserve">
+    <value>panel1</value>
+  </data>
+  <data name="&gt;&gt;groupBox3.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="panel1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="panel1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>533, 415</value>
+  </data>
+  <data name="panel1.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;panel1.Name" xml:space="preserve">
+    <value>panel1</value>
+  </data>
+  <data name="&gt;&gt;panel1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;panel1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;panel1.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="cmbLabelPriority.Items" xml:space="preserve">
     <value>Always (no overlay check)</value>
   </data>
@@ -745,13 +841,10 @@
     <value>Low (overlay check)</value>
   </data>
   <data name="cmbLabelPriority.Location" type="System.Drawing.Point, System.Drawing">
-    <value>160, 69</value>
-  </data>
-  <data name="cmbLabelPriority.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>107, 45</value>
   </data>
   <data name="cmbLabelPriority.Size" type="System.Drawing.Size, System.Drawing">
-    <value>382, 28</value>
+    <value>256, 21</value>
   </data>
   <data name="cmbLabelPriority.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -775,13 +868,10 @@
     <value>NoControl</value>
   </data>
   <data name="label3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>45, 75</value>
-  </data>
-  <data name="label3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
+    <value>30, 49</value>
   </data>
   <data name="label3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>103, 20</value>
+    <value>70, 13</value>
   </data>
   <data name="label3.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -808,13 +898,10 @@
     <value>NoControl</value>
   </data>
   <data name="label2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 26</value>
-  </data>
-  <data name="label2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
+    <value>6, 17</value>
   </data>
   <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>138, 20</value>
+    <value>95, 13</value>
   </data>
   <data name="label2.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -844,13 +931,10 @@
     <value>One Label Per Part</value>
   </data>
   <data name="cmbHowManyLabels.Location" type="System.Drawing.Point, System.Drawing">
-    <value>160, 22</value>
-  </data>
-  <data name="cmbHowManyLabels.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>107, 14</value>
   </data>
   <data name="cmbHowManyLabels.Size" type="System.Drawing.Size, System.Drawing">
-    <value>382, 28</value>
+    <value>256, 21</value>
   </data>
   <data name="cmbHowManyLabels.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -867,71 +951,14 @@
   <data name="&gt;&gt;cmbHowManyLabels.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="groupBox3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>20, 100</value>
-  </data>
-  <data name="groupBox3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
-  </data>
-  <data name="groupBox3.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
-  </data>
-  <data name="groupBox3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>564, 122</value>
-  </data>
-  <data name="groupBox3.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;groupBox3.Name" xml:space="preserve">
-    <value>groupBox3</value>
-  </data>
-  <data name="&gt;&gt;groupBox3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;groupBox3.Parent" xml:space="preserve">
-    <value>panel1</value>
-  </data>
-  <data name="&gt;&gt;groupBox3.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="panel1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="panel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
-  </data>
-  <data name="panel1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
-  </data>
-  <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>800, 638</value>
-  </data>
-  <data name="panel1.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;panel1.Name" xml:space="preserve">
-    <value>panel1</value>
-  </data>
-  <data name="&gt;&gt;panel1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;panel1.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;panel1.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>9, 20</value>
+    <value>6, 13</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>800, 638</value>
-  </data>
-  <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 5, 4, 5</value>
+    <value>533, 415</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>PropertyForm_SimpleLabelRenderer</value>

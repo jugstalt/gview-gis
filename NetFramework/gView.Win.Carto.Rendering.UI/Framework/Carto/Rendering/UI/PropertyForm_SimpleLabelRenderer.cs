@@ -88,7 +88,7 @@ namespace gView.Framework.Carto.Rendering.UI
                 }
 
                 symbolAlignmentPriorityControl.PrimarySymbolAlignment = _renderer.TextSymbol.TextSymbolAlignment;
-                symbolAlignmentPriorityControl.SecondarySymbolAlignments = secondaryAlignments;
+                symbolAlignmentPriorityControl.SecondarySymbolAlignments = _renderer.TextSymbol.SecondaryTextSymbolAlignments = secondaryAlignments;
             }
             DrawPreview();
 

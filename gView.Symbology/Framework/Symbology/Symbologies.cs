@@ -615,6 +615,7 @@ namespace gView.Framework.Symbology
             }
         }
 
+        [Browsable(false)]
         public TextSymbolAlignment[] SecondaryTextSymbolAlignments
         {
             get

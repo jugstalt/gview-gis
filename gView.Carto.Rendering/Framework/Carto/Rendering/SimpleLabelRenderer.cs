@@ -73,11 +73,6 @@ namespace gView.Framework.Carto.Rendering
             set { _useExpression = value; }
         }
 
-        public TextSymbolAlignment[] SecondaryAlignments
-        {
-            get; set;
-        }
-
         public howManyLabels HowManyLabels
         {
             get
