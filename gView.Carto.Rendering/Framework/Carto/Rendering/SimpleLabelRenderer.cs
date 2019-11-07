@@ -311,7 +311,7 @@ namespace gView.Framework.Carto.Rendering
             else if (feature.Shape is IPolyline)
             {
                 IPoint point1 = null, point2 = null;
-                double maxLenght = 0;
+                double maxLenght2 = 0;
 
                 IEnvelope dispEnv = _clipEnvelope; //disp.Envelope;
                 //if (disp.GeometricTransformer != null)
@@ -399,6 +399,7 @@ namespace gView.Framework.Carto.Rendering
                          _lineLabelling == CartographicLineLabeling.Perpendicular)
                 {
                     #region Horizontal
+
                     for (int iPath = 0; iPath < pLine.PathCount; iPath++)
                     {
                         IPath path = pLine[iPath];
@@ -411,11 +412,10 @@ namespace gView.Framework.Carto.Rendering
                                 dispEnv.minx <= p2.X && dispEnv.maxx >= p2.X &&
                                 dispEnv.miny <= p2.Y && dispEnv.maxy >= p2.Y)
                             {
-                                double len = Math.Sqrt((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
-                                if (len > maxLenght)
+                                double len = /*Math.Sqrt*/((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
+                                if (len > maxLenght2)
                                 {
-                                    maxLenght = len;
-                                    //alpha = Math.Atan2((p2.Y - p1.Y), (p2.X - p1.X));
+                                    maxLenght2 = len;
                                     point1 = p1;
                                     point2 = p2;
                                 }
@@ -450,32 +450,57 @@ namespace gView.Framework.Carto.Rendering
                             }
                         }
                     }
+
                     #endregion
                 }
                 else
                 {
                     #region Parallel Labelling
+
                     for (int iPath = 0; iPath < pLine.PathCount; iPath++)
                     {
                         IPath path = pLine[iPath];
-                        for (int iPoint = 0; iPoint < path.PointCount - 1; iPoint++)
+                        if (path.PointCount < 2)
                         {
-                            IPoint p1 = path[iPoint];
-                            IPoint p2 = path[iPoint + 1];
-                            if (dispEnv.minx <= p1.X && dispEnv.maxx >= p1.X &&
-                                dispEnv.miny <= p1.Y && dispEnv.maxy >= p1.Y &&
-                                dispEnv.minx <= p2.X && dispEnv.maxx >= p2.X &&
-                                dispEnv.miny <= p2.Y && dispEnv.maxy >= p2.Y)
-                            {
-                                double len = Math.Sqrt((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
-                                if (len > maxLenght)
+                            continue;
+                        }
+
+                        int fromPoint = 0, toPoint = path.PointCount;
+                        switch (this.TextSymbol.TextSymbolAlignment)
+                        {
+                            case TextSymbolAlignment.rightAlignOver:
+                            case TextSymbolAlignment.rightAlignCenter:
+                            case TextSymbolAlignment.rightAlignUnder:
+                                point1 = path[1];
+                                point2 = path[0];  // this will be alignment point in TextSymbol
+                                break;
+                            case TextSymbolAlignment.leftAlignOver:
+                            case TextSymbolAlignment.leftAlignCenter:
+                            case TextSymbolAlignment.leftAlignUnder:
+                                point1 = path[path.PointCount - 1];  // this will be alignment point in Textsymbol
+                                point2 = path[path.PointCount - 2];
+                                break;
+                            default:
+                                for (int iPoint = fromPoint; iPoint < toPoint - 1; iPoint++)
                                 {
-                                    maxLenght = len;
-                                    //alpha = Math.Atan2((p2.Y - p1.Y), (p2.X - p1.X));
-                                    point1 = p1;
-                                    point2 = p2;
+                                    IPoint p1 = path[iPoint];
+                                    IPoint p2 = path[iPoint + 1];
+                                    if (dispEnv.minx <= p1.X && dispEnv.maxx >= p1.X &&
+                                        dispEnv.miny <= p1.Y && dispEnv.maxy >= p1.Y &&
+                                        dispEnv.minx <= p2.X && dispEnv.maxx >= p2.X &&
+                                        dispEnv.miny <= p2.Y && dispEnv.maxy >= p2.Y)
+                                    {
+                                        double len2 = /*Math.Sqrt*/((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
+                                        if (len2 > maxLenght2)
+                                        {
+                                            maxLenght2 = len2;
+                                            //alpha = Math.Atan2((p2.Y - p1.Y), (p2.X - p1.X));
+                                            point1 = p1;
+                                            point2 = p2;
+                                        }
+                                    }
                                 }
-                            }
+                                break;
                         }
                     }
                     if (point1 != null && point2 != null)
@@ -493,6 +518,7 @@ namespace gView.Framework.Carto.Rendering
                             }
                         }
                     }
+
                     #endregion
                 }
             }

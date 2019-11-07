@@ -749,6 +749,7 @@ namespace gView.Framework.Symbology
                     }
 
                     #region Parallel Text
+
                     IPoint p1 = path[0], p2;
                     for (int iPoint = 1; iPoint < path.PointCount; iPoint++)
                     {
@@ -759,6 +760,8 @@ namespace gView.Framework.Symbology
                             angle -= display.DisplayTransformation.DisplayRotation;
                         }
 
+                        StringFormat format = StringFormatFromAlignment(symbolAlignment);
+
                         if (angle < 0)
                         {
                             angle += 360;
@@ -766,10 +769,25 @@ namespace gView.Framework.Symbology
 
                         if (angle > 90 && angle < 270)
                         {
+                            if (format.Alignment != StringAlignment.Center)
+                            {
+                                // swap points & alignment
+                                var p_ = p1;
+                                p1 = p2;
+                                p2 = p_;
+                                if (format.Alignment == StringAlignment.Far)
+                                {
+                                    format.Alignment = StringAlignment.Near;
+                                }
+                                else if (format.Alignment == StringAlignment.Near)
+                                {
+                                    format.Alignment = StringAlignment.Far;
+                                }
+                            }
                             angle -= 180;
                         }
 
-                        StringFormat format = StringFormatFromAlignment(symbolAlignment);
+                        
                         double x, y;
                         if (format.Alignment == StringAlignment.Center)
                         {
@@ -793,6 +811,7 @@ namespace gView.Framework.Symbology
                         DrawAtPoint(display, p, _text, (float)angle, format);
                         p1 = p2;
                     }
+
                     #endregion
                 }
             }
