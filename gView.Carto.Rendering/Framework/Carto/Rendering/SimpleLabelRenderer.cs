@@ -400,26 +400,55 @@ namespace gView.Framework.Carto.Rendering
                 {
                     #region Horizontal
 
+                    bool found = false;
                     for (int iPath = 0; iPath < pLine.PathCount; iPath++)
                     {
                         IPath path = pLine[iPath];
-                        for (int iPoint = 0; iPoint < path.PointCount - 1; iPoint++)
+                        if (path.PointCount < 2)
                         {
-                            IPoint p1 = path[iPoint];
-                            IPoint p2 = path[iPoint + 1];
-                            if (dispEnv.minx <= p1.X && dispEnv.maxx >= p1.X &&
-                                dispEnv.miny <= p1.Y && dispEnv.maxy >= p1.Y &&
-                                dispEnv.minx <= p2.X && dispEnv.maxx >= p2.X &&
-                                dispEnv.miny <= p2.Y && dispEnv.maxy >= p2.Y)
-                            {
-                                double len = /*Math.Sqrt*/((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
-                                if (len > maxLenght2)
+                            continue;
+                        }
+
+                        switch (this.TextSymbol.TextSymbolAlignment)
+                        {
+                            case TextSymbolAlignment.rightAlignOver:
+                            case TextSymbolAlignment.rightAlignCenter:
+                            case TextSymbolAlignment.rightAlignUnder:
+                                point1 = path[1];
+                                point2 = path[0];  // this will be alignment point in TextSymbol
+                                found = true;
+                                break;
+                            case TextSymbolAlignment.leftAlignOver:
+                            case TextSymbolAlignment.leftAlignCenter:
+                            case TextSymbolAlignment.leftAlignUnder:
+                                point1 = path[path.PointCount - 1];  // this will be alignment point in Textsymbol
+                                point2 = path[path.PointCount - 2];
+                                found = true;
+                                break;
+                            default:
+                                for (int iPoint = 0, iPointTo = path.PointCount - 1; iPoint < iPointTo; iPoint++)
                                 {
-                                    maxLenght2 = len;
-                                    point1 = p1;
-                                    point2 = p2;
+                                    IPoint p1 = path[iPoint];
+                                    IPoint p2 = path[iPoint + 1];
+                                    if (dispEnv.minx <= p1.X && dispEnv.maxx >= p1.X &&
+                                        dispEnv.miny <= p1.Y && dispEnv.maxy >= p1.Y &&
+                                        dispEnv.minx <= p2.X && dispEnv.maxx >= p2.X &&
+                                        dispEnv.miny <= p2.Y && dispEnv.maxy >= p2.Y)
+                                    {
+                                        double len = /*Math.Sqrt*/((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y));
+                                        if (len > maxLenght2)
+                                        {
+                                            maxLenght2 = len;
+                                            point1 = p1;
+                                            point2 = p2;
+                                        }
+                                    }
                                 }
-                            }
+                                break;
+                        }
+                        if (found == true)
+                        {
+                            break;
                         }
                     }
                     if (point1 != null && point2 != null)
@@ -435,10 +464,10 @@ namespace gView.Framework.Carto.Rendering
                                 angle += 360;
                             }
 
-                            if (angle > 90 && angle < 270)
-                            {
-                                angle -= 180;
-                            }
+                            //if (angle > 90 && angle < 270)
+                            //{
+                            //    angle -= 180;
+                            //}
 
                             _symbol.Angle = (float)angle;
                         }
@@ -457,6 +486,7 @@ namespace gView.Framework.Carto.Rendering
                 {
                     #region Parallel Labelling
 
+                    bool found = false;
                     for (int iPath = 0; iPath < pLine.PathCount; iPath++)
                     {
                         IPath path = pLine[iPath];
@@ -465,7 +495,6 @@ namespace gView.Framework.Carto.Rendering
                             continue;
                         }
 
-                        int fromPoint = 0, toPoint = path.PointCount;
                         switch (this.TextSymbol.TextSymbolAlignment)
                         {
                             case TextSymbolAlignment.rightAlignOver:
@@ -473,15 +502,17 @@ namespace gView.Framework.Carto.Rendering
                             case TextSymbolAlignment.rightAlignUnder:
                                 point1 = path[1];
                                 point2 = path[0];  // this will be alignment point in TextSymbol
+                                found = true;
                                 break;
                             case TextSymbolAlignment.leftAlignOver:
                             case TextSymbolAlignment.leftAlignCenter:
                             case TextSymbolAlignment.leftAlignUnder:
                                 point1 = path[path.PointCount - 1];  // this will be alignment point in Textsymbol
                                 point2 = path[path.PointCount - 2];
+                                found = true;
                                 break;
                             default:
-                                for (int iPoint = fromPoint; iPoint < toPoint - 1; iPoint++)
+                                for (int iPoint = 0, iPointTo= path.PointCount-1; iPoint < iPointTo; iPoint++)
                                 {
                                     IPoint p1 = path[iPoint];
                                     IPoint p2 = path[iPoint + 1];
@@ -501,6 +532,11 @@ namespace gView.Framework.Carto.Rendering
                                     }
                                 }
                                 break;
+                        }
+
+                        if(found)
+                        {
+                            break;
                         }
                     }
                     if (point1 != null && point2 != null)

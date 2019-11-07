@@ -148,6 +148,24 @@ namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI
                     button.Text = (GetMaxPriorty() + 1).ToString();
                     button.BackColor = Color.LightGreen;
                 }
+                else if (button.Text == "1")
+                {
+                    // Primary Alignment => do nothing
+                }
+                else
+                {
+                    int priority = int.Parse(button.Text);
+                    button.Text = "0";
+                    button.BackColor = Color.White;
+
+                    foreach(PriorityButton pButton in panelContent.Controls)
+                    {
+                        if(int.Parse(pButton.Text)>priority)
+                        {
+                            pButton.Text = (int.Parse(pButton.Text) - 1).ToString();
+                        }
+                    }
+                }
             }
 
             OnPriorityChanged?.Invoke(this, new EventArgs());
@@ -160,6 +178,8 @@ namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI
                 button.Text = "0";
                 button.BackColor = Color.White;
             }
+
+            this.PrimarySymbolAlignment = _primaryAlignment;
 
             OnPriorityChanged?.Invoke(this, new EventArgs());
         }
