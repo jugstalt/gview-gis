@@ -14,6 +14,11 @@ namespace gView.Framework.Data
         {
             if (!String.IsNullOrWhiteSpace(where))
             {
+                if(WhereClauseWhiteList.Contains(where))
+                {
+                    return;
+                }
+
                 where = where
                     .Replace(" in ", "=")
                     .Replace("<>", "=")
@@ -97,6 +102,11 @@ namespace gView.Framework.Data
 
             return false;
         }
+
+        static IEnumerable<string> WhereClauseWhiteList = new string[]
+        {
+            "1=1" // used by esri tools, e.g. esri-leaflet!!
+        };
 
         #endregion
     }

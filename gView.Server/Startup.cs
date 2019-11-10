@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace gView.Server
 {
@@ -37,7 +38,7 @@ namespace gView.Server
                 {
                     o.EnableEndpointRouting = false;
                 })
-                .AddNewtonsoftJson();
+                .AddNewtonsoftJson(opt => opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
 
             //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
@@ -58,6 +59,11 @@ namespace gView.Server
                 //app.ConfigureCustomExceptionMiddleware();
                 app.UseHsts();
             }
+
+            app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
 
             //app.UseHttpsRedirection();
             app.UseStaticFiles();

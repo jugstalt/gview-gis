@@ -2002,7 +2002,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 }
                 if(_beginrecord>0)
                 {
-                    _command.CommandText += " offset " + _beginrecord;
+                    _command.CommandText += " offset " + Math.Max(0, _beginrecord - 1);
                 }
 
                 _reader = await _command.ExecuteReaderAsync(CommandBehavior.Default);

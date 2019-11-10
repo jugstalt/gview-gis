@@ -1443,14 +1443,14 @@ namespace gView.Server.Controllers
                 }
 
                 string key = jsonPropertyAttribute.PropertyName ?? propertyInfo.Name;
-                var keyValuePair = nv.Where(k => k.Key == key).FirstOrDefault();
+                var keyValuePair = nv.Where(k => key.Equals(k.Key, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
                 if (keyValuePair.Key == null)
                 {
                     key = "&" + key;
                     keyValuePair = nv.Where(k => k.Key == key).FirstOrDefault();   // Sometimes the keyvalue-key starts with an & ??
                 }
 
-                if (keyValuePair.Key == key)
+                if (key.Equals(keyValuePair.Key, StringComparison.InvariantCultureIgnoreCase))
                 {
                     var val = keyValuePair.Value.ToString();
 

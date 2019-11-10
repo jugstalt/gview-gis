@@ -1,5 +1,5 @@
-﻿using gView.Framework.Data;
-using gView.Framework.FDB;
+﻿using gView.DataSources.Fdb.Sqlite;
+using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.Offline;
 using gView.Framework.system;
@@ -7,13 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.IO;
-using System.Linq;
-using System.Text;
-using gView.DataSources.Fdb.SQLite;
-using System.Threading.Tasks;
 using System.Data.SQLite;
-using gView.DataSources.Fdb.Sqlite;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.SQLite
 {
@@ -31,7 +28,9 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 FileInfo fi = new FileInfo(name);
                 if (fi.Exists)
+                {
                     return false;
+                }
 
                 using (SQLiteConnection connection = new SQLiteConnection())
                 using (StreamReader reader = new StreamReader(SystemVariables.StartupDirectory + @"/sql/SQLiteFDB/createdatabase.sql"))
@@ -73,10 +72,14 @@ namespace gView.DataSources.Fdb.SQLite
         {
             _filename = parseConnectionString(connectionString);
             if (String.IsNullOrEmpty(_filename))
+            {
                 _filename = connectionString;
+            }
 
             if (!_filename.Contains("="))
+            {
                 _filename = "Data Source=" + _filename;
+            }
 
             _conn = new SqliteConn(_filename);
 
@@ -90,16 +93,24 @@ namespace gView.DataSources.Fdb.SQLite
             //_conn = null;
 
             if (LinkedDatasetCacheInstance != null)
+            {
                 LinkedDatasetCacheInstance.Dispose();
+            }
         }
-        
+
         async override public Task<List<IDatasetElement>> DatasetLayers(IDataset dataset)
         {
             _errMsg = "";
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
 
             int dsID = await this.DatasetID(dataset.DatasetName);
-            if (dsID == -1) return null;
+            if (dsID == -1)
+            {
+                return null;
+            }
 
             DataSet ds = new DataSet();
             if (!await _conn.SQLQuery(ds, "SELECT * FROM FDB_FeatureClasses WHERE DatasetID=" + dsID, "FC"))
@@ -157,7 +168,10 @@ namespace gView.DataSources.Fdb.SQLite
                 {
                     IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                     if (linkedDs == null)
+                    {
                         continue;
+                    }
+
                     IDatasetElement linkedElement = await linkedDs.Element((string)row["Name"]);
 
                     LinkedFeatureClass fc = new LinkedFeatureClass(dataset,
@@ -174,15 +188,23 @@ namespace gView.DataSources.Fdb.SQLite
                 {
                     string[] viewNames = row["Name"].ToString().Split('@');
                     if (viewNames.Length != 2)
+                    {
                         continue;
+                    }
+
                     DataRow[] fcRows = ds.Tables[0].Select("Name='" + viewNames[0] + "'");
                     if (fcRows == null || fcRows.Length != 1)
+                    {
                         continue;
+                    }
+
                     fcRow = fcRows[0];
                 }
 
                 if (!await TableExists("FC_" + fcRow["Name"].ToString()))
+                {
                     continue;
+                }
                 //if (_seVersion != 0)
                 //{
                 //    _conn.ExecuteNoneQuery("execute LoadIndex '" + row["Name"].ToString() + "'");
@@ -205,7 +227,7 @@ namespace gView.DataSources.Fdb.SQLite
                     ((SQLiteFDBFeatureClass)layer.Class).ShapeFieldName = "FDB_SHAPE";
                     if (sRef != null)
                     {
-                        ((SQLiteFDBFeatureClass)layer.Class).SpatialReference = (ISpatialReference)(new SpatialReference((SpatialReference)sRef));
+                        ((SQLiteFDBFeatureClass)layer.Class).SpatialReference = new SpatialReference((SpatialReference)sRef);
                     }
                 }
                 var fields = await this.FeatureClassFields(dataset.DatasetName, layer.Class.Name);
@@ -361,8 +383,15 @@ namespace gView.DataSources.Fdb.SQLite
         }
         async public override Task<bool> Insert(IFeatureClass fClass, List<IFeature> features)
         {
-            if (fClass == null || features == null) return false;
-            if (features.Count == 0) return true;
+            if (fClass == null || features == null)
+            {
+                return false;
+            }
+
+            if (features.Count == 0)
+            {
+                return true;
+            }
 
             BinarySearchTree2 tree = null;
             await CheckSpatialSearchTreeVersion(fClass.Name);
@@ -385,7 +414,7 @@ namespace gView.DataSources.Fdb.SQLite
                 {
                     await connection.OpenAsync();
 
-                    using(var command=new SQLiteCommand())
+                    using (var command = new SQLiteCommand())
                     using (var transaction = connection.BeginTransaction())
                     {
                         command.Connection = connection;
@@ -422,7 +451,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                                 byte[] geometry = new byte[writer.BaseStream.Length];
                                 writer.BaseStream.Position = 0;
-                                writer.BaseStream.Read(geometry, (int)0, (int)writer.BaseStream.Length);
+                                writer.BaseStream.Read(geometry, 0, (int)writer.BaseStream.Length);
                                 writer.Close();
 
                                 SQLiteParameter parameter = new SQLiteParameter("@FDB_SHAPE", geometry);
@@ -436,7 +465,11 @@ namespace gView.DataSources.Fdb.SQLite
                             {
                                 foreach (IFieldValue fv in feature.Fields)
                                 {
-                                    if (fv.Name == "FDB_NID" || fv.Name == "FDB_SHAPE" || fv.Name == "FDB_OID") continue;
+                                    if (fv.Name == "FDB_NID" || fv.Name == "FDB_SHAPE" || fv.Name == "FDB_OID")
+                                    {
+                                        continue;
+                                    }
+
                                     string name = fv.Name.Replace("$", "");
 
                                     IField field = fClass.FindField(name);
@@ -444,10 +477,20 @@ namespace gView.DataSources.Fdb.SQLite
                                     {
                                         hasNID = true;
                                     }
-                                    else if (field == null) continue;
+                                    else if (field == null)
+                                    {
+                                        continue;
+                                    }
 
-                                    if (fields.Length != 0) fields.Append(",");
-                                    if (parameters.Length != 0) parameters.Append(",");
+                                    if (fields.Length != 0)
+                                    {
+                                        fields.Append(",");
+                                    }
+
+                                    if (parameters.Length != 0)
+                                    {
+                                        parameters.Append(",");
+                                    }
 
                                     SQLiteParameter parameter;
                                     parameter = new SQLiteParameter("@" + name, fv.Value);
@@ -463,10 +506,19 @@ namespace gView.DataSources.Fdb.SQLite
                             {
                                 long NID = 0;
                                 if (tree != null && feature.Shape != null)
+                                {
                                     NID = tree.InsertSINode(feature.Shape.Envelope);
+                                }
 
-                                if (fields.Length != 0) fields.Append(",");
-                                if (parameters.Length != 0) parameters.Append(",");
+                                if (fields.Length != 0)
+                                {
+                                    fields.Append(",");
+                                }
+
+                                if (parameters.Length != 0)
+                                {
+                                    parameters.Append(",");
+                                }
 
                                 SQLiteParameter parameter = new SQLiteParameter("@FDB_NID", NID);
                                 fields.Append("[FDB_NID]");
@@ -486,7 +538,7 @@ namespace gView.DataSources.Fdb.SQLite
                     }
                 }
 
-               await AddTreeNodes();
+                await AddTreeNodes();
             }
             catch (Exception ex)
             {
@@ -582,8 +634,15 @@ namespace gView.DataSources.Fdb.SQLite
         }
         async public override Task<bool> Update(IFeatureClass fClass, List<IFeature> features)
         {
-            if (fClass == null || features == null) return false;
-            if (features.Count == 0) return true;
+            if (fClass == null || features == null)
+            {
+                return false;
+            }
+
+            if (features.Count == 0)
+            {
+                return true;
+            }
 
             //int counter = 0;
             BinarySearchTree2 tree = null;
@@ -637,7 +696,10 @@ namespace gView.DataSources.Fdb.SQLite
                             command.Parameters.Clear();
                             StringBuilder commandText = new StringBuilder();
 
-                            if (feature == null) continue;
+                            if (feature == null)
+                            {
+                                continue;
+                            }
 
                             if (feature.OID < 0)
                             {
@@ -657,7 +719,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                                 byte[] geometry = new byte[writer.BaseStream.Length];
                                 writer.BaseStream.Position = 0;
-                                writer.BaseStream.Read(geometry, (int)0, (int)writer.BaseStream.Length);
+                                writer.BaseStream.Read(geometry, 0, (int)writer.BaseStream.Length);
                                 writer.Close();
 
                                 SQLiteParameter parameter = new SQLiteParameter("@FDB_SHAPE", geometry);
@@ -669,16 +731,26 @@ namespace gView.DataSources.Fdb.SQLite
                             {
                                 foreach (IFieldValue fv in feature.Fields)
                                 {
-                                    if (fv.Name == "FDB_NID" || fv.Name == "FDB_OID" || fv.Name == "FDB_SHAPE") continue;
+                                    if (fv.Name == "FDB_NID" || fv.Name == "FDB_OID" || fv.Name == "FDB_SHAPE")
+                                    {
+                                        continue;
+                                    }
+
                                     if (fv.Name == "$FDB_NID")
                                     {
                                         long.TryParse(fv.Value.ToString(), out NID);
                                         continue;
                                     }
                                     string name = fv.Name;
-                                    if (fClass.FindField(name) == null) continue;
+                                    if (fClass.FindField(name) == null)
+                                    {
+                                        continue;
+                                    }
 
-                                    if (fields.Length != 0) fields.Append(",");
+                                    if (fields.Length != 0)
+                                    {
+                                        fields.Append(",");
+                                    }
 
                                     SQLiteParameter parameter = new SQLiteParameter("@" + name, fv.Value);
                                     ModifyDbParameter(parameter);
@@ -702,7 +774,10 @@ namespace gView.DataSources.Fdb.SQLite
                                         NID = 0;
                                     }
 
-                                    if (fields.Length != 0) fields.Append(",");
+                                    if (fields.Length != 0)
+                                    {
+                                        fields.Append(",");
+                                    }
 
                                     SQLiteParameter parameterNID = new SQLiteParameter("@FDB_NID", NID);
                                     fields.Append("[FDB_NID]=@FDB_NID");
@@ -740,7 +815,10 @@ namespace gView.DataSources.Fdb.SQLite
         }
         async public override Task<bool> Delete(IFeatureClass fClass, string where)
         {
-            if (fClass == null) return false;
+            if (fClass == null)
+            {
+                return false;
+            }
 
             try
             {
@@ -749,7 +827,7 @@ namespace gView.DataSources.Fdb.SQLite
                     await connection.OpenAsync();
 
                     string sql = "DELETE FROM " + FcTableName(fClass) + ((where != String.Empty) ? " WHERE " + where : "");
-                    using(SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    using (SQLiteCommand command = new SQLiteCommand(sql, connection))
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
                         ReplicationTransaction replTrans = new ReplicationTransaction(connection, transaction);
@@ -818,7 +896,9 @@ namespace gView.DataSources.Fdb.SQLite
                     _addTreeNodes.Add(fcName, new List<long>());
                 }
                 if (!_addTreeNodes[fcName].Contains(nid))
+                {
                     _addTreeNodes[fcName].Add(nid);
+                }
             }
         }
         async private Task AddTreeNodes()
@@ -840,10 +920,12 @@ namespace gView.DataSources.Fdb.SQLite
 
         #region Internals
 
-       async override public Task<IDatasetElement> DatasetElement(IDataset ds, string elementName)
+        async override public Task<IDatasetElement> DatasetElement(IDataset ds, string elementName)
         {
             if (!(ds is SQLiteFDBDataset))
+            {
                 throw new ArgumentException("dataset must be SQLiteFDBDataset");
+            }
 
             SQLiteFDBDataset dataset = (SQLiteFDBDataset)ds;
             ISpatialReference sRef = await this.SpatialReference(dataset.DatasetName);
@@ -887,7 +969,10 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                 if (linkedDs == null)
+                {
                     return null;
+                }
+
                 IDatasetElement linkedElement = await linkedDs.Element(row["Name"]?.ToString());
 
                 LinkedFeatureClass fc = new LinkedFeatureClass(dataset,
@@ -902,10 +987,16 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 string[] viewNames = row["Name"].ToString().Split('@');
                 if (viewNames.Length != 2)
+                {
                     return null;
+                }
+
                 DataTable tab2 = await _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + dataset._dsID + " AND " + DbColName("Name") + "='" + viewNames[0] + "'");
                 if (tab2 == null || tab2.Rows.Count != 1)
+                {
                     return null;
+                }
+
                 fcRow = tab2.Rows[0];
             }
 
@@ -942,7 +1033,11 @@ namespace gView.DataSources.Fdb.SQLite
 
         async internal Task<DataTable> Select(string fields, string from, string where)
         {
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
+
             return await _conn.Select(fields, from, where);
         }
 
@@ -950,7 +1045,10 @@ namespace gView.DataSources.Fdb.SQLite
 
         async public override Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
         {
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
 
             string subfields = "";
             if (filter != null)
@@ -959,12 +1057,18 @@ namespace gView.DataSources.Fdb.SQLite
                 filter.fieldPostfix = "]";
                 if (filter is ISpatialFilter)
                 {
-                    if (((ISpatialFilter)filter).SpatialRelation != spatialRelation.SpatialRelationEnvelopeIntersects) filter.AddField("FDB_SHAPE");
+                    if (((ISpatialFilter)filter).SpatialRelation != spatialRelation.SpatialRelationEnvelopeIntersects)
+                    {
+                        filter.AddField("FDB_SHAPE");
+                    }
                 }
                 //subfields = filter.SubFields.Replace(" ", ",");
                 subfields = filter.SubFieldsAndAlias;
             }
-            if (subfields == "") subfields = "*";
+            if (subfields == "")
+            {
+                subfields = "*";
+            }
 
             List<long> NIDs = null;
             //IGeometry queryGeometry = null;
@@ -996,11 +1100,15 @@ namespace gView.DataSources.Fdb.SQLite
                 ISearchTree tree = (ISearchTree)_spatialSearchTrees[OriginFcName(fc.Name)];
                 if (tree != null && ((ISpatialFilter)filter).Geometry != null)
                 {
-                   if (sFilter.SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects &&
-                                sFilter.Geometry is IEnvelope)
+                    if (sFilter.SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects &&
+                                 sFilter.Geometry is IEnvelope)
+                    {
                         NIDs = tree.CollectNIDsPlus((IEnvelope)sFilter.Geometry);
+                    }
                     else
+                    {
                         NIDs = tree.CollectNIDs(sFilter.Geometry);
+                    }
                 }
 
                 if (((ISpatialFilter)filter).SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects)
@@ -1053,17 +1161,24 @@ namespace gView.DataSources.Fdb.SQLite
 
         async public override Task<IFeatureClass> GetFeatureclass(string fcName)
         {
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
 
             int fcID = await this.GetFeatureClassID(fcName);
 
             DataTable featureclasses = await _conn.Select(DbColName("DatasetID"), TableName("FDB_FeatureClasses"), DbColName("ID") + "=" + fcID);
             if (featureclasses == null || featureclasses.Rows.Count != 1)
+            {
                 return null;
+            }
 
             DataTable datasets = await _conn.Select(DbColName("Name"), TableName("FDB_Datasets"), DbColName("ID") + "=" + featureclasses.Rows[0]["DatasetID"].ToString());
             if (datasets == null || datasets.Rows.Count != 1)
+            {
                 return null;
+            }
 
             return await GetFeatureclass(datasets.Rows[0]["Name"].ToString(), fcName);
         }
@@ -1074,7 +1189,9 @@ namespace gView.DataSources.Fdb.SQLite
 
             string connString = "Data Source=" + _filename;
             if (!connString.Contains(";dsname=" + dsName))
+            {
                 connString += ";dsname=" + dsName;
+            }
 
             await dataset.SetConnectionString(connString);
             await dataset.Open();
@@ -1093,7 +1210,10 @@ namespace gView.DataSources.Fdb.SQLite
 
         async protected override Task<bool> TableExists(string tableName)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
 
             using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
             {
@@ -1120,7 +1240,11 @@ namespace gView.DataSources.Fdb.SQLite
 
         protected override string FieldDataType(IField field)
         {
-            if (field == null) return "";
+            if (field == null)
+            {
+                return "";
+            }
+
             switch (field.type)
             {
                 case FieldType.biginteger:
@@ -1143,9 +1267,14 @@ namespace gView.DataSources.Fdb.SQLite
                     return "NVARCHAR(1)";
                 case FieldType.String:
                     if (field.size > 0)
+                    {
                         return "NVARCHAR(" + field.size + ")";
+                    }
                     else if (field.size <= 0)
+                    {
                         return "TEXT(255)";
+                    }
+
                     break;
                 case FieldType.guid:
                     return "NVARCHAR(36)";
@@ -1172,7 +1301,10 @@ namespace gView.DataSources.Fdb.SQLite
                 foreach (IField field in Fields.ToEnumerable())
                 {
                     //if( field.type==FieldType.ID ||
-                    if (field.type == FieldType.Shape) continue;
+                    if (field.type == FieldType.Shape)
+                    {
+                        continue;
+                    }
 
                     if (!first)
                     {
@@ -1227,9 +1359,14 @@ namespace gView.DataSources.Fdb.SQLite
                             break;
                         case FieldType.String:
                             if (field.size > 0)
+                            {
                                 types.Append("nvarchar(" + field.size + ")");
+                            }
                             else if (field.size <= 0)
+                            {
                                 types.Append("nvarchar(255)");
+                            }
+
                             break;
                         case FieldType.guid:
                             types.Append("nvarchar(40)");
@@ -1263,7 +1400,9 @@ namespace gView.DataSources.Fdb.SQLite
             get
             {
                 if (String.IsNullOrEmpty(base.ConnectionString))
+                {
                     return "Data Source=" + _filename;
+                }
 
                 return base.ConnectionString;
             }
@@ -1272,7 +1411,10 @@ namespace gView.DataSources.Fdb.SQLite
         #region IAltertable
         async public override Task<bool> AlterTable(string table, IField oldField, IField newField)
         {
-            if (oldField == null && newField == null) return true;
+            if (oldField == null && newField == null)
+            {
+                return true;
+            }
 
             if (oldField != null && newField != null &&
                 oldField.name != newField.name &&
@@ -1284,7 +1426,11 @@ namespace gView.DataSources.Fdb.SQLite
                 return false;
             }
 
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
+
             int dsID = await DatasetIDFromFeatureClassName(table);
             string dsname = await DatasetNameFromFeatureClassName(table);
             if (dsname == "")
@@ -1299,7 +1445,10 @@ namespace gView.DataSources.Fdb.SQLite
 
             IFeatureClass fc = await GetFeatureclass(dsname, table);
 
-            if (fc == null || fc.Fields == null) return false;
+            if (fc == null || fc.Fields == null)
+            {
+                return false;
+            }
 
             try
             {
@@ -1310,7 +1459,10 @@ namespace gView.DataSources.Fdb.SQLite
                         _errMsg = "Featureclass " + table + " do not contain field '" + oldField.name + "'";
                         return false;
                     }
-                    if (oldField.Equals(newField)) return true;
+                    if (oldField.Equals(newField))
+                    {
+                        return true;
+                    }
 
                     if (newField != null)   // ALTER COLUMN
                     {
@@ -1382,7 +1534,7 @@ namespace gView.DataSources.Fdb.SQLite
                 bool useTrans = replTrans != null && replTrans.IsValid;
                 using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
                 {
-                    using (SQLiteCommand command =  new SQLiteCommand())
+                    using (SQLiteCommand command = new SQLiteCommand())
                     {
                         if (!useTrans)
                         {
@@ -1396,8 +1548,15 @@ namespace gView.DataSources.Fdb.SQLite
                         {
                             string name = fv.Name;
 
-                            if (fields.Length != 0) fields.Append(",");
-                            if (parameters.Length != 0) parameters.Append(",");
+                            if (fields.Length != 0)
+                            {
+                                fields.Append(",");
+                            }
+
+                            if (parameters.Length != 0)
+                            {
+                                parameters.Append(",");
+                            }
 
                             SQLiteParameter parameter;
                             parameter = new SQLiteParameter("@" + name, fv.Value);
@@ -1432,7 +1591,9 @@ namespace gView.DataSources.Fdb.SQLite
         public override bool InsertRows(string table, List<IRow> rows, IReplicationTransaction replTrans)
         {
             if (rows == null || rows.Count == 0)
+            {
                 return true;
+            }
 
             try
             {
@@ -1457,8 +1618,15 @@ namespace gView.DataSources.Fdb.SQLite
                                 {
                                     string name = fv.Name;
 
-                                    if (fields.Length != 0) fields.Append(",");
-                                    if (parameters.Length != 0) parameters.Append(",");
+                                    if (fields.Length != 0)
+                                    {
+                                        fields.Append(",");
+                                    }
+
+                                    if (parameters.Length != 0)
+                                    {
+                                        parameters.Append(",");
+                                    }
 
                                     SQLiteParameter parameter = new SQLiteParameter("@" + name, fv.Value);
 
@@ -1469,7 +1637,9 @@ namespace gView.DataSources.Fdb.SQLite
 
                                 string tabname = table;
                                 if (!tabname.StartsWith("[") && !tabname.EndsWith("]"))
+                                {
                                     tabname = "[" + tabname + "]";
+                                }
 
                                 command.CommandText = "INSERT INTO " + tabname + " (" + fields.ToString() + ") VALUES (" + parameters + ")";
 
@@ -1487,7 +1657,7 @@ namespace gView.DataSources.Fdb.SQLite
                         {
                             command.Connection = connection;
                             connection.Open();
-                            
+
                             foreach (IRow row in rows)
                             {
                                 StringBuilder fields = new StringBuilder(), parameters = new StringBuilder();
@@ -1497,8 +1667,15 @@ namespace gView.DataSources.Fdb.SQLite
                                 {
                                     string name = fv.Name;
 
-                                    if (fields.Length != 0) fields.Append(",");
-                                    if (parameters.Length != 0) parameters.Append(",");
+                                    if (fields.Length != 0)
+                                    {
+                                        fields.Append(",");
+                                    }
+
+                                    if (parameters.Length != 0)
+                                    {
+                                        parameters.Append(",");
+                                    }
 
                                     SQLiteParameter parameter = new SQLiteParameter("@" + name, fv.Value);
 
@@ -1509,7 +1686,9 @@ namespace gView.DataSources.Fdb.SQLite
 
                                 string tabname = table;
                                 if (!tabname.StartsWith("[") && !tabname.EndsWith("]"))
+                                {
                                     tabname = "[" + tabname + "]";
+                                }
 
                                 command.CommandText = "INSERT INTO " + tabname + " (" + fields.ToString() + ") VALUES (" + parameters + ")";
                                 command.ExecuteNonQuery();
@@ -1545,7 +1724,10 @@ namespace gView.DataSources.Fdb.SQLite
                 foreach (IFieldValue fv in row.Fields)
                 {
                     string name = fv.Name;
-                    if (fields.Length != 0) fields.Append(",");
+                    if (fields.Length != 0)
+                    {
+                        fields.Append(",");
+                    }
 
                     SQLiteParameter parameter = new SQLiteParameter("@" + name, fv.Value);
                     fields.Append("[" + name + "]=@" + name);
@@ -1554,7 +1736,9 @@ namespace gView.DataSources.Fdb.SQLite
 
                 string tabname = table;
                 if (!tabname.StartsWith("[") && !tabname.EndsWith("]"))
+                {
                     tabname = "[" + tabname + "]";
+                }
 
                 commandText.Append("UPDATE " + tabname + " SET " + fields.ToString() + " WHERE " + IDField + "=" + row.OID);
                 command.CommandText = commandText.ToString();
@@ -1639,7 +1823,9 @@ namespace gView.DataSources.Fdb.SQLite
             get
             {
                 if (_factory == null)
+                {
                     _factory = System.Data.SQLite.SQLiteFactory.Instance;
+                }
 
                 return _factory;
             }
@@ -1650,7 +1836,10 @@ namespace gView.DataSources.Fdb.SQLite
         #region Rebuild Index
         protected override bool UpdateFeatureSpatialNodeID(IFeatureClass fc, int oid, long nid)
         {
-            if (fc == null || _conn == null) return false;
+            if (fc == null || _conn == null)
+            {
+                return false;
+            }
 
             try
             {
@@ -1658,8 +1847,10 @@ namespace gView.DataSources.Fdb.SQLite
                 {
                     connection.Open();
 
-                    using(SQLiteCommand command = new SQLiteCommand("UPDATE " + FcTableName(fc) + " SET " + DbColName("FDB_NID") + "=" + nid.ToString() + " WHERE " + DbColName(fc.IDFieldName) + "=" + oid.ToString(), connection))
+                    using (SQLiteCommand command = new SQLiteCommand("UPDATE " + FcTableName(fc) + " SET " + DbColName("FDB_NID") + "=" + nid.ToString() + " WHERE " + DbColName(fc.IDFieldName) + "=" + oid.ToString(), connection))
+                    {
                         command.ExecuteNonQuery();
+                    }
 
                     connection.Close();
                 }
@@ -1675,7 +1866,10 @@ namespace gView.DataSources.Fdb.SQLite
 
         async public override Task<bool> ShrinkSpatialIndex(string fcName, List<long> NIDs)
         {
-            if (NIDs == null || _conn == null) return false;
+            if (NIDs == null || _conn == null)
+            {
+                return false;
+            }
 
             NIDs.Sort();
 
@@ -1685,11 +1879,11 @@ namespace gView.DataSources.Fdb.SQLite
                 {
                     connection.Open();
 
-                    using(SQLiteCommand command = new SQLiteCommand())
-                    using(var transaction=connection.BeginTransaction())
+                    using (SQLiteCommand command = new SQLiteCommand())
+                    using (var transaction = connection.BeginTransaction())
                     {
                         command.Connection = connection;
-                        command.CommandText="delete from "+FcsiTableName(fcName);
+                        command.CommandText = "delete from " + FcsiTableName(fcName);
                         command.ExecuteNonQuery();
                         command.CommandText = "delete from sqlite_sequence where name='FCSI_" + fcName + "'";
                         command.ExecuteNonQuery();
@@ -1727,7 +1921,10 @@ namespace gView.DataSources.Fdb.SQLite
 
         async private Task IncSpatialIndexVersion(string fcName)
         {
-            if (_conn == null) return;
+            if (_conn == null)
+            {
+                return;
+            }
 
             fcName = OriginFcName(fcName);
             try
@@ -1763,7 +1960,7 @@ namespace gView.DataSources.Fdb.SQLite
             private SQLiteFDBFeatureCursorIDs(IGeometryDef geomDef, ISpatialReference toSRef) :
                 base((geomDef != null) ? geomDef.SpatialReference : null, toSRef)
             {
-                
+
             }
 
             async static public Task<IFeatureCursor> Create(string connString, string sql, List<int> IDs, IGeometryDef geomDef, ISpatialReference toSRef)
@@ -1800,8 +1997,11 @@ namespace gView.DataSources.Fdb.SQLite
                 if (_connection != null)
                 {
                     if (_connection.State == ConnectionState.Open)
+                    {
                         try { _connection.Close(); }
                         catch { }
+                    }
+
                     _connection.Dispose();
                     _connection = null;
                 }
@@ -1814,20 +2014,37 @@ namespace gView.DataSources.Fdb.SQLite
                     _reader.Close();
                     _reader = null;
                 }
-                if (_IDs == null) return false;
-                if (_id_pos >= _IDs.Count) return false;
+                if (_IDs == null)
+                {
+                    return false;
+                }
+
+                if (_id_pos >= _IDs.Count)
+                {
+                    return false;
+                }
 
                 int counter = 0;
                 StringBuilder sb = new StringBuilder();
                 while (true)
                 {
-                    if (sb.Length > 0) sb.Append(",");
+                    if (sb.Length > 0)
+                    {
+                        sb.Append(",");
+                    }
+
                     sb.Append(_IDs[_id_pos].ToString());
                     counter++;
                     _id_pos++;
-                    if (_id_pos >= _IDs.Count || counter > 1000) break;
+                    if (_id_pos >= _IDs.Count || counter > 1000)
+                    {
+                        break;
+                    }
                 }
-                if (sb.Length == 0) return false;
+                if (sb.Length == 0)
+                {
+                    return false;
+                }
 
                 string where = " WHERE [FDB_OID] IN (" + sb.ToString() + ")";
 
@@ -1853,7 +2070,9 @@ namespace gView.DataSources.Fdb.SQLite
                 try
                 {
                     if (_reader == null)
+                    {
                         return null;
+                    }
 
                     if (!await _reader.ReadAsync())
                     {
@@ -1899,7 +2118,9 @@ namespace gView.DataSources.Fdb.SQLite
                             FieldValue fv = new FieldValue(/*_schemaTable.Rows[i][0].ToString()*/name, obj);
                             feature.Fields.Add(fv);
                             if (fv.Name == "FDB_OID")
+                            {
                                 feature.OID = Convert.ToInt32(obj);
+                            }
                         }
                     }
                     return feature;
@@ -1932,7 +2153,7 @@ namespace gView.DataSources.Fdb.SQLite
             private SQLiteFDBFeatureCursor(IGeometryDef geomDef, ISpatialReference toSRef) :
                 base((geomDef != null) ? geomDef.SpatialReference : null, toSRef)
             {
-                
+
             }
 
             async static public Task<IFeatureCursor> Create(string connString, string sql, string where, string orderby, int limit, int beginRecord, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef)
@@ -1973,7 +2194,7 @@ namespace gView.DataSources.Fdb.SQLite
             public override void Dispose()
             {
                 base.Dispose();
-                if(_readerCommand!=null)
+                if (_readerCommand != null)
                 {
                     _readerCommand.Dispose();
                     _readerCommand = null;
@@ -1985,14 +2206,18 @@ namespace gView.DataSources.Fdb.SQLite
                 }
                 if (_connection != null)
                 {
-                    if (_connection.State == ConnectionState.Open) _connection.Close();
+                    if (_connection.State == ConnectionState.Open)
+                    {
+                        _connection.Close();
+                    }
+
                     _connection = null;
                 }
             }
 
             async private Task<bool> ExecuteReaderAsync()
             {
-                if(_readerCommand!=null)
+                if (_readerCommand != null)
                 {
                     _readerCommand.Dispose();
                     _readerCommand = null;
@@ -2018,7 +2243,10 @@ namespace gView.DataSources.Fdb.SQLite
                     //}
 
                     if (_nid_pos >= _nids.Count)
+                    {
                         return false;
+                    }
+
                     if (_nids[_nid_pos] < 0)
                     {
                         where = "(FDB_NID BETWEEN @FDB_NID_FROM AND @FDB_NID_TO)" + (!String.IsNullOrEmpty(where) ? " AND (" + where + ")" : String.Empty);
@@ -2040,26 +2268,46 @@ namespace gView.DataSources.Fdb.SQLite
                 }
                 else
                 {
-                    if (_nid_pos > 0) return false;
+                    if (_nid_pos > 0)
+                    {
+                        return false;
+                    }
                 }
-                if (where != "") where = " WHERE " + where;
+                if (where != "")
+                {
+                    where = " WHERE " + where;
+                }
 
                 _nid_pos++;
                 _readerCommand = new SQLiteCommand(_sql +
                                                         where +
                                                         (!String.IsNullOrWhiteSpace(_orderby) ? " ORDER BY " + _orderby : "") +
                                                         (_limit > 0 ? " LIMIT " + _limit : "") +
-                                                        (_beginRecord > 0 && _limit > 0 ? " OFFSET " + _beginRecord : ""),
+                                                        (_beginRecord > 0 && _limit > 0 ? " OFFSET " + Math.Max(0, _beginRecord - 1) : ""),
                                                         _connection);
-                
 
-                if (parameter != null) _readerCommand.Parameters.Add(parameter);
-                if (parameter2 != null) _readerCommand.Parameters.Add(parameter2);
+
+                if (parameter != null)
+                {
+                    _readerCommand.Parameters.Add(parameter);
+                }
+
+                if (parameter2 != null)
+                {
+                    _readerCommand.Parameters.Add(parameter2);
+                }
 
                 _readerCommand.Prepare();
 
-                if (parameter != null) parameter.Value = pVal;
-                if (parameter2 != null) parameter2.Value = p2Val;
+                if (parameter != null)
+                {
+                    parameter.Value = pVal;
+                }
+
+                if (parameter2 != null)
+                {
+                    parameter2.Value = p2Val;
+                }
 
                 _reader = (SQLiteDataReader)await _readerCommand.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
@@ -2085,7 +2333,9 @@ namespace gView.DataSources.Fdb.SQLite
                     while (true)
                     {
                         if (_reader == null)
+                        {
                             return null;
+                        }
 
                         if (!await _reader.ReadAsync())
                         {
@@ -2146,7 +2396,6 @@ namespace gView.DataSources.Fdb.SQLite
                                     {
                                         if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialFilter, p))
                                         {
-                                            //return NextFeature;
                                             nextFeature = true;
                                             break;
                                         }
@@ -2159,12 +2408,16 @@ namespace gView.DataSources.Fdb.SQLite
                                 FieldValue fv = new FieldValue(/*_schemaTable.Rows[i][0].ToString()*/name, obj);
                                 feature.Fields.Add(fv);
                                 if (fv.Name == "FDB_OID")
+                                {
                                     feature.OID = Convert.ToInt32(obj);
+                                }
                             }
                         }
 
                         if (nextFeature == true)
+                        {
                             continue;
+                        }
 
                         Transform(feature);
                         return feature;
@@ -2221,11 +2474,14 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 get
                 {
-                    return (ISelectionSet)m_selectionset;
+                    return m_selectionset;
                 }
                 set
                 {
-                    if (m_selectionset != null && m_selectionset != value) m_selectionset.Clear();
+                    if (m_selectionset != null && m_selectionset != value)
+                    {
+                        m_selectionset.Clear();
+                    }
 
                     m_selectionset = value;
                 }
@@ -2233,7 +2489,11 @@ namespace gView.DataSources.Fdb.SQLite
 
             async public Task<bool> Select(IQueryFilter filter, gView.Framework.Data.CombinationMethod methode)
             {
-                if (!(this.Class is ITableClass)) return false;
+                if (!(this.Class is ITableClass))
+                {
+                    return false;
+                }
+
                 ISelectionSet selSet = await ((ITableClass)this.Class).Select(filter);
 
                 SelectionSet = selSet;
@@ -2258,7 +2518,9 @@ namespace gView.DataSources.Fdb.SQLite
             public void FireSelectionChangedEvent()
             {
                 if (FeatureSelectionChanged != null)
+                {
                     FeatureSelectionChanged(this);
+                }
             }
 
             #endregion
