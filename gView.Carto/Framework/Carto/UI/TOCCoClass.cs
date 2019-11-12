@@ -11,6 +11,7 @@ using gView.Framework.Data;
 using gView.Framework.IO;
 using gView.Framework.Symbology;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace gView.Framework.Carto.UI
 {
@@ -996,6 +997,8 @@ namespace gView.Framework.Carto.UI
 				_elements.Add(element);
 			}
 
+            ReorderElements();
+
             return true;
         }
 
@@ -1037,9 +1040,45 @@ namespace gView.Framework.Carto.UI
         }
 
         #endregion
+
+        #region Helper
+
+        private void ReorderElements()
+        {
+            List<ITOCElement> elements = new List<ITOCElement>();
+
+            foreach (var element in _elements)
+            {
+                if (element.ParentGroup == null)
+                {
+                    elements.Add(element);
+                    elements.AddRange(GetChildElementsRecursive(element));
+                }
+            }
+
+            if (elements.Count == _elements.Count)
+            {
+                _elements = elements;
+            }
+        }
+
+        private IEnumerable<ITOCElement> GetChildElementsRecursive(ITOCElement parentElement)
+        {
+            List<ITOCElement> childElements = new List<ITOCElement>();
+
+            foreach (var childElement in _elements.Where(e => e.ParentGroup == parentElement))
+            {
+                childElements.Add(childElement);
+                childElements.AddRange(GetChildElementsRecursive(childElement));
+            }
+
+            return childElements;
+        }
+
+        #endregion
     }
 
-	internal class TOCElement : gView.Framework.UI.ITOCElement
+    internal class TOCElement : gView.Framework.UI.ITOCElement
 	{
 		private string _name;
 		private TOCElementType _type;
