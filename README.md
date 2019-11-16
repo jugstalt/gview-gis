@@ -1,13 +1,14 @@
 # gview5
 
-gView GIS - Userfriendly open source GI framework
-
 The software consists of desktop applications for creating maps and the gView server for publishing the maps as map services (WMS, GeoServices REST, etc).
 
-Download the leatest release as ZIP from [Released](https://github.com/jugstalt/gview5/releases)
+*gView Carto* and *gView DataExplorer* runs on windows and require die .NET Framework >=4.7.2 
+*gView Server* is fully .NET Core (AspNetCore 3.0.0). It can run on windows, linux, mac and as a docker container 
+
+Download the leatest release as ZIP from [Releases](https://github.com/jugstalt/gview5/releases)
 Unzip and run...
 
-On detailed installation documentation:
+Read the installation documentation:
 [Online Documentation](https://docs.gviewonline.com)
 
 Some screenshots to demonstrate some of the features of gview GIS
@@ -37,7 +38,7 @@ Browse your spatial data or copy vector data from to different data formats
 
 ## gView Server
 
-A map server that exports gView Carto map as GeoServices REST, ArcXML, WMS, WFS, WMTS services
+A map server that exports gView Carto map as *GeoServices REST*, *ArcXML*, *WMS*, *WFS*, *WMTS* services
 
 ![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server1.png)
 
