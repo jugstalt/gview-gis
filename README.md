@@ -4,8 +4,13 @@ gView GIS - Userfriendly open source GI framework
 
 The software consists of desktop applications for creating maps and the gView server for publishing the maps as map services (WMS, GeoServices REST, etc).
 
+Download the leatest release as ZIP from [Released](https://github.com/jugstalt/gview5/releases)
+Unzip and run...
 
+On detailed installation documentation:
 [Online Documentation](https://docs.gviewonline.com)
+
+Some screenshots to demonstrate some of the features of gview GIS
 
 ## Deskop: gView Carto
 
@@ -36,7 +41,7 @@ A map server that exports gView Carto map as GeoServices REST, ArcXML, WMS, WFS,
 
 ![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server1.png)
 
-Manage the services and check the services status (running, stopped, error)
+Manage the services and check the service status (running, stopped, error)
 
 ![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server2.png)
 
