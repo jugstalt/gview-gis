@@ -41,7 +41,7 @@ namespace gView.Framework.IO
         }
 
         public IEnumerable<string> Warnings { get { return _warnings.ToArray(); } }
-        public IEnumerable<string> Errors { get { return _warnings.ToArray(); } }
+        public IEnumerable<string> Errors { get { return _errors.ToArray(); } }
 
         public void ClearErrorsAndWarnings()
         {

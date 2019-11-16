@@ -39,7 +39,7 @@ namespace gView.Symbology.Framework.Symbology.IO
             }
         }
 
-        public object Deserialize<T>(MemoryStream ms, IErrorReport errorReport, object source)
+        public object Deserialize<T>(MemoryStream ms, IErrorReport errorReport, object source, bool writeError=false)
         {
             // ToDo:
             if (typeof(T) == typeof(System.Drawing.Font))
@@ -76,7 +76,15 @@ namespace gView.Symbology.Framework.Symbology.IO
 
                     if (errorReport != null)
                     {
-                        errorReport.AddWarning($"Font '{name}' not installed on target system. '{fontFamily.Name}' will be used instead.", source);
+                        var message = $"Font '{name}' not installed on target system. '{fontFamily.Name}' will be used instead.";
+                        if (writeError == true)
+                        {
+                            errorReport.AddError(message, source);
+                        }
+                        else
+                        {
+                            errorReport.AddWarning(message, source);
+                        }
                     }
                 }
 

@@ -1774,7 +1774,7 @@ namespace gView.Framework.Symbology
                 ms.Write(encoder.GetBytes(soap), 0, soap.Length);
                 ms.Position = 0;
                 SoapFormatter formatter = new SoapFormatter();
-                _font = (Font)formatter.Deserialize<Font>(ms, stream, this);
+                _font = (Font)formatter.Deserialize<Font>(ms, stream, this, true);
             }
             catch { }
 
