@@ -7,9 +7,17 @@ The software consists of desktop applications for creating maps and the gView se
 
 [Online Documentation](https://docs.gviewonline.com)
 
+## Deskop: gView Carto
+
+Create maps in a userfriendly UI
+
 ![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-carto1.png)
 
+Set rendering for each layer
+
 ![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-carto2.png)
+
+Set labelling for any vektor layer
 
 ![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-carto3.png)
 
