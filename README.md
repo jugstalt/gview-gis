@@ -6,3 +6,5 @@ The software consists of desktop applications for creating maps and the gView se
 
 
 [Online Documentation](https://docs.gviewonline.com)
+
+![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-carto1.png)
