@@ -253,7 +253,7 @@ namespace gView.Interoperability.GeoServices.Request
             {
                 var tocElement = sender.TOC.GetTOCElementByLayerId(layer.ID);
                 bool layerIdContains = tocElement != null ?
-                    LayerOrParentIsInArray(sender, tocElement, layerIds) :
+                    LayerAndParentIsInArray(sender, tocElement, layerIds) :
                     layerIds.Contains(layer.ID);
 
                 switch (option)
@@ -325,22 +325,27 @@ namespace gView.Interoperability.GeoServices.Request
             }
         }
 
-        private bool LayerOrParentIsInArray(IServiceMap map, ITOCElement tocElement, int[] layerIds)
+        private bool LayerAndParentIsInArray(IServiceMap map, ITOCElement tocElement, int[] layerIds)
         {
+            if(tocElement == null)
+            {
+                return false;
+            }
+
             while (tocElement != null)
             {
                 if (tocElement.Layers != null)
                 {
                     foreach (var layer in tocElement.Layers)
                     {
-                        if (layerIds.Contains(layer.ID))
-                            return true;
+                        if (!layerIds.Contains(layer.ID))
+                            return false;
                     }
                 }
                 tocElement = tocElement.ParentGroup;
             }
 
-            return false;
+            return true;
         }
 
         #endregion

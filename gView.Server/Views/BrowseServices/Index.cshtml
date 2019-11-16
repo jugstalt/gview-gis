@@ -34,8 +34,8 @@
     {
 <div class="gview5-form-upload">
     @if(!String.IsNullOrWhiteSpace(Model.ErrorMessage)) {
-    <div class="gview5-error-message">
-        @Model.ErrorMessage
+    <div class="gview5-@(Model.ErrorMessage.ToLower().StartsWith("warnings:") ? "warning": "error")-message">
+        @Html.Raw(Model.ErrorMessage.Replace(Environment.NewLine, "<br/>"))
     </div>
     }
     <form action="@Url.Action("AddService")" method="post" enctype="multipart/form-data">

@@ -894,7 +894,7 @@ namespace gView.Framework.Symbology
                 ms.Write(encoder.GetBytes(soap), 0, soap.Length);
                 ms.Position = 0;
                 SoapFormatter formatter = new SoapFormatter();
-                _font = (Font)formatter.Deserialize<Font>(ms);
+                _font = (Font)formatter.Deserialize<Font>(ms, stream, this);
 
                 this.MaxFontSize = (float)stream.Load("maxfontsize", 0f);
                 this.MinFontSize = (float)stream.Load("minfontsize", 0f);
@@ -966,6 +966,23 @@ namespace gView.Framework.Symbology
         #endregion
 
         #region IClone2 Members
+
+        public override object Clone()
+        {
+            SimpleTextSymbol tSym = _font != null && _brush != null ?
+                new SimpleTextSymbol(new Font(_font.Name, _font.Size, _font.Style), _brush.Color) :
+                new SimpleTextSymbol();
+
+            tSym.HorizontalOffset = HorizontalOffset;
+            tSym.VerticalOffset = VerticalOffset;
+            tSym.Angle = Angle;
+            tSym._align = _align;
+            tSym.Smoothingmode = this.Smoothingmode;
+            tSym.IncludesSuperScript = this.IncludesSuperScript;
+            tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
+
+            return tSym;
+        }
 
         virtual public object Clone(CloneOptions options)
         {
@@ -1270,6 +1287,25 @@ namespace gView.Framework.Symbology
 
         #region IClone2 Members
 
+        public override object Clone()
+        {
+            GlowingTextSymbol tSym = _font != null && _brush != null && _outlinebrush != null ?
+                new GlowingTextSymbol(new Font(_font.Name, _font.Size, _font.Style), _brush.Color, _outlinebrush.Color) :
+                new GlowingTextSymbol();
+
+            tSym.HorizontalOffset = HorizontalOffset;
+            tSym.VerticalOffset = VerticalOffset;
+            tSym.Angle = Angle;
+            tSym._align = _align;
+            tSym.Smoothingmode = this.Smoothingmode;
+            tSym.GlowingSmoothingmode = this.GlowingSmoothingmode;
+            tSym.GlowingWidth = this.GlowingWidth;
+            tSym.IncludesSuperScript = this.IncludesSuperScript;
+            tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
+
+            return tSym;
+        }
+
         override public object Clone(CloneOptions options)
         {
             var display = options?.Display;
@@ -1453,6 +1489,23 @@ namespace gView.Framework.Symbology
         #endregion
 
         #region IClone2 Members
+
+        public override object Clone()
+        {
+            BlockoutTextSymbol tSym = _font != null && _brush != null && _outlinebrush != null ?
+                new BlockoutTextSymbol(new Font(_font.Name, _font.Size, _font.Style), _brush.Color, _outlinebrush.Color) :
+                new BlockoutTextSymbol();
+
+            tSym.HorizontalOffset = HorizontalOffset;
+            tSym.VerticalOffset = VerticalOffset;
+            tSym.Angle = Angle;
+            tSym._align = _align;
+            tSym.Smoothingmode = this.Smoothingmode;
+            tSym.IncludesSuperScript = this.IncludesSuperScript;
+            tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
+
+            return tSym;
+        }
 
         override public object Clone(CloneOptions options)
         {

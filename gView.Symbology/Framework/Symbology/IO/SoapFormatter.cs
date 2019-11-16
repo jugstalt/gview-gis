@@ -1,9 +1,10 @@
 ﻿using gView.Framework.system;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.Text;
 using System.Xml;
+using gView.Framework.IO;
 
 namespace gView.Symbology.Framework.Symbology.IO
 {
@@ -38,10 +39,10 @@ namespace gView.Symbology.Framework.Symbology.IO
             }
         }
 
-        public object Deserialize<T>(MemoryStream ms)
+        public object Deserialize<T>(MemoryStream ms, IErrorReport errorReport, object source)
         {
             // ToDo:
-            if(typeof(T)==typeof(System.Drawing.Font))
+            if (typeof(T) == typeof(System.Drawing.Font))
             {
                 var soap = Encoding.ASCII.GetString(ms.ToArray());
                 XmlDocument doc = new XmlDocument();
@@ -68,8 +69,18 @@ namespace gView.Symbology.Framework.Symbology.IO
                 if (styleNode != null)
                     grUnit = (System.Drawing.GraphicsUnit)Enum.Parse(typeof(System.Drawing.GraphicsUnit), unitNode.InnerText);
 
+                var fontFamily = System.Drawing.FontFamily.Families.Where(f => f.Name == name).FirstOrDefault();
+                if(fontFamily == null)
+                {
+                    fontFamily = System.Drawing.FontFamily.GenericSansSerif;
 
-                var font = new System.Drawing.Font(name, size, fontStyle, grUnit);
+                    if (errorReport != null)
+                    {
+                        errorReport.AddWarning($"Font '{name}' not installed on target system. '{fontFamily.Name}' will be used instead.", source);
+                    }
+                }
+
+                var font = new System.Drawing.Font(fontFamily, size, fontStyle, grUnit);
                 return font;
             }
 

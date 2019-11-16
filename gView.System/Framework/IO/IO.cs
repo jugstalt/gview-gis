@@ -1,60 +1,108 @@
-using System;
-using System.IO;
-using System.Xml;
-using System.Collections;
-using System.Collections.Generic;
-using gView.Framework.IO;
 using gView.Framework.system;
+using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
-using System.Reflection.Emit;
 using System.Globalization;
+using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Framework.IO
 {
-	/// <summary>
-	/// Zusammenfassung für IO.
-	/// </summary>
-	public class XmlStream : IPersistStream
-	{
-		private XmlDocument _doc;
-		private XmlNodePlus _parent;
+    public class ErrorReport : IErrorReport
+    {
+        #region IErrorReport 
+
+        private ConcurrentBag<string> _warnings = new ConcurrentBag<string>();
+        private ConcurrentBag<string> _errors = new ConcurrentBag<string>();
+
+
+        public void AddWarning(string warning, object source)
+        {
+            if (source != null)
+            {
+                warning = $"{ warning } ({ source.ToString() })";
+            }
+
+            _warnings.Add($"Warning: { warning }");
+        }
+        public void AddError(string error, object source)
+        {
+            if (source != null)
+            {
+                error = $"{error} ({ source.ToString() })";
+            }
+
+            _errors.Add($"Error: { error  }");
+        }
+
+        public IEnumerable<string> Warnings { get { return _warnings.ToArray(); } }
+        public IEnumerable<string> Errors { get { return _warnings.ToArray(); } }
+
+        public void ClearErrorsAndWarnings()
+        {
+            if (_warnings.Count > 0)
+            {
+                _warnings = new ConcurrentBag<string>();
+            }
+
+            if (_errors.Count > 0)
+            {
+                _errors = new ConcurrentBag<string>();
+            }
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Zusammenfassung für IO.
+    /// </summary>
+    public class XmlStream : ErrorReport, IPersistStream
+    {
+        private XmlDocument _doc;
+        private XmlNodePlus _parent;
         private NumberFormatInfo _nhi = global::System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
         private bool _performEncryption = true;
 
-		public XmlStream(string rootname) 
-		{
-			_doc=new XmlDocument();
+        public XmlStream(string rootname)
+        {
+            _doc = new XmlDocument();
             _nhi = global::System.Globalization.CultureInfo.CurrentCulture.NumberFormat;
-            
-			if(rootname=="") rootname="root";
-			
-			_parent=new XmlNodePlus(this.CreateNode(rootname));
+
+            if (rootname == "")
+            {
+                rootname = "root";
+            }
+
+            _parent = new XmlNodePlus(this.CreateNode(rootname));
             _parent.Culture = global::System.Globalization.CultureInfo.InvariantCulture;
 
-			_doc.AppendChild(_parent.Node);
-		}
+            _doc.AppendChild(_parent.Node);
+        }
         public XmlStream(string rootname, bool performEncryption)
             : this(rootname)
         {
             _performEncryption = performEncryption;
         }
 
-		private XmlNode CreateNode(string name) 
-		{
-			XmlNode node=_doc.CreateNode(XmlNodeType.Element,name,"");
-			return node;
-		}
+        private XmlNode CreateNode(string name)
+        {
+            XmlNode node = _doc.CreateNode(XmlNodeType.Element, name, "");
+            return node;
+        }
 
-		private XmlAttribute CreateAttribute(string name,string val) 
-		{
-			XmlAttribute attr=_doc.CreateAttribute(name);
-			attr.Value=val;
+        private XmlAttribute CreateAttribute(string name, string val)
+        {
+            XmlAttribute attr = _doc.CreateAttribute(name);
+            attr.Value = val;
 
-			return attr;
-		}
+            return attr;
+        }
         private void CreateXmlStreamObjectAttributes(XmlNode node, XmlStreamObject xso)
         {
             node.Attributes.Append(
@@ -62,7 +110,7 @@ namespace gView.Framework.IO
             node.Attributes.Append(
                 CreateAttribute("_description", xso.Description));
             node.Attributes.Append(
-                CreateAttribute("_displayname",xso.DisplayName));
+                CreateAttribute("_displayname", xso.DisplayName));
             node.Attributes.Append(
                 CreateAttribute("_isreadonly", xso.IsReadOnly.ToString()));
             node.Attributes.Append(
@@ -71,19 +119,37 @@ namespace gView.Framework.IO
         internal static void ApplyXmlStreamObjectAttributes(XmlNode node, XmlStreamObject xso)
         {
             if (node.Attributes["_category"] != null)
+            {
                 xso.Category = node.Attributes["_category"].Value;
+            }
+
             if (node.Attributes["_description"] != null)
+            {
                 xso.Description = node.Attributes["_description"].Value;
+            }
+
             if (node.Attributes["_displayname"] != null)
+            {
                 xso.DisplayName = node.Attributes["_displayname"].Value;
+            }
+
             if (node.Attributes["_isreadonly"] != null)
+            {
                 xso.IsReadOnly = Convert.ToBoolean(node.Attributes["_isreadonly"].Value);
+            }
+
             if (node.Attributes["_visible"] != null)
+            {
                 xso.Visible = Convert.ToBoolean(node.Attributes["_visible"].Value);
+            }
         }
         private void RemoveXmlDeclataion()
         {
-            if (_doc == null || _doc.ChildNodes == null) return;
+            if (_doc == null || _doc.ChildNodes == null)
+            {
+                return;
+            }
+
             for (int i = 0; i < _doc.ChildNodes.Count; i++)
             {
                 XmlNode node = _doc.ChildNodes[i];
@@ -98,16 +164,16 @@ namespace gView.Framework.IO
         {
             return WriteStream(path, Formatting.Indented);
         }
-        public bool WriteStream(string path, Formatting formatting) 
-		{
+        public bool WriteStream(string path, Formatting formatting)
+        {
             XmlTextWriter xmlWriter = new XmlTextWriter(path, Encoding.Unicode);
             xmlWriter.Formatting = formatting;
             xmlWriter.WriteStartDocument();
             RemoveXmlDeclataion();
             _doc.WriteTo(xmlWriter);
             xmlWriter.Close();
-			return true;
-		}
+            return true;
+        }
         public bool WriteStream(Stream stream)
         {
             return WriteStream(stream, Formatting.Indented);
@@ -138,12 +204,12 @@ namespace gView.Framework.IO
             //xmlWriter.Close();  // sonst wird auch der eingehende Stream geschlossen
             return true;
         }
-		public bool ReadStream(string path) 
-		{
-			try 
-			{
-				_doc=new XmlDocument();
-				_doc.Load(path);
+        public bool ReadStream(string path)
+        {
+            try
+            {
+                _doc = new XmlDocument();
+                _doc.Load(path);
 
                 // find first Element (== Parent)
                 foreach (XmlNode node in _doc.ChildNodes)
@@ -155,13 +221,13 @@ namespace gView.Framework.IO
                     }
                 }
 
-				return false;
-			}
-			catch 
-			{
-				return false;
-			}
-		}
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         public bool ReadStream(Stream stream)
         {
             try
@@ -213,9 +279,16 @@ namespace gView.Framework.IO
 
         public bool ReduceDocument(string xPath)
         {
-            if (_doc == null) return false;
+            if (_doc == null)
+            {
+                return false;
+            }
+
             XmlNode node = _doc.SelectSingleNode(xPath);
-            if (node == null) return false;
+            if (node == null)
+            {
+                return false;
+            }
 
             CultureInfo culture = global::System.Globalization.CultureInfo.CurrentCulture;
             if (_parent.Node.Attributes["culture"] != null)
@@ -240,28 +313,38 @@ namespace gView.Framework.IO
         {
             get { return _parent; }
         }
-        
-		#region IPersistStream Member
 
-		public object Load(string key) 
-		{
-			return Load(key,null,null);
-		}
-		public object Load(string key,object defValue) 
-		{
-			return Load(key,defValue,null);
-		}
-		public object Load(string key,object defValue,object objectInstance)
-		{
-            if (_parent == null) return null;
-			XmlNode xmlnode=_parent.Next(key);
-			if(xmlnode==null) return defValue;
-		
-			if(xmlnode.Attributes["GUID"]!=null) 
-			{
-				PlugInManager compManager=new PlugInManager();
-				object comp=compManager.CreateInstance(new Guid(xmlnode.Attributes["GUID"].Value));
-				if(comp==null) return defValue;
+        #region IPersistStream Member
+
+        public object Load(string key)
+        {
+            return Load(key, null, null);
+        }
+        public object Load(string key, object defValue)
+        {
+            return Load(key, defValue, null);
+        }
+        public object Load(string key, object defValue, object objectInstance)
+        {
+            if (_parent == null)
+            {
+                return null;
+            }
+
+            XmlNode xmlnode = _parent.Next(key);
+            if (xmlnode == null)
+            {
+                return defValue;
+            }
+
+            if (xmlnode.Attributes["GUID"] != null)
+            {
+                PlugInManager compManager = new PlugInManager();
+                object comp = compManager.CreateInstance(new Guid(xmlnode.Attributes["GUID"].Value));
+                if (comp == null)
+                {
+                    return defValue;
+                }
 
                 if (comp is IPersistable)
                 {
@@ -275,34 +358,37 @@ namespace gView.Framework.IO
                     throw new Exception("Can't laod async in this context (" + comp.GetType().ToString() + ")");
                 }
 
-				return comp;
-			}
-			if(xmlnode.Attributes["type"]==null) 
-			{
-				if(objectInstance is IPersistable) 
-				{
-					XmlNodePlus parent=_parent;
-					_parent=new XmlNodePlus(xmlnode,_parent.NumberFormat);
-					((IPersistable)objectInstance).Load(this);
-					_parent=parent;
-					return objectInstance;
-				}
+                return comp;
+            }
+            if (xmlnode.Attributes["type"] == null)
+            {
+                if (objectInstance is IPersistable)
+                {
+                    XmlNodePlus parent = _parent;
+                    _parent = new XmlNodePlus(xmlnode, _parent.NumberFormat);
+                    ((IPersistable)objectInstance).Load(this);
+                    _parent = parent;
+                    return objectInstance;
+                }
                 else if (objectInstance is IPersistableLoadAsync)
                 {
                     throw new Exception("Can't laod async in this context (" + objectInstance.GetType().ToString() + ")");
                 }
-                else 
-				{
-					return defValue;
-				}
-			}
-			try 
-			{
+                else
+                {
+                    return defValue;
+                }
+            }
+            try
+            {
                 if (xmlnode.Attributes["type"].Value != "System.String")
                 {
                     Type type = global::System.Type.GetType(xmlnode.Attributes["type"].Value, false, true);
                     object obj = Activator.CreateInstance(type);
-                    if (obj == null) return defValue;
+                    if (obj == null)
+                    {
+                        return defValue;
+                    }
 
                     if (obj is XmlStreamObject)
                     {
@@ -345,7 +431,7 @@ namespace gView.Framework.IO
                         }
                         return obj;
                     }
-                    
+
                     obj = Convert.ChangeType(xmlnode.Attributes["value"].Value, type, _parent.NumberFormat);
                     return obj;
                 }
@@ -363,21 +449,26 @@ namespace gView.Framework.IO
                     }
                     return v;
                 }
-			}
+            }
             catch/*(Exception ex)*/
-			{
-				return defValue;
-			}
-		}
+            {
+                return defValue;
+            }
+        }
 
         async public Task<T> LoadAsync<T>(string key, T objectInstance, T defaultValue = default(T))
             where T : IPersistableLoadAsync
         {
             if (_parent == null)
+            {
                 return default(T);
+            }
 
             XmlNode xmlnode = _parent.Next(key);
-            if (xmlnode == null) return defaultValue;
+            if (xmlnode == null)
+            {
+                return defaultValue;
+            }
 
             if (xmlnode.Attributes["type"] == null)
             {
@@ -397,9 +488,16 @@ namespace gView.Framework.IO
         async public Task<T> LoadPluginAsync<T>(string key, T unknownPlugin = default(T))
             where T : IPersistableLoadAsync
         {
-            if (_parent == null) return default(T);
+            if (_parent == null)
+            {
+                return default(T);
+            }
+
             XmlNode xmlnode = _parent.Next(key);
-            if (xmlnode == null) return default(T);
+            if (xmlnode == null)
+            {
+                return default(T);
+            }
 
             if (xmlnode.Attributes["GUID"] != null)
             {
@@ -408,10 +506,13 @@ namespace gView.Framework.IO
                 if (comp == null)
                 {
                     if (unknownPlugin is IErrorMessage)
-                        ((IErrorMessage)unknownPlugin).LastErrorMessage = "Unknown plugin type: "+ xmlnode.Attributes["GUID"].Value;
+                    {
+                        ((IErrorMessage)unknownPlugin).LastErrorMessage = "Unknown plugin type: " + xmlnode.Attributes["GUID"].Value;
+                    }
+
                     return unknownPlugin;
                 }
-                
+
                 //if (comp is IPersistableLoad)
                 {
                     XmlNodePlus parent = _parent;
@@ -437,8 +538,8 @@ namespace gView.Framework.IO
         }
         private void Save(string key, object val, bool encrypt)
         {
-            XmlNode node=this.CreateNode(key);
-			_parent.Node.AppendChild(node);
+            XmlNode node = this.CreateNode(key);
+            _parent.Node.AppendChild(node);
             if (PlugInManager.IsPlugin(val))
             {
                 node.Attributes.Append(
@@ -446,23 +547,27 @@ namespace gView.Framework.IO
                 node.Attributes.Append(
                     this.CreateAttribute("type", val.ToString()));
             }
-			if(val is IPersistable) 
-			{
-				_parent.Node=node;
-				((IPersistable)val).Save(this);
-				_parent.Node=node.ParentNode;
-				return;
-			}
-            if(val is IPersistableLoadAsync)
+            if (val is IPersistable)
+            {
+                _parent.Node = node;
+                ((IPersistable)val).Save(this);
+                _parent.Node = node.ParentNode;
+                return;
+            }
+            if (val is IPersistableLoadAsync)
             {
                 _parent.Node = node;
                 ((IPersistableLoadAsync)val).Save(this);
                 _parent.Node = node.ParentNode;
                 return;
             }
-            if (val is XmlStreamObject )
+            if (val is XmlStreamObject)
             {
-                if (((XmlStreamObject)val).Value == null) return;
+                if (((XmlStreamObject)val).Value == null)
+                {
+                    return;
+                }
+
                 CreateXmlStreamObjectAttributes(node, (XmlStreamObject)val);
 
                 if (val is XmlStreamOption &&
@@ -508,7 +613,7 @@ namespace gView.Framework.IO
                 }
                 return;
             }
-			
+
             if (val != null)
             {
                 if (node.Attributes["type"] == null)
@@ -519,22 +624,23 @@ namespace gView.Framework.IO
                 if (val.GetType() == typeof(double))
                 {
                     node.Attributes.Append(
-                        this.CreateAttribute("value",((double)val).ToString(_parent.NumberFormat)));
+                        this.CreateAttribute("value", ((double)val).ToString(_parent.NumberFormat)));
                 }
                 else if (val.GetType() == typeof(float))
                 {
                     node.Attributes.Append(
-                        this.CreateAttribute("value",((float)val).ToString(_parent.NumberFormat)));
+                        this.CreateAttribute("value", ((float)val).ToString(_parent.NumberFormat)));
                 }
                 else if (val.GetType() == typeof(decimal))
                 {
                     node.Attributes.Append(
-                        this.CreateAttribute("value",((decimal)val).ToString(_parent.NumberFormat)));
+                        this.CreateAttribute("value", ((decimal)val).ToString(_parent.NumberFormat)));
                 }
                 else
                 {
                     string v = val.ToString();
-                    if(encrypt==true) {
+                    if (encrypt == true)
+                    {
                         v = Crypto.Encrypt(v, "3f9932916f9746e1a3df048cc70dd30a");
                         node.Attributes.Append(this.CreateAttribute("encryption_type", "1"));
                     }
@@ -542,30 +648,34 @@ namespace gView.Framework.IO
                         this.CreateAttribute("value", v));
                 }
             }
-			//object f=Activator.CreateInstance(System.Type.GetType("System.String",false,true));
-			//f=null;
-		}
+            //object f=Activator.CreateInstance(System.Type.GetType("System.String",false,true));
+            //f=null;
+        }
 
-		#endregion
+        #endregion
 
         public override string ToString()
         {
             if (_doc == null)
+            {
                 return base.ToString();
+            }
             else
+            {
                 return _doc.OuterXml;
+            }
         }
-	}
+    }
 
     [TypeConverter("CustomProperty")]
-    public class PersistableClass : Component, ICustomTypeDescriptor,IPersistable
+    public class PersistableClass : Component, ICustomTypeDescriptor, IPersistable
     {
         private PropertyDescriptorCollection _propertyCollection;
         private List<PersistableClass> _childClasses;
         private int _maxLength;
-        private string _name=String.Empty;
+        private string _name = String.Empty;
         private NumberFormatInfo _nhi;
-       
+
         private PersistableClass()
         {
             _propertyCollection = new PropertyDescriptorCollection(new PropertyDescriptor[] { });
@@ -575,7 +685,10 @@ namespace gView.Framework.IO
         public PersistableClass(XmlStream stream) : this()
         {
             if (stream == null || stream.ParentNode == null ||
-                stream.ParentNode.Node == null) return;
+                stream.ParentNode.Node == null)
+            {
+                return;
+            }
 
             _nhi = stream.ParentNode.NumberFormat;
 
@@ -584,14 +697,21 @@ namespace gView.Framework.IO
         private PersistableClass(XmlNode parent, NumberFormatInfo nhi) : this()
         {
             _nhi = nhi;
-            if (parent == null) return;
+            if (parent == null)
+            {
+                return;
+            }
 
             FromNode(parent);
         }
 
-        private void FromNode(XmlNode parent) 
+        private void FromNode(XmlNode parent)
         {
-            if (parent == null) return;
+            if (parent == null)
+            {
+                return;
+            }
+
             _name = parent.Name;
 
             foreach (XmlNode node in parent.ChildNodes)
@@ -611,7 +731,10 @@ namespace gView.Framework.IO
                                 List<object> options = new List<object>();
                                 foreach (XmlNode optionNode in node.SelectNodes("Option[@type]"))
                                 {
-                                    if (optionNode.Attributes["value"] == null) continue;
+                                    if (optionNode.Attributes["value"] == null)
+                                    {
+                                        continue;
+                                    }
 
                                     Type optionType = global::System.Type.GetType(optionNode.Attributes["type"].Value, false, true);
                                     object optionObj = Convert.ChangeType(optionNode.Attributes["value"].Value, optionType, _nhi);
@@ -634,18 +757,21 @@ namespace gView.Framework.IO
                                 this.Add(new CustomProperty(
                                         node.Name, obj,
                                         ((XmlStreamObject)obj).Description,
-                                        ((XmlStreamObject)obj).Category, 
+                                        ((XmlStreamObject)obj).Category,
                                         ((XmlStreamOption)obj).Value.GetType(),
-                                        ((XmlStreamObject)obj).IsReadOnly, 
+                                        ((XmlStreamObject)obj).IsReadOnly,
                                         true));
-                                
+
                             }
                             else if (obj is XmlStreamStringArray)
                             {
                                 List<object> values = new List<object>();
                                 foreach (XmlNode valueNode in node.SelectNodes("Value[@type]"))
                                 {
-                                    if (valueNode.Attributes["value"] == null) continue;
+                                    if (valueNode.Attributes["value"] == null)
+                                    {
+                                        continue;
+                                    }
 
                                     Type valueType = global::System.Type.GetType(valueNode.Attributes["type"].Value, false, true);
                                     object valueObj = Convert.ChangeType(valueNode.Attributes["value"].Value, valueType, _nhi);
@@ -707,7 +833,7 @@ namespace gView.Framework.IO
                         }
                     }
                 }
-                
+
                 _childClasses.Add(new PersistableClass(node, _nhi));
             }
         }
@@ -722,9 +848,11 @@ namespace gView.Framework.IO
             set
             {
                 if (value > _maxLength)
+                {
                     _maxLength = value;
+                }
             }
-        }		
+        }
 
         private void Add(CustomProperty Value)
         {
@@ -808,9 +936,13 @@ namespace gView.Framework.IO
             PropertyDescriptorCollection props = GetAllProperties();
 
             if (props.Count > 0)
+            {
                 return (props[0]);
+            }
             else
+            {
                 return (null);
+            }
         }
 
         public object GetEditor(Type editorBaseType)
@@ -838,12 +970,16 @@ namespace gView.Framework.IO
                 List<Attribute> propAttributes = new List<Attribute>();
                 if (prop.propValueObject is XmlStreamObject)
                 {
-                    XmlStreamObject xso=(XmlStreamObject)prop.propValueObject;
+                    XmlStreamObject xso = (XmlStreamObject)prop.propValueObject;
                     if (!String.IsNullOrEmpty(xso.DisplayName))
+                    {
                         propAttributes.Add(new DisplayNameAttribute(xso.DisplayName));
+                    }
 
                     if (!xso.Visible)
+                    {
                         propAttributes.Add(new BrowsableAttribute(false));
+                    }
                 }
                 if (prop.propValueObject is XmlStreamOption)
                 {
@@ -1085,7 +1221,10 @@ namespace gView.Framework.IO
             public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
             {
                 CustomPropertyDescriptor propDecriptor = context.PropertyDescriptor as CustomPropertyDescriptor;
-                if (propDecriptor == null) return null;
+                if (propDecriptor == null)
+                {
+                    return null;
+                }
 
                 object ValueObject = propDecriptor.CustomProperty.propValueObject; // context.PropertyDescriptor.GetValue(context.Instance);
                 if (ValueObject is XmlStreamOption)
@@ -1138,177 +1277,222 @@ namespace gView.Framework.IO
         #endregion
     }
 
-	public class ConfigTextStream 
-	{
-		//private static string _configPath=System.Environment.CurrentDirectory+@"/config";
-		private string _path;
-		private global::System.IO.StreamReader tr=null;
-		private global::System.IO.StreamWriter tw=null;
-		private ArrayList _ids=new ArrayList();
+    public class ConfigTextStream
+    {
+        //private static string _configPath=System.Environment.CurrentDirectory+@"/config";
+        private string _path;
+        private global::System.IO.StreamReader tr = null;
+        private global::System.IO.StreamWriter tw = null;
+        private ArrayList _ids = new ArrayList();
         private string _dp = "&chr(" + ((byte)':').ToString() + ");";
 
-		public ConfigTextStream(string name) 
-		{
-            if (name == "") return;
+        public ConfigTextStream(string name)
+        {
+            if (name == "")
+            {
+                return;
+            }
 
-			_path=SystemVariables.MyApplicationConfigPath+@"/"+name+".config";
-			getIDs();
-			try 
-			{
-				FileInfo fi=new FileInfo(_path);
-				if(fi.Exists) tr = new global::System.IO.StreamReader(_path);
-			} 
-			catch 
-			{
-				Close();
-			}
-		}
-		public ConfigTextStream(string name,bool write,bool append) 
-		{
-			try 
-			{
-				_path=SystemVariables.MyApplicationConfigPath+@"/"+name+".config";
-				getIDs();
-				if(!write) 
-				{
-					FileInfo fi=new FileInfo(_path);
-					if(fi.Exists) tr = new global::System.IO.StreamReader(_path);
-				}
-				else 
-				{
-                    tw = new global::System.IO.StreamWriter(_path, append); 
-				}
-			}
-            catch/*(Exception ex)*/ 
-			{
-				Close();
-			}
-		}
-		private void getIDs()  
-		{
-			FileInfo fi=new FileInfo(_path);
-			if(!fi.Exists) return;
-			StreamReader sr=new StreamReader(_path);
-			string line;
-			while((line=sr.ReadLine())!=null) 
-			{
-				string [] id_=line.Split(':');
-				_ids.Add(id_[0]);
-			}
-			sr.Close();
-		}
-		public void Close() 
-		{
-			if(tr!=null) tr.Close();
-			if(tw!=null) tw.Close();
-			tr=null;
-			tw=null;
-		}
+            _path = SystemVariables.MyApplicationConfigPath + @"/" + name + ".config";
+            getIDs();
+            try
+            {
+                FileInfo fi = new FileInfo(_path);
+                if (fi.Exists)
+                {
+                    tr = new global::System.IO.StreamReader(_path);
+                }
+            }
+            catch
+            {
+                Close();
+            }
+        }
+        public ConfigTextStream(string name, bool write, bool append)
+        {
+            try
+            {
+                _path = SystemVariables.MyApplicationConfigPath + @"/" + name + ".config";
+                getIDs();
+                if (!write)
+                {
+                    FileInfo fi = new FileInfo(_path);
+                    if (fi.Exists)
+                    {
+                        tr = new global::System.IO.StreamReader(_path);
+                    }
+                }
+                else
+                {
+                    tw = new global::System.IO.StreamWriter(_path, append);
+                }
+            }
+            catch/*(Exception ex)*/
+            {
+                Close();
+            }
+        }
+        private void getIDs()
+        {
+            FileInfo fi = new FileInfo(_path);
+            if (!fi.Exists)
+            {
+                return;
+            }
 
-		private string modifyID(string id) 
-		{
-			int i=1;
-			string id_=id;
-			while(_ids.Contains(id)) 
-			{
-				id=id_+"("+i.ToString()+")";
-				i++;
-			}
+            StreamReader sr = new StreamReader(_path);
+            string line;
+            while ((line = sr.ReadLine()) != null)
+            {
+                string[] id_ = line.Split(':');
+                _ids.Add(id_[0]);
+            }
+            sr.Close();
+        }
+        public void Close()
+        {
+            if (tr != null)
+            {
+                tr.Close();
+            }
+
+            if (tw != null)
+            {
+                tw.Close();
+            }
+
+            tr = null;
+            tw = null;
+        }
+
+        private string modifyID(string id)
+        {
+            int i = 1;
+            string id_ = id;
+            while (_ids.Contains(id))
+            {
+                id = id_ + "(" + i.ToString() + ")";
+                i++;
+            }
             return id;
-		}
+        }
 
-		public bool Write(string line,ref string id) 
-		{
+        public bool Write(string line, ref string id)
+        {
             id = id.Replace(":", _dp);
 
-			if(tw==null) return false;
-			id=modifyID(id);
-			tw.WriteLine(id+":"+line);
-			return true;
-		}
+            if (tw == null)
+            {
+                return false;
+            }
 
-		public bool Remove(string id,string line) 
-		{
+            id = modifyID(id);
+            tw.WriteLine(id + ":" + line);
+            return true;
+        }
+
+        public bool Remove(string id, string line)
+        {
             id = id.Replace(":", _dp);
 
-			if(tw==null) return false;
-			try 
-			{
-				FileInfo fi=new FileInfo(_path);
-				fi.CopyTo(_path+".tmp");
-				
-				tw.Close();
-				tw=new StreamWriter(_path,false);
+            if (tw == null)
+            {
+                return false;
+            }
 
-				StreamReader sr=new StreamReader(_path+".tmp");
-				string l,i="";
-				while((l=sr.ReadLine())!=null) 
-				{
-					int pos=l.IndexOf(":");
-					if(pos!=-1) 
-					{
-						i =l.Substring(0,pos);
-						l =l.Substring(pos+1,l.Length-pos-1);
-					}
-					if(l==line && i==id) continue;
-					tw.WriteLine(i+":"+l);
-				}
-				sr.Close();
-				tw.Close();
-				fi=new FileInfo(_path+".tmp");
-				fi.Delete();
+            try
+            {
+                FileInfo fi = new FileInfo(_path);
+                fi.CopyTo(_path + ".tmp");
 
-				tw=new StreamWriter(_path,true);
-				return true;
-			} 
-			catch 
-			{
-				return false;
-			}
-		}
+                tw.Close();
+                tw = new StreamWriter(_path, false);
 
-		public bool Replace(string line,string to) 
-		{
-			if(tw==null) return false;
-			try 
-			{
-				FileInfo fi=new FileInfo(_path);
-				fi.CopyTo(_path+".tmp");
-				
-				tw.Close();
-				tw=new StreamWriter(_path, false);
+                StreamReader sr = new StreamReader(_path + ".tmp");
+                string l, i = "";
+                while ((l = sr.ReadLine()) != null)
+                {
+                    int pos = l.IndexOf(":");
+                    if (pos != -1)
+                    {
+                        i = l.Substring(0, pos);
+                        l = l.Substring(pos + 1, l.Length - pos - 1);
+                    }
+                    if (l == line && i == id)
+                    {
+                        continue;
+                    }
 
-				StreamReader sr=new StreamReader(_path+".tmp");
-				string l,id="";
-				while((l=sr.ReadLine())!=null) 
-				{
-					int pos=l.IndexOf(":");
-					if(pos!=-1) 
-					{
-						id=l.Substring(0,pos);
-						l =l.Substring(pos+1,l.Length-pos-1);
-					}
-					if(l==line)
-						tw.WriteLine(id+":"+to);
-					else	
-						tw.WriteLine(id+":"+l);
-				}
-				sr.Close();
-				tw.Close();
-				fi=new FileInfo(_path+".tmp");
-				fi.Delete();
+                    tw.WriteLine(i + ":" + l);
+                }
+                sr.Close();
+                tw.Close();
+                fi = new FileInfo(_path + ".tmp");
+                fi.Delete();
 
-				tw=new StreamWriter(_path,true);
-				return true;
-			} 
-			catch 
-			{
-				return false;
-			}
-		}
+                tw = new StreamWriter(_path, true);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool Replace(string line, string to)
+        {
+            if (tw == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                FileInfo fi = new FileInfo(_path);
+                fi.CopyTo(_path + ".tmp");
+
+                tw.Close();
+                tw = new StreamWriter(_path, false);
+
+                StreamReader sr = new StreamReader(_path + ".tmp");
+                string l, id = "";
+                while ((l = sr.ReadLine()) != null)
+                {
+                    int pos = l.IndexOf(":");
+                    if (pos != -1)
+                    {
+                        id = l.Substring(0, pos);
+                        l = l.Substring(pos + 1, l.Length - pos - 1);
+                    }
+                    if (l == line)
+                    {
+                        tw.WriteLine(id + ":" + to);
+                    }
+                    else
+                    {
+                        tw.WriteLine(id + ":" + l);
+                    }
+                }
+                sr.Close();
+                tw.Close();
+                fi = new FileInfo(_path + ".tmp");
+                fi.Delete();
+
+                tw = new StreamWriter(_path, true);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         public bool ReplaceHoleLine(string line, string to)
         {
-            if (tw == null) return false;
+            if (tw == null)
+            {
+                return false;
+            }
+
             try
             {
                 bool ret = false;
@@ -1346,21 +1530,28 @@ namespace gView.Framework.IO
             }
         }
 
-		public string Read(out string id) 
-		{
-			id="";
-			if(tr==null) return null;
-			string l=tr.ReadLine();
-			if(l==null) return null;
+        public string Read(out string id)
+        {
+            id = "";
+            if (tr == null)
+            {
+                return null;
+            }
 
-			int pos=l.IndexOf(":");
-			if(pos!=-1) 
-			{
+            string l = tr.ReadLine();
+            if (l == null)
+            {
+                return null;
+            }
+
+            int pos = l.IndexOf(":");
+            if (pos != -1)
+            {
                 id = l.Substring(0, pos).Replace(_dp, ":");
-				l =l.Substring(pos+1,l.Length-pos-1);
-			} 
-			return l;
-		}
+                l = l.Substring(pos + 1, l.Length - pos - 1);
+            }
+            return l;
+        }
 
         public static string ExtractValue(string Params, string Param)
         {
@@ -1371,7 +1562,11 @@ namespace gView.Framework.IO
                 string aa = a.Trim();
                 if (aa.ToLower().IndexOf(Param.ToLower() + "=") == 0)
                 {
-                    if (aa.Length == Param.Length + 1) return "";
+                    if (aa.Length == Param.Length + 1)
+                    {
+                        return "";
+                    }
+
                     return aa.Substring(Param.Length + 1, aa.Length - Param.Length - 1);
                 }
             }
@@ -1382,11 +1577,13 @@ namespace gView.Framework.IO
         {
             @params = @params.Trim();
             int pos = @params.ToLower().IndexOf("(" + param.ToLower() + "=");
-            if(pos>=0)
+            if (pos >= 0)
             {
                 int pos2 = @params.IndexOf(")", pos + param.Length + 1);
                 if (pos2 > pos)
+                {
                     return @params.Substring(pos + param.Length + 2, pos2 - pos - param.Length - 2);
+                }
             }
             return String.Empty;
         }
@@ -1400,8 +1597,15 @@ namespace gView.Framework.IO
             {
                 if (String.IsNullOrEmpty(a.Trim()) ||
                     a.ToLower().StartsWith(Param + "="))
+                {
                     continue;
-                if (sb.Length > 0) sb.Append(";");
+                }
+
+                if (sb.Length > 0)
+                {
+                    sb.Append(";");
+                }
+
                 sb.Append(a);
             }
             return sb.ToString();
@@ -1411,7 +1615,7 @@ namespace gView.Framework.IO
         {
             return id + ":" + config;
         }
-        
+
         public static Dictionary<string, string> Extract(string Params)
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>();
@@ -1436,9 +1640,11 @@ namespace gView.Framework.IO
         public static string SecureConfig(string Params)
         {
             if (!Params.Contains("="))
+            {
                 return Params;
+            }
 
-            List<string> secure1 = new List<string>() { "user", "username", "userid", "usr", "usrid", "uid"};
+            List<string> secure1 = new List<string>() { "user", "username", "userid", "usr", "usrid", "uid" };
             List<string> secure2 = new List<string>() { "password", "pwd", "passwd", "passwrd", "pw" };
             Dictionary<string, string> parameters = Extract(Params);
 
@@ -1446,9 +1652,15 @@ namespace gView.Framework.IO
             foreach (string key in parameters.Keys)
             {
                 if (key == String.Empty)
+                {
                     continue;
+                }
 
-                if(sb.Length>0) sb.Append(";");
+                if (sb.Length > 0)
+                {
+                    sb.Append(";");
+                }
+
                 if (secure2.Contains(key.Trim().ToLower()) ||
                     secure2.Contains(key.Trim().ToLower().Replace(" ", "")))
                 {
@@ -1462,7 +1674,10 @@ namespace gView.Framework.IO
                     {
                         val = v[0].ToString();
                         for (int i = 1; i < v.Length - 2; i++)
+                        {
                             val += "*";
+                        }
+
                         val += v[v.Length - 1];
                     }
                     sb.Append(key + "=" + val);
@@ -1475,12 +1690,12 @@ namespace gView.Framework.IO
 
             return sb.ToString();
         }
-	}
+    }
 
-	internal class XmlNodePlus 
-	{
-		private XmlNode _node;
-		private Hashtable _hash;
+    internal class XmlNodePlus
+    {
+        private XmlNode _node;
+        private Hashtable _hash;
         private NumberFormatInfo _nhi = global::System.Globalization.CultureInfo.CurrentCulture.NumberFormat;
 
         public XmlNodePlus(XmlNode node, string cultureName = null)
@@ -1505,23 +1720,26 @@ namespace gView.Framework.IO
         {
             _nhi = nhi;
         }
-		public XmlNode Node 
-		{
-			get { return _node; }
-			set { _node=value; }
-		}
+        public XmlNode Node
+        {
+            get { return _node; }
+            set { _node = value; }
+        }
 
-		public XmlNode Next(string xPath) 
-		{
-			if(_hash[xPath]==null) 
-			{
-				_hash.Add(xPath,new XmlNodeCursor(_node.SelectNodes(xPath)));
-			}
-			XmlNodeCursor cursor=(XmlNodeCursor)_hash[xPath];
-			if(cursor==null) return null;
+        public XmlNode Next(string xPath)
+        {
+            if (_hash[xPath] == null)
+            {
+                _hash.Add(xPath, new XmlNodeCursor(_node.SelectNodes(xPath)));
+            }
+            XmlNodeCursor cursor = (XmlNodeCursor)_hash[xPath];
+            if (cursor == null)
+            {
+                return null;
+            }
 
-			return cursor.Next;
-		}
+            return cursor.Next;
+        }
 
         public NumberFormatInfo NumberFormat
         {
@@ -1532,7 +1750,10 @@ namespace gView.Framework.IO
         {
             set
             {
-                if (value == null) return;
+                if (value == null)
+                {
+                    return;
+                }
 
                 if (_node.Attributes["culture"] != null)
                 {
@@ -1549,28 +1770,36 @@ namespace gView.Framework.IO
                 _nhi = value.NumberFormat;
             }
         }
-	}
+    }
 
-	internal class XmlNodeCursor 
-	{
-		private int _pos=0;
-		private XmlNodeList _list;
+    internal class XmlNodeCursor
+    {
+        private int _pos = 0;
+        private XmlNodeList _list;
 
-		public XmlNodeCursor(XmlNodeList list) 
-		{
-			_list=list;
-		}
+        public XmlNodeCursor(XmlNodeList list)
+        {
+            _list = list;
+        }
 
-		public XmlNode Next 
-		{
-			get 
-			{
-				if(_list==null) return null;
-				if(_pos>=_list.Count) return null;
-				return _list[_pos++];
-			}
-		}
-	}
+        public XmlNode Next
+        {
+            get
+            {
+                if (_list == null)
+                {
+                    return null;
+                }
+
+                if (_pos >= _list.Count)
+                {
+                    return null;
+                }
+
+                return _list[_pos++];
+            }
+        }
+    }
 
     public class XmlStreamObject
     {
@@ -1624,7 +1853,7 @@ namespace gView.Framework.IO
             : base()
         {
         }
-        public XmlStreamOption(object [] values, object selected)
+        public XmlStreamOption(object[] values, object selected)
             : base(selected)
         {
             _values = values;
@@ -1645,7 +1874,11 @@ namespace gView.Framework.IO
 
         new internal static object[] Options(T[] values)
         {
-            if (values == null) return null;
+            if (values == null)
+            {
+                return null;
+            }
+
             object[] ret = new object[values.Length];
 
             Array.Copy(values, ret, values.Length);
@@ -1666,18 +1899,23 @@ namespace gView.Framework.IO
 
     public class ConfigConnections
     {
-        private string _root=String.Empty;
+        private string _root = String.Empty;
         private string _encKey = String.Empty;
         private Encoding _encoding = Encoding.Default;
 
         public ConfigConnections(string name)
         {
-            if (name == null) return;
+            if (name == null)
+            {
+                return;
+            }
 
             _root = SystemVariables.MyApplicationConfigPath + @"/connections/" + name;
             DirectoryInfo di = new DirectoryInfo(_root);
             if (!di.Exists)
+            {
                 di.Create();
+            }
         }
         public ConfigConnections(string name, string encKey)
             : this(name)
@@ -1697,9 +1935,16 @@ namespace gView.Framework.IO
             {
                 Dictionary<string, string> connections = new Dictionary<string, string>();
 
-                if (String.IsNullOrEmpty(_root)) return connections;
+                if (String.IsNullOrEmpty(_root))
+                {
+                    return connections;
+                }
+
                 DirectoryInfo di = new DirectoryInfo(_root);
-                if (!di.Exists) return connections;
+                if (!di.Exists)
+                {
+                    return connections;
+                }
 
                 foreach (FileInfo fi in di.GetFiles("*.con"))
                 {
@@ -1725,9 +1970,16 @@ namespace gView.Framework.IO
 
         public bool Add(string name, string connectionstring)
         {
-            if (String.IsNullOrEmpty(_root)) return false;
+            if (String.IsNullOrEmpty(_root))
+            {
+                return false;
+            }
+
             DirectoryInfo di = new DirectoryInfo(_root);
-            if (!di.Exists) di.Create();
+            if (!di.Exists)
+            {
+                di.Create();
+            }
 
             if (!String.IsNullOrEmpty(_encKey))
             {
@@ -1735,7 +1987,7 @@ namespace gView.Framework.IO
                 connectionstring = Convert.ToBase64String(bytes);
             }
 
-            StreamWriter sw = new StreamWriter(di.FullName + @"/" + ReplaceSlash(name) + ".con",false, _encoding);
+            StreamWriter sw = new StreamWriter(di.FullName + @"/" + ReplaceSlash(name) + ".con", false, _encoding);
             sw.Write(connectionstring);
             sw.Close();
 
@@ -1744,14 +1996,24 @@ namespace gView.Framework.IO
 
         public bool Remove(string name)
         {
-            if (String.IsNullOrEmpty(_root)) return false;
+            if (String.IsNullOrEmpty(_root))
+            {
+                return false;
+            }
+
             DirectoryInfo di = new DirectoryInfo(_root);
-            if (!di.Exists) di.Create();
+            if (!di.Exists)
+            {
+                di.Create();
+            }
 
             try
             {
                 FileInfo fi = new FileInfo(di.FullName + @"/" + ReplaceSlash(name) + ".con");
-                if (fi.Exists) fi.Delete();
+                if (fi.Exists)
+                {
+                    fi.Delete();
+                }
 
                 return true;
             }
@@ -1763,9 +2025,16 @@ namespace gView.Framework.IO
 
         public bool Rename(string oldName, string newName)
         {
-            if (String.IsNullOrEmpty(_root)) return false;
+            if (String.IsNullOrEmpty(_root))
+            {
+                return false;
+            }
+
             DirectoryInfo di = new DirectoryInfo(_root);
-            if (!di.Exists) di.Create();
+            if (!di.Exists)
+            {
+                di.Create();
+            }
 
             try
             {
@@ -1785,9 +2054,16 @@ namespace gView.Framework.IO
 
         public string GetName(string name)
         {
-            if (String.IsNullOrEmpty(_root)) return String.Empty;
+            if (String.IsNullOrEmpty(_root))
+            {
+                return String.Empty;
+            }
+
             DirectoryInfo di = new DirectoryInfo(_root);
-            if (!di.Exists) di.Create();
+            if (!di.Exists)
+            {
+                di.Create();
+            }
 
             string ret = name;
 
@@ -1823,7 +2099,10 @@ namespace gView.Framework.IO
                 sb.Append("Stacktrace:" + ex.StackTrace + "\r\n");
 
                 ex = ex.InnerException;
-                if (ex != null) sb.Append("Inner Exception:\r\n");
+                if (ex != null)
+                {
+                    sb.Append("Inner Exception:\r\n");
+                }
             }
             return sb.ToString();
         }

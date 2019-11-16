@@ -538,32 +538,37 @@ namespace gView.Server.AppCode
             map.Name = mapName;
 
             StringBuilder errors = new StringBuilder();
+            bool hasErrors = false;
+
             foreach (var dataset in map.Datasets)
             {
                 if (!String.IsNullOrWhiteSpace(dataset.LastErrorMessage))
                 {
                     errors.Append("Dataset " + dataset.GetType().ToString() + Environment.NewLine);
                     errors.Append(dataset.LastErrorMessage + Environment.NewLine + Environment.NewLine);
+                    hasErrors = true;
                 }
             }
 
             if (map.HasErrorMessages)
             {
-                errors.Append("Map Errors:" + Environment.NewLine);
+                //errors.Append("Map Errors/Warnings:" + Environment.NewLine);
                 foreach (var errorMessage in map.ErrorMessages)
                 {
                     errors.Append(errorMessage + Environment.NewLine);
+                    hasErrors |= errorMessage.ToLower().StartsWith("warning:") == false;  // Warnings should not throw an exception
                 }
             }
             if (map.LastException != null)
             {
                 errors.Append("Map Exception:" + Environment.NewLine);
                 errors.Append(map.LastException.Message?.ToString());
+                hasErrors = true;
             }
 
-            if (errors.Length > 0)
+            if (hasErrors)
             {
-                throw new MapServerException(errors.ToString());
+                throw new MapServerException("Errors: " + Environment.NewLine + errors.ToString());
             }
 
             XmlStream pluginStream = new XmlStream("Moduls");
@@ -588,7 +593,14 @@ namespace gView.Server.AppCode
 
             await InternetMapServer.SaveConfig(mapDocument);
 
-            return await ReloadMap(mapName);
+            var result = await ReloadMap(mapName);
+
+            if(errors.Length > 0)  // Warnings
+            {
+                throw new MapServerException("Warnings: " + Environment.NewLine + errors.ToString());
+            }
+
+            return result;
         }
 
         async static public Task<bool> RemoveMap(string mapName, string usr, string pwd)

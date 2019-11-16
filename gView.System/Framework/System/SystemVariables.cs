@@ -169,7 +169,7 @@ namespace gView.Framework.system
 
     public class Cloner
     {
-        public object Clone()
+        virtual public object Clone()
         {
             if (!(this is IPersistable)) return null;
 

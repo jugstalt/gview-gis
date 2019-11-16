@@ -2061,6 +2061,24 @@ namespace gView.Framework.Carto
                 }
             }
 
+            if(stream.Warnings!=null)
+            {
+                foreach(var warning in stream.Warnings)
+                {
+                    _errorMessages.Add(warning);
+                }
+            }
+
+            if (stream.Errors != null)
+            {
+                foreach (var error in stream.Errors)
+                {
+                    _errorMessages.Add(error);
+                }
+            }
+
+            stream.ClearErrorsAndWarnings();
+
             return true;
         }
 

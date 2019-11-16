@@ -1774,7 +1774,7 @@ namespace gView.Framework.Symbology
                 ms.Write(encoder.GetBytes(soap), 0, soap.Length);
                 ms.Position = 0;
                 SoapFormatter formatter = new SoapFormatter();
-                _font = (Font)formatter.Deserialize<Font>(ms);
+                _font = (Font)formatter.Deserialize<Font>(ms, stream, this);
             }
             catch { }
 
@@ -1842,6 +1842,23 @@ namespace gView.Framework.Symbology
         #endregion
 
         #region IClone2
+
+        public override object Clone()
+        {
+            TrueTypeMarkerSymbol marker = Font != null && _brush != null ?
+                new TrueTypeMarkerSymbol(new Font(Font.Name, Font.Size, Font.Style), _brush.Color) :
+                new TrueTypeMarkerSymbol();
+
+            marker.Angle = Angle;
+            marker.HorizontalOffset = HorizontalOffset;
+            marker.VerticalOffset = VerticalOffset;
+
+            marker._char = _char;
+            marker.LegendLabel = _legendLabel;
+
+            return marker;
+        }
+
         public object Clone(CloneOptions options)
         {
             var display = options?.Display;
@@ -1874,6 +1891,7 @@ namespace gView.Framework.Symbology
 
             return marker;
         }
+
         #endregion
 
         #region ISymbolRotation Members

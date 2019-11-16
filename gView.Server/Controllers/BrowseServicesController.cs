@@ -82,8 +82,6 @@ namespace gView.Server.Controllers
                     }
                 }
 
-
-
                 var model = new BrowseServicesIndexModel()
                 {
                     IsPublisher = isPublisher,

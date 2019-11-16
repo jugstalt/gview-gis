@@ -10,6 +10,7 @@ using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Framework.UI.Controls;
 using gView.Framework.XML;
+using gView.system.UI.Framework.system.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -670,6 +671,14 @@ namespace gView.Win.Carto
 
             _appWindow.Title = "gView.Carto " + fi.Name;
             _readonly = (fi.Extension.ToLower() == ".rdm");
+
+            foreach(var map in _doc.Maps)
+            {
+                if(map.HasErrorMessages)
+                {
+                    FormToolException.Show($"Loading Map '{ map.Name }'", String.Join(Environment.NewLine, map.ErrorMessages));
+                }
+            }
 
             if (AfterLoadMapDocument != null)
             {
