@@ -3748,7 +3748,18 @@ namespace gView.Framework.Carto
                     // Beim Clonen sprerren...
                     // Da sonst bei der Servicemap bei gleichzeitigen Requests
                     // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
-                    labelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone(new CloneOptions(_map, maxLabelRefscaleFactor: _layer.MaxLabelRefScaleFactor));
+                    //labelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone(new CloneOptions(_map, maxLabelRefscaleFactor: _layer.MaxLabelRefScaleFactor));
+
+                    if (_layer.ApplyLabelRefScale == false && _map.refScale > 0)
+                    {
+                        //display.refScale = 0;
+                        labelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone(null);
+                        //display.refScale = refScale;
+                    }
+                    else
+                    {
+                        labelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone(new CloneOptions(_map, maxLabelRefscaleFactor: _layer.MaxLabelRefScaleFactor));
+                    }
                 }
 
                 #endregion
