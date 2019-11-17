@@ -388,23 +388,33 @@ namespace gView.Server.Controllers
                 }
 
                 gView.Framework.Geometry.Envelope fullExtent = null;
+                int epsg = 0;
+
                 return Result(new JsonFeatureService()
                 {
                     CurrentVersion = 10.61,
-                    Layers = map.MapElements.Select(e =>
+                    Layers = map.MapElements
+                    .Where(e => e.Class is IFeatureClass)
+                    .Select(e =>
                     {
                         var tocElement = map.TOC.GetTOCElement(e as ILayer);
+                        IFeatureClass fc = (IFeatureClass)e.Class;
 
-                        if (e.Class is IFeatureClass && ((IFeatureClass)e.Class).Envelope != null)
+                        if (fc.Envelope != null)
                         {
                             if (fullExtent == null)
                             {
-                                fullExtent = new Framework.Geometry.Envelope(((IFeatureClass)e.Class).Envelope);
+                                fullExtent = new Framework.Geometry.Envelope(fc.Envelope);
                             }
                             else
                             {
-                                fullExtent.Union(((IFeatureClass)e.Class).Envelope);
-                            }
+                                fullExtent.Union(fc.Envelope);
+                            }  
+                        }
+
+                        if (epsg == 0 && fc.SpatialReference != null && fc.SpatialReference.Name.ToLower().StartsWith("epsg:"))
+                        {
+                            int.TryParse(fc.SpatialReference.Name.Substring(5), out epsg);
                         }
 
                         return new JsonIdName()
@@ -419,7 +429,7 @@ namespace gView.Server.Controllers
                         YMin = fullExtent != null ? fullExtent.miny : 0D,
                         XMax = fullExtent != null ? fullExtent.maxx : 0D,
                         YMax = fullExtent != null ? fullExtent.maxy : 0D,
-                        SpatialReference = new JsonMapService.SpatialReference(0)
+                        SpatialReference = new JsonMapService.SpatialReference(epsg)
                     }
                 });
             });
