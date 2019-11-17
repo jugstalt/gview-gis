@@ -46,7 +46,7 @@ Manage the services and check the service status (running, stopped, error)
 
 ![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server2.png)
 
-Set the security for a servive or for a folder (group of services)
+Set the security for a service or for a folder (group of services)
 
 ![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server3.png)
 
