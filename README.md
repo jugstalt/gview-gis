@@ -31,7 +31,7 @@ Set labelling for any vector layer
 
 ![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-explorer1.png)
 
-Browse your spatial data or copy vector data from to different data formats
+Browse your spatial data or copy vector data to different data formats
 
 ![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-explorer2.png)
 
