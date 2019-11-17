@@ -15,7 +15,7 @@ Some screenshots to demonstrate some of the features of gview GIS
 
 ## Deskop: gView Carto
 
-Create maps in a userfriendly UI
+Create maps in an userfriendly UI
 
 ![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-carto1.png)
 
