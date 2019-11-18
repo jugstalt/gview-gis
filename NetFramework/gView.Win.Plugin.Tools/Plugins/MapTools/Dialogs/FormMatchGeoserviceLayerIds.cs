@@ -66,10 +66,22 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
             {
                 var url = txtMapServerUrl.Text + "/layers?f=pjson";
 
+                List<ListViewItem> remove = new List<ListViewItem>();
                 foreach (ListViewItem item in lstLayers.Items)
                 {
-                    item.SubItems[0].Text = "Not matched!!";
-                    item.SubItems[3].Text = "";
+                    if (item.SubItems[0].Text?.ToLower() == "missing")
+                    {
+                        remove.Add(item);
+                    }
+                    else
+                    {
+                        item.SubItems[0].Text = "Not matched!!";
+                        item.SubItems[3].Text = "";
+                    }
+                }
+                foreach(var item in remove)
+                {
+                    lstLayers.Items.Remove(item);
                 }
 
                 using (var client = new WebClient())
@@ -93,7 +105,8 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
                             }
                             else
                             {
-                                string errMessage = $"Layer not found {layerFullname}";
+                                //string errMessage = $"Layer not found {layerFullname}";
+                                lstLayers.Items.Add(new ListViewItem(new string[] { "missing", "", "", serviceLayer.Id.ToString(), layerFullname }));
                             }
                         }
                     }

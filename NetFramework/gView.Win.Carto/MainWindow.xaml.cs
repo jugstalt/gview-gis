@@ -508,8 +508,13 @@ namespace gView.Win.Carto
             {
                 if (e.AddedItems.Count > 0 && e.AddedItems[0] is ComboBoxItem)
                 {
-                    int scale = int.Parse(((ComboBoxItem)e.AddedItems[0]).Content.ToString().Replace(".", "").Replace(",", ""));
-                    await SetMapScale(scale);
+                    if (int.TryParse(((ComboBoxItem)e.AddedItems[0]).Content.ToString()
+                        .Replace(".", "")
+                        .Replace(",", "")
+                        .Replace(" ",""), out int scale)) 
+                    {
+                        await SetMapScale(scale);
+                    }
                 }
             }
             catch (Exception ex)
@@ -523,27 +528,34 @@ namespace gView.Win.Carto
         {
             if (e.Key == Key.Enter)
             {
-                int scale = int.Parse(cmbScale.Text.Replace(".", ""));
-                if (scale <= 0)
+                if (int.TryParse(cmbScale.Text
+                    .Replace(" ", "")
+                    .Replace(".", ""), out int scale))
                 {
-                    return;
-                }
-
-                int index = 0;
-                foreach (ComboBoxItem item in cmbScale.Items)
-                {
-                    int s = int.Parse(item.Content.ToString().Replace(".", "").Replace(",", ""));
-                    if (s > scale)
+                    if (scale <= 0)
                     {
-                        ComboBoxItem newItem = new ComboBoxItem();
-                        newItem.Content = String.Format("{0:0,0}", scale);
-                        cmbScale.Items.Insert(index, newItem);
-                        cmbScale.Text = newItem.Content.ToString();
-                        break;
+                        return;
                     }
-                    index++;
+
+                    //int index = 0;
+                    //foreach (ComboBoxItem item in cmbScale.Items)
+                    //{
+                    //    int s = int.Parse(item.Content.ToString().Replace(".", "").Replace(",", ""));
+                    //    if (s > scale)
+                    //    {
+                    //        ComboBoxItem newItem = new ComboBoxItem();
+                    //        newItem.Content = String.Format("{0:0,0}", scale);
+                    //        cmbScale.Items.Insert(index, newItem);
+                    //        cmbScale.Text = newItem.Content.ToString();
+                    //        break;
+                    //    }
+                    //    index++;
+                    //}
+
+                    cmbScale.Text = String.Format("{0:0,0}", scale);
+
+                    await SetMapScale(scale);
                 }
-                await SetMapScale(scale);
             }
         }
 

@@ -39,6 +39,7 @@
             this.colCurrentLayerId = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colGeoServiceId = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.btnApply = new System.Windows.Forms.Button();
+            this.colGetServiceLayer = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -48,18 +49,16 @@
             this.panel1.Controls.Add(this.label6);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
-            this.panel1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(895, 85);
+            this.panel1.Size = new System.Drawing.Size(1034, 55);
             this.panel1.TabIndex = 13;
             // 
             // label6
             // 
             this.label6.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.label6.Location = new System.Drawing.Point(12, 14);
-            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label6.Location = new System.Drawing.Point(8, 9);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(1114, 45);
+            this.label6.Size = new System.Drawing.Size(743, 29);
             this.label6.TabIndex = 1;
             this.label6.Text = "Match Layer Ids from GeoServices MapService for identical Layers (Layer with equa" +
     "l TOC Name, TOC Group, Geometry, ...)";
@@ -67,10 +66,9 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(16, 95);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Location = new System.Drawing.Point(11, 62);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(553, 20);
+            this.label1.Size = new System.Drawing.Size(391, 13);
             this.label1.TabIndex = 14;
             this.label1.Text = "GeoService MapServer Url: (https://server.com/..../rest/services/..../MapServer)";
             // 
@@ -78,19 +76,17 @@
             // 
             this.txtMapServerUrl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtMapServerUrl.Location = new System.Drawing.Point(21, 122);
-            this.txtMapServerUrl.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.txtMapServerUrl.Location = new System.Drawing.Point(14, 79);
             this.txtMapServerUrl.Name = "txtMapServerUrl";
-            this.txtMapServerUrl.Size = new System.Drawing.Size(855, 26);
+            this.txtMapServerUrl.Size = new System.Drawing.Size(1008, 20);
             this.txtMapServerUrl.TabIndex = 15;
             // 
             // btnMatch
             // 
-            this.btnMatch.Location = new System.Drawing.Point(21, 163);
-            this.btnMatch.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnMatch.Location = new System.Drawing.Point(14, 106);
             this.btnMatch.Name = "btnMatch";
             this.btnMatch.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.btnMatch.Size = new System.Drawing.Size(178, 35);
+            this.btnMatch.Size = new System.Drawing.Size(119, 23);
             this.btnMatch.TabIndex = 16;
             this.btnMatch.Text = "Match";
             this.btnMatch.UseVisualStyleBackColor = true;
@@ -105,13 +101,13 @@
             this.colStatus,
             this.colLayername,
             this.colCurrentLayerId,
-            this.colGeoServiceId});
+            this.colGeoServiceId,
+            this.colGetServiceLayer});
             this.lstLayers.GridLines = true;
             this.lstLayers.HideSelection = false;
-            this.lstLayers.Location = new System.Drawing.Point(20, 218);
-            this.lstLayers.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.lstLayers.Location = new System.Drawing.Point(13, 142);
             this.lstLayers.Name = "lstLayers";
-            this.lstLayers.Size = new System.Drawing.Size(855, 678);
+            this.lstLayers.Size = new System.Drawing.Size(1008, 484);
             this.lstLayers.TabIndex = 17;
             this.lstLayers.UseCompatibleStateImageBehavior = false;
             this.lstLayers.View = System.Windows.Forms.View.Details;
@@ -140,27 +136,30 @@
             // 
             this.btnApply.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnApply.Enabled = false;
-            this.btnApply.Location = new System.Drawing.Point(645, 908);
-            this.btnApply.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnApply.Location = new System.Drawing.Point(867, 632);
             this.btnApply.Name = "btnApply";
-            this.btnApply.Size = new System.Drawing.Size(231, 63);
+            this.btnApply.Size = new System.Drawing.Size(154, 41);
             this.btnApply.TabIndex = 18;
             this.btnApply.Text = "Apply Layer Ids";
             this.btnApply.UseVisualStyleBackColor = true;
             this.btnApply.Click += new System.EventHandler(this.btnApply_Click);
             // 
+            // colGetServiceLayer
+            // 
+            this.colGetServiceLayer.Text = "GeoService Layer";
+            this.colGetServiceLayer.Width = 152;
+            // 
             // FormMatchGeoserviceLayerIds
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(895, 989);
+            this.ClientSize = new System.Drawing.Size(1034, 685);
             this.Controls.Add(this.btnApply);
             this.Controls.Add(this.lstLayers);
             this.Controls.Add(this.btnMatch);
             this.Controls.Add(this.txtMapServerUrl);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.panel1);
-            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "FormMatchGeoserviceLayerIds";
             this.Text = "Match Geoservice Layer Ids";
             this.Load += new System.EventHandler(this.FormMatchGeoserviceLayerIds_Load);
@@ -183,5 +182,6 @@
         private System.Windows.Forms.ColumnHeader colCurrentLayerId;
         private System.Windows.Forms.ColumnHeader colGeoServiceId;
         private System.Windows.Forms.Button btnApply;
+        private System.Windows.Forms.ColumnHeader colGetServiceLayer;
     }
 }

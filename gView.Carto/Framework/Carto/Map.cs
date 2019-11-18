@@ -423,22 +423,7 @@ namespace gView.Framework.Carto
                     continue;
                 }
 
-                if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale)
-                {
-                    continue;
-                }
-
-                if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale)
-                {
-                    continue;
-                }
-
-                if (layer.MinimumLabelScale > 1 && layer.MinimumLabelScale > this.mapScale)
-                {
-                    continue;
-                }
-
-                if (layer.MaximumLabelScale > 1 && layer.MaximumLabelScale < this.mapScale)
+                if(!layer.LabelInScale(this))
                 {
                     continue;
                 }
@@ -1077,12 +1062,7 @@ namespace gView.Framework.Carto
                             break;
                         }
 
-                        if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale)
-                        {
-                            continue;
-                        }
-
-                        if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale)
+                        if (!layer.RenderInScale(this))
                         {
                             continue;
                         }
@@ -1194,6 +1174,7 @@ namespace gView.Framework.Carto
                     #endregion
 
                     #region Label Features
+
                     if (labelLayers.Count != 0)
                     {
                         StreamImage(ref _msGeometry, _image);

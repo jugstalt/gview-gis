@@ -557,12 +557,7 @@ namespace gView.Server.AppCode
                             continue;
                         }
 
-                        if (layer.MinimumScale > 1 && layer.MinimumScale > this.mapScale)
-                        {
-                            continue;
-                        }
-
-                        if (layer.MaximumScale > 1 && layer.MaximumScale < this.mapScale)
+                        if (!layer.RenderInScale(this))
                         {
                             continue;
                         }

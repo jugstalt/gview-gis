@@ -130,6 +130,8 @@
             <StatusBarItem Grid.Column="8">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Margin="0,-1,0,0">1:</TextBlock>
+                    <TextBox x:Name="cmbScale" Padding="0" Width="105" Height="15" Margin="0,-3,0,0" KeyDown="cmbScale_KeyDown" />
+                    <!--
                     <ComboBox x:Name="cmbScale" Padding="0" Width="105" Height="14" Margin="0,-1,0,0" IsEditable="True" SelectionChanged="cmbScale_SelectionChanged" KeyDown="cmbScale_KeyDown">
                         <ComboBoxItem Content="1.000" />
                         <ComboBoxItem Content="5.000" />
@@ -140,6 +142,7 @@
                         <ComboBoxItem Content="500.000" />
                         <ComboBoxItem Content="1.000.000" />
                     </ComboBox>
+                        -->
                 </StackPanel>
             </StatusBarItem>
         </StatusBar>

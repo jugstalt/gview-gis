@@ -7,6 +7,7 @@ using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 
 namespace gView.Framework.Carto.Rendering
 {
@@ -258,6 +259,10 @@ namespace gView.Framework.Carto.Rendering
             }
             if (_useExpression)
             {
+                if(SimpleScriptInterpreter.IsSimpleScript(expr))
+                {
+                    expr = new SimpleScriptInterpreter(expr).Interpret();
+                }
                 _symbol.Text = expr;
             }
 

@@ -253,7 +253,7 @@ namespace gView.Interoperability.GeoServices.Request
             {
                 var tocElement = sender.TOC.GetTOCElementByLayerId(layer.ID);
                 bool layerIdContains = tocElement != null ?
-                    LayerAndParentIsInArray(sender, tocElement, layerIds) :
+                    LayerOrParentIsInArray(sender, tocElement, layerIds) :    // this is how AGS works: if group is shown -> all layers in group are shown...
                     layerIds.Contains(layer.ID);
 
                 switch (option)
@@ -346,6 +346,24 @@ namespace gView.Interoperability.GeoServices.Request
             }
 
             return true;
+        }
+
+        private bool LayerOrParentIsInArray(IServiceMap map, ITOCElement tocElement, int[] layerIds)
+        {
+            while (tocElement != null)
+            {
+                if (tocElement.Layers != null)
+                {
+                    foreach (var layer in tocElement.Layers)
+                    {
+                        if (layerIds.Contains(layer.ID))
+                            return true;
+                    }
+                }
+                tocElement = tocElement.ParentGroup;
+            }
+
+            return false;
         }
 
         #endregion

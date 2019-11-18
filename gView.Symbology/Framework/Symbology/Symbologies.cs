@@ -1383,6 +1383,9 @@ namespace gView.Framework.Symbology
             pSym.LegendLabel = _legendLabel;
             pSym.Smoothingmode = this.Smoothingmode;
 
+            pSym.MaxSymbolSize = this.MaxSymbolSize;
+            pSym.MinSymbolSize = this.MinSymbolSize;
+
             return pSym;
         }
         #endregion
@@ -1856,6 +1859,9 @@ namespace gView.Framework.Symbology
             marker._char = _char;
             marker.LegendLabel = _legendLabel;
 
+            marker.MaxSymbolSize = this.MaxSymbolSize;
+            marker.MinSymbolSize = this.MinSymbolSize;
+
             return marker;
         }
 
@@ -1888,6 +1894,9 @@ namespace gView.Framework.Symbology
 
             marker._char = _char;
             marker.LegendLabel = _legendLabel;
+
+            marker.MaxSymbolSize = this.MaxSymbolSize;
+            marker.MinSymbolSize = this.MinSymbolSize;
 
             return marker;
         }
