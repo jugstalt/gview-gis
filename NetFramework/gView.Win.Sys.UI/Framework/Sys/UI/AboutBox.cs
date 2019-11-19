@@ -32,7 +32,9 @@ namespace gView.Framework.system.UI
 
         private void MakeGUI()
         {
-            lblVersion.Text = "Version: " + SystemVariables.gViewVersion.ToString();
+            richTextBox1.Text = richTextBox1.Text.Replace("{YEAR}", DateTime.Now.Year.ToString());
+
+            lblVersion.Text = "Version: " + SystemInfo.Version.ToString();
             lblBit.Text = (gView.Framework.system.Wow.Is64BitProcess ? "64" : "32") + " Bit";
 
             lbPath.Text = "Installation path: " + SystemVariables.ApplicationDirectory;

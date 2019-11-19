@@ -185,5 +185,10 @@
   <ItemGroup>
     <None Include="Resources\gview5_100x100-w.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Credits.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

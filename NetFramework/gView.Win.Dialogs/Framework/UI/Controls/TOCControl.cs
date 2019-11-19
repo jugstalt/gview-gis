@@ -1663,6 +1663,9 @@ namespace gView.Framework.UI.Controls
                 {
                     ((GroupItem)item).Visible = !((GroupItem)item).Visible;
                     list.Refresh();
+
+                    await RefreshMap();
+
                     return;
                 }
                 else if (X >= l + 20 && X <= l + 38)

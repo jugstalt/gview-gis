@@ -38,6 +38,7 @@
             this.lblBit = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.lbPath = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
             this.groupID.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -92,7 +93,8 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = gView.Win.Sys.UI.Properties.Resources.gViewOS11;
+            this.pictureBox1.BackColor = System.Drawing.Color.Black;
+            this.pictureBox1.Image = global::gView.Win.Sys.UI.Properties.Resources.gview5_100x100_w;
             resources.ApplyResources(this.pictureBox1, "pictureBox1");
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.TabStop = false;
@@ -104,11 +106,19 @@
             this.lbPath.ForeColor = System.Drawing.Color.Black;
             this.lbPath.Name = "lbPath";
             // 
+            // label1
+            // 
+            resources.ApplyResources(this.label1, "label1");
+            this.label1.BackColor = System.Drawing.Color.Black;
+            this.label1.ForeColor = System.Drawing.Color.White;
+            this.label1.Name = "label1";
+            // 
             // AboutBox
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.lbPath);
             this.Controls.Add(this.lblBit);
             this.Controls.Add(this.lblVersion);
@@ -136,5 +146,6 @@
         private System.Windows.Forms.Label lblBit;
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.Label lbPath;
+        private System.Windows.Forms.Label label1;
     }
 }
