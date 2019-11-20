@@ -266,7 +266,7 @@ namespace gView.Framework.Carto.Rendering
                 _symbol.Text = expr;
             }
 
-            if (String.IsNullOrEmpty(_symbol.Text))
+            if (String.IsNullOrWhiteSpace(_symbol.Text))
             {
                 return;
             }

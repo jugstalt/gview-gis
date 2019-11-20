@@ -22,7 +22,7 @@ namespace gView.Framework.system
                 var expr_lines = script.Split('\n');
 
                 StringBuilder sb = new StringBuilder();
-                bool interpret = false;
+                bool interpret = false, useLine = true;
 
                 for (int i = 1, to = expr_lines.Length; i < to; i++)
                 {
@@ -32,7 +32,16 @@ namespace gView.Framework.system
                         interpret = true;
                         result = sb.ToString();
                     }
-                    else if (interpret == false)
+                    else if(expr_line.StartsWith("@@if(")) 
+                    {
+                        var commandResult = GetCommand(expr_line);
+                        useLine = CheckCondition(commandResult.arguments);
+                    }
+                    else if(expr_line == "@@endif")
+                    {
+                        useLine = true;
+                    }
+                    else if (interpret == false && useLine)
                     {
                         if (sb.Length > 0)
                         {
@@ -79,6 +88,30 @@ namespace gView.Framework.system
             }
 
             return (null, null);
+        }
+
+        private bool CheckCondition(string[] args)
+        {
+            if (args.Length == 1)
+            {
+                return !String.IsNullOrWhiteSpace(args[0]);
+            }
+            else if (args.Length == 2)
+            {
+                return args[0] == args[1];
+            }
+            else if(args.Length == 3)
+            {
+                switch(args[1]?.ToLower())
+                {
+                    case "eq":
+                        return args[0] == args[2];
+                    case "not":
+                        return args[0] != args[2];
+                }
+            }
+
+            return false;
         }
 
         public static bool IsSimpleScript(string script)
