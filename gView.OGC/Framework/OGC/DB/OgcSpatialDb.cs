@@ -1146,12 +1146,14 @@ namespace gView.Framework.OGC.DB
 
             string filterWhereClause = (filter is IRowIDFilter) ? ((IRowIDFilter)filter).RowIDWhereClause : filter.WhereClause;
 
-            if (where != "" && filterWhereClause != "")
-            {
-                where += " AND ";
-            }
+            //if (where != "" && filterWhereClause != "")
+            //{
+            //    where += " AND ";
+            //}
 
-            where += filterWhereClause;
+            where = String.IsNullOrWhiteSpace(where) ? 
+                filterWhereClause : 
+                where + " AND (" + filterWhereClause + ")";
 
             StringBuilder fieldNames = new StringBuilder();
             foreach (string fieldName in filter.SubFields.Split(' '))

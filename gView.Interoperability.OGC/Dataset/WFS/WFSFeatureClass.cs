@@ -175,6 +175,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
         public gView.Framework.Geometry.ISpatialReference SpatialReference
         {
             get { return _sRef; }
+            set { _sRef = value; }
         }
 
         public gView.Framework.Geometry.geometryType GeometryType

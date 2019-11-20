@@ -1,6 +1,7 @@
 ﻿using gView.Core.Framework.Exceptions;
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.UI;
@@ -564,6 +565,21 @@ namespace gView.Server.AppCode
                 errors.Append("Map Exception:" + Environment.NewLine);
                 errors.Append(map.LastException.Message?.ToString());
                 hasErrors = true;
+            }
+
+            foreach (IFeatureLayer featureLayer in map.MapElements.Where(e => e is IFeatureLayer))
+            {
+                if (featureLayer.Class is IFeatureClass && ((IFeatureClass)featureLayer.Class).SpatialReference == null)
+                {
+                    if (map.LayerDefaultSpatialReference != null)
+                    {
+                        errors.Append($"Warning: { featureLayer.Title } has no spatial reference. Map default '{ map.LayerDefaultSpatialReference.EpsgCode }' will used for this layer."+ Environment.NewLine);
+                    }
+                    else
+                    {
+                        errors.Append($"Error: { featureLayer.Title } has no spatial reference. Fix this or at least set a default spatial reference for this map in the carto app" + Environment.NewLine);
+                    }
+                }
             }
 
             if (hasErrors)

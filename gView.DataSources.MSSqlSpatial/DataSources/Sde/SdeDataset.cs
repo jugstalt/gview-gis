@@ -321,7 +321,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
             if (!String.IsNullOrEmpty(where))
             {
-                command.CommandText += " WHERE " + where + ((filterWhereClause != "") ? " AND " + filterWhereClause : "");
+                command.CommandText += " WHERE " + where + ((filterWhereClause != "") ? $" AND ({ filterWhereClause })" : "");
             }
             else if (!String.IsNullOrEmpty(filterWhereClause))
             {

@@ -494,51 +494,67 @@ namespace gView.Interoperability.GeoServices.Request
 
                         #endregion
 
-                        using (var cursor = await tableClass.Search(filter))
+
+                        bool transform = false;
+                        using (var geoTransfromer = GeometricTransformerFactory.Create())
                         {
-                            bool firstFeature = true;
-                            if (cursor is IFeatureCursor)
+                            if (tableClass is IFeatureClass && ((IFeatureClass)tableClass).SpatialReference == null && filter.FeatureSpatialReference != null && serviceMap.LayerDefaultSpatialReference != null)
                             {
-                                IFeature feature;
-                                IFeatureCursor featureCursor = (IFeatureCursor)cursor;
-                                while ((feature = await featureCursor.NextFeature()) != null)
+                                geoTransfromer.SetSpatialReferences(serviceMap.LayerDefaultSpatialReference, filter.FeatureSpatialReference);
+                                transform = true;
+                            }
+
+                            using (var cursor = await tableClass.Search(filter))
+                            {
+                                bool firstFeature = true;
+                                if (cursor is IFeatureCursor)
                                 {
-                                    featureCount++;
-                                    var jsonFeature = new JsonFeature();
-                                    var attributesDict = (IDictionary<string, object>)jsonFeature.Attributes;
-
-                                    if (feature.Fields != null)
+                                    IFeature feature;
+                                    IFeatureCursor featureCursor = (IFeatureCursor)cursor;
+                                    while ((feature = await featureCursor.NextFeature()) != null)
                                     {
-                                        foreach (var field in feature.Fields)
-                                        {
-                                            object val = field.Value;
-                                            if (val is DateTime)
-                                            {
-                                                val = Convert.ToInt64(((DateTime)val - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
-                                            }
-                                            attributesDict[field.Name] = val;
+                                        featureCount++;
+                                        var jsonFeature = new JsonFeature();
+                                        var attributesDict = (IDictionary<string, object>)jsonFeature.Attributes;
 
-                                            if (firstFeature)
+                                        if (feature.Fields != null)
+                                        {
+                                            foreach (var field in feature.Fields)
                                             {
-                                                var tableField = tableClass.FindField(field.Name);
-                                                if (tableField != null)
+                                                object val = field.Value;
+                                                if (val is DateTime)
                                                 {
-                                                    jsonFields.Add(new JsonFeatureResponse.Field()
+                                                    val = Convert.ToInt64(((DateTime)val - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
+                                                }
+                                                attributesDict[field.Name] = val;
+
+                                                if (firstFeature)
+                                                {
+                                                    var tableField = tableClass.FindField(field.Name);
+                                                    if (tableField != null)
                                                     {
-                                                        Name = tableField.name,
-                                                        Alias = tableField.aliasname,
-                                                        Length = tableField.size,
-                                                        Type = JsonField.ToType(tableField.type).ToString()
-                                                    });
+                                                        jsonFields.Add(new JsonFeatureResponse.Field()
+                                                        {
+                                                            Name = tableField.name,
+                                                            Alias = tableField.aliasname,
+                                                            Length = tableField.size,
+                                                            Type = JsonField.ToType(tableField.type).ToString()
+                                                        });
+                                                    }
                                                 }
                                             }
                                         }
+
+                                        if(transform)
+                                        {
+                                            feature.Shape = geoTransfromer.Transform2D(feature.Shape) as IGeometry;
+                                        }
+
+                                        jsonFeature.Geometry = feature.Shape?.ToJsonGeometry();
+
+                                        jsonFeatures.Add(jsonFeature);
+                                        firstFeature = false;
                                     }
-
-                                    jsonFeature.Geometry = feature.Shape?.ToJsonGeometry();
-
-                                    jsonFeatures.Add(jsonFeature);
-                                    firstFeature = false;
                                 }
                             }
                         }

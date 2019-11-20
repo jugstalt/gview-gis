@@ -867,7 +867,7 @@ namespace gView.Server.Controllers
                 }
 
                 JsonExtent extent = null;
-                var spatialReference = (datasetElement.Class is IFeatureClass ? ((IFeatureClass)datasetElement.Class).SpatialReference : null) ?? map.Display.SpatialReference;
+                var spatialReference = (datasetElement.Class is IFeatureClass ? ((IFeatureClass)datasetElement.Class).SpatialReference : null) ?? (map.LayerDefaultSpatialReference ?? map.Display.SpatialReference);
                 int epsgCode = spatialReference != null ? spatialReference.EpsgCode : 0;
 
                 if (datasetElement.Class is IFeatureClass && ((IFeatureClass)datasetElement.Class).Envelope != null)

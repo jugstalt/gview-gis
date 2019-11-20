@@ -366,7 +366,14 @@ namespace gView.Framework.Data
 
         public Geometry.ISpatialReference SpatialReference
         {
-            get { return _fc.SpatialReference; }
+            get { return _fc?.SpatialReference; }
+            set
+            {
+                if(_fc!=null)
+                {
+                    _fc.SpatialReference = value;
+                }
+            }
         }
 
         public Geometry.geometryType GeometryType

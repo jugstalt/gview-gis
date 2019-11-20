@@ -154,6 +154,12 @@ namespace gView.Framework.Carto
         string GetLayerDescription(int layerId);
 
         string GetLayerCopyrightText(int layerId);
+
+        ISpatialReference LayerDefaultSpatialReference
+        {
+            get;
+            set;
+        }
     }
 
     public delegate void MapScaleChangedEvent(IDisplay sender);

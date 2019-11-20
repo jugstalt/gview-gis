@@ -141,7 +141,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
         public gView.Framework.Geometry.ISpatialReference SpatialReference
         {
             get;
-            private set;
+            set;
         }
 
         public gView.Framework.Geometry.geometryType GeometryType

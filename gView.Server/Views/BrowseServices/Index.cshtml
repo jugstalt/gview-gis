@@ -33,9 +33,9 @@
     @if(Model.IsPublisher)
     {
 <div class="gview5-form-upload">
-    @if(!String.IsNullOrWhiteSpace(Model.ErrorMessage)) {
-    <div class="gview5-@(Model.ErrorMessage.ToLower().StartsWith("warnings:") ? "warning": "error")-message">
-        @Html.Raw(Model.ErrorMessage.Replace(Environment.NewLine, "<br/>"))
+    @if(!String.IsNullOrWhiteSpace(Model.Message)) {
+    <div class="gview5-@(Model.Message.ToLower().StartsWith("success:") ? "success" : (Model.Message.ToLower().StartsWith("warnings:") ? "warning": "error"))-message">
+        @Html.Raw(Model.Message.Replace(Environment.NewLine, "<br/>"))
     </div>
     }
     <form action="@Url.Action("AddService")" method="post" enctype="multipart/form-data">

@@ -415,6 +415,7 @@ namespace gView.Framework.OGC.DB
         virtual public gView.Framework.Geometry.ISpatialReference SpatialReference
         {
             get { return _sRef; }
+            set { _sRef = value; }
         }
 
         public gView.Framework.Geometry.geometryType GeometryType

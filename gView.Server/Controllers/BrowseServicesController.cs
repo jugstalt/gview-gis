@@ -91,7 +91,7 @@ namespace gView.Server.Controllers
                     Services = services.ToArray(),
 
                     ServiceName = serviceName,
-                    ErrorMessage = errorMessage
+                    Message = errorMessage
                 };
 
                 return View("Index", model);
@@ -247,15 +247,16 @@ namespace gView.Server.Controllers
                     //    succeeded = true
                     //});
 
+                    //return await Index(folder, String.Empty, $"Success: Successfully published services { service.ServiceName() }");
                     return await Index(folder);
                 }
                 catch (MapServerException mse)
                 {
-                    return await Index(folder, service.ServiceName(), mse.Message);
+                    return await Index(folder, /*service.ServiceName()*/String.Empty, mse.Message);
                 }
                 catch (Exception ex)
                 {
-                    return await Index(folder, service.ServiceName(), "Unknown error: " + ex.Message);
+                    return await Index(folder, /*service.ServiceName()*/String.Empty, "Unknown error: " + ex.Message);
                 }
             });
         }

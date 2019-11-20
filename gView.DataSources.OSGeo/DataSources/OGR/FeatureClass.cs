@@ -176,7 +176,7 @@ namespace gView.DataSources.OGR
 
         public ISpatialReference SpatialReference
         {
-            get { return null; }
+            get; set;
         }
 
         public geometryType GeometryType

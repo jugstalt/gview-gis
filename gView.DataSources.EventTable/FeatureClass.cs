@@ -190,6 +190,13 @@ namespace gView.DataSources.EventTable
                     return _etcon.SpatialReference;
                 return null;
             }
+            set
+            {
+                if (_etcon != null)
+                {
+                    _etcon.SpatialReference = value;
+                }
+            }
         }
 
         public gView.Framework.Geometry.geometryType GeometryType

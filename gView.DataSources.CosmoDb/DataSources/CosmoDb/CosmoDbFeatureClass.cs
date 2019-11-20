@@ -90,7 +90,7 @@ namespace gView.DataSources.CosmoDb
 
         public bool HasM { get; private set; }
 
-        public ISpatialReference SpatialReference { get; private set; }
+        public ISpatialReference SpatialReference { get; set; }
 
         public geometryType GeometryType { get; private set; }
 
