@@ -1153,7 +1153,7 @@ namespace gView.Framework.OGC.DB
 
             where = String.IsNullOrWhiteSpace(where) ? 
                 filterWhereClause : 
-                where + " AND (" + filterWhereClause + ")";
+                where + (String.IsNullOrWhiteSpace(filterWhereClause) ? "" : $" AND ({ filterWhereClause })");
 
             StringBuilder fieldNames = new StringBuilder();
             foreach (string fieldName in filter.SubFields.Split(' '))

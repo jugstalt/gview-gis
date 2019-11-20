@@ -118,14 +118,7 @@ namespace gView.DataSources.Fdb
 
         public Framework.Geometry.ISpatialReference SpatialReference
         {
-            get { return _fc != null ? _fc.SpatialReference : null; }
-            set
-            {
-                if (_fc != null)
-                {
-                    _fc.SpatialReference = value;
-                }
-            }
+            get { return _fc?.SpatialReference; }
         }
 
         public Framework.Geometry.geometryType GeometryType
