@@ -255,6 +255,11 @@ namespace gView.Server
                     defaults: new { controller = "MapServer", Action = "Catalog" }
                 );
                 routes.MapRoute(
+                    name: "mapserver-maprequest-wmts-comp",
+                    template: "MapRequest/wmts/{id}",
+                    defaults: new { controller = "Ogc", Action = "OgcRequest" }
+                    );
+                routes.MapRoute(
                     name: "mapserver-maprequest",
                     template: "MapRequest/{guid}/{folder}/{name}",
                     defaults: new { controller = "MapServer", Action = "MapRequest" }
