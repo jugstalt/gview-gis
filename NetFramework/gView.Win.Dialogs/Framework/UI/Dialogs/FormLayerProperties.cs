@@ -113,8 +113,10 @@ namespace gView.Framework.UI.Dialogs
         private IMapDocument _mapDocument;
         private ComboBox cmbApplyRefScale;
         private ComboBox cmbApplyLabelRefScale;
+        private TabPage tabMapService;
+        private CheckBox chkMapServiceNotDropdownable;
+        private ComboBox cmbMapServerGrouplayerStyle;
         private IMap _map;
-
 
         public FormLayerProperties(IMapDocument mapDocument, IMap map, IDataset dataset, ILayer layer)
         {
@@ -154,6 +156,11 @@ namespace gView.Framework.UI.Dialogs
                 cmbApplyLabelRefScale.Items.Add(new ReferenceScaleItem((float)(i + 100) / 100f, $"Apply reference scale for labels (max scale up {i}%)"));
             }
 
+            foreach(MapServerGrouplayerStyle grouplayerStyle in Enum.GetValues(typeof(MapServerGrouplayerStyle)))
+            {
+                cmbMapServerGrouplayerStyle.Items.Add(grouplayerStyle);
+            }
+
             tabControl1.TabPages.Remove(tabRaster);
             tabControl1.TabPages.Remove(tabRenderer);
             tabControl1.TabPages.Remove(tabSelRenderer);
@@ -162,6 +169,7 @@ namespace gView.Framework.UI.Dialogs
             tabControl1.TabPages.Remove(tabFields);
             tabControl1.TabPages.Remove(tabSR);
             tabControl1.TabPages.Remove(tabDescription);
+            tabControl1.TabPages.Remove(tabMapService);
 
             if (layer is IFeatureLayer)
             {
@@ -203,7 +211,12 @@ namespace gView.Framework.UI.Dialogs
             }
             if (layer is IGroupLayer)
             {
+                if(!tabControl1.TabPages.Contains(tabMapService))
+                {
+                    tabControl1.TabPages.Add(tabMapService);
+                }
 
+                cmbMapServerGrouplayerStyle.SelectedItem = ((IGroupLayer)layer).MapServerStyle;
             }
             if (layer is IRasterLayer)
             {
@@ -324,6 +337,7 @@ namespace gView.Framework.UI.Dialogs
             this.tabLabelling = new System.Windows.Forms.TabPage();
             this.panelLabelRendererPage = new System.Windows.Forms.Panel();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.cmbApplyLabelRefScale = new System.Windows.Forms.ComboBox();
             this.chkLabelLayer = new System.Windows.Forms.CheckBox();
             this.cmbLabelRenderer = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -367,11 +381,13 @@ namespace gView.Framework.UI.Dialogs
             this.label12 = new System.Windows.Forms.Label();
             this.txtDescription = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
+            this.tabMapService = new System.Windows.Forms.TabPage();
+            this.chkMapServiceNotDropdownable = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
-            this.cmbApplyLabelRefScale = new System.Windows.Forms.ComboBox();
+            this.cmbMapServerGrouplayerStyle = new System.Windows.Forms.ComboBox();
             this.tabControl1.SuspendLayout();
             this.tabGeneral.SuspendLayout();
             this.groupBox6.SuspendLayout();
@@ -401,6 +417,7 @@ namespace gView.Framework.UI.Dialogs
             this.panel3.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.tabDescription.SuspendLayout();
+            this.tabMapService.SuspendLayout();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -416,6 +433,7 @@ namespace gView.Framework.UI.Dialogs
             this.tabControl1.Controls.Add(this.tabFields);
             this.tabControl1.Controls.Add(this.tabSR);
             this.tabControl1.Controls.Add(this.tabDescription);
+            this.tabControl1.Controls.Add(this.tabMapService);
             resources.ApplyResources(this.tabControl1, "tabControl1");
             this.tabControl1.Multiline = true;
             this.tabControl1.Name = "tabControl1";
@@ -720,6 +738,13 @@ namespace gView.Framework.UI.Dialogs
             resources.ApplyResources(this.groupBox2, "groupBox2");
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.TabStop = false;
+            // 
+            // cmbApplyLabelRefScale
+            // 
+            resources.ApplyResources(this.cmbApplyLabelRefScale, "cmbApplyLabelRefScale");
+            this.cmbApplyLabelRefScale.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbApplyLabelRefScale.FormattingEnabled = true;
+            this.cmbApplyLabelRefScale.Name = "cmbApplyLabelRefScale";
             // 
             // chkLabelLayer
             // 
@@ -1042,6 +1067,20 @@ namespace gView.Framework.UI.Dialogs
             resources.ApplyResources(this.label13, "label13");
             this.label13.Name = "label13";
             // 
+            // tabMapService
+            // 
+            this.tabMapService.Controls.Add(this.cmbMapServerGrouplayerStyle);
+            this.tabMapService.Controls.Add(this.chkMapServiceNotDropdownable);
+            resources.ApplyResources(this.tabMapService, "tabMapService");
+            this.tabMapService.Name = "tabMapService";
+            this.tabMapService.UseVisualStyleBackColor = true;
+            // 
+            // chkMapServiceNotDropdownable
+            // 
+            resources.ApplyResources(this.chkMapServiceNotDropdownable, "chkMapServiceNotDropdownable");
+            this.chkMapServiceNotDropdownable.Name = "chkMapServiceNotDropdownable";
+            this.chkMapServiceNotDropdownable.UseVisualStyleBackColor = true;
+            // 
             // panel1
             // 
             this.panel1.Controls.Add(this.panel2);
@@ -1068,12 +1107,12 @@ namespace gView.Framework.UI.Dialogs
             this.btnOK.Name = "btnOK";
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
-            // cmbApplyLabelRefScale
+            // cmbMapServerGrouplayerStyle
             // 
-            resources.ApplyResources(this.cmbApplyLabelRefScale, "cmbApplyLabelRefScale");
-            this.cmbApplyLabelRefScale.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbApplyLabelRefScale.FormattingEnabled = true;
-            this.cmbApplyLabelRefScale.Name = "cmbApplyLabelRefScale";
+            this.cmbMapServerGrouplayerStyle.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbMapServerGrouplayerStyle.FormattingEnabled = true;
+            resources.ApplyResources(this.cmbMapServerGrouplayerStyle, "cmbMapServerGrouplayerStyle");
+            this.cmbMapServerGrouplayerStyle.Name = "cmbMapServerGrouplayerStyle";
             // 
             // FormLayerProperties
             // 
@@ -1122,6 +1161,8 @@ namespace gView.Framework.UI.Dialogs
             this.groupBox3.PerformLayout();
             this.tabDescription.ResumeLayout(false);
             this.tabDescription.PerformLayout();
+            this.tabMapService.ResumeLayout(false);
+            this.tabMapService.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);

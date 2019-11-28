@@ -31,6 +31,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="gView.Data.Fields">
+      <HintPath>..\..\gView.Data.Fields\bin\Debug\netstandard2.0\gView.Data.Fields.dll</HintPath>
+    </Reference>
+    <Reference Include="gView.Db, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\gView.Db\bin\Debug\netstandard2.0\gView.Db.dll</HintPath>
+    </Reference>
+    <Reference Include="gView.Win.Db.UI">
+      <HintPath>..\gView.Win.Db.UI\bin\Debug\gView.Win.Db.UI.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -355,6 +365,10 @@
       <Project>{3c8ffd95-66e8-41e5-b891-4b13d44942c3}</Project>
       <Name>gView.Win.Core.UI</Name>
     </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Data.Fields.UI\gView.Win.Data.Fields.UI.csproj">
+      <Project>{4DF95582-C3B4-412A-A845-79CD9DF5C87A}</Project>
+      <Name>gView.Win.Data.Fields.UI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\gView.Win.Explorer.UI\gView.Win.Explorer.UI.csproj">
       <Project>{fec5f35a-cf6e-4f6b-b910-72949954be82}</Project>
       <Name>gView.Win.Explorer.UI</Name>
@@ -486,9 +500,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Framework\UI\Dialogs\FormLayerFilter.resx">
       <DependentUpon>FormLayerFilter.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Framework\UI\Dialogs\FormLayerProperties.de.resx">
-      <DependentUpon>FormLayerProperties.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Framework\UI\Dialogs\FormLayerProperties.resx">
       <DependentUpon>FormLayerProperties.cs</DependentUpon>

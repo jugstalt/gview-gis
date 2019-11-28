@@ -387,6 +387,8 @@ namespace gView.Framework.Data
             get { return gView.Framework.system.ListOperations<ILayer>.Clone(_childLayers); }
         }
 
+        public MapServerGrouplayerStyle MapServerStyle { get; set; }
+
         #endregion
 
         public void Add(Layer layer)
@@ -403,6 +405,24 @@ namespace gView.Framework.Data
             _childLayers.Remove(layer);
             layer.GroupLayer = null;
         }
+
+        #region IPersitable
+
+        public override void Load(IPersistStream stream)
+        {
+            base.Load(stream);
+
+            this.MapServerStyle = (MapServerGrouplayerStyle)(int)stream.Load("MapServerStyle", (int)MapServerGrouplayerStyle.Dropdownable);
+        }
+
+        public override void Save(IPersistStream stream)
+        {
+            base.Save(stream);
+
+            stream.Save("MapServerStyle", (int)this.MapServerStyle);
+        }
+
+        #endregion
     }
     public class Fields : IFields, IPersistable
     {
