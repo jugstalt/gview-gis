@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -85,6 +86,26 @@ namespace gView.Server.AppCode
             }
 
             return fullExtent;
+        }
+    }
+
+    static public class gViewFrameworkExtensions
+    {
+        static public bool IsHidden(this ITOCElement tocElement)
+        {
+            var parent = tocElement.ParentGroup;
+
+            while (parent != null)
+            {
+                IGroupLayer groupLayer = parent.Layers.FirstOrDefault() as IGroupLayer;
+                if (groupLayer != null && groupLayer.MapServerStyle == MapServerGrouplayerStyle.Checkbox)
+                {
+                    return true;
+                }
+                parent = parent.ParentGroup;
+            }
+
+            return false;
         }
     }
 }

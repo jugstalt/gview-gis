@@ -117,30 +117,38 @@ namespace gView.Server.Controllers
                     return Result(new JsonMapService()
                     {
                         CurrentVersion = 10.61,
-                        MapName = String.IsNullOrWhiteSpace(map.Title) ? 
-                            (map.Name.Contains("/") ? map.Name.Substring(map.Name.LastIndexOf("/")+1) : map.Name) : 
+                        MapName = String.IsNullOrWhiteSpace(map.Title) ?
+                            (map.Name.Contains("/") ? map.Name.Substring(map.Name.LastIndexOf("/") + 1) : map.Name) :
                             map.Title,
                         CopyrightText = map.GetLayerCopyrightText(Map.MapCopyrightTextId),
                         ServiceDescription = map.GetLayerDescription(Map.MapDescriptionId),
-                        Layers = map.MapElements.Select(e =>
-                        {
-                            var tocElement = map.TOC.GetTOCElement(e as ILayer);
-
-                            int parentLayerId =
-                                (e is IFeatureLayer && ((IFeatureLayer)e).GroupLayer != null) ?
-                                ((IFeatureLayer)e).GroupLayer.ID :
-                                -1;
-
-                            return new JsonMapService.Layer()
+                        Layers = map.MapElements
+                            .Where(e =>
                             {
-                                Id = e.ID,
-                                ParentLayerId = parentLayerId,
-                                Name = tocElement != null ? tocElement.Name : e.Title,
-                                DefaultVisibility = tocElement != null ? tocElement.LayerVisible : true,
-                                MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale > 1 ? tocElement.Layers[0].MinimumScale : 0, 0) : 0,
-                                MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale > 1 ? tocElement.Layers[0].MaximumScale : 0, 0) : 0,
-                            };
-                        }).ToArray(),
+                                var tocElement = map.TOC.GetTOCElement(e as ILayer);
+
+                                return tocElement == null ? false : tocElement.IsHidden() == false;
+                            })
+                            .Select(e =>
+                            {
+                                var tocElement = map.TOC.GetTOCElement(e as ILayer);
+
+                                int parentLayerId =
+                                    (e is IFeatureLayer && ((IFeatureLayer)e).GroupLayer != null) ?
+                                    ((IFeatureLayer)e).GroupLayer.ID :
+                                    -1;
+
+                                return new JsonMapService.Layer()
+                                {
+                                    Id = e.ID,
+                                    ParentLayerId = parentLayerId,
+                                    Name = tocElement != null ? tocElement.Name : e.Title,
+                                    DefaultVisibility = tocElement != null ? tocElement.LayerVisible : true,
+                                    MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale > 1 ? tocElement.Layers[0].MinimumScale : 0, 0) : 0,
+                                    MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale > 1 ? tocElement.Layers[0].MaximumScale : 0, 0) : 0,
+                                };
+                            })
+                            .ToArray(),
                         SpatialReferenceInstance = epsgCode > 0 ? new JsonMapService.SpatialReference(epsgCode) : null,
                         FullExtent = new JsonMapService.Extent()
                         {
@@ -176,7 +184,11 @@ namespace gView.Server.Controllers
 
                     var jsonLayers = new JsonLayers();
                     jsonLayers.Layers = map.MapElements
-                        .Where(e => map.TOC.GetTOCElement(e as ILayer) != null)  // Just show layer in Toc
+                        .Where(e => {   // Just show layer in Toc (and not hidden)
+                            var tocElement = map.TOC.GetTOCElement(e as ILayer);
+
+                            return tocElement == null ? false : tocElement.IsHidden() == false;
+                            })
                         .Select(e => JsonLayer(map, e.ID))
                         .ToArray();
 
@@ -780,6 +792,25 @@ namespace gView.Server.Controllers
             {
                 var groupLayer = (GroupLayer)datasetElement;
                 string type = "Group Layer";
+                var childLayers = groupLayer.ChildLayer != null ?
+                        groupLayer.ChildLayer.Where(l => map.TOC.GetTOCElement(l as ILayer) != null).Select(l =>
+                        {
+                            var childTocElement = map.TOC.GetTOCElement(l as ILayer);
+
+                            return new JsonLayerLink()
+                            {
+                                Id = l.ID,
+                                Name = childTocElement.Name
+                            };
+                        }).ToArray() :
+                        new JsonLayerLink[0];
+
+                if (groupLayer.MapServerStyle == MapServerGrouplayerStyle.Checkbox)
+                {
+                    type = "Feature Layer";
+                    childLayers = null;
+                }
+
 
                 var jsonGroupLayer = new JsonLayer()
                 {
@@ -791,18 +822,7 @@ namespace gView.Server.Controllers
                     MinScale = Math.Max(groupLayer.MaximumScale > 1 ? groupLayer.MaximumScale : 0, 0),
                     Type = type,
                     ParentLayer = parentLayer,
-                    SubLayers = groupLayer.ChildLayer != null ?
-                        groupLayer.ChildLayer.Where(l => map.TOC.GetTOCElement(l as ILayer) != null).Select(l =>
-                            {
-                                var childTocElement = map.TOC.GetTOCElement(l as ILayer);
-
-                                return new JsonLayerLink()
-                                {
-                                    Id = l.ID,
-                                    Name = childTocElement.Name
-                                };
-                            }).ToArray() :
-                        new JsonLayerLink[0]
+                    SubLayers = childLayers
                 };
 
                 if (jsonGroupLayer.SubLayers != null)

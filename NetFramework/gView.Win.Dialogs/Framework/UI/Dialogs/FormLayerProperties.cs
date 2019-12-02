@@ -382,12 +382,12 @@ namespace gView.Framework.UI.Dialogs
             this.txtDescription = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
             this.tabMapService = new System.Windows.Forms.TabPage();
+            this.cmbMapServerGrouplayerStyle = new System.Windows.Forms.ComboBox();
             this.chkMapServiceNotDropdownable = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
-            this.cmbMapServerGrouplayerStyle = new System.Windows.Forms.ComboBox();
             this.tabControl1.SuspendLayout();
             this.tabGeneral.SuspendLayout();
             this.groupBox6.SuspendLayout();
@@ -452,9 +452,9 @@ namespace gView.Framework.UI.Dialogs
             // 
             // groupBox6
             // 
+            resources.ApplyResources(this.groupBox6, "groupBox6");
             this.groupBox6.Controls.Add(this.cmbGeometryType);
             this.groupBox6.Controls.Add(this.label11);
-            resources.ApplyResources(this.groupBox6, "groupBox6");
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.TabStop = false;
             // 
@@ -472,20 +472,20 @@ namespace gView.Framework.UI.Dialogs
             // 
             // groupBox5
             // 
+            resources.ApplyResources(this.groupBox5, "groupBox5");
             this.groupBox5.Controls.Add(this.txtMaximunZoom2FeatureScale);
             this.groupBox5.Controls.Add(this.label9);
-            resources.ApplyResources(this.groupBox5, "groupBox5");
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.TabStop = false;
             // 
             // txtMaximunZoom2FeatureScale
             // 
+            resources.ApplyResources(this.txtMaximunZoom2FeatureScale, "txtMaximunZoom2FeatureScale");
             this.txtMaximunZoom2FeatureScale.Increment = new decimal(new int[] {
             100,
             0,
             0,
             0});
-            resources.ApplyResources(this.txtMaximunZoom2FeatureScale, "txtMaximunZoom2FeatureScale");
             this.txtMaximunZoom2FeatureScale.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -510,24 +510,24 @@ namespace gView.Framework.UI.Dialogs
             // 
             // groupBox4
             // 
+            resources.ApplyResources(this.groupBox4, "groupBox4");
             this.groupBox4.Controls.Add(this.txtLabelMaxScale);
             this.groupBox4.Controls.Add(this.txtLabelMinScale);
             this.groupBox4.Controls.Add(this.radioLabelAllScales);
             this.groupBox4.Controls.Add(this.label7);
             this.groupBox4.Controls.Add(this.label8);
             this.groupBox4.Controls.Add(this.radioLabelScales);
-            resources.ApplyResources(this.groupBox4, "groupBox4");
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.TabStop = false;
             // 
             // txtLabelMaxScale
             // 
+            resources.ApplyResources(this.txtLabelMaxScale, "txtLabelMaxScale");
             this.txtLabelMaxScale.Increment = new decimal(new int[] {
             1000,
             0,
             0,
             0});
-            resources.ApplyResources(this.txtLabelMaxScale, "txtLabelMaxScale");
             this.txtLabelMaxScale.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -537,12 +537,12 @@ namespace gView.Framework.UI.Dialogs
             // 
             // txtLabelMinScale
             // 
+            resources.ApplyResources(this.txtLabelMinScale, "txtLabelMinScale");
             this.txtLabelMinScale.Increment = new decimal(new int[] {
             1000,
             0,
             0,
             0});
-            resources.ApplyResources(this.txtLabelMinScale, "txtLabelMinScale");
             this.txtLabelMinScale.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -574,13 +574,13 @@ namespace gView.Framework.UI.Dialogs
             // 
             // GroupBox1
             // 
+            resources.ApplyResources(this.GroupBox1, "GroupBox1");
             this.GroupBox1.Controls.Add(this.radioScales);
             this.GroupBox1.Controls.Add(this.txtMaxScale);
             this.GroupBox1.Controls.Add(this.txtMinScale);
             this.GroupBox1.Controls.Add(this.radioAllScales);
             this.GroupBox1.Controls.Add(this.label2);
             this.GroupBox1.Controls.Add(this.label1);
-            resources.ApplyResources(this.GroupBox1, "GroupBox1");
             this.GroupBox1.Name = "GroupBox1";
             this.GroupBox1.TabStop = false;
             // 
@@ -592,12 +592,12 @@ namespace gView.Framework.UI.Dialogs
             // 
             // txtMaxScale
             // 
+            resources.ApplyResources(this.txtMaxScale, "txtMaxScale");
             this.txtMaxScale.Increment = new decimal(new int[] {
             1000,
             0,
             0,
             0});
-            resources.ApplyResources(this.txtMaxScale, "txtMaxScale");
             this.txtMaxScale.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -607,12 +607,12 @@ namespace gView.Framework.UI.Dialogs
             // 
             // txtMinScale
             // 
+            resources.ApplyResources(this.txtMinScale, "txtMinScale");
             this.txtMinScale.Increment = new decimal(new int[] {
             1000,
             0,
             0,
             0});
-            resources.ApplyResources(this.txtMinScale, "txtMinScale");
             this.txtMinScale.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -1075,6 +1075,13 @@ namespace gView.Framework.UI.Dialogs
             this.tabMapService.Name = "tabMapService";
             this.tabMapService.UseVisualStyleBackColor = true;
             // 
+            // cmbMapServerGrouplayerStyle
+            // 
+            this.cmbMapServerGrouplayerStyle.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbMapServerGrouplayerStyle.FormattingEnabled = true;
+            resources.ApplyResources(this.cmbMapServerGrouplayerStyle, "cmbMapServerGrouplayerStyle");
+            this.cmbMapServerGrouplayerStyle.Name = "cmbMapServerGrouplayerStyle";
+            // 
             // chkMapServiceNotDropdownable
             // 
             resources.ApplyResources(this.chkMapServiceNotDropdownable, "chkMapServiceNotDropdownable");
@@ -1106,13 +1113,6 @@ namespace gView.Framework.UI.Dialogs
             resources.ApplyResources(this.btnOK, "btnOK");
             this.btnOK.Name = "btnOK";
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
-            // 
-            // cmbMapServerGrouplayerStyle
-            // 
-            this.cmbMapServerGrouplayerStyle.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbMapServerGrouplayerStyle.FormattingEnabled = true;
-            resources.ApplyResources(this.cmbMapServerGrouplayerStyle, "cmbMapServerGrouplayerStyle");
-            this.cmbMapServerGrouplayerStyle.Name = "cmbMapServerGrouplayerStyle";
             // 
             // FormLayerProperties
             // 
@@ -1754,6 +1754,10 @@ namespace gView.Framework.UI.Dialogs
                     ((IGridClass)_layer.Class).UseIgnoreDataValue = chkNoDataValue.Checked;
                     ((IGridClass)_layer.Class).IgnoreDataValue = (double)numNoDataValue.Value;
                 }
+            }
+            if(_layer is IGroupLayer)
+            {
+                ((IGroupLayer)_layer).MapServerStyle = (MapServerGrouplayerStyle)cmbMapServerGrouplayerStyle.SelectedItem;
             }
             if (_layer is IWebServiceLayer)
             {

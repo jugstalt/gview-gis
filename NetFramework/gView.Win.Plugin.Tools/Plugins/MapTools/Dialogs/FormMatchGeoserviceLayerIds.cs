@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Carto;
+using gView.Framework.Data;
 using gView.Framework.UI;
 using gView.Interoperability.GeoServices.Rest.Json;
 using Newtonsoft.Json;
@@ -75,7 +76,7 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
                     }
                     else
                     {
-                        item.SubItems[0].Text = "Not matched!!";
+                        item.SubItems[0].Text = item is TocElementListViewitem && ((TocElementListViewitem)item).IsHidden == true ? "hidden" : "Not matched!!";
                         item.SubItems[3].Text = "";
                     }
                 }
@@ -84,6 +85,7 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
                     lstLayers.Items.Remove(item);
                 }
 
+                var maxId = 0;
                 using (var client = new WebClient())
                 {
                     var jsonBytes = await client.DownloadDataTaskAsync(url);
@@ -93,6 +95,8 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
 
                     if (serviceLayers != null)
                     {
+                        maxId = serviceLayers.Layers.Max(l => l.Id);
+
                         foreach (var serviceLayer in serviceLayers.Layers)
                         {
                             var layerFullname = LayerFullname(serviceLayers, serviceLayer);
@@ -111,6 +115,14 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
                         }
                     }
                 }
+
+                foreach(ListViewItem item in lstLayers.Items)
+                {
+                    if(item.SubItems[0].Text?.ToLower() == "hidden")
+                    {
+                        item.SubItems[3].Text = (++maxId).ToString();
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -127,11 +139,15 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
                 return;
             }
 
-            foreach (TocElementListViewitem item in lstLayers.Items)
+            foreach (ListViewItem item in lstLayers.Items)
             {
-                if (int.TryParse(item.SubItems[3].Text, out int geoServiceLayerId))
+
+                if (item is TocElementListViewitem)
                 {
-                    item.TOCElement.Layers.First().ID = geoServiceLayerId;
+                    if (int.TryParse(item.SubItems[3].Text, out int geoServiceLayerId))
+                    {
+                        ((TocElementListViewitem)item).TOCElement.Layers.First().ID = geoServiceLayerId;
+                    }
                 }
             }
 
@@ -139,6 +155,7 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
             {
                 ((IRefreshSequences)_map).RefreshSequences();
             }
+
             this.Close();
         }
 
@@ -230,6 +247,25 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
             }
 
             public ITOCElement TOCElement { get; private set; }
+
+            public bool IsHidden
+            {
+                get
+                {
+                    var parent = this.TOCElement?.ParentGroup;
+                    while(parent!=null)
+                    {
+                        IGroupLayer groupLayer = parent.Layers.FirstOrDefault() as IGroupLayer;
+                        if(groupLayer!=null && groupLayer.MapServerStyle == MapServerGrouplayerStyle.Checkbox)
+                        {
+                            return true;
+                        }
+                        parent = parent.ParentGroup;
+                    }
+
+                    return false;
+                }
+            }
         }
 
         #endregion
