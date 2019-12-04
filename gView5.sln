@@ -167,6 +167,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.FillElasticSearch
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.CopyFeatureclass", "gView.Cmd.CopyFeatureclass\gView.Cmd.CopyFeatureclass.csproj", "{9DB41767-A9D9-477B-A86E-4B0FBE0EFC60}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Cmd.MxlInfo", "NetFramework\gView.Cmd.MxlInfo\gView.Cmd.MxlInfo.csproj", "{8C040A69-F7E9-4D59-85C8-4C6B69C97D86}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -831,6 +833,14 @@ Global
 		{9DB41767-A9D9-477B-A86E-4B0FBE0EFC60}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9DB41767-A9D9-477B-A86E-4B0FBE0EFC60}.Release|x64.ActiveCfg = Release|Any CPU
 		{9DB41767-A9D9-477B-A86E-4B0FBE0EFC60}.Release|x64.Build.0 = Release|Any CPU
+		{8C040A69-F7E9-4D59-85C8-4C6B69C97D86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C040A69-F7E9-4D59-85C8-4C6B69C97D86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C040A69-F7E9-4D59-85C8-4C6B69C97D86}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8C040A69-F7E9-4D59-85C8-4C6B69C97D86}.Debug|x64.Build.0 = Debug|Any CPU
+		{8C040A69-F7E9-4D59-85C8-4C6B69C97D86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C040A69-F7E9-4D59-85C8-4C6B69C97D86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C040A69-F7E9-4D59-85C8-4C6B69C97D86}.Release|x64.ActiveCfg = Release|Any CPU
+		{8C040A69-F7E9-4D59-85C8-4C6B69C97D86}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
