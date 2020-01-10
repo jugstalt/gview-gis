@@ -114,8 +114,13 @@ namespace gView.Framework.UI.Dialogs
         private ComboBox cmbApplyRefScale;
         private ComboBox cmbApplyLabelRefScale;
         private TabPage tabMapService;
-        private CheckBox chkMapServiceNotDropdownable;
         private ComboBox cmbMapServerGrouplayerStyle;
+        private GroupBox groupBox7;
+        private Label label16;
+        private Label label15;
+        private Label label14;
+        private Label label18;
+        private Label label17;
         private IMap _map;
 
         public FormLayerProperties(IMapDocument mapDocument, IMap map, IDataset dataset, ILayer layer)
@@ -383,11 +388,16 @@ namespace gView.Framework.UI.Dialogs
             this.label13 = new System.Windows.Forms.Label();
             this.tabMapService = new System.Windows.Forms.TabPage();
             this.cmbMapServerGrouplayerStyle = new System.Windows.Forms.ComboBox();
-            this.chkMapServiceNotDropdownable = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
+            this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.label14 = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
+            this.label18 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabGeneral.SuspendLayout();
             this.groupBox6.SuspendLayout();
@@ -420,6 +430,7 @@ namespace gView.Framework.UI.Dialogs
             this.tabMapService.SuspendLayout();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
+            this.groupBox7.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -1069,8 +1080,7 @@ namespace gView.Framework.UI.Dialogs
             // 
             // tabMapService
             // 
-            this.tabMapService.Controls.Add(this.cmbMapServerGrouplayerStyle);
-            this.tabMapService.Controls.Add(this.chkMapServiceNotDropdownable);
+            this.tabMapService.Controls.Add(this.groupBox7);
             resources.ApplyResources(this.tabMapService, "tabMapService");
             this.tabMapService.Name = "tabMapService";
             this.tabMapService.UseVisualStyleBackColor = true;
@@ -1081,12 +1091,6 @@ namespace gView.Framework.UI.Dialogs
             this.cmbMapServerGrouplayerStyle.FormattingEnabled = true;
             resources.ApplyResources(this.cmbMapServerGrouplayerStyle, "cmbMapServerGrouplayerStyle");
             this.cmbMapServerGrouplayerStyle.Name = "cmbMapServerGrouplayerStyle";
-            // 
-            // chkMapServiceNotDropdownable
-            // 
-            resources.ApplyResources(this.chkMapServiceNotDropdownable, "chkMapServiceNotDropdownable");
-            this.chkMapServiceNotDropdownable.Name = "chkMapServiceNotDropdownable";
-            this.chkMapServiceNotDropdownable.UseVisualStyleBackColor = true;
             // 
             // panel1
             // 
@@ -1113,6 +1117,43 @@ namespace gView.Framework.UI.Dialogs
             resources.ApplyResources(this.btnOK, "btnOK");
             this.btnOK.Name = "btnOK";
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
+            // 
+            // groupBox7
+            // 
+            resources.ApplyResources(this.groupBox7, "groupBox7");
+            this.groupBox7.Controls.Add(this.label18);
+            this.groupBox7.Controls.Add(this.label17);
+            this.groupBox7.Controls.Add(this.label16);
+            this.groupBox7.Controls.Add(this.label15);
+            this.groupBox7.Controls.Add(this.label14);
+            this.groupBox7.Controls.Add(this.cmbMapServerGrouplayerStyle);
+            this.groupBox7.Name = "groupBox7";
+            this.groupBox7.TabStop = false;
+            // 
+            // label14
+            // 
+            resources.ApplyResources(this.label14, "label14");
+            this.label14.Name = "label14";
+            // 
+            // label15
+            // 
+            resources.ApplyResources(this.label15, "label15");
+            this.label15.Name = "label15";
+            // 
+            // label16
+            // 
+            resources.ApplyResources(this.label16, "label16");
+            this.label16.Name = "label16";
+            // 
+            // label17
+            // 
+            resources.ApplyResources(this.label17, "label17");
+            this.label17.Name = "label17";
+            // 
+            // label18
+            // 
+            resources.ApplyResources(this.label18, "label18");
+            this.label18.Name = "label18";
             // 
             // FormLayerProperties
             // 
@@ -1162,9 +1203,10 @@ namespace gView.Framework.UI.Dialogs
             this.tabDescription.ResumeLayout(false);
             this.tabDescription.PerformLayout();
             this.tabMapService.ResumeLayout(false);
-            this.tabMapService.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
+            this.groupBox7.ResumeLayout(false);
+            this.groupBox7.PerformLayout();
             this.ResumeLayout(false);
 
         }
