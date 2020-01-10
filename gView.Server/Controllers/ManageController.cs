@@ -55,8 +55,8 @@ namespace gView.Server.Controllers
                     return RedirectToAction("Index", "Home");
                 }
 
-                Console.WriteLine("UN: "+model.Username);
-                Console.WriteLine("PW: "+model.Password);
+                //Console.WriteLine("UN: "+model.Username);
+                //Console.WriteLine("PW: "+model.Password);
 
                 var loginManager = new LoginManager(Globals.LoginManagerRootPath);
                 var authToken = loginManager.GetManagerAuthToken(model.Username, model.Password, createIfFirst: true);
