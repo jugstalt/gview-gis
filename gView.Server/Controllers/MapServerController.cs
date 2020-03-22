@@ -114,6 +114,7 @@ namespace gView.Server.Controllers
                 ServiceRequest serviceRequest = new ServiceRequest(name.ServiceName(), name.FolderName(), input)
                 {
                     OnlineResource = InternetMapServer.OnlineResource + "/MapRequest/" + guid + "/" + name,
+                    OutputUrl = InternetMapServer.OutputUrl,
                     Identity = identity
                 };
 

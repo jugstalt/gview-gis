@@ -222,6 +222,19 @@ namespace gView.Server.AppCode
             if (_folderSettings != null)
             {
                 CheckAccess(context, _folderSettings);
+
+                if (context.ServiceRequest != null)
+                {
+                    if (!String.IsNullOrEmpty(_folderSettings.OnlineResource))
+                    {
+                        context.ServiceRequest.OnlineResource = _folderSettings.OnlineResource;
+                    }
+
+                    if (!String.IsNullOrEmpty(_folderSettings.OutputUrl))
+                    {
+                        context.ServiceRequest.OutputUrl = _folderSettings.OutputUrl;
+                    }
+                }
             }
 
             CheckAccess(context, _settings);
@@ -490,6 +503,11 @@ namespace gView.Server.AppCode
             get { return RefreshService.Ticks; }
             set { RefreshService = new DateTime(value, DateTimeKind.Utc); }
         }
+
+        [JsonProperty("onlineresource", NullValueHandling = NullValueHandling.Ignore)]
+        public string OnlineResource { get; set; }
+        [JsonProperty("outputurl", NullValueHandling = NullValueHandling.Ignore)]
+        public string OutputUrl { get; set; }
 
         #region Classes
 

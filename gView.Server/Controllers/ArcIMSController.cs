@@ -57,7 +57,8 @@ namespace gView.Server.Controllers
                 ServiceRequest serviceRequest = new ServiceRequest(ServiceName.ServiceName(), ServiceName.FolderName(), content)
                 {
                     Identity = identity,
-                    OnlineResource = InternetMapServer.OnlineResource
+                    OnlineResource = InternetMapServer.OnlineResource,
+                    OutputUrl = InternetMapServer.OutputUrl,
                 };
 
                 #endregion

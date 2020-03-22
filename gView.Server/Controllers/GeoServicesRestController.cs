@@ -239,6 +239,7 @@ namespace gView.Server.Controllers
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(exportMap))
                 {
                     OnlineResource = InternetMapServer.OnlineResource,
+                    OutputUrl = InternetMapServer.OutputUrl,
                     Method = "export",
                     Identity = identity
                 };
@@ -301,6 +302,7 @@ namespace gView.Server.Controllers
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(queryLayer))
                 {
                     OnlineResource = InternetMapServer.OnlineResource,
+                    OutputUrl = InternetMapServer.OutputUrl,
                     Method = "query",
                     Identity = identity
                 };
@@ -354,6 +356,7 @@ namespace gView.Server.Controllers
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, String.Empty)
                 {
                     OnlineResource = InternetMapServer.OnlineResource,
+                    OutputUrl = InternetMapServer.OutputUrl,
                     Method = "legend",
                     Identity = identity
                 };
@@ -464,6 +467,7 @@ namespace gView.Server.Controllers
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(queryLayer))
                 {
                     OnlineResource = InternetMapServer.OnlineResource,
+                    OutputUrl = InternetMapServer.OutputUrl,
                     Method = "featureserver_query",
                     Identity = identity
                 };
@@ -515,6 +519,7 @@ namespace gView.Server.Controllers
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
                 {
                     OnlineResource = InternetMapServer.OnlineResource,
+                    OutputUrl = InternetMapServer.OutputUrl,
                     Method = "featureserver_addfeatures",
                     Identity = identity
                 };
@@ -577,6 +582,7 @@ namespace gView.Server.Controllers
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
                 {
                     OnlineResource = InternetMapServer.OnlineResource,
+                    OutputUrl = InternetMapServer.OutputUrl,
                     Method = "featureserver_updatefeatures",
                     Identity = identity
                 };
@@ -639,6 +645,7 @@ namespace gView.Server.Controllers
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
                 {
                     OnlineResource = InternetMapServer.OnlineResource,
+                    OutputUrl = InternetMapServer.OutputUrl,
                     Method = "featureserver_deletefeatures",
                     Identity = identity
                 };

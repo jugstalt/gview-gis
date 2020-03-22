@@ -354,7 +354,10 @@ namespace gView.Server.Controllers
                     allTypes = allTypes.ToArray(),
                     accessRules = accessRules,
                     allUsers = loginManager.GetTokenUsernames(),
-                    anonymousUsername = Identity.AnonyomousUsername
+                    anonymousUsername = Identity.AnonyomousUsername,
+
+                    onlineResource = settings.OnlineResource,
+                    outputUrl = settings.OutputUrl
                 });
             });
         }
@@ -430,6 +433,18 @@ namespace gView.Server.Controllers
                                 {
                                     accessRule.RemoveServiceType(serviceType);
                                 }
+                            }
+                        }
+                        else 
+                        {
+                            switch(key)
+                            {
+                                case "advancedsettings_onlineresource":
+                                    settings.OnlineResource = String.IsNullOrWhiteSpace(form[key]) ? null : form[key].ToString();
+                                    break;
+                                case "advancedsettings_outputurl":
+                                    settings.OutputUrl = String.IsNullOrWhiteSpace(form[key]) ? null : form[key].ToString();
+                                    break;
                             }
                         }
                     }

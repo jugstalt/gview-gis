@@ -472,7 +472,8 @@ input[type="file"] {
         border-radius:5px;
     }
 
-    .gview5-manage-body .form .form-input .label {
+    .gview5-manage-body .form .form-input .label,
+    .modal-dialog .form-input .label {
         position:relative;
         top:14px;
         left:5px;
@@ -480,13 +481,25 @@ input[type="file"] {
         color:#0094ff;
         text-align:left;
     }
-    .gview5-manage-body .form .form-input input {
+    .gview5-manage-body .form .form-input input,
+    .modal-dialog .form-input input {
         min-width:250px;
         margin:5px 0px;
         border:1px solid #0094ff;
         border-radius:5px;
         padding:10px 5px 5px 5px;
     }
+
+    .modal-dialog .form-input input {
+        width: 100%;
+    }
+
+.modal-dialog .section {
+    margin-top: 10px;
+    background: #0094ff47;
+    padding: 10px;
+    border-radius: 5px;
+}
 
     .gview5-manage-body button {
         background:#0094ff;

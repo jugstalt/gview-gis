@@ -344,11 +344,11 @@ namespace gView.Interoperability.ArcXML
                         return;
                     }
 
-                    serviceRequest.Response = await getImage.LegendRequest(map, _mapServer, _useTOC);
+                    serviceRequest.Response = await getImage.LegendRequest(map, context, _useTOC);
                 }
                 else
                 {
-                    serviceRequest.Response = await getImage.ImageRequest(map, _mapServer, _useTOC);
+                    serviceRequest.Response = await getImage.ImageRequest(map, context, _useTOC);
                 }
                 //map.Release();
             }

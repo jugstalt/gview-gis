@@ -344,7 +344,7 @@ window.gview.manage = function () {
                                     });
                                 };
 
-                                var renderSecurityTable = function ($target, result) {
+                                var renderSecurityTable = function ($target, result, advancedSettings) {
                                     $target.empty();
 
                                     var $tab = $("<table>").appendTo($target);
@@ -389,6 +389,38 @@ window.gview.manage = function () {
                                         }
                                         $(this).val('');
                                     });
+
+                                    if (advancedSettings) {
+                                        var $settingsDiv = $("<div>").addClass('section').appendTo($target);
+                                        $("<h4>Folder Settings</h4>").appendTo($settingsDiv);
+
+                                        var $formInput = $("<div>")
+                                            .addClass('form-input')
+                                            .appendTo($settingsDiv);
+
+                                        $("<div>")
+                                            .addClass('label')
+                                            .text('Online Resource (override)')
+                                            .appendTo($formInput);
+                                        $("<br>").appendTo($formInput);
+                                        $("<input name='advancedsettings_onlineresource'>")
+                                            .addClass('form-value')
+                                            .val(result.onlineResource)
+                                            .appendTo($formInput);
+
+                                        $formInput = $("<div>")
+                                            .addClass('form-input')
+                                            .appendTo($settingsDiv);
+                                        $("<div>")
+                                            .addClass('label')
+                                            .text('Output Url (override)')
+                                            .appendTo($formInput);
+                                        $("<br>").appendTo($formInput);
+                                        $("<input name='advancedsettings_outputurl'>")
+                                            .addClass('form-value')
+                                            .val(result.outputUrl)
+                                            .appendTo($formInput);
+                                    }
                                 };
 
                                 modalDialog({
@@ -398,7 +430,7 @@ window.gview.manage = function () {
                                         get({
                                             url: '/manage/foldersecurity?folder=' + folder.name,
                                             success: function (result) {
-                                                renderSecurityTable($body, result);
+                                                renderSecurityTable($body, result, true);
                                             }
                                         });
                                     },

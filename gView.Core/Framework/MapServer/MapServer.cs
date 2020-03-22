@@ -22,7 +22,7 @@ namespace gView.MapServer
         Task LogAsync(string mapName, string header, loggingMethod methode, string msg);
         Task LogAsync(IServiceRequestContext context, string header, loggingMethod methode, string msg);
 
-        string OutputUrl { get; }
+        //string OutputUrl { get; }
         string OutputPath { get; }
 
         string TileCachePath { get; }
@@ -67,6 +67,9 @@ namespace gView.MapServer
         IMapServiceAccess[] AccessRules { get; set; }
 
         DateTime RefreshService { get; set; }
+
+        string OnlineResource { get; set; }
+        string OutputUrl { get; set; }
     }
 
     [Flags]
@@ -106,6 +109,7 @@ namespace gView.MapServer
         public string Request { get; private set; }
         public string Response = "";
         public string OnlineResource = "";
+        public string OutputUrl = "";
         public IIdentity Identity = null;
         public bool Succeeded = true;
         public string Method = "";
@@ -200,6 +204,7 @@ namespace gView.MapServer
         IMapServer MapServer { get; }
         IServiceRequestInterpreter ServiceRequestInterpreter { get; }
         ServiceRequest ServiceRequest { get; }
+
         Task<IServiceMap> CreateServiceMapInstance();
     }
 
@@ -214,8 +219,6 @@ namespace gView.MapServer
             _mapServer = mapServer;
             _interpreter = interpreter;
             _request = request;
-
-            
         }
 
         async static public Task<IServiceRequestContext> TryCreate(IMapServer mapServer, IServiceRequestInterpreter interpreter, ServiceRequest request, bool checkSecurity = true)
@@ -250,6 +253,7 @@ namespace gView.MapServer
         {
             get { return _request; }
         }
+
         async public Task<IServiceMap> CreateServiceMapInstance()
         {
             return (_mapServer != null) ? await _mapServer.GetServiceMapAsync(this) : null;

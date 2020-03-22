@@ -196,7 +196,7 @@ namespace gView.Interoperability.GeoServices.Request
                             context.ServiceRequest.Succeeded = true;
                             context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonExportResponse()
                             {
-                                Href = _mapServer.OutputUrl + "/" + fileName,
+                                Href = context.ServiceRequest.OutputUrl + "/" + fileName,
                                 Width = serviceMap.Display.iWidth,
                                 Height = serviceMap.Display.iHeight,
                                 ContentType = "image/" + iFormat.ToString().ToLower(),

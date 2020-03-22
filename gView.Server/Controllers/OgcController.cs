@@ -68,6 +68,7 @@ namespace gView.Server.Controllers
                 ServiceRequest serviceRequest = new ServiceRequest(id.ServiceName(), id.FolderName(), requestString)
                 {
                     OnlineResource = InternetMapServer.OnlineResource + "/ogc/" + id,
+                    OutputUrl = InternetMapServer.OutputUrl,
                     Identity = identity
                 };
 
@@ -114,6 +115,7 @@ namespace gView.Server.Controllers
             ServiceRequest serviceRequest = new ServiceRequest(name, folder, requestString)
             {
                 OnlineResource = InternetMapServer.OnlineResource + "/ogc/" + name,
+                OutputUrl = InternetMapServer.OutputUrl,
                 Identity = identity
             };
 
