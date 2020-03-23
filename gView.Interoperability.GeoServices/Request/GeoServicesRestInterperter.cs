@@ -242,41 +242,72 @@ namespace gView.Interoperability.GeoServices.Request
 
         private void ServiceMap_BeforeRenderLayers(Framework.Carto.IServiceMap sender, List<Framework.Data.ILayer> layers)
         {
-            if (String.IsNullOrWhiteSpace(_exportMap?.Layers) || !_exportMap.Layers.Contains(":"))
-                return;
-
-            string option = _exportMap.Layers.Substring(0, _exportMap.Layers.IndexOf(":")).ToLower();
-            int[] layerIds = _exportMap.Layers.Substring(_exportMap.Layers.IndexOf(":") + 1)
-                                    .Split(',').Select(l => int.Parse(l)).ToArray();
-
-            foreach (var layer in layers)
+            if (!String.IsNullOrWhiteSpace(_exportMap?.Layers) && _exportMap.Layers.Contains(":"))
             {
-                var tocElement = sender.TOC.GetTOCElementByLayerId(layer.ID);
-                bool layerIdContains = tocElement != null ?
-                    LayerOrParentIsInArray(sender, tocElement, layerIds) :    // this is how AGS works: if group is shown -> all layers in group are shown...
-                    layerIds.Contains(layer.ID);
+                #region Apply Visibility
 
-                switch (option)
+                string option = _exportMap.Layers.Substring(0, _exportMap.Layers.IndexOf(":")).ToLower();
+                int[] layerIds = _exportMap.Layers.Substring(_exportMap.Layers.IndexOf(":") + 1)
+                                        .Split(',').Select(l => int.Parse(l)).ToArray();
+
+
+                foreach (var layer in layers)
                 {
-                    case "show":
-                        layer.Visible = layerIdContains;
-                        break;
-                    case "hide":
-                        layer.Visible = !layerIdContains;
-                        break;
-                    case "include":
-                        if (layerIdContains)
-                            layer.Visible = true;
-                        break;
-                    case "exclude":
-                        if (layerIdContains)
-                            layer.Visible = false;
-                        break;
+                    var tocElement = sender.TOC.GetTOCElementByLayerId(layer.ID);
+                    bool layerIdContains = tocElement != null ?
+                        LayerOrParentIsInArray(sender, tocElement, layerIds) :    // this is how AGS works: if group is shown -> all layers in group are shown...
+                        layerIds.Contains(layer.ID);
+
+                    switch (option)
+                    {
+                        case "show":
+                            layer.Visible = layerIdContains;
+                            break;
+                        case "hide":
+                            layer.Visible = !layerIdContains;
+                            break;
+                        case "include":
+                            if (layerIdContains)
+                                layer.Visible = true;
+                            break;
+                        case "exclude":
+                            if (layerIdContains)
+                                layer.Visible = false;
+                            break;
+                    }
+                }
+
+                #endregion
+            }
+
+            if (!String.IsNullOrEmpty(_exportMap?.LayerDefs))
+            {
+                Dictionary<string, string> layerDefs = null;
+
+                try
+                {
+                    layerDefs = JsonConvert.DeserializeObject<Dictionary<string, string>>(_exportMap.LayerDefs);
+
+                    foreach (var layerId in layerDefs.Keys)
+                    {
+                        var lID = int.Parse(layerId);
+                        var layer = layers.Where(l => l.ID == lID).FirstOrDefault();
+                        if(layer is IFeatureLayer)
+                        {
+                            ((IFeatureLayer)layer).FilterQuery = ((IFeatureLayer)layer).FilterQuery.AppendWhereClause(layerDefs[layerId]);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Can't parse layer definitions: { ex.Message }");
                 }
             }
 
             if (!String.IsNullOrWhiteSpace(_exportMap.DynamicLayers))
             {
+                #region Apply Dynamic Layers
+
                 var jsonDynamicLayers = JsonConvert.DeserializeObject<JsonDynamicLayer[]>(_exportMap.DynamicLayers);
                 foreach (var jsonDynamicLayer in jsonDynamicLayers)
                 {
@@ -322,6 +353,8 @@ namespace gView.Interoperability.GeoServices.Request
                         }
                     }
                 }
+
+                #endregion
             }
         }
 
