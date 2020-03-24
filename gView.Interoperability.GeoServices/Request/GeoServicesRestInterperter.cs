@@ -282,6 +282,8 @@ namespace gView.Interoperability.GeoServices.Request
 
             if (!String.IsNullOrEmpty(_exportMap?.LayerDefs))
             {
+                #region Apply Layer Definitions
+
                 Dictionary<string, string> layerDefs = null;
 
                 try
@@ -295,6 +297,8 @@ namespace gView.Interoperability.GeoServices.Request
                         if(layer is IFeatureLayer)
                         {
                             ((IFeatureLayer)layer).FilterQuery = ((IFeatureLayer)layer).FilterQuery.AppendWhereClause(layerDefs[layerId]);
+
+                            //File.WriteAllText("c:\\temp\\filter.txt", ((IFeatureLayer)layer).FilterQuery.WhereClause);
                         }
                     }
                 }
@@ -302,6 +306,8 @@ namespace gView.Interoperability.GeoServices.Request
                 {
                     throw new Exception($"Can't parse layer definitions: { ex.Message }");
                 }
+
+                #endregion
             }
 
             if (!String.IsNullOrWhiteSpace(_exportMap.DynamicLayers))
