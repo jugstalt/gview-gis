@@ -749,7 +749,7 @@ namespace gView.Interoperability.GeoServices.Request
                         throw new Exception("Featureclass is not editable");
                     }
 
-                    List<IFeature> features = GetFeatures(featureClass, editRequest);
+                    List<IFeature> features = GetFeatures(featureClass, editRequest, true);
                     if (features.Count == 0)
                         throw new Exception("No features to add");
 
@@ -812,7 +812,7 @@ namespace gView.Interoperability.GeoServices.Request
                         throw new Exception("Featureclass is not editable");
                     }
 
-                    List<IFeature> features = GetFeatures(featureClass, editRequest);
+                    List<IFeature> features = GetFeatures(featureClass, editRequest, true);
                     if (features.Count == 0)
                         throw new Exception("No features to add");
 
@@ -942,12 +942,35 @@ namespace gView.Interoperability.GeoServices.Request
             return featureClass;
         }
 
-        private List<IFeature> GetFeatures(IFeatureClass featureClass, JsonFeatureServerUpdateRequest editRequest)
+        private List<IFeature> GetFeatures(IFeatureClass featureClass, JsonFeatureServerUpdateRequest editRequest, bool projetToFeatureClassSpatialReference)
         {
+            int? fcSrs = featureClass?.SpatialReference?.EpsgCode;
+
             List<IFeature> features = new List<IFeature>();
             foreach (var jsonFeature in editRequest.Features)
             {
-                features.Add(ToFeature(featureClass, jsonFeature));
+                var feature = ToFeature(featureClass, jsonFeature);
+
+                if (projetToFeatureClassSpatialReference == true)
+                {
+                    if (feature.Shape != null && feature.Shape.Srs.HasValue && !feature.Shape.Srs.Equals(fcSrs))
+                    {
+                        using (var transformer = GeometricTransformerFactory.Create())
+                        {
+                            var fromSrs = SpatialReference.FromID("espg:" + feature.Shape.Srs.ToString());
+                            var toSrs = SpatialReference.FromID("espg:" + fcSrs.ToString());
+
+                            transformer.SetSpatialReferences(fromSrs, toSrs);
+
+                            var transformedShape = transformer.Transform2D(feature.Shape) as IGeometry;
+                            transformedShape.Srs = fcSrs;
+
+                            feature.Shape = transformedShape;
+                        }
+                    }
+                }
+
+                features.Add(feature);
             }
 
             return features;

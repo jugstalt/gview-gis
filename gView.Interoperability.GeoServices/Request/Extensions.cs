@@ -133,15 +133,17 @@ namespace gView.Interoperability.GeoServices.Request
             if (geometry == null)
                 return null;
 
+            IGeometry shape = null;
+
             if(geometry.X.HasValue && geometry.Y.HasValue)
             {
-                return new Point(geometry.X.Value, geometry.Y.Value);
+                shape = new Point(geometry.X.Value, geometry.Y.Value);
             }
-            if(geometry.XMin.HasValue && geometry.YMin.HasValue && geometry.XMax.HasValue && geometry.YMax.HasValue)
+            else if(geometry.XMin.HasValue && geometry.YMin.HasValue && geometry.XMax.HasValue && geometry.YMax.HasValue)
             {
-                return new Envelope(geometry.XMin.Value, geometry.YMin.Value, geometry.XMax.Value, geometry.YMax.Value);
+                shape = new Envelope(geometry.XMin.Value, geometry.YMin.Value, geometry.XMax.Value, geometry.YMax.Value);
             }
-            if(geometry.Paths!=null && geometry.Paths.Length>0)
+            else if(geometry.Paths!=null && geometry.Paths.Length>0)
             {
                 var polyline = new Polyline();
 
@@ -159,9 +161,9 @@ namespace gView.Interoperability.GeoServices.Request
                     polyline.AddPath(path);
                 }
 
-                return polyline;
+                shape = polyline;
             }
-            if(geometry.Rings!=null && geometry.Rings.Length>0)
+            else if(geometry.Rings!=null && geometry.Rings.Length>0)
             {
                 var polygon = new Polygon();
 
@@ -179,10 +181,15 @@ namespace gView.Interoperability.GeoServices.Request
                     polygon.AddRing(ring);
                 }
 
-                return polygon;
+                shape = polygon;
             }
 
-            return null;
+            if(shape != null && geometry.SpatialReference!=null && geometry.SpatialReference.Wkid>0)
+            {
+                shape.Srs = geometry.SpatialReference.Wkid;
+            }
+
+            return shape;
         }
 
         #endregion

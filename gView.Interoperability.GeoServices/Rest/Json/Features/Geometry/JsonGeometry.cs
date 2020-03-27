@@ -31,5 +31,8 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Features.Geometry
         public double? XMax { get; set; }
         [JsonProperty("ymax", NullValueHandling = NullValueHandling.Ignore)]
         public double? YMax { get; set; }
+
+        [JsonProperty("spatialReference", NullValueHandling = NullValueHandling.Ignore)]
+        public JsonSpatialReference SpatialReference { get; set; }
     }
 }
