@@ -3,6 +3,9 @@ using gView.Framework.system;
 using gView.MapServer;
 using gView.Server.AppCode;
 using gView.Server.Models;
+using gView.Server.Services.Logging;
+using gView.Server.Services.MapServer;
+using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -13,11 +16,29 @@ namespace gView.Server.Controllers
 {
     public class ManageController : BaseController
     {
+        private readonly InternetMapServerService _mapServerService;
+        private readonly MapServerDeployService _mapServerDeployService;
+        private readonly LoginManagerService _loginManagerService;
+        private readonly MapServicesEventLogger _logger;
+
+        public ManageController(InternetMapServerService mapServerService,
+                                MapServerDeployService mapServerDeployService,
+                                LoginManagerService loginManagerService,
+                                MapServicesEventLogger logger,
+                                EncryptionCertificateService encryptionCertificateService)
+                                : base(loginManagerService, encryptionCertificateService)
+        {
+            _mapServerService = mapServerService;
+            _mapServerDeployService = mapServerDeployService;
+            _loginManagerService = loginManagerService;
+            _logger = logger;
+        }
+
         public IActionResult Index()
         {
             try
             {
-                var authToken = base.GetAuthToken();
+                var authToken = _loginManagerService.GetAuthToken(this.Request);
                 if (!authToken.IsManageUser)
                 {
                     return RedirectToAction("Login");
@@ -58,8 +79,7 @@ namespace gView.Server.Controllers
                 //Console.WriteLine("UN: "+model.Username);
                 //Console.WriteLine("PW: "+model.Password);
 
-                var loginManager = new LoginManager(Globals.LoginManagerRootPath);
-                var authToken = loginManager.GetManagerAuthToken(model.Username, model.Password, createIfFirst: true);
+                var authToken = _loginManagerService.GetManagerAuthToken(model.Username, model.Password, createIfFirst: true);
 
                 if (authToken == null)
                 {
@@ -95,7 +115,7 @@ namespace gView.Server.Controllers
         {
             return await SecureApiCall(async () =>
             {
-                var folderServices = InternetMapServer.MapServices
+                var folderServices = _mapServerService.MapServices
                                     .Where(s => s.Type == MapServiceType.Folder)
                                     .Select(s => s)
                                     .OrderBy(s => s.Name)
@@ -118,11 +138,11 @@ namespace gView.Server.Controllers
         async public Task<IActionResult> Services(string folder)
         {
             folder = folder ?? String.Empty;
-            await InternetMapServer.ReloadServices(folder, true);
+            _mapServerService.ReloadServices(folder, true);
 
             return await SecureApiCall(async () =>
             {
-                var servicesInFolder = InternetMapServer.MapServices
+                var servicesInFolder = _mapServerService.MapServices
                     .Where(s => s.Type != MapServiceType.Folder &&
                                     s.Folder == folder);
 
@@ -144,7 +164,7 @@ namespace gView.Server.Controllers
         {
             return await SecureApiCall(async () =>
             {
-                var mapService = InternetMapServer.MapServices.Where(s => s.Fullname == service).FirstOrDefault();
+                var mapService = _mapServerService.MapServices.Where(s => s.Fullname == service).FirstOrDefault();
                 if (mapService == null)
                 {
                     throw new MapServerException("Unknown service: " + service);
@@ -160,12 +180,12 @@ namespace gView.Server.Controllers
                             settings.Status = MapServiceStatus.Running;
                             await mapService.SaveSettingsAsync();
                             // reload
-                            await InternetMapServer.Instance.GetServiceMapAsync(service.ServiceName(), service.FolderName());
+                            await _mapServerService.Instance.GetServiceMapAsync(service.ServiceName(), service.FolderName());
                         }
                         break;
                     case "stopped":
                         settings.Status = MapServiceStatus.Stopped;
-                        InternetMapServer.MapDocument.RemoveMap(mapService.Fullname);
+                        _mapServerDeployService.MapDocument.RemoveMap(mapService.Fullname);
                         await mapService.SaveSettingsAsync();
                         break;
                     case "refresh":
@@ -175,7 +195,7 @@ namespace gView.Server.Controllers
                         settings.Status = MapServiceStatus.Running;
                         await mapService.SaveSettingsAsync();
                         // reload
-                        await InternetMapServer.Instance.GetServiceMapAsync(service.ServiceName(), service.FolderName());
+                        await _mapServerService.Instance.GetServiceMapAsync(service.ServiceName(), service.FolderName());
                         break;
                 }
 
@@ -191,7 +211,7 @@ namespace gView.Server.Controllers
         {
             return SecureApiCall(() =>
             {
-                var errorsResult = AppCode.Logger.ErrorLogs(service, Framework.system.loggingMethod.error, long.Parse(last));
+                var errorsResult = _logger.ErrorLogs(service, Framework.system.loggingMethod.error, long.Parse(last));
 
                 return Json(new
                 {
@@ -208,7 +228,7 @@ namespace gView.Server.Controllers
             {
                 service = service?.ToLower() ?? String.Empty;
 
-                var mapService = InternetMapServer.MapServices.Where(s => s.Fullname?.ToLower() == service).FirstOrDefault();
+                var mapService = _mapServerService.MapServices.Where(s => s.Fullname?.ToLower() == service).FirstOrDefault();
                 if (mapService == null)
                 {
                     throw new MapServerException("Unknown service: " + service);
@@ -221,17 +241,16 @@ namespace gView.Server.Controllers
 
                 var accessRules = settings.AccessRules;
 
-                foreach (var interpreterType in InternetMapServer.Interpreters)
+                foreach (var interpreterType in _mapServerService.Interpreters)
                 {
                     allTypes.Add("_" + ((IServiceRequestInterpreter)Activator.CreateInstance(interpreterType)).IdentityName.ToLower());
                 }
 
-                var loginManager = new LoginManager(Globals.LoginManagerRootPath);
                 return Json(new
                 {
                     allTypes = allTypes.ToArray(),
                     accessRules = accessRules,
-                    allUsers = loginManager.GetTokenUsernames(),
+                    allUsers = _loginManagerService.GetTokenUsernames(),
                     anonymousUsername = Identity.AnonyomousUsername
                 });
             });
@@ -244,7 +263,7 @@ namespace gView.Server.Controllers
             {
                 var service = Request.Query["service"].ToString().ToLower();
 
-                var mapService = InternetMapServer.MapServices.Where(s => s.Fullname?.ToLower() == service).FirstOrDefault();
+                var mapService = _mapServerService.MapServices.Where(s => s.Fullname?.ToLower() == service).FirstOrDefault();
                 if (mapService == null)
                 {
                     throw new MapServerException("Unknown service: " + service);
@@ -286,7 +305,7 @@ namespace gView.Server.Controllers
                             {
                                 serviceType = rule;
                             }
-                            else if (rule.StartsWith("_") && InternetMapServer.Interpreters
+                            else if (rule.StartsWith("_") && _mapServerService.Interpreters
                                             .Select(t => new Framework.system.PlugInManager().CreateInstance<IServiceRequestInterpreter>(t))
                                             .Where(i => "_" + i.IdentityName.ToLower() == rule.ToLower())
                                             .Count() == 1)  // Interpreter
@@ -330,7 +349,7 @@ namespace gView.Server.Controllers
             {
                 folder = folder?.ToLower() ?? String.Empty;
 
-                var mapService = InternetMapServer.MapServices.Where(s => s.Type== MapServiceType.Folder && s.Fullname?.ToLower() == folder).FirstOrDefault();
+                var mapService = _mapServerService.MapServices.Where(s => s.Type== MapServiceType.Folder && s.Fullname?.ToLower() == folder).FirstOrDefault();
                 if (mapService == null)
                 {
                     throw new MapServerException("Unknown folder: " + folder);
@@ -343,17 +362,16 @@ namespace gView.Server.Controllers
 
                 var accessRules = settings.AccessRules;
 
-                foreach (var interpreterType in InternetMapServer.Interpreters)
+                foreach (var interpreterType in _mapServerService.Interpreters)
                 {
                     allTypes.Add("_" + ((IServiceRequestInterpreter)Activator.CreateInstance(interpreterType)).IdentityName.ToLower());
                 }
 
-                var loginManager = new LoginManager(Globals.LoginManagerRootPath);
                 return Json(new
                 {
                     allTypes = allTypes.ToArray(),
                     accessRules = accessRules,
-                    allUsers = loginManager.GetTokenUsernames(),
+                    allUsers = _loginManagerService.GetTokenUsernames(),
                     anonymousUsername = Identity.AnonyomousUsername,
 
                     onlineResource = settings.OnlineResource,
@@ -369,7 +387,7 @@ namespace gView.Server.Controllers
             {
                 var folder = Request.Query["folder"].ToString().ToLower();
 
-                var mapService = InternetMapServer.MapServices.Where(s => s.Type== MapServiceType.Folder && s.Fullname?.ToLower() == folder).FirstOrDefault();
+                var mapService = _mapServerService.MapServices.Where(s => s.Type== MapServiceType.Folder && s.Fullname?.ToLower() == folder).FirstOrDefault();
                 if (mapService == null)
                 {
                     throw new MapServerException("Unknown folder: " + folder);
@@ -411,7 +429,7 @@ namespace gView.Server.Controllers
                             {
                                 serviceType = rule;
                             }
-                            else if (rule.StartsWith("_") && InternetMapServer.Interpreters
+                            else if (rule.StartsWith("_") && _mapServerService.Interpreters
                                             .Select(t => new Framework.system.PlugInManager().CreateInstance<IServiceRequestInterpreter>(t))
                                             .Where(i => "_" + i.IdentityName.ToLower() == rule.ToLower())
                                             .Count() == 1)  // Interpreter
@@ -468,8 +486,7 @@ namespace gView.Server.Controllers
         {
             return SecureApiCall(() =>
             {
-                var loginManager = new LoginManager(Globals.LoginManagerRootPath);
-                return Json(new { users = loginManager.GetTokenUsernames() });
+                return Json(new { users = _loginManagerService.GetTokenUsernames() });
             });
         }
 
@@ -481,8 +498,7 @@ namespace gView.Server.Controllers
                 model.NewUsername = model.NewUsername?.Trim() ?? String.Empty;
                 model.NewPassword = model.NewPassword?.Trim() ?? String.Empty;
 
-                var loginManager = new LoginManager(Globals.LoginManagerRootPath);
-                loginManager.CreateTokenLogin(model.NewUsername, model.NewPassword);
+                _loginManagerService.CreateTokenLogin(model.NewUsername, model.NewPassword);
 
                 return Json(new { success = true });
             });
@@ -496,8 +512,7 @@ namespace gView.Server.Controllers
                 model.Username = model.Username?.Trim() ?? String.Empty;
                 model.NewPassword = model.NewPassword?.Trim() ?? String.Empty;
 
-                var loginManager = new LoginManager(Globals.LoginManagerRootPath);
-                loginManager.ChangeTokenUserPassword(model.Username, model.NewPassword);
+                _loginManagerService.ChangeTokenUserPassword(model.Username, model.NewPassword);
 
                 return Json(new { success = true });
             });
@@ -511,7 +526,7 @@ namespace gView.Server.Controllers
         {
             try
             {
-                var authToken = base.GetAuthToken();
+                var authToken = _loginManagerService.GetAuthToken(this.Request);
                 if (!authToken.IsManageUser)
                 {
                     throw new Exception("Not allowed");
@@ -537,7 +552,7 @@ namespace gView.Server.Controllers
         {
             try
             {
-                var authToken = base.GetAuthToken();
+                var authToken = _loginManagerService.GetAuthToken(this.Request);
                 if (!authToken.IsManageUser)
                 {
                     throw new Exception("Not allowed");
@@ -570,7 +585,7 @@ namespace gView.Server.Controllers
                 runningSince = settings?.Status == MapServiceStatus.Running && mapService.RunningSinceUtc.HasValue ?
                     mapService.RunningSinceUtc.Value.ToShortDateString() + " " + mapService.RunningSinceUtc.Value.ToLongTimeString() + " (UTC)" :
                     String.Empty,
-                hasErrors = AppCode.Logger.LogFileExists(mapService.Fullname, Framework.system.loggingMethod.error)
+                hasErrors = _logger.LogFileExists(mapService.Fullname, Framework.system.loggingMethod.error)
             };
         }
 

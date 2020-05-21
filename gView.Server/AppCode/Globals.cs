@@ -12,34 +12,13 @@ namespace gView.Server.AppCode
         public static bool HasValidConfig = true;
         public static string ConfigErrorMessage = String.Empty;
 
-        public static string OutputPath
-        {
-            get
-            {
-                return InternetMapServer.OutputPath;
-            }
-        }
-
-        public static string TileCachePath
-        {
-            get
-            {
-                return InternetMapServer.TileCachePath;
-            }
-        }
-        public static string OutputUrl
-        {
-            get
-            {
-                return InternetMapServer.OutputUrl;
-            }
-        }
-
         public static string AppRootPath { get; set; }
 
         public static string LoginManagerRootPath { get; set; }
 
         public static string LoggingRootPath { get; set; }
+
+        public const string AuthCookieName = "gview5-auth-token";
 
         public static int MaxThreads
         {

@@ -1,10 +1,11 @@
 ﻿using gView.Core.Framework.Exceptions;
 using gView.Framework.system;
+using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
-using System.Collections.Generic;
+using gView.Server.Extensions;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,6 +13,15 @@ namespace gView.Server.AppCode
 {
     public class BaseController : Controller
     {
+        private readonly LoginManagerService _loginManagerService;
+        private readonly EncryptionCertificateService _encryptionCertificate;
+
+        public BaseController(LoginManagerService loginManagerService, EncryptionCertificateService encryptionCertificate)
+        {
+            _loginManagerService = loginManagerService;
+            _encryptionCertificate = encryptionCertificate;
+        }
+
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             this.ActionStartTime = DateTime.UtcNow;
@@ -23,13 +33,6 @@ namespace gView.Server.AppCode
 
         #region Security
 
-        const string AuthCookieName = "gview5-auth-token";
-
-        protected AuthToken GetAuthToken()
-        {
-            return LoginAuthToken(this.Request);
-        }
-
         protected void SetAuthCookie(AuthToken authToken)
         {
             var cookieOptions = new CookieOptions()
@@ -39,15 +42,15 @@ namespace gView.Server.AppCode
                 HttpOnly = true
             };
 
-            this.Response.Cookies.Append(AuthCookieName, authToken.ToString(), cookieOptions);
+            this.Response.Cookies.Append(Globals.AuthCookieName, _encryptionCertificate.ToToken(authToken), cookieOptions);
         }
 
         protected void RemoveAuthCookie()
         {
-            this.Response.Cookies.Delete(AuthCookieName);
+            this.Response.Cookies.Delete(Globals.AuthCookieName);
         }
 
-        static public AuthToken LoginAuthToken(HttpRequest request)
+        public AuthToken LoginAuthToken(HttpRequest request)
         {
             AuthToken authToken = null;
 
@@ -66,17 +69,17 @@ namespace gView.Server.AppCode
                 }
                 if (!String.IsNullOrEmpty(token))
                 {
-                    return authToken = AuthToken.FromString(token);
+                    return authToken = _encryptionCertificate.FromToken(token);
                 }
 
                 #endregion
 
                 #region From Cookie
 
-                string cookie = request.Cookies[AuthCookieName];
+                string cookie = request.Cookies[Globals.AuthCookieName];
                 if (!String.IsNullOrWhiteSpace(cookie))
                 {
-                    return authToken = AuthToken.FromString(cookie);
+                    return authToken = _encryptionCertificate.FromToken(cookie);
                 }
 
                 #endregion
@@ -90,45 +93,6 @@ namespace gView.Server.AppCode
             {
                 if (authToken==null || authToken.IsExpired)
                     throw new InvalidTokenException();
-            }
-        }
-
-        static public string LoginUsername(HttpRequest request)
-        {
-            try
-            {
-                return LoginAuthToken(request).Username;
-            }
-            catch (Exception)
-            {
-                return String.Empty;
-            }
-        }
-
-        static public bool IsManageUser(HttpRequest request)
-        {
-            try
-            {
-                var loginAuthToken = LoginAuthToken(request);
-                return loginAuthToken!=null &&
-                       loginAuthToken.AuthType == AuthToken.AuthTypes.Manage;
-            }
-            catch(Exception)
-            {
-                return false;
-            }
-        }
-
-        static public bool HasManagerLogin()
-        {
-            try
-            {
-                var loginManager = new LoginManager(Globals.LoginManagerRootPath);
-                return loginManager.HasManagerLogin();
-            }
-            catch
-            {
-                return false;
             }
         }
 
@@ -189,7 +153,7 @@ namespace gView.Server.AppCode
             }
             try
             {
-                var authToken = this.GetAuthToken();
+                var authToken = _loginManagerService.GetAuthToken(this.Request);
                 var identity = new Identity(authToken.Username, authToken.IsManageUser);
 
                 return await func(identity);

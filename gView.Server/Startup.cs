@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using gView.Framework.system;
 using gView.Server.AppCode;
+using gView.Server.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -11,18 +12,21 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 
 namespace gView.Server
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
             Configuration = configuration;
+            Environment = environment;
         }
 
         public IConfiguration Configuration { get; }
+        public IWebHostEnvironment Environment { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -44,10 +48,44 @@ namespace gView.Server
 
             //services.AddTransient<Microsoft.AspNetCore.Authentication.IClaimsTransformation, ClaimsTransformer>();
             //services.AddAuthentication(Microsoft.AspNetCore.Server.IIS.IISServerDefaults.AuthenticationScheme);
+
+            services.AddMapServerService(
+                config =>
+                {
+                    config.AppRootPath = Environment.ContentRootPath;
+                    if (!String.IsNullOrWhiteSpace(Configuration["services-folder"]))
+                    {
+                        config.IsValid = true;
+
+                        config.OutputPath = Configuration["output-path"];
+                        config.OutputUrl = Configuration["output-url"];
+                        config.OnlineResource = Configuration["onlineresource-url"];
+                        config.TileCachePath = Configuration["tilecache-root"];
+
+                        config.TaskQueue_MaxThreads = Math.Max(1, int.Parse(Configuration["task-queue:max-parallel-tasks"]));
+                        config.TaskQueue_QueueLength = Math.Max(10, int.Parse(Configuration["task-queue:max-queue-length"]));
+
+                        config.ServicesPath = $"{ Configuration["services-folder"] }/services";
+                        config.LoginManagerRootPath = $"{ Configuration["services-folder"] }/_login";
+                        config.LoggingRootPath = $"{ Configuration["services-folder"] }/log";
+
+                        Globals.AllowFormsLogin = config.AllowFormsLogin = Configuration["allowFormsLogin"]?.ToLower() != "false";
+                        config.ForceHttps= Configuration["force-https"]?.ToLower() == "true";
+
+                        if(!String.IsNullOrWhiteSpace(Configuration["port"]))
+                        {
+                            config.Port = int.Parse(Configuration["port"]);
+                        }
+                    }
+                    else
+                    {
+                        config.IsValid = false;
+                    }
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -314,11 +352,8 @@ namespace gView.Server
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-
-            PlugInManager.Init();
             
-            InternetMapServer.Init(env.ContentRootPath).Wait();
-            //InternetMapServer.Init(@"C:\Development_OpenSource\GeoDaten\MXL\8050");
+            //InternetMapServer.Init(env.ContentRootPath).Wait();
         }
     }
 }

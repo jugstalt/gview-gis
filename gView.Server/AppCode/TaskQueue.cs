@@ -65,10 +65,10 @@ namespace gView.Server.AppCode
             }
             catch (Exception ex)
             {
-                await Logger.LogAsync(
-                    parameter as IServiceRequestContext,
-                    Framework.system.loggingMethod.error,
-                    "Thread Error: " + ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
+                //await Logger.LogAsync(
+                //    parameter as IServiceRequestContext,
+                //    Framework.system.loggingMethod.error,
+                //    "Thread Error: " + ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
 
                 return false;
             }

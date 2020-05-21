@@ -1,6 +1,7 @@
 ﻿using gView.Core.Framework.Exceptions;
 using gView.Framework.system;
 using gView.MapServer;
+using gView.Server.Services.MapServer;
 using Newtonsoft.Json;
 using System;
 using System.IO;
@@ -18,10 +19,12 @@ namespace gView.Server.AppCode
         private MapServiceSettings _settings = null;
         private MapServiceSettings _folderSettings = null;
         private DateTime? _lastServiceRefresh = null;
+        private readonly InternetMapServerService _mss;
 
         public MapService() { }
-        public MapService(string filename, string folder, MapServiceType type)
+        public MapService(InternetMapServerService mss, string filename, string folder, MapServiceType type)
         {
+            _mss = mss;
             _type = type;
             try
             {
@@ -180,7 +183,7 @@ namespace gView.Server.AppCode
                     return;
                 }
 
-                var folderMapService = InternetMapServer.MapServices
+                var folderMapService = _mss.MapServices
                     .Where(s => s.Type == MapServiceType.Folder && this.Folder.Equals(s.Name, StringComparison.InvariantCultureIgnoreCase))
                     .FirstOrDefault() as MapService;
 

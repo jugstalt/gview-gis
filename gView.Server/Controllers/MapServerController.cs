@@ -2,6 +2,8 @@
 using gView.Framework.system;
 using gView.MapServer;
 using gView.Server.AppCode;
+using gView.Server.Services.MapServer;
+using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.IO;
@@ -13,6 +15,22 @@ namespace gView.Server.Controllers
 {
     public class MapServerController : BaseController
     {
+        private readonly InternetMapServerService _mapServerService;
+        private readonly MapServerDeployService _mapServerDeployService;
+        private readonly LoginManagerService _loginManagerService;
+
+        public MapServerController(
+            InternetMapServerService mapServerService, 
+            MapServerDeployService mapServerDeployService,
+            LoginManagerService loginManagerService,
+            EncryptionCertificateService encryptionCertificateService)
+            : base(loginManagerService, encryptionCertificateService)
+        {
+            _mapServerService = mapServerService;
+            _mapServerDeployService = mapServerDeployService;
+            _loginManagerService = loginManagerService;
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -29,12 +47,12 @@ namespace gView.Server.Controllers
                 {
                     StringBuilder sb = new StringBuilder();
                     sb.Append("<RESPONSE><SERVICES>");
-                    foreach (var service in await InternetMapServer.Instance.Maps(null))
+                    foreach (var service in await _mapServerService.Instance.Maps(null))
                     {
                         if (service.Type == MapServiceType.Folder)  // if accessable for current user... => ToDo!!!
                         {
-                            await InternetMapServer.ReloadServices(service.Name);
-                            foreach (var folderService in InternetMapServer.MapServices.Where(s => s.Folder == service.Name))
+                            _mapServerService.ReloadServices(service.Name);
+                            foreach (var folderService in _mapServerService.MapServices.Where(s => s.Folder == service.Name))
                             {
                                 sb.Append("<SERVICE ");
                                 sb.Append("NAME='" + folderService.Fullname + "' ");
@@ -82,7 +100,7 @@ namespace gView.Server.Controllers
 
                 #region Security
 
-                Identity identity = Identity.FromFormattedString(base.GetAuthToken().Username);
+                Identity identity = Identity.FromFormattedString(_loginManagerService.GetAuthToken(this.Request).Username);
 
                 #endregion
 
@@ -113,24 +131,24 @@ namespace gView.Server.Controllers
 
                 ServiceRequest serviceRequest = new ServiceRequest(name.ServiceName(), name.FolderName(), input)
                 {
-                    OnlineResource = InternetMapServer.OnlineResource + "/MapRequest/" + guid + "/" + name,
-                    OutputUrl = InternetMapServer.OutputUrl,
+                    OnlineResource = _mapServerService.Options.OnlineResource + "/MapRequest/" + guid + "/" + name,
+                    OutputUrl = _mapServerService.Options.OutputUrl,
                     Identity = identity
                 };
 
                 #endregion
 
                 IServiceRequestInterpreter interpreter =
-                    InternetMapServer.GetInterpreter(new Guid(guid));
+                    _mapServerService.GetInterpreter(new Guid(guid));
 
                 #region Queue & Wait
 
                 IServiceRequestContext context = await ServiceRequestContext.TryCreate(
-                    InternetMapServer.Instance,
+                    _mapServerService.Instance,
                     interpreter,
                     serviceRequest);
 
-                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
+                await _mapServerService.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
@@ -161,7 +179,7 @@ namespace gView.Server.Controllers
 
                 name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
-                bool ret = await InternetMapServer.AddMap(name, input, credentials.user, credentials.password);
+                bool ret = await _mapServerDeployService.AddMap(name, input, credentials.user, credentials.password);
 
                 return Result(ret.ToString(), "text/plain");
             }
@@ -185,7 +203,7 @@ namespace gView.Server.Controllers
 
                 name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
-                bool ret = await InternetMapServer.RemoveMap(name, user, pwd);
+                bool ret = await _mapServerDeployService.RemoveMap(name, user, pwd);
 
                 return Result(ret.ToString(), "text/plain");
             }
@@ -208,7 +226,7 @@ namespace gView.Server.Controllers
 
                 name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
-                string ret = await InternetMapServer.GetMetadata(name, user, pwd);
+                string ret = await _mapServerDeployService.GetMetadata(name, user, pwd);
 
                 return Result(ret, "text/xml");
             }
@@ -234,7 +252,7 @@ namespace gView.Server.Controllers
                 string user = String.Empty, pwd = String.Empty;
                 // var request = Request(out user, out pwd);
 
-                bool ret = await InternetMapServer.SetMetadata(name, input, user, pwd);
+                bool ret = await _mapServerDeployService.SetMetadata(name, input, user, pwd);
 
                 return Result(ret.ToString(), "text/plain");
             }

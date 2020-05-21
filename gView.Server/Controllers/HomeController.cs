@@ -1,5 +1,7 @@
 ﻿using gView.Server.AppCode;
 using gView.Server.Models;
+using gView.Server.Services.MapServer;
+using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Diagnostics;
@@ -8,9 +10,22 @@ namespace gView.Server.Controllers
 {
     public class HomeController : BaseController
     {
+        private readonly InternetMapServerService _mapServerService;
+        private readonly LoginManagerService _loginManagerService;
+
+        public HomeController(
+            InternetMapServerService mapServerService, 
+            LoginManagerService loginManagerService,
+            EncryptionCertificateService encryptionCertificateService)
+            : base(loginManagerService, encryptionCertificateService)
+        {
+            _mapServerService = mapServerService;
+            _loginManagerService = loginManagerService;
+        }
+
         public IActionResult Index()
         {
-            if (Globals.HasValidConfig == false)
+            if (_mapServerService.Options.IsValid == false)
             {
                 return RedirectToAction("ConfigInvalid");
             }
@@ -21,8 +36,7 @@ namespace gView.Server.Controllers
 
             if (!String.IsNullOrWhiteSpace(user))
             {
-                var loginManager = new LoginManager(Globals.LoginManagerRootPath);
-                var authToken = loginManager.CreateUserAuthTokenWithoutPasswordCheck(user);
+                var authToken = _loginManagerService.CreateUserAuthTokenWithoutPasswordCheck(user);
                 if (authToken != null)
                 {
                     base.SetAuthCookie(authToken);

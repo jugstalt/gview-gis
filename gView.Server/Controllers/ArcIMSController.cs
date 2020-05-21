@@ -10,12 +10,25 @@ using gView.Interoperability.ArcXML;
 using gView.Interoperability.GeoServices.Rest.Json;
 using gView.MapServer;
 using gView.Server.AppCode;
+using gView.Server.Services.MapServer;
+using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 
 namespace gView.Server.Controllers
 {
     public class ArcIMSController : BaseController
     {
+        private readonly InternetMapServerService _mapServerService;
+
+        public ArcIMSController(
+            InternetMapServerService mapServerService,
+            LoginManagerService loginManagerService,
+            EncryptionCertificateService encryptionCertificateService)
+            : base(loginManagerService, encryptionCertificateService)
+        {
+            _mapServerService = mapServerService;
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -45,7 +58,7 @@ namespace gView.Server.Controllers
                     content = @"<?xml version=""1.0"" encoding=""UTF-8""?><ARCXML version=""1.1""><REQUEST><GET_SERVICE_INFO fields=""true"" envelope=""true"" renderer=""true"" extensions=""true"" /></REQUEST></ARCXML>";
                 }
 
-                var interpreter = InternetMapServer.GetInterpreter(typeof(ArcXMLRequest));
+                var interpreter = _mapServerService.GetInterpreter(typeof(ArcXMLRequest));
 
                 #region Request 
 
@@ -57,8 +70,8 @@ namespace gView.Server.Controllers
                 ServiceRequest serviceRequest = new ServiceRequest(ServiceName.ServiceName(), ServiceName.FolderName(), content)
                 {
                     Identity = identity,
-                    OnlineResource = InternetMapServer.OnlineResource,
-                    OutputUrl = InternetMapServer.OutputUrl,
+                    OnlineResource = _mapServerService.Options.OnlineResource,
+                    OutputUrl = _mapServerService.Options.OutputUrl,
                 };
 
                 #endregion
@@ -66,12 +79,12 @@ namespace gView.Server.Controllers
                 #region Queue & Wait
 
                 IServiceRequestContext context = await ServiceRequestContext.TryCreate(
-                    InternetMapServer.Instance,
+                    _mapServerService.Instance,
                     interpreter,
                     serviceRequest,
                     checkSecurity: ServiceName.ToLower() != "catalog");
 
-                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
+                await _mapServerService.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
