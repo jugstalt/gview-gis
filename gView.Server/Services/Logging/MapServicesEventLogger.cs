@@ -12,9 +12,9 @@ namespace gView.Server.Services.Logging
 {
     public class MapServicesEventLogger
     {
-        private InternetMapServerService _mapServerService;
+        private MapServiceManager _mapServerService;
 
-        public MapServicesEventLogger(InternetMapServerService mapServerService)
+        public MapServicesEventLogger(MapServiceManager mapServerService)
         {
             _mapServerService = mapServerService;
         }

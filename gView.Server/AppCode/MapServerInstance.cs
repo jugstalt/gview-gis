@@ -22,30 +22,30 @@ namespace gView.Server.AppCode
         private Dictionary<string, object> _lockers = new Dictionary<string, object>();
         //private int _maxGDIServers = int.MaxValue;
         private int _maxServices = int.MaxValue;
-        private readonly InternetMapServerService _mss;
-        private readonly MapServerDeployService _msds;
+        private readonly MapServiceManager _mapServiceMananger;
+        private readonly MapServiceDeploymentManager _mapServiceDeploymentMananger;
         private readonly MapServicesEventLogger _logger;
 
         public MapServerInstance(
-            InternetMapServerService mss, 
-            MapServerDeployService msds,
+            MapServiceManager mapServiceMananger,
+            MapServiceDeploymentManager mapServiceDeploymentMananger,
             MapServicesEventLogger logger,
             int port)
         {
-            _mss = mss;
-            _msds = msds;
+            _mapServiceMananger = mapServiceMananger;
+            _mapServiceDeploymentMananger = mapServiceDeploymentMananger;
             _logger = logger;
 
-            _log_requests = Globals.log_requests;
-            _log_request_details = Globals.log_request_details;
-            _log_errors = Globals.log_errors;
+            _log_requests = _mapServiceMananger.Options.LogServiceRequests;
+            _log_request_details = _mapServiceMananger.Options.LogServiceRequestDetails;
+            _log_errors = _mapServiceMananger.Options.LogServiceErrors;
         }
 
         async private Task<IServiceMap> Map(string name, string folder, IServiceRequestContext context)
         {
             try
             {
-                if (_msds.MapDocument == null)
+                if (_mapServiceDeploymentMananger.MapDocument == null)
                 {
                     throw new MapServerException("Fatal error: map(server) document missing");
                 }
@@ -71,7 +71,7 @@ namespace gView.Server.AppCode
 
                 if (await mapService.RefreshRequired())
                 {
-                    _msds.MapDocument.RemoveMap(mapService.Fullname);
+                    _mapServiceDeploymentMananger.MapDocument.RemoveMap(mapService.Fullname);
                 }
 
                 //lock (locker)
@@ -110,11 +110,11 @@ namespace gView.Server.AppCode
             {
                 if (identity == null)
                 {
-                    return _mss.MapServices.ToArray();
+                    return _mapServiceMananger.MapServices.ToArray();
                 }
 
                 List<IMapService> services = new List<IMapService>();
-                foreach (var service in _mss.MapServices)
+                foreach (var service in _mapServiceMananger.MapServices)
                 {
                     if (await service.HasAnyAccess(identity))
                     {
@@ -250,7 +250,7 @@ namespace gView.Server.AppCode
         {
             get
             {
-                return _mss.Options.OutputUrl;;
+                return _mapServiceMananger.Options.OutputUrl;;
             }
         }
 
@@ -258,7 +258,7 @@ namespace gView.Server.AppCode
         {
             get
             {
-                return _mss.Options.OutputPath;
+                return _mapServiceMananger.Options.OutputPath;
             }
         }
 
@@ -266,7 +266,7 @@ namespace gView.Server.AppCode
         {
             get
             {
-                return _mss.Options.TileCachePath;
+                return _mapServiceMananger.Options.TileCachePath;
             }
         }
 
@@ -280,9 +280,9 @@ namespace gView.Server.AppCode
             if (map != null)
             {
                 IEnumerable<IMapApplicationModule> modules = null;
-                if (_msds.MapDocument is IMapDocumentModules)
+                if (_mapServiceDeploymentMananger.MapDocument is IMapDocumentModules)
                 {
-                    modules = ((IMapDocumentModules)_msds.MapDocument).GetMapModules(map);
+                    modules = ((IMapDocumentModules)_mapServiceDeploymentMananger.MapDocument).GetMapModules(map);
                 }
                 return await ServiceMap.CreateAsync(map, this, modules);
             }
@@ -373,13 +373,13 @@ namespace gView.Server.AppCode
                         }
                     }
                     newMap.Name = alias;
-                    if (!_msds.MapDocument.AddMap(newMap))
+                    if (!_mapServiceDeploymentMananger.MapDocument.AddMap(newMap))
                     {
                         return null;
                     }
 
                     bool found = false;
-                    foreach (IMapService ms in _mss.MapServices)
+                    foreach (IMapService ms in _mapServiceMananger.MapServices)
                     {
                         if (ms != null &&
                             ms.Name == alias && ms.Type == MapServiceType.GDI)
@@ -391,7 +391,7 @@ namespace gView.Server.AppCode
 
                     if (!found)
                     {
-                        _mss.MapServices.Add(new MapService(_mss, name, String.Empty, MapServiceType.GDI));
+                        _mapServiceMananger.MapServices.Add(new MapService(_mapServiceMananger, name, String.Empty, MapServiceType.GDI));
                     }
 
                     return await ServiceMap.CreateAsync(newMap, this, null);
@@ -403,7 +403,7 @@ namespace gView.Server.AppCode
 
         public IMapService GetMapService(string name, string folder)
         {
-            foreach (IMapService ms in _mss.MapServices)
+            foreach (IMapService ms in _mapServiceMananger.MapServices)
             {
                 if (ms == null)
                 {
@@ -417,12 +417,12 @@ namespace gView.Server.AppCode
                 }
             }
 
-            return _mss.TryAddService(name, folder);
+            return _mapServiceMananger.TryAddService(name, folder);
         }
 
         async private Task<Map> FindMap(string name, IServiceRequestContext context)
         {
-            foreach (IMap map in _msds.MapDocument.Maps)
+            foreach (IMap map in _mapServiceDeploymentMananger.MapDocument.Maps)
             {
                 if (map.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) && map is Map)
                 {
@@ -435,7 +435,7 @@ namespace gView.Server.AppCode
                 return null;
             }
 
-            IMap m = await _msds.LoadMap(name);
+            IMap m = await _mapServiceDeploymentMananger.LoadMap(name);
             if (m is Map)
             {
                 return (Map)m;

@@ -10,22 +10,22 @@ namespace gView.Server.Controllers
 {
     public class HomeController : BaseController
     {
-        private readonly InternetMapServerService _mapServerService;
-        private readonly LoginManagerService _loginManagerService;
+        private readonly MapServiceManager _mapServiceMananger;
+        private readonly LoginManager _loginManager;
 
         public HomeController(
-            InternetMapServerService mapServerService, 
-            LoginManagerService loginManagerService,
+            MapServiceManager mapServiceMananger, 
+            LoginManager loginManager,
             EncryptionCertificateService encryptionCertificateService)
-            : base(loginManagerService, encryptionCertificateService)
+            : base(mapServiceMananger, loginManager, encryptionCertificateService)
         {
-            _mapServerService = mapServerService;
-            _loginManagerService = loginManagerService;
+            _mapServiceMananger = mapServiceMananger;
+            _loginManager = loginManager;
         }
 
         public IActionResult Index()
         {
-            if (_mapServerService.Options.IsValid == false)
+            if (_mapServiceMananger.Options.IsValid == false)
             {
                 return RedirectToAction("ConfigInvalid");
             }
@@ -36,7 +36,7 @@ namespace gView.Server.Controllers
 
             if (!String.IsNullOrWhiteSpace(user))
             {
-                var authToken = _loginManagerService.CreateUserAuthTokenWithoutPasswordCheck(user);
+                var authToken = _loginManager.CreateUserAuthTokenWithoutPasswordCheck(user);
                 if (authToken != null)
                 {
                     base.SetAuthCookie(authToken);

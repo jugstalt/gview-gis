@@ -13,9 +13,9 @@ namespace gView.Server.Services.Security
 {
     public class EncryptionCertificateService
     {
-        private readonly InternetMapServerService _mapServerService;
+        private readonly MapServiceManager _mapServerService;
 
-        public EncryptionCertificateService(InternetMapServerService mapServerService)
+        public EncryptionCertificateService(MapServiceManager mapServerService)
         {
             _mapServerService = mapServerService;
         }

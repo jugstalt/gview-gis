@@ -15,20 +15,20 @@ namespace gView.Server.Controllers
 {
     public class MapServerController : BaseController
     {
-        private readonly InternetMapServerService _mapServerService;
-        private readonly MapServerDeployService _mapServerDeployService;
-        private readonly LoginManagerService _loginManagerService;
+        private readonly MapServiceManager _mapServiceManager;
+        private readonly MapServiceDeploymentManager _mapServiceDeploymentMananger;
+        private readonly LoginManager _loginMananger;
 
         public MapServerController(
-            InternetMapServerService mapServerService, 
-            MapServerDeployService mapServerDeployService,
-            LoginManagerService loginManagerService,
+            MapServiceManager mapServiceMananger, 
+            MapServiceDeploymentManager mapServiceDeploymentManager,
+            LoginManager loginMananger,
             EncryptionCertificateService encryptionCertificateService)
-            : base(loginManagerService, encryptionCertificateService)
+            : base(mapServiceMananger, loginMananger, encryptionCertificateService)
         {
-            _mapServerService = mapServerService;
-            _mapServerDeployService = mapServerDeployService;
-            _loginManagerService = loginManagerService;
+            _mapServiceManager = mapServiceMananger;
+            _mapServiceDeploymentMananger = mapServiceDeploymentManager;
+            _loginMananger = loginMananger;
         }
 
         public IActionResult Index()
@@ -47,12 +47,12 @@ namespace gView.Server.Controllers
                 {
                     StringBuilder sb = new StringBuilder();
                     sb.Append("<RESPONSE><SERVICES>");
-                    foreach (var service in await _mapServerService.Instance.Maps(null))
+                    foreach (var service in await _mapServiceManager.Instance.Maps(null))
                     {
                         if (service.Type == MapServiceType.Folder)  // if accessable for current user... => ToDo!!!
                         {
-                            _mapServerService.ReloadServices(service.Name);
-                            foreach (var folderService in _mapServerService.MapServices.Where(s => s.Folder == service.Name))
+                            _mapServiceManager.ReloadServices(service.Name);
+                            foreach (var folderService in _mapServiceManager.MapServices.Where(s => s.Folder == service.Name))
                             {
                                 sb.Append("<SERVICE ");
                                 sb.Append("NAME='" + folderService.Fullname + "' ");
@@ -100,7 +100,7 @@ namespace gView.Server.Controllers
 
                 #region Security
 
-                Identity identity = Identity.FromFormattedString(_loginManagerService.GetAuthToken(this.Request).Username);
+                Identity identity = Identity.FromFormattedString(_loginMananger.GetAuthToken(this.Request).Username);
 
                 #endregion
 
@@ -131,24 +131,24 @@ namespace gView.Server.Controllers
 
                 ServiceRequest serviceRequest = new ServiceRequest(name.ServiceName(), name.FolderName(), input)
                 {
-                    OnlineResource = _mapServerService.Options.OnlineResource + "/MapRequest/" + guid + "/" + name,
-                    OutputUrl = _mapServerService.Options.OutputUrl,
+                    OnlineResource = _mapServiceManager.Options.OnlineResource + "/MapRequest/" + guid + "/" + name,
+                    OutputUrl = _mapServiceManager.Options.OutputUrl,
                     Identity = identity
                 };
 
                 #endregion
 
                 IServiceRequestInterpreter interpreter =
-                    _mapServerService.GetInterpreter(new Guid(guid));
+                    _mapServiceManager.GetInterpreter(new Guid(guid));
 
                 #region Queue & Wait
 
                 IServiceRequestContext context = await ServiceRequestContext.TryCreate(
-                    _mapServerService.Instance,
+                    _mapServiceManager.Instance,
                     interpreter,
                     serviceRequest);
 
-                await _mapServerService.TaskQueue.AwaitRequest(interpreter.Request, context);
+                await _mapServiceManager.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
@@ -179,7 +179,7 @@ namespace gView.Server.Controllers
 
                 name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
-                bool ret = await _mapServerDeployService.AddMap(name, input, credentials.user, credentials.password);
+                bool ret = await _mapServiceDeploymentMananger.AddMap(name, input, credentials.user, credentials.password);
 
                 return Result(ret.ToString(), "text/plain");
             }
@@ -203,7 +203,7 @@ namespace gView.Server.Controllers
 
                 name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
-                bool ret = await _mapServerDeployService.RemoveMap(name, user, pwd);
+                bool ret = await _mapServiceDeploymentMananger.RemoveMap(name, user, pwd);
 
                 return Result(ret.ToString(), "text/plain");
             }
@@ -226,7 +226,7 @@ namespace gView.Server.Controllers
 
                 name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
-                string ret = await _mapServerDeployService.GetMetadata(name, user, pwd);
+                string ret = await _mapServiceDeploymentMananger.GetMetadata(name, user, pwd);
 
                 return Result(ret, "text/xml");
             }
@@ -252,7 +252,7 @@ namespace gView.Server.Controllers
                 string user = String.Empty, pwd = String.Empty;
                 // var request = Request(out user, out pwd);
 
-                bool ret = await _mapServerDeployService.SetMetadata(name, input, user, pwd);
+                bool ret = await _mapServiceDeploymentMananger.SetMetadata(name, input, user, pwd);
 
                 return Result(ret.ToString(), "text/plain");
             }

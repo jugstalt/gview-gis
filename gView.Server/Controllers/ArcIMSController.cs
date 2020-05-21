@@ -18,13 +18,13 @@ namespace gView.Server.Controllers
 {
     public class ArcIMSController : BaseController
     {
-        private readonly InternetMapServerService _mapServerService;
+        private readonly MapServiceManager _mapServerService;
 
         public ArcIMSController(
-            InternetMapServerService mapServerService,
-            LoginManagerService loginManagerService,
+            MapServiceManager mapServerService,
+            LoginManager loginManagerService,
             EncryptionCertificateService encryptionCertificateService)
-            : base(loginManagerService, encryptionCertificateService)
+            : base(mapServerService, loginManagerService, encryptionCertificateService)
         {
             _mapServerService = mapServerService;
         }

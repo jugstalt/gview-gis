@@ -19,19 +19,19 @@ using System.Threading.Tasks;
 
 namespace gView.Server.Services.MapServer
 {
-    public class MapServerDeployService
+    public class MapServiceDeploymentManager
     {
-        private readonly InternetMapServerService _mapServerService;
+        private readonly MapServiceManager _mapServerService;
         private readonly AccessControlService _accessControlService;
         private readonly ILogger _logger;
 
-        public MapServerDeployService(InternetMapServerService mapServicerService,
+        public MapServiceDeploymentManager(MapServiceManager mapServicerService,
                                       AccessControlService accessControlService,
-                                      ILogger<MapServerDeployService> logger=null)
+                                      ILogger<MapServiceDeploymentManager> logger=null)
         {
             _mapServerService = mapServicerService;
             _accessControlService = accessControlService;
-            _logger = logger ?? new ConsoleLogger<MapServerDeployService>();
+            _logger = logger ?? new ConsoleLogger<MapServiceDeploymentManager>();
 
             MapDocument= new ServerMapDocument(_mapServerService);
         }

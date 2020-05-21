@@ -1,6 +1,6 @@
 ﻿@using  gView.Server.AppCode
 @inject gView.Server.Services.Hosting.UrlHelperService UrlHelperService
-@inject gView.Server.Services.Security.LoginManagerService LoginManagerService
+@inject gView.Server.Services.Security.LoginManager LoginManager
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,7 +22,7 @@
 </head>
 <body>
     @{
-        var username = LoginManagerService.LoginUsername(this.Context.Request);
+        var username = LoginManager.LoginUsername(this.Context.Request);
     }
     <nav class="webportal-layout-header navbar navbar-inverse navbar-fixed-top">
         <div class="navbar-header">

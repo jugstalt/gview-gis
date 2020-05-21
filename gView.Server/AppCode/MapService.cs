@@ -19,10 +19,10 @@ namespace gView.Server.AppCode
         private MapServiceSettings _settings = null;
         private MapServiceSettings _folderSettings = null;
         private DateTime? _lastServiceRefresh = null;
-        private readonly InternetMapServerService _mss;
+        private readonly MapServiceManager _mss;
 
         public MapService() { }
-        public MapService(InternetMapServerService mss, string filename, string folder, MapServiceType type)
+        public MapService(MapServiceManager mss, string filename, string folder, MapServiceType type)
         {
             _mss = mss;
             _type = type;

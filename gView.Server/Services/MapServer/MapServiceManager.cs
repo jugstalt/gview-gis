@@ -14,19 +14,19 @@ using gView.Server.Services.Logging;
 
 namespace gView.Server.Services.MapServer
 {
-    public class InternetMapServerService
+    public class MapServiceManager
     {
         private ILogger _logger;
         private IServiceProvider _serviceProvider;
 
-        public InternetMapServerService(
+        public MapServiceManager(
             IServiceProvider serviceProvider,
-            IOptionsMonitor<InternetMapServerServiceOptions> optionsMonitor, 
-            ILogger<InternetMapServerService> logger = null)
+            IOptionsMonitor<MapServerManagerOptions> optionsMonitor, 
+            ILogger<MapServiceManager> logger = null)
         {
             _serviceProvider = serviceProvider;
             Options = optionsMonitor.CurrentValue;
-            _logger = logger ?? new ConsoleLogger<InternetMapServerService>();
+            _logger = logger ?? new ConsoleLogger<MapServiceManager>();
 
             if (Options.IsValid)
             {
@@ -63,7 +63,7 @@ namespace gView.Server.Services.MapServer
             {
                 if (_instance == null)
                 {
-                    var msds = (MapServerDeployService)_serviceProvider.GetService(typeof(MapServerDeployService));
+                    var msds = (MapServiceDeploymentManager)_serviceProvider.GetService(typeof(MapServiceDeploymentManager));
                     var logger = (MapServicesEventLogger)_serviceProvider.GetService(typeof(MapServicesEventLogger));
 
                     _instance = new MapServerInstance(this, msds, logger, Options.Port);
@@ -73,7 +73,7 @@ namespace gView.Server.Services.MapServer
             }
         }
 
-        public readonly InternetMapServerServiceOptions Options;
+        public readonly MapServerManagerOptions Options;
         public readonly TaskQueue<IServiceRequestContext> TaskQueue;
         public readonly Type[] Interpreters;
         public ConcurrentBag<IMapService> MapServices = new ConcurrentBag<IMapService>();

@@ -18,9 +18,9 @@ namespace gView.Server.AppCode
         private ConcurrentBag<IMap> _maps = new ConcurrentBag<IMap>();
         private ConcurrentDictionary<IMap, IEnumerable<IMapApplicationModule>> _mapModules = new ConcurrentDictionary<IMap, IEnumerable<IMapApplicationModule>>();
         private ITableRelations _tableRelations;
-        private InternetMapServerService _mapServerService;
+        private MapServiceManager _mapServerService;
              
-        public ServerMapDocument(InternetMapServerService mapServerService)
+        public ServerMapDocument(MapServiceManager mapServerService)
         {
             _mapServerService = mapServerService;
             _tableRelations = new TableRelations(this);

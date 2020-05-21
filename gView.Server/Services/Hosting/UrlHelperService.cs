@@ -9,9 +9,9 @@ namespace gView.Server.Services.Hosting
 {
     public class UrlHelperService
     {
-        public InternetMapServerService _mapServerSercice;
+        public MapServiceManager _mapServerSercice;
 
-        public UrlHelperService(InternetMapServerService mapServerService)
+        public UrlHelperService(MapServiceManager mapServerService)
         {
             _mapServerSercice = mapServerService;
         }

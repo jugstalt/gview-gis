@@ -13,12 +13,12 @@ using gView.Server.Extensions;
 
 namespace gView.Server.Services.Security
 {
-    public class LoginManagerService
+    public class LoginManager
     {
-        private readonly InternetMapServerService _mapServerService;
+        private readonly MapServiceManager _mapServerService;
         private readonly EncryptionCertificateService _encryptionCertService;
 
-        public LoginManagerService(InternetMapServerService mapServerService, EncryptionCertificateService encryptionCertService)
+        public LoginManager(MapServiceManager mapServerService, EncryptionCertificateService encryptionCertService)
         {
             _mapServerService = mapServerService;
             _encryptionCertService = encryptionCertService;

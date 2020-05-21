@@ -1,10 +1,10 @@
 ﻿@using gView.Server.AppCode
 @inject gView.Server.Services.Hosting.UrlHelperService UrlHelperService
-@inject gView.Server.Services.Security.LoginManagerService LoginManagerService
+@inject gView.Server.Services.Security.LoginManager LoginManager
 @{
     ViewData["Title"] = "Home Page";
-    var username = LoginManagerService.LoginUsername(this.Context.Request);
-    var isManageUser = LoginManagerService.IsManageUser(this.Context.Request);
+    var username = LoginManager.LoginUsername(this.Context.Request);
+    var isManageUser = LoginManager.IsManageUser(this.Context.Request);
 }
 
 <div>
@@ -20,7 +20,7 @@
         </a>
         @if (isManageUser || (Globals.AllowFormsLogin && (isManageUser == true || String.IsNullOrWhiteSpace(username))))
         {
-        var hasManagerLogin = LoginManagerService.HasManagerLogin();
+        var hasManagerLogin = LoginManager.HasManagerLogin();
         <a class="main-nav-panel manage @(!hasManagerLogin ? "required":"")" asp-area="" asp-controller="Manage" asp-action="Index">
             <div class="text">Manage</div>
         </a>

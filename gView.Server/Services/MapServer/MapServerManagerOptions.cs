@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace gView.Server.Services.MapServer
 {
-    public class InternetMapServerServiceOptions
+    public class MapServerManagerOptions
     {
         public bool IsValid { get; set; }
 
@@ -19,6 +19,10 @@ namespace gView.Server.Services.MapServer
 
         public string LoginManagerRootPath { get; set; }
         public string LoggingRootPath { get; set; }
+
+        public bool LogServiceErrors { get; set; }
+        public bool LogServiceRequests { get; set; }
+        public bool LogServiceRequestDetails { get; set; }
 
         public bool AllowFormsLogin { get; set; }
         public bool ForceHttps { get; set; }

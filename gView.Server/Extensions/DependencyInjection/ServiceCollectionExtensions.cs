@@ -14,27 +14,18 @@ namespace gView.Server.Extensions.DependencyInjection
     {
         static public IServiceCollection AddMapServerService(
             this IServiceCollection services,
-            Action<InternetMapServerServiceOptions> configAction,
-            Action<InternetMapServerCapabilites> configCapabilites = null)
+            Action<MapServerManagerOptions> configAction)
         {
-            services.Configure<InternetMapServerServiceOptions>(configAction);
-            services.AddSingleton<InternetMapServerService>();
+            services.Configure<MapServerManagerOptions>(configAction);
+            services.AddSingleton<MapServiceManager>();
 
             services.AddSingleton<UrlHelperService>();
-            services.AddSingleton<LoginManagerService>();
+            services.AddSingleton<LoginManager>();
             services.AddSingleton<AccessControlService>();
             services.AddSingleton<EncryptionCertificateService>();
 
-            services.AddSingleton<MapServerDeployService>();
+            services.AddSingleton<MapServiceDeploymentManager>();
             services.AddSingleton<MapServicesEventLogger>();
-
-            var capabilites = new InternetMapServerCapabilites();
-            configCapabilites?.Invoke(capabilites);
-
-            if(capabilites.AllowDeployment)
-            {
-                
-            }
 
             return services;
         } 

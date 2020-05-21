@@ -8,16 +8,22 @@ using System;
 using gView.Server.Extensions;
 using System.Linq;
 using System.Threading.Tasks;
+using gView.Server.Services.MapServer;
 
 namespace gView.Server.AppCode
 {
     public class BaseController : Controller
     {
-        private readonly LoginManagerService _loginManagerService;
+        private readonly MapServiceManager _mapServerService;
+        private readonly LoginManager _loginManagerService;
         private readonly EncryptionCertificateService _encryptionCertificate;
 
-        public BaseController(LoginManagerService loginManagerService, EncryptionCertificateService encryptionCertificate)
+        public BaseController(
+            MapServiceManager mapServerService,
+            LoginManager loginManagerService, 
+            EncryptionCertificateService encryptionCertificate)
         {
+            _mapServerService = mapServerService;
             _loginManagerService = loginManagerService;
             _encryptionCertificate = encryptionCertificate;
         }
@@ -147,7 +153,7 @@ namespace gView.Server.AppCode
 
         async virtual protected Task<IActionResult> SecureMethodHandler(Func<Identity, Task<IActionResult>> func, Func<Exception, IActionResult> onException = null)
         {
-            if(Globals.HasValidConfig==false)
+            if (_mapServerService.Options.IsValid == false)
             {
                 return RedirectToAction("ConfigInvalid", "Home");
             }

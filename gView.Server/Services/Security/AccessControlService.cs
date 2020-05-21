@@ -9,10 +9,10 @@ namespace gView.Server.Services.Security
 {
     public class AccessControlService
     {
-        private readonly InternetMapServerService _mapServerService;
-        private readonly LoginManagerService _loginManagerService;
+        private readonly MapServiceManager _mapServerService;
+        private readonly LoginManager _loginManagerService;
 
-        public AccessControlService(InternetMapServerService mapServerService, LoginManagerService loginManagerService)
+        public AccessControlService(MapServiceManager mapServerService, LoginManager loginManagerService)
         {
             _mapServerService = mapServerService;
             _loginManagerService = loginManagerService;

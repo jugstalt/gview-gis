@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using gView.Framework.system;
+using gView.Interoperability.GeoServices.Rest.Json.Renderers;
 using gView.Server.AppCode;
 using gView.Server.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
@@ -68,6 +69,10 @@ namespace gView.Server
                         config.ServicesPath = $"{ Configuration["services-folder"] }/services";
                         config.LoginManagerRootPath = $"{ Configuration["services-folder"] }/_login";
                         config.LoggingRootPath = $"{ Configuration["services-folder"] }/log";
+
+                        config.LogServiceErrors = Configuration["Logging:LogServiceErrors"]?.ToLower() != "false";
+                        config.LogServiceRequests = Configuration["Logging:LogServiceRequests"]?.ToLower() == "true";
+                        config.LogServiceRequestDetails = Configuration["Logging:LogServerRequestDetails"]?.ToLower() == "true";
 
                         Globals.AllowFormsLogin = config.AllowFormsLogin = Configuration["allowFormsLogin"]?.ToLower() != "false";
                         config.ForceHttps= Configuration["force-https"]?.ToLower() == "true";

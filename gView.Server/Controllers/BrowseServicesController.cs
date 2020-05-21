@@ -19,18 +19,18 @@ namespace gView.Server.Controllers
 {
     public class BrowseServicesController : BaseController
     {
-        private readonly InternetMapServerService _mapServerService;
-        private readonly MapServerDeployService _mapServerDeployService;
+        private readonly MapServiceManager _mapServerService;
+        private readonly MapServiceDeploymentManager _mapServerDeployService;
         private readonly UrlHelperService _urlHelperService;
-        private readonly LoginManagerService _loginManagerService;
+        private readonly LoginManager _loginManagerService;
 
         public BrowseServicesController(
-            InternetMapServerService mapServerService,
-            MapServerDeployService mapServerDeployService,
+            MapServiceManager mapServerService,
+            MapServiceDeploymentManager mapServerDeployService,
             UrlHelperService urlHelperService,
-            LoginManagerService loginManagerService,
+            LoginManager loginManagerService,
             EncryptionCertificateService encryptionCertificateService)
-            : base(loginManagerService, encryptionCertificateService)
+            : base(mapServerService, loginManagerService, encryptionCertificateService)
         {
             _mapServerService = mapServerService;
             _mapServerDeployService = mapServerDeployService;

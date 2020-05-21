@@ -1,9 +1,9 @@
 ﻿@using gView.Server.AppCode
 @inject gView.Server.Services.Hosting.UrlHelperService UrlHelperService
-@inject gView.Server.Services.Security.LoginManagerService LoginManagerService
+@inject gView.Server.Services.Security.LoginManager LoginManager
 @{
-    var username = LoginManagerService.LoginUsername(this.Context.Request);
-    var isManageUser = LoginManagerService.IsManageUser(this.Context.Request);
+    var username = LoginManager.LoginUsername(this.Context.Request);
+    var isManageUser = LoginManager.IsManageUser(this.Context.Request);
 }
 
 <div class="webportal-layout-sidebar">

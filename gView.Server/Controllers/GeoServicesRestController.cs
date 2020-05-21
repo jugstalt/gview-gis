@@ -32,17 +32,17 @@ namespace gView.Server.Controllers
 {
     public class GeoServicesRestController : BaseController
     {
-        private readonly InternetMapServerService _mapServerService;
+        private readonly MapServiceManager _mapServerService;
         private readonly UrlHelperService _urlHelperService;
-        private readonly LoginManagerService _loginManagerService;
+        private readonly LoginManager _loginManagerService;
         private readonly EncryptionCertificateService _encryptionCertificate;
 
         public GeoServicesRestController(
-            InternetMapServerService mapServerService,
+            MapServiceManager mapServerService,
             UrlHelperService urlHelperService,
-            LoginManagerService loginManagerService,
+            LoginManager loginManagerService,
             EncryptionCertificateService encryptionCertificate)
-            : base(loginManagerService, encryptionCertificate)
+            : base(mapServerService, loginManagerService, encryptionCertificate)
         {
             _mapServerService = mapServerService;
             _urlHelperService = urlHelperService;

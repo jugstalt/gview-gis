@@ -1,5 +1,6 @@
 ﻿using gView.Server.AppCode;
 using gView.Server.Models;
+using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -8,14 +9,15 @@ namespace gView.Server.Controllers
 {
     public class TokenController : BaseController
     {
-        private readonly LoginManagerService _loginManagerService;
+        private readonly LoginManager _loginMananger;
 
         public TokenController(
-            LoginManagerService loginManagerService,
+            MapServiceManager mapServiceMananger,
+            LoginManager loginManager,
             EncryptionCertificateService encryptionCertificateService)
-            : base(loginManagerService, encryptionCertificateService)
+            : base(mapServiceMananger, loginManager, encryptionCertificateService)
         {
-            _loginManagerService = loginManagerService;
+            _loginMananger = loginManager;
         }
 
         public IActionResult Index()
@@ -44,7 +46,7 @@ namespace gView.Server.Controllers
                     return RedirectToAction("Index", "Home");
                 }
 
-                var authToken = _loginManagerService.GetAuthToken(model.Username, model.Password);
+                var authToken = _loginMananger.GetAuthToken(model.Username, model.Password);
 
                 if (authToken == null)
                 {
