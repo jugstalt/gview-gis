@@ -957,8 +957,8 @@ namespace gView.Interoperability.GeoServices.Request
                     {
                         using (var transformer = GeometricTransformerFactory.Create())
                         {
-                            var fromSrs = SpatialReference.FromID("espg:" + feature.Shape.Srs.ToString());
-                            var toSrs = SpatialReference.FromID("espg:" + fcSrs.ToString());
+                            var fromSrs = SpatialReference.FromID("epsg:" + feature.Shape.Srs.ToString());
+                            var toSrs = SpatialReference.FromID("epsg:" + fcSrs.ToString());
 
                             transformer.SetSpatialReferences(fromSrs, toSrs);
 
