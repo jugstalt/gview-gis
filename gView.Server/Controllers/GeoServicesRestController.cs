@@ -13,6 +13,10 @@ using gView.Interoperability.GeoServices.Rest.Json.Response;
 using gView.Interoperability.GeoServices.Rest.Reflection;
 using gView.MapServer;
 using gView.Server.AppCode;
+using gView.Server.Extensions;
+using gView.Server.Services.Hosting;
+using gView.Server.Services.MapServer;
+using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -28,6 +32,24 @@ namespace gView.Server.Controllers
 {
     public class GeoServicesRestController : BaseController
     {
+        private readonly MapServiceManager _mapServerService;
+        private readonly UrlHelperService _urlHelperService;
+        private readonly LoginManager _loginManagerService;
+        private readonly EncryptionCertificateService _encryptionCertificate;
+
+        public GeoServicesRestController(
+            MapServiceManager mapServerService,
+            UrlHelperService urlHelperService,
+            LoginManager loginManagerService,
+            EncryptionCertificateService encryptionCertificate)
+            : base(mapServerService, loginManagerService, encryptionCertificate)
+        {
+            _mapServerService = mapServerService;
+            _urlHelperService = urlHelperService;
+            _loginManagerService = loginManagerService;
+            _encryptionCertificate = encryptionCertificate;
+        }
+
         public const double Version = 10.61;
         //private const string DefaultFolder = "default";
 
@@ -47,11 +69,11 @@ namespace gView.Server.Controllers
         {
             return await SecureMethodHandler(async (identity) =>
             {
-                await InternetMapServer.ReloadServices(id, true);
+                _mapServerService.ReloadServices(id, true);
 
                 if (!String.IsNullOrWhiteSpace(id))
                 {
-                    var folderService = InternetMapServer.MapServices
+                    var folderService = _mapServerService.MapServices
                         .Where(f => f.Type == MapServiceType.Folder && String.IsNullOrWhiteSpace(f.Folder) && id.Equals(f.Name, StringComparison.InvariantCultureIgnoreCase))
                         .FirstOrDefault();
 
@@ -62,7 +84,7 @@ namespace gView.Server.Controllers
                 }
 
                 List<string> folders = new List<string>();
-                foreach (var f in InternetMapServer.MapServices.Where(s => s.Type == MapServiceType.Folder && s.Folder == id))
+                foreach (var f in _mapServerService.MapServices.Where(s => s.Type == MapServiceType.Folder && s.Folder == id))
                 {
                     if (await f.HasAnyAccess(identity))
                     {
@@ -71,7 +93,7 @@ namespace gView.Server.Controllers
                 }
 
                 List<AgsService> services = new List<AgsService>();
-                foreach (var s in InternetMapServer.MapServices)
+                foreach (var s in _mapServerService.MapServices)
                 {
                     if (s.Type != MapServiceType.Folder &&
                        s.Folder == id &&
@@ -95,15 +117,15 @@ namespace gView.Server.Controllers
         {
             return await SecureMethodHandler(async (identity) =>
             {
-                var mapService = InternetMapServer.Instance.GetMapService(id, folder);
+                var mapService = _mapServerService.Instance.GetMapService(id, folder);
                 if (mapService == null)
                 {
                     throw new Exception("Unknown service: " + id);
                 }
 
-                await mapService.CheckAccess(identity, InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter)));
+                await mapService.CheckAccess(identity, _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter)));
 
-                using (var map = await InternetMapServer.Instance.GetServiceMapAsync(id, folder))
+                using (var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder))
                 {
                     if (map == null)
                     {
@@ -167,15 +189,15 @@ namespace gView.Server.Controllers
         {
             return await SecureMethodHandler(async (identity) =>
             {
-                var mapService = InternetMapServer.Instance.GetMapService(id, folder);
+                var mapService = _mapServerService.Instance.GetMapService(id, folder);
                 if (mapService == null)
                 {
                     throw new Exception("Unknown service: " + id);
                 }
 
-                await mapService.CheckAccess(identity, InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter)));
+                await mapService.CheckAccess(identity, _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter)));
 
-                using (var map = await InternetMapServer.Instance.GetServiceMapAsync(id, folder))
+                using (var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder))
                 {
                     if (map == null)
                     {
@@ -201,15 +223,15 @@ namespace gView.Server.Controllers
         {
             return await SecureMethodHandler(async (identity) =>
             {
-                var mapService = InternetMapServer.Instance.GetMapService(id, folder);
+                var mapService = _mapServerService.Instance.GetMapService(id, folder);
                 if (mapService == null)
                 {
                     throw new Exception("Unknown service: " + id);
                 }
 
-                await mapService.CheckAccess(identity, InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter)));
+                await mapService.CheckAccess(identity, _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter)));
 
-                var map = await InternetMapServer.Instance.GetServiceMapAsync(id, folder);
+                var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder);
                 if (map == null)
                 {
                     throw new Exception("unable to create map: " + id);
@@ -227,7 +249,7 @@ namespace gView.Server.Controllers
 
             return await SecureMethodHandler(async (identity) =>
             {
-                var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
+                var interpreter = _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
 
@@ -238,7 +260,8 @@ namespace gView.Server.Controllers
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(exportMap))
                 {
-                    OnlineResource = InternetMapServer.OnlineResource,
+                    OnlineResource = _mapServerService.Options.OnlineResource,
+                    OutputUrl = _mapServerService.Options.OutputUrl,
                     Method = "export",
                     Identity = identity
                 };
@@ -248,7 +271,7 @@ namespace gView.Server.Controllers
                 #region Queue & Wait
 
                 IServiceRequestContext context = await ServiceRequestContext.TryCreate(
-                    InternetMapServer.Instance,
+                    _mapServerService.Instance,
                     interpreter,
                     serviceRequest);
 
@@ -262,7 +285,7 @@ namespace gView.Server.Controllers
                     }
                 }
 
-                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
+                await _mapServerService.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
@@ -288,7 +311,7 @@ namespace gView.Server.Controllers
         {
             return await SecureMethodHandler(async (identity) =>
             {
-                var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
+                var interpreter = _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
 
@@ -300,7 +323,8 @@ namespace gView.Server.Controllers
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(queryLayer))
                 {
-                    OnlineResource = InternetMapServer.OnlineResource,
+                    OnlineResource = _mapServerService.Options.OnlineResource,
+                    OutputUrl = _mapServerService.Options.OutputUrl,
                     Method = "query",
                     Identity = identity
                 };
@@ -310,7 +334,7 @@ namespace gView.Server.Controllers
                 #region Queue & Wait
 
                 IServiceRequestContext context = await ServiceRequestContext.TryCreate(
-                    InternetMapServer.Instance,
+                    _mapServerService.Instance,
                     interpreter,
                     serviceRequest);
 
@@ -320,7 +344,7 @@ namespace gView.Server.Controllers
                     return FormResult(queryLayer);
                 }
 
-                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
+                await _mapServerService.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
@@ -347,29 +371,28 @@ namespace gView.Server.Controllers
         {
             return await SecureMethodHandler(async (identity) =>
             {
-                var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
+                var interpreter = _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, String.Empty)
                 {
-                    OnlineResource = InternetMapServer.OnlineResource,
+                    OnlineResource = _mapServerService.Options.OnlineResource,
+                    OutputUrl = _mapServerService.Options.OutputUrl,
                     Method = "legend",
                     Identity = identity
                 };
 
                 #endregion
 
-
-
                 #region Queue & Wait
 
                 IServiceRequestContext context = await ServiceRequestContext.TryCreate(
-                    InternetMapServer.Instance,
+                    _mapServerService.Instance,
                     interpreter,
                     serviceRequest);
 
-                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
+                await _mapServerService.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
@@ -385,15 +408,15 @@ namespace gView.Server.Controllers
         {
             return await SecureMethodHandler(async (identity) =>
             {
-                var mapService = InternetMapServer.Instance.GetMapService(id, folder);
+                var mapService = _mapServerService.Instance.GetMapService(id, folder);
                 if (mapService == null)
                 {
                     throw new Exception("Unknown service: " + id);
                 }
 
-                await mapService.CheckAccess(identity, InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter)));
+                await mapService.CheckAccess(identity, _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter)));
 
-                var map = await InternetMapServer.Instance.GetServiceMapAsync(id, folder);
+                var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder);
                 if (map == null)
                 {
                     throw new Exception("unable to create map: " + id);
@@ -451,7 +474,7 @@ namespace gView.Server.Controllers
         {
             return await SecureMethodHandler(async (identity) =>
             {
-                var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
+                var interpreter = _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
 
@@ -463,7 +486,8 @@ namespace gView.Server.Controllers
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(queryLayer))
                 {
-                    OnlineResource = InternetMapServer.OnlineResource,
+                    OnlineResource = _mapServerService.Options.OnlineResource,
+                    OutputUrl = _mapServerService.Options.OutputUrl,
                     Method = "featureserver_query",
                     Identity = identity
                 };
@@ -473,7 +497,7 @@ namespace gView.Server.Controllers
                 #region Queue & Wait
 
                 IServiceRequestContext context = await ServiceRequestContext.TryCreate(
-                    InternetMapServer.Instance,
+                    _mapServerService.Instance,
                     interpreter,
                     serviceRequest);
 
@@ -483,7 +507,7 @@ namespace gView.Server.Controllers
                     return FormResult(queryLayer);
                 }
 
-                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
+                await _mapServerService.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
@@ -502,7 +526,7 @@ namespace gView.Server.Controllers
         {
             return await SecureMethodHandler(async (identity) =>
             {
-                var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
+                var interpreter = _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
 
@@ -514,7 +538,8 @@ namespace gView.Server.Controllers
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
                 {
-                    OnlineResource = InternetMapServer.OnlineResource,
+                    OnlineResource = _mapServerService.Options.OnlineResource,
+                    OutputUrl = _mapServerService.Options.OutputUrl,
                     Method = "featureserver_addfeatures",
                     Identity = identity
                 };
@@ -524,7 +549,7 @@ namespace gView.Server.Controllers
                 #region Queue & Wait
 
                 IServiceRequestContext context = await ServiceRequestContext.TryCreate(
-                    InternetMapServer.Instance,
+                    _mapServerService.Instance,
                     interpreter,
                     serviceRequest);
 
@@ -534,7 +559,7 @@ namespace gView.Server.Controllers
                     return FormResult(editRequest);
                 }
 
-                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
+                await _mapServerService.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
@@ -564,7 +589,7 @@ namespace gView.Server.Controllers
         {
             return await SecureMethodHandler(async (identity) =>
             {
-                var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
+                var interpreter = _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
 
@@ -576,7 +601,8 @@ namespace gView.Server.Controllers
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
                 {
-                    OnlineResource = InternetMapServer.OnlineResource,
+                    OnlineResource = _mapServerService.Options.OnlineResource,
+                    OutputUrl = _mapServerService.Options.OutputUrl,
                     Method = "featureserver_updatefeatures",
                     Identity = identity
                 };
@@ -586,7 +612,7 @@ namespace gView.Server.Controllers
                 #region Queue & Wait
 
                 IServiceRequestContext context = await ServiceRequestContext.TryCreate(
-                    InternetMapServer.Instance,
+                    _mapServerService.Instance,
                     interpreter,
                     serviceRequest);
 
@@ -596,7 +622,7 @@ namespace gView.Server.Controllers
                     return FormResult(editRequest);
                 }
 
-                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
+                await _mapServerService.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
@@ -626,7 +652,7 @@ namespace gView.Server.Controllers
         {
             return await SecureMethodHandler(async (identity) =>
             {
-                var interpreter = InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter));
+                var interpreter = _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter));
 
                 #region Request
 
@@ -638,7 +664,8 @@ namespace gView.Server.Controllers
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
                 {
-                    OnlineResource = InternetMapServer.OnlineResource,
+                    OnlineResource = _mapServerService.Options.OnlineResource,
+                    OutputUrl = _mapServerService.Options.OutputUrl,
                     Method = "featureserver_deletefeatures",
                     Identity = identity
                 };
@@ -648,7 +675,7 @@ namespace gView.Server.Controllers
                 #region Queue & Wait
 
                 IServiceRequestContext context = await ServiceRequestContext.TryCreate(
-                    InternetMapServer.Instance,
+                    _mapServerService.Instance,
                     interpreter,
                     serviceRequest);
 
@@ -658,7 +685,7 @@ namespace gView.Server.Controllers
                     return FormResult(editRequest);
                 }
 
-                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
+                await _mapServerService.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
 
@@ -688,15 +715,15 @@ namespace gView.Server.Controllers
         {
             return await SecureMethodHandler(async (identity) =>
             {
-                var mapService = InternetMapServer.Instance.GetMapService(id, folder);
+                var mapService = _mapServerService.Instance.GetMapService(id, folder);
                 if (mapService == null)
                 {
                     throw new Exception("Unknown service: " + id);
                 }
 
-                await mapService.CheckAccess(identity, InternetMapServer.GetInterpreter(typeof(GeoServicesRestInterperter)));
+                await mapService.CheckAccess(identity, _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter)));
 
-                var map = await InternetMapServer.Instance.GetServiceMapAsync(id, folder);
+                var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder);
                 if (map == null)
                 {
                     throw new Exception("unable to create map: " + id);
@@ -735,8 +762,7 @@ namespace gView.Server.Controllers
                         throw new Exception("password required");
                     }
 
-                    var loginManager = new LoginManager(Globals.LoginManagerRootPath);
-                    var authToken = loginManager.GetAuthToken(username, password, expireMinutes: expiration);
+                    var authToken = _loginManagerService.GetAuthToken(username, password, expireMinutes: expiration);
                     if (authToken == null)
                     {
                         throw new Exception("unknown username or password");
@@ -744,7 +770,7 @@ namespace gView.Server.Controllers
 
                     return Task.FromResult(Result(new JsonSecurityToken()
                     {
-                        token = authToken.ToString(),
+                        token = _encryptionCertificate.ToToken(authToken),
                         expires = Convert.ToInt64((new DateTime(authToken.Expire, DateTimeKind.Utc) - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds)
                     }));
                 }
@@ -1037,7 +1063,7 @@ namespace gView.Server.Controllers
                 requestPath = requestPath.Substring(1);
             }
 
-            string path = InternetMapServer.AppRootUrl(this.Request);
+            string path = _urlHelperService.AppRootUrl(this.Request);
             string[] requestPathItems = requestPath.Split('/');
             string[] serverTypes = new string[] { "mapserver", "featureserver" };
 
@@ -1141,7 +1167,7 @@ namespace gView.Server.Controllers
 
             foreach (var serviceMethodAttribute in obj.GetType().GetCustomAttributes<ServiceMethodAttribute>(false))
             {
-                sb.Append("<a href='" + InternetMapServer.OnlineResource + this.Request.Path + "/" + serviceMethodAttribute.Method + "'>" + serviceMethodAttribute.Name + "</a><br/>");
+                sb.Append("<a href='" + _mapServerService.Options.OnlineResource + this.Request.Path + "/" + serviceMethodAttribute.Method + "'>" + serviceMethodAttribute.Name + "</a><br/>");
             }
 
             sb.Append("</div>");
@@ -1285,7 +1311,7 @@ namespace gView.Server.Controllers
             }
 
             string link = htmlLink.LinkTemplate
-                .Replace("{url}", InternetMapServer.AppRootUrl(this.Request).CombineUri(Request.Path))
+                .Replace("{url}", _urlHelperService.AppRootUrl(this.Request).CombineUri(Request.Path))
                 .Replace("{0}", valString);
 
             if (instance != null && link.Contains("{") && link.Contains("}"))  // Replace instance properties

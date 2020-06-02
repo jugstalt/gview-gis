@@ -1,10 +1,9 @@
-﻿if (!window.gview)
-    window.gview = {};
+﻿if (!window.gview) window.gview = {};
 
-window.gview.server = function () {
+window.gview.server = (function() {
     var rootUrl = '/';
 
-    var setRootUrl = function (url) {
+    var setRootUrl = function(url) {
         rootUrl = url;
         if (rootUrl[rootUrl.length - 1] !== '/') {
             rootUrl += '/';
@@ -15,20 +14,29 @@ window.gview.server = function () {
     //  Get/Post
     //
 
-    var get = function (options) {
+    var get = function(options) {
         $.ajax({
-            url: options.url.indexOf(rootUrl) === 0 ? options.url : rootUrl + (options.url[0] === '/' ? options.url.substr(1) : options.url),
+            url:
+                options.url.indexOf(rootUrl) === 0
+                    ? options.url
+                    : rootUrl + (options.url[0] === '/' ? options.url.substr(1) : options.url),
             type: options.type || 'get',
             data: options.data || null,
-            success: options.success || function (result) { gview.server.alert(result); },
-            error: options.error || function (jqXHR, textStatus, errorThrown) {
-                $('.loading').removeClass('loading');
-                gview.server.alert("Error: " + errorThrown + "(" + textStatus + ")");
-            }
+            success:
+                options.success ||
+                function(result) {
+                    gview.server.alert(result);
+                },
+            error:
+                options.error ||
+                function(jqXHR, textStatus, errorThrown) {
+                    $('.loading').removeClass('loading');
+                    gview.server.alert('Error: ' + errorThrown + '(' + textStatus + ')');
+                }
         });
     };
 
-    var alert = function (msg) {
+    var alert = function(msg) {
         bootbox.alert(msg);
     };
 
@@ -37,4 +45,4 @@ window.gview.server = function () {
         alert: alert,
         setRootUrl: setRootUrl
     };
-}();
+})();

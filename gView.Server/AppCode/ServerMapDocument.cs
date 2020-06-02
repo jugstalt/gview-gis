@@ -4,6 +4,7 @@ using gView.Framework.Data.Relations;
 using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.Server.Services.MapServer;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,12 +16,13 @@ namespace gView.Server.AppCode
     public class ServerMapDocument : IMapDocument, IMapDocumentModules, IPersistableLoadAsync
     {
         private ConcurrentBag<IMap> _maps = new ConcurrentBag<IMap>();
-        // ToDo: ThreadSafe
         private ConcurrentDictionary<IMap, IEnumerable<IMapApplicationModule>> _mapModules = new ConcurrentDictionary<IMap, IEnumerable<IMapApplicationModule>>();
         private ITableRelations _tableRelations;
-
-        public ServerMapDocument()
+        private MapServiceManager _mapServerService;
+             
+        public ServerMapDocument(MapServiceManager mapServerService)
         {
+            _mapServerService = mapServerService;
             _tableRelations = new TableRelations(this);
         }
 
@@ -52,7 +54,7 @@ namespace gView.Server.AppCode
 
         public bool AddMap(IMap map)
         {
-            if (InternetMapServer.Instance == null)
+            if (_mapServerService.Instance == null)
             {
                 return false;
             }

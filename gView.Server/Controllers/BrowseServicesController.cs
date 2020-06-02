@@ -3,6 +3,9 @@ using gView.Framework.system;
 using gView.MapServer;
 using gView.Server.AppCode;
 using gView.Server.Models;
+using gView.Server.Services.Hosting;
+using gView.Server.Services.MapServer;
+using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -16,6 +19,25 @@ namespace gView.Server.Controllers
 {
     public class BrowseServicesController : BaseController
     {
+        private readonly MapServiceManager _mapServerService;
+        private readonly MapServiceDeploymentManager _mapServerDeployService;
+        private readonly UrlHelperService _urlHelperService;
+        private readonly LoginManager _loginManagerService;
+
+        public BrowseServicesController(
+            MapServiceManager mapServerService,
+            MapServiceDeploymentManager mapServerDeployService,
+            UrlHelperService urlHelperService,
+            LoginManager loginManagerService,
+            EncryptionCertificateService encryptionCertificateService)
+            : base(mapServerService, loginManagerService, encryptionCertificateService)
+        {
+            _mapServerService = mapServerService;
+            _mapServerDeployService = mapServerDeployService;
+            _urlHelperService = urlHelperService;
+            _loginManagerService = loginManagerService;
+        }
+
         async public Task<IActionResult> Index(string folder, string serviceName="", string errorMessage="")
         {
             folder = folder ?? String.Empty;
@@ -24,7 +46,7 @@ namespace gView.Server.Controllers
             {
                 try
                 {
-                    await InternetMapServer.ReloadServices(folder, true);
+                     _mapServerService.ReloadServices(folder, true);
                 }
                 catch  // Folder not exists
                 {
@@ -34,14 +56,14 @@ namespace gView.Server.Controllers
                     }
                 }
 
-                var authToken = base.GetAuthToken();
+                var authToken = _loginManagerService.GetAuthToken(this.Request);
 
                 bool isPublisher = authToken.AuthType == AuthToken.AuthTypes.Manage;
                 bool isManager = authToken.AuthType == AuthToken.AuthTypes.Manage;
 
                 if (!String.IsNullOrWhiteSpace(folder))
                 {
-                    var folderService = InternetMapServer.MapServices
+                    var folderService = _mapServerService.MapServices
                         .Where(f => f.Type == MapServiceType.Folder && String.IsNullOrWhiteSpace(f.Folder) && folder.Equals(f.Name, StringComparison.InvariantCultureIgnoreCase))
                         .FirstOrDefault();
 
@@ -54,7 +76,7 @@ namespace gView.Server.Controllers
                 }
 
                 List<string> folders = new List<string>();
-                foreach (var f in InternetMapServer.MapServices.Where(s => s.Type == MapServiceType.Folder && s.Folder == folder))
+                foreach (var f in _mapServerService.MapServices.Where(s => s.Type == MapServiceType.Folder && s.Folder == folder))
                 {
                     if (await f.HasAnyAccess(identity))
                     {
@@ -63,7 +85,7 @@ namespace gView.Server.Controllers
                 }
 
                 List<IMapService> services = new List<IMapService>();
-                foreach (var s in InternetMapServer.MapServices)
+                foreach (var s in _mapServerService.MapServices)
                 {
                     try
                     {
@@ -102,7 +124,7 @@ namespace gView.Server.Controllers
         {
             return await SecureMethodHandler(async (identity) =>
             {
-                var mapService = InternetMapServer.Instance.GetMapService(id.ServiceName(), id.FolderName());
+                var mapService = _mapServerService.Instance.GetMapService(id.ServiceName(), id.FolderName());
                 if (mapService == null)
                 {
                     throw new Exception("Unknown service: " + id);
@@ -114,7 +136,7 @@ namespace gView.Server.Controllers
                 }
 
                 List<IServiceRequestInterpreter> interpreters = new List<IServiceRequestInterpreter>();
-                foreach (var interpreterType in InternetMapServer.Interpreters)
+                foreach (var interpreterType in _mapServerService.Interpreters)
                 {
                     try
                     {
@@ -127,9 +149,9 @@ namespace gView.Server.Controllers
 
                 return View(new BrowseServicesServiceModel()
                 {
-                    Server = InternetMapServer.AppRootUrl(this.Request),
+                    Server = _urlHelperService.AppRootUrl(this.Request),
                     OnlineResource = Request.Scheme + "://" + Request.Host + "/ogc?",
-                    MapService = InternetMapServer.MapServices.Where(s => s.Name == id.ServiceName() && s.Folder == id.FolderName()).FirstOrDefault(),
+                    MapService = _mapServerService.MapServices.Where(s => s.Name == id.ServiceName() && s.Folder == id.FolderName()).FirstOrDefault(),
                     Interpreters = interpreters
                 });
             });
@@ -150,7 +172,7 @@ namespace gView.Server.Controllers
                         service = folder + "/" + service;
                     }
 
-                    bool ret = await InternetMapServer.RemoveMap(service, identity);
+                    bool ret = await _mapServerDeployService.RemoveMap(service, identity);
 
                     return Json(new
                     {
@@ -240,7 +262,7 @@ namespace gView.Server.Controllers
                         throw new MapServerException("Can't read xml");
                     }
 
-                    bool ret = await InternetMapServer.AddMap(service, mapXml, identity);
+                    bool ret = await _mapServerDeployService.AddMap(service, mapXml, identity);
 
                     //return Json(new
                     //{
@@ -275,7 +297,7 @@ namespace gView.Server.Controllers
                         throw new MapServerException("Not allowed");
                     }
 
-                    var di = new DirectoryInfo($"{InternetMapServer.ServicesPath}/{newFolder}");
+                    var di = new DirectoryInfo($"{ _mapServerService.Options.ServicesPath }/{ newFolder }");
                     if(di.Exists)
                     {
                         throw new MapServerException($"Folder { newFolder } already exists");

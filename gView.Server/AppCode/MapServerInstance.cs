@@ -5,6 +5,8 @@ using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.MapServer;
+using gView.Server.Services.Logging;
+using gView.Server.Services.MapServer;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,25 +17,35 @@ namespace gView.Server.AppCode
     public class MapServerInstance : IMapServer
     {
         public enum ServerLicType { Unknown = 0, Private = 1, Professional = 2, Express = 3 };
-        private IMapDocument _doc;
         private bool _log_requests, _log_request_details, _log_errors;
         private object _lockThis = new object();
         private Dictionary<string, object> _lockers = new Dictionary<string, object>();
         //private int _maxGDIServers = int.MaxValue;
         private int _maxServices = int.MaxValue;
+        private readonly MapServiceManager _mapServiceMananger;
+        private readonly MapServiceDeploymentManager _mapServiceDeploymentMananger;
+        private readonly MapServicesEventLogger _logger;
 
-        public MapServerInstance(int port)
+        public MapServerInstance(
+            MapServiceManager mapServiceMananger,
+            MapServiceDeploymentManager mapServiceDeploymentMananger,
+            MapServicesEventLogger logger,
+            int port)
         {
-            _log_requests = Globals.log_requests;
-            _log_request_details = Globals.log_request_details;
-            _log_errors = Globals.log_errors;
+            _mapServiceMananger = mapServiceMananger;
+            _mapServiceDeploymentMananger = mapServiceDeploymentMananger;
+            _logger = logger;
+
+            _log_requests = _mapServiceMananger.Options.LogServiceRequests;
+            _log_request_details = _mapServiceMananger.Options.LogServiceRequestDetails;
+            _log_errors = _mapServiceMananger.Options.LogServiceErrors;
         }
 
         async private Task<IServiceMap> Map(string name, string folder, IServiceRequestContext context)
         {
             try
             {
-                if (InternetMapServer.MapDocument == null)
+                if (_mapServiceDeploymentMananger.MapDocument == null)
                 {
                     throw new MapServerException("Fatal error: map(server) document missing");
                 }
@@ -59,7 +71,7 @@ namespace gView.Server.AppCode
 
                 if (await mapService.RefreshRequired())
                 {
-                    InternetMapServer.MapDocument.RemoveMap(mapService.Fullname);
+                    _mapServiceDeploymentMananger.MapDocument.RemoveMap(mapService.Fullname);
                 }
 
                 //lock (locker)
@@ -98,11 +110,11 @@ namespace gView.Server.AppCode
             {
                 if (identity == null)
                 {
-                    return InternetMapServer.MapServices.ToArray();
+                    return _mapServiceMananger.MapServices.ToArray();
                 }
 
                 List<IMapService> services = new List<IMapService>();
-                foreach (var service in InternetMapServer.MapServices)
+                foreach (var service in _mapServiceMananger.MapServices)
                 {
                     if (await service.HasAnyAccess(identity))
                     {
@@ -111,9 +123,6 @@ namespace gView.Server.AppCode
                 }
 
                 return services;
-                //return  await
-                //    InternetMapServer.mapServices
-                //    .Where(async s => true == await s.HasAnyAccess(identity));
             }
             catch (MapServerException mse)
             {
@@ -198,7 +207,7 @@ namespace gView.Server.AppCode
                         msg = header + "\n" + msg;
                     }
 
-                    await Logger.LogAsync(mapName, method, msg);
+                    await _logger.LogAsync(mapName, method, msg);
                     break;
                 case loggingMethod.request:
                     if (!String.IsNullOrEmpty(header))
@@ -206,7 +215,7 @@ namespace gView.Server.AppCode
                         msg = header + " - " + msg;
                     }
 
-                    await Logger.LogAsync(mapName, method, msg);
+                    await _logger.LogAsync(mapName, method, msg);
                     break;
                 case loggingMethod.request_detail:
                     if (!String.IsNullOrEmpty(header))
@@ -214,7 +223,7 @@ namespace gView.Server.AppCode
                         msg = header + "\n" + msg;
                     }
 
-                    await Logger.LogAsync(mapName, method, msg);
+                    await _logger.LogAsync(mapName, method, msg);
                     break;
                 case loggingMethod.request_detail_pro:
                     if (!String.IsNullOrEmpty(header))
@@ -222,7 +231,7 @@ namespace gView.Server.AppCode
                         header = header.Replace(".", "_");
                     }
 
-                    await Logger.LogAsync(mapName, method, msg);
+                    await _logger.LogAsync(mapName, method, msg);
                     break;
             }
         }
@@ -241,7 +250,7 @@ namespace gView.Server.AppCode
         {
             get
             {
-                return Globals.OutputUrl;
+                return _mapServiceMananger.Options.OutputUrl;;
             }
         }
 
@@ -249,7 +258,7 @@ namespace gView.Server.AppCode
         {
             get
             {
-                return Globals.OutputPath;
+                return _mapServiceMananger.Options.OutputPath;
             }
         }
 
@@ -257,29 +266,13 @@ namespace gView.Server.AppCode
         {
             get
             {
-                return Globals.TileCachePath;
+                return _mapServiceMananger.Options.TileCachePath;
             }
         }
-
-        //public bool CheckAccess(IIdentity identity, string service)
-        //{
-        //    if (InternetMapServer.acl == null) return true;
-        //    return InternetMapServer.acl.HasAccess(identity, null, service);
-        //}
 
         public int FeatureQueryLimit => 1000;
 
         #endregion
-
-        //private bool ServiceExists(string name)
-        //{
-        //    foreach (IMapService service in InternetMapServer.mapServices)
-        //    {
-        //        if (service == null) continue;
-        //        if (service.Name == name) return true;
-        //    }
-        //    return false;
-        //}
 
         async private Task<IServiceMap> FindServiceMap(string name, string alias, IServiceRequestContext context)
         {
@@ -287,9 +280,9 @@ namespace gView.Server.AppCode
             if (map != null)
             {
                 IEnumerable<IMapApplicationModule> modules = null;
-                if (InternetMapServer.MapDocument is IMapDocumentModules)
+                if (_mapServiceDeploymentMananger.MapDocument is IMapDocumentModules)
                 {
-                    modules = ((IMapDocumentModules)InternetMapServer.MapDocument).GetMapModules(map);
+                    modules = ((IMapDocumentModules)_mapServiceDeploymentMananger.MapDocument).GetMapModules(map);
                 }
                 return await ServiceMap.CreateAsync(map, this, modules);
             }
@@ -380,13 +373,13 @@ namespace gView.Server.AppCode
                         }
                     }
                     newMap.Name = alias;
-                    if (!InternetMapServer.MapDocument.AddMap(newMap))
+                    if (!_mapServiceDeploymentMananger.MapDocument.AddMap(newMap))
                     {
                         return null;
                     }
 
                     bool found = false;
-                    foreach (IMapService ms in InternetMapServer.MapServices)
+                    foreach (IMapService ms in _mapServiceMananger.MapServices)
                     {
                         if (ms != null &&
                             ms.Name == alias && ms.Type == MapServiceType.GDI)
@@ -398,7 +391,7 @@ namespace gView.Server.AppCode
 
                     if (!found)
                     {
-                        InternetMapServer.MapServices.Add(new MapService(name, String.Empty, MapServiceType.GDI));
+                        _mapServiceMananger.MapServices.Add(new MapService(_mapServiceMananger, name, String.Empty, MapServiceType.GDI));
                     }
 
                     return await ServiceMap.CreateAsync(newMap, this, null);
@@ -410,7 +403,7 @@ namespace gView.Server.AppCode
 
         public IMapService GetMapService(string name, string folder)
         {
-            foreach (IMapService ms in InternetMapServer.MapServices)
+            foreach (IMapService ms in _mapServiceMananger.MapServices)
             {
                 if (ms == null)
                 {
@@ -424,12 +417,12 @@ namespace gView.Server.AppCode
                 }
             }
 
-            return InternetMapServer.TryAddService(name, folder);
+            return _mapServiceMananger.TryAddService(name, folder);
         }
 
         async private Task<Map> FindMap(string name, IServiceRequestContext context)
         {
-            foreach (IMap map in InternetMapServer.MapDocument.Maps)
+            foreach (IMap map in _mapServiceDeploymentMananger.MapDocument.Maps)
             {
                 if (map.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) && map is Map)
                 {
@@ -442,7 +435,7 @@ namespace gView.Server.AppCode
                 return null;
             }
 
-            IMap m = await InternetMapServer.LoadMap(name);
+            IMap m = await _mapServiceDeploymentMananger.LoadMap(name);
             if (m is Map)
             {
                 return (Map)m;

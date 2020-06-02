@@ -1,8 +1,10 @@
 ﻿@using gView.Server.AppCode
+@inject gView.Server.Services.Hosting.UrlHelperService UrlHelperService
+@inject gView.Server.Services.Security.LoginManager LoginManager
 @{
     ViewData["Title"] = "Home Page";
-    var username = gView.Server.AppCode.BaseController.LoginUsername(this.Context.Request);
-    var isManageUser = gView.Server.AppCode.BaseController.IsManageUser(this.Context.Request);
+    var username = LoginManager.LoginUsername(this.Context.Request);
+    var isManageUser = LoginManager.IsManageUser(this.Context.Request);
 }
 
 <div>
@@ -13,12 +15,12 @@
         <a class="main-nav-panel browse" asp-area="" asp-controller="BrowseServices" asp-action="Index">
             <div class="text">Browse Services</div>
         </a>
-        <a class="main-nav-panel geoservices" href="@(gView.Server.AppCode.InternetMapServer.AppRootUrl(this.Context.Request))/geoservices/rest/services">
+        <a class="main-nav-panel geoservices" href="@(UrlHelperService.AppRootUrl(this.Context.Request))/geoservices/rest/services">
             <div class="text">GeoServices (REST)</div>
         </a>
         @if (isManageUser || (Globals.AllowFormsLogin && (isManageUser == true || String.IsNullOrWhiteSpace(username))))
         {
-        var hasManagerLogin = gView.Server.AppCode.BaseController.HasManagerLogin();
+        var hasManagerLogin = LoginManager.HasManagerLogin();
         <a class="main-nav-panel manage @(!hasManagerLogin ? "required":"")" asp-area="" asp-controller="Manage" asp-action="Index">
             <div class="text">Manage</div>
         </a>

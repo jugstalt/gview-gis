@@ -303,7 +303,7 @@ namespace gView.Interoperability.ArcXML
             this.ImageFormat = System.Drawing.Imaging.ImageFormat.Png;
         }
 
-        async public Task<string> ImageRequest(IServiceMap map, IMapServer mapServer, bool useTOC)
+        async public Task<string> ImageRequest(IServiceMap map, IServiceRequestContext context, bool useTOC)
         {
             string ret = "";
             _useTOC = useTOC;
@@ -322,9 +322,9 @@ namespace gView.Interoperability.ArcXML
             await map.Render();
 
             string title = map.Name.Replace(",", "_").Replace("/", "_") + "_" + System.Guid.NewGuid().ToString("N") + _imageExtension;
-            if (await map.SaveImage(mapServer.OutputPath + @"/" + title, _imageFormat))
+            if (await map.SaveImage(context.MapServer.OutputPath + @"/" + title, _imageFormat))
             {
-                ret = response.IMAGE(mapServer.OutputPath, mapServer.OutputUrl, title, map.Display.Envelope);
+                ret = response.IMAGE(context.MapServer.OutputPath, context.ServiceRequest.OutputUrl, title, map.Display.Envelope);
             }
 
             return ret;
@@ -351,7 +351,7 @@ namespace gView.Interoperability.ArcXML
             }
         }
 
-        async public Task<string> LegendRequest(IServiceMap map, IMapServer mapServer, bool useTOC)
+        async public Task<string> LegendRequest(IServiceMap map, IServiceRequestContext context, bool useTOC)
         {
             string ret = "";
             try
@@ -368,8 +368,8 @@ namespace gView.Interoperability.ArcXML
                 if (legend != null)
                 {
                     string title = map.Name.Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + ".png";
-                    legend.Save(mapServer.OutputPath + @"/" + title, System.Drawing.Imaging.ImageFormat.Png);
-                    ret = response.LEGEND(mapServer.OutputPath, mapServer.OutputUrl, title, map.Display.Envelope);
+                    legend.Save(context.MapServer.OutputPath + @"/" + title, System.Drawing.Imaging.ImageFormat.Png);
+                    ret = response.LEGEND(context.MapServer.OutputPath, context.ServiceRequest.OutputUrl, title, map.Display.Envelope);
                 }
             }
             catch { }

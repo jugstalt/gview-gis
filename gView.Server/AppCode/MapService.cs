@@ -1,6 +1,7 @@
 ﻿using gView.Core.Framework.Exceptions;
 using gView.Framework.system;
 using gView.MapServer;
+using gView.Server.Services.MapServer;
 using Newtonsoft.Json;
 using System;
 using System.IO;
@@ -18,10 +19,12 @@ namespace gView.Server.AppCode
         private MapServiceSettings _settings = null;
         private MapServiceSettings _folderSettings = null;
         private DateTime? _lastServiceRefresh = null;
+        private readonly MapServiceManager _mss;
 
         public MapService() { }
-        public MapService(string filename, string folder, MapServiceType type)
+        public MapService(MapServiceManager mss, string filename, string folder, MapServiceType type)
         {
+            _mss = mss;
             _type = type;
             try
             {
@@ -180,7 +183,7 @@ namespace gView.Server.AppCode
                     return;
                 }
 
-                var folderMapService = InternetMapServer.MapServices
+                var folderMapService = _mss.MapServices
                     .Where(s => s.Type == MapServiceType.Folder && this.Folder.Equals(s.Name, StringComparison.InvariantCultureIgnoreCase))
                     .FirstOrDefault() as MapService;
 
@@ -222,6 +225,19 @@ namespace gView.Server.AppCode
             if (_folderSettings != null)
             {
                 CheckAccess(context, _folderSettings);
+
+                if (context.ServiceRequest != null)
+                {
+                    if (!String.IsNullOrEmpty(_folderSettings.OnlineResource))
+                    {
+                        context.ServiceRequest.OnlineResource = _folderSettings.OnlineResource;
+                    }
+
+                    if (!String.IsNullOrEmpty(_folderSettings.OutputUrl))
+                    {
+                        context.ServiceRequest.OutputUrl = _folderSettings.OutputUrl;
+                    }
+                }
             }
 
             CheckAccess(context, _settings);
@@ -490,6 +506,11 @@ namespace gView.Server.AppCode
             get { return RefreshService.Ticks; }
             set { RefreshService = new DateTime(value, DateTimeKind.Utc); }
         }
+
+        [JsonProperty("onlineresource", NullValueHandling = NullValueHandling.Ignore)]
+        public string OnlineResource { get; set; }
+        [JsonProperty("outputurl", NullValueHandling = NullValueHandling.Ignore)]
+        public string OutputUrl { get; set; }
 
         #region Classes
 

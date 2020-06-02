@@ -3,6 +3,8 @@ using gView.Interoperability.OGC;
 using gView.Interoperability.OGC.Request.WMTS;
 using gView.MapServer;
 using gView.Server.AppCode;
+using gView.Server.Services.MapServer;
+using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.IO;
@@ -13,6 +15,19 @@ namespace gView.Server.Controllers
 {
     public class OgcController : BaseController
     {
+        private readonly MapServiceManager _mapServiceMananger;
+        private readonly LoginManager _loginMananger;
+
+        public OgcController(
+            MapServiceManager mapServiceMananger,
+            LoginManager loginManager,
+            EncryptionCertificateService encryptionCertificateService)
+            : base(mapServiceMananger, loginManager, encryptionCertificateService)
+        {
+            _mapServiceMananger = mapServiceMananger;
+            _loginMananger = loginManager;
+        }
+
         public IActionResult Index()
         {
             return RedirectToAction("Index", "Home");
@@ -24,7 +39,7 @@ namespace gView.Server.Controllers
             {
                 #region Security
 
-                Identity identity = Identity.FromFormattedString(base.GetAuthToken().Username);
+                Identity identity = Identity.FromFormattedString(_loginMananger.GetAuthToken(this.Request).Username);
 
                 #endregion
 
@@ -35,13 +50,13 @@ namespace gView.Server.Controllers
                 switch (service.ToLower().Split(',')[0])
                 {
                     case "wms":
-                        interpreter = InternetMapServer.GetInterpreter(typeof(WMSRequest));
+                        interpreter = _mapServiceMananger.GetInterpreter(typeof(WMSRequest));
                         break;
                     case "wfs":
-                        interpreter = InternetMapServer.GetInterpreter(typeof(WFSRequest));
+                        interpreter = _mapServiceMananger.GetInterpreter(typeof(WFSRequest));
                         break;
                     case "wmts":
-                        interpreter = InternetMapServer.GetInterpreter(typeof(WMTSRequest));
+                        interpreter = _mapServiceMananger.GetInterpreter(typeof(WMTSRequest));
                         break;
                     default:
                         throw new Exception("Missing or unknow service: " + service);
@@ -67,19 +82,20 @@ namespace gView.Server.Controllers
 
                 ServiceRequest serviceRequest = new ServiceRequest(id.ServiceName(), id.FolderName(), requestString)
                 {
-                    OnlineResource = InternetMapServer.OnlineResource + "/ogc/" + id,
+                    OnlineResource = _mapServiceMananger.Options.OnlineResource + "/ogc/" + id,
+                    OutputUrl = _mapServiceMananger.Options.OutputUrl,
                     Identity = identity
                 };
 
                 #endregion
 
                 IServiceRequestContext context = await ServiceRequestContext.TryCreate(
-                   InternetMapServer.Instance,
+                   _mapServiceMananger.Instance,
                    interpreter,
                    serviceRequest);
 
 
-                await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
+                await _mapServiceMananger.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 return Result(serviceRequest.Response, "text/xml");
             }
@@ -101,11 +117,11 @@ namespace gView.Server.Controllers
 
             #region Security
 
-            Identity identity = Identity.FromFormattedString(base.GetAuthToken().Username);
+            Identity identity = Identity.FromFormattedString(_loginMananger.GetAuthToken(this.Request).Username);
 
             #endregion
 
-            var interpreter = InternetMapServer.GetInterpreter(typeof(WMTSRequest));
+            var interpreter = _mapServiceMananger.GetInterpreter(typeof(WMTSRequest));
 
             #region Request
 
@@ -113,19 +129,20 @@ namespace gView.Server.Controllers
 
             ServiceRequest serviceRequest = new ServiceRequest(name, folder, requestString)
             {
-                OnlineResource = InternetMapServer.OnlineResource + "/ogc/" + name,
+                OnlineResource = _mapServiceMananger.Options.OnlineResource + "/ogc/" + name,
+                OutputUrl = _mapServiceMananger.Options.OutputUrl,
                 Identity = identity
             };
 
             #endregion
 
             IServiceRequestContext context = await ServiceRequestContext.TryCreate(
-                   InternetMapServer.Instance,
+                   _mapServiceMananger.Instance,
                    interpreter,
                    serviceRequest);
 
             //await interpreter.Request(context);
-            await InternetMapServer.TaskQueue.AwaitRequest(interpreter.Request, context);
+            await _mapServiceMananger.TaskQueue.AwaitRequest(interpreter.Request, context);
 
             string ret = serviceRequest.Response;
             string contentType = col.Contains(".") ? "image/" + col.Split('.')[1] : "image/png";
