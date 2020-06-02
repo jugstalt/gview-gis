@@ -2856,37 +2856,40 @@ namespace gView.Framework.Geometry
                 {
                     var ring = rings[i];
                     ring.ClosePath();
-                    for (int j = 0; j < rings.Length; j++)
-                    {
-                        var candidateRing = candidateRings[j];
-                        candidateRing.ClosePath();
 
-                        //if (ring.PointCount != candidateRing.PointCount)
-                        //    return false;
+                    var candidateRing = candidateRings[i];
+                    candidateRing.ClosePath();
 
-                        if (Math.Abs(ring.Area - candidateRing.Area) > epsi)
-                            return false;
+                    //if (ring.PointCount != candidateRing.PointCount)
+                    //    return false;
 
-                        if (!ring.Envelope.Equals(candidateRing.Envelope))
-                            return false;
+                    if (Math.Abs(ring.Area - candidateRing.Area) > epsi)
+                        return false;
 
-                        // ToDo:
-                        // Testen, ob die Punkte eines Rings alle auf der Kante des anderen liegen...
+                    if (!ring.Envelope.Equals(candidateRing.Envelope))
+                        return false;
 
-                        //var ringPoints = ring.ToArray();
-                        //var candidatePoints = candidateRing.ToArray();
+                    // ToDo:
+                    // Testen, ob die Punkte eines Rings alle auf der Kante des anderen liegen...
 
-                        //foreach(var ringPoint in ringPoints)
-                        //{
-                        //    if (candidatePoints.Where(p => p.Equals(ringPoint)).Count() == 0)
-                        //        return false;
-                        //}
-                    }
+                    //var ringPoints = ring.ToArray();
+                    //var candidatePoints = candidateRing.ToArray();
+
+                    //foreach(var ringPoint in ringPoints)
+                    //{
+                    //    if (candidatePoints.Where(p => p.Equals(ringPoint)).Count() == 0)
+                    //        return false;
+                    //}
                 }
                 return true;
             }
 
             return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 

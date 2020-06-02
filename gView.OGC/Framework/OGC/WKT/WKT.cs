@@ -69,12 +69,19 @@ namespace gView.Framework.OGC
                         else
                         {
                             sb.Append("MULTIPOLYGON(");
+                            bool first = true;
+
+                            var equal = polygons[1].Equals(polygons[1]);
+
                             foreach (IPolygon mPoly in polygons)
                             {
-                                if (polygons.IndexOf(mPoly) > 0) sb.Append(",");
+                                if (!first) sb.Append(",");
+
                                 sb.Append("(");
                                 AppendPolygon(sb, mPoly);
                                 sb.Append(")");
+
+                                first = false;
                             }
                             sb.Append(")");
                         }
