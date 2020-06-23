@@ -14,6 +14,8 @@ namespace gView.Server.Services.Security
     public class EncryptionCertificateService
     {
         private readonly MapServiceManager _mapServerService;
+        // Singleton
+        private X509CertificateWrapper _cert = null;
 
         public EncryptionCertificateService(MapServiceManager mapServerService)
         {
@@ -21,8 +23,6 @@ namespace gView.Server.Services.Security
         }
 
         #region Certificate
-
-        private X509CertificateWrapper _cert = null;
 
         public X509CertificateWrapper GetCertificate(string name = "crypto0")
         {

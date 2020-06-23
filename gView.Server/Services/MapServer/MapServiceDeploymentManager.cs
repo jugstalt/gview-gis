@@ -25,6 +25,9 @@ namespace gView.Server.Services.MapServer
         private readonly AccessControlService _accessControlService;
         private readonly ILogger _logger;
 
+        // Singleton
+        public readonly ServerMapDocument MapDocument;
+
         public MapServiceDeploymentManager(MapServiceManager mapServicerService,
                                       AccessControlService accessControlService,
                                       ILogger<MapServiceDeploymentManager> logger=null)
@@ -35,8 +38,6 @@ namespace gView.Server.Services.MapServer
 
             MapDocument= new ServerMapDocument(_mapServerService);
         }
-
-        public readonly ServerMapDocument MapDocument;
 
         async public Task<bool> AddMap(string mapName, string mapXml, string usr, string pwd)
         {

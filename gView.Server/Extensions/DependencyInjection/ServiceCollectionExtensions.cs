@@ -18,14 +18,14 @@ namespace gView.Server.Extensions.DependencyInjection
         {
             services.Configure<MapServerManagerOptions>(configAction);
             services.AddSingleton<MapServiceManager>();
-
-            services.AddSingleton<UrlHelperService>();
-            services.AddSingleton<LoginManager>();
-            services.AddSingleton<AccessControlService>();
             services.AddSingleton<EncryptionCertificateService>();
-
             services.AddSingleton<MapServiceDeploymentManager>();
-            services.AddSingleton<MapServicesEventLogger>();
+
+            services.AddTransient<UrlHelperService>();
+            services.AddTransient<LoginManager>();
+            services.AddTransient<AccessControlService>();
+            
+            services.AddTransient<MapServicesEventLogger>();
 
             return services;
         } 

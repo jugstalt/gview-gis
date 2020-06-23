@@ -30,9 +30,6 @@ namespace gView.Server.Services.MapServer
 
             if (Options.IsValid)
             {
-                
-                
-
                 foreach (string createDirectroy in new string[] {
                     Options.ServicesPath,
                     Options.LoginManagerRootPath,
@@ -56,6 +53,7 @@ namespace gView.Server.Services.MapServer
             }
         }
 
+        // Singleton
         private MapServerInstance _instance;
         public MapServerInstance Instance
         {
