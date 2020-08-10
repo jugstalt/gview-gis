@@ -504,12 +504,14 @@ namespace gView.Interoperability.OGC.Request.WMTS
                 IEnvelope extent = metadata.GetEPSGEnvelope(epsg);
                 if (extent == null)
                 {
+                    Console.WriteLine($"EPSG { epsg }: Envelope not exits");
                     continue;
                 }
 
                 IPoint origin = metadata.GetOriginUpperLeft(epsg);
                 if (origin == null)
                 {
+                    Console.WriteLine($"EPSG { epsg }: Origin not exits");
                     continue;
                 }
 
@@ -538,11 +540,12 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
                 foreach (string cacheType in new string[] { "classic", "compact" })
                 {
-                    string epsgPath = _mapServer.TileCachePath + @"/" + MapName(context) + @"/_alllayers/" + (cacheType == "compact" ? @"compact\" : "") +
+                    string epsgPath = _mapServer.TileCachePath + @"/" + MapName(context) + @"/_alllayers/" + (cacheType == "compact" ? @"compact/" : "") +
                         TileServiceMetadata.EpsgPath(GridOrientation.UpperLeft, epsg);
 
                     if (!new DirectoryInfo(epsgPath).Exists)
                     {
+                        Console.WriteLine($"Path { epsgPath }: not exists");
                         continue;
                     }
 

@@ -20,7 +20,7 @@ namespace gView.Framework.Data
                 }
 
                 where = where
-                    .Replace(" in ", "=")
+                    //.Replace(" in ", "=")
                     .Replace("<>", "=")
                     .Replace("<", "=")
                     .Replace(">", "=");
@@ -58,7 +58,7 @@ namespace gView.Framework.Data
 
                 for (int i = 1, to = tokens.Length; i < to - 1; i++)
                 {
-                    if (tokens[i].Type == "=")
+                    if (tokens[i].Type == "=" || tokens[i].Type.Equals("TOKEN_IN", StringComparison.InvariantCultureIgnoreCase))
                     {
                         var tokenField = tokens[i - 1];
                         var tokenValue = tokens[i + 1];

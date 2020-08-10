@@ -1,8 +1,8 @@
 {
   "services-folder_": "C:\\ProgramData\\gView\\mapServer\\gview5",
   "services-folder": "C:\\Development_OpenSource\\GeoDaten\\gview5",
-  "output-path": "C:\\ArcIMS\\Output",
-  "output-path_": "E:\\geonet_sys\\development\\shared\\webgis\\Output",
+  "output-path_": "C:\\ArcIMS\\Output",
+  "output-path": "E:\\geonet_sys\\development\\shared\\webgis\\Output",
   "output-url": "http://localhost/output",
   "onlineresource-url": "https://localhost:44331",
   "tilecache-root": "C:\\temp\\tilecache",
