@@ -60,7 +60,7 @@ namespace gView.Framework.Data.Fields.FieldDomains
         public object PropertyPage(object initObject)
         {
             string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Data.Fields.UI.dll");
+            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Data.Fields.UI.dll");
 
             IInitializeClass p = uiAssembly.CreateInstance("gView.Framework.Data.Fields.UI.FieldDomains.Control_RangeDomain") as IInitializeClass;
             if (p != null)
