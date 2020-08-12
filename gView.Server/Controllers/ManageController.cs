@@ -79,7 +79,13 @@ namespace gView.Server.Controllers
                 //Console.WriteLine("UN: "+model.Username);
                 //Console.WriteLine("PW: "+model.Password);
 
-                var authToken = _loginManager.GetManagerAuthToken(model.Username, model.Password, createIfFirst: true);
+                if (String.IsNullOrWhiteSpace(model.Username))
+                    throw new Exception("Username is required...");
+
+                if (String.IsNullOrWhiteSpace(model.Password))
+                    throw new Exception("Password is required...");
+
+                var authToken = _loginManager.GetManagerAuthToken(model.Username.Trim(), model.Password.Trim(), createIfFirst: true);
 
                 if (authToken == null)
                 {
@@ -92,14 +98,12 @@ namespace gView.Server.Controllers
             }
             catch (Exception ex)
             {
-                model.ErrorMessage = ex.Message;
+                model.ErrorMessage = ex.Message + (ex is NullReferenceException ? " " + ex.StackTrace : "");
                 return View(model);
             }
         }
 
         #endregion
-
-
 
         public IActionResult Collect()
         {
