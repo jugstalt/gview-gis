@@ -98,7 +98,10 @@ namespace gView.Server.Controllers
             }
             catch (Exception ex)
             {
-                model.ErrorMessage = ex.Message + (ex is NullReferenceException ? " " + ex.StackTrace : "");
+                model.ErrorMessage = ex.Message;
+
+                ex.ToConsole();
+
                 return View(model);
             }
         }

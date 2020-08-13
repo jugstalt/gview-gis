@@ -87,6 +87,16 @@ namespace gView.Server.AppCode
 
             return fullExtent;
         }
+
+        static public void ToConsole(this Exception ex)
+        {
+            if (ex != null)
+            {
+                Console.WriteLine($"Exception      : { ex.GetType().ToString() }");
+                Console.WriteLine($"     Message   : { ex.Message }");
+                Console.WriteLine($"     Stacktrace: { ex.StackTrace }");
+            }
+        }
     }
 
     static public class gViewFrameworkExtensions
