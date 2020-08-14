@@ -478,4 +478,9 @@ namespace gView.Framework.Carto
 
         void Draw(IDisplay disp, IFeature feature);
     }
+
+    public interface IRenderRequiresClone
+    {
+        bool RequiresClone();
+    }
 }

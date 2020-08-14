@@ -13,10 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Framework\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
     <ProjectReference Include="..\gView.Data\gView.Data.csproj" />
     <ProjectReference Include="..\gView.Geometry\gView.Geometry.csproj" />

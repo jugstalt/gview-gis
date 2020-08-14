@@ -3541,7 +3541,7 @@ namespace gView.Framework.Carto
                     // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
                     if (layer.FeatureRenderer != null && layer.FeatureRenderer.HasEffect(layer, _map))
                     {
-                        if(layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale)
+                        if(layer.RequiresFeatureRendererClone())
                         {
                             renderer = clonedRenderer = (IFeatureRenderer)layer.FeatureRenderer.Clone(new CloneOptions(display, maxRefScaleFactor: layer.MaxRefScaleFactor));
                         } 

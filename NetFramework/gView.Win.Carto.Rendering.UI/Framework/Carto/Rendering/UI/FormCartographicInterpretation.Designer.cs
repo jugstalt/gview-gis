@@ -30,6 +30,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormCartographicInterpretation));
             this.gbCartography = new System.Windows.Forms.GroupBox();
+            this.btnCartoCompositionModeCopy = new System.Windows.Forms.RadioButton();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
@@ -44,7 +45,6 @@
             this.btnCartoSimple = new System.Windows.Forms.RadioButton();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.btnCartoFeatureAggregation = new System.Windows.Forms.RadioButton();
             this.gbCartography.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).BeginInit();
@@ -56,7 +56,7 @@
             // 
             // gbCartography
             // 
-            this.gbCartography.Controls.Add(this.btnCartoFeatureAggregation);
+            this.gbCartography.Controls.Add(this.btnCartoCompositionModeCopy);
             this.gbCartography.Controls.Add(this.label3);
             this.gbCartography.Controls.Add(this.label2);
             this.gbCartography.Controls.Add(this.label1);
@@ -72,6 +72,13 @@
             resources.ApplyResources(this.gbCartography, "gbCartography");
             this.gbCartography.Name = "gbCartography";
             this.gbCartography.TabStop = false;
+            // 
+            // btnCartoCompositionModeCopy
+            // 
+            resources.ApplyResources(this.btnCartoCompositionModeCopy, "btnCartoCompositionModeCopy");
+            this.btnCartoCompositionModeCopy.Name = "btnCartoCompositionModeCopy";
+            this.btnCartoCompositionModeCopy.TabStop = true;
+            this.btnCartoCompositionModeCopy.UseVisualStyleBackColor = true;
             // 
             // label3
             // 
@@ -165,13 +172,6 @@
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
-            // btnCartoFeatureAggregation
-            // 
-            resources.ApplyResources(this.btnCartoFeatureAggregation, "btnCartoFeatureAggregation");
-            this.btnCartoFeatureAggregation.Name = "btnCartoFeatureAggregation";
-            this.btnCartoFeatureAggregation.TabStop = true;
-            this.btnCartoFeatureAggregation.UseVisualStyleBackColor = true;
-            // 
             // FormCartographicInterpretation
             // 
             resources.ApplyResources(this, "$this");
@@ -210,6 +210,6 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.RadioButton btnCartoFeatureAggregation;
+        private System.Windows.Forms.RadioButton btnCartoCompositionModeCopy;
     }
 }

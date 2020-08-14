@@ -27,8 +27,8 @@ namespace gView.Framework.Carto.Rendering.UI
                 case LegendGroupCartographicMethod.LegendAndSymbolOrdering:
                     btnCartoLegendAndSymbolOrdering.Checked = true;
                     break;
-                case LegendGroupCartographicMethod.FeatureAggregation:
-                    btnCartoFeatureAggregation.Checked = true;
+                case LegendGroupCartographicMethod.CompositionModeCopy:
+                    btnCartoCompositionModeCopy.Checked = true;
                     break;
             }
         }
@@ -43,8 +43,8 @@ namespace gView.Framework.Carto.Rendering.UI
                 if (btnCartoLegendAndSymbolOrdering.Checked)
                     return LegendGroupCartographicMethod.LegendAndSymbolOrdering;
 
-                if (btnCartoFeatureAggregation.Checked)
-                    return LegendGroupCartographicMethod.FeatureAggregation;
+                if (btnCartoCompositionModeCopy.Checked)
+                    return LegendGroupCartographicMethod.CompositionModeCopy;
 
                 return LegendGroupCartographicMethod.Simple;
             }
