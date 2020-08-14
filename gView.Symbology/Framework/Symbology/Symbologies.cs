@@ -998,6 +998,7 @@ namespace gView.Framework.Symbology
         {
             _brush = new SolidBrush(Color.Blue);
             _pen = new Pen(Color.Black);
+            var brush = new SolidBrush(Color.White);
         }
 
         private SimplePointSymbol(Color penColor, float penWidth, Color brushColor)

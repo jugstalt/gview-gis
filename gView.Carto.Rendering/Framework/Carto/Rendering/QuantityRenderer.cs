@@ -157,6 +157,8 @@ namespace gView.Framework.Carto.Rendering
             if (symbol != null) disp.Draw(symbol, feature.Shape);
         }
 
+        public void StartDrawing(IDisplay display) { }
+
         public void FinishDrawing(IDisplay disp, ICancelTracker cancelTracker)
         {
         }

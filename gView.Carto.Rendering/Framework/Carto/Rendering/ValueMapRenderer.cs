@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Carto.Rendering
 {
-    public enum LegendGroupCartographicMethod { Simple = 0, LegendOrdering = 1, LegendAndSymbolOrdering = 2 }
+    public enum LegendGroupCartographicMethod { Simple = 0, LegendOrdering = 1, LegendAndSymbolOrdering = 2, FeatureAggregation = 3 }
 
     [gView.Framework.system.RegisterPlugIn("C7A92674-0120-4f3d-BC03-F1210136B5C6")]
     public class ValueMapRenderer : Cloner, IFeatureRenderer, IPropertyPage, ILegendGroup
@@ -325,20 +325,27 @@ namespace gView.Framework.Carto.Rendering
             }
         }
 
+        public void StartDrawing(IDisplay display) 
+        {
+            
+        }
+
         public void FinishDrawing(IDisplay disp, ICancelTracker cancelTracker)
         {
-            if (cancelTracker == null) cancelTracker = new CancelTracker();
+            if (cancelTracker == null)
+                cancelTracker = new CancelTracker();
 
-            if (_cartoMethod == LegendGroupCartographicMethod.LegendAndSymbolOrdering && cancelTracker.Continue)
+            if (_features != null)
             {
-                int symbolIndex = 0;
-
-                List<string> keys = new List<string>();
-                foreach (string key in _symbolTable.Keys)
-                    keys.Insert(0, key);
-
-                if (_features != null)
+                if (_cartoMethod == LegendGroupCartographicMethod.LegendAndSymbolOrdering && cancelTracker.Continue)
                 {
+                    int symbolIndex = 0;
+
+                    List<string> keys = new List<string>();
+                    foreach (string key in _symbolTable.Keys)
+                        keys.Insert(0, key);
+
+
                     while (true)
                     {
                         bool loop = false;
@@ -400,55 +407,111 @@ namespace gView.Framework.Carto.Rendering
 
                         if (!loop)
                             break;
+
                         symbolIndex++;
                     }
                 }
-            }
-            else if (_cartoMethod == LegendGroupCartographicMethod.LegendOrdering && cancelTracker.Continue)
-            {
-                List<string> keys = new List<string>();
-                foreach (string key in _symbolTable.Keys)
-                    keys.Insert(0, key);
-
-                foreach (string key in keys)
+                else if (_cartoMethod == LegendGroupCartographicMethod.LegendOrdering && cancelTracker.Continue)
                 {
-                    if (!_features.ContainsKey(key) || _features[key] == null)
-                        continue;
-                    if (!cancelTracker.Continue)
-                        break;
+                    List<string> keys = new List<string>();
+                    foreach (string key in _symbolTable.Keys)
+                        keys.Insert(0, key);
 
-                    ISymbol symbol = _symbolTable.ContainsKey(key) ? (ISymbol)_symbolTable[key] : null;
-                    if (symbol == null) continue;
-
-                    List<IFeature> features = _features[key];
-                    bool isRotatable = symbol is ISymbolRotation;
-
-                    int counter = 0;
-                    foreach (IFeature feature in features)
+                    foreach (string key in keys)
                     {
-                        if (isRotatable && !String.IsNullOrEmpty(_symbolRotation.RotationFieldName))
+                        if (!_features.ContainsKey(key) || _features[key] == null)
+                            continue;
+                        if (!cancelTracker.Continue)
+                            break;
+
+                        ISymbol symbol = _symbolTable.ContainsKey(key) ? (ISymbol)_symbolTable[key] : null;
+                        if (symbol == null) continue;
+
+                        List<IFeature> features = _features[key];
+                        bool isRotatable = symbol is ISymbolRotation;
+
+                        int counter = 0;
+                        foreach (IFeature feature in features)
                         {
-                            object rot = feature[_symbolRotation.RotationFieldName];
-                            if (rot != null && rot != DBNull.Value)
+                            if (isRotatable && !String.IsNullOrEmpty(_symbolRotation.RotationFieldName))
                             {
-                                ((ISymbolRotation)symbol).Rotation = (float)_symbolRotation.Convert2DEGAritmetic(Convert.ToDouble(rot));
+                                object rot = feature[_symbolRotation.RotationFieldName];
+                                if (rot != null && rot != DBNull.Value)
+                                {
+                                    ((ISymbolRotation)symbol).Rotation = (float)_symbolRotation.Convert2DEGAritmetic(Convert.ToDouble(rot));
+                                }
+                                else
+                                {
+                                    ((ISymbolRotation)symbol).Rotation = 0;
+                                }
+                            }
+                            symbol.Draw(disp, feature.Shape);
+
+                            counter++;
+                            if (counter % 100 == 0 && !cancelTracker.Continue)
+                                break;
+                        }
+                    }
+                }
+                else if (_cartoMethod == LegendGroupCartographicMethod.FeatureAggregation && cancelTracker.Continue)
+                {
+                    List<string> keys = new List<string>();
+                    foreach (string key in _symbolTable.Keys)
+                        keys.Insert(0, key);
+
+                    foreach (string key in keys)
+                    {
+                        if (!_features.ContainsKey(key) || _features[key] == null)
+                            continue;
+                        if (!cancelTracker.Continue)
+                            break;
+
+                        ISymbol symbol = _symbolTable.ContainsKey(key) ? (ISymbol)_symbolTable[key] : null;
+                        if (symbol == null) continue;
+
+                        List<IFeature> features = _features[key];
+                        bool isRotatable = symbol is ISymbolRotation;
+
+                        int counter = 0;
+
+                        IGeometry shape = null;
+
+                        foreach (IFeature feature in features)
+                        {
+                            if (feature.Shape == null)
+                                continue;
+
+                            if (shape == null)
+                            {
+                                shape = feature.Shape;
                             }
                             else
                             {
-                                ((ISymbolRotation)symbol).Rotation = 0;
+                                if (feature.Shape is IPolyline && shape is IPolyline)
+                                {
+                                    foreach (var path in ((IPolyline)feature.Shape).Paths)
+                                    {
+                                        ((IPolyline)shape).AddPath(path);
+                                    }
+                                }
+                                else
+                                {
+                                    throw new Exception($"Can't aggregate features (Catrographic interpretation for layer");
+                                }
                             }
-                        }
-                        symbol.Draw(disp, feature.Shape);
 
-                        counter++;
-                        if (counter % 100 == 0 && !cancelTracker.Continue)
-                            break;
+                            counter++;
+                            if (counter % 100 == 0 && !cancelTracker.Continue)
+                                break;
+                        }
+
+                        if (shape != null)
+                        {
+                            symbol.Draw(disp, shape);
+                        }
                     }
                 }
-            }
 
-            if (_features != null)
-            {
                 _features.Clear();
                 _features = null;
             }

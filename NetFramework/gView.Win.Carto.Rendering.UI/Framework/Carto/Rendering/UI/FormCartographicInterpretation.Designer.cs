@@ -33,17 +33,18 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.btnCartoLegendOrdering = new System.Windows.Forms.RadioButton();
-            this.btnCartoLegendAndSymbolOrdering = new System.Windows.Forms.RadioButton();
-            this.btnCartoSimple = new System.Windows.Forms.RadioButton();
-            this.btnOK = new System.Windows.Forms.Button();
-            this.btnCancel = new System.Windows.Forms.Button();
             this.pictureBox6 = new System.Windows.Forms.PictureBox();
             this.pictureBox5 = new System.Windows.Forms.PictureBox();
             this.pictureBox4 = new System.Windows.Forms.PictureBox();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.btnCartoLegendOrdering = new System.Windows.Forms.RadioButton();
+            this.btnCartoLegendAndSymbolOrdering = new System.Windows.Forms.RadioButton();
+            this.btnCartoSimple = new System.Windows.Forms.RadioButton();
+            this.btnOK = new System.Windows.Forms.Button();
+            this.btnCancel = new System.Windows.Forms.Button();
+            this.btnCartoFeatureAggregation = new System.Windows.Forms.RadioButton();
             this.gbCartography.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).BeginInit();
@@ -55,7 +56,7 @@
             // 
             // gbCartography
             // 
-            resources.ApplyResources(this.gbCartography, "gbCartography");
+            this.gbCartography.Controls.Add(this.btnCartoFeatureAggregation);
             this.gbCartography.Controls.Add(this.label3);
             this.gbCartography.Controls.Add(this.label2);
             this.gbCartography.Controls.Add(this.label1);
@@ -68,6 +69,7 @@
             this.gbCartography.Controls.Add(this.btnCartoLegendOrdering);
             this.gbCartography.Controls.Add(this.btnCartoLegendAndSymbolOrdering);
             this.gbCartography.Controls.Add(this.btnCartoSimple);
+            resources.ApplyResources(this.gbCartography, "gbCartography");
             this.gbCartography.Name = "gbCartography";
             this.gbCartography.TabStop = false;
             // 
@@ -85,6 +87,48 @@
             // 
             resources.ApplyResources(this.label1, "label1");
             this.label1.Name = "label1";
+            // 
+            // pictureBox6
+            // 
+            this.pictureBox6.Image = global::gView.Win.Carto.Rendering.UI.Properties.Resources.symbol_ordering;
+            resources.ApplyResources(this.pictureBox6, "pictureBox6");
+            this.pictureBox6.Name = "pictureBox6";
+            this.pictureBox6.TabStop = false;
+            // 
+            // pictureBox5
+            // 
+            this.pictureBox5.Image = global::gView.Win.Carto.Rendering.UI.Properties.Resources.legend_ordering;
+            resources.ApplyResources(this.pictureBox5, "pictureBox5");
+            this.pictureBox5.Name = "pictureBox5";
+            this.pictureBox5.TabStop = false;
+            // 
+            // pictureBox4
+            // 
+            this.pictureBox4.Image = global::gView.Win.Carto.Rendering.UI.Properties.Resources.feature_order;
+            resources.ApplyResources(this.pictureBox4, "pictureBox4");
+            this.pictureBox4.Name = "pictureBox4";
+            this.pictureBox4.TabStop = false;
+            // 
+            // pictureBox3
+            // 
+            this.pictureBox3.Image = global::gView.Win.Carto.Rendering.UI.Properties.Resources.roads_legende;
+            resources.ApplyResources(this.pictureBox3, "pictureBox3");
+            this.pictureBox3.Name = "pictureBox3";
+            this.pictureBox3.TabStop = false;
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Image = global::gView.Win.Carto.Rendering.UI.Properties.Resources.roads_legende;
+            resources.ApplyResources(this.pictureBox2, "pictureBox2");
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.TabStop = false;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::gView.Win.Carto.Rendering.UI.Properties.Resources.roads_legende;
+            resources.ApplyResources(this.pictureBox1, "pictureBox1");
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.TabStop = false;
             // 
             // btnCartoLegendOrdering
             // 
@@ -121,47 +165,12 @@
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
-            // pictureBox6
+            // btnCartoFeatureAggregation
             // 
-            resources.ApplyResources(this.pictureBox6, "pictureBox6");
-            this.pictureBox6.Image = global::gView.Win.Carto.Rendering.UI.Properties.Resources.symbol_ordering;
-            this.pictureBox6.Name = "pictureBox6";
-            this.pictureBox6.TabStop = false;
-            // 
-            // pictureBox5
-            // 
-            resources.ApplyResources(this.pictureBox5, "pictureBox5");
-            this.pictureBox5.Image = global::gView.Win.Carto.Rendering.UI.Properties.Resources.legend_ordering;
-            this.pictureBox5.Name = "pictureBox5";
-            this.pictureBox5.TabStop = false;
-            // 
-            // pictureBox4
-            // 
-            resources.ApplyResources(this.pictureBox4, "pictureBox4");
-            this.pictureBox4.Image = global::gView.Win.Carto.Rendering.UI.Properties.Resources.feature_order;
-            this.pictureBox4.Name = "pictureBox4";
-            this.pictureBox4.TabStop = false;
-            // 
-            // pictureBox3
-            // 
-            resources.ApplyResources(this.pictureBox3, "pictureBox3");
-            this.pictureBox3.Image = global::gView.Win.Carto.Rendering.UI.Properties.Resources.roads_legende;
-            this.pictureBox3.Name = "pictureBox3";
-            this.pictureBox3.TabStop = false;
-            // 
-            // pictureBox2
-            // 
-            resources.ApplyResources(this.pictureBox2, "pictureBox2");
-            this.pictureBox2.Image = global::gView.Win.Carto.Rendering.UI.Properties.Resources.roads_legende;
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.TabStop = false;
-            // 
-            // pictureBox1
-            // 
-            resources.ApplyResources(this.pictureBox1, "pictureBox1");
-            this.pictureBox1.Image = global::gView.Win.Carto.Rendering.UI.Properties.Resources.roads_legende;
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.TabStop = false;
+            resources.ApplyResources(this.btnCartoFeatureAggregation, "btnCartoFeatureAggregation");
+            this.btnCartoFeatureAggregation.Name = "btnCartoFeatureAggregation";
+            this.btnCartoFeatureAggregation.TabStop = true;
+            this.btnCartoFeatureAggregation.UseVisualStyleBackColor = true;
             // 
             // FormCartographicInterpretation
             // 
@@ -201,5 +210,6 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.RadioButton btnCartoFeatureAggregation;
     }
 }

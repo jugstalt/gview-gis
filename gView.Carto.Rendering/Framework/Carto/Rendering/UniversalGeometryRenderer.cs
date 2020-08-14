@@ -70,6 +70,8 @@ namespace gView.Framework.Carto.Rendering
             _symbol.Draw(feature.Shape, disp);
         }
 
+        public void StartDrawing(IDisplay display) { }
+
         public void FinishDrawing(IDisplay disp, ICancelTracker cancelTracker)
         {
         }

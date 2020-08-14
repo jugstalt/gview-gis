@@ -303,6 +303,8 @@ namespace gView.Framework.Carto.Rendering
             }
         }
 
+        public void StartDrawing(IDisplay display) { }
+
         public void FinishDrawing(IDisplay disp, ICancelTracker cancelTracker)
         {
             if (cancelTracker == null) cancelTracker = new CancelTracker();

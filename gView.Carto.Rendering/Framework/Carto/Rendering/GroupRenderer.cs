@@ -42,6 +42,8 @@ namespace gView.Framework.Carto.Rendering
             }
         }
 
+        public void StartDrawing(IDisplay display) { }
+
         public void FinishDrawing(IDisplay disp, ICancelTracker cancelTracker)
         {
             foreach (IFeatureRenderer renderer in _renderers)

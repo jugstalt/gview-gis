@@ -169,6 +169,8 @@ namespace gView.Interoperability.OGC.SLD
             }
         }
 
+        public void StartDrawing(IDisplay display) { }
+
         public void FinishDrawing(IDisplay disp, ICancelTracker cancelTracker)
         {
         }

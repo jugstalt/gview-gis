@@ -27,6 +27,9 @@ namespace gView.Framework.Carto.Rendering.UI
                 case LegendGroupCartographicMethod.LegendAndSymbolOrdering:
                     btnCartoLegendAndSymbolOrdering.Checked = true;
                     break;
+                case LegendGroupCartographicMethod.FeatureAggregation:
+                    btnCartoFeatureAggregation.Checked = true;
+                    break;
             }
         }
 
@@ -39,6 +42,9 @@ namespace gView.Framework.Carto.Rendering.UI
 
                 if (btnCartoLegendAndSymbolOrdering.Checked)
                     return LegendGroupCartographicMethod.LegendAndSymbolOrdering;
+
+                if (btnCartoFeatureAggregation.Checked)
+                    return LegendGroupCartographicMethod.FeatureAggregation;
 
                 return LegendGroupCartographicMethod.Simple;
             }

@@ -3452,6 +3452,8 @@ namespace gView.Framework.Carto
         }
         async private Task Render(IFeatureLayer layer)
         {
+            IFeatureRenderer clonedRenderer = null;
+
             try
             {
                 _map.FireOnUserInterface(true);
@@ -3539,9 +3541,14 @@ namespace gView.Framework.Carto
                     // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
                     if (layer.FeatureRenderer != null && layer.FeatureRenderer.HasEffect(layer, _map))
                     {
-                        renderer = (layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale) ?
-                            (IFeatureRenderer)layer.FeatureRenderer.Clone(new CloneOptions(display, maxRefScaleFactor: layer.MaxRefScaleFactor)) :
-                            layer.FeatureRenderer;
+                        if(layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale)
+                        {
+                            renderer = clonedRenderer = (IFeatureRenderer)layer.FeatureRenderer.Clone(new CloneOptions(display, maxRefScaleFactor: layer.MaxRefScaleFactor));
+                        } 
+                        else
+                        {
+                            renderer = layer.FeatureRenderer;
+                        }
                     }
                     if (layer.LabelRenderer != null && _useLabelRenderer)
                     {
@@ -3584,6 +3591,8 @@ namespace gView.Framework.Carto
 
                         if (renderer != null)
                         {
+                            renderer.StartDrawing(_map);
+
                             while ((feature = await fCursor.NextFeature()) != null)
                             {
                                 if (_cancelTracker != null)
@@ -3637,11 +3646,6 @@ namespace gView.Framework.Carto
                         {
                             renderer.FinishDrawing(_map, _cancelTracker);
                         }
-
-                        if (renderer != null && layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale)
-                        {
-                            renderer.Release();
-                        }
                     }
                 }
             }
@@ -3662,6 +3666,11 @@ namespace gView.Framework.Carto
             }
             finally
             {
+                if (clonedRenderer != null)
+                {
+                    clonedRenderer.Release();
+                }
+
                 _map.FireOnUserInterface(false);
             }
         }
