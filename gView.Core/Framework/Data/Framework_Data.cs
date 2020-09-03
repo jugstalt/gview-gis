@@ -699,7 +699,7 @@ namespace gView.Framework.Data
         IFeatureRenderer FeatureRenderer { get; set; }
         IFeatureRenderer SelectionRenderer { get; set; }
         ILabelRenderer LabelRenderer { get; set; }
-        
+
         bool ApplyRefScale { get; set; }
         bool ApplyLabelRefScale { get; set; }
 

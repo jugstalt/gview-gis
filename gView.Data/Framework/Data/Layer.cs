@@ -1201,7 +1201,7 @@ namespace gView.Framework.Data
         #endregion
     }
 
-    public class FeatureLayer2 : FeatureSelection
+    public class FeatureLayer2 : FeatureSelection, IFeatureLayerComposition
     {
         public FeatureLayer2()
         {
@@ -1213,6 +1213,41 @@ namespace gView.Framework.Data
         public FeatureLayer2(IFeatureLayer layer)
             : base(layer)
         {
+        }
+
+        #region IFeatureLayerComposition
+
+        public FeatureLayerCompositionMode CompositionMode { get; set; }
+        public float CompositionModeCopyTransparency { get; set; }
+
+        #endregion
+
+        internal override void CopyFrom(IDatasetElement element)
+        {
+            base.CopyFrom(element);
+
+            if(element is FeatureLayer2)
+            {
+                var fLayer2 = (FeatureLayer2)element;
+                this.CompositionMode = fLayer2.CompositionMode;
+                this.CompositionModeCopyTransparency = fLayer2.CompositionModeCopyTransparency;
+            }
+        }
+
+        public override void Load(IPersistStream stream)
+        {
+            base.Load(stream);
+
+            this.CompositionMode = (FeatureLayerCompositionMode)(int)stream.Load("composition_mode", (int)FeatureLayerCompositionMode.Over);
+            this.CompositionModeCopyTransparency = (float)stream.Load("compostion_copy_transp", 1f);
+        }
+
+        public override void Save(IPersistStream stream)
+        {
+            base.Save(stream);
+
+            stream.Save("composition_mode", (int)this.CompositionMode);
+            stream.Save("compostion_copy_transp", this.CompositionModeCopyTransparency);
         }
     }
 

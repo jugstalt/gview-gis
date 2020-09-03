@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
@@ -121,6 +122,8 @@ namespace gView.Framework.UI.Dialogs
         private Label label14;
         private Label label18;
         private Label label17;
+        private TabPage tabCompostionMode;
+        private ComboBox cmbCompositionMode;
         private IMap _map;
 
         public FormLayerProperties(IMapDocument mapDocument, IMap map, IDataset dataset, ILayer layer)
@@ -175,6 +178,7 @@ namespace gView.Framework.UI.Dialogs
             tabControl1.TabPages.Remove(tabSR);
             tabControl1.TabPages.Remove(tabDescription);
             tabControl1.TabPages.Remove(tabMapService);
+            tabControl1.TabPages.Remove(tabCompostionMode);
 
             if (layer is IFeatureLayer)
             {
@@ -245,6 +249,20 @@ namespace gView.Framework.UI.Dialogs
                 if (!tabControl1.TabPages.Contains(tabSR))
                 {
                     tabControl1.TabPages.Add(tabSR);
+                }
+            }
+            if (layer is IFeatureLayerComposition)
+            {
+                tabControl1.TabPages.Add(tabCompostionMode);
+
+                foreach(FeatureLayerCompositionMode compostionMode in Enum.GetValues(typeof(FeatureLayerCompositionMode)))
+                {
+                    cmbCompositionMode.Items.Add(new CompositionModeItem(compostionMode));
+
+                    if(((IFeatureLayerComposition)layer).CompositionMode == compostionMode)
+                    {
+                        cmbCompositionMode.SelectedIndex = cmbCompositionMode.Items.Count - 1;
+                    }
                 }
             }
             if (_map != null)
@@ -387,17 +405,19 @@ namespace gView.Framework.UI.Dialogs
             this.txtDescription = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
             this.tabMapService = new System.Windows.Forms.TabPage();
+            this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.label18 = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label14 = new System.Windows.Forms.Label();
             this.cmbMapServerGrouplayerStyle = new System.Windows.Forms.ComboBox();
+            this.tabCompostionMode = new System.Windows.Forms.TabPage();
+            this.cmbCompositionMode = new System.Windows.Forms.ComboBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
-            this.groupBox7 = new System.Windows.Forms.GroupBox();
-            this.label14 = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
-            this.label17 = new System.Windows.Forms.Label();
-            this.label18 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabGeneral.SuspendLayout();
             this.groupBox6.SuspendLayout();
@@ -428,9 +448,10 @@ namespace gView.Framework.UI.Dialogs
             this.groupBox3.SuspendLayout();
             this.tabDescription.SuspendLayout();
             this.tabMapService.SuspendLayout();
+            this.groupBox7.SuspendLayout();
+            this.tabCompostionMode.SuspendLayout();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
-            this.groupBox7.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -445,6 +466,7 @@ namespace gView.Framework.UI.Dialogs
             this.tabControl1.Controls.Add(this.tabSR);
             this.tabControl1.Controls.Add(this.tabDescription);
             this.tabControl1.Controls.Add(this.tabMapService);
+            this.tabControl1.Controls.Add(this.tabCompostionMode);
             resources.ApplyResources(this.tabControl1, "tabControl1");
             this.tabControl1.Multiline = true;
             this.tabControl1.Name = "tabControl1";
@@ -1085,12 +1107,63 @@ namespace gView.Framework.UI.Dialogs
             this.tabMapService.Name = "tabMapService";
             this.tabMapService.UseVisualStyleBackColor = true;
             // 
+            // groupBox7
+            // 
+            resources.ApplyResources(this.groupBox7, "groupBox7");
+            this.groupBox7.Controls.Add(this.label18);
+            this.groupBox7.Controls.Add(this.label17);
+            this.groupBox7.Controls.Add(this.label16);
+            this.groupBox7.Controls.Add(this.label15);
+            this.groupBox7.Controls.Add(this.label14);
+            this.groupBox7.Controls.Add(this.cmbMapServerGrouplayerStyle);
+            this.groupBox7.Name = "groupBox7";
+            this.groupBox7.TabStop = false;
+            // 
+            // label18
+            // 
+            resources.ApplyResources(this.label18, "label18");
+            this.label18.Name = "label18";
+            // 
+            // label17
+            // 
+            resources.ApplyResources(this.label17, "label17");
+            this.label17.Name = "label17";
+            // 
+            // label16
+            // 
+            resources.ApplyResources(this.label16, "label16");
+            this.label16.Name = "label16";
+            // 
+            // label15
+            // 
+            resources.ApplyResources(this.label15, "label15");
+            this.label15.Name = "label15";
+            // 
+            // label14
+            // 
+            resources.ApplyResources(this.label14, "label14");
+            this.label14.Name = "label14";
+            // 
             // cmbMapServerGrouplayerStyle
             // 
             this.cmbMapServerGrouplayerStyle.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbMapServerGrouplayerStyle.FormattingEnabled = true;
             resources.ApplyResources(this.cmbMapServerGrouplayerStyle, "cmbMapServerGrouplayerStyle");
             this.cmbMapServerGrouplayerStyle.Name = "cmbMapServerGrouplayerStyle";
+            // 
+            // tabCompostionMode
+            // 
+            this.tabCompostionMode.Controls.Add(this.cmbCompositionMode);
+            resources.ApplyResources(this.tabCompostionMode, "tabCompostionMode");
+            this.tabCompostionMode.Name = "tabCompostionMode";
+            this.tabCompostionMode.UseVisualStyleBackColor = true;
+            // 
+            // cmbCompositionMode
+            // 
+            this.cmbCompositionMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbCompositionMode.FormattingEnabled = true;
+            resources.ApplyResources(this.cmbCompositionMode, "cmbCompositionMode");
+            this.cmbCompositionMode.Name = "cmbCompositionMode";
             // 
             // panel1
             // 
@@ -1117,43 +1190,6 @@ namespace gView.Framework.UI.Dialogs
             resources.ApplyResources(this.btnOK, "btnOK");
             this.btnOK.Name = "btnOK";
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
-            // 
-            // groupBox7
-            // 
-            resources.ApplyResources(this.groupBox7, "groupBox7");
-            this.groupBox7.Controls.Add(this.label18);
-            this.groupBox7.Controls.Add(this.label17);
-            this.groupBox7.Controls.Add(this.label16);
-            this.groupBox7.Controls.Add(this.label15);
-            this.groupBox7.Controls.Add(this.label14);
-            this.groupBox7.Controls.Add(this.cmbMapServerGrouplayerStyle);
-            this.groupBox7.Name = "groupBox7";
-            this.groupBox7.TabStop = false;
-            // 
-            // label14
-            // 
-            resources.ApplyResources(this.label14, "label14");
-            this.label14.Name = "label14";
-            // 
-            // label15
-            // 
-            resources.ApplyResources(this.label15, "label15");
-            this.label15.Name = "label15";
-            // 
-            // label16
-            // 
-            resources.ApplyResources(this.label16, "label16");
-            this.label16.Name = "label16";
-            // 
-            // label17
-            // 
-            resources.ApplyResources(this.label17, "label17");
-            this.label17.Name = "label17";
-            // 
-            // label18
-            // 
-            resources.ApplyResources(this.label18, "label18");
-            this.label18.Name = "label18";
             // 
             // FormLayerProperties
             // 
@@ -1203,10 +1239,11 @@ namespace gView.Framework.UI.Dialogs
             this.tabDescription.ResumeLayout(false);
             this.tabDescription.PerformLayout();
             this.tabMapService.ResumeLayout(false);
-            this.panel1.ResumeLayout(false);
-            this.panel2.ResumeLayout(false);
             this.groupBox7.ResumeLayout(false);
             this.groupBox7.PerformLayout();
+            this.tabCompostionMode.ResumeLayout(false);
+            this.panel1.ResumeLayout(false);
+            this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -1815,6 +1852,13 @@ namespace gView.Framework.UI.Dialogs
                     }
                 }
             }
+            if(_layer is IFeatureLayerComposition)
+            {
+                if (cmbCompositionMode.SelectedItem is CompositionModeItem)
+                {
+                    ((IFeatureLayerComposition)_layer).CompositionMode = ((CompositionModeItem)cmbCompositionMode.SelectedItem).CompositionMode;
+                }
+            }
             if (_map != null && _layer != null)
             {
                 _map.SetLayerDescription(_layer.ID, txtDescription.Text);
@@ -1959,6 +2003,20 @@ namespace gView.Framework.UI.Dialogs
             }
         }
 
+        class CompositionModeItem
+        {
+            public CompositionModeItem(FeatureLayerCompositionMode compositionMode)
+            {
+                this.CompositionMode = compositionMode;
+            }
+            public FeatureLayerCompositionMode CompositionMode { get; private set; }
+
+            public override string ToString()
+            {
+                return $"{ this.CompositionMode.ToString() }{ ((int)this.CompositionMode == 0 ? " (default)" : "") }";
+            }
+        }
+
         #endregion
     }
 
@@ -2013,4 +2071,5 @@ namespace gView.Framework.UI.Dialogs
         }
     }
 
+    
 }

@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
 using gView.Framework.IO;
+using gView.Framework.Carto.LayerRenderers;
 
 namespace gView.Server.AppCode
 {
@@ -441,8 +442,8 @@ namespace gView.Server.AppCode
                         }
 
 
-                        ServiceRequestThread srt = new ServiceRequestThread(this, wsLayer, webServiceOrder++);
-                        srt.finish += new ServiceRequestThread.RequestThreadFinished(MapRequestThread_finished);
+                        var srt = new RenderServiceRequest(this, wsLayer, webServiceOrder++);
+                        srt.finish += new RenderServiceRequest.RequestThreadFinished(MapRequestThread_finished);
                         //Thread thread = new Thread(new ThreadStart(srt.ImageRequest));
                         m_imageMerger.max++;
                         //thread.Start();
@@ -459,8 +460,8 @@ namespace gView.Server.AppCode
 
                             wsLayer.WebServiceClass.SpatialReference = this.SpatialReference;
 
-                            srt = new ServiceRequestThread(this, wsLayer, (++webServiceOrder2) + webServices.Count);
-                            srt.finish += new ServiceRequestThread.RequestThreadFinished(MapRequestThread_finished);
+                            srt = new RenderServiceRequest(this, wsLayer, (++webServiceOrder2) + webServices.Count);
+                            srt.finish += new RenderServiceRequest.RequestThreadFinished(MapRequestThread_finished);
                             //thread = new Thread(new ThreadStart(srt.ImageRequest));
                             m_imageMerger.max++;
                             //thread.Start();
@@ -579,7 +580,7 @@ namespace gView.Server.AppCode
                             }
                             else
                             {
-                                RenderFeatureLayerThread rlt = new RenderFeatureLayerThread(this, fLayer, cancelTracker, new FeatureCounter());
+                                RenderFeatureLayer rlt = new RenderFeatureLayer(this, fLayer, cancelTracker, new FeatureCounter());
                                 if (fLayer.LabelRenderer != null && fLayer.LabelRenderer.RenderMode == LabelRenderMode.RenderWithFeature)
                                 {
                                     rlt.UseLabelRenderer = true;
@@ -621,7 +622,7 @@ namespace gView.Server.AppCode
                                 }
                                 else
                                 {
-                                    RenderRasterLayerThread rlt = new RenderRasterLayerThread(this, rLayer, rLayer, cancelTracker);
+                                    RenderRasterLayer rlt = new RenderRasterLayer(this, rLayer, rLayer, cancelTracker);
                                     await rlt.Render();
 
                                     //thread = new Thread(new ThreadStart(rlt.Render));
@@ -648,7 +649,7 @@ namespace gView.Server.AppCode
                                 continue;
                             }
 
-                            RenderLabelThread rlt = new RenderLabelThread(this, fLayer, cancelTracker);
+                            RenderLabel rlt = new RenderLabel(this, fLayer, cancelTracker);
                             await rlt.Render();
                         }
                     }
@@ -741,7 +742,7 @@ namespace gView.Server.AppCode
 
                     IRasterLayer cLayer = (IRasterLayer)child;
 
-                    RenderRasterLayerThread rlt = new RenderRasterLayerThread(this, cLayer, rootLayer, cancelTracker);
+                    RenderRasterLayer rlt = new RenderRasterLayer(this, cLayer, rootLayer, cancelTracker);
                     await rlt.Render();
 
                     if (child.Class is IDisposable)
