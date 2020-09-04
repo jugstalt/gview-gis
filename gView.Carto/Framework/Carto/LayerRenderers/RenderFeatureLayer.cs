@@ -320,7 +320,7 @@ namespace gView.Framework.Carto.LayerRenderers
                         {
                             var matrix = new System.Drawing.Imaging.ColorMatrix();
                             //set the opacity  
-                            matrix.Matrix33 = (float)0.5;
+                            matrix.Matrix33 =  (float)Math.Min(1, (100f - ((IFeatureLayerComposition)layer).CompositionModeCopyTransparency) / 100);
                             //create image attributes  
                             var attributes = new System.Drawing.Imaging.ImageAttributes();
 

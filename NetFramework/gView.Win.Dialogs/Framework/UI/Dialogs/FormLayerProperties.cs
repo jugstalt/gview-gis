@@ -124,6 +124,17 @@ namespace gView.Framework.UI.Dialogs
         private Label label17;
         private TabPage tabCompostionMode;
         private ComboBox cmbCompositionMode;
+        private GroupBox groupBox8;
+        private Panel panelCompModeCopy;
+        private Label label20;
+        private Label label19;
+        private NumericUpDown numCompModeCopyTransparency;
+        private Label label22;
+        private Label label21;
+        private Label label23;
+        private PictureBox pictureBox2;
+        private PictureBox pictureBox1;
+        private Label label24;
         private IMap _map;
 
         public FormLayerProperties(IMapDocument mapDocument, IMap map, IDataset dataset, ILayer layer)
@@ -264,6 +275,9 @@ namespace gView.Framework.UI.Dialogs
                         cmbCompositionMode.SelectedIndex = cmbCompositionMode.Items.Count - 1;
                     }
                 }
+
+                numCompModeCopyTransparency.Value = (decimal)((IFeatureLayerComposition)layer).CompositionModeCopyTransparency;
+                panelCompModeCopy.Visible = ((IFeatureLayerComposition)layer).CompositionMode == FeatureLayerCompositionMode.Copy;
             }
             if (_map != null)
             {
@@ -413,11 +427,22 @@ namespace gView.Framework.UI.Dialogs
             this.label14 = new System.Windows.Forms.Label();
             this.cmbMapServerGrouplayerStyle = new System.Windows.Forms.ComboBox();
             this.tabCompostionMode = new System.Windows.Forms.TabPage();
+            this.groupBox8 = new System.Windows.Forms.GroupBox();
+            this.panelCompModeCopy = new System.Windows.Forms.Panel();
+            this.label23 = new System.Windows.Forms.Label();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.label22 = new System.Windows.Forms.Label();
+            this.label21 = new System.Windows.Forms.Label();
+            this.label20 = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this.numCompModeCopyTransparency = new System.Windows.Forms.NumericUpDown();
             this.cmbCompositionMode = new System.Windows.Forms.ComboBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
+            this.label24 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabGeneral.SuspendLayout();
             this.groupBox6.SuspendLayout();
@@ -450,6 +475,11 @@ namespace gView.Framework.UI.Dialogs
             this.tabMapService.SuspendLayout();
             this.groupBox7.SuspendLayout();
             this.tabCompostionMode.SuspendLayout();
+            this.groupBox8.SuspendLayout();
+            this.panelCompModeCopy.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numCompModeCopyTransparency)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -1153,17 +1183,89 @@ namespace gView.Framework.UI.Dialogs
             // 
             // tabCompostionMode
             // 
-            this.tabCompostionMode.Controls.Add(this.cmbCompositionMode);
+            this.tabCompostionMode.Controls.Add(this.groupBox8);
             resources.ApplyResources(this.tabCompostionMode, "tabCompostionMode");
             this.tabCompostionMode.Name = "tabCompostionMode";
             this.tabCompostionMode.UseVisualStyleBackColor = true;
             // 
+            // groupBox8
+            // 
+            resources.ApplyResources(this.groupBox8, "groupBox8");
+            this.groupBox8.Controls.Add(this.panelCompModeCopy);
+            this.groupBox8.Controls.Add(this.cmbCompositionMode);
+            this.groupBox8.Name = "groupBox8";
+            this.groupBox8.TabStop = false;
+            // 
+            // panelCompModeCopy
+            // 
+            resources.ApplyResources(this.panelCompModeCopy, "panelCompModeCopy");
+            this.panelCompModeCopy.Controls.Add(this.label24);
+            this.panelCompModeCopy.Controls.Add(this.label23);
+            this.panelCompModeCopy.Controls.Add(this.pictureBox2);
+            this.panelCompModeCopy.Controls.Add(this.pictureBox1);
+            this.panelCompModeCopy.Controls.Add(this.label22);
+            this.panelCompModeCopy.Controls.Add(this.label21);
+            this.panelCompModeCopy.Controls.Add(this.label20);
+            this.panelCompModeCopy.Controls.Add(this.label19);
+            this.panelCompModeCopy.Controls.Add(this.numCompModeCopyTransparency);
+            this.panelCompModeCopy.Name = "panelCompModeCopy";
+            // 
+            // label23
+            // 
+            resources.ApplyResources(this.label23, "label23");
+            this.label23.Name = "label23";
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Image = global::gView.Win.Dialogs.Properties.Resources.trans_comp_copy;
+            resources.ApplyResources(this.pictureBox2, "pictureBox2");
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.TabStop = false;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::gView.Win.Dialogs.Properties.Resources.trans_symbol;
+            resources.ApplyResources(this.pictureBox1, "pictureBox1");
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.TabStop = false;
+            // 
+            // label22
+            // 
+            resources.ApplyResources(this.label22, "label22");
+            this.label22.Name = "label22";
+            // 
+            // label21
+            // 
+            resources.ApplyResources(this.label21, "label21");
+            this.label21.Name = "label21";
+            // 
+            // label20
+            // 
+            resources.ApplyResources(this.label20, "label20");
+            this.label20.Name = "label20";
+            // 
+            // label19
+            // 
+            resources.ApplyResources(this.label19, "label19");
+            this.label19.Name = "label19";
+            // 
+            // numCompModeCopyTransparency
+            // 
+            this.numCompModeCopyTransparency.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            resources.ApplyResources(this.numCompModeCopyTransparency, "numCompModeCopyTransparency");
+            this.numCompModeCopyTransparency.Name = "numCompModeCopyTransparency";
+            // 
             // cmbCompositionMode
             // 
+            resources.ApplyResources(this.cmbCompositionMode, "cmbCompositionMode");
             this.cmbCompositionMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbCompositionMode.FormattingEnabled = true;
-            resources.ApplyResources(this.cmbCompositionMode, "cmbCompositionMode");
             this.cmbCompositionMode.Name = "cmbCompositionMode";
+            this.cmbCompositionMode.SelectedIndexChanged += new System.EventHandler(this.cmbCompositionMode_SelectedIndexChanged);
             // 
             // panel1
             // 
@@ -1190,6 +1292,11 @@ namespace gView.Framework.UI.Dialogs
             resources.ApplyResources(this.btnOK, "btnOK");
             this.btnOK.Name = "btnOK";
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
+            // 
+            // label24
+            // 
+            resources.ApplyResources(this.label24, "label24");
+            this.label24.Name = "label24";
             // 
             // FormLayerProperties
             // 
@@ -1242,6 +1349,12 @@ namespace gView.Framework.UI.Dialogs
             this.groupBox7.ResumeLayout(false);
             this.groupBox7.PerformLayout();
             this.tabCompostionMode.ResumeLayout(false);
+            this.groupBox8.ResumeLayout(false);
+            this.panelCompModeCopy.ResumeLayout(false);
+            this.panelCompModeCopy.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numCompModeCopyTransparency)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -1858,6 +1971,9 @@ namespace gView.Framework.UI.Dialogs
                 {
                     ((IFeatureLayerComposition)_layer).CompositionMode = ((CompositionModeItem)cmbCompositionMode.SelectedItem).CompositionMode;
                 }
+
+                ((IFeatureLayerComposition)_layer).CompositionModeCopyTransparency =
+                    (float)numCompModeCopyTransparency.Value;
             }
             if (_map != null && _layer != null)
             {
@@ -1982,6 +2098,13 @@ namespace gView.Framework.UI.Dialogs
             btnTranscolor.BackColor = Color.Transparent;
         }
 
+        private void cmbCompositionMode_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbCompositionMode.SelectedItem is CompositionModeItem)
+            {
+                panelCompModeCopy.Visible = ((CompositionModeItem)cmbCompositionMode.SelectedItem).CompositionMode == FeatureLayerCompositionMode.Copy;
+            }
+        }
 
         #region ItemClasses
 

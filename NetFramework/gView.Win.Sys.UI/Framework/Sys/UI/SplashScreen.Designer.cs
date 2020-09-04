@@ -60,7 +60,7 @@ namespace gView.Framework.system.UI
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(264, 14);
             this.label1.TabIndex = 1;
-            this.label1.Text = "(c) 2006-2019 gView. All rights reserved.";
+            this.label1.Text = "(c) 2006-2020 gView. All rights reserved.";
             // 
             // lblVersion
             // 

@@ -30,7 +30,6 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormCartographicInterpretation));
             this.gbCartography = new System.Windows.Forms.GroupBox();
-            this.btnCartoCompositionModeCopy = new System.Windows.Forms.RadioButton();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
@@ -56,7 +55,6 @@
             // 
             // gbCartography
             // 
-            this.gbCartography.Controls.Add(this.btnCartoCompositionModeCopy);
             this.gbCartography.Controls.Add(this.label3);
             this.gbCartography.Controls.Add(this.label2);
             this.gbCartography.Controls.Add(this.label1);
@@ -72,13 +70,6 @@
             resources.ApplyResources(this.gbCartography, "gbCartography");
             this.gbCartography.Name = "gbCartography";
             this.gbCartography.TabStop = false;
-            // 
-            // btnCartoCompositionModeCopy
-            // 
-            resources.ApplyResources(this.btnCartoCompositionModeCopy, "btnCartoCompositionModeCopy");
-            this.btnCartoCompositionModeCopy.Name = "btnCartoCompositionModeCopy";
-            this.btnCartoCompositionModeCopy.TabStop = true;
-            this.btnCartoCompositionModeCopy.UseVisualStyleBackColor = true;
             // 
             // label3
             // 
@@ -210,6 +201,5 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.RadioButton btnCartoCompositionModeCopy;
     }
 }

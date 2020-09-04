@@ -19,7 +19,7 @@ namespace gView.Win.Dialogs.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -61,112 +61,132 @@ namespace gView.Win.Dialogs.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type global::System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static global::System.Drawing.Bitmap add_16 {
+        internal static System.Drawing.Bitmap add_16 {
             get {
                 object obj = ResourceManager.GetObject("add_16", resourceCulture);
-                return ((global::System.Drawing.Bitmap)(obj));
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type global::System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static global::System.Drawing.Bitmap arrow_down_16 {
+        internal static System.Drawing.Bitmap arrow_down_16 {
             get {
                 object obj = ResourceManager.GetObject("arrow_down_16", resourceCulture);
-                return ((global::System.Drawing.Bitmap)(obj));
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type global::System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static global::System.Drawing.Bitmap arrow_up_16 {
+        internal static System.Drawing.Bitmap arrow_up_16 {
             get {
                 object obj = ResourceManager.GetObject("arrow_up_16", resourceCulture);
-                return ((global::System.Drawing.Bitmap)(obj));
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type global::System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static global::System.Drawing.Bitmap delete_16 {
+        internal static System.Drawing.Bitmap delete_16 {
             get {
                 object obj = ResourceManager.GetObject("delete_16", resourceCulture);
-                return ((global::System.Drawing.Bitmap)(obj));
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type global::System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static global::System.Drawing.Bitmap img_18 {
+        internal static System.Drawing.Bitmap img_18 {
             get {
                 object obj = ResourceManager.GetObject("img_18", resourceCulture);
-                return ((global::System.Drawing.Bitmap)(obj));
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type global::System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static global::System.Drawing.Bitmap img_9 {
+        internal static System.Drawing.Bitmap img_9 {
             get {
                 object obj = ResourceManager.GetObject("img_9", resourceCulture);
-                return ((global::System.Drawing.Bitmap)(obj));
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type global::System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static global::System.Drawing.Bitmap layers {
+        internal static System.Drawing.Bitmap layers {
             get {
                 object obj = ResourceManager.GetObject("layers", resourceCulture);
-                return ((global::System.Drawing.Bitmap)(obj));
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type global::System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static global::System.Drawing.Bitmap point {
+        internal static System.Drawing.Bitmap point {
             get {
                 object obj = ResourceManager.GetObject("point", resourceCulture);
-                return ((global::System.Drawing.Bitmap)(obj));
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type global::System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static global::System.Drawing.Bitmap polygon {
+        internal static System.Drawing.Bitmap polygon {
             get {
                 object obj = ResourceManager.GetObject("polygon", resourceCulture);
-                return ((global::System.Drawing.Bitmap)(obj));
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type global::System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static global::System.Drawing.Bitmap polyline {
+        internal static System.Drawing.Bitmap polyline {
             get {
                 object obj = ResourceManager.GetObject("polyline", resourceCulture);
-                return ((global::System.Drawing.Bitmap)(obj));
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type global::System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static global::System.Drawing.Bitmap rectangle {
+        internal static System.Drawing.Bitmap rectangle {
             get {
                 object obj = ResourceManager.GetObject("rectangle", resourceCulture);
-                return ((global::System.Drawing.Bitmap)(obj));
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap trans_comp_copy {
+            get {
+                object obj = ResourceManager.GetObject("trans_comp_copy", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap trans_symbol {
+            get {
+                object obj = ResourceManager.GetObject("trans_symbol", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

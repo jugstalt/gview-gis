@@ -627,5 +627,11 @@
   <ItemGroup>
     <None Include="Resources\rectangle.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\trans-comp-copy.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\trans-symbol.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

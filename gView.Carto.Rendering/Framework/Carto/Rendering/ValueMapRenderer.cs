@@ -14,7 +14,7 @@ using System.Reflection;
 
 namespace gView.Framework.Carto.Rendering
 {
-    public enum LegendGroupCartographicMethod { Simple = 0, LegendOrdering = 1, LegendAndSymbolOrdering = 2, CompositionModeCopy = 3 }
+    public enum LegendGroupCartographicMethod { Simple = 0, LegendOrdering = 1, LegendAndSymbolOrdering = 2 }
 
     [gView.Framework.system.RegisterPlugIn("C7A92674-0120-4f3d-BC03-F1210136B5C6")]
     public class ValueMapRenderer : Cloner, IFeatureRenderer, IPropertyPage, ILegendGroup, IRenderRequiresClone
@@ -560,195 +560,6 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
                         }
                     }
                 }
-                else if (_cartoMethod == LegendGroupCartographicMethod.CompositionModeCopy && cancelTracker.Continue)
-                {
-                    List<string> keys = new List<string>();
-                    foreach (string key in _symbolTable.Keys)
-                    {
-                        keys.Insert(0, key);
-                    }
-
-                    var opacity = 0d;
-                    int opacityCount = 0;
-
-                    #region Determine average Opacity
-
-                    foreach (var symbol in this.Symbols)
-                    {
-                        Color? brushColor = symbol is IBrushColor ? ((IBrushColor)symbol).FillColor : (Color?)null;
-                        Color? penColor = symbol is IPenColor ? ((IPenColor)symbol).PenColor : (Color?)null;
-
-                        if (brushColor.HasValue)
-                        {
-                            ((IBrushColor)symbol).FillColor = Color.FromArgb(255, brushColor.Value);
-                        }
-                        if (penColor.HasValue)
-                        {
-                            ((IPenColor)symbol).PenColor = Color.FromArgb(255, penColor.Value);
-                        }
-
-                        if (brushColor.HasValue)
-                        {
-                            opacity += brushColor.Value.A;
-                            opacityCount++;
-                        }
-                        else if (penColor.HasValue)
-                        {
-                            opacity += penColor.Value.A;
-                            opacityCount++;
-                        }
-                    }
-
-                    if (opacityCount > 0)
-                    {
-                        opacity /= opacityCount;
-                        opacity /= 255;
-                    }
-
-                    if (opacityCount == 0)
-                    {
-                        opacity = 1f;
-                    }
-
-                    #endregion
-
-                    var originalGraphicsContext = disp.GraphicsContext;
-                    try
-                    {
-                        using (var bm = new System.Drawing.Bitmap(disp.Bitmap.Width, disp.Bitmap.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
-                        using (var gr = System.Drawing.Graphics.FromImage(bm))
-                        {
-                            bm.MakeTransparent();
-                            bm.SetResolution(disp.Bitmap.HorizontalResolution, disp.Bitmap.VerticalResolution);
-
-                            ((Display)disp).GraphicsContext = gr;
-
-                            foreach (string key in keys)
-                            {
-                                if (!_features.ContainsKey(key) || _features[key] == null)
-                                {
-                                    continue;
-                                }
-
-                                if (!cancelTracker.Continue)
-                                {
-                                    break;
-                                }
-
-                                ISymbol symbol = _symbolTable.ContainsKey(key) ? (ISymbol)_symbolTable[key] : null;
-                                if (symbol == null)
-                                {
-                                    continue;
-                                }
-
-                                List<IFeature> features = _features[key];
-                                bool isRotatable = symbol is ISymbolRotation;
-
-                                int counter = 0;
-
-                                foreach (IFeature feature in features)
-                                {
-                                    if (isRotatable && !String.IsNullOrEmpty(_symbolRotation.RotationFieldName))
-                                    {
-                                        object rot = feature[_symbolRotation.RotationFieldName];
-                                        if (rot != null && rot != DBNull.Value)
-                                        {
-                                            ((ISymbolRotation)symbol).Rotation = (float)_symbolRotation.Convert2DEGAritmetic(Convert.ToDouble(rot));
-                                        }
-                                        else
-                                        {
-                                            ((ISymbolRotation)symbol).Rotation = 0;
-                                        }
-                                    }
-                                    symbol.Draw(disp, feature.Shape);
-
-                                    counter++;
-                                    if (counter % 100 == 0 && !cancelTracker.Continue)
-                                    {
-                                        break;
-                                    }
-                                }
-                            }
-
-                            ColorMatrix matrix = new ColorMatrix();
-                            //set the opacity  
-                            matrix.Matrix33 = (float)opacity;
-                            //create image attributes  
-                            ImageAttributes attributes = new ImageAttributes();
-
-                            //set the color(opacity) of the image  
-                            attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-
-                            originalGraphicsContext.DrawImage(bm,
-                                new Rectangle(0, 0, bm.Width, bm.Height),
-                                0, 0, bm.Width, bm.Height,
-                                GraphicsUnit.Pixel,
-                                attributes);
-                        }
-                    }
-                    finally
-                    {
-                        ((Display)disp).GraphicsContext = originalGraphicsContext;
-                    }
-                }
-                //else if (_cartoMethod == LegendGroupCartographicMethod.FeatureAggregation && cancelTracker.Continue)
-                //{
-                //    List<string> keys = new List<string>();
-                //    foreach (string key in _symbolTable.Keys)
-                //        keys.Insert(0, key);
-
-                //    foreach (string key in keys)
-                //    {
-                //        if (!_features.ContainsKey(key) || _features[key] == null)
-                //            continue;
-                //        if (!cancelTracker.Continue)
-                //            break;
-
-                //        ISymbol symbol = _symbolTable.ContainsKey(key) ? (ISymbol)_symbolTable[key] : null;
-                //        if (symbol == null) continue;
-
-                //        List<IFeature> features = _features[key];
-                //        bool isRotatable = symbol is ISymbolRotation;
-
-                //        int counter = 0;
-
-                //        IGeometry shape = null;
-
-                //        foreach (IFeature feature in features)
-                //        {
-                //            if (feature.Shape == null)
-                //                continue;
-
-                //            if (shape == null)
-                //            {
-                //                shape = feature.Shape;
-                //            }
-                //            else
-                //            {
-                //                if (feature.Shape is IPolyline && shape is IPolyline)
-                //                {
-                //                    foreach (var path in ((IPolyline)feature.Shape).Paths)
-                //                    {
-                //                        ((IPolyline)shape).AddPath(path);
-                //                    }
-                //                }
-                //                else
-                //                {
-                //                    throw new Exception($"Can't aggregate features (Catrographic interpretation for layer");
-                //                }
-                //            }
-
-                //            counter++;
-                //            if (counter % 100 == 0 && !cancelTracker.Continue)
-                //                break;
-                //        }
-
-                //        if (shape != null)
-                //        {
-                //            symbol.Draw(disp, shape);
-                //        }
-                //    }
-                //}
 
                 _features.Clear();
                 _features = null;
@@ -949,7 +760,7 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
 
         public bool RequiresClone()
         {
-            return _cartoMethod == LegendGroupCartographicMethod.CompositionModeCopy;
+            return false;
         }
 
         #endregion

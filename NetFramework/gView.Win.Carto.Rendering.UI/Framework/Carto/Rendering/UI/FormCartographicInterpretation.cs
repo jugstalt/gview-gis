@@ -27,9 +27,6 @@ namespace gView.Framework.Carto.Rendering.UI
                 case LegendGroupCartographicMethod.LegendAndSymbolOrdering:
                     btnCartoLegendAndSymbolOrdering.Checked = true;
                     break;
-                case LegendGroupCartographicMethod.CompositionModeCopy:
-                    btnCartoCompositionModeCopy.Checked = true;
-                    break;
             }
         }
 
@@ -42,9 +39,6 @@ namespace gView.Framework.Carto.Rendering.UI
 
                 if (btnCartoLegendAndSymbolOrdering.Checked)
                     return LegendGroupCartographicMethod.LegendAndSymbolOrdering;
-
-                if (btnCartoCompositionModeCopy.Checked)
-                    return LegendGroupCartographicMethod.CompositionModeCopy;
 
                 return LegendGroupCartographicMethod.Simple;
             }
