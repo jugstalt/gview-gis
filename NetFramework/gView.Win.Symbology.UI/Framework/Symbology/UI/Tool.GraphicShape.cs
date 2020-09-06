@@ -1112,6 +1112,12 @@ namespace gView.Framework.Symbology.UI
         public float MaxPenWidth { get; set; }
         public float MinPenWidth { get; set; }
 
+        public DrawingUnit PenWidthUnit
+        {
+            get { return DrawingUnit.Pixel; }
+            set { }
+        }
+
         #endregion
 
         #region IPenDashStyle Member

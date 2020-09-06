@@ -9,14 +9,17 @@ namespace gView.Framework.Carto
     {
         static public bool RequiresFeatureRendererClone(this IFeatureLayer layer)
         {
-            if (layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale)
+            if (layer?.FeatureRenderer != null)
             {
-                return true;
-            }
+                if (layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale)
+                {
+                    return true;
+                }
 
-            if(layer.FeatureRenderer is IRenderRequiresClone && ((IRenderRequiresClone)layer.FeatureRenderer).RequiresClone())
-            {
-                return true;
+                if (layer.FeatureRenderer.RequireClone())
+                {
+                    return true;
+                }
             }
 
             return false;

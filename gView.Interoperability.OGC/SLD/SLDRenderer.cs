@@ -17,6 +17,7 @@ using gView.Framework.Xml;
 using gView.Framework.XML;
 using gView.Framework.Carto.Rendering;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace gView.Interoperability.OGC.SLD
 {
@@ -239,6 +240,12 @@ namespace gView.Interoperability.OGC.SLD
         public string Category
         {
             get { return "OGC"; }
+        }
+
+        public bool RequireClone()
+        {
+            return _rules?.Where(r => r?.Symbol != null && r.Symbol.RequireClone())
+                          .FirstOrDefault() != null;
         }
 
         #endregion

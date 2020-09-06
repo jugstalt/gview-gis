@@ -10,6 +10,7 @@ using gView.Framework.Data;
 using System.Reflection;
 using gView.Framework.Carto.Rendering.UI;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace gView.Framework.Carto.Rendering
 {
@@ -120,6 +121,11 @@ namespace gView.Framework.Carto.Rendering
         public string Category
         {
             get { return "Features"; }
+        }
+
+        public bool RequireClone()
+        {
+            return _symbol?.Symbols?.Where(s => s != null && s.RequireClone()).FirstOrDefault() != null;
         }
 
         #endregion

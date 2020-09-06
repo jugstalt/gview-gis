@@ -236,6 +236,12 @@ namespace gView.Framework.Carto.Rendering
             get { return "Features"; }
         }
 
+        public bool RequireClone()
+        {
+            return (_textSymbol != null && _textSymbol.RequireClone()) ||
+                   (_lineSymbol != null && _lineSymbol.RequireClone());
+        }
+
         #endregion
 
         #region IPersistable Member

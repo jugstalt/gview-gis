@@ -12,6 +12,7 @@ using System.Reflection;
 using gView.Framework.Network;
 using gView.Framework.Carto.Rendering.UI;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace gView.Framework.Carto.Rendering
 {
@@ -191,6 +192,11 @@ namespace gView.Framework.Carto.Rendering
         public string Category
         {
             get { return "Network"; }
+        }
+
+        public bool RequireClone()
+        {
+            return _renderers?.Where(r => r != null && r.RequireClone()).FirstOrDefault() != null;
         }
 
         #endregion

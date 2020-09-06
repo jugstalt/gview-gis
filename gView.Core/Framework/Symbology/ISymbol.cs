@@ -26,6 +26,8 @@ namespace gView.Framework.Symbology
         string Name { get; }
 
         SymbolSmoothing SymbolSmothingMode { set; }
+
+        bool RequireClone();
     }
 
     public interface INullSymbol : ISymbol
@@ -540,11 +542,20 @@ namespace gView.Framework.Symbology
     {
         Color PenColor { get; set; }
     }
+
+    // Never Change values!!
+    public enum DrawingUnit
+    {
+        Pixel = 0,
+        Meters = 1
+    }
+
     public interface IPenWidth
     {
         float PenWidth { get; set; }
         float MaxPenWidth { get; set; }
         float MinPenWidth { get; set; }
+        DrawingUnit PenWidthUnit { get; set; }
     }
     public interface ISymbolSize
     {

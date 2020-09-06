@@ -459,6 +459,8 @@ namespace gView.Framework.Carto
         /// The category for the renderer.
         /// </summary>
         string Category { get; }
+
+        bool RequireClone();
     }
     public interface IFeatureRenderer2 : IFeatureRenderer
     {
@@ -477,10 +479,5 @@ namespace gView.Framework.Carto
         int RenderPriority { get; }
 
         void Draw(IDisplay disp, IFeature feature);
-    }
-
-    public interface IRenderRequiresClone
-    {
-        bool RequiresClone();
     }
 }

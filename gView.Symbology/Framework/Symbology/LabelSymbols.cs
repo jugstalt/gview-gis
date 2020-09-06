@@ -1084,6 +1084,11 @@ namespace gView.Framework.Symbology
             set { this.Smoothingmode = value; }
         }
 
+        public bool RequireClone()
+        {
+            return false;
+        }
+
         #endregion
 
         #region Helper

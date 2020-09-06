@@ -72,6 +72,12 @@ namespace gView.Framework.Symbology
             }
         }
 
+        public bool RequireClone()
+        {
+            return (LineSymbol != null && LineSymbol.RequireClone()) ||
+                   (PointSymbol != null && PointSymbol.RequireClone());
+        }
+
         public void Draw(IDisplay display, IGeometry geometry)
         {
             try

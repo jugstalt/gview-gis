@@ -13,6 +13,7 @@ using gView.Framework.system;
 using System.Reflection;
 using gView.Framework.Carto.Rendering.UI;
 using System.Threading.Tasks;
+using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 
 namespace gView.Framework.Carto.Rendering
 {
@@ -343,6 +344,12 @@ namespace gView.Framework.Carto.Rendering
         {
             get { return "Features"; }
         }
+
+        public bool RequireClone()
+        {
+            return _symbol != null && _symbol.RequireClone();
+        }
+
         #endregion
 
         #region IPropertyPage Member

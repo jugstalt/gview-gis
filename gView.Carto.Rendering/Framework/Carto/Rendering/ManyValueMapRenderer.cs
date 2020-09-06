@@ -433,6 +433,23 @@ namespace gView.Framework.Carto.Rendering
                 _features = null;
             }
         }
+
+        public bool RequireClone()
+        {
+            if (_symbolTable != null)
+            {
+                foreach (var symbol in _symbolTable.Values)
+                {
+                    if (symbol != null && symbol.RequireClone())
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         #endregion
 
         #region IPersistable Member
