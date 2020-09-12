@@ -10,6 +10,8 @@ using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.Globalisation;
 using gView.Framework.UI;
+using System.Security.Policy;
+using gView.Framework.UI.Dialogs;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -88,7 +90,7 @@ namespace gView.Plugins.MapTools.Dialogs
             }
             if (parent == null)
             {
-                parent = new CategoryTreeNode(Category);
+                parent = new CategoryTreeNode(Category, _doc, layer);
                 treeObjects.Nodes.Add(parent);
             }
 
@@ -204,10 +206,8 @@ namespace gView.Plugins.MapTools.Dialogs
             if (_doc.FocusMap.Display == null) return;
             if (_doc.Application == null) return;
 
-            if (e.Button != MouseButtons.Left) return;
-
             TreeNode node = treeObjects.GetNodeAt(e.X, e.Y);
-            if (/*node == treeObjects.SelectedNode &&*/ node is FeatureTreeNode)
+            if (node is FeatureTreeNode && e.Button == MouseButtons.Left)
             {
                 IFeature feature = ((FeatureTreeNode)node).Feature;
                 ISpatialReference sRef = ((FeatureTreeNode)node).SpatialReference;
@@ -245,6 +245,11 @@ namespace gView.Plugins.MapTools.Dialogs
                     }
                 }
             }
+            //else if(node is CategoryTreeNode)
+            //{
+            //    var categoryTreeNode = (CategoryTreeNode)node;
+            //    MessageBox.Show(categoryTreeNode.Category);
+            //}
         }
 
         private void treeObjects_MouseDown(object sender, MouseEventArgs e)
@@ -555,17 +560,53 @@ namespace gView.Plugins.MapTools.Dialogs
 
     internal class CategoryTreeNode : TreeNode
     {
-        private string _category = "";
+        private readonly IMapDocument _mapDocument;
+        private readonly IMap _map;
 
-        public CategoryTreeNode(string category)
+        public CategoryTreeNode(string category, 
+                                IMapDocument mapDocument,
+                                IFeatureLayer featureLayer)
         {
-            
-            _category = category;
+            this.Category = category;
+            _mapDocument = mapDocument;
+            _map = _mapDocument.FocusMap;
+            this.FeatureLayer = featureLayer;
+
+            if (this.FeatureLayer?.Class?.Dataset != null)
+            {
+                this.ContextMenu = new ContextMenu(
+                    new MenuItem[]
+                    {
+                    new MenuItem("Layer Properties...", OnLayerProperties)
+                    });
+            }
         }
         
         public string Category
         {
-            get { return _category; }
+            get; private set;
+        }
+
+        public IFeatureLayer FeatureLayer { get; private set; }
+
+        private void OnLayerProperties(object sender, EventArgs e)
+        {
+            var dlg = new FormLayerProperties(_mapDocument, _map,
+                                              FeatureLayer.Class.Dataset,
+                                              FeatureLayer);
+
+            if(dlg.ShowDialog() == DialogResult.OK)
+            {
+                if (_mapDocument.Application is IMapApplication)
+                {
+                    ((IMapApplication)_mapDocument.Application).RefreshTOCElement((ILayer)FeatureLayer);
+                    ((IMapApplication)_mapDocument.Application).RefreshActiveMap(DrawPhase.All);
+                }
+                if (_mapDocument.FocusMap != null)
+                {
+                    _mapDocument.FocusMap.TOC.Reset();
+                }
+            }
         }
     }
 
