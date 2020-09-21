@@ -158,6 +158,7 @@ namespace gView.Framework.Symbology
                 SymbolTransformation.Transform(_angle, _hOffset, _vOffset, out _xOffset, out _yOffset);
             }
         }
+
         #endregion
 
         #region ISymbol Member

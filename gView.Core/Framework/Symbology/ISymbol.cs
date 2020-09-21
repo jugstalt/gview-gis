@@ -471,7 +471,8 @@ namespace gView.Framework.Symbology
 
         public double Convert2DEGAritmetic(double rotation)
         {
-            if (_rotType == RotationType.aritmetic && _rotUnit == RotationUnit.deg) return rotation;
+            //if (_rotType == RotationType.aritmetic && _rotUnit == RotationUnit.deg) 
+            //    return -rotation;
 
             switch (_rotUnit)
             {
@@ -485,12 +486,15 @@ namespace gView.Framework.Symbology
 
             switch (_rotType)
             {
-                case RotationType.geographic:
+                case RotationType.aritmetic:
                     rotation = 90 - rotation;
-                    if (rotation < 0.0) rotation += 360.0;
+                    break;
+                case RotationType.geographic:
+                    //rotation = 90 - rotation;
                     break;
             }
 
+            if (rotation < 0.0) rotation += 360.0;
             return rotation;
         }
 
