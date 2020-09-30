@@ -95,11 +95,26 @@ namespace gView.Cmd.FillElasticSearch
                     if (importConfig.Connection.DeleteIndex)
                     {
                         searchContext.DeleteIndex();
+                        searchContext.DeleteIndex(importConfig.Connection.MetaIndex);
                     }
 
-                    searchContext.CreateIndex();
-                    searchContext.Map<Item>();
-                    searchContext.Map<Meta>();
+                    if (!searchContext.CreateIndex<Item>())
+                    {
+                        throw new Exception($"Can't create elasticsearch index { importConfig.Connection.DefaultIndex }");
+                    }
+                    if (!searchContext.Map<Item>())
+                    {
+                        throw new Exception($"Can't map item in elasticsearch index { importConfig.Connection.DefaultIndex }");
+                    }
+                    if (!searchContext.CreateIndex<Meta>(importConfig.Connection.MetaIndex))
+                    {
+                        throw new Exception($"Can't create elasticsearch index { importConfig.Connection.MetaIndex }");
+                    }
+
+                    if (!searchContext.Map<Meta>(importConfig.Connection.MetaIndex))
+                    {
+                        throw new Exception($"Can't map item in elasticsearch index { importConfig.Connection.MetaIndex }");
+                    }
 
                     ISpatialReference sRefTarget = SpatialReference.FromID("epsg:4326");
 
@@ -142,7 +157,10 @@ namespace gView.Cmd.FillElasticSearch
                                     Service = featureClassConfig?.Meta.Service,
                                     Query = featureClassConfig?.Meta.Query
                                 };
-                                searchContext.Index<Meta>(meta);
+                                if (!searchContext.Index<Meta>(meta, importConfig.Connection.MetaIndex))
+                                {
+                                    throw new Exception($"Can't index meta item in elasticsearch index { importConfig.Connection.MetaIndex }");
+                                }
                             }
 
                             bool useGeometry = featureClassConfig.UserGeometry;
@@ -194,7 +212,10 @@ namespace gView.Cmd.FillElasticSearch
 
                                     if (items.Count >= 500)
                                     {
-                                        searchContext.IndexMany<Item>(items.ToArray());
+                                        if (!searchContext.IndexMany<Item>(items.ToArray()))
+                                        {
+                                            throw new Exception($"Error on indexing { items.Count } items on elasticsearch index { importConfig.Connection.DefaultIndex }");
+                                        }
                                         items.Clear();
 
                                         Console.Write(count + "...");
@@ -203,7 +224,10 @@ namespace gView.Cmd.FillElasticSearch
 
                                 if (items.Count > 0)
                                 {
-                                    searchContext.IndexMany<Item>(items.ToArray());
+                                    if (!searchContext.IndexMany<Item>(items.ToArray()))
+                                    {
+                                        throw new Exception($"Error on indexing { items.Count } items on elasticsearch index { importConfig.Connection.DefaultIndex }");
+                                    }
                                     Console.WriteLine(count + "...finish");
                                 }
                             }

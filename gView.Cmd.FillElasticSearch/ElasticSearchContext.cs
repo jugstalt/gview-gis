@@ -32,18 +32,22 @@ namespace gView.Cmd.FillElasticSearch
 
         #region Create/Delete Index
 
-        public void CreateIndex(string indexName = "")
+        public bool CreateIndex<T>(string indexName = "")
+            where T: class
         {
             indexName = CurrentIndexName(indexName);
             if (String.IsNullOrWhiteSpace(indexName))
                 throw new ArgumentException("No Index name");
 
-            var createIndexResult = _client.CreateIndex(indexName);
-            //var mapResult = _client.Map<T>(c => c
-            //    .AutoMap());
+            //var createIndexResult = _client.CreateIndex(indexName);
+
+            var createIndexResult = _client.Indices.Create(indexName,
+                index => index.Map(x => x.AutoMap()));
+
+            return createIndexResult.IsValid;
         }
 
-        public void Map<T>(string indexName="")
+        public bool Map<T>(string indexName="")
             where T : class
         {
             indexName = CurrentIndexName(indexName);
@@ -53,6 +57,8 @@ namespace gView.Cmd.FillElasticSearch
             var mapResult = _client.Map<T>(c => c
                 .AutoMap()
                 .Index(indexName));
+
+            return mapResult.IsValid;
         }
 
         public bool DeleteIndex(string indexName="")
@@ -61,7 +67,7 @@ namespace gView.Cmd.FillElasticSearch
             if (String.IsNullOrWhiteSpace(indexName))
                 throw new ArgumentException("No Index name");
 
-            var result = _client.DeleteIndex(indexName);
+            var result = _client.Indices.Delete(indexName);
             return result.IsValid;
         }
 
@@ -77,7 +83,8 @@ namespace gView.Cmd.FillElasticSearch
                 throw new ArgumentException("No Index name");
 
             var response = _client.Index<T>(document, idx => idx.Index(indexName));
-            return response.Created;
+
+            return response.IsValid;
         }
 
         public bool IndexMany<T>(T[] documents, string indexName = "")
@@ -87,11 +94,9 @@ namespace gView.Cmd.FillElasticSearch
             if (String.IsNullOrWhiteSpace(indexName))
                 throw new ArgumentException("No Index name");
 
-            string[] type = typeof(T).ToString().Split('.');
+            var response = _client.IndexMany<T>(documents, indexName);
 
-            var response = _client.IndexMany<T>(documents, indexName, type[type.Length - 1].ToLower());
-
-            return response.Errors == false;
+            return response.IsValid;
         }
 
         public bool Remove<T>(string id, string indexName = "")
@@ -103,7 +108,8 @@ namespace gView.Cmd.FillElasticSearch
 
             var response = _client.Delete<T>(id, idx => idx.Index(indexName));
             
-            return response.Found;
+            // ToDo: Check Result
+            return response.IsValid;
         }
 
         public bool RemoveMany<T>(IEnumerable<T> objects, string indexName="")
@@ -214,7 +220,7 @@ namespace gView.Cmd.FillElasticSearch
             };
             AppendFilters<T>(request, filters);
             var result = _client.Search<T>(request);
-            var aggHelper = result.Aggs.Terms("agg_" + field);
+            var aggHelper = result.Aggregations.Terms("agg_" + field);
 
             List<Aggragtion> ret = new List<Aggragtion>();
             foreach (var bucket in aggHelper.Buckets)
@@ -243,7 +249,7 @@ namespace gView.Cmd.FillElasticSearch
             };
             AppendFilters<T>(request, filters);
             var result = _client.Search<T>(request);
-            var aggHelper = result.Aggs.Sum("agg_" + field);
+            var aggHelper = result.Aggregations.Sum("agg_" + field);
 
             List<Aggragtion> ret = new List<Aggragtion>();
 
@@ -271,7 +277,7 @@ namespace gView.Cmd.FillElasticSearch
             };
             AppendFilters<T>(request, filters);
             var result = _client.Search<T>(request);
-            var aggHelper = result.Aggs.Average("agg_" + field);
+            var aggHelper = result.Aggregations.Average("agg_" + field);
 
             List<Aggragtion> ret = new List<Aggragtion>();
 
@@ -299,7 +305,7 @@ namespace gView.Cmd.FillElasticSearch
             };
             AppendFilters<T>(request, filters);
             var result = _client.Search<T>(request);
-            var aggHelper = result.Aggs.Average("agg_" + field);
+            var aggHelper = result.Aggregations.Average("agg_" + field);
 
             List<Aggragtion> ret = new List<Aggragtion>();
 
@@ -327,7 +333,7 @@ namespace gView.Cmd.FillElasticSearch
             };
             AppendFilters<T>(request, filters);
             var result = _client.Search<T>(request);
-            var aggHelper = result.Aggs.Average("agg_" + field);
+            var aggHelper = result.Aggregations.Average("agg_" + field);
 
             List<Aggragtion> ret = new List<Aggragtion>();
 
