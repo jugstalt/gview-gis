@@ -27,7 +27,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\..\..\..\_releases\core\web\gview5\gView.Cmd\app\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -50,13 +50,157 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\gView.Carto.Rendering\gView.Carto.Rendering.csproj">
+      <Project>{961d9a60-014e-4139-907f-0112f5dfac4d}</Project>
+      <Name>gView.Carto.Rendering</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Carto\gView.Carto.csproj">
+      <Project>{517f72fa-aa41-4e70-8469-e7becca58ad6}</Project>
+      <Name>gView.Carto</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\gView.Core\gView.Core.csproj">
       <Project>{5A66D185-6E2C-4DA4-97D7-00616A182BD8}</Project>
       <Name>gView.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\gView.Data.Fields\gView.Data.Fields.csproj">
+      <Project>{f47e7fff-3582-4bb4-84db-b197a5da921f}</Project>
+      <Name>gView.Data.Fields</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Data.Joins\gView.Data.Joins.csproj">
+      <Project>{1730a1e1-3991-46d0-a52a-1a86b6ccb8f0}</Project>
+      <Name>gView.Data.Joins</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.CosmoDb\gView.DataSources.CosmoDb.csproj">
+      <Project>{10d9cdc6-adcf-48f8-807e-1b31bef9eb32}</Project>
+      <Name>gView.DataSources.CosmoDb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.EventTable\gView.DataSources.EventTable.csproj">
+      <Project>{77afd455-9fd0-4087-8163-44ba03886670}</Project>
+      <Name>gView.DataSources.EventTable</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.Fdb.PostgreSql\gView.DataSources.Fdb.PostgreSql.csproj">
+      <Project>{01ad9e16-2249-4a46-9173-2ec727a6026e}</Project>
+      <Name>gView.DataSources.Fdb.PostgreSql</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.Fdb.SQLite\gView.DataSources.Fdb.SQLite.csproj">
+      <Project>{f11b1be8-7d8a-4b23-af7b-db27a0bc9086}</Project>
+      <Name>gView.DataSources.Fdb.SQLite</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.Fdb.SqlServer\gView.DataSources.Fdb.SqlServer.csproj">
+      <Project>{d890dd88-58cd-4dc1-8664-38f273d74692}</Project>
+      <Name>gView.DataSources.Fdb.SqlServer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.Fdb\gView.DataSources.Fdb.csproj">
+      <Project>{595657d6-c9dc-4a48-a5d0-3cbc4a90ada1}</Project>
+      <Name>gView.DataSources.Fdb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.MongoDb\gView.DataSources.MongoDb.csproj">
+      <Project>{faeabc8e-55fd-4d3e-9759-83d0fb94c9fb}</Project>
+      <Name>gView.DataSources.MongoDb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.MSSqlSpatial\gView.DataSources.MSSqlSpatial.csproj">
+      <Project>{5326d7f9-707e-45e2-92d2-5cb92d0ff897}</Project>
+      <Name>gView.DataSources.MSSqlSpatial</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.OSGeo\gView.DataSources.OSGeo.csproj">
+      <Project>{78971780-e6b2-423b-b61d-7caefbb25282}</Project>
+      <Name>gView.DataSources.OSGeo</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.PostGIS\gView.DataSources.PostGIS.csproj">
+      <Project>{794758c5-26a1-4141-b2a5-fca016aadb8b}</Project>
+      <Name>gView.DataSources.PostGIS</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.Raster\gView.DataSources.Raster.csproj">
+      <Project>{180b4390-78e4-47cd-ba97-30f5ef31af07}</Project>
+      <Name>gView.DataSources.Raster</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.Shape\gView.DataSources.Shape.csproj">
+      <Project>{ed4b335f-4967-4245-bcea-45ce48b4648b}</Project>
+      <Name>gView.DataSources.Shape</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Data\gView.Data.csproj">
+      <Project>{9b556868-8431-4d6c-b002-3fef15df0498}</Project>
+      <Name>gView.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Db\gView.Db.csproj">
+      <Project>{fb98412b-8def-4b02-b903-2979a433e75e}</Project>
+      <Name>gView.Db</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Drawing.Pro\gView.Drawing.Pro.csproj">
+      <Project>{9b3a0de1-e73b-400c-9201-c83b434ca587}</Project>
+      <Name>gView.Drawing.Pro</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Editor.Core\gView.Editor.Core.csproj">
+      <Project>{8c804d9d-7cb0-4f53-88b2-f265060ce702}</Project>
+      <Name>gView.Editor.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Geometry\gView.Geometry.csproj">
+      <Project>{82012e45-2efc-498e-9bb1-f3deba4b87c5}</Project>
+      <Name>gView.Geometry</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Interoperability.ArcXML\gView.Interoperability.ArcXML.csproj">
+      <Project>{5e48a0a0-cf45-458d-ad3c-4fc235ad203f}</Project>
+      <Name>gView.Interoperability.ArcXML</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Interoperability.GeoServices\gView.Interoperability.GeoServices.csproj">
+      <Project>{7b010002-084b-4d1d-9b06-4ec70ec93ca2}</Project>
+      <Name>gView.Interoperability.GeoServices</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Interoperability.OGC\gView.Interoperability.OGC.csproj">
+      <Project>{fafef445-a01c-4770-b993-4e9ca33d95e3}</Project>
+      <Name>gView.Interoperability.OGC</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Interoperability.Server\gView.Interoperability.Server.csproj">
+      <Project>{e740ae66-7162-4355-87b1-cb706774931a}</Project>
+      <Name>gView.Interoperability.Server</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Math\gView.Math.csproj">
+      <Project>{deb9738e-ec3b-4e04-9301-617cb56641ac}</Project>
+      <Name>gView.Math</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Metadata\gView.Metadata.csproj">
+      <Project>{42696d09-69c7-4e21-8351-dc53698d24e8}</Project>
+      <Name>gView.Metadata</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Network\gView.Network.csproj">
+      <Project>{f47ea9df-e750-4afe-bdff-8644403e17bb}</Project>
+      <Name>gView.Network</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Offline\gView.Offline.csproj">
+      <Project>{7eaf9c21-4c1d-4996-b111-7c503217b8f5}</Project>
+      <Name>gView.Offline</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.OGC\gView.OGC.csproj">
+      <Project>{248d2c9b-793a-4eb0-a2da-7a881a1357bd}</Project>
+      <Name>gView.OGC</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Plugins.Modules\gView.Plugins.Modules.csproj">
+      <Project>{04e002f8-468c-45e8-997b-332e5048ba31}</Project>
+      <Name>gView.Plugins.Modules</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Proj\gView.Proj.csproj">
+      <Project>{f236407a-27b9-42d0-9000-6bc4a04e8f54}</Project>
+      <Name>gView.Proj</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Security\gView.Security.csproj">
+      <Project>{f90e3a4d-8a73-4899-9f49-a756f58828f7}</Project>
+      <Name>gView.Security</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Server.Connector\gView.Server.Connector.csproj">
+      <Project>{2678b2d7-4eeb-4945-8f77-6d0add3a8b48}</Project>
+      <Name>gView.Server.Connector</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Symbology\gView.Symbology.csproj">
+      <Project>{c37d6d4b-5670-49b9-8592-48e9dcc0aa3c}</Project>
+      <Name>gView.Symbology</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\gView.System\gView.System.csproj">
       <Project>{e50d8014-0fb8-4b67-8291-0abee04a1403}</Project>
       <Name>gView.System</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.Web\gView.Web.csproj">
+      <Project>{b0f8bfa1-0034-4797-ae21-cd4cbd489e4c}</Project>
+      <Name>gView.Web</Name>
     </ProjectReference>
     <ProjectReference Include="..\gView.Win.Carto.UI\gView.Win.Carto.UI.csproj">
       <Project>{77538348-8321-4978-842d-2d97cdedeca6}</Project>
