@@ -59,6 +59,9 @@ namespace gView.Framework.UI.Dialogs
 
             _class.UseHillShade = gridControl1.UseHillShade;
             _class.ColorClasses = gridControl1.GridColorClasses;
+
+            _class.RenderRawGridValues = _class.UseHillShade == false &&
+                                         (_class.ColorClasses == null || _class.ColorClasses.Length == 0);
         }
 
         #endregion
