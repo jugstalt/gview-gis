@@ -523,6 +523,11 @@ namespace gView.DataSources.Fdb.MSSql
             return layer;
         }
 
+        public override string EscapeQueryValue(string value)
+        {
+            return value;
+        }
+
         async internal Task<DataTable> Select(string fields, string from, string where)
         {
             if (_conn == null) return null;

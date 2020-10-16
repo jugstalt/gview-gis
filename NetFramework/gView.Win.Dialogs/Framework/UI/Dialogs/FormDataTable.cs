@@ -1,17 +1,14 @@
+using gView.Framework.Carto;
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Threading;
 using System.Data;
 using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.Data;
-using gView.Framework.system;
-using gView.Framework.Carto;
-using gView.Framework.Geometry;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -47,15 +44,23 @@ namespace gView.Framework.UI.Dialogs
             _dsElement = dsElement;
             if (_dsElement is IFeatureLayer &&
                 ((IFeatureLayer)_dsElement).FilterQuery != null)
+            {
                 _filterQueryClause = ((IFeatureLayer)_dsElement).FilterQuery.WhereClause;
+            }
 
             if (_dsElement != null)
+            {
                 _dsElement.PropertyChanged += new PropertyChangedHandler(dsElement_PropertyChanged);
+            }
 
             if (dsElement is IFeatureLayer)
+            {
                 TableClass = ((IFeatureLayer)dsElement).FeatureClass;
+            }
             else if (dsElement is ITableLayer)
+            {
                 TableClass = ((ITableLayer)dsElement).TableClass;
+            }
 
             if (_dsElement is IFeatureSelection)
             {
@@ -117,7 +122,10 @@ namespace gView.Framework.UI.Dialogs
             {
                 _class = value;
                 gridView.Columns.Clear();
-                if (_tabWorker != null) _tabWorker.TableClass = _class;
+                if (_tabWorker != null)
+                {
+                    _tabWorker.TableClass = _class;
+                }
 
                 if (_class == null)
                 {
@@ -140,7 +148,9 @@ namespace gView.Framework.UI.Dialogs
             _workerThread = null;
 
             if (_tabWorker != null)
+            {
                 _tabWorker.ReleaseCursor();
+            }
 
             _tabWorker = new FillTableThread(this.TableClass, _cancelTracker);
             _tabWorker.FirstFillMaximum = 1000;
@@ -176,7 +186,9 @@ namespace gView.Framework.UI.Dialogs
         private void MakeFilter(IEnvelope env)
         {
             if (env == null)
+            {
                 _filter = new QueryFilter();
+            }
             else
             {
                 _filter = new SpatialFilter();
@@ -186,7 +198,9 @@ namespace gView.Framework.UI.Dialogs
             RefreshFilterFields();
 
             if (_filterQueryClause != null)
+            {
                 _filter.WhereClause = _filterQueryClause;
+            }
         }
         private void RefreshFilterFields()
         {
@@ -195,7 +209,11 @@ namespace gView.Framework.UI.Dialogs
                 _filter.SubFields = String.Empty;
                 foreach (IField field in _class.Fields.ToEnumerable())
                 {
-                    if (field.type == FieldType.binary || field.type == FieldType.Shape) continue;
+                    if (field.type == FieldType.binary || field.type == FieldType.Shape)
+                    {
+                        continue;
+                    }
+
                     _filter.AddField(field.name);
                 }
             }
@@ -204,7 +222,9 @@ namespace gView.Framework.UI.Dialogs
         private void FormDataTable_Load(object sender, EventArgs e)
         {
             if (_startOnShown)
+            {
                 StartWorkerThread();
+            }
         }
 
         //private void FormDataTable_Shown(object sender, EventArgs e)
@@ -243,7 +263,10 @@ namespace gView.Framework.UI.Dialogs
 
         private void HookAllMaps()
         {
-            if (_doc == null) return;
+            if (_doc == null)
+            {
+                return;
+            }
 
             UnhookAllMaps();
             foreach (IMap map in _doc.Maps)
@@ -254,7 +277,10 @@ namespace gView.Framework.UI.Dialogs
 
         private void UnhookAllMaps()
         {
-            if (_doc == null) return;
+            if (_doc == null)
+            {
+                return;
+            }
 
             foreach (IMap map in _doc.Maps)
             {
@@ -295,7 +321,10 @@ namespace gView.Framework.UI.Dialogs
         #region WorkerThread
         internal void StartWorkerThread()
         {
-            if (_tabWorker == null || this.Visible == false) return;
+            if (_tabWorker == null || this.Visible == false)
+            {
+                return;
+            }
 
             gridView.DataSource = null;
 
@@ -315,7 +344,7 @@ namespace gView.Framework.UI.Dialogs
 
             if (_viewMode == ViewMode.selected)
             {
-                if (_dsElement is IFeatureSelection && 
+                if (_dsElement is IFeatureSelection &&
                     ((IFeatureSelection)_dsElement).SelectionSet is IIDSelectionSet)
                 {
                     IIDSelectionSet selSet = (IIDSelectionSet)((IFeatureSelection)_dsElement).SelectionSet;
@@ -335,11 +364,18 @@ namespace gView.Framework.UI.Dialogs
         private void CancelWorkerThread(bool pause)
         {
             if (pause)
+            {
                 _cancelTracker.Pause();
+            }
             else
+            {
                 _cancelTracker.Cancel();
+            }
 
-            if (_workerThread == null) return;
+            if (_workerThread == null)
+            {
+                return;
+            }
 
             if (_workerThread.IsAlive)
             {
@@ -363,16 +399,23 @@ namespace gView.Framework.UI.Dialogs
             _workerThread = null;
 
             if (pause)
+            {
                 tabWorker_Paused();
+            }
             else
+            {
                 tabWorker_ThreadFinished();
+            }
 
             EnableCancelThreadButton(false);
         }
 
         void tabWorker_Progress()
         {
-            if (_tabWorker.Table != null) SetGridTable(_tabWorker.Table, false);
+            if (_tabWorker.Table != null)
+            {
+                SetGridTable(_tabWorker.Table, false);
+            }
         }
 
         private delegate void tabworker_PausedCallback();
@@ -394,7 +437,10 @@ namespace gView.Framework.UI.Dialogs
                     SetGridTable(_tabWorker.Table, true);
                 }
 
-                if (_viewMode != ViewMode.selected) MarkSelection();
+                if (_viewMode != ViewMode.selected)
+                {
+                    MarkSelection();
+                }
             }
         }
 
@@ -417,7 +463,10 @@ namespace gView.Framework.UI.Dialogs
                     SetGridTable(_tabWorker.Table, true);
                 }
 
-                if (_viewMode != ViewMode.selected) MarkSelection();
+                if (_viewMode != ViewMode.selected)
+                {
+                    MarkSelection();
+                }
             }
         }
         #endregion
@@ -457,11 +506,17 @@ namespace gView.Framework.UI.Dialogs
             if (_dsElement is IFeatureSelection)
             {
                 if (((IFeatureSelection)_dsElement).SelectionSet == null)
+                {
                     gridNavigator.CountItemFormat = "0 of " + gridNavigator.CountItemFormat + " selected";
+                }
                 else if (((IFeatureSelection)_dsElement).SelectionSet.Count == 0)
+                {
                     gridNavigator.CountItemFormat = "0 of " + gridNavigator.CountItemFormat + " selected";
+                }
                 else
+                {
                     gridNavigator.CountItemFormat = ((IFeatureSelection)_dsElement).SelectionSet.Count + " of " + gridNavigator.CountItemFormat + " selected";
+                }
             }
         }
 
@@ -475,7 +530,11 @@ namespace gView.Framework.UI.Dialogs
             }
             else
             {
-                if (index > gridView.Rows.Count) return;
+                if (index > gridView.Rows.Count)
+                {
+                    return;
+                }
+
                 gridView.Rows[index].DefaultCellStyle.BackColor = back;
             }
         }
@@ -529,7 +588,10 @@ namespace gView.Framework.UI.Dialogs
                     CancelWorkerThread(true);
                     break;
                 case ExecuteMethod.Continue:
-                    if (_workerThread != null) break;
+                    if (_workerThread != null)
+                    {
+                        break;
+                    }
 
                     gridNavigator.BindingSource = null;
 
@@ -564,10 +626,15 @@ namespace gView.Framework.UI.Dialogs
 
         private void ChangeSelection()
         {
-            if (!(_dsElement is IFeatureSelection) && _class != null) return;
-            ((IFeatureSelection)_dsElement).ClearSelection();
+            if (!(_dsElement is IFeatureSelection) && _class != null)
+            {
+                return;
+            } ((IFeatureSelection)_dsElement).ClearSelection();
             IIDSelectionSet selSet = ((FeatureSelection)_dsElement).SelectionSet as IIDSelectionSet;
-            if (selSet == null) return;
+            if (selSet == null)
+            {
+                return;
+            }
 
             foreach (DataGridViewRow row in gridView.SelectedRows)
             {
@@ -606,7 +673,10 @@ namespace gView.Framework.UI.Dialogs
 
         private void MarkSelectedRows(Color col)
         {
-            if (gridView.DataSource == null) return;
+            if (gridView.DataSource == null)
+            {
+                return;
+            }
 
             this.Cursor = Cursors.WaitCursor;
             if (_dsElement is IFeatureSelection && gridSource.DataSource is DataTable)
@@ -670,7 +740,10 @@ namespace gView.Framework.UI.Dialogs
                 gridView.DefaultCellStyle.SelectionBackColor = Color.Yellow;
                 return;
             }
-            if (e.Button != MouseButtons.Left) return;
+            if (e.Button != MouseButtons.Left)
+            {
+                return;
+            }
 
             if (e.X >= 0 && e.X <= gridView.RowHeadersWidth /* && e.Y > gridView.ColumnHeadersHeight*/)
             {
@@ -692,7 +765,10 @@ namespace gView.Framework.UI.Dialogs
         private void gridView_MouseUp(object sender, MouseEventArgs e)
         {
             _mouseDown = false;
-            if (_shiftKey || _ctrlKey || _viewMode == ViewMode.selected) return;
+            if (_shiftKey || _ctrlKey || _viewMode == ViewMode.selected)
+            {
+                return;
+            }
 
             _mouseSelect = false;
             if (_selChanged)
@@ -704,15 +780,33 @@ namespace gView.Framework.UI.Dialogs
 
         private void gridView_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyValue == 16) _shiftKey = true;
-            if (e.KeyValue == 17) _ctrlKey = true;
+            if (e.KeyValue == 16)
+            {
+                _shiftKey = true;
+            }
+
+            if (e.KeyValue == 17)
+            {
+                _ctrlKey = true;
+            }
         }
         private void gridView_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyValue == 16) _shiftKey = false;
-            if (e.KeyValue == 17) _ctrlKey = false;
+            if (e.KeyValue == 16)
+            {
+                _shiftKey = false;
+            }
 
-            if (_mouseDown || _shiftKey || _ctrlKey || _viewMode == ViewMode.selected) return;
+            if (e.KeyValue == 17)
+            {
+                _ctrlKey = false;
+            }
+
+            if (_mouseDown || _shiftKey || _ctrlKey || _viewMode == ViewMode.selected)
+            {
+                return;
+            }
+
             if (_selChanged)
             {
                 _selChanged = false;
@@ -738,7 +832,11 @@ namespace gView.Framework.UI.Dialogs
             _viewMode = ViewMode.all;
 
             gridView.DefaultCellStyle.BackColor = gridView.DefaultCellStyle.SelectionBackColor = Color.White;
-            if (_filter is ISpatialFilter) MakeFilter(null);
+            if (_filter is ISpatialFilter)
+            {
+                MakeFilter(null);
+            }
+
             StartWorkerThread();
         }
 
@@ -749,7 +847,11 @@ namespace gView.Framework.UI.Dialogs
             _viewMode = ViewMode.selected;
 
             gridView.DefaultCellStyle.BackColor = gridView.DefaultCellStyle.SelectionBackColor = _selectionColor;
-            if (_filter is ISpatialFilter) MakeFilter(null);
+            if (_filter is ISpatialFilter)
+            {
+                MakeFilter(null);
+            }
+
             StartWorkerThread();
         }
 
@@ -824,7 +926,9 @@ namespace gView.Framework.UI.Dialogs
             {
                 IFeatureSelection target = (this.TableRelation.LeftTable == this.DatasetElement ? this.TableRelation.RightTable : this.TableRelation.LeftTable) as IFeatureSelection;
                 if (target == null)
+                {
                     return;
+                }
 
                 target.ClearSelection();
 
@@ -832,7 +936,7 @@ namespace gView.Framework.UI.Dialogs
                     ((IFeatureSelection)this.DatasetElement).SelectionSet is IIDSelectionSet)
                 {
                     IIDSelectionSet selSet = (IIDSelectionSet)((IFeatureSelection)this.DatasetElement).SelectionSet;
-                    if (selSet != null && selSet.IDs != null && selSet.IDs.Count>0)
+                    if (selSet != null && selSet.IDs != null && selSet.IDs.Count > 0)
                     {
                         string relationField = this.TableRelation.LeftTable == this.DatasetElement ? this.TableRelation.LeftTableField : this.TableRelation.RightTableField;
                         RowIDFilter filter = new RowIDFilter(((ITableClass)this.DatasetElement.Class).IDFieldName);
@@ -844,7 +948,10 @@ namespace gView.Framework.UI.Dialogs
                         while ((row = await Next(cursor)) != null)
                         {
                             object val = row[relationField];
-                            if (val == null) continue;
+                            if (val == null)
+                            {
+                                continue;
+                            }
 
                             IQueryFilter selFilter = this.TableRelation.LeftTable == this.DatasetElement ? this.TableRelation.GetRightFilter("*", val) : this.TableRelation.GetLeftFilter("*", val);
                             await target.Select(selFilter, CombinationMethod.Union);
@@ -867,9 +974,14 @@ namespace gView.Framework.UI.Dialogs
             async private Task<IRow> Next(ICursor cursor)
             {
                 if (cursor is IFeatureCursor)
+                {
                     return await ((IFeatureCursor)cursor).NextFeature();
+                }
+
                 if (cursor is IRowCursor)
+                {
                     return await ((IRowCursor)cursor).NextRow();
+                }
 
                 return null;
             }
@@ -898,7 +1010,7 @@ namespace gView.Framework.UI.Dialogs
         private FeatureTable _fTab = null;
         private ICursor _cursor = null;
 
-        public FillTableThread(ITableClass Class,ICancelTracker cancelTracker)
+        public FillTableThread(ITableClass Class, ICancelTracker cancelTracker)
         {
             _class = Class;
             _cancelTracker = cancelTracker;
@@ -941,12 +1053,18 @@ namespace gView.Framework.UI.Dialogs
             if (_class is IFeatureClass)
             {
                 if (filter is List<int>)
+                {
                     ProcessFeatureClassByID(_class as IFeatureClass, filter as List<int>).Wait();
+                }
                 else
+                {
                     ProcessFeatureClass(_class as IFeatureClass, filter as IQueryFilter).Wait();
+                }
             }
             else if (_class is ITableClass)
-                ProcessTableClass(_class as ITableClass, filter as IQueryFilter); ;
+            {
+                ProcessTableClass(_class as ITableClass, filter as IQueryFilter);
+            };
         }
 
         public void Continue()
@@ -962,16 +1080,25 @@ namespace gView.Framework.UI.Dialogs
                 {
                     _fTab.ReleaseCursor();
                     _cursor = null;
-                    if (ThreadFinished != null) ThreadFinished();
+                    if (ThreadFinished != null)
+                    {
+                        ThreadFinished();
+                    }
                 }
                 else
                 {
-                    if (Paused != null) Paused();
+                    if (Paused != null)
+                    {
+                        Paused();
+                    }
                 }
             }
             else
             {
-                if (ThreadFinished != null) ThreadFinished();
+                if (ThreadFinished != null)
+                {
+                    ThreadFinished();
+                }
             }
         }
 
@@ -990,26 +1117,38 @@ namespace gView.Framework.UI.Dialogs
                 {
                     _fTab.ReleaseCursor();
                     _cursor = null;
-                    if (ThreadFinished != null) ThreadFinished();
+                    if (ThreadFinished != null)
+                    {
+                        ThreadFinished();
+                    }
                 }
                 else
                 {
-                    if (Paused != null) Paused();
+                    if (Paused != null)
+                    {
+                        Paused();
+                    }
                 }
             }
             else
             {
-                if (ThreadFinished != null) ThreadFinished();
+                if (ThreadFinished != null)
+                {
+                    ThreadFinished();
+                }
             }
         }
 
-        async private Task ProcessFeatureClass(IFeatureClass fc,IQueryFilter filter)
+        async private Task ProcessFeatureClass(IFeatureClass fc, IQueryFilter filter)
         {
             CleanUp();
             if (fc != null)
             {
                 _cursor = await fc.Search(filter);
-                if (_cursor == null) return;
+                if (_cursor == null)
+                {
+                    return;
+                }
 
                 _fTab = new FeatureTable(_cursor as IFeatureCursor, fc.Fields, fc);
                 _fTab.RowsAddedToTable += new RowsAddedToTableEvent(fTab_RowsAddedToTable);
@@ -1029,27 +1168,39 @@ namespace gView.Framework.UI.Dialogs
                     return;
                 }
 
-                if (!_fTab.hasMore || 
-                    (_cancelTracker!=null && !_cancelTracker.Continue && !_cancelTracker.Paused))
+                if (!_fTab.hasMore ||
+                    (_cancelTracker != null && !_cancelTracker.Continue && !_cancelTracker.Paused))
                 {
                     _fTab.ReleaseCursor();
                     _cursor = null;
-                    if (ThreadFinished != null) ThreadFinished();
+                    if (ThreadFinished != null)
+                    {
+                        ThreadFinished();
+                    }
                 }
                 else
                 {
-                    if (Paused != null) Paused();
+                    if (Paused != null)
+                    {
+                        Paused();
+                    }
                 }
             }
             else
             {
-                if (ThreadFinished != null) ThreadFinished();
+                if (ThreadFinished != null)
+                {
+                    ThreadFinished();
+                }
             }
         }
 
         void fTab_RowsAddedToTable(int count)
         {
-            if (Progress != null) Progress();
+            if (Progress != null)
+            {
+                Progress();
+            }
         }
 
         private void ProcessTableClass(ITableClass tc, IQueryFilter filter)
@@ -1081,7 +1232,9 @@ namespace gView.Framework.UI.Dialogs
         public void ReleaseCursor()
         {
             if (_fTab != null)
+            {
                 _fTab.ReleaseCursor();
+            }
         }
 
         #region IDisposable Member

@@ -3,7 +3,9 @@ using gView.Framework.Data;
 using gView.Framework.IO;
 using gView.Framework.UI;
 using System;
+using System.Data;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace gView.Framework.system
 {
@@ -195,6 +197,46 @@ namespace gView.Framework.system
                 default:
                     return dt;
             }
+        }
+
+        static public bool IsEqual(this DateTime date1, DateTime date2, int toleranceSeconds = 0, DateTimeKind defaultDateTimeKind = DateTimeKind.Local)
+        {
+            if (date1.Kind == DateTimeKind.Unspecified)
+            {
+                date1 = new DateTime(date1.Ticks, defaultDateTimeKind);
+            }
+
+            if (date2.Kind == DateTimeKind.Unspecified)
+            {
+                date2 = new DateTime(date2.Ticks, defaultDateTimeKind);
+            }
+
+            return Math.Abs((date1.ToUniversalTime() - date2.ToUniversalTime()).TotalSeconds) <= toleranceSeconds;
+        }
+
+        static public bool IsEqual2(this DateTime date1, DateTime date2, int toleranceSeconds = 0)
+        {
+            if (date1.Kind == DateTimeKind.Unspecified)
+            {
+                return date1.IsEqual(date2, toleranceSeconds, DateTimeKind.Local) ||
+                       date1.IsEqual(date2, toleranceSeconds, DateTimeKind.Utc);
+            }
+            
+            if (date2.Kind == DateTimeKind.Unspecified)
+            {
+                return date1.IsEqual(date2, toleranceSeconds, DateTimeKind.Local) ||
+                       date1.IsEqual(date2, toleranceSeconds, DateTimeKind.Utc);
+            }
+
+            return Math.Abs((date1.ToUniversalTime() - date2.ToUniversalTime()).TotalSeconds) <= toleranceSeconds;
+        }
+
+        static public double SpanSeconds2(this DateTime date1, DateTime date2)
+        {
+            if (date1.IsEqual2(date2))
+                return 0;
+
+            return Math.Abs((date1 - date2).TotalSeconds);
         }
 
         #endregion

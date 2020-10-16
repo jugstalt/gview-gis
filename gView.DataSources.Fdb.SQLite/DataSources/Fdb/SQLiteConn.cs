@@ -69,7 +69,7 @@ namespace gView.DataSources.Fdb.Sqlite
         {
             get
             {
-                throw new NotImplementedException();
+                return this.dbType.ToString();
             }
             set
             {

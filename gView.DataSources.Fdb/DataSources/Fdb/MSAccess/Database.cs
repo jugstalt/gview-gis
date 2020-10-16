@@ -3897,6 +3897,11 @@ namespace gView.DataSources.Fdb.MSAccess
             return FcsiTableName(fc.Name);
         }
 
+        virtual public string EscapeQueryValue(string value)
+        {
+            return value?.Replace(@"\", @"\\");
+        }
+
         #region Network
         async private Task<bool> IsNetworkSubFeatureclass(string fcname)
         {
