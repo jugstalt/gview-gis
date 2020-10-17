@@ -779,6 +779,12 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             }
             return layers;
         }
+
+        public override string EscapeQueryValue(string value)
+        {
+            return value;
+        }
+
         #endregion
 
         #region IFeatureUpdater

@@ -244,16 +244,16 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                     if (fi.Exists)
                     {
-                        DateTime t = ((DateTime)row["LAST_MODIFIED"]).ToUTC();
+                        DateTime t = (DateTime)row["LAST_MODIFIED"];
 
-                        int span = (int)Math.Abs((fi.LastWriteTimeUtc - t).TotalSeconds);
+                        int span = (int)fi.LastWriteTimeUtc.SpanSeconds2(t);
                         try
                         {
                             FileInfo fi2 = new FileInfo(row["PATH2"].ToString());
                             if (fi2.Exists)
                             {
                                 t = ((DateTime)row["LAST_MODIFIED2"]).ToUTC();
-                                span = Math.Max((int)Math.Abs((fi2.LastWriteTimeUtc - t).TotalSeconds), span);
+                                span = Math.Max((int)fi2.LastWriteTimeUtc.SpanSeconds2(t), span);
                             }
                         }
                         catch { }
@@ -436,7 +436,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 IFeatureClass fc = await fdb.GetFeatureclass(args.dataset.DatasetName, args.dataset.DatasetName + "_IMAGE_POLYGONS");
                 if (fc != null)
                 {
-                    fdb.CalculateExtent(fc).Wait();
+                    await fdb.CalculateExtent(fc);
                 }
 
                 await fdb.ShrinkSpatialIndex(args.dataset.DatasetName + "_IMAGE_POLYGONS");

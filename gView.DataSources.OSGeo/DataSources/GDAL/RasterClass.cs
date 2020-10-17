@@ -554,11 +554,23 @@ namespace gView.DataSources.GDAL
                             {
                                 if (_renderRawGridValues)
                                 {
-                                    byte* vb = (byte*)v;
-                                    ptr[0] = *vb; vb++;
-                                    ptr[1] = *vb; vb++;
-                                    ptr[2] = *vb; vb++;
-                                    ptr[3] = *vb;
+                                    if (_hasNoDataVal == 1 && *v == _nodata)
+                                    {
+                                        ptr[0] = ptr[1] = ptr[2] = ptr[3] = 0;
+                                    }
+                                    else
+                                    {
+                                        var int24Bytes = new Int24(*v * 100f).GetBytes();
+                                        ptr[0] = int24Bytes[0];
+                                        ptr[1] = int24Bytes[1];
+                                        ptr[2] = int24Bytes[2];
+                                        ptr[3] = 255;
+                                    }
+                                    //byte* vb = (byte*)v;
+                                    //ptr[0] = *vb; vb++;
+                                    //ptr[1] = *vb; vb++;
+                                    //ptr[2] = *vb; vb++;
+                                    //ptr[3] = *vb;  
                                 }
                                 else
                                 {

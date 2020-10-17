@@ -2527,5 +2527,10 @@ namespace gView.DataSources.Fdb.SQLite
         }
 
         #endregion
+
+        public override string EscapeQueryValue(string value)
+        {
+            return value;
+        }
     }
 }
