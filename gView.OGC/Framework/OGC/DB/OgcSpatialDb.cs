@@ -1055,7 +1055,14 @@ namespace gView.Framework.OGC.DB
                     adapter.SelectCommand.CommandText = "select ST_AsBinary(st_extent(" + fc.ShapeFieldName + ")) as extent from " + DbTableName(fc.Name);
                     adapter.SelectCommand.Connection = conn;
 
-                    adapter.Fill(tab);
+                    try
+                    {
+                        adapter.Fill(tab);
+                    }
+                    catch
+                    {
+                        return Task.FromResult<IEnvelope>(new Envelope(-10, -10, 10, 10));
+                    }
                 }
                 if (tab.Rows.Count == 1)
                 {
