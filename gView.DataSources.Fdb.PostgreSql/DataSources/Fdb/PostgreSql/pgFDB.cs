@@ -340,7 +340,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                             types.Append("float8 NULL");
                             break;
                         case FieldType.Date:
-                            types.Append("date NULL");
+                            types.Append("timestamp NULL");
                             break;
                         case FieldType.ID:
                             if (!hasID)
