@@ -3,7 +3,7 @@
 The software consists of desktop applications for creating maps and the gView server for publishing the maps as map services (WMS, GeoServices REST, etc).
 
 *gView Carto* and *gView DataExplorer* runs on windows and require die .NET Framework >=4.7.2 
-*gView Server* is fully .NET Core (AspNetCore 3.0.0). It can run on windows, linux, mac and as a docker container 
+*gView Server* is fully .NET Core (AspNetCore 3.1.x). It can run on windows, linux, mac and as a docker container 
 
 Download the leatest release as ZIP from [Releases](https://github.com/jugstalt/gview5/releases)
 Unzip and run...
