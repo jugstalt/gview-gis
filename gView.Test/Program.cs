@@ -16,9 +16,11 @@ namespace gView.Test
             try
             {
                 //TestProj4();
-                TestPerformance();
+                //TestPerformance();
 
                 //Console.ReadLine();
+
+                TestVtc().Wait();
             }
             catch (Exception ex)
             {
@@ -203,6 +205,41 @@ namespace gView.Test
 
             return ms;
         }
+
+        #region Vector Tile Cache
+
+        async static Task TestVtc()
+        {
+            var dataset = new DataSources.VectorTileCache.Dataset();
+            await dataset.SetConnectionString("name=kagis;source=https://gis.ktn.gv.at/osgdi/flawi/tile.json");
+            await dataset.Open();
+
+            var start = DateTime.Now;
+
+            for (int i = 0; i < 1; i++)
+            {
+                var featureCache = new gView.DataSources.VectorTileCache.FeatureCache(dataset);
+                await featureCache.LoadAsync(14, 8841, 8842, 5787, 5788);
+
+                Console.WriteLine($"TimeSpan: { (DateTime.Now - start).TotalMilliseconds } ms");
+
+                int count = 0;
+                foreach (var layername in featureCache.LayersNames)
+                {
+                    count += featureCache.FeatureCount(layername);
+                    Console.WriteLine($"{ layername }: { featureCache.FeatureCount(layername) }");
+
+                    //System.IO.File.WriteAllText($@"c:\temp\{ layername }.json", featureCache.ToGeoJson(layername));
+                }
+
+                Console.WriteLine($"Sum Featuers: { count }");
+            }
+
+            if (!String.IsNullOrEmpty(dataset.LastErrorMessage))
+                Console.WriteLine($"ERROR: { dataset.LastErrorMessage }");
+        }
+
+        #endregion
 
         #region Classes
 

@@ -173,6 +173,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.TileCache
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.DataSources.TileCache.UI", "NetFramework\gView.Win.DataSources.TileCache.UI\gView.Win.DataSources.TileCache.UI.csproj", "{9353E020-6EB4-463D-A304-6FBF0AC560FB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.VectorTileCache", "gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj", "{46CCAD05-281C-437F-A0A3-89D0B9B6662E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -861,6 +863,14 @@ Global
 		{9353E020-6EB4-463D-A304-6FBF0AC560FB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9353E020-6EB4-463D-A304-6FBF0AC560FB}.Release|x64.ActiveCfg = Release|Any CPU
 		{9353E020-6EB4-463D-A304-6FBF0AC560FB}.Release|x64.Build.0 = Release|Any CPU
+		{46CCAD05-281C-437F-A0A3-89D0B9B6662E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46CCAD05-281C-437F-A0A3-89D0B9B6662E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46CCAD05-281C-437F-A0A3-89D0B9B6662E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{46CCAD05-281C-437F-A0A3-89D0B9B6662E}.Debug|x64.Build.0 = Debug|Any CPU
+		{46CCAD05-281C-437F-A0A3-89D0B9B6662E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46CCAD05-281C-437F-A0A3-89D0B9B6662E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46CCAD05-281C-437F-A0A3-89D0B9B6662E}.Release|x64.ActiveCfg = Release|Any CPU
+		{46CCAD05-281C-437F-A0A3-89D0B9B6662E}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
