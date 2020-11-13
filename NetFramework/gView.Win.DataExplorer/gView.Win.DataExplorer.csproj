@@ -270,6 +270,10 @@
       <Project>{ed4b335f-4967-4245-bcea-45ce48b4648b}</Project>
       <Name>gView.DataSources.Shape</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.TileCache\gView.DataSources.TileCache.csproj">
+      <Project>{b31ab72e-72f6-489e-b707-9d481dea3338}</Project>
+      <Name>gView.DataSources.TileCache</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\gView.Data\gView.Data.csproj">
       <Project>{9b556868-8431-4d6c-b002-3fef15df0498}</Project>
       <Name>gView.Data</Name>
@@ -413,6 +417,10 @@
     <ProjectReference Include="..\gView.Win.DataSources.Shape.UI\gView.Win.DataSources.Shape.UI.csproj">
       <Project>{d04f00d1-c054-41c1-808c-b652b221e74b}</Project>
       <Name>gView.Win.DataSources.Shape.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.DataSources.TileCache.UI\gView.Win.DataSources.TileCache.UI.csproj">
+      <Project>{9353e020-6eb4-463d-a304-6fbf0ac560fb}</Project>
+      <Name>gView.Win.DataSources.TileCache.UI</Name>
     </ProjectReference>
     <ProjectReference Include="..\gView.Win.Db.UI\gView.Win.Db.UI.csproj">
       <Project>{e5ed18b7-1d13-441b-9b3e-55a65a147928}</Project>
