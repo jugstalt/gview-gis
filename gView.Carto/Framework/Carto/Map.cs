@@ -1,3 +1,5 @@
+using gView.Data.Framework.Data;
+using gView.Data.Framework.Data.Abstraction;
 using gView.Framework.Carto.LayerRenderers;
 using gView.Framework.Carto.UI;
 using gView.Framework.Data;
@@ -915,227 +917,196 @@ namespace gView.Framework.Carto
 
             try
             {
-                this.IsRefreshing = true;
-
-                _lastException = null;
-
-                if (_graphics != null && phase == DrawPhase.Graphics)
+                using (var datasetCachingContext = new DatasetCachingContext(this))
                 {
-                    return true;
-                }
+                    this.IsRefreshing = true;
 
-                #region Start Drawing/Initialisierung
-                this.ZoomTo(m_actMinX, m_actMinY, m_actMaxX, m_actMaxY);
+                    _lastException = null;
 
-                if (cancelTracker == null)
-                {
-                    cancelTracker = new CancelTracker();
-                }
-
-                IGeometricTransformer geoTransformer = GeometricTransformerFactory.Create();
-                //geoTransformer.ToSpatialReference = this.SpatialReference;
-                if (!printerMap)
-                {
-                    if (_image != null && (_image.Width != iWidth || _image.Height != iHeight))
+                    if (_graphics != null && phase == DrawPhase.Graphics)
                     {
+                        return true;
+                    }
 
-                        if (!DisposeImage())
+                    #region Start Drawing/Initialisierung
+
+                    this.ZoomTo(m_actMinX, m_actMinY, m_actMaxX, m_actMaxY);
+
+                    if (cancelTracker == null)
+                    {
+                        cancelTracker = new CancelTracker();
+                    }
+
+                    await StartDatasetCaching(datasetCachingContext);
+
+                    IGeometricTransformer geoTransformer = GeometricTransformerFactory.Create();
+                    //geoTransformer.ToSpatialReference = this.SpatialReference;
+                    if (!printerMap)
+                    {
+                        if (_image != null && (_image.Width != iWidth || _image.Height != iHeight))
                         {
-                            return false;
-                        }
-                    }
 
-                    if (_image == null)
-                    {
-                        DisposeStreams();
-                        _image = new System.Drawing.Bitmap(iWidth, iHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                        //if (NewBitmap != null && cancelTracker.Continue) NewBitmap(_image);
-                    }
-                    // NewBitmap immer aufrufen, da sonst neuer DataView nix mitbekommt
-                    if (NewBitmap != null && cancelTracker.Continue)
-                    {
-                        NewBitmap(_image);
-                    }
-
-                    _graphics = System.Drawing.Graphics.FromImage(_image);
-
-                    this.dpi = _graphics.DpiX;
-
-                    using (System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(_backgroundColor))
-                    {
-                        _graphics.FillRectangle(brush, 0, 0, /*_image.Width, _image.Height*/ iWidth, iHeight);
-                        brush.Dispose();
-                    }
-                }
-                #endregion
-
-                #region Geometry
-
-                if (Bit.Has(phase, DrawPhase.Geography))
-                //if (phase == DrawPhase.All || phase == DrawPhase.Geography)
-                {
-                    LabelEngine.Init(this.Display, printerMap);
-
-                    this.GeometricTransformer = geoTransformer;
-
-                    // Thread für MapServer Datasets starten...
-                    #region WebServiceLayer
-                    List<IWebServiceLayer> webServices;
-                    if (this.TOC != null)
-                    {
-                        webServices = ListOperations<IWebServiceLayer>.Swap(this.TOC.VisibleWebServiceLayers);
-                    }
-                    else
-                    {
-                        webServices = new List<IWebServiceLayer>();
-                        foreach (IDatasetElement layer in this.MapElements)
-                        {
-                            if (!(layer is IWebServiceLayer))
+                            if (!DisposeImage())
                             {
-                                continue;
-                            }
-
-                            if (((ILayer)layer).Visible)
-                            {
-                                webServices.Add((IWebServiceLayer)layer);
+                                return false;
                             }
                         }
-                    }
-                    int webServiceOrder = 0;
-                    foreach (IWebServiceLayer element in webServices)
-                    {
-                        if (!element.Visible)
+
+                        if (_image == null)
                         {
-                            continue;
+                            DisposeStreams();
+                            _image = new System.Drawing.Bitmap(iWidth, iHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                            //if (NewBitmap != null && cancelTracker.Continue) NewBitmap(_image);
+                        }
+                        // NewBitmap immer aufrufen, da sonst neuer DataView nix mitbekommt
+                        if (NewBitmap != null && cancelTracker.Continue)
+                        {
+                            NewBitmap(_image);
                         }
 
-                        RenderServiceRequest srt = new RenderServiceRequest(this, element, webServiceOrder++);
-                        srt.finish += new RenderServiceRequest.RequestThreadFinished(MapRequestThread_finished);
-                        //Thread thread = new Thread(new ThreadStart(srt.ImageRequest));
-                        m_imageMerger.max++;
-                        //thread.Start();
-                        var task = srt.ImageRequest();  // start the task...
+                        _graphics = System.Drawing.Graphics.FromImage(_image);
+
+                        this.dpi = _graphics.DpiX;
+
+                        using (System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(_backgroundColor))
+                        {
+                            _graphics.FillRectangle(brush, 0, 0, /*_image.Width, _image.Height*/ iWidth, iHeight);
+                            brush.Dispose();
+                        }
                     }
+
                     #endregion
 
-                    #region Layerlisten erstellen
-                    List<ILayer> layers;
-                    if (this.TOC != null)
+                    #region Geometry
+
+                    if (Bit.Has(phase, DrawPhase.Geography))
+                    //if (phase == DrawPhase.All || phase == DrawPhase.Geography)
                     {
-                        if (this.ToString() == "gView.MapServer.Instance.ServiceMap")
+                        LabelEngine.Init(this.Display, printerMap);
+
+                        this.GeometricTransformer = geoTransformer;
+
+                        // Thread für MapServer Datasets starten...
+                        #region WebServiceLayer
+                        List<IWebServiceLayer> webServices;
+                        if (this.TOC != null)
                         {
-                            layers = ListOperations<ILayer>.Swap(this.TOC.Layers);
+                            webServices = ListOperations<IWebServiceLayer>.Swap(this.TOC.VisibleWebServiceLayers);
                         }
                         else
                         {
-                            layers = ListOperations<ILayer>.Swap(this.TOC.VisibleLayers);
+                            webServices = new List<IWebServiceLayer>();
+                            foreach (IDatasetElement layer in this.MapElements)
+                            {
+                                if (!(layer is IWebServiceLayer))
+                                {
+                                    continue;
+                                }
+
+                                if (((ILayer)layer).Visible)
+                                {
+                                    webServices.Add((IWebServiceLayer)layer);
+                                }
+                            }
                         }
-                    }
-                    else
-                    {
-                        layers = new List<ILayer>();
-                        foreach (IDatasetElement layer in this.MapElements)
+                        int webServiceOrder = 0;
+                        foreach (IWebServiceLayer element in webServices)
                         {
-                            if (!(layer is ILayer))
+                            if (!element.Visible)
                             {
                                 continue;
                             }
 
-                            if (((ILayer)layer).Visible)
+                            RenderServiceRequest srt = new RenderServiceRequest(this, element, webServiceOrder++);
+                            srt.finish += new RenderServiceRequest.RequestThreadFinished(MapRequestThread_finished);
+                            //Thread thread = new Thread(new ThreadStart(srt.ImageRequest));
+                            m_imageMerger.max++;
+                            //thread.Start();
+                            var task = srt.ImageRequest();  // start the task...
+                        }
+                        #endregion
+
+                        #region Layerlisten erstellen
+                        List<ILayer> layers;
+                        if (this.TOC != null)
+                        {
+                            if (this.ToString() == "gView.MapServer.Instance.ServiceMap")
                             {
-                                layers.Add((ILayer)layer);
-                            }
-                        }
-                    }
-
-                    List<IFeatureLayer> labelLayers = this.OrderedLabelLayers(layers);
-
-                    #endregion
-
-                    #region Renderer Features
-
-                    foreach (ILayer layer in layers)
-                    {
-                        if (!cancelTracker.Continue)
-                        {
-                            break;
-                        }
-
-                        if (!layer.RenderInScale(this))
-                        {
-                            continue;
-                        }
-
-                        SetGeotransformer(layer, geoTransformer);
-
-                        DateTime startTime = DateTime.Now;
-
-                        Thread thread = null;
-                        FeatureCounter fCounter = new FeatureCounter();
-                        if (layer is IFeatureLayer)
-                        {
-                            IFeatureLayer fLayer = (IFeatureLayer)layer;
-                            if (fLayer.FeatureRenderer == null &&
-                                (
-                                 fLayer.LabelRenderer == null ||
-                                (fLayer.LabelRenderer != null && fLayer.LabelRenderer.RenderMode != LabelRenderMode.RenderWithFeature)
-                                ))
-                            {
-                                //continue;
+                                layers = ListOperations<ILayer>.Swap(this.TOC.Layers);
                             }
                             else
                             {
-                                RenderFeatureLayer rlt = new RenderFeatureLayer(this, fLayer, cancelTracker, fCounter);
-                                if (fLayer.LabelRenderer != null && fLayer.LabelRenderer.RenderMode == LabelRenderMode.RenderWithFeature)
-                                {
-                                    rlt.UseLabelRenderer = true;
-                                }
-                                else
-                                {
-                                    rlt.UseLabelRenderer = labelLayers.IndexOf(fLayer) == 0;  // letzten Layer gleich mitlabeln
-                                }
-
-                                if (rlt.UseLabelRenderer)
-                                {
-                                    labelLayers.Remove(fLayer);
-                                }
-
-                                //thread = new Thread(new ThreadStart(rlt.Render));
-                                //thread.Start();
-
-                                if (DrawingLayer != null && cancelTracker.Continue)
-                                {
-                                    DrawingLayer(layer.Title);
-                                }
-
-                                await rlt.Render();
+                                layers = ListOperations<ILayer>.Swap(this.TOC.VisibleLayers);
                             }
                         }
-                        if (layer is IRasterLayer && ((IRasterLayer)layer).RasterClass != null)
+                        else
                         {
-                            IRasterLayer rLayer = (IRasterLayer)layer;
-                            if (rLayer.RasterClass.Polygon == null)
+                            layers = new List<ILayer>();
+                            foreach (IDatasetElement layer in this.MapElements)
+                            {
+                                if (!(layer is ILayer))
+                                {
+                                    continue;
+                                }
+
+                                if (((ILayer)layer).Visible)
+                                {
+                                    layers.Add((ILayer)layer);
+                                }
+                            }
+                        }
+
+                        List<IFeatureLayer> labelLayers = this.OrderedLabelLayers(layers);
+
+                        #endregion
+
+                        #region Renderer Features
+
+                        foreach (ILayer layer in layers)
+                        {
+                            if (!cancelTracker.Continue)
+                            {
+                                break;
+                            }
+
+                            if (!layer.RenderInScale(this))
                             {
                                 continue;
                             }
 
-                            IEnvelope dispEnvelope = this.DisplayTransformation.TransformedBounds(this); //this.Envelope;
-                            if (Display.GeometricTransformer != null)
-                            {
-                                dispEnvelope = ((IGeometry)Display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
-                            }
+                            SetGeotransformer(layer, geoTransformer);
 
-                            if (gView.Framework.SpatialAlgorithms.Algorithm.IntersectBox(rLayer.RasterClass.Polygon, dispEnvelope))
+                            DateTime startTime = DateTime.Now;
+
+                            Thread thread = null;
+                            FeatureCounter fCounter = new FeatureCounter();
+                            if (layer is IFeatureLayer)
                             {
-                                if (rLayer.Class is IParentRasterLayer)
+                                IFeatureLayer fLayer = (IFeatureLayer)layer;
+                                if (fLayer.FeatureRenderer == null &&
+                                    (
+                                     fLayer.LabelRenderer == null ||
+                                    (fLayer.LabelRenderer != null && fLayer.LabelRenderer.RenderMode != LabelRenderMode.RenderWithFeature)
+                                    ))
                                 {
-                                    await DrawRasterParentLayer((IParentRasterLayer)rLayer.Class, cancelTracker, rLayer);
-                                    thread = null;
+                                    //continue;
                                 }
                                 else
                                 {
-                                    RenderRasterLayer rlt = new RenderRasterLayer(this, rLayer, rLayer, cancelTracker);
-                                    await rlt.Render();
+                                    RenderFeatureLayer rlt = new RenderFeatureLayer(this, fLayer, cancelTracker, fCounter);
+                                    if (fLayer.LabelRenderer != null && fLayer.LabelRenderer.RenderMode == LabelRenderMode.RenderWithFeature)
+                                    {
+                                        rlt.UseLabelRenderer = true;
+                                    }
+                                    else
+                                    {
+                                        rlt.UseLabelRenderer = labelLayers.IndexOf(fLayer) == 0;  // letzten Layer gleich mitlabeln
+                                    }
+
+                                    if (rlt.UseLabelRenderer)
+                                    {
+                                        labelLayers.Remove(fLayer);
+                                    }
 
                                     //thread = new Thread(new ThreadStart(rlt.Render));
                                     //thread.Start();
@@ -1144,230 +1115,268 @@ namespace gView.Framework.Carto
                                     {
                                         DrawingLayer(layer.Title);
                                     }
+
+                                    await rlt.Render();
                                 }
                             }
-                        }
-                        // Andere Layer (zB IRasterLayer)
-
-                        if (thread == null)
-                        {
-                            continue;
-                        }
-
-                        thread.Join();
-
-                        if (DrawingLayerFinished != null)
-                        {
-                            DrawingLayerFinished(this, new gView.Framework.system.TimeEvent("Drawing: " + layer.Title, startTime, DateTime.Now, fCounter.Counter));
-                        }
-                        //int count = 0;
-
-                        //while (thread.IsAlive)
-                        //{
-                        //    Thread.Sleep(10);
-                        //    if (DoRefreshMapView != null && (count % 100) == 0 && cancelTracker.Continue) DoRefreshMapView();
-                        //    count++;
-                        //}
-                        //if (DoRefreshMapView != null && cancelTracker.Continue) DoRefreshMapView();
-                    }
-                    #endregion
-
-                    #region Label Features
-
-                    if (labelLayers.Count != 0)
-                    {
-                        StreamImage(ref _msGeometry, _image);
-                        foreach (IFeatureLayer fLayer in labelLayers)
-                        {
-                            this.SetGeotransformer(fLayer, geoTransformer);
-
-                            DateTime startTime = DateTime.Now;
-
-                            RenderLabel rlt = new RenderLabel(this, fLayer, cancelTracker);
-
-                            if (DrawingLayer != null && cancelTracker.Continue)
+                            if (layer is IRasterLayer && ((IRasterLayer)layer).RasterClass != null)
                             {
-                                DrawingLayer(fLayer.Title);
+                                IRasterLayer rLayer = (IRasterLayer)layer;
+                                if (rLayer.RasterClass.Polygon == null)
+                                {
+                                    continue;
+                                }
+
+                                IEnvelope dispEnvelope = this.DisplayTransformation.TransformedBounds(this); //this.Envelope;
+                                if (Display.GeometricTransformer != null)
+                                {
+                                    dispEnvelope = ((IGeometry)Display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
+                                }
+
+                                if (gView.Framework.SpatialAlgorithms.Algorithm.IntersectBox(rLayer.RasterClass.Polygon, dispEnvelope))
+                                {
+                                    if (rLayer.Class is IParentRasterLayer)
+                                    {
+                                        await DrawRasterParentLayer((IParentRasterLayer)rLayer.Class, cancelTracker, rLayer);
+                                        thread = null;
+                                    }
+                                    else
+                                    {
+                                        RenderRasterLayer rlt = new RenderRasterLayer(this, rLayer, rLayer, cancelTracker);
+                                        await rlt.Render();
+
+                                        //thread = new Thread(new ThreadStart(rlt.Render));
+                                        //thread.Start();
+
+                                        if (DrawingLayer != null && cancelTracker.Continue)
+                                        {
+                                            DrawingLayer(layer.Title);
+                                        }
+                                    }
+                                }
                             }
+                            // Andere Layer (zB IRasterLayer)
 
-                            await rlt.Render();
-
-                            if (DrawingLayerFinished != null)
-                            {
-                                DrawingLayerFinished(this, new gView.Framework.system.TimeEvent("Labelling: " + fLayer.Title, startTime, DateTime.Now));
-                            }
-                        }
-                        DrawStream(_msGeometry);
-                    }
-
-                    if (!printerMap)
-                    {
-                        LabelEngine.Draw(this.Display, cancelTracker);
-                    }
-
-                    LabelEngine.Release();
-
-                    #endregion
-
-                    #region Waiting for Webservices
-
-                    if (cancelTracker.Continue)
-                    {
-                        if (DrawingLayer != null && m_imageMerger.max > 0)
-                        {
-                            DrawingLayer("...Waiting for WebServices...");
-                        }
-
-                        while (m_imageMerger.Count < m_imageMerger.max)
-                        {
-                            await Task.Delay(100);
-                        }
-                    }
-                    if (_drawScaleBar)
-                    {
-                        m_imageMerger.mapScale = this.mapScale;
-                        m_imageMerger.dpi = this.dpi;
-                    }
-                    if (m_imageMerger.Count > 0)
-                    {
-                        System.Drawing.Bitmap clonedBitmap = _image.Clone(new System.Drawing.Rectangle(0, 0, _image.Width, _image.Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                        clonedBitmap.MakeTransparent(_backgroundColor);
-                        m_imageMerger.Add(new GeorefBitmap(clonedBitmap), 999);
-
-                        if (!m_imageMerger.Merge(_image, this.Display) &&
-                            (this is IServiceMap) &&
-                            ((IServiceMap)this).MapServer != null)
-                        {
-                            await ((IServiceMap)this).MapServer.LogAsync(
-                                this.Name,
-                                "Image Merger:",
-                                loggingMethod.error,
-                                m_imageMerger.LastErrorMessage);
-                        }
-                        m_imageMerger.Clear();
-                    }
-
-                    StreamImage(ref _msGeometry, _image);
-
-                    #endregion
-                }
-                #endregion
-
-                #region Draw Selection
-                if (Bit.Has(phase, DrawPhase.Selection))
-                //if (phase == DrawPhase.All || phase == DrawPhase.Selection)
-                {
-                    if (phase != DrawPhase.All)
-                    {
-                        DrawStream(_msGeometry);
-                    }
-
-                    foreach (IDatasetElement layer in this.MapElements)
-                    {
-                        if (!cancelTracker.Continue)
-                        {
-                            break;
-                        }
-
-                        if (!(layer is ILayer))
-                        {
-                            continue;
-                        }
-
-                        if (layer is IFeatureLayer &&
-                            layer is IFeatureSelection &&
-                            ((IFeatureSelection)layer).SelectionSet != null &&
-                            ((IFeatureSelection)layer).SelectionSet.Count > 0)
-                        {
-                            SetGeotransformer((ILayer)layer, geoTransformer);
-                            await RenderSelection(layer as IFeatureLayer, cancelTracker);
-                        } // Andere Layer (zB IRasterLayer)
-                        else if (layer is IWebServiceLayer)
-                        {
-                            IWebServiceLayer wLayer = (IWebServiceLayer)layer;
-                            if (wLayer.WebServiceClass == null)
+                            if (thread == null)
                             {
                                 continue;
                             }
 
-                            foreach (IWebServiceTheme theme in wLayer.WebServiceClass.Themes)
+                            thread.Join();
+
+                            if (DrawingLayerFinished != null)
                             {
-                                if (theme is IFeatureLayer &&
-                                    theme.SelectionRenderer != null &&
-                                    theme is IFeatureSelection &&
-                                    ((IFeatureSelection)theme).SelectionSet != null &&
-                                    ((IFeatureSelection)theme).SelectionSet.Count > 0)
+                                DrawingLayerFinished(this, new gView.Framework.system.TimeEvent("Drawing: " + layer.Title, startTime, DateTime.Now, fCounter.Counter));
+                            }
+                            //int count = 0;
+
+                            //while (thread.IsAlive)
+                            //{
+                            //    Thread.Sleep(10);
+                            //    if (DoRefreshMapView != null && (count % 100) == 0 && cancelTracker.Continue) DoRefreshMapView();
+                            //    count++;
+                            //}
+                            //if (DoRefreshMapView != null && cancelTracker.Continue) DoRefreshMapView();
+                        }
+                        #endregion
+
+                        #region Label Features
+
+                        if (labelLayers.Count != 0)
+                        {
+                            StreamImage(ref _msGeometry, _image);
+                            foreach (IFeatureLayer fLayer in labelLayers)
+                            {
+                                this.SetGeotransformer(fLayer, geoTransformer);
+
+                                DateTime startTime = DateTime.Now;
+
+                                RenderLabel rlt = new RenderLabel(this, fLayer, cancelTracker);
+
+                                if (DrawingLayer != null && cancelTracker.Continue)
                                 {
-                                    SetGeotransformer(theme, geoTransformer);
-                                    await RenderSelection(theme as IFeatureLayer, cancelTracker);
+                                    DrawingLayer(fLayer.Title);
+                                }
+
+                                await rlt.Render();
+
+                                if (DrawingLayerFinished != null)
+                                {
+                                    DrawingLayerFinished(this, new gView.Framework.system.TimeEvent("Labelling: " + fLayer.Title, startTime, DateTime.Now));
+                                }
+                            }
+                            DrawStream(_msGeometry);
+                        }
+
+                        if (!printerMap)
+                        {
+                            LabelEngine.Draw(this.Display, cancelTracker);
+                        }
+
+                        LabelEngine.Release();
+
+                        #endregion
+
+                        #region Waiting for Webservices
+
+                        if (cancelTracker.Continue)
+                        {
+                            if (DrawingLayer != null && m_imageMerger.max > 0)
+                            {
+                                DrawingLayer("...Waiting for WebServices...");
+                            }
+
+                            while (m_imageMerger.Count < m_imageMerger.max)
+                            {
+                                await Task.Delay(100);
+                            }
+                        }
+                        if (_drawScaleBar)
+                        {
+                            m_imageMerger.mapScale = this.mapScale;
+                            m_imageMerger.dpi = this.dpi;
+                        }
+                        if (m_imageMerger.Count > 0)
+                        {
+                            System.Drawing.Bitmap clonedBitmap = _image.Clone(new System.Drawing.Rectangle(0, 0, _image.Width, _image.Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                            clonedBitmap.MakeTransparent(_backgroundColor);
+                            m_imageMerger.Add(new GeorefBitmap(clonedBitmap), 999);
+
+                            if (!m_imageMerger.Merge(_image, this.Display) &&
+                                (this is IServiceMap) &&
+                                ((IServiceMap)this).MapServer != null)
+                            {
+                                await ((IServiceMap)this).MapServer.LogAsync(
+                                    this.Name,
+                                    "Image Merger:",
+                                    loggingMethod.error,
+                                    m_imageMerger.LastErrorMessage);
+                            }
+                            m_imageMerger.Clear();
+                        }
+
+                        StreamImage(ref _msGeometry, _image);
+
+                        #endregion
+                    }
+                    #endregion
+
+                    #region Draw Selection
+                    if (Bit.Has(phase, DrawPhase.Selection))
+                    //if (phase == DrawPhase.All || phase == DrawPhase.Selection)
+                    {
+                        if (phase != DrawPhase.All)
+                        {
+                            DrawStream(_msGeometry);
+                        }
+
+                        foreach (IDatasetElement layer in this.MapElements)
+                        {
+                            if (!cancelTracker.Continue)
+                            {
+                                break;
+                            }
+
+                            if (!(layer is ILayer))
+                            {
+                                continue;
+                            }
+
+                            if (layer is IFeatureLayer &&
+                                layer is IFeatureSelection &&
+                                ((IFeatureSelection)layer).SelectionSet != null &&
+                                ((IFeatureSelection)layer).SelectionSet.Count > 0)
+                            {
+                                SetGeotransformer((ILayer)layer, geoTransformer);
+                                await RenderSelection(layer as IFeatureLayer, cancelTracker);
+                            } // Andere Layer (zB IRasterLayer)
+                            else if (layer is IWebServiceLayer)
+                            {
+                                IWebServiceLayer wLayer = (IWebServiceLayer)layer;
+                                if (wLayer.WebServiceClass == null)
+                                {
+                                    continue;
+                                }
+
+                                foreach (IWebServiceTheme theme in wLayer.WebServiceClass.Themes)
+                                {
+                                    if (theme is IFeatureLayer &&
+                                        theme.SelectionRenderer != null &&
+                                        theme is IFeatureSelection &&
+                                        ((IFeatureSelection)theme).SelectionSet != null &&
+                                        ((IFeatureSelection)theme).SelectionSet.Count > 0)
+                                    {
+                                        SetGeotransformer(theme, geoTransformer);
+                                        await RenderSelection(theme as IFeatureLayer, cancelTracker);
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    StreamImage(ref _msSelection, _image);
-                }
-                #endregion
-
-                #region Graphics
-                if (Bit.Has(phase, DrawPhase.Graphics))
-                //if (phase == DrawPhase.All || phase == DrawPhase.Graphics)
-                {
-                    if (phase != DrawPhase.All)
-                    {
-                        DrawStream((_msSelection != null) ? _msSelection : _msGeometry);
+                        StreamImage(ref _msSelection, _image);
                     }
+                    #endregion
 
-                    foreach (IGraphicElement grElement in Display.GraphicsContainer.Elements)
+                    #region Graphics
+                    if (Bit.Has(phase, DrawPhase.Graphics))
+                    //if (phase == DrawPhase.All || phase == DrawPhase.Graphics)
                     {
-                        grElement.Draw(Display);
-                    }
-                    foreach (IGraphicElement grElement in Display.GraphicsContainer.SelectedElements)
-                    {
-                        if (grElement is IGraphicElement2)
+                        if (phase != DrawPhase.All)
                         {
-                            if (((IGraphicElement2)grElement).Ghost != null)
+                            DrawStream((_msSelection != null) ? _msSelection : _msGeometry);
+                        }
+
+                        foreach (IGraphicElement grElement in Display.GraphicsContainer.Elements)
+                        {
+                            grElement.Draw(Display);
+                        }
+                        foreach (IGraphicElement grElement in Display.GraphicsContainer.SelectedElements)
+                        {
+                            if (grElement is IGraphicElement2)
                             {
-                                ((IGraphicElement2)grElement).Ghost.Draw(Display);
-                            } ((IGraphicElement2)grElement).DrawGrabbers(Display);
+                                if (((IGraphicElement2)grElement).Ghost != null)
+                                {
+                                    ((IGraphicElement2)grElement).Ghost.Draw(Display);
+                                } ((IGraphicElement2)grElement).DrawGrabbers(Display);
+                            }
                         }
                     }
-                }
-                #endregion
+                    #endregion
 
-                #region Cleanup
-                if (geoTransformer != null)
-                {
-                    this.GeometricTransformer = null;
-                    geoTransformer.Release();
-                    geoTransformer = null;
-                }
-                #endregion
-
-                #region Send Events
-                // Überprüfen, ob sich Extent seit dem letztem Zeichnen geändert hat...
-                if (cancelTracker.Continue)
-                {
-                    if (_lastRenderExtent == null)
+                    #region Cleanup
+                    if (geoTransformer != null)
                     {
-                        _lastRenderExtent = new Envelope();
+                        this.GeometricTransformer = null;
+                        geoTransformer.Release();
+                        geoTransformer = null;
                     }
+                    #endregion
 
-                    if (NewExtentRendered != null)
+                    #region Send Events
+                    // Überprüfen, ob sich Extent seit dem letztem Zeichnen geändert hat...
+                    if (cancelTracker.Continue)
                     {
-                        if (!_lastRenderExtent.Equals(Display.Envelope))
+                        if (_lastRenderExtent == null)
                         {
-                            NewExtentRendered(this, Display.Envelope);
+                            _lastRenderExtent = new Envelope();
                         }
-                    }
-                    _lastRenderExtent.minx = Display.Envelope.minx;
-                    _lastRenderExtent.miny = Display.Envelope.miny;
-                    _lastRenderExtent.maxx = Display.Envelope.maxx;
-                    _lastRenderExtent.maxy = Display.Envelope.maxy;
-                }
-                #endregion
 
-                return true;
+                        if (NewExtentRendered != null)
+                        {
+                            if (!_lastRenderExtent.Equals(Display.Envelope))
+                            {
+                                NewExtentRendered(this, Display.Envelope);
+                            }
+                        }
+                        _lastRenderExtent.minx = Display.Envelope.minx;
+                        _lastRenderExtent.miny = Display.Envelope.miny;
+                        _lastRenderExtent.maxx = Display.Envelope.maxx;
+                        _lastRenderExtent.maxy = Display.Envelope.maxy;
+                    }
+                    #endregion
+
+                    return true;
+                }
             }
             catch (Exception ex)
             {
@@ -2480,6 +2489,25 @@ namespace gView.Framework.Carto
             var maxLayerId=this.MapElements.Select(e => e.ID).Max();
 
             _layerIDSequece.SetToIfLower(maxLayerId + 1);
+        }
+
+        #endregion
+
+        #region DatasetCaching
+
+        async private Task<bool> StartDatasetCaching(DatasetCachingContext cachingContext)
+        {
+            var result = true;
+
+            if (this.Datasets != null)
+            {
+                foreach (var dataset in this.Datasets.Where(d=>d is IFeatureCacheDataset))
+                {
+                    result &= await ((IFeatureCacheDataset)dataset).InitFeatureCache(cachingContext);
+                }
+            }
+
+            return result;
         }
 
         #endregion

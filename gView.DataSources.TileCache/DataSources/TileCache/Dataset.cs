@@ -8,6 +8,8 @@ using gView.Framework.system;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
 using System.Threading.Tasks;
+using System.Net.Http;
+using System.Net;
 
 namespace gView.DataSources.TileCache
 {
@@ -19,6 +21,11 @@ namespace gView.DataSources.TileCache
         private string _connectionString, _lastErrMsg=String.Empty, _copyright;
         private ParentRasterClass _class = null;
         private IDatasetElement _dsElement = null;
+
+        internal static HttpClient _httpClient = new HttpClient(new HttpClientHandler()
+        {
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+        });
 
         public Dataset()
         {

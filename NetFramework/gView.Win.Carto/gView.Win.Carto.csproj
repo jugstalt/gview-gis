@@ -229,6 +229,10 @@
       <Project>{b31ab72e-72f6-489e-b707-9d481dea3338}</Project>
       <Name>gView.DataSources.TileCache</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj">
+      <Project>{46ccad05-281c-437f-a0a3-89d0b9b6662e}</Project>
+      <Name>gView.DataSources.VectorTileCache</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\gView.Data\gView.Data.csproj">
       <Project>{9b556868-8431-4d6c-b002-3fef15df0498}</Project>
       <Name>gView.Data</Name>
@@ -364,6 +368,10 @@
     <ProjectReference Include="..\gView.Win.DataSources.TileCache.UI\gView.Win.DataSources.TileCache.UI.csproj">
       <Project>{9353e020-6eb4-463d-a304-6fbf0ac560fb}</Project>
       <Name>gView.Win.DataSources.TileCache.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.DataSources.VectorTileCache.UI\gView.Win.DataSources.VectorTileCache.UI.csproj">
+      <Project>{df28644d-7be0-428a-bf5d-31325604ee68}</Project>
+      <Name>gView.Win.DataSources.VectorTileCache.UI</Name>
     </ProjectReference>
     <ProjectReference Include="..\gView.Win.Db.UI\gView.Win.Db.UI.csproj">
       <Project>{e5ed18b7-1d13-441b-9b3e-55a65a147928}</Project>

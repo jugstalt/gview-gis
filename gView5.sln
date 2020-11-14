@@ -169,11 +169,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.CopyFeatureclass"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Cmd.MxlInfo", "NetFramework\gView.Cmd.MxlInfo\gView.Cmd.MxlInfo.csproj", "{8C040A69-F7E9-4D59-85C8-4C6B69C97D86}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.TileCache", "gView.DataSources.TileCache\gView.DataSources.TileCache.csproj", "{B31AB72E-72F6-489E-B707-9D481DEA3338}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.TileCache", "gView.DataSources.TileCache\gView.DataSources.TileCache.csproj", "{B31AB72E-72F6-489E-B707-9D481DEA3338}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.DataSources.TileCache.UI", "NetFramework\gView.Win.DataSources.TileCache.UI\gView.Win.DataSources.TileCache.UI.csproj", "{9353E020-6EB4-463D-A304-6FBF0AC560FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.VectorTileCache", "gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj", "{46CCAD05-281C-437F-A0A3-89D0B9B6662E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.VectorTileCache", "gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj", "{46CCAD05-281C-437F-A0A3-89D0B9B6662E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.DataSources.VectorTileCache.UI", "NetFramework\gView.Win.DataSources.VectorTileCache.UI\gView.Win.DataSources.VectorTileCache.UI.csproj", "{DF28644D-7BE0-428A-BF5D-31325604EE68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -871,6 +873,14 @@ Global
 		{46CCAD05-281C-437F-A0A3-89D0B9B6662E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{46CCAD05-281C-437F-A0A3-89D0B9B6662E}.Release|x64.ActiveCfg = Release|Any CPU
 		{46CCAD05-281C-437F-A0A3-89D0B9B6662E}.Release|x64.Build.0 = Release|Any CPU
+		{DF28644D-7BE0-428A-BF5D-31325604EE68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF28644D-7BE0-428A-BF5D-31325604EE68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF28644D-7BE0-428A-BF5D-31325604EE68}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DF28644D-7BE0-428A-BF5D-31325604EE68}.Debug|x64.Build.0 = Debug|Any CPU
+		{DF28644D-7BE0-428A-BF5D-31325604EE68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF28644D-7BE0-428A-BF5D-31325604EE68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF28644D-7BE0-428A-BF5D-31325604EE68}.Release|x64.ActiveCfg = Release|Any CPU
+		{DF28644D-7BE0-428A-BF5D-31325604EE68}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -50,6 +50,8 @@ namespace gView.DataSources.VectorTileCache
                             field.type = FieldType.String;
                             break;
                     }
+
+                    ((Fields)this.Fields).Add(field);
                 }
             }
 

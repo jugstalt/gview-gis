@@ -29,7 +29,7 @@ namespace gView.DataSources.VectorTileCache
             _grid = new WebMercatorGrid();
         }
 
-        async public Task LoadAsync(IDisplay display, double dpi)
+        async public Task LoadAsync(IDisplay display)
         {
             double displayResolution = display.mapScale / (display.dpi / 0.0254);
 

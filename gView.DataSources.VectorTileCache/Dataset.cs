@@ -1,4 +1,6 @@
-﻿using gView.Framework.Data;
+﻿using gView.Data.Framework.Data;
+using gView.Data.Framework.Data.Abstraction;
+using gView.Framework.Data;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
@@ -12,7 +14,7 @@ using System.Threading.Tasks;
 namespace gView.DataSources.VectorTileCache
 {
     [gView.Framework.system.RegisterPlugIn("1B8F1096-8D3F-4D2B-9222-15F26BBEC550")]
-    public class Dataset : DatasetMetadata, IDataset
+    public class Dataset : DatasetMetadata, IDataset, IFeatureCacheDataset
     {
         private string _connectionString;
         private string _dsName;
@@ -106,6 +108,11 @@ namespace gView.DataSources.VectorTileCache
 
                 _capabilities = JsonConvert.DeserializeObject<Json.VectorTilesCapabilities>(jsonString);
 
+                if (String.IsNullOrEmpty(_dsName))
+                {
+                    _dsName = _capabilities.Name;
+                }
+
                 this.TileUrls = _capabilities.Tiles;
 
                 var dsElements = new List<IDatasetElement>();
@@ -138,6 +145,23 @@ namespace gView.DataSources.VectorTileCache
         public void Save(IPersistStream stream)
         {
             stream.Save("connectionstring", _connectionString);
+        }
+
+        #endregion
+
+        #region IFeatureCacheDataset
+
+        async public Task<bool> InitFeatureCache(DatasetCachingContext cachingContext)
+        {
+            var map = cachingContext?.Map;
+
+            if (map != null)
+            {
+                FeatureCache cache = new FeatureCache(this);
+                await cache.LoadAsync(map.Display);
+            }
+
+            return true;
         }
 
         #endregion

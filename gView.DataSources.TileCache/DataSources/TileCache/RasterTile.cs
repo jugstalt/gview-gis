@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using gView.Framework.Carto;
 using gView.Framework.Data;
-using gView.Framework.Geometry.Tiling;
 using gView.Framework.Geometry;
-using gView.Framework.Web;
-using System.Threading;
+using gView.Framework.Geometry.Tiling;
+using gView.Framework.IO;
+using gView.Framework.system;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using gView.Framework.Carto;
-using gView.Framework.system;
-using gView.Framework.IO;
 
 namespace gView.DataSources.TileCache
 {
@@ -111,14 +107,14 @@ namespace gView.DataSources.TileCache
             }
         }
 
-        public Task BeginPaint(IDisplay display, ICancelTracker cancelTracker)
+        async public Task BeginPaint(IDisplay display, ICancelTracker cancelTracker)
         {
-            if (!cancelTracker.Continue) 
-                return Task.CompletedTask;
+            if (!cancelTracker.Continue)
+            {
+                return;
+            }
 
-            GetImage();
-
-            return Task.CompletedTask;
+            await GetImage();
         }
 
         public void EndPaint(Framework.system.ICancelTracker cancelTracker)
@@ -313,7 +309,9 @@ namespace gView.DataSources.TileCache
         public void FirePropertyChanged()
         {
             if (PropertyChanged != null)
+            {
                 PropertyChanged();
+            }
         }
 
         #endregion
@@ -395,7 +393,7 @@ namespace gView.DataSources.TileCache
 
         #endregion
 
-        private void GetImage()
+        async private Task GetImage()
         {
             FileInfo fi = null;
             if (LocalCachingSettings.UseLocalCaching)
@@ -407,6 +405,7 @@ namespace gView.DataSources.TileCache
 
                     if (fi.Exists)
                     {
+                        // ToDo: Read Async
                         _bm = (System.Drawing.Bitmap)System.Drawing.Image.FromFile(fn);
                         return;
                     }
@@ -423,7 +422,10 @@ namespace gView.DataSources.TileCache
 
                     url = urls[RasterTile.index % urls.Length];
                     RasterTile.index++;
-                    if (RasterTile.index > 1000) RasterTile.index = 0;
+                    if (RasterTile.index > 1000)
+                    {
+                        RasterTile.index = 0;
+                    }
                 }
                 if (url.Contains("{3}"))
                 {
@@ -432,23 +434,29 @@ namespace gView.DataSources.TileCache
 
                 url = String.Format(url, _col, _row, _level, quadkey);
 
-                using (MemoryStream ms = WebFunctions.DownloadStream(url))
+                using (var responseMessage = await gView.DataSources.TileCache.Dataset._httpClient.GetAsync(url))
                 {
-                    _bm = (System.Drawing.Bitmap)System.Drawing.Image.FromStream(ms);
-
-                    if (fi != null)
+                    var bytes = await responseMessage.Content.ReadAsByteArrayAsync();
+                    using (var ms = new MemoryStream(bytes))
                     {
-                        fi.Refresh();
-                        if (!fi.Exists)
-                        {
-                            if (!fi.Directory.Exists)
-                                fi.Directory.Create();
+                        _bm = (System.Drawing.Bitmap)System.Drawing.Image.FromStream(ms);
 
-                            ms.Position = 0;
-                            StreamWriter sw = new StreamWriter(fi.FullName);
-                            ms.WriteTo(sw.BaseStream);
-                            sw.Flush();
-                            sw.Close();
+                        if (fi != null)
+                        {
+                            fi.Refresh();
+                            if (!fi.Exists)
+                            {
+                                if (!fi.Directory.Exists)
+                                {
+                                    fi.Directory.Create();
+                                }
+
+                                ms.Position = 0;
+                                StreamWriter sw = new StreamWriter(fi.FullName);
+                                ms.WriteTo(sw.BaseStream);
+                                sw.Flush();
+                                sw.Close();
+                            }
                         }
                     }
                 }
