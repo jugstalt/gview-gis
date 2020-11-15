@@ -97,6 +97,7 @@ namespace gView.Framework.Data
             copyto.m_fieldPostfix = m_fieldPostfix;
             copyto._featureSRef = _featureSRef;
             copyto.CancelTracker = CancelTracker;
+            copyto.DatasetCachingContext = this.DatasetCachingContext;
 
             this.CopyUserDataTo(copyto);
         }
@@ -356,6 +357,7 @@ namespace gView.Framework.Data
         }
 
         public double MapScale { get; set; }
+        public IDatasetCachingContext DatasetCachingContext { get; set; }
 
         #endregion
 

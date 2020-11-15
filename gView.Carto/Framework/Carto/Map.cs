@@ -1093,7 +1093,7 @@ namespace gView.Framework.Carto
                                 }
                                 else
                                 {
-                                    RenderFeatureLayer rlt = new RenderFeatureLayer(this, fLayer, cancelTracker, fCounter);
+                                    RenderFeatureLayer rlt = new RenderFeatureLayer(this, datasetCachingContext, fLayer, cancelTracker, fCounter);
                                     if (fLayer.LabelRenderer != null && fLayer.LabelRenderer.RenderMode == LabelRenderMode.RenderWithFeature)
                                     {
                                         rlt.UseLabelRenderer = true;
@@ -2495,7 +2495,7 @@ namespace gView.Framework.Carto
 
         #region DatasetCaching
 
-        async private Task<bool> StartDatasetCaching(DatasetCachingContext cachingContext)
+        async protected Task<bool> StartDatasetCaching(DatasetCachingContext cachingContext)
         {
             var result = true;
 

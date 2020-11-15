@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using gView.Framework.IO;
 using gView.Framework.Carto.LayerRenderers;
+using gView.Data.Framework.Data;
 
 namespace gView.Server.AppCode
 {
@@ -350,6 +351,7 @@ namespace gView.Server.AppCode
                 cancelTracker = new CancelTracker();
             }
 
+            using (var datasetCachingContext = new DatasetCachingContext(this))
             using (var geoTransformer = GeometricTransformerFactory.Create())
             {
                 //geoTransformer.ToSpatialReference = this.SpatialReference;
@@ -370,6 +372,8 @@ namespace gView.Server.AppCode
                         _graphics.FillRectangle(brush, 0, 0, _image.Width, _image.Height);
                     }
                 }
+
+                await StartDatasetCaching(datasetCachingContext);
 
                 if (phase == DrawPhase.All || phase == DrawPhase.Geography)
                 {
@@ -580,7 +584,7 @@ namespace gView.Server.AppCode
                             }
                             else
                             {
-                                RenderFeatureLayer rlt = new RenderFeatureLayer(this, fLayer, cancelTracker, new FeatureCounter());
+                                RenderFeatureLayer rlt = new RenderFeatureLayer(this, datasetCachingContext, fLayer, cancelTracker, new FeatureCounter());
                                 if (fLayer.LabelRenderer != null && fLayer.LabelRenderer.RenderMode == LabelRenderMode.RenderWithFeature)
                                 {
                                     rlt.UseLabelRenderer = true;

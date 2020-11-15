@@ -170,7 +170,7 @@ namespace gView.Framework.UI.Controls
             mapView1.NewBitmapCreated(image);
         }
 
-        async public Task<bool> OnShow()
+        public Task<bool> OnShow()
         {
             // Starts Refresh in the background, do NOT await!!!! Otherwise it blocks UI
             Task.Run(async () =>
@@ -183,9 +183,7 @@ namespace gView.Framework.UI.Controls
                 await Task.Delay(100);
                 mapView1.RefreshMap(DrawPhase.Geography);
             });
-            return true;
-            //mapView1.RefreshMap(DrawPhase.Geography);
-            //return true;
+            return Task.FromResult(true);
         }
 
         public void OnHide()
@@ -263,15 +261,17 @@ namespace gView.Framework.UI.Controls
         {
             return _exObject;
         }
-        async public Task SetExplorerObjectAsync(IExplorerObject value)
+        public Task SetExplorerObjectAsync(IExplorerObject value)
         {
             if (_exObject == value || _map == null)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             _exObject = value;
             _exObjectInvokeRequired = true;
+
+            return Task.CompletedTask;
         }
 
         public Task<bool> ShowWith(IExplorerObject exObject)
@@ -339,9 +339,11 @@ namespace gView.Framework.UI.Controls
             return null;
         }
 
-        async public Task RefreshMap()
+        public Task RefreshMap()
         {
             mapView1.RefreshMap(DrawPhase.All);
+
+            return Task.CompletedTask;
         }
 
         #region IOrder Members

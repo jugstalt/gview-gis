@@ -1,13 +1,15 @@
 ﻿using gView.Data.Framework.Data.Abstraction;
 using gView.Framework.Carto;
+using gView.Framework.Data;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace gView.Data.Framework.Data
 {
-    public class DatasetCachingContext : IDisposable
+    public class DatasetCachingContext : IDatasetCachingContext
     {
         private ConcurrentBag<IDatasetCache> _caches; 
 
@@ -28,6 +30,11 @@ namespace gView.Data.Framework.Data
             {
                 _caches.Add(datasetCache);
             }
+        }
+
+        public T GetCache<T>()
+        {
+            return (T)_caches.Where(c => c.GetType().Equals(typeof(T))).FirstOrDefault();
         }
 
         #region IDisposable

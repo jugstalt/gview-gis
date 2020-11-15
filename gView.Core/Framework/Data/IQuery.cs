@@ -37,7 +37,9 @@ namespace gView.Framework.Data
         bool IgnoreUndefinedFields { get; set; }
 
         double MapScale { get; set; }
-	}
+
+        IDatasetCachingContext DatasetCachingContext { get; set; }
+    }
 
     public interface IDistinctFilter : IQueryFilter
     {

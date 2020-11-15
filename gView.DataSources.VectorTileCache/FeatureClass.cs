@@ -93,7 +93,7 @@ namespace gView.DataSources.VectorTileCache
 
         public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
-            throw new NotImplementedException();
+            return Task.FromResult<IFeatureCursor>(new FeatureCursor(this, filter));
         }
 
         public Task<ICursor> Search(IQueryFilter filter)

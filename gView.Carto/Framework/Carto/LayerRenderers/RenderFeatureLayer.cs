@@ -1,4 +1,5 @@
-﻿using gView.Framework.Data;
+﻿using gView.Data.Framework.Data;
+using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.system;
@@ -10,6 +11,7 @@ namespace gView.Framework.Carto.LayerRenderers
     public sealed class RenderFeatureLayer
     {
         private Map _map;
+        private IDatasetCachingContext _datasetCachingContext;
         private IFeatureLayer _layer;
         private ICancelTracker _cancelTracker;
         private static object lockThis = new object();
@@ -17,9 +19,10 @@ namespace gView.Framework.Carto.LayerRenderers
         private FeatureCounter _counter;
         private bool _isServiceMap = false;
 
-        public RenderFeatureLayer(Map map, IFeatureLayer layer, ICancelTracker cancelTracker, FeatureCounter counter)
+        public RenderFeatureLayer(Map map, IDatasetCachingContext datasetCachingContext , IFeatureLayer layer, ICancelTracker cancelTracker, FeatureCounter counter)
         {
             _map = map;
+            _datasetCachingContext = datasetCachingContext;
             _isServiceMap = map is IServiceMap;
             _layer = layer;
             _cancelTracker = ((cancelTracker == null) ? new CancelTracker() : cancelTracker);
@@ -140,6 +143,7 @@ namespace gView.Framework.Carto.LayerRenderers
                 }
 
                 gView.Framework.Data.SpatialFilter filter = new gView.Framework.Data.SpatialFilter();
+                filter.DatasetCachingContext = _datasetCachingContext;
                 filter.Geometry = filterGeom;
                 filter.AddField(fClass.ShapeFieldName);
                 //filter.FuzzyQuery = true;

@@ -8,10 +8,10 @@ namespace gView.DataSources.VectorTileCache
 {
     class WebMercatorGrid : Grid
     {
-        const double WmDpi = 5.4D / 0.28D;  // wmts 0.28mm -> 1 Pixel in WebMercator
+        const double WmDpi = 25.4D / 0.28D;  // wmts 0.28mm -> 1 Pixel in WebMercator
 
         public WebMercatorGrid()
-            : base(new Point(), 256, 256, WmDpi, GridOrientation.UpperLeft) 
+            : base(new Point(-20037508.3427892, 20037508.3427892), 256, 256, WmDpi, GridOrientation.UpperLeft) 
         {
             double scale = 559082264.02871776;
 
@@ -23,6 +23,7 @@ namespace gView.DataSources.VectorTileCache
             }
 
             this.Extent = new Envelope(-20037508.3427892, -20037508.3427892, 20037508.3427892, 20037508.3427892);
+            
         }
 
         public IEnvelope Extent { get; }

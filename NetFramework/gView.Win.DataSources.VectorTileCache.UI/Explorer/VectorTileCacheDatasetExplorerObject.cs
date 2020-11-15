@@ -22,9 +22,9 @@ namespace gView.Win.DataSources.VectorTileCache.UI.Explorer
         private Dataset _dataset = null;
 
         public VectorTileCacheDatasetExplorerObject()
-            : base(null, null, 0) { }
+            : base(null, typeof(Dataset), 0) { }
         public VectorTileCacheDatasetExplorerObject(IExplorerObject parent, string name, string connectionString)
-            : base(parent, null, 0)
+            : base(parent, typeof(Dataset), 0)
         {
             _name = name;
             _connectionString = connectionString;
@@ -107,7 +107,7 @@ namespace gView.Win.DataSources.VectorTileCache.UI.Explorer
                     return _dataset;
             }
 
-            return null;
+            return _dataset;
         }
 
         #endregion

@@ -1,4 +1,5 @@
 ﻿using GeoJSON.Net.Feature;
+using gView.Data.Framework.Data.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using Mapbox.Vector.Tile;
@@ -16,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.VectorTileCache
 {
-    public class FeatureCache : IDisposable
+    public class FeatureCache : IDatasetCache
     {
         private readonly Dataset _dataset;
         private readonly WebMercatorGrid _grid;
@@ -129,6 +130,14 @@ namespace gView.DataSources.VectorTileCache
             return JsonConvert.SerializeObject(
                 new { type = "FeatureCollection", features = _features[layername] }
                 );
+        }
+
+        public IEnumerable<Feature> this[string layername]
+        {
+            get
+            {
+                return _features.ContainsKey(layername) ? _features[layername].ToArray() : new Feature[0];
+            }
         }
 
         #region IDisposable

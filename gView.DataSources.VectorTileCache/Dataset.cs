@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace gView.DataSources.VectorTileCache
 {
     [gView.Framework.system.RegisterPlugIn("1B8F1096-8D3F-4D2B-9222-15F26BBEC550")]
-    public class Dataset : DatasetMetadata, IDataset, IFeatureCacheDataset
+    public class Dataset : DatasetMetadata, IDataset, IFeatureCacheDataset, IFeatureDataset
     {
         private string _connectionString;
         private string _dsName;
@@ -90,10 +90,10 @@ namespace gView.DataSources.VectorTileCache
 
         async public Task<bool> Open()
         {
-            await RefreshClasses();
-
             SpatialReference = gView.Framework.Geometry.SpatialReference.FromID("epsg:4326");
             WebMercatorSpatialReference = gView.Framework.Geometry.SpatialReference.FromID("epsg:3857");
+
+            await RefreshClasses();
 
             return true;
         }
@@ -159,9 +159,38 @@ namespace gView.DataSources.VectorTileCache
             {
                 FeatureCache cache = new FeatureCache(this);
                 await cache.LoadAsync(map.Display);
+                cachingContext.AddCache(cache);
             }
 
             return true;
+        }
+
+        #endregion
+
+        #region IFeatureDataset
+
+        public Task<IEnvelope> Envelope()
+        {
+            if(_capabilities?.Bounds != null && _capabilities.Bounds.Length==4)
+            {
+                return Task.FromResult<IEnvelope>(new Envelope(
+                    _capabilities.Bounds[0],
+                    _capabilities.Bounds[1],
+                    _capabilities.Bounds[2],
+                    _capabilities.Bounds[3]));
+            }
+
+            return Task.FromResult<IEnvelope>(null);
+        }
+
+        public Task<ISpatialReference> GetSpatialReference()
+        {
+            return Task.FromResult(this.SpatialReference);
+        }
+
+        public void SetSpatialReference(ISpatialReference sRef)
+        {
+            
         }
 
         #endregion
