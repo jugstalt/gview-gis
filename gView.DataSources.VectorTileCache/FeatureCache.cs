@@ -30,9 +30,11 @@ namespace gView.DataSources.VectorTileCache
             _grid = new WebMercatorGrid();
         }
 
+        internal Dataset Dataset => _dataset;
+
         async public Task LoadAsync(IDisplay display)
         {
-            double displayResolution = display.mapScale / (display.dpi / 0.0254);
+            double displayResolution = display.mapScale / (/*display.dpi*/96.0 / 0.0254);
 
             int level = _grid.GetBestLevel(displayResolution, 90D);
 
@@ -94,26 +96,25 @@ namespace gView.DataSources.VectorTileCache
         {
             try
             {
-                using (var responseMesssage = await Dataset._httpClient.GetAsync(tileUrl))
+                var bytes = await DownloadTile(level, col, row, tileUrl);
+
+                var layerInfos = VectorTileParser.Parse(new MemoryStream(bytes));
+
+                foreach (var layerInfo in layerInfos)
                 {
-                    var stream = await responseMesssage.Content.ReadAsStreamAsync();
-
-                    var layerInfos = VectorTileParser.Parse(stream);
-
-                    foreach (var layerInfo in layerInfos)
+                    var fc = layerInfo.ToGeoJSON(col, row, level);
+                    if (fc.Features != null &&
+                        fc.Features.Count > 0 &&
+                        _features.ContainsKey(layerInfo.Name))
                     {
-                        var fc = layerInfo.ToGeoJSON(col, row, level);
-                        if (fc.Features != null && 
-                            fc.Features.Count > 0 &&
-                            _features.ContainsKey(layerInfo.Name))
+                        foreach (var feature in fc.Features)
                         {
-                            foreach (var feature in fc.Features)
-                            {
-                                _features[layerInfo.Name].Add(feature);
-                            }
+                            _features[layerInfo.Name].Add(feature);
                         }
                     }
                 }
+
+                StoreToLocalcache(level, col, row, bytes);
             }
             catch (Exception ex)
             {
@@ -145,6 +146,48 @@ namespace gView.DataSources.VectorTileCache
         public void Dispose()
         {
             _features.Clear();
+        }
+
+        #endregion
+
+        #region Localcaching
+
+        private const string LocalCachePath = @"C:\temp\vtc";
+
+        private string LocalStorageTilePath(int level, int col, int row) => $"{ LocalCachePath }/{ level }/{ col }/{ row }.mvt";
+
+        private void StoreToLocalcache(int level, int col, int row, byte[] data)
+        {
+            //FileInfo fi = new FileInfo(LocalStorageTilePath(level, col, row));
+            //if (fi.Exists)
+            //    return;
+
+            //if (!fi.Directory.Exists)
+            //    fi.Directory.Create();
+
+            //File.WriteAllBytes(fi.FullName, data);
+        }
+
+        async private Task<byte[]> DownloadTile(int level, int col, int row, string tileUrl)
+        {
+            //FileInfo fi = new FileInfo(LocalStorageTilePath(level, col, row));
+            //if (fi.Exists)
+            //{
+            //    using (var stream = new FileStream(fi.FullName, FileMode.Open))
+            //    {
+            //        var buffer = new byte[stream.Length];
+            //        await stream.ReadAsync(buffer, 0, buffer.Length);
+            //        return buffer;
+            //    }
+            //}
+            //else
+            {
+                using (var responseMesssage = await Dataset._httpClient.GetAsync(tileUrl))
+                {
+                    var bytes = await responseMesssage.Content.ReadAsByteArrayAsync();
+                    return bytes;
+                }
+            }
         }
 
         #endregion

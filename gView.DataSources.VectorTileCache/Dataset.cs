@@ -155,6 +155,12 @@ namespace gView.DataSources.VectorTileCache
         {
             var map = cachingContext?.Map;
 
+            var featureCache = cachingContext?.GetCache<FeatureCache>();
+            if (featureCache?.Dataset == this)
+            {
+                return true;
+            }
+
             if (map != null)
             {
                 FeatureCache cache = new FeatureCache(this);

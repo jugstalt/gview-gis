@@ -14,6 +14,7 @@ using System.Xml;
 using gView.Framework.IO;
 using gView.Framework.Carto.LayerRenderers;
 using gView.Data.Framework.Data;
+using gView.Data.Framework.Data.Abstraction;
 
 namespace gView.Server.AppCode
 {
@@ -373,8 +374,6 @@ namespace gView.Server.AppCode
                     }
                 }
 
-                await StartDatasetCaching(datasetCachingContext);
-
                 if (phase == DrawPhase.All || phase == DrawPhase.Geography)
                 {
                     this.GeometricTransformer = geoTransformer;
@@ -573,6 +572,11 @@ namespace gView.Server.AppCode
 
                         if (layer is IFeatureLayer)
                         {
+                            if (layer.Class?.Dataset is IFeatureCacheDataset)
+                            {
+                                await ((IFeatureCacheDataset)layer.Class.Dataset).InitFeatureCache(datasetCachingContext);
+                            }
+
                             IFeatureLayer fLayer = (IFeatureLayer)layer;
                             if (fLayer.FeatureRenderer == null &&
                                  (

@@ -937,9 +937,8 @@ namespace gView.Framework.Carto
                         cancelTracker = new CancelTracker();
                     }
 
-                    await StartDatasetCaching(datasetCachingContext);
-
                     IGeometricTransformer geoTransformer = GeometricTransformerFactory.Create();
+                    
                     //geoTransformer.ToSpatialReference = this.SpatialReference;
                     if (!printerMap)
                     {
@@ -1082,6 +1081,12 @@ namespace gView.Framework.Carto
                             FeatureCounter fCounter = new FeatureCounter();
                             if (layer is IFeatureLayer)
                             {
+
+                                if(layer.Class?.Dataset is IFeatureCacheDataset)
+                                {
+                                    await ((IFeatureCacheDataset)layer.Class.Dataset).InitFeatureCache(datasetCachingContext);
+                                }
+
                                 IFeatureLayer fLayer = (IFeatureLayer)layer;
                                 if (fLayer.FeatureRenderer == null &&
                                     (
@@ -2489,25 +2494,6 @@ namespace gView.Framework.Carto
             var maxLayerId=this.MapElements.Select(e => e.ID).Max();
 
             _layerIDSequece.SetToIfLower(maxLayerId + 1);
-        }
-
-        #endregion
-
-        #region DatasetCaching
-
-        async protected Task<bool> StartDatasetCaching(DatasetCachingContext cachingContext)
-        {
-            var result = true;
-
-            if (this.Datasets != null)
-            {
-                foreach (var dataset in this.Datasets.Where(d=>d is IFeatureCacheDataset))
-                {
-                    result &= await ((IFeatureCacheDataset)dataset).InitFeatureCache(cachingContext);
-                }
-            }
-
-            return result;
         }
 
         #endregion
