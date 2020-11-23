@@ -1,5 +1,6 @@
 ﻿using GeoJSON.Net.Feature;
 using gView.Data.Framework.Data.Abstraction;
+using gView.DataSources.VectorTileCache.Extensions;
 using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using Mapbox.Vector.Tile;
@@ -8,6 +9,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -137,7 +139,9 @@ namespace gView.DataSources.VectorTileCache
         {
             get
             {
-                return _features.ContainsKey(layername) ? _features[layername].ToArray() : new Feature[0];
+                var features = _features.ContainsKey(layername) ? _features[layername].ToArray() : new Feature[0];
+
+                return features;//.DistinctBy(f => f.Id);
             }
         }
 
