@@ -118,6 +118,14 @@
       <Project>{ed4b335f-4967-4245-bcea-45ce48b4648b}</Project>
       <Name>gView.DataSources.Shape</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.TileCache\gView.DataSources.TileCache.csproj">
+      <Project>{b31ab72e-72f6-489e-b707-9d481dea3338}</Project>
+      <Name>gView.DataSources.TileCache</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj">
+      <Project>{46ccad05-281c-437f-a0a3-89d0b9b6662e}</Project>
+      <Name>gView.DataSources.VectorTileCache</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\gView.Data\gView.Data.csproj">
       <Project>{9b556868-8431-4d6c-b002-3fef15df0498}</Project>
       <Name>gView.Data</Name>

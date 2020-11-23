@@ -58,6 +58,8 @@ namespace gView.Framework.system
         public static event ParseAssemblyDelegate OnParseAssembly = null;
         public static event ParseAssemblyDelegate OnAddPluginType = null;
 
+        public static bool InitSilent = false;
+
         public static void Init()
         {
             if (_pluginTypes != null)
@@ -104,7 +106,10 @@ namespace gView.Framework.system
 
                             OnAddPluginType?.Invoke(pluginType.ToString());
 
-                            Console.WriteLine($"added {pluginType.ToString()}");
+                            if(InitSilent==false)
+                            {
+                                Console.WriteLine($"added {pluginType.ToString()}");
+                            }
                         }
                     }
                     catch (BadImageFormatException)

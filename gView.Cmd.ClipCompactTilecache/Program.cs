@@ -21,7 +21,7 @@ namespace gView.Cmd.ClipCompactTilecache
             int jpegQuality = -1, maxlevel = -1;
             bool listFilenames = false;
 
-            for (int i = 0; i < args.Length - 1; i++)
+            for (int i = 0; i < args.Length; i++)
             {
                 if (args[i] == "-gml")
                 {
@@ -45,6 +45,7 @@ namespace gView.Cmd.ClipCompactTilecache
                 }
                 else if (args[i] == "-listfilenames")
                 {
+                    PlugInManager.InitSilent = true;
                     listFilenames = true;
                 }
             }
@@ -60,6 +61,12 @@ namespace gView.Cmd.ClipCompactTilecache
 
             PlugInManager compMan = new PlugInManager();
             IFeatureDataset gmlDataset = compMan.CreateInstance(new Guid("dbabe7f1-fe46-4731-ab2b-8a324c60554e")) as IFeatureDataset;
+
+            if(gmlDataset == null)
+            {
+                Console.WriteLine("GML Dataset-plugin is not supported");
+                return 1;
+            }
 
             await gmlDataset.SetConnectionString(gmlSource);
             await gmlDataset.Open();
@@ -77,18 +84,24 @@ namespace gView.Cmd.ClipCompactTilecache
                         while ((feature = await cursor.NextFeature()) != null)
                         {
                             if (feature.Shape is IPolygon)
+                            {
                                 sourcePolygons.Add((IPolygon)feature.Shape);
+                            }
                         }
                     }
                 }
             }
 
             if (!listFilenames)
+            {
                 Console.WriteLine(sourcePolygons.Count + " polygons found for clipping...");
+            }
 
             FileInfo configFile = new FileInfo(cacheSource + @"\conf.json");
             if (!configFile.Exists)
+            {
                 throw new ArgumentException("File " + configFile.FullName + " not exists");
+            }
 
             #region Image Encoding Parameters
 
@@ -107,14 +120,15 @@ namespace gView.Cmd.ClipCompactTilecache
 
             #endregion
 
-
             CompactTileConfig cacheConfig = JsonConvert.DeserializeObject<CompactTileConfig>(File.ReadAllText(configFile.FullName));
             double dpm = cacheConfig.Dpi / 0.0254;
 
             foreach (var level in cacheConfig.Levels)
             {
                 if (!listFilenames)
+                {
                     Console.WriteLine("Level: " + level.Level + " Scale=" + level.Scale);
+                }
 
                 double resolution = (level.Scale / dpm);
                 double tileWorldWidth = cacheConfig.TileSize[0] * resolution;
@@ -122,13 +136,17 @@ namespace gView.Cmd.ClipCompactTilecache
 
                 var scaleDirectory = new DirectoryInfo(cacheSource + @"\" + ((int)level.Scale).ToString());
                 if (!scaleDirectory.Exists)
+                {
                     continue;
+                }
 
                 foreach (var bundleFile in scaleDirectory.GetFiles("*.tilebundle"))
                 {
                     var bundle = new Bundle(bundleFile.FullName);
                     if (!bundle.Index.Exists)
+                    {
                         continue;
+                    }
 
                     int startRow = bundle.StartRow, startCol = bundle.StartCol;
                     double bundleWorldWidth = tileWorldWidth * 128D, bundleWorldHeight = tileWorldHeight * 128D;
@@ -138,7 +156,9 @@ namespace gView.Cmd.ClipCompactTilecache
                     IEnvelope bundleEnvelope = new Envelope(bundleLowerLeft, new Point(bundleLowerLeft.X + bundleWorldWidth, bundleLowerLeft.Y + bundleWorldHeight));
 
                     if (!Intersect(bundleEnvelope, sourcePolygons))
+                    {
                         continue;
+                    }
 
                     if (listFilenames)
                     {
@@ -148,11 +168,16 @@ namespace gView.Cmd.ClipCompactTilecache
 
                     Console.WriteLine("Clip bundle: " + bundleFile.FullName);
 
-                    var clippedBundleFile = new FileInfo(cacheTarget + @"\" + (int)level.Scale + @"\" + bundleFile.Name);
+                    var clippedBundleFile = new FileInfo(cacheTarget + "/" + (int)level.Scale + "/" + bundleFile.Name);
                     if (!clippedBundleFile.Directory.Exists)
+                    {
                         clippedBundleFile.Directory.Create();
+                    }
+
                     if (clippedBundleFile.Exists)
+                    {
                         clippedBundleFile.Delete();
+                    }
 
                     var indexBuilder = new CompactTilesIndexBuilder();
                     int clippedTilePos = 0;
@@ -171,7 +196,9 @@ namespace gView.Cmd.ClipCompactTilecache
                                 IEnvelope tileEnvelope = new Envelope(tileLowerLeft, new Point(tileLowerLeft.X + tileWorldWidth, tileLowerLeft.Y + tileWorldHeight));
 
                                 if (!Intersect(tileEnvelope, sourcePolygons))
+                                {
                                     continue;
+                                }
 
                                 Console.WriteLine("Append tile " + level.Level + "/" + (startRow + r) + "/" + (startCol + c));
 
@@ -207,11 +234,15 @@ namespace gView.Cmd.ClipCompactTilecache
                     }
 
                     if (clippedTilePos > 0)
+                    {
                         indexBuilder.Save(clippedBundleFile.Directory.FullName + @"\" + new FileInfo(bundle.Index.Filename).Name);
+                    }
                 }
 
                 if (maxlevel >= 0 && level.Level >= maxlevel)
+                {
                     break;
+                }
             }
 
             return 0;
@@ -224,13 +255,19 @@ namespace gView.Cmd.ClipCompactTilecache
                 var polygonEnvelope = polygon.Envelope;
 
                 if (!envelope.Intersects(polygonEnvelope) && !envelope.Contains(polygonEnvelope) && !polygonEnvelope.Contains(envelope))
+                {
                     continue;
+                }
 
                 if (envelope.Contains(polygon.Envelope))
+                {
                     return true;
+                }
 
                 if (Algorithm.IntersectBox(polygon, envelope))
+                {
                     return true;
+                }
             }
             return false;
         }
