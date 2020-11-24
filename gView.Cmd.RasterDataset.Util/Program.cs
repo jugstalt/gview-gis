@@ -26,6 +26,8 @@ namespace gView.Cmd.RasterDataset.Util
 
         async static Task<int> Main(string[] args)
         {
+            PlugInManager.InitSilent = true;
+
             #region Parse Parameters
 
             for (int i = 0; i < args.Length; i++)
@@ -87,8 +89,10 @@ namespace gView.Cmd.RasterDataset.Util
                     case "-f":
                         Filters = args[++i];
                         break;
+                    case "-debug":
+                        PlugInManager.InitSilent = false;
+                        break;
                 }
-
             }
             #endregion
 
@@ -290,10 +294,21 @@ namespace gView.Cmd.RasterDataset.Util
             return await import.RemoveUnexisting();
         }
 
+        static int ProgressCounter = 0;
         async static Task<bool> ImportFiles(IFeatureDataset ds, string[] filenames, Dictionary<string, Guid> providers)
         {
             FDBImageDataset import = new FDBImageDataset(ds.Database as IImageDB, ds.DatasetName);
             import.handleNonGeorefAsError = !(rootPath != String.Empty);
+
+            import.ReportProgress += (sender, progress) =>
+            {
+                ProgressCounter++;
+
+                if(ProgressCounter%100 == 0)
+                {
+                    Console.WriteLine($"... { ProgressCounter }");
+                }
+            };
 
             foreach (string filename in filenames)
             {
