@@ -19,5 +19,11 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         {
 
         }
+
+        [JsonProperty("gv_is_editable")]
+        public bool IsEditable { get; set; }
+
+        [JsonProperty("gv_edit_operations", NullValueHandling = NullValueHandling.Ignore)]
+        public string[] EditOperations { get; set; }
     }
 }

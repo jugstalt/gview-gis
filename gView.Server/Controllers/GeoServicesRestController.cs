@@ -975,6 +975,32 @@ namespace gView.Server.Controllers
                 result.Description = map.GetLayerDescription(layerId);
                 result.CopyrightText = map.GetLayerCopyrightText(layerId);
 
+                if(result is JsonFeatureServerLayer)
+                {
+                    var editorModule = map.GetModule<gView.Plugins.Modules.EditorModule>();
+                    if(editorModule!=null)
+                    {
+                        var editLayer = editorModule.GetEditLayer(result.Id);
+                        if (editLayer != null)
+                        {
+                            List<string> editOperations = new List<string>();
+                            foreach (Framework.Editor.Core.EditStatements statement in Enum.GetValues(typeof(Framework.Editor.Core.EditStatements)))
+                            {
+                                if (statement != Framework.Editor.Core.EditStatements.NONE && editLayer.Statements.HasFlag(statement))
+                                {
+                                    editOperations.Add(statement.ToString());
+                                }
+                            }
+
+                            if(editOperations.Count>0)
+                            {
+                                ((JsonFeatureServerLayer)result).IsEditable = true;
+                                ((JsonFeatureServerLayer)result).EditOperations = editOperations.ToArray();
+                            } 
+                        }
+                    }
+                }
+
                 return result;
             }
         }
