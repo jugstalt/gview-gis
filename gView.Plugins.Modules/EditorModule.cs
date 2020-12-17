@@ -29,11 +29,16 @@ namespace gView.Plugins.Modules
                 .FirstOrDefault();
         }
 
+        public IMap Map { get; private set; }
+
         #region IMapApplicationModule
 
         public void OnCreate(object hook)
         {
-            
+            if(hook is IMap)
+            {
+                Map = (IMap)hook;
+            }
         }
 
         #endregion
@@ -90,10 +95,12 @@ namespace gView.Plugins.Modules
             public void Save(IPersistStream stream)
             {
                 if (stream == null ||
-                    _module == null)
+                    _module?.Map == null)
                     return;
 
                 stream.Save("index", 0);
+                stream.Save("name", _module.Map.Name);
+
                 foreach (IEditLayer editLayer in _module.EditLayers)
                 {
                     if (editLayer == null) continue;

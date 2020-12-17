@@ -265,6 +265,7 @@ namespace gView.Server.AppCode
 
                 if (module.Module != null)
                 {
+                    module.Module.OnCreate(_map);
                     _modules.Add(module.Module);
                 }
             }
