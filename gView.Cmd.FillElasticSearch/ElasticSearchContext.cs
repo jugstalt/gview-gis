@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gView.Cmd.FillElasticSearch
 {
@@ -12,12 +10,24 @@ namespace gView.Cmd.FillElasticSearch
         private ElasticClient _client;
         private string _defalutIndex = String.Empty;
 
-        public ElasticSearchContext(string url = "http://localhost:9200", string defaultIndex = "")
+        public ElasticSearchContext(string url = "http://localhost:9200", string defaultIndex = "", 
+                                    string proxyUri = "", string proxyUsername = "", string proxyPassword = "",
+                                    string basicAuthUser = "", string basicAuthPassword = "")
         {
             var node = new Uri(url);
 
             var settings = new ConnectionSettings(node);
             settings.DefaultIndex(_defalutIndex = defaultIndex);
+
+            if (!String.IsNullOrEmpty(proxyUri))
+            {
+                settings.Proxy(new Uri(proxyUri), proxyUsername, proxyPassword);
+            }
+            if (!String.IsNullOrEmpty(basicAuthUser) && !String.IsNullOrEmpty(basicAuthPassword))
+            {
+                //Console.WriteLine($"Using basic auth: { basicAuthUser } { basicAuthPassword }");
+                settings.BasicAuthentication(basicAuthUser, basicAuthPassword);
+            }
 
             _client = new ElasticClient(settings);
         }
@@ -30,6 +40,8 @@ namespace gView.Cmd.FillElasticSearch
 
         #endregion
 
+        public string LastErrorMessage { get; private set; }
+
         #region Create/Delete Index
 
         public bool CreateIndex<T>(string indexName = "")
@@ -37,12 +49,19 @@ namespace gView.Cmd.FillElasticSearch
         {
             indexName = CurrentIndexName(indexName);
             if (String.IsNullOrWhiteSpace(indexName))
+            {
                 throw new ArgumentException("No Index name");
+            }
 
             //var createIndexResult = _client.CreateIndex(indexName);
 
             var createIndexResult = _client.Indices.Create(indexName,
                 index => index.Map(x => x.AutoMap()));
+
+            if (createIndexResult.OriginalException != null)
+            {
+                LastErrorMessage = createIndexResult.OriginalException.Message;
+            }
 
             return createIndexResult.IsValid;
         }
@@ -52,11 +71,18 @@ namespace gView.Cmd.FillElasticSearch
         {
             indexName = CurrentIndexName(indexName);
             if (String.IsNullOrWhiteSpace(indexName))
+            {
                 throw new ArgumentException("No Index name");
+            }
 
             var mapResult = _client.Map<T>(c => c
                 .AutoMap()
                 .Index(indexName));
+
+            if (mapResult.OriginalException != null)
+            {
+                LastErrorMessage = mapResult.OriginalException.Message;
+            }
 
             return mapResult.IsValid;
         }
@@ -65,9 +91,17 @@ namespace gView.Cmd.FillElasticSearch
         {
             indexName = CurrentIndexName(indexName);
             if (String.IsNullOrWhiteSpace(indexName))
+            {
                 throw new ArgumentException("No Index name");
+            }
 
             var result = _client.Indices.Delete(indexName);
+
+            if (result.OriginalException != null)
+            {
+                LastErrorMessage = result.OriginalException.Message;
+            }
+
             return result.IsValid;
         }
 
@@ -80,9 +114,16 @@ namespace gView.Cmd.FillElasticSearch
         {
             indexName = CurrentIndexName(indexName);
             if (String.IsNullOrWhiteSpace(indexName))
+            {
                 throw new ArgumentException("No Index name");
+            }
 
             var response = _client.Index<T>(document, idx => idx.Index(indexName));
+
+            if (response.OriginalException != null)
+            {
+                LastErrorMessage = response.OriginalException.Message;
+            }
 
             return response.IsValid;
         }
@@ -92,9 +133,16 @@ namespace gView.Cmd.FillElasticSearch
         {
             indexName = CurrentIndexName(indexName);
             if (String.IsNullOrWhiteSpace(indexName))
+            {
                 throw new ArgumentException("No Index name");
+            }
 
             var response = _client.IndexMany<T>(documents, indexName);
+
+            if (response.OriginalException != null)
+            {
+                LastErrorMessage = response.OriginalException.Message;
+            }
 
             return response.IsValid;
         }
@@ -104,10 +152,17 @@ namespace gView.Cmd.FillElasticSearch
         {
             indexName = CurrentIndexName(indexName);
             if (String.IsNullOrWhiteSpace(indexName))
+            {
                 throw new ArgumentException("No Index name");
+            }
 
             var response = _client.Delete<T>(id, idx => idx.Index(indexName));
-            
+
+            if (response.OriginalException != null)
+            {
+                LastErrorMessage = response.OriginalException.Message;
+            }
+
             // ToDo: Check Result
             return response.IsValid;
         }
@@ -117,9 +172,16 @@ namespace gView.Cmd.FillElasticSearch
         {
             indexName = CurrentIndexName(indexName);
             if (String.IsNullOrWhiteSpace(indexName))
+            {
                 throw new ArgumentException("No Index name");
+            }
 
             var response = _client.DeleteMany<T>(objects, indexName);
+
+            if (response.OriginalException != null)
+            {
+                LastErrorMessage = response.OriginalException.Message;
+            }
 
             return response.Errors == false;
         }
@@ -143,9 +205,14 @@ namespace gView.Cmd.FillElasticSearch
 
                 pos += result.Documents.Count();
                 if (count > 0)
+                {
                     ret.AddRange(result.Documents);
+                }
+
                 if (count < size)
+                {
                     break;
+                }
             }
             return ret;
         }
@@ -177,9 +244,14 @@ namespace gView.Cmd.FillElasticSearch
 
                 pos += result.Documents.Count();
                 if (count > 0)
+                {
                     ret.AddRange(result.Documents);
+                }
+
                 if (count < size || ret.Count() >= max)
+                {
                     break;
+                }
             }
             return ret;
         }
@@ -360,15 +432,21 @@ namespace gView.Cmd.FillElasticSearch
                 foreach (var filter in filters)
                 {
                     if (filter.Value == null)
+                    {
                         continue;
+                    }
 
                     //var qsq = new TermQuery { Field = new Field(filter.Field), Value = filter.Value };
                     //MatchQuery qsq=new MatchQuery { Field = filter.Field,  Query = new  };
                     QueryStringQuery qsq = new QueryStringQuery { DefaultField = filter.Field, Query = filter.Value.ToString() };  // Fuzzy
                     if (request.Query == null)
+                    {
                         request.Query = qsq;
+                    }
                     else
+                    {
                         request.Query &= qsq;
+                    }
                 }
             }
         }
@@ -376,7 +454,9 @@ namespace gView.Cmd.FillElasticSearch
         private string CurrentIndexName(string indexName)
         {
             if (String.IsNullOrWhiteSpace(indexName))
+            {
                 indexName = _defalutIndex;
+            }
 
             return indexName;
         }

@@ -18,6 +18,10 @@ namespace gView.Cmd.FillElasticSearch
         async static Task<int> Main(string[] args)
         {
             string cmd = "fill", jsonFile = (args.Length == 1 && args[0] != "fill" ? args[0] : String.Empty), indexUrl = String.Empty, indexName = String.Empty, category = String.Empty;
+
+            string proxyUrl = String.Empty, proxyUser = String.Empty, proxyPassword = String.Empty;
+            string basicAuthUser = String.Empty, basicAuthPassword = String.Empty;
+
             bool replace = false;
 
             for (int i = 0; i < args.Length; i++)
@@ -51,6 +55,37 @@ namespace gView.Cmd.FillElasticSearch
                 {
                     replace = true;
                 }
+
+                #region Proxy
+
+                if (args[i] == "-proxy")
+                {
+                    proxyUrl = args[i + 1];
+                }
+                if (args[i] == "-proxy-user")
+                {
+                    proxyUser = args[i + 1];
+                }
+                if (args[i] == "-proxy-pwd")
+                {
+                    proxyPassword = args[i + 1];
+                }
+
+                #endregion
+
+                #region Basic Authentication
+
+                if(args[i] == "-basic-auth-user")
+                {
+                    basicAuthUser = args[i + 1];
+                }
+
+                if (args[i] == "-basic-auth-pwd")
+                {
+                    basicAuthPassword = args[i + 1];
+                }
+
+                #endregion
             }
 
             if (args.Length == 0)
@@ -90,7 +125,10 @@ namespace gView.Cmd.FillElasticSearch
 
                     var importConfig = JsonConvert.DeserializeObject<ImportConfig>(File.ReadAllText(jsonFile));
 
-                    var searchContext = new ElasticSearchContext(importConfig.Connection.Url, importConfig.Connection.DefaultIndex);
+                    var searchContext = new ElasticSearchContext(importConfig.Connection.Url, 
+                                                                 importConfig.Connection.DefaultIndex,
+                                                                 proxyUri: proxyUrl, proxyUsername: proxyUser, proxyPassword: proxyPassword,
+                                                                 basicAuthUser: basicAuthUser, basicAuthPassword: basicAuthPassword);
 
                     if (importConfig.Connection.DeleteIndex)
                     {
@@ -100,20 +138,20 @@ namespace gView.Cmd.FillElasticSearch
 
                     if (!searchContext.CreateIndex<Item>())
                     {
-                        throw new Exception($"Can't create elasticsearch index { importConfig.Connection.DefaultIndex }");
+                        throw new Exception($"Can't create elasticsearch index { importConfig.Connection.DefaultIndex }: { searchContext.LastErrorMessage }");
                     }
                     if (!searchContext.Map<Item>())
                     {
-                        throw new Exception($"Can't map item in elasticsearch index { importConfig.Connection.DefaultIndex }");
+                        throw new Exception($"Can't map item in elasticsearch index { importConfig.Connection.DefaultIndex }: { searchContext.LastErrorMessage }");
                     }
                     if (!searchContext.CreateIndex<Meta>(importConfig.Connection.MetaIndex))
                     {
-                        throw new Exception($"Can't create elasticsearch index { importConfig.Connection.MetaIndex }");
+                        throw new Exception($"Can't create elasticsearch index { importConfig.Connection.MetaIndex }: { searchContext.LastErrorMessage }");
                     }
 
                     if (!searchContext.Map<Meta>(importConfig.Connection.MetaIndex))
                     {
-                        throw new Exception($"Can't map item in elasticsearch index { importConfig.Connection.MetaIndex }");
+                        throw new Exception($"Can't map item in elasticsearch index { importConfig.Connection.MetaIndex }: { searchContext.LastErrorMessage }");
                     }
 
                     ISpatialReference sRefTarget = SpatialReference.FromID("epsg:4326");
@@ -214,7 +252,7 @@ namespace gView.Cmd.FillElasticSearch
                                     {
                                         if (!searchContext.IndexMany<Item>(items.ToArray()))
                                         {
-                                            throw new Exception($"Error on indexing { items.Count } items on elasticsearch index { importConfig.Connection.DefaultIndex }");
+                                            throw new Exception($"Error on indexing { items.Count } items on elasticsearch index { importConfig.Connection.DefaultIndex }: { searchContext.LastErrorMessage }");
                                         }
                                         items.Clear();
 
@@ -226,7 +264,7 @@ namespace gView.Cmd.FillElasticSearch
                                 {
                                     if (!searchContext.IndexMany<Item>(items.ToArray()))
                                     {
-                                        throw new Exception($"Error on indexing { items.Count } items on elasticsearch index { importConfig.Connection.DefaultIndex }");
+                                        throw new Exception($"Error on indexing { items.Count } items on elasticsearch index { importConfig.Connection.DefaultIndex }: { searchContext.LastErrorMessage }");
                                     }
                                     Console.WriteLine(count + "...finish");
                                 }
@@ -240,7 +278,9 @@ namespace gView.Cmd.FillElasticSearch
                 {
                     #region Remove Category
 
-                    RemoveCategory(indexUrl, indexName, replace ? Replace(category) : category);
+                    RemoveCategory(indexUrl, indexName, replace ? Replace(category) : category,
+                                   proxyUrl, proxyUser, proxyPassword,
+                                   basicAuthUser, basicAuthPassword);
 
                     #endregion
                 }
@@ -255,9 +295,12 @@ namespace gView.Cmd.FillElasticSearch
             }
         }
 
-        static private bool RemoveCategory(string indexUrl, string indexName, string category)
+        static private bool RemoveCategory(string indexUrl, string indexName, string category, string proxyUrl, string proxyUser, string proxyPassword, string basicAuthUser, string basicAuthPassword)
         {
-            var searchContext = new ElasticSearchContext(indexUrl, indexName);
+            var searchContext = new ElasticSearchContext(indexUrl, 
+                                                         indexName,
+                                                         proxyUri: proxyUrl, proxyUsername: proxyUser, proxyPassword: proxyPassword,
+                                                         basicAuthUser: basicAuthUser, basicAuthPassword: basicAuthPassword);
 
             var metas = searchContext.Query<Meta>(new ElasticSearchContext.SearchFilter()
             {
@@ -292,7 +335,7 @@ namespace gView.Cmd.FillElasticSearch
 
                     if (searchContext.RemoveMany<Item>(items, indexName))
                     {
-                        Console.WriteLine("Successfully deleted " + items.Count() + " items");
+                        Console.WriteLine($"Successfully deleted { items.Count() } items: { searchContext.LastErrorMessage }");
                     }
 
                     System.Threading.Thread.Sleep(1000);
