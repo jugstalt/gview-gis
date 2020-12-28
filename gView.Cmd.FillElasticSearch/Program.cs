@@ -250,7 +250,7 @@ namespace gView.Cmd.FillElasticSearch
 
                                     if (items.Count >= 500)
                                     {
-                                        if (!searchContext.IndexMany<Item>(items.ToArray()))
+                                        if (!searchContext.IndexManyPro<Item>(items.ToArray()))
                                         {
                                             throw new Exception($"Error on indexing { items.Count } items on elasticsearch index { importConfig.Connection.DefaultIndex }: { searchContext.LastErrorMessage }");
                                         }
@@ -262,7 +262,7 @@ namespace gView.Cmd.FillElasticSearch
 
                                 if (items.Count > 0)
                                 {
-                                    if (!searchContext.IndexMany<Item>(items.ToArray()))
+                                    if (!searchContext.IndexManyPro<Item>(items.ToArray()))
                                     {
                                         throw new Exception($"Error on indexing { items.Count } items on elasticsearch index { importConfig.Connection.DefaultIndex }: { searchContext.LastErrorMessage }");
                                     }

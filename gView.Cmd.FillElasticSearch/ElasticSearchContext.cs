@@ -147,6 +147,29 @@ namespace gView.Cmd.FillElasticSearch
             return response.IsValid;
         }
 
+        public bool IndexManyPro<T>(T[] documents, string indexName = "", int maxTries=5)
+            where T : class
+        {
+            int tries = 0;
+
+            while(true)
+            {
+                if(IndexMany<T>(documents, indexName))
+                {
+                    return true;
+                }
+
+                tries++;
+                if (maxTries > 5)
+                {
+                    return false;
+                }
+
+                Console.Write("...retry");
+                System.Threading.Thread.Sleep(3000);
+            }
+        }
+
         public bool Remove<T>(string id, string indexName = "")
             where T : class, new()
         {
