@@ -500,6 +500,10 @@ namespace gView.Interoperability.GeoServices.Request
                         else
                         {
                             filter.SubFields = query.OutFields;
+                            if(query.ReturnGeometry && tableClass is IFeatureClass && !filter.HasField(((IFeatureClass)tableClass).ShapeFieldName))
+                            {
+                                filter.AddField(((IFeatureClass)tableClass).ShapeFieldName);
+                            }
                         }
 
                         if (!String.IsNullOrWhiteSpace(query.OutSRef))

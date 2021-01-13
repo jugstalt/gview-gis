@@ -38,7 +38,7 @@ namespace gView.Framework.Data
                         errors.Append(error.Message + Environment.NewLine);
                     }
 
-                    throw new Exception("SQL Parser Exception: " + errors.ToString());
+                    throw new Exception($"SQL Parser Exception ({ where }): { errors.ToString() }");
                 }
 
                 var tokens = parseResult.Script.Tokens

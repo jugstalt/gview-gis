@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
+using gView.Framework.Data;
 
 namespace gView.Test
 {
@@ -20,7 +21,9 @@ namespace gView.Test
 
                 //Console.ReadLine();
 
-                TestVtc().Wait();
+                //TestVtc().Wait();
+
+                ParseSQL();
             }
             catch (Exception ex)
             {
@@ -246,6 +249,15 @@ namespace gView.Test
         private class ExportResponse
         {
             public string href { get; set; }
+        }
+
+        #endregion
+
+        #region SQL Parser
+
+        static public void ParseSQL()
+        {
+            "OBJECTID in (1,2)".CheckWhereClauseForSqlInjection();
         }
 
         #endregion
