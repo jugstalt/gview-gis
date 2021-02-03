@@ -314,9 +314,9 @@ namespace gView.DataSources.MongoDb
 
         public int SuggestedInsertFeatureCountPerTransaction => throw new NotImplementedException();
 
-        async public Task AppendElement(string elementName)
+        public Task AppendElement(string elementName)
         {
-
+            return Task.CompletedTask;
         }
 
         public void Dispose()

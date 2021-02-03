@@ -177,6 +177,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.VectorTil
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.DataSources.VectorTileCache.UI", "NetFramework\gView.Win.DataSources.VectorTileCache.UI\gView.Win.DataSources.VectorTileCache.UI.csproj", "{DF28644D-7BE0-428A-BF5D-31325604EE68}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.GeoJson", "gView.DataSources.GeoJson\gView.DataSources.GeoJson.csproj", "{E56C9CC9-720D-453F-9760-A56D83A48D10}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -881,6 +883,14 @@ Global
 		{DF28644D-7BE0-428A-BF5D-31325604EE68}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DF28644D-7BE0-428A-BF5D-31325604EE68}.Release|x64.ActiveCfg = Release|Any CPU
 		{DF28644D-7BE0-428A-BF5D-31325604EE68}.Release|x64.Build.0 = Release|Any CPU
+		{E56C9CC9-720D-453F-9760-A56D83A48D10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E56C9CC9-720D-453F-9760-A56D83A48D10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E56C9CC9-720D-453F-9760-A56D83A48D10}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E56C9CC9-720D-453F-9760-A56D83A48D10}.Debug|x64.Build.0 = Debug|Any CPU
+		{E56C9CC9-720D-453F-9760-A56D83A48D10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E56C9CC9-720D-453F-9760-A56D83A48D10}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E56C9CC9-720D-453F-9760-A56D83A48D10}.Release|x64.ActiveCfg = Release|Any CPU
+		{E56C9CC9-720D-453F-9760-A56D83A48D10}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

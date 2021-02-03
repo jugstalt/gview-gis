@@ -8,7 +8,7 @@ using gView.Framework.Geometry;
 
 namespace gView.Framework.OGC.GeoJson
 {
-    public class GeoJson
+    public class GeoJsonHelper
     {
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
 

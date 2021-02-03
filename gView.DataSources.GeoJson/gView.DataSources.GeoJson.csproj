@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Data\gView.Data.csproj" />
+    <ProjectReference Include="..\gView.OGC\gView.OGC.csproj" />
+  </ItemGroup>
+
+</Project>
