@@ -65,7 +65,7 @@ namespace gView.DataSources.GeoJson
 
         public string ShapeFieldName => "geometry";
 
-        public IEnvelope Envelope => throw new NotImplementedException();
+        public IEnvelope Envelope => _dataset.Source?.Envelope ?? new Envelope();
 
         public IFields Fields { get; private set; }
 

@@ -28,7 +28,7 @@ namespace gView.DataSources.GeoJson
 
         public Task<IFeature> NextFeature()
         {
-            if (_features == null || _features.Length >= pos)
+            if (_features == null || _features.Length <= pos)
                 return Task.FromResult<IFeature>(null);
 
             var feature = _features[pos++];

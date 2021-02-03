@@ -4,9 +4,7 @@ using gView.Framework.OGC.GeoJson;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.GeoJson
@@ -14,13 +12,13 @@ namespace gView.DataSources.GeoJson
     class GeoJsonSource
     {
         private readonly string _target;
-        private readonly IEnvelope _envelope;
+        private IEnvelope _envelope = null;
         private DateTime _lastLoad = new DateTime(0);
         private List<IFeature> _features = null;
 
         public GeoJsonSource(string target)
         {
-
+            _target = target;
         }
 
         async private Task LoadAsync()
@@ -44,6 +42,18 @@ namespace gView.DataSources.GeoJson
 
                 feature.Shape = geoJsonFeature.ToGeometry();
                 IDictionary<string, object> properties = null;
+
+                if (feature.Shape != null)
+                {
+                    if (_envelope == null)
+                    {
+                        _envelope = new Envelope(feature.Shape.Envelope);
+                    }
+                    else
+                    {
+                        _envelope.Union(feature.Shape.Envelope);
+                    }
+                }
 
                 try
                 {
@@ -69,8 +79,12 @@ namespace gView.DataSources.GeoJson
         async private Task Refresh()
         {
             if ((DateTime.Now - _lastLoad).TotalMinutes >= 5)
+            {
                 await LoadAsync();
+            }
         }
+
+        public IEnvelope Envelope => _envelope ?? new Envelope();
 
         async public Task<IEnumerable<IFeature>> GetFeatures<T>()
             where T : IGeometry

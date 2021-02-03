@@ -234,6 +234,10 @@
       <Project>{595657d6-c9dc-4a48-a5d0-3cbc4a90ada1}</Project>
       <Name>gView.DataSources.Fdb</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\gView.DataSources.GeoJson\gView.DataSources.GeoJson.csproj">
+      <Project>{e56c9cc9-720d-453f-9760-a56d83a48d10}</Project>
+      <Name>gView.DataSources.GeoJson</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\gView.DataSources.MongoDb\gView.DataSources.MongoDb.csproj">
       <Project>{faeabc8e-55fd-4d3e-9759-83d0fb94c9fb}</Project>
       <Name>gView.DataSources.MongoDb</Name>
@@ -385,6 +389,10 @@
     <ProjectReference Include="..\gView.Win.Datasources.Fdb.UI\gView.Win.DataSources.Fdb.UI.csproj">
       <Project>{b3944c41-5bb6-4cbc-9173-59d5e50f74a4}</Project>
       <Name>gView.Win.DataSources.Fdb.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.DataSources.GeoJson.UI\gView.Win.DataSources.GeoJson.UI.csproj">
+      <Project>{f66575e3-6821-48cf-a9f4-f673d913b1ef}</Project>
+      <Name>gView.Win.DataSources.GeoJson.UI</Name>
     </ProjectReference>
     <ProjectReference Include="..\gView.Win.DataSources.MongoDb.UI\gView.Win.DataSources.MongoDb.UI.csproj">
       <Project>{84636d73-d607-441c-b069-b4c6e06a0b75}</Project>

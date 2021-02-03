@@ -23,6 +23,9 @@ namespace gView.Framework.OGC.GeoJson
 
         public IGeometry ToGeometry()
         {
+            if (this.Geometry?.coordinates == null)
+                return null;
+
             switch (this.Geometry.type.ToString().ToLower())
             {
                 case "point":

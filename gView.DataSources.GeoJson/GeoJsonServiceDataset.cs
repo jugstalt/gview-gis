@@ -85,7 +85,7 @@ namespace gView.DataSources.GeoJson
 
         public Task<IEnvelope> Envelope()
         {
-            throw new NotImplementedException();
+            return Task.FromResult(_source?.Envelope);
         }
 
         public Task<ISpatialReference> GetSpatialReference()
