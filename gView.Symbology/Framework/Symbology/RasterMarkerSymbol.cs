@@ -7,6 +7,7 @@ using gView.Framework.UI;
 using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Reflection;
 
 namespace gView.Framework.Symbology
@@ -84,15 +85,24 @@ namespace gView.Framework.Symbology
                     {
                         if (_image == null)
                         {
-                            _image = Image.FromFile(_filename);
+                            if (_filename.StartsWith("resource:"))
+                            {
+                                _image = Image.FromStream(new MemoryStream(display.Map.ResourceContainer[_filename.Substring(9)]));
+                            }
+                            else
+                            {
+                                _image = Image.FromFile(_filename);
+                            }
                         }
 
-                        display.GraphicsContext.DrawImage(
-                                _image,
-                                new Rectangle((int)x, (int)y, (int)_sizeX, (int)_sizeY),
-                                new Rectangle(0, 0, _image.Width, _image.Height),
-                                GraphicsUnit.Pixel);
-
+                        if (_image != null)
+                        {
+                            display.GraphicsContext.DrawImage(
+                                    _image,
+                                    new Rectangle((int)x, (int)y, (int)_sizeX, (int)_sizeY),
+                                    new Rectangle(0, 0, _image.Width, _image.Height),
+                                    GraphicsUnit.Pixel);
+                        }
                     }
                     catch
                     {

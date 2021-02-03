@@ -62,6 +62,8 @@ namespace gView.Server.AppCode
             serviceMap._layerDescriptions = original.LayerDescriptions;
             serviceMap._layerCopyrightTexts = original.LayerCopyrightTexts;
 
+            serviceMap.SetResourceContainer(original.ResourceContainer);
+
             return serviceMap;
         }
 

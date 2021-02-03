@@ -64,12 +64,20 @@ namespace gView.Framework.UI.Dialogs
             this.btnDefaultLayerSRFromSpatialReference = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
             this.tabDescription = new System.Windows.Forms.TabPage();
+            this.txtTitle = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
             this.txtCopyright = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
             this.txtDescription = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
-            this.txtTitle = new System.Windows.Forms.TextBox();
+            this.tabResources = new System.Windows.Forms.TabPage();
+            this.gridResources = new System.Windows.Forms.DataGridView();
+            this.colName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colRemove = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.panel6 = new System.Windows.Forms.Panel();
+            this.btnAddResources = new System.Windows.Forms.Button();
+            this.label12 = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -83,6 +91,9 @@ namespace gView.Framework.UI.Dialogs
             this.tabDefLayerSR.SuspendLayout();
             this.panel5.SuspendLayout();
             this.tabDescription.SuspendLayout();
+            this.tabResources.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.gridResources)).BeginInit();
+            this.panel6.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -158,6 +169,7 @@ namespace gView.Framework.UI.Dialogs
             this.tabControl1.Controls.Add(this.tabSR);
             this.tabControl1.Controls.Add(this.tabDefLayerSR);
             this.tabControl1.Controls.Add(this.tabDescription);
+            this.tabControl1.Controls.Add(this.tabResources);
             resources.ApplyResources(this.tabControl1, "tabControl1");
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -337,6 +349,16 @@ namespace gView.Framework.UI.Dialogs
             this.tabDescription.Name = "tabDescription";
             this.tabDescription.UseVisualStyleBackColor = true;
             // 
+            // txtTitle
+            // 
+            resources.ApplyResources(this.txtTitle, "txtTitle");
+            this.txtTitle.Name = "txtTitle";
+            // 
+            // label11
+            // 
+            resources.ApplyResources(this.label11, "label11");
+            this.label11.Name = "label11";
+            // 
             // txtCopyright
             // 
             this.txtCopyright.AcceptsReturn = true;
@@ -359,15 +381,64 @@ namespace gView.Framework.UI.Dialogs
             resources.ApplyResources(this.label9, "label9");
             this.label9.Name = "label9";
             // 
-            // label11
+            // tabResources
             // 
-            resources.ApplyResources(this.label11, "label11");
-            this.label11.Name = "label11";
+            this.tabResources.Controls.Add(this.gridResources);
+            this.tabResources.Controls.Add(this.panel6);
+            resources.ApplyResources(this.tabResources, "tabResources");
+            this.tabResources.Name = "tabResources";
+            this.tabResources.UseVisualStyleBackColor = true;
             // 
-            // txtTitle
+            // gridResources
             // 
-            resources.ApplyResources(this.txtTitle, "txtTitle");
-            this.txtTitle.Name = "txtTitle";
+            this.gridResources.AllowUserToAddRows = false;
+            this.gridResources.AllowUserToDeleteRows = false;
+            this.gridResources.AllowUserToOrderColumns = true;
+            resources.ApplyResources(this.gridResources, "gridResources");
+            this.gridResources.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gridResources.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.colName,
+            this.colSize,
+            this.colRemove});
+            this.gridResources.Name = "gridResources";
+            this.gridResources.RowTemplate.Height = 28;
+            this.gridResources.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridResources_CellClick);
+            // 
+            // colName
+            // 
+            resources.ApplyResources(this.colName, "colName");
+            this.colName.Name = "colName";
+            this.colName.ReadOnly = true;
+            // 
+            // colSize
+            // 
+            resources.ApplyResources(this.colSize, "colSize");
+            this.colSize.Name = "colSize";
+            this.colSize.ReadOnly = true;
+            // 
+            // colRemove
+            // 
+            resources.ApplyResources(this.colRemove, "colRemove");
+            this.colRemove.Name = "colRemove";
+            // 
+            // panel6
+            // 
+            this.panel6.Controls.Add(this.btnAddResources);
+            this.panel6.Controls.Add(this.label12);
+            resources.ApplyResources(this.panel6, "panel6");
+            this.panel6.Name = "panel6";
+            // 
+            // btnAddResources
+            // 
+            resources.ApplyResources(this.btnAddResources, "btnAddResources");
+            this.btnAddResources.Name = "btnAddResources";
+            this.btnAddResources.UseVisualStyleBackColor = true;
+            this.btnAddResources.Click += new System.EventHandler(this.btnAddResources_Click);
+            // 
+            // label12
+            // 
+            resources.ApplyResources(this.label12, "label12");
+            this.label12.Name = "label12";
             // 
             // FormMapProperties
             // 
@@ -395,6 +466,9 @@ namespace gView.Framework.UI.Dialogs
             this.panel5.PerformLayout();
             this.tabDescription.ResumeLayout(false);
             this.tabDescription.PerformLayout();
+            this.tabResources.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.gridResources)).EndInit();
+            this.panel6.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -442,5 +516,13 @@ namespace gView.Framework.UI.Dialogs
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.TextBox txtTitle;
         private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.TabPage tabResources;
+        private System.Windows.Forms.Panel panel6;
+        private System.Windows.Forms.Button btnAddResources;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.DataGridView gridResources;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colSize;
+        private System.Windows.Forms.DataGridViewButtonColumn colRemove;
     }
 }

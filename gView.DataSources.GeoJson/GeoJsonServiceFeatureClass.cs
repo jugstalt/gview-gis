@@ -97,6 +97,9 @@ namespace gView.DataSources.GeoJson
 
         async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
+            if (filter is DistinctFilter)
+                return new GeoJsonDistinctFeatureCursor(await _dataset.Source?.GetFeatures(this.GeometryType), (DistinctFilter)filter);
+
             return new GeoJsonFeatureCursor(await _dataset.Source?.GetFeatures(this.GeometryType), filter);
         }
 

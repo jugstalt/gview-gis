@@ -231,7 +231,7 @@ namespace gView.Framework.Carto
                                     x2 = ring[0].X; y2 = ring[0].Y;
 
                                     /////////////////////////////////////////////////////////
-                                    Display d = new Display(false);
+                                    Display d = new Display(display.Map, false);
                                     d.Limit = d.Envelope = geoBmp.Envelope;
                                     d.iWidth = geoBmp.Bitmap.Width;
                                     d.iHeight = geoBmp.Bitmap.Height;

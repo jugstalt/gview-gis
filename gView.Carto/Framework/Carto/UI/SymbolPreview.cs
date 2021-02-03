@@ -58,6 +58,8 @@ namespace gView.Framework.Carto.UI
             return geometry;
         }
 
+        public static IMap CurrentMap = null;
+
         public static void Draw(System.Drawing.Graphics graphics, System.Drawing.Rectangle rectangle, ISymbol symbol)
         {
             Draw(graphics, rectangle, symbol, true);
@@ -66,7 +68,7 @@ namespace gView.Framework.Carto.UI
         {
             if (symbol == null) return;
 
-            Display display = new gView.Framework.Carto.Display();
+            Display display = new gView.Framework.Carto.Display(CurrentMap);
             display.dpi = graphics.DpiX;
 
             IEnvelope env = display.Limit = new Envelope(0, rectangle.Top + rectangle.Height, rectangle.Left + rectangle.Width, 0);

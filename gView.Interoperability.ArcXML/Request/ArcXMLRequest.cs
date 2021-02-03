@@ -830,7 +830,7 @@ namespace gView.Interoperability.ArcXML
                 XmlNode dispNode = rType.SelectSingleNode("gv_display");
                 if (dispNode != null)
                 {
-                    Display display = new Display();
+                    Display display = new Display(map3 as IMap);
 
                     if (dispNode.Attributes["iwidth"] == null || dispNode.Attributes["iheight"] == null)
                     {

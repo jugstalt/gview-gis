@@ -35,8 +35,10 @@ namespace gView.Framework.Carto
         private DisplayTransformation _displayTransformation = new DisplayTransformation();
         #endregion
 
-        public Display()
+        public Display(IMap map)
         {
+            this.Map = map;
+
             m_extentChanged = true;
             m_fontsizeFactor = m_widthFactor = m_refScale = -1.0;
             //m_fixScales=new ArrayList();
@@ -45,7 +47,8 @@ namespace gView.Framework.Carto
             InitEnvironment();
         }
 
-        internal Display(bool createLabelEngine)
+        internal Display(IMap map, bool createLabelEngine)
+            : this(map)
         {
             m_extentChanged = true;
             m_fontsizeFactor = m_widthFactor = m_refScale = -1.0;
@@ -689,9 +692,14 @@ namespace gView.Framework.Carto
             }
         }
 
+        private IMap _map = null;
         virtual public IMap Map
         {
-            get { return this as IMap; }
+            get
+            {
+                return _map ?? this as IMap;
+            }
+            set { _map = value; }
         }
 
         private class DisplayScreen : IScreen

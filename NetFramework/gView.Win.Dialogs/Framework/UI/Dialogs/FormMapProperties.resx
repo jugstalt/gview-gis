@@ -1249,6 +1249,183 @@ to ensure all layers will be projected properly.
   <data name="&gt;&gt;tabDescription.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
+  <data name="gridResources.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <metadata name="colName.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="colName.HeaderText" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="colName.MinimumWidth" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="colName.Width" type="System.Int32, mscorlib">
+    <value>350</value>
+  </data>
+  <metadata name="colSize.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="colSize.HeaderText" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="colSize.MinimumWidth" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="colSize.Width" type="System.Int32, mscorlib">
+    <value>150</value>
+  </data>
+  <metadata name="colRemove.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="colRemove.HeaderText" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="colRemove.MinimumWidth" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="colRemove.Width" type="System.Int32, mscorlib">
+    <value>150</value>
+  </data>
+  <data name="gridResources.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 143</value>
+  </data>
+  <data name="gridResources.RowHeadersWidth" type="System.Int32, mscorlib">
+    <value>62</value>
+  </data>
+  <data name="gridResources.Size" type="System.Drawing.Size, System.Drawing">
+    <value>865, 693</value>
+  </data>
+  <data name="gridResources.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;gridResources.Name" xml:space="preserve">
+    <value>gridResources</value>
+  </data>
+  <data name="&gt;&gt;gridResources.Type" xml:space="preserve">
+    <value>System.Windows.Forms.DataGridView, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;gridResources.Parent" xml:space="preserve">
+    <value>tabResources</value>
+  </data>
+  <data name="&gt;&gt;gridResources.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="btnAddResources.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Right</value>
+  </data>
+  <data name="btnAddResources.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btnAddResources.Location" type="System.Drawing.Point, System.Drawing">
+    <value>519, 91</value>
+  </data>
+  <data name="btnAddResources.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="btnAddResources.Size" type="System.Drawing.Size, System.Drawing">
+    <value>350, 35</value>
+  </data>
+  <data name="btnAddResources.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="btnAddResources.Text" xml:space="preserve">
+    <value>Add Resources</value>
+  </data>
+  <data name="&gt;&gt;btnAddResources.Name" xml:space="preserve">
+    <value>btnAddResources</value>
+  </data>
+  <data name="&gt;&gt;btnAddResources.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btnAddResources.Parent" xml:space="preserve">
+    <value>panel6</value>
+  </data>
+  <data name="&gt;&gt;btnAddResources.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="label12.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label12.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 15</value>
+  </data>
+  <data name="label12.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label12.Size" type="System.Drawing.Size, System.Drawing">
+    <value>849, 62</value>
+  </data>
+  <data name="label12.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="label12.Text" xml:space="preserve">
+    <value>Resources are binary data added to to the map. This can e.g uses image-symbols for layer renderers. The resources are stored inside the map-document. Do not add large files, to avoid large map-documents!</value>
+  </data>
+  <data name="&gt;&gt;label12.Name" xml:space="preserve">
+    <value>label12</value>
+  </data>
+  <data name="&gt;&gt;label12.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label12.Parent" xml:space="preserve">
+    <value>panel6</value>
+  </data>
+  <data name="&gt;&gt;label12.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="panel6.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Top</value>
+  </data>
+  <data name="panel6.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="panel6.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="panel6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>881, 135</value>
+  </data>
+  <data name="panel6.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;panel6.Name" xml:space="preserve">
+    <value>panel6</value>
+  </data>
+  <data name="&gt;&gt;panel6.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;panel6.Parent" xml:space="preserve">
+    <value>tabResources</value>
+  </data>
+  <data name="&gt;&gt;panel6.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="tabResources.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 29</value>
+  </data>
+  <data name="tabResources.Size" type="System.Drawing.Size, System.Drawing">
+    <value>881, 844</value>
+  </data>
+  <data name="tabResources.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="tabResources.Text" xml:space="preserve">
+    <value>Resources</value>
+  </data>
+  <data name="&gt;&gt;tabResources.Name" xml:space="preserve">
+    <value>tabResources</value>
+  </data>
+  <data name="&gt;&gt;tabResources.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabResources.Parent" xml:space="preserve">
+    <value>tabControl1</value>
+  </data>
+  <data name="&gt;&gt;tabResources.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
   <data name="tabControl1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
@@ -1290,6 +1467,24 @@ to ensure all layers will be projected properly.
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Map Properties</value>
+  </data>
+  <data name="&gt;&gt;colName.Name" xml:space="preserve">
+    <value>colName</value>
+  </data>
+  <data name="&gt;&gt;colName.Type" xml:space="preserve">
+    <value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;colSize.Name" xml:space="preserve">
+    <value>colSize</value>
+  </data>
+  <data name="&gt;&gt;colSize.Type" xml:space="preserve">
+    <value>System.Windows.Forms.DataGridViewTextBoxColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;colRemove.Name" xml:space="preserve">
+    <value>colRemove</value>
+  </data>
+  <data name="&gt;&gt;colRemove.Type" xml:space="preserve">
+    <value>System.Windows.Forms.DataGridViewButtonColumn, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>FormMapProperties</value>

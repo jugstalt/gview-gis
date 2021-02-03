@@ -9,6 +9,7 @@ using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.Data;
 using gView.Framework.Symbology;
+using System.IO;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -91,6 +92,8 @@ namespace gView.Framework.UI.Dialogs
             txtTitle.Text = _map.Title;
             txtDescription.Text = _map.GetLayerDescription(Map.MapDescriptionId);
             txtCopyright.Text = _map.GetLayerCopyrightText(Map.MapCopyrightTextId);
+
+            BuildResourcesList();
         }
 
 
@@ -222,6 +225,80 @@ namespace gView.Framework.UI.Dialogs
             if (_app != null)
                 _app.RefreshActiveMap(DrawPhase.All);
         }
+
+        #region MapResources
+
+        private void btnAddResources_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog()
+            {
+                Multiselect = true
+            };
+
+            if(dlg.ShowDialog() == DialogResult.OK)
+            {
+                foreach(var filename in dlg.FileNames)
+                {
+                    FileInfo fi = new FileInfo(filename);
+
+                    _map.ResourceContainer[fi.Name] = File.ReadAllBytes(fi.FullName);
+                }
+
+                BuildResourcesList();
+            }
+        }
+
+        private void BuildResourcesList()
+        {
+            gridResources.Rows.Clear();
+
+            if(_map?.ResourceContainer?.Names!=null)
+            {
+                foreach(string name in _map.ResourceContainer.Names)
+                {
+                    var data = _map.ResourceContainer[name];
+                    if (data == null || data.Length == 0)
+                        continue;
+
+                    var gridRow = new DataGridViewRow();
+                    gridRow.Cells.Add(new DataGridViewTextBoxCell()
+                    {
+                        Value = name
+                    });
+                    gridRow.Cells.Add(new DataGridViewTextBoxCell()
+                    {
+                        Value = $"{ Math.Round(data.Length/1024.0, 2).ToString() }kb"
+                    });
+                    gridRow.Cells.Add(new DataGridViewButtonCell()
+                    {
+                        Value="Remove"
+                    });
+                    gridResources.Rows.Add(gridRow);
+                }
+            } 
+        }
+        private void gridResources_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (_map?.ResourceContainer != null)
+            {
+                if (e.ColumnIndex == 2)  // remove
+                {
+                    var row = gridResources.Rows[e.RowIndex];
+
+                    string resourceName = row.Cells[0].Value.ToString();
+
+                    if (MessageBox.Show($"Remove resouorce { resourceName } from map?", "Remove", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        _map.ResourceContainer[resourceName] = null;
+                        gridResources.Rows.Remove(row);
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        
 
         private void btnDefaultLayerSRFromSpatialReference_Click(object sender, EventArgs e)
         {

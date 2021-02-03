@@ -10,13 +10,15 @@ namespace gView.DataSources.GeoJson
     class GeoJsonFeatureCursor : IFeatureCursor
     {
         private readonly IFeature[] _features;
-        private readonly IQueryFilter _filter;
+        private readonly ISpatialFilter _spatialFilter;
+        private readonly IQueryFilter _queryFilter;
         private int pos = 0;
 
         public GeoJsonFeatureCursor(IEnumerable<IFeature> features, IQueryFilter filter)
         {
             _features = features?.ToArray();
-            _filter = filter;
+            _queryFilter = filter;
+            _spatialFilter = filter as ISpatialFilter;
         }
 
         #region IFeatureCursor
@@ -33,7 +35,14 @@ namespace gView.DataSources.GeoJson
 
             var feature = _features[pos++];
 
-            // ToDO: Check Filter
+            // ToDO: Check Filter WHERE
+            if(_spatialFilter!=null)
+            {
+                if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialFilter, feature?.Shape))
+                {
+                    return NextFeature();
+                }
+            }
 
             return Task.FromResult<IFeature>(feature);
         }

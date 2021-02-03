@@ -113,6 +113,8 @@ namespace gView.Framework.Carto
 
         string GetLayerCopyrightText(int layerId);
         void SetLayerCopyrightText(int layerId, string copyrightText);
+
+        IResourceContainer ResourceContainer { get; }
     }
 
     /*

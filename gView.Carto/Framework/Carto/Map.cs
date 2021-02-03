@@ -58,10 +58,12 @@ namespace gView.Framework.Carto
         private ConcurrentBag<string> _errorMessages = new ConcurrentBag<string>();
 
         private IntegerSequence _layerIDSequece = new IntegerSequence();
+        private IResourceContainer _resourceContainer = new ResourceContainer();
 
         protected List<Exception> _requestExceptions = null;
 
         public Map()
+            : base(null)
         {
             _datasets = new List<IDataset>();
 
@@ -1900,6 +1902,12 @@ namespace gView.Framework.Carto
                 {
                     LayerAdded(this, fLayer);
                 }
+
+                var resources = (IResourceContainer)stream.Load("MapResources", null, new ResourceContainer());
+                if(resources!=null)
+                {
+                    _resourceContainer = resources;
+                }
             }
 
             RasterCatalogLayer rcLayer;
@@ -2173,6 +2181,11 @@ namespace gView.Framework.Carto
                         System.Text.Encoding.Unicode.GetBytes(_layerCopyrightTexts[key])));
                 }
             }
+
+            if(_resourceContainer.HasResources)
+            {
+                stream.Save("MapResources", _resourceContainer);
+            }
         }
 
         private class PersistableClasses : IPersistable
@@ -2440,6 +2453,12 @@ namespace gView.Framework.Carto
         {
             this.OnUserInterface?.Invoke(this, lockUI);
         }
+
+        protected void SetResourceContainer(IResourceContainer resourceContainer)
+        {
+            _resourceContainer = resourceContainer ?? _resourceContainer;
+        }
+        public IResourceContainer ResourceContainer => _resourceContainer;
 
         #region Map / Layer Description
 

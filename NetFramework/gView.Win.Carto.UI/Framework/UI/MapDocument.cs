@@ -198,6 +198,8 @@ namespace gView.Framework.UI
 
                 _focusMapIndex = _maps.IndexOf(value);
 
+                Carto.UI.SymbolPreview.CurrentMap = value;
+
                 if (AfterSetFocusMap != null)
                 {
                     AfterSetFocusMap(this.FocusMap);
