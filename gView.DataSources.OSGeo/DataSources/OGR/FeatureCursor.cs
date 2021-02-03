@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using System;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.OGR
 {
@@ -12,7 +10,10 @@ namespace gView.DataSources.OGR
         OSGeo.OGR.Layer _layer;
         public FeatureCursor(OSGeo.OGR.Layer layer, IQueryFilter filter)
         {
-            if (layer == null) return;
+            if (layer == null)
+            {
+                return;
+            }
 
             _layer = layer;
             _layer.ResetReading();
@@ -22,14 +23,22 @@ namespace gView.DataSources.OGR
                 IEnvelope env=((ISpatialFilter)filter).Geometry.Envelope;
                 _layer.SetSpatialFilterRect(env.minx, env.miny, env.maxx, env.maxy);
                 if (String.IsNullOrEmpty(filter.WhereClause))
+                {
                     _layer.SetAttributeFilter(null);
+                }
                 else
+                {
                     _layer.SetAttributeFilter(filter.WhereClause);
+                }
             }
             else
             {
                 string where = filter.WhereClause;
-                if (String.IsNullOrEmpty(where)) where = null;
+                if (String.IsNullOrEmpty(where))
+                {
+                    where = null;
+                }
+
                 _layer.SetAttributeFilter(where);
                 _layer.SetSpatialFilter(null);
             }
@@ -39,9 +48,16 @@ namespace gView.DataSources.OGR
 
         public Task<IFeature> NextFeature()
         {
-            if (_layer == null) return null;
+            if (_layer == null)
+            {
+                return Task.FromResult<IFeature>(null);
+            }
+
             OSGeo.OGR.Feature ogrfeature = _layer.GetNextFeature();
-            if (ogrfeature == null) return null;
+            if (ogrfeature == null)
+            {
+                return Task.FromResult<IFeature>(null);
+            }
 
             Feature feature = new Feature();
             feature.OID = ogrfeature.GetFID();
@@ -53,7 +69,8 @@ namespace gView.DataSources.OGR
                 OSGeo.OGR.FieldDefn fdefn = defn.GetFieldDefn(i);
                 FieldValue fv = new FieldValue(fdefn.GetName());
 
-                switch (fdefn.GetFieldTypeName(fdefn.GetFieldType()).ToLower())
+                string fieldType = fdefn.GetFieldTypeName(fdefn.GetFieldType()).ToLower();
+                switch (fieldType)
                 {
                     case "integer":
                         fv.Value = ogrfeature.GetFieldAsInteger(i);
@@ -62,14 +79,31 @@ namespace gView.DataSources.OGR
                         fv.Value = ogrfeature.GetFieldAsDouble(i);
                         break;
                     default:
-                        fv.Value = ogrfeature.GetFieldAsString(i);
+                        //if (fv.Name == "geom")
+                        //{
+                        //    var geom = ogrfeature.GetFieldAsString(i).ToByteArray();
+                        //    if (geom != null)
+                        //    {
+                        //        feature.Shape = gView.Framework.OGC.OGC.WKBToGeometry(geom);
+                        //    }
+                        //}
+                        //else
+                        {
+                            fv.Value = ogrfeature.GetFieldAsString(i);
+                        }
                         break;
                 }
                 feature.Fields.Add(fv);
             }
 
-            OSGeo.OGR.Geometry geom = ogrfeature.GetGeometryRef();
-            feature.Shape = gView.Framework.OGC.GML.GeometryTranslator.GML2Geometry(geom.ExportToGML(), GmlVersion.v1);
+            if (feature.Shape == null)
+            {
+                OSGeo.OGR.Geometry geom = ogrfeature.GetGeometryRef();
+                if (geom != null)
+                {
+                    feature.Shape = gView.Framework.OGC.GML.GeometryTranslator.GML2Geometry(geom.ExportToGML(), GmlVersion.v1);
+                }
+            }
 
             return Task.FromResult<IFeature>(feature);
         }
@@ -82,7 +116,11 @@ namespace gView.DataSources.OGR
         {
             try
             {
-                if (_layer == null) return;
+                if (_layer == null)
+                {
+                    return;
+                }
+
                 _layer.ResetReading();
                 _layer = null;
             }
