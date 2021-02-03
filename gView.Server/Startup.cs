@@ -9,6 +9,7 @@ using gView.Server.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -87,6 +88,12 @@ namespace gView.Server
                         config.IsValid = false;
                     }
                 });
+
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders =
+                    ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -95,13 +102,26 @@ namespace gView.Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseForwardedHeaders();
             }
             else
             {
                 app.UseExceptionHandler("/Home/Error");
                 //app.ConfigureCustomExceptionMiddleware();
-                app.UseHsts();
+                app.UseForwardedHeaders();
+                //app.UseHsts();
             }
+
+            // Hack: app.UseForwardedHeaders() ... not working
+            app.Use(async (context, next) =>
+            {
+                var xproto = context.Request.Headers["X-Forwarded-Proto"].ToString();
+                if (xproto != null && xproto.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Request.Scheme = "https";
+                }
+                await next();
+            });
 
             app.UseCors(x => x
                 .AllowAnyOrigin()

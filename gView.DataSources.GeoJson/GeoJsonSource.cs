@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.GeoJson
@@ -25,13 +26,21 @@ namespace gView.DataSources.GeoJson
         {
             _lastLoad = DateTime.Now;
 
-            if(_target.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase) || 
+            string geoJsonString = String.Empty;
+
+            if (_target.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase) || 
                _target.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase))
             {
-                // ToDo: Load from web (with credentials)
+                using(var httpClient = new HttpClient())
+                {
+                    var httpResponseMessage = await httpClient.GetAsync(_target);
+                    geoJsonString = await httpResponseMessage.Content.ReadAsStringAsync();
+                }
+            } 
+            else
+            {
+                geoJsonString = System.IO.File.ReadAllText(_target);
             }
-
-            var geoJsonString = System.IO.File.ReadAllText(_target);
 
             var geoJson = JsonConvert.DeserializeObject<GeoJsonFeatures>(geoJsonString);
             List<IFeature> features = new List<IFeature>();
