@@ -4,7 +4,9 @@ using gView.Framework.IO;
 using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.Symbology.Framework.Symbology.Extensions;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -81,6 +83,8 @@ namespace gView.Framework.Symbology
                     display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
                     display.GraphicsContext.RotateTransform(_angle + _rotation);
 
+                    var rect = new Rectangle((int)x, (int)y, (int)_sizeX, (int)_sizeY);
+
                     try
                     {
                         if (_image == null)
@@ -99,7 +103,7 @@ namespace gView.Framework.Symbology
                         {
                             display.GraphicsContext.DrawImage(
                                     _image,
-                                    new Rectangle((int)x, (int)y, (int)_sizeX, (int)_sizeY),
+                                    rect,
                                     new Rectangle(0, 0, _image.Width, _image.Height),
                                     GraphicsUnit.Pixel);
                         }
@@ -131,6 +135,7 @@ namespace gView.Framework.Symbology
             }
             else if (geometry is IMultiPoint)
             {
+
                 for (int i = 0, to = ((IMultiPoint)geometry).PointCount; i < to; i++)
                 {
                     IPoint p = ((IMultiPoint)geometry)[i];

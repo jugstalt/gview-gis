@@ -3,6 +3,7 @@ using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
+using gView.Web.Framework.Web.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -102,10 +103,14 @@ namespace gView.DataSources.GeoJson
         {
             try
             {
+                this.DatasetName = this.ConnectionString.ExtractConnectionStringParameter("name");
                 var target = this.ConnectionString.ExtractConnectionStringParameter("target");
+
                 _spatialReference = SpatialReference.FromID("epsg:4326");
 
-                _source = new GeoJsonSource(target);
+                _source = new GeoJsonSource(
+                    target,
+                    new WebAuthorizationCredentials(this.ConnectionString));
             }
             catch (Exception ex)
             {

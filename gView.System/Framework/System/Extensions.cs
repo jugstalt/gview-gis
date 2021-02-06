@@ -6,6 +6,7 @@ using System;
 using System.Data;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace gView.Framework.system
 {
@@ -36,6 +37,22 @@ namespace gView.Framework.system
             }
 
             return String.Empty;
+        }
+
+        static public void AddConnectionStringParameter(this StringBuilder sb, string parameter, string value)
+        {
+            if (String.IsNullOrEmpty(parameter) || String.IsNullOrEmpty(value))
+                return;
+
+            if (sb.Length > 0)
+                sb.Append(";");
+
+            sb.Append($"{ parameter.Trim() }={ value?.Trim() }");
+        }
+
+        static public string OrTake(this string str, string orTake)
+        {
+            return String.IsNullOrEmpty(str) ? orTake : str;
         }
 
         #region Numbers

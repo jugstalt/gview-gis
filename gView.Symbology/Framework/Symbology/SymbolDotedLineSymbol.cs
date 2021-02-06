@@ -4,13 +4,21 @@ using gView.Framework.IO;
 using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.Symbology.Framework.Symbology.Extensions;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
 using System.Reflection;
 
 namespace gView.Framework.Symbology
 {
+    public enum StepWidthUnit
+    {
+        Pixel = 0,
+        Percent = 99
+    }
+
     [gView.Framework.system.RegisterPlugIn("C13DF1F1-FB0A-4C47-AF73-05A184880612")]
     public class SymbolDotedLineSymbol : Symbol, ILineSymbol, IPropertyPage, IPersistable
     {
@@ -42,8 +50,17 @@ namespace gView.Framework.Symbology
         [DisplayName("Draw Step Points")]
         public bool DrawStepPoints { get; set; }
         [Browsable(true)]
-        [DisplayName("Step Width [px]")]
+        [DisplayName("Step Width")]
         public int StepWidth { get; set; }
+        [Browsable(true)]
+        [DisplayName("Step Unit")]
+        public StepWidthUnit StepWidthUnit { get; set; }
+        [Browsable(true)]
+        [DisplayName("Step Start Pos")]
+        public int StepStartPos { get; set; }
+        [Browsable(true)]
+        [DisplayName("Symbol max distance [pixel]")]
+        public int SymbolMaxDistance { get; set; }
 
         [Browsable(true)]
         [DisplayName("Rotate Symbols")]
@@ -108,13 +125,17 @@ namespace gView.Framework.Symbology
                     //{
                     //    this.PointSymbol.SymbolSmothingMode = this.SymbolSmothingMode;
                     //}
-                    double pixelStep = this.StepWidth;
-                    double step = pixelStep * (display.mapScale / (96 / 0.0254));  // [m]
+                    double stepWidthValue = this.StepWidth;
+                    double stepStartPosValue = this.StepStartPos;
+                    double step = 0, start = 0;
+                    double symbolMaxDistance = 0.5 * display.SpatialReference.MetersToDeg(this.SymbolMaxDistance * display.mapScale / (96 / 0.0254));
 
-                    if (display.SpatialReference != null &&
-                        display.SpatialReference.SpatialParameters.IsGeographic)
+                    switch (this.StepWidthUnit)
                     {
-                        step = (180.0 * step / Math.PI) / 6370000.0;
+                        case StepWidthUnit.Pixel:
+                            step = display.SpatialReference.MetersToDeg(stepWidthValue * (display.mapScale / (96 / 0.0254)) /* [m] */ );
+                            start = display.SpatialReference.MetersToDeg(stepStartPosValue * (display.mapScale / (96 / 0.0254))  /* [m] */);
+                            break;
                     }
 
                     var polyline = ((IPolyline)geometry);
@@ -137,13 +158,21 @@ namespace gView.Framework.Symbology
                         PointCollection pointCollection = new PointCollection();
                         if (pointCount >= 2)
                         {
+                            switch(this.StepWidthUnit)
+                            {
+                                case StepWidthUnit.Percent:
+                                    step = length * ((float)stepWidthValue / 100f);
+                                    start = length * ((float)stepStartPosValue / 100f);
+                                    break;
+                            }
+
                             #region Step Points
 
-                            if (this.DrawStepPoints && pixelStep >= 1 && step > 0.0)
+                            if (this.DrawStepPoints && stepWidthValue >= 1 && step > 0.0)
                             {
                                 pointCollection = length > step ?
                                     SpatialAlgorithms.Algorithm.PathPoints(path,
-                                                                           fromStat: step,
+                                                                           fromStat: start > 0.0 ? start : step,
                                                                            toStat: length,
                                                                            step: step,
                                                                            createPointM2: true) :
@@ -184,8 +213,25 @@ namespace gView.Framework.Symbology
                             }
                         }
 
+                        var symbolEnvelopes = symbolMaxDistance > 0 ? new List<IEnvelope>() : null;
+
                         for (int i = 0, i_to = pointCollection.PointCount; i < i_to; i++)
                         {
+                            #region Check Min Dinstance (Intersection)
+
+                            if (symbolMaxDistance > 0)
+                            {
+                                var symbolEnvelope = new Envelope(-symbolMaxDistance, -symbolMaxDistance, symbolMaxDistance, symbolMaxDistance);
+                                symbolEnvelope.TranslateTo(pointCollection[i].X, pointCollection[i].Y);
+
+                                if (symbolEnvelope.IntersectsOne(symbolEnvelopes))
+                                    continue;
+
+                                symbolEnvelopes.Add(symbolEnvelope);
+                            }
+
+                            #endregion
+
                             if (symbolRotation != null)
                             {
                                 if (pointCollection[i] is PointM2)
@@ -199,6 +245,7 @@ namespace gView.Framework.Symbology
                                 }
                             }
 
+                            
                             this.PointSymbol.Draw(display, pointCollection[i]);
                         }
                     }
@@ -268,7 +315,21 @@ namespace gView.Framework.Symbology
             cloneSym.DrawStartPoint = this.DrawStartPoint;
             cloneSym.DrawEndPoint = this.DrawEndPoint;
             cloneSym.DrawStepPoints = this.DrawStepPoints;
-            cloneSym.StepWidth = (int)((float)this.StepWidth * fac);
+            cloneSym.StepWidthUnit = this.StepWidthUnit;
+            cloneSym.SymbolMaxDistance = (int)((float)this.SymbolMaxDistance * fac);
+
+            switch(cloneSym.StepWidthUnit)
+            {
+                case StepWidthUnit.Pixel:
+                    cloneSym.StepWidth = (int)((float)this.StepWidth * fac);
+                    cloneSym.StepStartPos = (int)((float)this.StepStartPos * fac);
+                    break;
+                default:
+                    cloneSym.StepWidth = this.StepWidth;
+                    cloneSym.StepStartPos = this.StepStartPos;
+                    break;
+            }
+            
             cloneSym.UseSymbolRotation = this.UseSymbolRotation;
 
             return cloneSym;
@@ -312,6 +373,9 @@ namespace gView.Framework.Symbology
             this.DrawEndPoint = (bool)stream.Load("drawendpoint", true);
             this.DrawStepPoints = (bool)stream.Load("drawsteppoints", true);
             this.StepWidth = (int)stream.Load("stepwidth", (int)20);
+            this.StepWidthUnit = (StepWidthUnit)(int)stream.Load("stepwidthunit", (int)StepWidthUnit.Pixel);
+            this.StepStartPos = (int)stream.Load("stepstartpos", (int)0);
+            this.SymbolMaxDistance = (int)stream.Load("symbolmaxdistance", (int)0);
 
             this.UseSymbolRotation = (bool)stream.Load("usesymbolrotation", true);
         }
@@ -334,7 +398,10 @@ namespace gView.Framework.Symbology
             stream.Save("drawendpoint", this.DrawEndPoint);
             stream.Save("drawsteppoints", this.DrawStepPoints);
             stream.Save("stepwidth", this.StepWidth);
+            stream.Save("stepwidthunit", (int)this.StepWidthUnit);
             stream.Save("usesymbolrotation", this.UseSymbolRotation);
+            stream.Save("stepstartpos", this.StepStartPos);
+            stream.Save("symbolmaxdistance", this.SymbolMaxDistance);
         }
 
         #endregion

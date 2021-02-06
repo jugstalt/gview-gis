@@ -46,6 +46,7 @@ namespace gView.Win.DataSources.GeoJson.UI.ExplorerObjects
             }
 
             FormGeoJsonConnection dlg = new FormGeoJsonConnection();
+            dlg.ConnectionString = _connectionString;
 
             if (dlg.ShowDialog() == DialogResult.OK)
             {

@@ -31,8 +31,42 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="gView.Carto">
+      <HintPath>..\..\gView.Carto\bin\Debug\netstandard2.0\gView.Carto.dll</HintPath>
+    </Reference>
+    <Reference Include="gView.Carto.Rendering">
+      <HintPath>..\..\gView.Carto.Rendering\bin\Debug\netstandard2.0\gView.Carto.Rendering.dll</HintPath>
+    </Reference>
+    <Reference Include="gView.Math, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\gView.Math\bin\Debug\netstandard2.0\gView.Math.dll</HintPath>
+    </Reference>
+    <Reference Include="gView.Network">
+      <HintPath>..\..\gView.Network\bin\Debug\netstandard2.0\gView.Network.dll</HintPath>
+    </Reference>
+    <Reference Include="gView.Symbology">
+      <HintPath>..\..\gView.Symbology\bin\Debug\netstandard2.0\gView.Symbology.dll</HintPath>
+    </Reference>
+    <Reference Include="gView.Web, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\gView.Web\bin\Debug\netstandard2.0\gView.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="gView.Win.Carto.UI">
+      <HintPath>..\gView.Win.Carto.UI\bin\Debug\gView.Win.Carto.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="gView.Win.Explorer.UI">
+      <HintPath>..\gView.Win.Explorer.UI\bin\Debug\gView.Win.Explorer.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="gView.Win.Symbology.UI">
+      <HintPath>..\gView.Win.Symbology.UI\bin\Debug\gView.Win.Symbology.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Users\admin\.nuget\packages\newtonsoft.json\12.0.3\lib\netstandard2.0\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
@@ -109,6 +143,10 @@
     <ProjectReference Include="..\gView.Win.Core.UI\gView.Win.Core.UI.csproj">
       <Project>{3c8ffd95-66e8-41e5-b891-4b13d44942c3}</Project>
       <Name>gView.Win.Core.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Dialogs\gView.Win.Dialogs.csproj">
+      <Project>{5E36EAA4-15C4-4D04-973B-245AD8A59B97}</Project>
+      <Name>gView.Win.Dialogs</Name>
     </ProjectReference>
     <ProjectReference Include="..\gView.Win.Globalisation\gView.Win.Globalisation.csproj">
       <Project>{68ff06ec-cebd-4ba4-a536-6c09d9714066}</Project>

@@ -1,15 +1,14 @@
-﻿using gView.Framework.Security;
+﻿using gView.Core.Framework.Exceptions;
+using gView.Framework.Security;
+using gView.Security.Framework;
 using gView.Server.AppCode;
+using gView.Server.Extensions;
 using gView.Server.Services.MapServer;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using gView.Security.Framework;
-using Microsoft.AspNetCore.Http;
-using gView.Core.Framework.Exceptions;
-using gView.Server.Extensions;
 
 namespace gView.Server.Services.Security
 {
@@ -53,7 +52,9 @@ namespace gView.Server.Services.Security
             var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/token");
             var fi = new FileInfo(di.FullName + "/" + username + ".lgn");
             if (fi.Exists)
+            {
                 throw new Exception("User '" + username + "' already exists");
+            }
 
             CreateLogin(di.FullName, username, password);
         }
@@ -65,7 +66,9 @@ namespace gView.Server.Services.Security
             var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/token");
             var fi = new FileInfo(di.FullName + "/" + username + ".lgn");
             if (!fi.Exists)
+            {
                 throw new Exception("User '" + username + "' do not exists");
+            }
 
             var hashedPassword = SecureCrypto.Hash64(newPassword, username);
             File.WriteAllText(fi.FullName, hashedPassword);
@@ -154,6 +157,18 @@ namespace gView.Server.Services.Security
 
                 #endregion
 
+                #region Authorization Header
+
+                if(!String.IsNullOrEmpty(request.Headers["Authorization"]))
+                {
+                    var userPwd = request.Headers["Authorization"].ToString().FromAuthorizationHeader();
+                    var path = _mapServerService.Options.LoginManagerRootPath + "/token";
+
+                    return authToken = CreateAuthToken(path, userPwd.username, userPwd.password, AuthToken.AuthTypes.Tokenuser);
+                }
+
+                #endregion
+
                 return authToken = new AuthToken()
                 {
                     Username = String.Empty
@@ -162,7 +177,9 @@ namespace gView.Server.Services.Security
             finally
             {
                 if (authToken == null || authToken.IsExpired)
+                {
                     throw new InvalidTokenException();
+                }
             }
         }
 
@@ -170,6 +187,8 @@ namespace gView.Server.Services.Security
         {
             return LoginAuthToken(request);
         }
+
+       
 
         #endregion
 
@@ -188,6 +207,8 @@ namespace gView.Server.Services.Security
 
             return null;
         }
+
+        
 
         private AuthToken CreateAuthTokenWithoutPasswordCheck(string path, string username, AuthToken.AuthTypes authType, int expireMiniutes = 30)
         {

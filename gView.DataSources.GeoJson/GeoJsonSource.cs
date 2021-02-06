@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.GeoJson;
+using gView.Web.Framework.Web.Authorization;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -17,72 +18,82 @@ namespace gView.DataSources.GeoJson
         private DateTime _lastLoad = new DateTime(0);
         private List<IFeature> _features = null;
 
-        public GeoJsonSource(string target)
+        private WebAuthorizationCredentials _webAuthorization;
+
+        public GeoJsonSource(string target, WebAuthorizationCredentials webAuthorization)
         {
             _target = target;
+            _webAuthorization = webAuthorization;
         }
 
         async private Task LoadAsync()
         {
             _lastLoad = DateTime.Now;
 
-            string geoJsonString = String.Empty;
+            try
+            {
+                string geoJsonString = String.Empty;
 
-            if (_target.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase) || 
-               _target.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase))
-            {
-                using(var httpClient = new HttpClient())
+                if (_target.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase) ||
+                    _target.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var httpResponseMessage = await httpClient.GetAsync(_target);
-                    geoJsonString = await httpResponseMessage.Content.ReadAsStringAsync();
+                    using (var httpClient = new HttpClient())
+                    {
+                        if (_webAuthorization != null)
+                            await _webAuthorization.AddAuthorizationHeaders(httpClient);
+
+                        var httpResponseMessage = await httpClient.GetAsync(_target);
+                        geoJsonString = await httpResponseMessage.Content.ReadAsStringAsync();
+                    }
                 }
-            } 
-            else
-            {
-                geoJsonString = System.IO.File.ReadAllText(_target);
+                else
+                {
+                    geoJsonString = System.IO.File.ReadAllText(_target);
+                }
+
+                var geoJson = JsonConvert.DeserializeObject<GeoJsonFeatures>(geoJsonString);
+                List<IFeature> features = new List<IFeature>();
+
+                foreach (var geoJsonFeature in geoJson.Features)
+                {
+                    var feature = new Feature();
+
+                    feature.Shape = geoJsonFeature.ToGeometry();
+                    IDictionary<string, object> properties = null;
+
+                    if (feature.Shape != null)
+                    {
+                        if (_envelope == null)
+                        {
+                            _envelope = new Envelope(feature.Shape.Envelope);
+                        }
+                        else
+                        {
+                            _envelope.Union(feature.Shape.Envelope);
+                        }
+                    }
+
+                    try
+                    {
+                        geoJsonFeature.PropertiesToDict();
+                        properties = (IDictionary<string, object>)geoJsonFeature.Properties;
+                    }
+                    catch { }
+
+                    if (properties != null)
+                    {
+                        foreach (var key in properties.Keys)
+                        {
+                            feature.Fields.Add(new FieldValue(key, properties[key]));
+                        }
+                    }
+
+                    features.Add(feature);
+                }
+
+                _features = features;
             }
-
-            var geoJson = JsonConvert.DeserializeObject<GeoJsonFeatures>(geoJsonString);
-            List<IFeature> features = new List<IFeature>();
-
-            foreach(var geoJsonFeature in geoJson.Features)
-            {
-                var feature = new Feature();
-
-                feature.Shape = geoJsonFeature.ToGeometry();
-                IDictionary<string, object> properties = null;
-
-                if (feature.Shape != null)
-                {
-                    if (_envelope == null)
-                    {
-                        _envelope = new Envelope(feature.Shape.Envelope);
-                    }
-                    else
-                    {
-                        _envelope.Union(feature.Shape.Envelope);
-                    }
-                }
-
-                try
-                {
-                    geoJsonFeature.PropertiesToDict();
-                    properties = (IDictionary<string, object>)geoJsonFeature.Properties;
-                }
-                catch { }
-
-                if(properties!=null)
-                {
-                    foreach(var key in properties.Keys)
-                    {
-                        feature.Fields.Add(new FieldValue(key, properties[key]));
-                    }
-                }
-
-                features.Add(feature);
-            }
-
-            _features = features;
+            catch { }
         }
 
         async private Task Refresh()
