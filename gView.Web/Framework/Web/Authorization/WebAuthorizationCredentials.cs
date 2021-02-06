@@ -132,32 +132,33 @@ namespace gView.Web.Framework.Web.Authorization
 
                         var authServiceClient = httpClient; // use same...
                         //using (var authServiceClient = new HttpClient())
-                        //{
+                        {
                             authServiceClient.DefaultRequestHeaders.Authorization =
                                 new System.Net.Http.Headers.AuthenticationHeaderValue("Basic",
                                 Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ this.Username }:{ this.Password }")));
+                            //authServiceClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/x-www-form-urlencoded");
 
-                            StringBuilder content = new StringBuilder();
-                            content.Append($"grant_type={ this.GrantType }");
-                            content.Append($"&scope={ WebUtility.UrlEncode(this.Scope) }");
+                            var nvc = new List<KeyValuePair<string, string>>();
+                            nvc.Add(new KeyValuePair<string, string>("grant_type", this.GrantType));
+                            nvc.Add(new KeyValuePair<string, string>("scope", this.Scope));
+                            var client = new HttpClient();
 
-                            using (var postContent = new StringContent(content.ToString()))
+                            using (var req = new HttpRequestMessage(HttpMethod.Post, AccessTokenTokenServiceUrl) { Content = new FormUrlEncodedContent(nvc) })
                             {
-                                var httpResponseMessage = await authServiceClient.PostAsync(AccessTokenTokenServiceUrl, postContent);
+                                var httpResponseMessage = await authServiceClient.SendAsync(req);
+                                var tokenResonseString = await httpResponseMessage.Content.ReadAsStringAsync();
                                 if (httpResponseMessage.StatusCode == HttpStatusCode.OK)
                                 {
-                                    var tokenResonseString = await httpResponseMessage.Content.ReadAsStringAsync();
-
                                     var accessToken = JsonConvert.DeserializeObject<AccessTokenResponse>(tokenResonseString);
 
                                     AuthToken = new Token()
                                     {
-                                        AuthToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(accessToken.access_token)),
+                                        AuthToken =  accessToken.access_token, //Convert.ToBase64String(Encoding.UTF8.GetBytes(accessToken.access_token)),
                                         Expires = DateTime.Now.AddSeconds(accessToken.expires_in)
                                     };
                                 }
                             }
-                        //}
+                        }
 
                         #endregion
                     }

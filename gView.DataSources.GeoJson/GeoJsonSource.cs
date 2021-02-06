@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.GeoJson;
+using gView.Framework.Web;
 using gView.Web.Framework.Web.Authorization;
 using Newtonsoft.Json;
 using System;
@@ -37,13 +38,22 @@ namespace gView.DataSources.GeoJson
                 if (_target.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase) ||
                     _target.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    using (var httpClient = new HttpClient())
+                    using (var clientHandler = new HttpClientHandler())
                     {
-                        if (_webAuthorization != null)
-                            await _webAuthorization.AddAuthorizationHeaders(httpClient);
+                        var proxy = ProxySettings.Proxy(_target);
+                        if(proxy!=null)
+                        {
+                            clientHandler.UseProxy = true;
+                            clientHandler.Proxy = proxy;
+                        }
+                        using (var httpClient = new HttpClient(clientHandler))
+                        {
+                            if (_webAuthorization != null)
+                                await _webAuthorization.AddAuthorizationHeaders(httpClient);
 
-                        var httpResponseMessage = await httpClient.GetAsync(_target);
-                        geoJsonString = await httpResponseMessage.Content.ReadAsStringAsync();
+                            var httpResponseMessage = await httpClient.GetAsync(_target);
+                            geoJsonString = await httpResponseMessage.Content.ReadAsStringAsync();
+                        }
                     }
                 }
                 else

@@ -1,18 +1,15 @@
+using gView.Framework.IO;
+using gView.Framework.system;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Drawing;
-using System.Web;
-using System.Xml;
-using System.Net;
-using System.IO;
-using Microsoft.Win32;
-using System.Security.Cryptography;
-using gView.Framework.system;
-using gView.Framework.IO;
-using Newtonsoft.Json;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Net.Http;
 
 namespace gView.Framework.Web
 {
@@ -32,7 +29,11 @@ namespace gView.Framework.Web
             if (user != "" && user != null && password != null)
             {
                 NetworkCredential credential = new NetworkCredential(user, password);
-                if (domain != "" && domain != null) credential.Domain = domain;
+                if (domain != "" && domain != null)
+                {
+                    credential.Domain = domain;
+                }
+
                 proxy.Credentials = credential;
             }
             return proxy;
@@ -45,7 +46,10 @@ namespace gView.Framework.Web
                 try
                 {
                     FileInfo fi = new FileInfo(output.Attributes["file"].Value);
-                    if (fi.Exists) return (Bitmap)Image.FromFile(fi.FullName);
+                    if (fi.Exists)
+                    {
+                        return (Bitmap)Image.FromFile(fi.FullName);
+                    }
                 }
                 catch (Exception ex) { LastErrorMessage = ex.Message; throw ex; }
             }
@@ -66,7 +70,10 @@ namespace gView.Framework.Web
                 try
                 {
                     FileInfo fi = new FileInfo(output.Attributes["file"].Value);
-                    if (fi.Exists) return (Bitmap)Image.FromFile(fi.FullName);
+                    if (fi.Exists)
+                    {
+                        return (Bitmap)Image.FromFile(fi.FullName);
+                    }
                 }
                 catch (Exception ex) { LastErrorMessage = ex.Message; throw ex; }
             }
@@ -137,7 +144,11 @@ namespace gView.Framework.Web
                 HttpWebRequest wReq = (HttpWebRequest)HttpWebRequest.Create(url);
                 wReq.Credentials = credentials;
 
-                if (proxy != null) wReq.Proxy = proxy;
+                if (proxy != null)
+                {
+                    wReq.Proxy = proxy;
+                }
+
                 AppendAuthentification(wReq, usr, pwd);
 
                 //wReq.UserAgent = "Mozilla/5.0 (Windows NT 6.1; rv:15.0) Gecko/20100101 Firefox/15.0.1";
@@ -156,7 +167,10 @@ namespace gView.Framework.Web
                 while (Bytes2Read > 0)
                 {
                     int len = stream.Read(b, 0, Bytes2Read);
-                    if (len == 0) break;
+                    if (len == 0)
+                    {
+                        break;
+                    }
 
                     memStream.Write(b, 0, len);
                 }
@@ -189,7 +203,11 @@ namespace gView.Framework.Web
             {
                 HttpWebRequest wReq = (HttpWebRequest)HttpWebRequest.Create(url);
 
-                if (proxy != null) wReq.Proxy = proxy;
+                if (proxy != null)
+                {
+                    wReq.Proxy = proxy;
+                }
+
                 AppendAuthentification(wReq, usr, pwd);
 
                 HttpWebResponse wresp = (HttpWebResponse)wReq.GetResponse();
@@ -205,7 +223,10 @@ namespace gView.Framework.Web
                 while (Bytes2Read > 0)
                 {
                     int len = stream.Read(b, 0, Bytes2Read);
-                    if (len == 0) break;
+                    if (len == 0)
+                    {
+                        break;
+                    }
 
                     memStream.Write(b, 0, len);
                 }
@@ -233,7 +254,10 @@ namespace gView.Framework.Web
                 HttpWebRequest wReq = (HttpWebRequest)HttpWebRequest.Create(imageUrl);
                 wReq.Method = "POST";
 
-                if (proxy != null) wReq.Proxy = proxy;
+                if (proxy != null)
+                {
+                    wReq.Proxy = proxy;
+                }
 
                 if (postBytes != null)
                 {
@@ -267,7 +291,10 @@ namespace gView.Framework.Web
                 while (Bytes2Read > 0)
                 {
                     int len = stream.Read(b, 0, Bytes2Read);
-                    if (len == 0) break;
+                    if (len == 0)
+                    {
+                        break;
+                    }
 
                     memStream.Write(b, 0, len);
                 }
@@ -312,7 +339,11 @@ namespace gView.Framework.Web
                 HttpWebRequest wReq = (HttpWebRequest)HttpWebRequest.Create(url);
                 wReq.Credentials = credentials;
 
-                if (proxy != null) wReq.Proxy = proxy;
+                if (proxy != null)
+                {
+                    wReq.Proxy = proxy;
+                }
+
                 AppendAuthentification(wReq, usr, pwd);
 
                 if (postBytes != null)
@@ -352,7 +383,10 @@ namespace gView.Framework.Web
                 while (Bytes2Read > 0)
                 {
                     int len = stream.Read(b, 0, Bytes2Read);
-                    if (len == 0) break;
+                    if (len == 0)
+                    {
+                        break;
+                    }
 
                     memStream.Write(b, 0, len);
                 }
@@ -377,7 +411,11 @@ namespace gView.Framework.Web
                 HttpWebRequest wReq = (HttpWebRequest)HttpWebRequest.Create(url);
                 wReq.Credentials = credentials;
 
-                if (proxy != null) wReq.Proxy = proxy;
+                if (proxy != null)
+                {
+                    wReq.Proxy = proxy;
+                }
+
                 AppendAuthentification(wReq, usr, pwd);
 
                 if (postBytes != null)
@@ -417,7 +455,10 @@ namespace gView.Framework.Web
                 while (Bytes2Read > 0)
                 {
                     int len = stream.Read(b, 0, Bytes2Read);
-                    if (len == 0) break;
+                    if (len == 0)
+                    {
+                        break;
+                    }
 
                     memStream.Write(b, 0, len);
                 }
@@ -483,7 +524,9 @@ namespace gView.Framework.Web
                 httpRequest.Method = methode;
 
                 if (timeout > 0)
+                {
                     httpRequest.Timeout = timeout;
+                }
 
                 //ProxySettings settings = new ProxySettings();
                 //HttpWReq.Proxy = settings.Proxy(url);
@@ -536,7 +579,10 @@ namespace gView.Framework.Web
                 while (Bytes2Read > 0)
                 {
                     int len = stream.Read(b, 0, Bytes2Read);
-                    if (len == 0) break;
+                    if (len == 0)
+                    {
+                        break;
+                    }
 
                     memStream.Write(b, 0, len);
                 }
@@ -578,7 +624,9 @@ namespace gView.Framework.Web
                 httpRequest.Method = methode;
 
                 if (timeout > 0)
+                {
                     httpRequest.Timeout = timeout;
+                }
 
                 //ProxySettings settings = new ProxySettings();
                 //HttpWReq.Proxy = settings.Proxy(url);
@@ -631,7 +679,10 @@ namespace gView.Framework.Web
                 while (Bytes2Read > 0)
                 {
                     int len = stream.Read(b, 0, Bytes2Read);
-                    if (len == 0) break;
+                    if (len == 0)
+                    {
+                        break;
+                    }
 
                     memStream.Write(b, 0, len);
                 }
@@ -650,9 +701,13 @@ namespace gView.Framework.Web
         {
             string c = "?";
             if (url.EndsWith("?") || url.EndsWith("&"))
+            {
                 c = "";
+            }
             else if (url.Contains("?"))
+            {
                 c = "&";
+            }
 
             return url + c + parameters;
         }
@@ -666,11 +721,16 @@ namespace gView.Framework.Web
                 for (i = pos + 1; i < xml.Length; i++)
                 {
                     if (xml[i] == '<')
+                    {
                         o++;
+                    }
                     else if (xml[i] == '>')
                     {
                         o--;
-                        if (o == 0) break;
+                        if (o == 0)
+                        {
+                            break;
+                        }
                     }
                 }
 
@@ -686,7 +746,9 @@ namespace gView.Framework.Web
         private static void AppendAuthentification(HttpWebRequest req, string usr, string pwd)
         {
             if (String.IsNullOrEmpty(usr.Trim()))
+            {
                 return;
+            }
 
             string auth = "Basic " + Convert.ToBase64String(Encoding.ASCII.GetBytes(usr + ":" + pwd));
             req.Headers.Add("Authorization", auth);
@@ -708,7 +770,11 @@ namespace gView.Framework.Web
         {
             get
             {
-                if (!_loaded) ProxySettings.Load();
+                if (!_loaded)
+                {
+                    ProxySettings.Load();
+                }
+
                 return _useProxy;
             }
             set { _useProxy = value; }
@@ -718,7 +784,11 @@ namespace gView.Framework.Web
         {
             get
             {
-                if (!_loaded) ProxySettings.Load();
+                if (!_loaded)
+                {
+                    ProxySettings.Load();
+                }
+
                 return _server;
             }
             set { _server = value; }
@@ -728,7 +798,11 @@ namespace gView.Framework.Web
         {
             get
             {
-                if (!_loaded) ProxySettings.Load();
+                if (!_loaded)
+                {
+                    ProxySettings.Load();
+                }
+
                 return _port;
             }
             set { _port = value; }
@@ -738,7 +812,11 @@ namespace gView.Framework.Web
         {
             get
             {
-                if (!_loaded) ProxySettings.Load();
+                if (!_loaded)
+                {
+                    ProxySettings.Load();
+                }
+
                 return _exceptions;
             }
             set { _exceptions = value; }
@@ -748,7 +826,11 @@ namespace gView.Framework.Web
         {
             get
             {
-                if (!_loaded) ProxySettings.Load();
+                if (!_loaded)
+                {
+                    ProxySettings.Load();
+                }
+
                 return _domain;
             }
             set { _domain = value; }
@@ -758,7 +840,11 @@ namespace gView.Framework.Web
         {
             get
             {
-                if (!_loaded) ProxySettings.Load();
+                if (!_loaded)
+                {
+                    ProxySettings.Load();
+                }
+
                 return _user;
             }
             set
@@ -842,7 +928,10 @@ namespace gView.Framework.Web
                 case UseProxyType.defaultProxy:
                     _proxy = WebRequest.GetSystemWebProxy();
                     if (_proxy != null)
+                    {
                         _proxy.Credentials = CredentialCache.DefaultNetworkCredentials;
+                    }
+
                     break;
                 case UseProxyType.none:
                     _proxy = null;
@@ -869,20 +958,31 @@ namespace gView.Framework.Web
 
         static public IWebProxy Proxy(string url)
         {
-            if (!_loaded) ProxySettings.Load();
+            if (!_loaded)
+            {
+                ProxySettings.Load();
+            }
 
-            if (_proxy == null) return null;
+            if (_proxy == null)
+            {
+                return null;
+            }
 
             string serverName = extractServername(url).ToLower();
             if (serverName.ToLower() == "localhost")
+            {
                 return null;
+            }
 
             foreach (string iServer in _exceptions.Split(';'))
             {
                 string pattern = iServer.ToLower();
                 try
                 {
-                    if (Regex.IsMatch(serverName, pattern)) return null;
+                    if (Regex.IsMatch(serverName, pattern))
+                    {
+                        return null;
+                    }
                 }
                 catch { }
             }
@@ -916,20 +1016,38 @@ namespace gView.Framework.Web
     {
         static public ICredentials FromXmlNode(XmlNode node)
         {
-            if (node == null) return null;
+            if (node == null)
+            {
+                return null;
+            }
 
             if (node.Attributes["default"] != null &&
-                node.Attributes["default"].Value.ToLower() == "true") return CredentialCache.DefaultCredentials;
+                node.Attributes["default"].Value.ToLower() == "true")
+            {
+                return CredentialCache.DefaultCredentials;
+            }
+
             if (node.Attributes["default"] != null &&
-                node.Attributes["default"].Value.ToLower() == "net") return CredentialCache.DefaultNetworkCredentials;
+                node.Attributes["default"].Value.ToLower() == "net")
+            {
+                return CredentialCache.DefaultNetworkCredentials;
+            }
 
             NetworkCredential credential = new NetworkCredential();
             if (node.Attributes["user"] != null)
+            {
                 credential.UserName = node.Attributes["user"].Value;
+            }
+
             if (node.Attributes["pwd"] != null)
+            {
                 credential.Password = node.Attributes["pwd"].Value;
+            }
+
             if (node.Attributes["domain"] != null)
+            {
                 credential.Domain = node.Attributes["domain"].Value;
+            }
 
             return credential;
         }
