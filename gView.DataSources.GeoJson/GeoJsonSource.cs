@@ -18,6 +18,7 @@ namespace gView.DataSources.GeoJson
         private IEnvelope _envelope = null;
         private DateTime _lastLoad = new DateTime(0);
         private List<IFeature> _features = null;
+        private bool _isInitialized=false;
 
         private WebAuthorizationCredentials _webAuthorization;
 
@@ -30,6 +31,7 @@ namespace gView.DataSources.GeoJson
         async private Task LoadAsync()
         {
             _lastLoad = DateTime.Now;
+            _isInitialized = true;
 
             try
             {
@@ -121,7 +123,7 @@ namespace gView.DataSources.GeoJson
 
         public IEnvelope Envelope => _envelope ?? new Envelope();
 
-        public bool IsValid => _features != null;
+        public bool IsValid => _isInitialized == false || _features != null;
 
         async public Task<IEnumerable<IFeature>> GetFeatures<T>()
             where T : IGeometry
