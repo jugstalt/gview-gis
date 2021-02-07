@@ -6,6 +6,7 @@ using gView.Framework.system;
 using gView.Interoperability.GeoServices.Rest.Json.Renderers;
 using gView.Server.AppCode;
 using gView.Server.Extensions.DependencyInjection;
+using gView.Server.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -113,15 +114,7 @@ namespace gView.Server
             }
 
             // Hack: app.UseForwardedHeaders() ... not working
-            app.Use(async (context, next) =>
-            {
-                var xproto = context.Request.Headers["X-Forwarded-Proto"].ToString();
-                if (xproto != null && xproto.StartsWith("https", StringComparison.OrdinalIgnoreCase))
-                {
-                    context.Request.Scheme = "https";
-                }
-                await next();
-            });
+            app.UseMiddleware<XForwardedMiddleware>();
 
             app.UseCors(x => x
                 .AllowAnyOrigin()

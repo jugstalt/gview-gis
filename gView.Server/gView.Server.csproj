@@ -78,7 +78,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Middleware\" />
     <Folder Include="Views\GeoServices\" />
   </ItemGroup>
 
