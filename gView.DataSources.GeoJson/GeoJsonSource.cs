@@ -41,7 +41,7 @@ namespace gView.DataSources.GeoJson
                     using (var clientHandler = new HttpClientHandler())
                     {
                         var proxy = ProxySettings.Proxy(_target);
-                        if(proxy!=null)
+                        if (proxy != null)
                         {
                             clientHandler.UseProxy = true;
                             clientHandler.Proxy = proxy;
@@ -103,18 +103,25 @@ namespace gView.DataSources.GeoJson
 
                 _features = features;
             }
-            catch { }
+            catch(Exception ex)
+            {
+                this.LastException = ex;
+            }
         }
 
         async private Task Refresh()
         {
-            if ((DateTime.Now - _lastLoad).TotalMinutes >= 5)
+            if (this.IsValid == false || (DateTime.Now - _lastLoad).TotalMinutes >= 5)
             {
                 await LoadAsync();
             }
         }
 
+        public Exception LastException { get; private set; }
+
         public IEnvelope Envelope => _envelope ?? new Envelope();
+
+        public bool IsValid => _features != null;
 
         async public Task<IEnumerable<IFeature>> GetFeatures<T>()
             where T : IGeometry

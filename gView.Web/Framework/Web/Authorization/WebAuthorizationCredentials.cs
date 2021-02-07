@@ -1,6 +1,7 @@
 ﻿using gView.Framework.system;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -14,6 +15,8 @@ namespace gView.Web.Framework.Web.Authorization
         const string AuthTypeDefault = "Basic";
         const string GrantTypeDefault = "client_credentials";
         const string ScopeDefault = "openid";
+
+        private static ConcurrentDictionary<string, Token> _globalTokenCache = new ConcurrentDictionary<string, Token>();
 
         public WebAuthorizationCredentials(
             string username,
@@ -110,82 +113,121 @@ namespace gView.Web.Framework.Web.Authorization
             if (String.IsNullOrEmpty(this.Username))
                 return;
 
-            if (AuthToken == null || AuthToken.IsExpired())
+            try
             {
-                if (this.AuthType == AuthorizationType.Basic)
+                Token token = null;
+                _globalTokenCache.TryGetValue(CacheKey, out token);
+
+                if (token == null || token.IsExpired())
                 {
-                    #region Basic Authentication
-
-                    AuthToken = new Token()
+                    if (this.AuthType == AuthorizationType.Basic)
                     {
-                        AuthToken = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ this.Username }:{ this.Password }")),
-                        Expires = DateTime.Now.AddDays(365)
-                    };
+                        #region Basic Authentication
 
-                    #endregion
-                }
-                if (this.AuthType == AuthorizationType.Bearer)
-                {
-                    if (!String.IsNullOrEmpty(AccessTokenTokenServiceUrl))
-                    {
-                        #region OAuth2
-
-                        var authServiceClient = httpClient; // use same...
-                        //using (var authServiceClient = new HttpClient())
+                        _globalTokenCache[CacheKey] = token = new Token()
                         {
-                            authServiceClient.DefaultRequestHeaders.Authorization =
-                                new System.Net.Http.Headers.AuthenticationHeaderValue("Basic",
-                                Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ this.Username }:{ this.Password }")));
-                            //authServiceClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/x-www-form-urlencoded");
-
-                            var nvc = new List<KeyValuePair<string, string>>();
-                            nvc.Add(new KeyValuePair<string, string>("grant_type", this.GrantType));
-                            nvc.Add(new KeyValuePair<string, string>("scope", this.Scope));
-                            var client = new HttpClient();
-
-                            using (var req = new HttpRequestMessage(HttpMethod.Post, AccessTokenTokenServiceUrl) { Content = new FormUrlEncodedContent(nvc) })
-                            {
-                                var httpResponseMessage = await authServiceClient.SendAsync(req);
-                                var tokenResonseString = await httpResponseMessage.Content.ReadAsStringAsync();
-                                if (httpResponseMessage.StatusCode == HttpStatusCode.OK)
-                                {
-                                    var accessToken = JsonConvert.DeserializeObject<AccessTokenResponse>(tokenResonseString);
-
-                                    AuthToken = new Token()
-                                    {
-                                        AuthToken =  accessToken.access_token, //Convert.ToBase64String(Encoding.UTF8.GetBytes(accessToken.access_token)),
-                                        Expires = DateTime.Now.AddSeconds(accessToken.expires_in)
-                                    };
-                                }
-                            }
-                        }
-
-                        #endregion
-                    }
-                    else
-                    {
-                        #region Username => access_token
-
-                        AuthToken = new Token()
-                        {
-                            AuthToken = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ this.Username }")),
+                            AuthToken = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ this.Username }:{ this.Password }")),
                             Expires = DateTime.Now.AddDays(365)
                         };
 
                         #endregion
                     }
+                    if (this.AuthType == AuthorizationType.Bearer)
+                    {
+                        if (!String.IsNullOrEmpty(AccessTokenTokenServiceUrl))
+                        {
+                            #region OAuth2
+
+                            var authServiceClient = httpClient; // use same...
+                                                                //using (var authServiceClient = new HttpClient())
+                            {
+                                authServiceClient.DefaultRequestHeaders.Authorization =
+                                    new System.Net.Http.Headers.AuthenticationHeaderValue("Basic",
+                                    Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ this.Username }:{ this.Password }")));
+                                //authServiceClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/x-www-form-urlencoded");
+
+                                var nvc = new List<KeyValuePair<string, string>>();
+                                nvc.Add(new KeyValuePair<string, string>("grant_type", this.GrantType));
+                                nvc.Add(new KeyValuePair<string, string>("scope", this.Scope));
+                                var client = new HttpClient();
+
+                                using (var req = new HttpRequestMessage(HttpMethod.Post, AccessTokenTokenServiceUrl) { Content = new FormUrlEncodedContent(nvc) })
+                                {
+                                    var httpResponseMessage = await authServiceClient.SendAsync(req);
+                                    if (httpResponseMessage.IsSuccessStatusCode)
+                                    {
+                                        var tokenResonseString = await httpResponseMessage.Content.ReadAsStringAsync();
+                                        var accessToken = JsonConvert.DeserializeObject<AccessTokenResponse>(tokenResonseString);
+
+                                        if (!String.IsNullOrEmpty(accessToken.error))
+                                        {
+                                            throw new Exception(RemoveSecrets($"AccessToken POST request returns error: { accessToken.error } - { accessToken.error_description ?? String.Empty }"));
+                                        }
+
+                                        _globalTokenCache[CacheKey] = token = new Token()
+                                        {
+                                            AuthToken = accessToken.access_token, //Convert.ToBase64String(Encoding.UTF8.GetBytes(accessToken.access_token)),
+                                            Expires = DateTime.Now.AddSeconds(accessToken.expires_in)
+                                        };
+                                    }
+                                    else
+                                    {
+                                        throw new Exception($"AccessToken POST request returns statuscode { httpResponseMessage.StatusCode }");
+                                    }
+                                }
+                            }
+
+                            #endregion
+                        }
+                        else
+                        {
+                            #region Username => access_token
+
+                            _globalTokenCache[CacheKey] = token = new Token()
+                            {
+                                AuthToken = this.Username,
+                                Expires = DateTime.Now.AddDays(365)
+                            };
+
+                            #endregion
+                        }
+                    }
+                }
+
+                if (token != null)
+                {
+                    httpClient.DefaultRequestHeaders.Authorization =
+                        new System.Net.Http.Headers.AuthenticationHeaderValue(AuthType.ToString(),
+                        token.AuthToken);
                 }
             }
-
-            if (AuthToken != null)
+            catch (Exception ex)
             {
-                httpClient.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue(AuthType.ToString(),
-                    AuthToken.AuthToken);
+                _globalTokenCache[CacheKey] = null;
+                throw new Exception("WebAuthoriation Exception", ex);
             }
         }
 
-        private Token AuthToken { get; set; } 
+        private string CacheKey => $"{ this.AccessTokenTokenServiceUrl }:{ this.AuthType.ToString() }:{ this.Username }";
+
+        private string RemoveSecrets(string msg)
+        {
+            if(!String.IsNullOrEmpty(Username))
+            {
+                msg = msg.Replace(Username, $"{ Username.Substring(0, Math.Min(Username.Length, 2)) }******");
+            }
+
+            if (!String.IsNullOrEmpty(Password)) {
+                msg = msg.Replace(Username, $"********");
+            }
+
+            if(!String.IsNullOrEmpty(AccessTokenTokenServiceUrl))
+            {
+                msg = msg.Replace(AccessTokenTokenServiceUrl, $"{ AccessTokenTokenServiceUrl.Substring(0, Math.Min(AccessTokenTokenServiceUrl.Length, 24)) }******");
+            }
+
+            return msg;
+        }
 
         #region Classes
 
@@ -208,6 +250,9 @@ namespace gView.Web.Framework.Web.Authorization
             public string id_token { get; set; }
             public string token_type { get; set; }
             public int expires_in { get; set; }
+
+            public string error { get; set; }
+            public string error_description { get; set; }
         }
 
         #endregion

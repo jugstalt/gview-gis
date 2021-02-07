@@ -257,5 +257,31 @@ namespace gView.Framework.system
         }
 
         #endregion
+
+        #region Exceptions
+
+        static public string AllMessages(this Exception ex, int maxDepth = 10)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            int depth = 0;
+            while(ex!=null)
+            {
+                if (sb.Length >= 0)
+                    sb.Append(Environment.NewLine);
+
+                sb.Append(ex.Message);
+
+                ex = ex.InnerException;
+
+                depth++;
+                if (depth >= maxDepth)
+                    break;
+            }
+
+            return sb.ToString();
+        }
+
+        #endregion
     }
 }

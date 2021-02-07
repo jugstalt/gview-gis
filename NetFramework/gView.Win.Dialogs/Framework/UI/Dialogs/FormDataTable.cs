@@ -1050,21 +1050,28 @@ namespace gView.Framework.UI.Dialogs
         {
             CleanUp();
 
-            if (_class is IFeatureClass)
+            try
             {
-                if (filter is List<int>)
+                if (_class is IFeatureClass)
                 {
-                    ProcessFeatureClassByID(_class as IFeatureClass, filter as List<int>).Wait();
+                    if (filter is List<int>)
+                    {
+                        ProcessFeatureClassByID(_class as IFeatureClass, filter as List<int>).Wait();
+                    }
+                    else
+                    {
+                        ProcessFeatureClass(_class as IFeatureClass, filter as IQueryFilter).Wait();
+                    }
                 }
-                else
+                else if (_class is ITableClass)
                 {
-                    ProcessFeatureClass(_class as IFeatureClass, filter as IQueryFilter).Wait();
-                }
+                    ProcessTableClass(_class as ITableClass, filter as IQueryFilter);
+                };
             }
-            else if (_class is ITableClass)
+            catch (Exception ex)
             {
-                ProcessTableClass(_class as ITableClass, filter as IQueryFilter);
-            };
+                MessageBox.Show(ex.AllMessages(), "Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         public void Continue()
@@ -1073,24 +1080,37 @@ namespace gView.Framework.UI.Dialogs
 
             if (_fTab != null)
             {
-                _fTab.Fill(_cancelTracker);
-
-                if (!_fTab.hasMore ||
-                    (_cancelTracker != null && !_cancelTracker.Continue && !_cancelTracker.Paused))
+                try
                 {
-                    _fTab.ReleaseCursor();
-                    _cursor = null;
+                    _fTab.Fill(_cancelTracker);
+
+
+                    if (!_fTab.hasMore ||
+                        (_cancelTracker != null && !_cancelTracker.Continue && !_cancelTracker.Paused))
+                    {
+                        _fTab.ReleaseCursor();
+                        _cursor = null;
+                        if (ThreadFinished != null)
+                        {
+                            ThreadFinished();
+                        }
+                    }
+                    else
+                    {
+                        if (Paused != null)
+                        {
+                            Paused();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
                     if (ThreadFinished != null)
                     {
                         ThreadFinished();
                     }
-                }
-                else
-                {
-                    if (Paused != null)
-                    {
-                        Paused();
-                    }
+
+                    MessageBox.Show(ex.AllMessages(), "Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             else

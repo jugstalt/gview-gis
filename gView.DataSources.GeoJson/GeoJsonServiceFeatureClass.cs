@@ -1,8 +1,7 @@
 ﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
+using gView.Framework.system;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.GeoJson
@@ -97,10 +96,25 @@ namespace gView.DataSources.GeoJson
 
         async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
-            if (filter is DistinctFilter)
-                return new GeoJsonDistinctFeatureCursor(await _dataset.Source?.GetFeatures(this.GeometryType), (DistinctFilter)filter);
+            if (_dataset.Source != null)
+            {
+                if (_dataset.Source.IsValid)
+                {
+                    if (filter is DistinctFilter)
+                    {
+                        return new GeoJsonDistinctFeatureCursor(await _dataset.Source?.GetFeatures(this.GeometryType), (DistinctFilter)filter);
+                    }
 
-            return new GeoJsonFeatureCursor(await _dataset.Source?.GetFeatures(this.GeometryType), filter);
+                    return new GeoJsonFeatureCursor(await _dataset.Source?.GetFeatures(this.GeometryType), filter);
+                }
+                else if (_dataset.Source.LastException != null)
+                {
+                    throw new Exception(_dataset.Source.LastException.AllMessages());
+                }
+            }
+
+            // Dataset is not intializalized
+            return new GeoJsonFeatureCursor(new IFeature[0], filter);
         }
 
         async public Task<ICursor> Search(IQueryFilter filter)
