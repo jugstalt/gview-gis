@@ -30,7 +30,7 @@ namespace gView.Server.Services.Security
             var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/manage");
             if (createIfFirst && di.GetFiles().Count() == 0)
             {
-                CreateLogin(di.FullName, username, password);
+                CreateLogin(di.FullName, username.ToLower(), password);
                 _encryptionCertService.GetCertificate("crypto0");  // Create the Service if not exits
             }
 
@@ -43,17 +43,34 @@ namespace gView.Server.Services.Security
             return di.Exists && di.GetFiles("*.lgn").Length > 0;
         }
 
+        public IEnumerable<string> GetMangeUserNames()
+        {
+            var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/manage");
+
+            if (di.Exists)
+            {
+                return di.GetFiles("*.lgn").Select(f => f.Name.Substring(0, f.Name.Length - f.Extension.Length));
+            }
+
+            return new string[0];
+        }
+
         #endregion
 
         #region Token Logins
 
         public void CreateTokenLogin(string username, string password)
         {
+            if (GetManageAndTokenUsernames().Where(u => username.Equals(u, StringComparison.InvariantCultureIgnoreCase)).Count() >= 0)
+            {
+                throw new MapServerException("User '" + username + "' already exists");
+            }
+
             var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/token");
             var fi = new FileInfo(di.FullName + "/" + username + ".lgn");
             if (fi.Exists)
             {
-                throw new Exception("User '" + username + "' already exists");
+                throw new MapServerException("User '" + username + "' already exists");
             }
 
             CreateLogin(di.FullName, username, password);
@@ -67,7 +84,7 @@ namespace gView.Server.Services.Security
             var fi = new FileInfo(di.FullName + "/" + username + ".lgn");
             if (!fi.Exists)
             {
-                throw new Exception("User '" + username + "' do not exists");
+                throw new MapServerException("User '" + username + "' do not exists");
             }
 
             var hashedPassword = SecureCrypto.Hash64(newPassword, username);
@@ -78,7 +95,12 @@ namespace gView.Server.Services.Security
         {
 
             var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/token");
-            return di.GetFiles("*.lgn").Select(f => f.Name.Substring(0, f.Name.Length - f.Extension.Length));
+            if (di.Exists)
+            {
+                return di.GetFiles("*.lgn").Select(f => f.Name.Substring(0, f.Name.Length - f.Extension.Length));
+            }
+
+            return new string[0];
         }
 
         public AuthToken GetAuthToken(string username, string password, int expireMinutes = 30)
@@ -94,6 +116,16 @@ namespace gView.Server.Services.Security
         }
 
         #endregion
+
+        public IEnumerable<string> GetManageAndTokenUsernames()
+        {
+            List<string> names = new List<string>();
+
+            names.AddRange(GetMangeUserNames());
+            names.AddRange(GetTokenUsernames());
+
+            return names;
+        }
 
         #region Request
 

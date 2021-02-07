@@ -80,10 +80,14 @@ namespace gView.Server.Controllers
                 //Console.WriteLine("PW: "+model.Password);
 
                 if (String.IsNullOrWhiteSpace(model.Username))
+                {
                     throw new Exception("Username is required...");
+                }
 
                 if (String.IsNullOrWhiteSpace(model.Password))
+                {
                     throw new Exception("Password is required...");
+                }
 
                 var authToken = _loginManager.GetManagerAuthToken(model.Username.Trim(), model.Password.Trim(), createIfFirst: true);
 
@@ -110,9 +114,9 @@ namespace gView.Server.Controllers
 
         public IActionResult Collect()
         {
-            var mem1 = (double)GC.GetTotalMemory(false) / 1024.0 / 1024.0;
+            var mem1 = GC.GetTotalMemory(false) / 1024.0 / 1024.0;
             GC.Collect();
-            var mem2 = (double)GC.GetTotalMemory(true) / 1024.0 / 1024.0;
+            var mem2 = GC.GetTotalMemory(true) / 1024.0 / 1024.0;
             return Json(new { succeeded = true, mem1 = mem1, mem2 = mem2 });
         }
 
@@ -378,7 +382,7 @@ namespace gView.Server.Controllers
                 {
                     allTypes = allTypes.ToArray(),
                     accessRules = accessRules,
-                    allUsers = _loginManager.GetTokenUsernames(),
+                    allUsers = _loginManager.GetManageAndTokenUsernames(),
                     anonymousUsername = Identity.AnonyomousUsername,
 
                     onlineResource = settings.OnlineResource,
@@ -505,7 +509,12 @@ namespace gView.Server.Controllers
                 model.NewUsername = model.NewUsername?.Trim() ?? String.Empty;
                 model.NewPassword = model.NewPassword?.Trim() ?? String.Empty;
 
-                _loginManager.CreateTokenLogin(model.NewUsername, model.NewPassword);
+                if (String.IsNullOrWhiteSpace(model.NewUsername))
+                {
+                    throw new MapServerException("Username is empty");
+                }
+
+                _loginManager.CreateTokenLogin(model.NewUsername.ToLower(), model.NewPassword);
 
                 return Json(new { success = true });
             });
