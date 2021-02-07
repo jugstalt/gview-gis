@@ -139,7 +139,7 @@ namespace gView.Web.Framework.Web.Authorization
                             #region OAuth2
 
                             var authServiceClient = httpClient; // use same...
-                                                                //using (var authServiceClient = new HttpClient())
+                            //using (var authServiceClient = new HttpClient())
                             {
                                 authServiceClient.DefaultRequestHeaders.Authorization =
                                     new System.Net.Http.Headers.AuthenticationHeaderValue("Basic",

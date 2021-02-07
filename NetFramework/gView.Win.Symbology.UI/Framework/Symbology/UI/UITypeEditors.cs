@@ -12,6 +12,7 @@ using gView.Framework.system;
 using gView.Framework.Carto;
 using gView.Framework.Carto.UI;
 using gView.Framework.Symbology.UI.Controls;
+using gView.Framework.UI.Symbology.Dialogs;
 
 namespace gView.Framework.Symbology.UI
 {
@@ -284,7 +285,29 @@ namespace gView.Framework.Symbology.UI
                 filename = ((RasterMarkerSymbol)((CustomClass)context.Instance).ObjectInstance).Filename;
             }
 
-            OpenFileDialog dlg = new OpenFileDialog();
+			#region Check Resources First
+
+			var currentMap = SymbolPreview.CurrentMap;
+			if(currentMap?.ResourceContainer!=null && currentMap.ResourceContainer.HasResources)
+            {
+				var resourcePicker = new FormMapResourcePicker(currentMap);
+				resourcePicker.SetAbortButtonText("Or Select File...");
+
+				switch(resourcePicker.ShowDialog())
+                {
+					case DialogResult.OK:
+						return $"resource:{ resourcePicker.SelectedResourceName }";
+					case DialogResult.Abort:
+						// Open Filedialog
+						break;
+					default:
+						return filename;
+                }
+            }
+
+			#endregion
+
+			OpenFileDialog dlg = new OpenFileDialog();
             dlg.FileName = filename;
 
             if (dlg.ShowDialog() == DialogResult.OK)
