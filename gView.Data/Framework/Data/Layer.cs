@@ -1959,6 +1959,26 @@ namespace gView.Framework.Data
             }
         }
 
+        protected IFeature CloneIfTransform(IFeature feature)
+        {
+            if (feature != null && _transformer != null && feature.Shape != null)
+            {
+                Feature cloned = new Feature();
+
+                foreach (var f in feature.Fields)
+                {
+                    cloned.Fields.Add(new FieldValue(f.Name, f.Value));
+                }
+
+                cloned.Shape = (IGeometry)feature.Shape.Clone();
+                cloned.Shape = _transformer.Transform2D(cloned.Shape) as IGeometry;
+
+                return cloned;
+            }
+
+            return feature;
+        }
+
         protected ICancelTracker CancelTracker { get; set; }
 
         #region IFeatureCursor Member

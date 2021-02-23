@@ -96,6 +96,22 @@ namespace gView.DataSources.GeoJson
 
         async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
+            if (filter is ISpatialFilter)
+            {
+                if (this.SpatialReference != null &&
+                    ((ISpatialFilter)filter).FilterSpatialReference != null &&
+                    !((ISpatialFilter)filter).FilterSpatialReference.Equals(this.SpatialReference))
+                {
+                    filter = (ISpatialFilter)filter.Clone();
+
+                    ((ISpatialFilter)filter).Geometry =
+                       GeometricTransformerFactory.Transform2D(((ISpatialFilter)filter).Geometry,
+                        ((ISpatialFilter)filter).FilterSpatialReference,
+                        this.SpatialReference);
+                    ((ISpatialFilter)filter).FilterSpatialReference = null;
+                }
+            }
+
             if (_dataset.Source != null)
             {
                 if (_dataset.Source.IsValid)
@@ -105,7 +121,7 @@ namespace gView.DataSources.GeoJson
                         return new GeoJsonDistinctFeatureCursor(await _dataset.Source?.GetFeatures(this.GeometryType), (DistinctFilter)filter);
                     }
 
-                    return new GeoJsonFeatureCursor(await _dataset.Source?.GetFeatures(this.GeometryType), filter);
+                    return new GeoJsonFeatureCursor(this, await _dataset.Source?.GetFeatures(this.GeometryType), filter);
                 }
                 else if (_dataset.Source.LastException != null)
                 {
@@ -114,7 +130,7 @@ namespace gView.DataSources.GeoJson
             }
 
             // Dataset is not intializalized
-            return new GeoJsonFeatureCursor(new IFeature[0], filter);
+            return new GeoJsonFeatureCursor(this, new IFeature[0], filter);
         }
 
         async public Task<ICursor> Search(IQueryFilter filter)
