@@ -11,9 +11,24 @@ namespace gView.Framework.IO
 {
     static public class Extensions
     {
+        static private HttpClient _httpClient = null;
+
         static public string ToPlattformPath(this string path)
         {
             return path.Replace(@"\", "/");
+        }
+
+        static public void SetRequestUrl(this HttpRequestMessage requestMessage, string url) 
+        {
+            var uri = new Uri(url);
+
+            if(!String.IsNullOrEmpty(uri.UserInfo))
+            {
+                requestMessage.Headers.Add("Authorization", $"Basic { Convert.ToBase64String(Encoding.UTF8.GetBytes(uri.UserInfo)) }");
+                uri = new Uri($"{ uri.Scheme }://{ uri.Authority }{ uri.PathAndQuery }");
+            }
+
+            requestMessage.RequestUri = uri;
         }
 
         async static public Task SaveOrUpload(this Bitmap bitmap, string path, ImageFormat format)
@@ -30,16 +45,31 @@ namespace gView.Framework.IO
 
                 var file_bytes = ms.ToArray();
 
-                using (var client = new HttpClient())
+                // reuse HttpClient
+                var client = _httpClient ?? (_httpClient = new HttpClient());
+
+                try
                 {
-                    HttpClient httpClient = new HttpClient();
-                    MultipartFormDataContent form = new MultipartFormDataContent();
+                    using (var requestMessage = new HttpRequestMessage())
+                    {
+                        MultipartFormDataContent form = new MultipartFormDataContent();
+                        form.Add(new ByteArrayContent(file_bytes, 0, file_bytes.Length), "file", filename);
 
-                    form.Add(new ByteArrayContent(file_bytes, 0, file_bytes.Length), "file", filename);
-                    HttpResponseMessage response = await httpClient.PostAsync(url, form);
+                        requestMessage.Method = HttpMethod.Post;
+                        requestMessage.Content = form;
+                        requestMessage.SetRequestUrl(url);
 
-                    response.EnsureSuccessStatusCode();
-                    //string sd = response.Content.ReadAsStringAsync().Result;
+                        HttpResponseMessage response = await client.SendAsync(requestMessage);
+
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            throw new Exception($"SaveOrUpload: Upload status code: { response.StatusCode }");
+                        }
+                    }
+                }
+                catch(Exception ex)
+                {
+                    throw new Exception($"SaveOrUpload: { ex.Message }", ex);
                 }
             }
             else

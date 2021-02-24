@@ -122,7 +122,9 @@ namespace gView.Server.AppCode
                         "Image.Save\nPath='" + path + "'\nFormat=" + format.ToString() + "\n" +
                         ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                 }
-                return false;
+                //return false;
+
+                throw ex;
             }
         }
 
