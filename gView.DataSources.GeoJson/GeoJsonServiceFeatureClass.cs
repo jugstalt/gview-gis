@@ -2,6 +2,7 @@
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.GeoJson
@@ -29,14 +30,28 @@ namespace gView.DataSources.GeoJson
             var fields = new Fields();
             if (dataset.Source != null)
             {
-                foreach (var feature in await dataset.Source.GetFeatures(geometryType))
+                bool idIsInterger = false;
+                var features = await dataset.Source.GetFeatures(geometryType);
+
+                // mayby later...
+                //if (features != null && features.Count() > 0)
+                //{
+                //    idIsInterger = features.Where(f => f != null && int.TryParse(f["id"]?.ToString(), out int intId))
+                //                           .Count() == features.Count();
+                //}
+
+                foreach (var feature in features)
                 {
                     foreach(var fieldValue in feature.Fields)
                     {
                         if(fields.FindField(fieldValue.Name) == null)
                         {
                             var val = fieldValue.Value;
-                            if(val?.GetType() == typeof(int))
+                            if (fieldValue.Name == "id" && idIsInterger)
+                            {
+                                fields.Add(new Field(fieldValue.Name, FieldType.ID));
+                            }
+                            else if (val?.GetType() == typeof(int))
                             {
                                 fields.Add(new Field(fieldValue.Name, FieldType.integer));
                             }
