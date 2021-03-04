@@ -19,3 +19,6 @@ The components of the gView Framework can be divided into two categories:
   In addition to OGC standards (WMS, WFS), the services are also available in formats such as GeoServices REST and ArcXML. This makes it 
   easy to view and query the services in any popular GIS software.
 
+**Table of centents**
+
+* [Data Formats](formats.md)

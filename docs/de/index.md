@@ -20,6 +20,6 @@ Die Komponenten des gView Frameworks lassen sich in zwei Kategorien einteilen:
   die Dienste in jeder gängigen GIS Software anzeigen und Abfragen.
 
 
-Inhalt
+**Inhalt**
 
 * [Datenformate](formats.md)
