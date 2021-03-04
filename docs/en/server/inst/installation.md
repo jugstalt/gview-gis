@@ -1,13 +1,13 @@
 Installation
 ============
 
-Der gView Server ist eine .NET Core Web Anwendungen und kann auf unterschiedliche Weise installiert werden:
+The gView Server is a .NET Core Web application and can be installed in several ways:
 
-**Inhalt**
+**Table of contents**
    
    * [Microsoft Internet Information Server (IIS) (Windows)](installation_iis.md)
    * [Docker Container (Linux)](installation_docker.md)
    * [Standalone (Windows, Linux, MacOS)](installation_standalone.md)
    * [Postinstallation](postinstallation.md)
 
-[Weiter..](installation_iis.md)
+[Next..](installation_iis.md)

@@ -8,3 +8,5 @@ geodata. After starting, the following window will appear:
 
 On the left, the file system and the connections to various data sources are displayed as a tree. 
 The middle part of the window (*Contents*) always displays the contents of each node.
+
+[Next..](../../server/index.md)
