@@ -51,5 +51,5 @@ Die Schnittstelle bietet neben *MapServices* auch *FeatureServices*, mit denen G
 werden können.
 
 
-[Weiter..](desktop/init.md)
+[Weiter..](desktop/index.md)
  

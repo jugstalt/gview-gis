@@ -8,7 +8,7 @@ GI Systemen wird dabei voraus gesetzt.
 
 **Inhalt**
 
-   [Installation](installation.md)
-   [gView Data Explorer](dataexplorer/index.md)
+   * [Installation](installation.md)
+   * [gView Data Explorer](dataexplorer/index.md)
 
 [Weiter..](installation.md)
