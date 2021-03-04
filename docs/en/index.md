@@ -23,6 +23,7 @@ The components of the gView Framework can be divided into two categories:
 
 * [Data Formats](formats.md)
 * [gView Desktop](desktop/index.md)
+* [gView Server](server/index.md)
 
 
 [Next..](formats.md)
