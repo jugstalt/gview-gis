@@ -18,3 +18,8 @@ Die Komponenten des gView Frameworks lassen sich in zwei Kategorien einteilen:
 * **Server GIS:** Der gView Server ist ein Kartenserver, mit dem die erstellten Karten als Kartendienste veröffentlicht werden können.
   Neben OGC Standards (WMS, WFS) stehen die Dienste auch in Formaten wie GeoServices REST und ArcXML zu verfügung. Damit lassen sich 
   die Dienste in jeder gängigen GIS Software anzeigen und Abfragen.
+
+
+Inhalt
+
+* [Datenformate](formats.md)
