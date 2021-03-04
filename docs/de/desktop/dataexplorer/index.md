@@ -8,3 +8,5 @@ von Geodaten konzipiert. Nach dem Start erscheint folgendes Fenster:
 
 Links werden das Dateisystem und die Verbindungen zu diversen Datenquellen in einer Baustruktur dargestellt. 
 Der mittlere Teil des Fensters (*Contents*) zeigt immer den Inhalt des jeweiligen Knotens an.
+
+[Weiter..](../../server/index.md)
