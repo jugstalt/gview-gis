@@ -19,3 +19,5 @@ jeweilige Applikation das Verzeichnis nach Plugins. Dies kann einige Sekunden da
 öffnet sich das Programmfenster von gView.Carte bzw. gView.DataExplorer:
 
 ![inst3](img/inst3.png)
+
+[Weiter..](dataexplorer/index.md)

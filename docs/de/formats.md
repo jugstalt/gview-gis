@@ -49,4 +49,7 @@ Bei GeoServices REST handelt es sich um einen ([Open Web Foundation](http://www.
 [ESRI](https://www.esri.com/en-us/arcgis/open-vision/overview) entwickelt wurde. Dieses Format wird auch vom ArcGIS Server verwendet.
 Die Schnittstelle bietet neben *MapServices* auch *FeatureServices*, mit denen Geo-Objekte angelegt und bearbeitet 
 werden können.
+
+
+[Weiter..](desktop/init.md)
  

@@ -10,3 +10,5 @@ GI Systemen wird dabei voraus gesetzt.
 
    [Installation](installation.md)
    [gView Data Explorer](dataexplorer/index.md)
+
+[Weiter..](installation.md)
