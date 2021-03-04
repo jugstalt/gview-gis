@@ -9,7 +9,7 @@ Download the leatest release as ZIP from [Releases](https://github.com/jugstalt/
 Unzip and run...
 
 Read the installation documentation:
-* [English](docs/de/index.md)
+* [English](docs/en/index.md)
 * [German](docs/de/index.md)
 
 Some screenshots to demonstrate some of the features of gview GIS
