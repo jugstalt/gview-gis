@@ -271,7 +271,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                 throw new Exception("Format image/jpeg no supported");
             }
 
-            string path = _mapServer.TileCachePath + @"/" + MapName(context) + @"/_alllayers\compact\" +
+            string path = _mapServer.TileCachePath + @"/" + MapName(context) + @"/_alllayers/compact/" +
                 TileServiceMetadata.ScalePath(orientation, epsg, scale);
 
             string compactTileName = CompactTileName(row, col);
@@ -669,7 +669,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
                     for (int s = 0, to = metadata.Scales.Count; s < to; s++)
                     {
-                        string scalePath = _mapServer.TileCachePath + @"/" + MapName(context) + @"/_alllayers/" + (cacheType == "compact" ? @"compact\" : "") +
+                        string scalePath = _mapServer.TileCachePath + @"/" + MapName(context) + @"/_alllayers/" + (cacheType == "compact" ? @"compact/" : "") +
                             TileServiceMetadata.ScalePath(GridOrientation.UpperLeft, epsg, metadata.Scales[s]);
 
                         if (!new DirectoryInfo(scalePath).Exists)

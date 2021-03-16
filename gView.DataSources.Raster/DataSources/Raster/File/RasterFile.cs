@@ -97,6 +97,7 @@ namespace gView.DataSources.Raster.File
             {
                 ret.Add(layer);
             }
+
             return Task.FromResult(ret);
         }
 
@@ -138,7 +139,7 @@ namespace gView.DataSources.Raster.File
                     if (fi.Exists)
                     {
                         return Task.FromResult<IDatasetElement>(AddRasterFile(fi.FullName));
-                    }
+                    } 
                 }
             }
             catch { }
@@ -172,7 +173,10 @@ namespace gView.DataSources.Raster.File
                 }
                 if (fi.Extension.ToLower() == ".sid" || fi.Extension.ToLower() == ".jp2")
                 {
-                    MrSidFileClass rasterClass = (polygon == null) ? new MrSidFileClass(this, filename) : new MrSidFileClass(this, filename, polygon);
+                    MrSidFileClass rasterClass = (polygon == null) ?
+                        new MrSidFileClass(this, filename) : 
+                        new MrSidFileClass(this, filename, polygon);
+
                     RasterLayer layer = new RasterLayer(rasterClass);
                     if (rasterClass.isValid)
                     {
@@ -1116,7 +1120,8 @@ namespace gView.DataSources.Raster.File
                 try
                 {
                     FileInfo fi = new FileInfo(_filename);
-                    return fi.Name.Substring(0, fi.Name.Length - fi.Extension.Length);
+                    return fi.Name;
+                    //return fi.Name.Substring(0, fi.Name.Length - fi.Extension.Length);
                 }
                 catch
                 {
