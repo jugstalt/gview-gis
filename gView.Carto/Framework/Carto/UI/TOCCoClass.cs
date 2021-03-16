@@ -266,7 +266,7 @@ namespace gView.Framework.Carto.UI
                     else if (items[0] is ILegendItem)
                     {
                         ISymbol symbol = items[0] as ISymbol;
-                        SymbolPreview.Draw(
+                        new SymbolPreview(_map).Draw(
                             gr,
                             new System.Drawing.Rectangle(2, 1, 30, 20),
                             symbol);
@@ -292,7 +292,7 @@ namespace gView.Framework.Carto.UI
                         else if(item is ILegendItem)
                         {
                             ISymbol symbol = item as ISymbol;
-                            SymbolPreview.Draw(
+                            new SymbolPreview(_map).Draw(
                                 gr,
                                 new System.Drawing.Rectangle(4, 1 + y, 30, 20),
                                 symbol);
@@ -357,7 +357,7 @@ namespace gView.Framework.Carto.UI
                                 using (var gr = System.Drawing.Graphics.FromImage(bm))
                                 {
                                     ISymbol symbol = lItem as ISymbol;
-                                    SymbolPreview.Draw(
+                                    new SymbolPreview(_map).Draw(
                                         gr,
                                         new System.Drawing.Rectangle(0, 0, 20, 20),
                                         symbol);

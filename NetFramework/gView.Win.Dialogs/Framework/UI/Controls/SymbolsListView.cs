@@ -58,7 +58,7 @@ namespace gView.Framework.UI.Controls
         {
             Bitmap bm = new Bitmap(imageList1.ImageSize.Width, imageList1.ImageSize.Height);
             System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(bm);
-            SymbolPreview.Draw(gr, new Rectangle(0, 0, bm.Width, bm.Height), symbol);
+            new SymbolPreview(null).Draw(gr, new Rectangle(0, 0, bm.Width, bm.Height), symbol);
             gr.Dispose();
             gr = null;
             imageList1.Images.Add(bm);
@@ -70,7 +70,7 @@ namespace gView.Framework.UI.Controls
         {
             Bitmap bm = new Bitmap(imageList1.ImageSize.Width, imageList1.ImageSize.Height);
             System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(bm);
-            SymbolPreview.Draw(gr, new Rectangle(0, 0, bm.Width, bm.Height), symbol);
+            new SymbolPreview(null).Draw(gr, new Rectangle(0, 0, bm.Width, bm.Height), symbol);
             gr.Dispose();
             gr = null;
             imageList1.Images.Add(bm);
@@ -258,7 +258,7 @@ namespace gView.Framework.UI.Controls
                     Image image = imageList1.Images[item.ImageIndex];
                     using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(image))
                     {
-                        SymbolPreview.Draw(gr, new Rectangle(0, 0, image.Width, image.Height), symbol, true);
+                        new SymbolPreview(null).Draw(gr, new Rectangle(0, 0, image.Width, image.Height), symbol, true);
                         imageList1.Images[item.ImageIndex] = image;
                     }
                     list.Refresh();
@@ -273,7 +273,7 @@ namespace gView.Framework.UI.Controls
                         Image image = imageList1.Images[item.ImageIndex];
                         using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(image))
                         {
-                            SymbolPreview.Draw(gr, new Rectangle(0, 0, image.Width, image.Height), dlg.Symbol, true);
+                            new SymbolPreview(null).Draw(gr, new Rectangle(0, 0, image.Width, image.Height), dlg.Symbol, true);
                             imageList1.Images[item.ImageIndex] = image;
 
                             if (OnSymbolChanged != null) OnSymbolChanged(item.Text, dlg.Symbol);

@@ -186,7 +186,7 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_renderer == null) return;
 
-            SymbolPreview.Draw(
+            new SymbolPreview(null).Draw(
                 e.Graphics,
                 new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10),
                 ((IFeatureRenderer2)_renderer).Symbol, false);

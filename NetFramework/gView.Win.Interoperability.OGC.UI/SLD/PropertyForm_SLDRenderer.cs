@@ -300,13 +300,13 @@ namespace gView.Interoperability.OGC.UI.SLD
                                 ts.Angle = 0;
                                 ts.HorizontalOffset = ts.VerticalOffset = 0;
 
-                                SymbolPreview.Draw(e.Graphics, rect, ts);
+                                new SymbolPreview(null).Draw(e.Graphics, rect, ts);
                                 ts.Release();
                             }
                         }
                         else
                         {
-                            SymbolPreview.Draw(e.Graphics, rect, (ISymbol)legendItem);
+                            new SymbolPreview(null).Draw(e.Graphics, rect, (ISymbol)legendItem);
                         }
                     }
                     if (legendItem.LegendLabel != String.Empty)

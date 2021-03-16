@@ -39,7 +39,7 @@ namespace gView.Framework.Carto.Rendering.UI
             ISymbol symbol = _renderer[NetworkRenderer.RendererType.Edges];
             if (symbol != null)
             {
-                SymbolPreview.Draw(
+                new SymbolPreview(null).Draw(
                     e.Graphics,
                     new Rectangle(5, 5, btnChooseEdgeSymbol.Width - 10, btnChooseEdgeSymbol.Height - 10),
                     symbol, false);
@@ -54,7 +54,7 @@ namespace gView.Framework.Carto.Rendering.UI
             ISymbol symbol = _renderer[NetworkRenderer.RendererType.SimpleNodes];
             if (symbol != null)
             {
-                SymbolPreview.Draw(
+                new SymbolPreview(null).Draw(
                     e.Graphics,
                     new Rectangle(5, 5, btnChooseSimpeSwitchSymbol.Width - 10, btnChooseSimpeSwitchSymbol.Height - 10),
                     symbol, false);
@@ -69,7 +69,7 @@ namespace gView.Framework.Carto.Rendering.UI
             ISymbol symbol = _renderer[NetworkRenderer.RendererType.SwitchesOn];
             if (symbol != null)
             {
-                SymbolPreview.Draw(
+                new SymbolPreview(null).Draw(
                     e.Graphics,
                     new Rectangle(5, 5, btnChooseSwitchOnSymbol.Width - 10, btnChooseSwitchOnSymbol.Height - 10),
                     symbol, false);
@@ -84,7 +84,7 @@ namespace gView.Framework.Carto.Rendering.UI
             ISymbol symbol = _renderer[NetworkRenderer.RendererType.SwitchesOff];
             if (symbol != null)
             {
-                SymbolPreview.Draw(
+                new SymbolPreview(null).Draw(
                     e.Graphics,
                     new Rectangle(5, 5, btnChooseSwitchOffSymbol.Width - 10, btnChooseSwitchOffSymbol.Height - 10),
                     symbol, false);

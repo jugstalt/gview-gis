@@ -543,7 +543,7 @@ namespace gView.Framework.Symbology.UI.Controls
                             rect.Y += 1;
                             rect.Width -= 2;
                             rect.Height -= 2;
-                            SymbolPreview.Draw(e.Graphics, rect, item.Symbol, false);
+                            new SymbolPreview(null).Draw(e.Graphics, rect, item.Symbol, false);
                         }
                     }
                     catch { }
@@ -710,7 +710,7 @@ namespace gView.Framework.Symbology.UI.Controls
                 gr.DrawLine(pen, rect.Width / 2, 0, rect.Width / 2, rect.Height);
             }
 
-            SymbolPreview.Draw(gr, rect, _symbol, false);
+            new SymbolPreview(null).Draw(gr, rect, _symbol, false);
             gr.Dispose();
             gr = null;
         }

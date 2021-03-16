@@ -55,7 +55,7 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_renderer == null) return;
 
-            SymbolPreview.Draw(
+            new SymbolPreview(null).Draw(
                 e.Graphics,
                 new Rectangle(5, 5, btnLineSymbol.Width - 10, btnLineSymbol.Height - 10),
                 ((DimensionRenderer)_renderer).LineSymbol, false);
@@ -65,7 +65,7 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_renderer == null) return;
 
-            SymbolPreview.Draw(
+            new SymbolPreview(null).Draw(
                 e.Graphics,
                 new Rectangle(5, 5, btnTextSymbol.Width - 10, btnTextSymbol.Height - 10),
                 ((DimensionRenderer)_renderer).TextSymbol, false);

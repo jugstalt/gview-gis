@@ -87,7 +87,7 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnMinSymbol_Paint(object sender, PaintEventArgs e)
         {
-            SymbolPreview.Draw(e.Graphics,
+            new SymbolPreview(null).Draw(e.Graphics,
                     new Rectangle(0, 0, btnMinSymbol.Width, btnMinSymbol.Height),
                     _minSymbol);
         }
@@ -101,7 +101,7 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnMaxSymbol_Paint(object sender, PaintEventArgs e)
         {
-            SymbolPreview.Draw(e.Graphics,
+            new SymbolPreview(null).Draw(e.Graphics,
                     new Rectangle(0, 0, btnMaxSymbol.Width, btnMaxSymbol.Height),
                     _maxSymbol);
         }

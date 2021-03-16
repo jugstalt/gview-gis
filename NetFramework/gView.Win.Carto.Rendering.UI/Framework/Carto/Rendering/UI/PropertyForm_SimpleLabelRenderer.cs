@@ -117,7 +117,7 @@ namespace gView.Framework.Carto.Rendering.UI
             if (_renderer.TextSymbol is ISymbol)
             {
                 _renderer.TextSymbol.Text = "Label";
-                SymbolPreview.Draw(gr, rect, (ISymbol)_renderer.TextSymbol, false);
+                new SymbolPreview(null).Draw(gr, rect, (ISymbol)_renderer.TextSymbol, false);
             }
             gr.Dispose();
             gr = null;

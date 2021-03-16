@@ -187,7 +187,7 @@ namespace gView.Framework.Symbology.UI
 		public override void PaintValue(PaintValueEventArgs e)
 		{
 			if(!(e.Value is ISymbol)) return;
-			SymbolPreview.Draw(e.Graphics,e.Bounds,(ISymbol)e.Value);
+			new SymbolPreview(null).Draw(e.Graphics,e.Bounds,(ISymbol)e.Value);
 		}
 
 	}
@@ -227,7 +227,7 @@ namespace gView.Framework.Symbology.UI
         public override void PaintValue(PaintValueEventArgs e)
         {
             if (!(e.Value is ISymbol)) return;
-            SymbolPreview.Draw(e.Graphics, e.Bounds, (ISymbol)e.Value);
+            new SymbolPreview(null) .Draw(e.Graphics, e.Bounds, (ISymbol)e.Value);
         }
     }
 
