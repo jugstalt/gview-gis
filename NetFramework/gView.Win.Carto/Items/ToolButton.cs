@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using gView.Framework.UI;
-using System.Windows.Controls;
-using gView.Desktop.Wpf.Controls;
-using System.Windows;
-using gView.Framework.Globalisation;
+﻿using gView.Desktop.Wpf.Controls;
 using gView.Framework.Carto;
-using gView.Framework.Data;
+using gView.Framework.Globalisation;
+using gView.Framework.UI;
+using System;
+using System.Windows;
 
 namespace gView.Win.Carto.Items
 {
@@ -18,11 +13,11 @@ namespace gView.Win.Carto.Items
         {
             this.Tool = tool;
 
-            String toolName=!String.IsNullOrEmpty(tool.ToolTip) ? tool.ToolTip : LocalizedResources.GetResString(tool.Name, tool.Name);
-            base.Header = toolName; 
+            String toolName = !String.IsNullOrEmpty(tool.ToolTip) ? tool.ToolTip : LocalizedResources.GetResString(tool.Name, tool.Name);
+            base.Header = toolName;
             base.Icon = base.LargeIcon = ImageFactory.FromBitmap(tool.Image as System.Drawing.Image);
 
-            if(tool is IScreenTip)
+            if (tool is IScreenTip)
             {
                 base.ToolTip = new Fluent.ScreenTip()
                 {
@@ -36,7 +31,7 @@ namespace gView.Win.Carto.Items
 
     internal class ContextToolButton : Fluent.Button
     {
-        private object _contextObject=null;
+        private object _contextObject = null;
 
         public ContextToolButton(ITool tool, object contextObject)
         {
@@ -54,11 +49,11 @@ namespace gView.Win.Carto.Items
                 };
             }
 
-            _contextObject=contextObject;
+            _contextObject = contextObject;
             this.Click += new RoutedEventHandler(ContextToolButton_Click);
         }
 
-        void ContextToolButton_Click(object sender, RoutedEventArgs e)
+        private void ContextToolButton_Click(object sender, RoutedEventArgs e)
         {
             Tool.OnEvent(_contextObject);
         }
@@ -106,13 +101,13 @@ namespace gView.Win.Carto.Items
             base.Visibility = visible == false ? Visibility.Collapsed : Visibility.Visible;
         }
 
-        void ContextMenuButton_Click(object sender, RoutedEventArgs e)
+        private void ContextMenuButton_Click(object sender, RoutedEventArgs e)
         {
             if (_doc == null || Tool == null || _contextType == null) return;
 
             if (_contextType.ContextObject is IMap)
             {
-                Tool.OnEvent(_contextType.ContextObject, _doc);   
+                Tool.OnEvent(_contextType.ContextObject, _doc);
             }
             else if (_contextType.ContextObject is ITOCElement && ((ITOCElement)_contextType.ContextObject).Layers != null)
             {
@@ -138,7 +133,7 @@ namespace gView.Win.Carto.Items
             this.Tool = tool;
 
             String toolName = !String.IsNullOrEmpty(tool.ToolTip) ? tool.ToolTip : LocalizedResources.GetResString(tool.Name, tool.Name);
-            base.Header = toolName; 
+            base.Header = toolName;
             base.Icon = base.LargeIcon = ImageFactory.FromBitmap(tool.Image as System.Drawing.Image);
 
             if (tool is IScreenTip)
@@ -151,7 +146,6 @@ namespace gView.Win.Carto.Items
         }
 
         public ITool Tool { get; private set; }
-
 
         public bool Checked
         {
@@ -192,7 +186,7 @@ namespace gView.Win.Carto.Items
             base.Click += new RoutedEventHandler(PdfLinkButton_Click);
         }
 
-        void PdfLinkButton_Click(object sender, RoutedEventArgs e)
+        private void PdfLinkButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {

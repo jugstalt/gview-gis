@@ -26,7 +26,7 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_renderer == null) return;
 
-            SymbolPreview.Draw(
+            new SymbolPreview(null).Draw(
                 e.Graphics,
                 new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10),
                 _renderer[geometryType.Point], false);
@@ -36,7 +36,7 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_renderer == null) return;
 
-            SymbolPreview.Draw(
+            new SymbolPreview(null).Draw(
                 e.Graphics,
                 new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10),
                 _renderer[geometryType.Polygon], false);
@@ -46,7 +46,7 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_renderer == null) return;
 
-            SymbolPreview.Draw(
+            new SymbolPreview(null).Draw(
                 e.Graphics,
                 new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10),
                 _renderer[geometryType.Polyline], false);

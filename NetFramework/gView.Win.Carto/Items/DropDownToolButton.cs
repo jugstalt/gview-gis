@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using gView.Desktop.Wpf.Controls;
 using gView.Framework.UI;
-using gView.Desktop.Wpf.Controls;
+using System;
 using System.Windows;
-using System.Windows.Media;
 
 namespace gView.Win.Carto.Items
 {
@@ -19,6 +15,7 @@ namespace gView.Win.Carto.Items
             : this(tool, null)
         {
         }
+
         public DropDownToolButton(IToolMenu tool, object contextObject)
         {
             _tool = tool;
@@ -40,12 +37,12 @@ namespace gView.Win.Carto.Items
             }
         }
 
-        void button_Click(object sender, EventArgs e)
+        private void button_Click(object sender, EventArgs e)
         {
             if (!(sender is DropDownToolButtonItem)) return;
 
             _tool.SelectedTool = ((DropDownToolButtonItem)sender).Tool;
-            base.Icon = base.LargeIcon= ImageFactory.FromBitmap(_tool.SelectedTool.Image as System.Drawing.Image);
+            base.Icon = base.LargeIcon = ImageFactory.FromBitmap(_tool.SelectedTool.Image as System.Drawing.Image);
             base.Header = _tool.SelectedTool.Name;
 
             this.OnClick();
@@ -70,7 +67,7 @@ namespace gView.Win.Carto.Items
             }
         }
 
-        #endregion
+        #endregion ICheckAbleButton Member
 
         #region Events
 
@@ -84,7 +81,7 @@ namespace gView.Win.Carto.Items
                 _tool.SelectedTool.OnEvent(_contextObject);
         }
 
-        #endregion
+        #endregion Events
     }
 
     internal class DropDownToolButtonItem : Fluent.Button
@@ -97,7 +94,7 @@ namespace gView.Win.Carto.Items
             _parent = parent;
             _tool = tool;
 
-            base.Icon = base.LargeIcon= ImageFactory.FromBitmap(tool.Image as System.Drawing.Image);
+            base.Icon = base.LargeIcon = ImageFactory.FromBitmap(tool.Image as System.Drawing.Image);
             base.Header = tool.Name;
             base.SizeDefinition = "Middle";
         }

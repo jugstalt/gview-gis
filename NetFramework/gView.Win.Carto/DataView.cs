@@ -1,22 +1,19 @@
+using gView.Framework.Carto;
+using gView.Framework.Carto.UI;
+using gView.Framework.Geometry;
+using gView.Framework.IO;
+using gView.Framework.UI;
+using gView.Framework.UI.Controls;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Windows.Forms;
-using gView.Framework.Carto;
-using gView.Framework.Geometry;
-using gView.Framework.UI.Controls;
-using gView.Framework.IO;
-using gView.Framework.Carto.UI;
-using gView.Framework.UI;
-using Xceed.Wpf;
 using Xceed.Wpf.AvalonDock.Layout;
 
 namespace gView.Desktop.Wpf.Carto
 {
-
     internal class DataViewMenuItem : MenuItem
     {
-        DataView _dv;
+        private DataView _dv;
 
         public DataViewMenuItem(DataView dv)
         {
@@ -47,7 +44,6 @@ namespace gView.Desktop.Wpf.Carto
         }
     }
 
-
     internal class DataView : IPersistable
     {
         public event EventHandler DataViewRenamed;
@@ -71,6 +67,7 @@ namespace gView.Desktop.Wpf.Carto
         {
             _maps = new List<IMap>(maps);
         }
+
         #region IDataView Members
 
         public string Name
@@ -103,14 +100,14 @@ namespace gView.Desktop.Wpf.Carto
             }
         }
 
-        void _map_MapRenamed(object sender, EventArgs e)
+        private void _map_MapRenamed(object sender, EventArgs e)
         {
             if (DataViewRenamed != null)
                 DataViewRenamed(this, e);
         }
 
-        #endregion
-        
+        #endregion IDataView Members
+
         internal IEnvelope Envelope
         {
             get { return _envelope; }
@@ -215,7 +212,6 @@ namespace gView.Desktop.Wpf.Carto
                 stream.Save("DisplayRotation", _displayRotation);
         }
 
-        #endregion
+        #endregion IPersistable Members
     }
-
 }

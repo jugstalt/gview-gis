@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using gView.Desktop.Wpf.Controls;
 using gView.Framework.UI;
-using gView.Desktop.Wpf.Controls;
 
 namespace gView.Win.Carto.Items
 {

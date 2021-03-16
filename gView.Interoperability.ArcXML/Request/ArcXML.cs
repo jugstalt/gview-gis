@@ -1387,7 +1387,7 @@ namespace gView.Interoperability.ArcXML
                 {
                     using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(bm))
                     {
-                        SymbolPreview.Draw(gr, new System.Drawing.Rectangle(0, 0, 25, 14), lItem as ISymbol);
+                        new SymbolPreview(null).Draw(gr, new System.Drawing.Rectangle(0, 0, 25, 14), lItem as ISymbol);
                     }
                     MemoryStream ms = new MemoryStream();
                     bm.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);

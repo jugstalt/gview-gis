@@ -9,8 +9,13 @@ namespace gView.Framework.Carto.UI
 {
     public class SymbolPreview
     {
-        public SymbolPreview()
+        public static IMap CurrentMap = null;
+
+        private readonly IMap _map;
+
+        public SymbolPreview(IMap map)
         {
+            _map = map ?? CurrentMap;
         }
 
         private static IGeometry GeometryFromSymbol(ISymbol symbol, IEnvelope env)
@@ -58,17 +63,15 @@ namespace gView.Framework.Carto.UI
             return geometry;
         }
 
-        public static IMap CurrentMap = null;
-
-        public static void Draw(System.Drawing.Graphics graphics, System.Drawing.Rectangle rectangle, ISymbol symbol)
+        public void Draw(System.Drawing.Graphics graphics, System.Drawing.Rectangle rectangle, ISymbol symbol)
         {
             Draw(graphics, rectangle, symbol, true);
         }
-        public static void Draw(System.Drawing.Graphics graphics, System.Drawing.Rectangle rectangle, ISymbol symbol, bool cls)
+        public void Draw(System.Drawing.Graphics graphics, System.Drawing.Rectangle rectangle, ISymbol symbol, bool cls)
         {
             if (symbol == null) return;
 
-            Display display = new gView.Framework.Carto.Display(CurrentMap);
+            Display display = new gView.Framework.Carto.Display(_map);
             display.dpi = graphics.DpiX;
 
             IEnvelope env = display.Limit = new Envelope(0, rectangle.Top + rectangle.Height, rectangle.Left + rectangle.Width, 0);

@@ -1194,7 +1194,7 @@ namespace gView.Framework.UI.Controls
                     ILegendItem legendItem = ((LegendItem)item).legendItem;
                     if (legendItem is ISymbol)
                     {
-                        SymbolPreview.Draw(e.Graphics, rect, (ISymbol)legendItem);
+                        new SymbolPreview(null).Draw(e.Graphics, rect, (ISymbol)legendItem);
                     }
                     if (legendItem.LegendLabel != "")
                     {

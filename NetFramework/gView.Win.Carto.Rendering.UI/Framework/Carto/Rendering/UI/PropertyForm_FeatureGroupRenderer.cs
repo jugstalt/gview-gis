@@ -346,7 +346,7 @@ namespace gView.Framework.Carto.Rendering.UI
                 {
                     if (legendItem is ISymbol)
                     {
-                        SymbolPreview.Draw(e.Graphics, rect, (ISymbol)legendItem);
+                        new SymbolPreview(null).Draw(e.Graphics, rect, (ISymbol)legendItem);
                     }
                     if (legendItem.LegendLabel != String.Empty)
                     {
