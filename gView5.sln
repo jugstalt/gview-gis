@@ -177,9 +177,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.VectorTil
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.DataSources.VectorTileCache.UI", "NetFramework\gView.Win.DataSources.VectorTileCache.UI\gView.Win.DataSources.VectorTileCache.UI.csproj", "{DF28644D-7BE0-428A-BF5D-31325604EE68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.GeoJson", "gView.DataSources.GeoJson\gView.DataSources.GeoJson.csproj", "{E56C9CC9-720D-453F-9760-A56D83A48D10}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.GeoJson", "gView.DataSources.GeoJson\gView.DataSources.GeoJson.csproj", "{E56C9CC9-720D-453F-9760-A56D83A48D10}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.DataSources.GeoJson.UI", "NetFramework\gView.Win.DataSources.GeoJson.UI\gView.Win.DataSources.GeoJson.UI.csproj", "{F66575E3-6821-48CF-A9F4-F673D913B1EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Cmd.FillLuceneServer", "gView.Cmd.FillLuceneServer\gView.Cmd.FillLuceneServer.csproj", "{11421C27-F65E-4826-B0ED-84C4536A69BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -901,6 +903,14 @@ Global
 		{F66575E3-6821-48CF-A9F4-F673D913B1EF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F66575E3-6821-48CF-A9F4-F673D913B1EF}.Release|x64.ActiveCfg = Release|Any CPU
 		{F66575E3-6821-48CF-A9F4-F673D913B1EF}.Release|x64.Build.0 = Release|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Debug|x64.Build.0 = Debug|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Release|x64.ActiveCfg = Release|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
