@@ -21,4 +21,8 @@
     <ProjectReference Include="..\gView.System\gView.System.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Framework\Carto\Extensions\" />
+  </ItemGroup>
+
 </Project>

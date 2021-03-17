@@ -1,17 +1,12 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.Win32;
-using gView.Framework;
-using gView.Framework.Carto;
+using gView.Framework.Data;
+using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.Framework.UI;
-using gView.Framework.Data;
-using gView.Framework.IO;
-using gView.Framework.Symbology;
-using System.Threading.Tasks;
+using gView.Symbology.Framework.Symbology.Extensions;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Carto.UI
 {
@@ -56,9 +51,12 @@ namespace gView.Framework.Carto.UI
 		{
 			get
 			{
-				if(_pos>=_elements.Count) return null;
+				if(_pos>=_elements.Count)
+                {
+                    return null;
+                }
 
-				ITOCElement element=(ITOCElement)_elements[_pos];
+                ITOCElement element=(ITOCElement)_elements[_pos];
 				if(element.ElementType==TOCElementType.ClosedGroup) 
 				{
 					for(int i=_pos+1;i<_elements.Count;i++) 
@@ -72,8 +70,12 @@ namespace gView.Framework.Carto.UI
 								_pos=i;
 								return element;
 							}
-							if(parent==null) break;
-							parent=parent.ParentGroup;
+							if(parent==null)
+                            {
+                                break;
+                            }
+
+                            parent =parent.ParentGroup;
 						}
 					}
 					_pos=_elements.Count;
@@ -89,17 +91,29 @@ namespace gView.Framework.Carto.UI
         public List<ITOCElement> GroupedElements(ITOCElement group)
         {
             List<ITOCElement> elements = new List<ITOCElement>();
-            if (group == null || group.ElementType != TOCElementType.OpenedGroup) return elements;
+            if (group == null || group.ElementType != TOCElementType.OpenedGroup)
+            {
+                return elements;
+            }
 
             int index = _elements.IndexOf(group);
-            if (index == -1) return elements;
+            if (index == -1)
+            {
+                return elements;
+            }
 
             while (++index < _elements.Count)
             {
                 ITOCElement element = _elements[index];
-                if (!IsChild(group, element)) break;
+                if (!IsChild(group, element))
+                {
+                    break;
+                }
 
-                if (element.ParentGroup != group) continue;
+                if (element.ParentGroup != group)
+                {
+                    continue;
+                }
 
                 elements.Add(element);
                 if (element.ElementType == TOCElementType.OpenedGroup)
@@ -120,7 +134,9 @@ namespace gView.Framework.Carto.UI
                 List<ITOCElement> elements = new List<ITOCElement>();
 
                 foreach (ITOCElement element in _elements)
+                {
                     elements.Add(element);
+                }
 
                 return elements;
             }
@@ -131,15 +147,29 @@ namespace gView.Framework.Carto.UI
             List<ITOCElement> list = new List<ITOCElement>();
             foreach (ITOCElement element in _elements)
             {
-                if (element.Layers == null) 
+                if (element.Layers == null)
+                {
                     continue;
+                }
+
                 foreach (ILayer layer in element.Layers)
                 {
-                    if (layer == null) continue;
+                    if (layer == null)
+                    {
+                        continue;
+                    }
+
                     if (_map != null && _map.Display != null)
                     {
-                        if (layer.MinimumScale > 1 && layer.MinimumScale > _map.Display.mapScale) continue;
-                        if (layer.MaximumScale > 1 && layer.MaximumScale < _map.Display.mapScale) continue;
+                        if (layer.MinimumScale > 1 && layer.MinimumScale > _map.Display.mapScale)
+                        {
+                            continue;
+                        }
+
+                        if (layer.MaximumScale > 1 && layer.MaximumScale < _map.Display.mapScale)
+                        {
+                            continue;
+                        }
                     }
                     if (layer.Visible)
                     {
@@ -161,10 +191,16 @@ namespace gView.Framework.Carto.UI
                 foreach (ITOCElement element in elements)
                 {
                     System.Drawing.Bitmap bm = await Legend(element);
-                    if (bm != null) bitmaps.Add(bm);
+                    if (bm != null)
+                    {
+                        bitmaps.Add(bm);
+                    }
                 }
 
-                if (bitmaps.Count == 0) return new System.Drawing.Bitmap(1, 1);
+                if (bitmaps.Count == 0)
+                {
+                    return new System.Drawing.Bitmap(1, 1);
+                }
 
                 int width = 0, height = 0;
                 foreach (System.Drawing.Bitmap bm in bitmaps)
@@ -188,12 +224,19 @@ namespace gView.Framework.Carto.UI
             }
             catch
             {
-                if (bitmap != null) bitmap.Dispose();  
+                if (bitmap != null)
+                {
+                    bitmap.Dispose();
+                }
+
                 return null;
             }
             finally
             {
-                if (gr != null) gr.Dispose();
+                if (gr != null)
+                {
+                    gr.Dispose();
+                }
 
                 foreach (System.Drawing.Bitmap bm in bitmaps)
                 {
@@ -204,7 +247,10 @@ namespace gView.Framework.Carto.UI
         }
         async public Task<System.Drawing.Bitmap> Legend(ITOCElement element)
         {
-            if (element==null || element.Layers==null || !_elements.Contains(element)) return null;
+            if (element==null || element.Layers==null || !_elements.Contains(element))
+            {
+                return null;
+            }
 
             System.Drawing.Bitmap bm = new System.Drawing.Bitmap(1,1);
             System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(bm);
@@ -223,7 +269,11 @@ namespace gView.Framework.Carto.UI
                         if (await wClass.LegendRequest(_map.Display))
                         {
                             System.Drawing.Bitmap lBm = wClass.Legend;
-                            if (lBm == null) continue;
+                            if (lBm == null)
+                            {
+                                continue;
+                            }
+
                             height += lBm.Height;
                             items.Add(lBm);
                         }
@@ -315,7 +365,10 @@ namespace gView.Framework.Carto.UI
             {
                 font1.Dispose();
                 font2.Dispose();
-                if (gr != null) gr.Dispose();
+                if (gr != null)
+                {
+                    gr.Dispose();
+                }
             }
 
             return bm;
@@ -323,7 +376,10 @@ namespace gView.Framework.Carto.UI
         async public Task<TocLegendItems> LegendSymbol(ITOCElement element)
         {
             var items = new List<TocLegendItem>();
-            if (element == null || element.Layers == null || !_elements.Contains(element)) return null;
+            if (element == null || element.Layers == null || !_elements.Contains(element))
+            {
+                return null;
+            }
 
             try
             {
@@ -336,7 +392,11 @@ namespace gView.Framework.Carto.UI
                         {
                             System.Drawing.Bitmap lBm = wClass.Legend;
 
-                            if (lBm == null) continue;
+                            if (lBm == null)
+                            {
+                                continue;
+                            }
+
                             items.Add(new TocLegendItem()
                             {
                                 Image = lBm
@@ -359,7 +419,7 @@ namespace gView.Framework.Carto.UI
                                     ISymbol symbol = lItem as ISymbol;
                                     new SymbolPreview(_map).Draw(
                                         gr,
-                                        new System.Drawing.Rectangle(0, 0, 20, 20),
+                                        new System.Drawing.Rectangle().ToLegendItemSymbolRect(),
                                         symbol);
                                 }
                                 items.Add(new TocLegendItem()
@@ -462,12 +522,26 @@ namespace gView.Framework.Carto.UI
 
         public void Add2Group(ITOCElement element, ITOCElement Group)
 		{
-			if(element==null) return;
-			if(_elements.IndexOf(element)==-1) return;
-			if(element==Group) return;
+			if(element==null)
+            {
+                return;
+            }
+
+            if (_elements.IndexOf(element)==-1)
+            {
+                return;
+            }
+
+            if (element==Group)
+            {
+                return;
+            }
 
             if (Group == null || Group.Layers.Count != 1 ||
-                !(Group.Layers[0] is GroupLayer)) return;
+                !(Group.Layers[0] is GroupLayer))
+            {
+                return;
+            }
 
             ITOCElement pElement = element.ParentGroup;
             IGroupLayer pLayer = null;
@@ -492,10 +566,12 @@ namespace gView.Framework.Carto.UI
 				ITOCElement parent=Group;
 				while(parent!=null) 
 				{
-					if(parent.ParentGroup==element) 
-						((TOCElement)parent).ParentGroup=element.ParentGroup;
+					if(parent.ParentGroup==element)
+                    {
+                        ((TOCElement)parent).ParentGroup=element.ParentGroup;
+                    }
 
-					parent=parent.ParentGroup;
+                    parent =parent.ParentGroup;
 				}
 
 				_elements.Remove(element);
@@ -517,15 +593,21 @@ namespace gView.Framework.Carto.UI
                 }
             }
 
-            if (TocChanged != null) TocChanged(this, new EventArgs());
-		}
+            if (TocChanged != null)
+            {
+                TocChanged(this, new EventArgs());
+            }
+        }
 
 		public ITOCElement GetTOCElement(string name,ITOCElement parent) 
 		{
 			foreach(ITOCElement element in _elements) 
 			{
-				if(element.Name==name && element.ParentGroup==parent) return element;
-			}
+				if(element.Name==name && element.ParentGroup==parent)
+                {
+                    return element;
+                }
+            }
 			return null;
 		}
 
@@ -533,11 +615,17 @@ namespace gView.Framework.Carto.UI
         {
             foreach (ITOCElement tocElement in _elements)
             {
-                if (tocElement.Layers == null) continue;
-                foreach(ILayer e in tocElement.Layers)
+                if (tocElement.Layers == null)
                 {
-                    if (e == layer) 
+                    continue;
+                }
+
+                foreach (ILayer e in tocElement.Layers)
+                {
+                    if (e == layer)
+                    {
                         return tocElement;
+                    }
                 }
             }
             return null;
@@ -547,11 +635,17 @@ namespace gView.Framework.Carto.UI
         {
             foreach (ITOCElement tocElement in _elements)
             {
-                if (tocElement.Layers == null) continue;
+                if (tocElement.Layers == null)
+                {
+                    continue;
+                }
+
                 foreach (ILayer e in tocElement.Layers)
                 {
                     if (e.ID == layerId)
+                    {
                         return tocElement;
+                    }
                 }
             }
             return null;
@@ -559,14 +653,29 @@ namespace gView.Framework.Carto.UI
 
         public ITOCElement GetTOCElement(IClass Class)
         {
-            if (Class == null) return null;
+            if (Class == null)
+            {
+                return null;
+            }
+
             foreach (ITOCElement tocElement in _elements)
             {
-                if (tocElement.Layers == null) continue;
+                if (tocElement.Layers == null)
+                {
+                    continue;
+                }
+
                 foreach (ILayer e in tocElement.Layers)
                 {
-                    if (e == null) continue;
-                    if (e.Class == Class) return tocElement;
+                    if (e == null)
+                    {
+                        continue;
+                    }
+
+                    if (e.Class == Class)
+                    {
+                        return tocElement;
+                    }
                 }
             }
             return null;
@@ -580,8 +689,11 @@ namespace gView.Framework.Carto.UI
 				foreach(ITOCElement elem in _elements) 
 				{
 					if( elem.ElementType==TOCElementType.ClosedGroup ||
-					    elem.ElementType==TOCElementType.OpenedGroup ) e.Add(elem);
-				}
+					    elem.ElementType==TOCElementType.OpenedGroup )
+                    {
+                        e.Add(elem);
+                    }
+                }
 				return e;
 			}
 		}
@@ -590,18 +702,28 @@ namespace gView.Framework.Carto.UI
 		{
 			if(element.ElementType==TOCElementType.Layer) 
 			{
-				if(_elements.IndexOf(element)==-1) return;
+				if(_elements.IndexOf(element)==-1)
+                {
+                    return;
+                }
 
-				// Zwei Layer mit selben Namen und gleicher ParentGroup
-				// vereinigen...
-				foreach(ITOCElement e in _elements) 
+                // Zwei Layer mit selben Namen und gleicher ParentGroup
+                // vereinigen...
+                foreach (ITOCElement e in _elements) 
 				{
-					if(e==element) continue;
-					if(e.Name==newName && e.ParentGroup==element.ParentGroup) 
-					{
-						if(e.ElementType!=TOCElementType.Layer) return;  // Nur mit Layer vereinigbar...
+					if(e==element)
+                    {
+                        continue;
+                    }
 
-                        foreach(ILayer layer in element.Layers)
+                    if (e.Name==newName && e.ParentGroup==element.ParentGroup) 
+					{
+						if(e.ElementType!=TOCElementType.Layer)
+                        {
+                            return;  // Nur mit Layer vereinigbar...
+                        }
+
+                        foreach (ILayer layer in element.Layers)
                         {
 							((TOCElement)e).LayersList.Add(layer);
 						}
@@ -618,10 +740,18 @@ namespace gView.Framework.Carto.UI
 				// vereinigen...
 				foreach(ITOCElement e in _elements) 
 				{
-					if(e==element) continue;
-					if( e.ElementType!=TOCElementType.ClosedGroup &&
-						e.ElementType!=TOCElementType.OpenedGroup ) continue;
-					if(	e.ParentGroup==element.ParentGroup &&
+					if(e==element)
+                    {
+                        continue;
+                    }
+
+                    if ( e.ElementType!=TOCElementType.ClosedGroup &&
+						e.ElementType!=TOCElementType.OpenedGroup )
+                    {
+                        continue;
+                    }
+
+                    if (	e.ParentGroup==element.ParentGroup &&
 						e.Name==newName) 
 					{
                         foreach (ITOCElement e2 in ListOperations<ITOCElement>.Clone(_elements))
@@ -643,19 +773,30 @@ namespace gView.Framework.Carto.UI
 						break;
 					}
 				}
-				if(_elements.IndexOf(element)==-1) return;
-				((TOCElement)element).rename(newName);
+				if(_elements.IndexOf(element)==-1)
+                {
+                    return;
+                } ((TOCElement)element).rename(newName);
 			}
 
-            if (TocChanged != null) TocChanged(this, new EventArgs());
-		}
+            if (TocChanged != null)
+            {
+                TocChanged(this, new EventArgs());
+            }
+        }
 
         public void MoveElement(ITOCElement element, ITOCElement insertBefore, bool insertAfter)
         {
-            if (element == insertBefore) return;
+            if (element == insertBefore)
+            {
+                return;
+            }
 
             if (_elements.IndexOf(element) == -1 ||
-                _elements.IndexOf(insertBefore) == -1) return;
+                _elements.IndexOf(insertBefore) == -1)
+            {
+                return;
+            }
 
             int sum = (insertAfter) ? 1 : 0;
 
@@ -674,23 +815,36 @@ namespace gView.Framework.Carto.UI
                 this.MoveGroup(element);
             }
 
-            if (TocChanged != null) TocChanged(this, new EventArgs());
+            if (TocChanged != null)
+            {
+                TocChanged(this, new EventArgs());
+            }
         }
 
 		public int CountGroupLayers(ITOCElement Group,bool subGroups)
 		{
 			if( Group.ElementType!=TOCElementType.OpenedGroup &&
-				Group.ElementType!=TOCElementType.ClosedGroup ) return 0;
-			if(_elements.IndexOf(Group)==-1) return 0;
+				Group.ElementType!=TOCElementType.ClosedGroup )
+            {
+                return 0;
+            }
 
-			int count=0;
+            if (_elements.IndexOf(Group)==-1)
+            {
+                return 0;
+            }
+
+            int count=0;
 			foreach(ITOCElement element in _elements) 
 			{
 				if(element.ParentGroup==Group) 
 				{
 					if(element.ElementType==TOCElementType.Layer)
-						count++;
-					if((element.ElementType==TOCElementType.ClosedGroup ||
+                    {
+                        count++;
+                    }
+
+                    if ((element.ElementType==TOCElementType.ClosedGroup ||
 						element.ElementType==TOCElementType.OpenedGroup ) &&
 						subGroups) 
 					{
@@ -703,18 +857,28 @@ namespace gView.Framework.Carto.UI
 		public int CountVisibleGroupLayers(ITOCElement Group,bool subGroups) 
 		{
 			if( Group.ElementType!=TOCElementType.OpenedGroup &&
-				Group.ElementType!=TOCElementType.ClosedGroup ) return 0;
-			if(_elements.IndexOf(Group)==-1) return 0;
+				Group.ElementType!=TOCElementType.ClosedGroup )
+            {
+                return 0;
+            }
 
-			int count=0;
+            if (_elements.IndexOf(Group)==-1)
+            {
+                return 0;
+            }
+
+            int count=0;
 			foreach(ITOCElement element in _elements) 
 			{
 				if(element.ParentGroup==Group) 
 				{
 					if(element.ElementType==TOCElementType.Layer) 
 					{
-						if(element.LayerVisible) count++;
-					}
+						if(element.LayerVisible)
+                        {
+                            count++;
+                        }
+                    }
 					if((element.ElementType==TOCElementType.ClosedGroup ||
 						element.ElementType==TOCElementType.OpenedGroup ) &&
 						subGroups) 
@@ -728,10 +892,17 @@ namespace gView.Framework.Carto.UI
 		public void SplitMultiLayer(ITOCElement element) 
 		{
 			int index=_elements.IndexOf(element);
-			if(index==-1) return;
-			if(element.ElementType!=TOCElementType.Layer) return;
+			if(index==-1)
+            {
+                return;
+            }
 
-			for(int i=((TOCElement)element).LayersList.Count-1;i>0;i--) 
+            if (element.ElementType!=TOCElementType.Layer)
+            {
+                return;
+            }
+
+            for (int i=((TOCElement)element).LayersList.Count-1;i>0;i--) 
 			{
 				ILayer layer=(ILayer)((TOCElement)element).LayersList[i];
 				((TOCElement)element).LayersList.Remove(layer);
@@ -771,7 +942,11 @@ namespace gView.Framework.Carto.UI
                         if (element.Layers.Count == 0)
                         {
                             _elements.Remove(element);
-                            if (TocChanged != null) TocChanged(this, new EventArgs());
+                            if (TocChanged != null)
+                            {
+                                TocChanged(this, new EventArgs());
+                            }
+
                             break;
                         }
                     }
@@ -800,12 +975,19 @@ namespace gView.Framework.Carto.UI
                 foreach (IWebServiceTheme theme in wc.Themes)
                 {
                     theme.DatasetID = layer.DatasetID;
-                    if (theme.Locked) continue;
+                    if (theme.Locked)
+                    {
+                        continue;
+                    }
+
                     InsertLayer(pos > 0 ? pos + 1 : -1, theme, theme.Title, element);
                 }
             }
 
-            if (TocChanged != null) TocChanged(this, new EventArgs());
+            if (TocChanged != null)
+            {
+                TocChanged(this, new EventArgs());
+            }
         }
 
 		private int lastGroupItemIndex(ITOCElement parent) 
@@ -813,11 +995,16 @@ namespace gView.Framework.Carto.UI
 			int index=0,i=0;
 			foreach(ITOCElement elem in _elements) 
 			{
-				if(elem==parent) 
-					index=i;
-				else if(elem.ParentGroup==parent && elem.ElementType==TOCElementType.Layer)
-					index=i;
-				i++;
+				if(elem==parent)
+                {
+                    index =i;
+                }
+                else if(elem.ParentGroup==parent && elem.ElementType==TOCElementType.Layer)
+                {
+                    index =i;
+                }
+
+                i++;
 			}
 			return index;
 		}
@@ -840,12 +1027,17 @@ namespace gView.Framework.Carto.UI
 			{
 				_elements.Insert(index++,elem);
 				if( elem.ElementType==TOCElementType.ClosedGroup ||
-					elem.ElementType==TOCElementType.OpenedGroup ) 
-					MoveGroup(elem);
-			}
+					elem.ElementType==TOCElementType.OpenedGroup )
+                {
+                    MoveGroup(elem);
+                }
+            }
 
-            if (TocChanged != null) TocChanged(this, new EventArgs());
-		}
+            if (TocChanged != null)
+            {
+                TocChanged(this, new EventArgs());
+            }
+        }
 
 		public void SetGroupVisibility(ITOCElement Group,bool visible) 
 		{
@@ -873,15 +1065,22 @@ namespace gView.Framework.Carto.UI
 				foreach(ITOCElement tocElement in _elements) 
 				{
                     if (tocElement == null || tocElement.ElementType != TOCElementType.Layer ||
-                        tocElement.Layers == null) continue;
+                        tocElement.Layers == null)
+                    {
+                        continue;
+                    }
 
-					//if(!tocElement.LayerVisible) continue;
+                    //if(!tocElement.LayerVisible) continue;
 
                     if (this.Modifier == TOCModifier.Public)
                     {
                         foreach (ILayer layer in tocElement.Layers)
                         {
-                            if (layer == null || !layer.Visible) continue;
+                            if (layer == null || !layer.Visible)
+                            {
+                                continue;
+                            }
+
                             layers.Add(layer);
                         }
                     }
@@ -897,7 +1096,9 @@ namespace gView.Framework.Carto.UI
                         if (visible)
                         {
                             foreach (ILayer layer in tocElement.Layers)
+                            {
                                 layers.Add(layer);
+                            }
                         }
                     }
 				}
@@ -915,13 +1116,20 @@ namespace gView.Framework.Carto.UI
                 foreach (ITOCElement tocElement in _elements)
                 {
                     if (tocElement == null || tocElement.ElementType == TOCElementType.Layer ||
-                        tocElement.Layers == null) continue;
-                    
+                        tocElement.Layers == null)
+                    {
+                        continue;
+                    }
+
                     if (this.Modifier == TOCModifier.Public)
                     {
                         foreach (ILayer layer in tocElement.Layers)
                         {
-                            if (!(layer is IWebServiceLayer) || !layer.Visible) continue;
+                            if (!(layer is IWebServiceLayer) || !layer.Visible)
+                            {
+                                continue;
+                            }
+
                             layers.Add(layer as IWebServiceLayer);
                         }
                     }
@@ -938,7 +1146,11 @@ namespace gView.Framework.Carto.UI
                         {
                             foreach (ILayer layer in tocElement.Layers)
                             {
-                                if (!(layer is IWebServiceLayer)) continue;
+                                if (!(layer is IWebServiceLayer))
+                                {
+                                    continue;
+                                }
+
                                 layers.Add(layer as IWebServiceLayer);
                             }
                         }
@@ -957,9 +1169,12 @@ namespace gView.Framework.Carto.UI
 
                 foreach (ITOCElement tocElement in _elements)
                 {
-                    if (tocElement.ElementType != TOCElementType.Layer) continue;
+                    if (tocElement.ElementType != TOCElementType.Layer)
+                    {
+                        continue;
+                    }
 
-                    foreach(ILayer layer in tocElement.Layers)
+                    foreach (ILayer layer in tocElement.Layers)
                     {
                         layers.Add(layer);
                     }
@@ -972,17 +1187,31 @@ namespace gView.Framework.Carto.UI
         public void RemoveAllElements()
         {
             _elements.Clear();
-            if (TocChanged != null) TocChanged(this, new EventArgs());
+            if (TocChanged != null)
+            {
+                TocChanged(this, new EventArgs());
+            }
         }
 
         private bool IsChild(ITOCElement parent, ITOCElement child)
         {
-            if (child == null) return false;
-            if (parent == null) return true; // null ist immer Parent
+            if (child == null)
+            {
+                return false;
+            }
+
+            if (parent == null)
+            {
+                return true; // null ist immer Parent
+            }
 
             while (child.ParentGroup != null)
             {
-                if (child.ParentGroup == parent) return true;
+                if (child.ParentGroup == parent)
+                {
+                    return true;
+                }
+
                 child = child.ParentGroup;
             }
             return false;
@@ -1034,7 +1263,10 @@ namespace gView.Framework.Carto.UI
                 if (element.ParentGroup != null)
                 {
                     parentIndex = _elements.IndexOf(element.ParentGroup);
-                    if (parentIndex >= toc._elements.Count) parentIndex = -1;
+                    if (parentIndex >= toc._elements.Count)
+                    {
+                        parentIndex = -1;
+                    }
                 }
 
                 toc._elements.Add(((TOCElement)element).Copy(toc, (parentIndex == -1) ? null : toc._elements[parentIndex]));
@@ -1157,7 +1389,11 @@ namespace gView.Framework.Carto.UI
         }
         private static void RecursiveName(TOCElement element, ref string name)
         {
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
+
             name = ((name != "") ? element._name + "|" + name : element._name);
             RecursiveName(element.ParentGroup as TOCElement, ref name);
         }
@@ -1190,7 +1426,11 @@ namespace gView.Framework.Carto.UI
 			}
             set
             {
-                if (value == null || value == "" || _toc == null) return;
+                if (value == null || value == "" || _toc == null)
+                {
+                    return;
+                }
+
                 _toc.RenameElement(this, value);
             }
 		}
@@ -1217,12 +1457,20 @@ namespace gView.Framework.Carto.UI
 		}
         public void RemoveLayer(ILayer layer)
         {
-            if (!_layers.Contains(layer)) return;
+            if (!_layers.Contains(layer))
+            {
+                return;
+            }
+
             _layers.Remove(layer);
         }
         public void AddLayer(ILayer layer)
         {
-            if (_layers.Contains(layer)) return;
+            if (_layers.Contains(layer))
+            {
+                return;
+            }
+
             _layers.Add(layer);
         }
         public ITOCElement ParentGroup
@@ -1233,14 +1481,21 @@ namespace gView.Framework.Carto.UI
             }
             set
             {
-                if (_parent == value) return;
+                if (_parent == value)
+                {
+                    return;
+                }
+
                 _parent = value;
 
                 if (_layers != null)
                 {
                     foreach (ILayer layer in _layers)
                     {
-                        if (!(layer is Layer)) continue;
+                        if (!(layer is Layer))
+                        {
+                            continue;
+                        }
 
                         if (layer.GroupLayer is GroupLayer)
                         {
@@ -1264,7 +1519,10 @@ namespace gView.Framework.Carto.UI
                     {
                         foreach (ILayer layer in _layers)
                         {
-                            if (layer == null) continue;
+                            if (layer == null)
+                            {
+                                continue;
+                            }
 
                             if (TOCElement.layerVisible(layer))
                             {
@@ -1301,7 +1559,11 @@ namespace gView.Framework.Carto.UI
                     {
                         foreach (ILayer layer in _layers)
                         {
-                            if (layer == null) continue;
+                            if (layer == null)
+                            {
+                                continue;
+                            }
+
                             layer.Visible = _visible = value;
                         }
                     }
@@ -1353,10 +1615,14 @@ namespace gView.Framework.Carto.UI
 				_type==TOCElementType.ClosedGroup ) 
 			{
 				if(open)
-					_type=TOCElementType.OpenedGroup;
-				else
-					_type=TOCElementType.ClosedGroup;
-			}
+                {
+                    _type =TOCElementType.OpenedGroup;
+                }
+                else
+                {
+                    _type =TOCElementType.ClosedGroup;
+                }
+            }
 		}
 
         public ITOC TOC
@@ -1371,7 +1637,9 @@ namespace gView.Framework.Carto.UI
             foreach (ILayer layer in _layers)
             {
                 if (layer is IGroupLayer)
+                {
                     ((IGroupLayer)layer).Title = newName;
+                }
             }
 		}
 		public List<IDatasetElement> LayersList 
@@ -1442,14 +1710,19 @@ namespace gView.Framework.Carto.UI
                         // Für alte Versionen: Suchen, ob Grouplayer in Karte vorhanden
                         // Wenn nein: einfügen
                         //
-                        if (gLayer == null) _toc._map.AddLayer(gLayer = new GroupLayer(RecursiveName(this)));
+                        if (gLayer == null)
+                        {
+                            _toc._map.AddLayer(gLayer = new GroupLayer(RecursiveName(this)));
+                        }
                     }
 
                     if (gLayer != null)
                     {
                         _layers.Add(gLayer);
                         if (_parent != null && _parent.Layers.Count == 1 && _parent.Layers[0] is GroupLayer)
+                        {
                             ((GroupLayer)_parent.Layers[0]).Add(gLayer as Layer);
+                        }
                     }
                 }
             }
@@ -1461,7 +1734,9 @@ namespace gView.Framework.Carto.UI
                 {
                     _layers.Add(pElement.DatasetElement);  // DatasetElement kann auch null sein, wenn (vorübergehend) nicht mehr im Dataset...
                     if (_parent != null && _parent.Layers.Count == 1 && _parent.Layers[0] is GroupLayer)
+                    {
                         ((GroupLayer)_parent.Layers[0]).Add(pElement.DatasetElement as Layer);
+                    }
                 }
             }
 
@@ -1517,7 +1792,9 @@ namespace gView.Framework.Carto.UI
 		async public Task<bool> LoadAsync(gView.Framework.IO.IPersistStream stream)
 		{
 			if(_map==null)
+            {
                 return true;
+            }
 
             int datasetIndex=(int)stream.Load("DatasetIndex",-1);
 
@@ -1536,11 +1813,15 @@ namespace gView.Framework.Carto.UI
 
                 IDatasetElement wElement = await dataset.Element(webClassName);
                 if (wElement == null || !(wElement.Class is IWebServiceClass))
+                {
                     return true;
+                }
 
                 IWebServiceClass wc = wElement.Class as IWebServiceClass;
                 if (wc == null || wc.Themes == null)
+                {
                     return true;
+                }
 
                 foreach (IWebServiceTheme theme in wc.Themes)
                 {
@@ -1608,7 +1889,9 @@ namespace gView.Framework.Carto.UI
 		public void Save(gView.Framework.IO.IPersistStream stream)
 		{
             if (_element == null || _map == null)
+            {
                 return;
+            }
 
             if (_element is NullLayer)
             {

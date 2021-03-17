@@ -75,15 +75,22 @@ namespace gView.Framework.Symbology
         {
             if (!String.IsNullOrEmpty(_filename))
             {
-                float x = _xOffset - _sizeX / 2;
-                float y = _yOffset - _sizeY / 2;
+                float sizeX = _sizeX, sizeY = _sizeY;
+
+                if(display.IsLegendItemSymbol())
+                {
+                    sizeX = Math.Min(_sizeY, display.iWidth);
+                    sizeY = Math.Min(_sizeY, display.iHeight);
+                }
+                float x = _xOffset - sizeX / 2;
+                float y = _yOffset - sizeY / 2;
 
                 try
                 {
                     display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
                     display.GraphicsContext.RotateTransform(_angle + _rotation);
 
-                    var rect = new Rectangle((int)x, (int)y, (int)_sizeX, (int)_sizeY);
+                    var rect = new Rectangle((int)x, (int)y, (int)sizeX, (int)sizeY);
 
                     try
                     {
