@@ -2,9 +2,9 @@
   "services-folder_": "C:\\ProgramData\\gView\\mapServer\\gview5",
   "services-folder": "C:\\Development_OpenSource\\GeoDaten\\gview5",
   "output-path_": "C:\\ArcIMS\\Output",
-  "output-path__": "E:\\geonet_sys\\development\\shared\\webgis\\Output",
+  "output-path": "E:\\geonet_sys\\development\\shared\\webgis\\Output",
   "output-url_": "http://localhost/output",
-  "output-path": "https://user1:passw0rd@localhost:44377/http/output",
+  "output-path__": "https://user1:passw0rd@localhost:44377/http/output",
   "output-url": "https://localhost:44377/http/output",
   "onlineresource-url_": "https://localhost:44331",
   "onlineresource-url": "http://localhost:8889",
@@ -24,6 +24,11 @@
     "LogServiceErrors": true,
     "LogServiceRequests": false,
     "LogServiceRequestDetails": false
+  },
+
+  "performance-logger": {
+    "loggertype": "AzureTable",
+    "connectionstring": "UseDevelopmentStorage=true"
   },
 
   "allowFormsLogin": true,
