@@ -9,7 +9,7 @@ namespace gView.Framework.Logging.ResourceLogging
     {
         Task Init(string initialParameter);
 
-        Task Log(IPerformanceLoggerItem item);
+        void Log(IPerformanceLoggerItem item);
 
         Task Flush();
     }

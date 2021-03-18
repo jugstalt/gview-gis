@@ -6,7 +6,7 @@ using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Legend
 {
-    public class LegendResponse
+    public class LegendResponse : JsonStopWatch
     {
         [JsonProperty("layers")]
         public Layer[] Layers { get; set; }

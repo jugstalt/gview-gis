@@ -29,6 +29,14 @@ namespace gView.Server.Services.Logging
             }
         }
 
+        public void Log(IPerformanceLoggerItem item)
+        {
+            if(_resourceLogger!=null)
+            {
+                _resourceLogger.Log(item);  // run and forget
+            }
+        }
+
         public void Flush()
         {
             if(_resourceLogger!=null)
@@ -36,5 +44,7 @@ namespace gView.Server.Services.Logging
                 _resourceLogger.Flush();
             }
         }
+
+        public bool UseLogging => _resourceLogger != null;
     }
 }

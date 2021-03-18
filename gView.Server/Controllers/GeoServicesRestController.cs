@@ -301,7 +301,7 @@ namespace gView.Server.Controllers
                     }
                     else
                     {
-                        return Result(JsonConvert.DeserializeObject<JsonExportResponse>(serviceRequest.Response));
+                        return Result(JsonConvert.DeserializeObject<JsonExportResponse>(serviceRequest.Response), folder, id, "ExportMap");
                     }
                 }
                 else
@@ -356,7 +356,7 @@ namespace gView.Server.Controllers
                 {
                     if (queryLayer.ReturnCountOnly == true)
                     {
-                        return Result(JsonConvert.DeserializeObject<JsonFeatureCountResponse>(serviceRequest.Response));
+                        return Result(JsonConvert.DeserializeObject<JsonFeatureCountResponse>(serviceRequest.Response), folder, id, "Query");
                     }
                     else
                     {
@@ -400,7 +400,7 @@ namespace gView.Server.Controllers
 
                 #endregion
 
-                return Result(JsonConvert.DeserializeObject<LegendResponse>(serviceRequest.Response));
+                return Result(JsonConvert.DeserializeObject<LegendResponse>(serviceRequest.Response), folder, id, "Legend");
             });
         }
 
@@ -1016,11 +1016,14 @@ namespace gView.Server.Controllers
 
         #endregion
 
-        private IActionResult Result(object obj)
+        private IActionResult Result(object obj, string folder = null, string id = null, string method = null)
         {
             if (base.ActionStartTime.HasValue && obj is JsonStopWatch)
             {
                 ((JsonStopWatch)obj).DurationMilliseconds = (DateTime.UtcNow - base.ActionStartTime.Value).TotalMilliseconds;
+
+                ((JsonStopWatch)obj).AddPerformanceLoggerItem(_performanceLogger,
+                                                              folder, id, method);
             }
 
             string format = ResultFormat();

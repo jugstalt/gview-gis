@@ -37,7 +37,7 @@ namespace gView.Framework.Logging.ResourceLogging
         }
 
         static object _locker = new object();
-        async public Task Log(IPerformanceLoggerItem item)
+        public void Log(IPerformanceLoggerItem item)
         {
             if (_tableStorage != null && item != null)
             {
@@ -45,10 +45,10 @@ namespace gView.Framework.Logging.ResourceLogging
                 {
                     _bag.Add(item);
 
-                    if (_bag.Count > 100)
-                    {
-                        await Flush();
-                    }
+                    //if (_bag.Count > 100)
+                    //{
+                    //    await Flush();
+                    //}
                 }
                 catch /*(Exception ex)*/
                 {
