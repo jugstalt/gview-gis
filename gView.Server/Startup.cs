@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using gView.Framework.system;
-using gView.Interoperability.GeoServices.Rest.Json.Renderers;
-using gView.Server.AppCode;
+﻿using gView.Server.AppCode;
+using gView.Server.AppCode.Configuration;
 using gView.Server.Extensions.DependencyInjection;
 using gView.Server.Middleware;
+using gView.Server.Services.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+using System;
 
 namespace gView.Server
 {
@@ -24,7 +19,7 @@ namespace gView.Server
     {
         public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
-            Configuration = configuration;
+            Configuration = configuration.BuildConfigParsers();
             Environment = environment;
         }
 
@@ -46,11 +41,6 @@ namespace gView.Server
                     o.EnableEndpointRouting = false;
                 })
                 .AddNewtonsoftJson(opt => opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
-
-            //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
-            //services.AddTransient<Microsoft.AspNetCore.Authentication.IClaimsTransformation, ClaimsTransformer>();
-            //services.AddAuthentication(Microsoft.AspNetCore.Server.IIS.IISServerDefaults.AuthenticationScheme);
 
             services.AddMapServerService(
                 config =>
@@ -96,17 +86,29 @@ namespace gView.Server
 
                 services.AddAccessTokenAuthService(config =>
                 {
-                    config.Authority = Configuration["external-auth-authority:url"];
-                    config.AllowAccessTokenAuthorization = Configuration["external-auth-authority:allow-access-token"]?.ToLower() == "true";
-                    config.AccessTokenParameterName = Configuration["external-auth-authority:access-token-url-parameter"] ?? "access-token";
+                    config.Authority = Configuration.GetParsedValue("external-auth-authority:url");
+                    config.AllowAccessTokenAuthorization = Configuration.GetParsedValue("external-auth-authority:allow-access-token")?.ToLower() == "true";
+                    config.AccessTokenParameterName = Configuration.GetParsedValue("external-auth-authority:access-token-url-parameter") ?? "access-token";
                 });
             }
+
+            services.AddPerformanceLoggerService(config =>
+            {
+                config.LoggerType = Configuration.GetParsedValue("performance-logger:loggertype");
+                config.ConnectionString = Configuration.GetParsedValue("performance-logger:connectionstring");
+            });
 
             services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders =
                     ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
             });
+
+            #region Background Task
+
+            services.AddHostedService<TimedHostedBackgroundService>();
+
+            #endregion
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

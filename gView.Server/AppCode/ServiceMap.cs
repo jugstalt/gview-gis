@@ -76,11 +76,11 @@ namespace gView.Server.AppCode
             set { _LAYERS = value; }
         }
 
-        async public Task<bool> SaveImage(string path, System.Drawing.Imaging.ImageFormat format)
+        async public Task<int> SaveImage(string path, System.Drawing.Imaging.ImageFormat format)
         {
             if (_image == null)
             {
-                return false;
+                return -1;
             }
 
             try
@@ -107,10 +107,10 @@ namespace gView.Server.AppCode
                     }
                 }
                 //_image.Save(path, format);
-                await _image.SaveOrUpload(path, format);
+                int size = await _image.SaveOrUpload(path, format);
                 _image.Dispose();
                 _image = null;
-                return true;
+                return size;
             }
             catch (Exception ex)
             {
@@ -128,11 +128,11 @@ namespace gView.Server.AppCode
             }
         }
 
-        async public Task<bool> SaveImage(Stream ms, System.Drawing.Imaging.ImageFormat format)
+        async public Task<int> SaveImage(Stream ms, System.Drawing.Imaging.ImageFormat format)
         {
             if (_image == null)
             {
-                return false;
+                return -1;
             }
 
             try
@@ -161,7 +161,7 @@ namespace gView.Server.AppCode
                 _image.Save(ms, format);
                 _image.Dispose();
                 _image = null;
-                return true;
+                return (int)ms.Length;
             }
             catch (Exception ex)
             {
@@ -173,7 +173,7 @@ namespace gView.Server.AppCode
                         "Image.Save\n'\nFormat=" + format.ToString() + "\n" +
                         ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                 }
-                return false;
+                return -1;
             }
         }
 

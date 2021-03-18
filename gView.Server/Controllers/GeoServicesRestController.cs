@@ -15,6 +15,7 @@ using gView.MapServer;
 using gView.Server.AppCode;
 using gView.Server.Extensions;
 using gView.Server.Services.Hosting;
+using gView.Server.Services.Logging;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
@@ -36,18 +37,21 @@ namespace gView.Server.Controllers
         private readonly UrlHelperService _urlHelperService;
         private readonly LoginManager _loginManagerService;
         private readonly EncryptionCertificateService _encryptionCertificate;
+        private readonly PerformanceLoggerService _performanceLogger;
 
         public GeoServicesRestController(
             MapServiceManager mapServerService,
             UrlHelperService urlHelperService,
             LoginManager loginManagerService,
-            EncryptionCertificateService encryptionCertificate)
+            EncryptionCertificateService encryptionCertificate,
+            PerformanceLoggerService performanceLogger)
             : base(mapServerService, loginManagerService, encryptionCertificate)
         {
             _mapServerService = mapServerService;
             _urlHelperService = urlHelperService;
             _loginManagerService = loginManagerService;
             _encryptionCertificate = encryptionCertificate;
+            _performanceLogger = performanceLogger;
         }
 
         public const double Version = 10.61;

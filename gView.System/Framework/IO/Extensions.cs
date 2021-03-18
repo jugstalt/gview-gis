@@ -31,7 +31,7 @@ namespace gView.Framework.IO
             requestMessage.RequestUri = uri;
         }
 
-        async static public Task SaveOrUpload(this Bitmap bitmap, string path, ImageFormat format)
+        async static public Task<int> SaveOrUpload(this Bitmap bitmap, string path, ImageFormat format)
         {
             if (path.StartsWith("http://") || path.StartsWith("https://"))
             {
@@ -71,10 +71,13 @@ namespace gView.Framework.IO
                 {
                     throw new Exception($"SaveOrUpload: { ex.Message }", ex);
                 }
+
+                return file_bytes.Length;
             }
             else
             {
                 bitmap.Save(path, format);
+                return 1;
             }
         }
     }

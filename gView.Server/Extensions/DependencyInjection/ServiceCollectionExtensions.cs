@@ -35,5 +35,12 @@ namespace gView.Server.Extensions.DependencyInjection
             services.Configure<AccessTokenAuthServiceOptions>(configAction);
             return services.AddTransient<AccessTokenAuthService>();
         }
+
+        static public IServiceCollection AddPerformanceLoggerService(this IServiceCollection services,
+                                                                     Action<PerformanceLoggerServiceOptions> configAction)
+        {
+            services.Configure<PerformanceLoggerServiceOptions>(configAction);
+            return services.AddSingleton<PerformanceLoggerService>();
+        }
     }
 }

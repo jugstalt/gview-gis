@@ -34,6 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\gView.Azure\gView.Azure.csproj" />
     <ProjectReference Include="..\gView.Carto.Rendering\gView.Carto.Rendering.csproj" />
     <ProjectReference Include="..\gView.Carto\gView.Carto.csproj" />
     <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
@@ -62,6 +63,7 @@
     <ProjectReference Include="..\gView.Interoperability.GeoServices\gView.Interoperability.GeoServices.csproj" />
     <ProjectReference Include="..\gView.Interoperability.OGC\gView.Interoperability.OGC.csproj" />
     <ProjectReference Include="..\gView.Interoperability.Server\gView.Interoperability.Server.csproj" />
+    <ProjectReference Include="..\gView.Logging\gView.Logging.csproj" />
     <ProjectReference Include="..\gView.Math\gView.Math.csproj" />
     <ProjectReference Include="..\gView.Metadata\gView.Metadata.csproj" />
     <ProjectReference Include="..\gView.Network\gView.Network.csproj" />

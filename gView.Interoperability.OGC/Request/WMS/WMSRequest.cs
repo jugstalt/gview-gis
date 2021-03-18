@@ -705,7 +705,7 @@ namespace gView.Interoperability.OGC
                         else
                         {
                             MemoryStream ms = new MemoryStream();
-                            if (await map.SaveImage(ms, _parameters.GetImageFormat()))
+                            if (await map.SaveImage(ms, _parameters.GetImageFormat())>=0)
                             {
                                 return "base64:" + _parameters.GetContentType() + ":" + Convert.ToBase64String(ms.ToArray());
                             }

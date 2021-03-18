@@ -145,8 +145,8 @@ namespace gView.Framework.Carto
         Task<bool> Render();
         Task<global::System.Drawing.Bitmap> Legend();
         global::System.Drawing.Bitmap MapImage { get; }
-        Task<bool> SaveImage(string path, global::System.Drawing.Imaging.ImageFormat format);
-        Task<bool> SaveImage(Stream ms, global::System.Drawing.Imaging.ImageFormat format);
+        Task<int> SaveImage(string path, global::System.Drawing.Imaging.ImageFormat format);
+        Task<int> SaveImage(Stream ms, global::System.Drawing.Imaging.ImageFormat format);
         void ReleaseImage();
 
         float ScaleSymbolFactor { get; set; }

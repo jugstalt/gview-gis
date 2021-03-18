@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gView.Logging.ResourceLogging
+namespace gView.Framework.Logging.ResourceLogging
 {
-    public interface IResourcesLogger
+    public interface IPerformanceLogger
     {
         Task Init(string initialParameter);
 
-        Task Log(IResourcesLoggerItem item);
+        Task Log(IPerformanceLoggerItem item);
 
         Task Flush();
     }

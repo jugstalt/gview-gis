@@ -6,12 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gView.Logging.ResourceLogging
+namespace gView.Framework.Logging.ResourceLogging
 {
-    public class AzureTableResourceLogger : IResourcesLogger
+    public class AzureTablePerformanceLogger : IPerformanceLogger
     {
         private Azure.Storage.TableStorage _tableStorage = null;
-        private ConcurrentBag<IResourcesLoggerItem> _bag = new ConcurrentBag<IResourcesLoggerItem>();
+        private ConcurrentBag<IPerformanceLoggerItem> _bag = new ConcurrentBag<IPerformanceLoggerItem>();
 
         const string tableName = "webgisresourcelogs";
         const string tableNameAggregated = tableName + "agg";
@@ -37,7 +37,7 @@ namespace gView.Logging.ResourceLogging
         }
 
         static object _locker = new object();
-        async public Task Log(IResourcesLoggerItem item)
+        async public Task Log(IPerformanceLoggerItem item)
         {
             if (_tableStorage != null && item != null)
             {
@@ -63,15 +63,15 @@ namespace gView.Logging.ResourceLogging
         {
             try
             {
-                ConcurrentBag<IResourcesLoggerItem> currentBag = null;
+                ConcurrentBag<IPerformanceLoggerItem> currentBag = null;
                 lock (_locker)
                 {
                     currentBag = _bag;
-                    _bag = new ConcurrentBag<IResourcesLoggerItem>();
+                    _bag = new ConcurrentBag<IPerformanceLoggerItem>();
                 }
 
-                await _tableStorage.InsertEntitiesAsync<IResourcesLoggerItem>(tableName, currentBag.ToArray());
-                await _tableStorage.InsertEntitiesAsync<IResourcesLoggerItem>(tableNameAggregated,
+                await _tableStorage.InsertEntitiesAsync<IPerformanceLoggerItem>(tableName, currentBag.ToArray());
+                await _tableStorage.InsertEntitiesAsync<IPerformanceLoggerItem>(tableNameAggregated,
                     Aggregate(currentBag.ToArray()).ToArray());
             }
             catch { }
@@ -93,11 +93,11 @@ namespace gView.Logging.ResourceLogging
 
         #region Helper
 
-        private IEnumerable<IResourcesLoggerItem> Aggregate(IEnumerable<IResourcesLoggerItem> items)
+        private IEnumerable<IPerformanceLoggerItem> Aggregate(IEnumerable<IPerformanceLoggerItem> items)
         {
-            List<IResourcesLoggerItem> list = new List<IResourcesLoggerItem>(items);
+            List<IPerformanceLoggerItem> list = new List<IPerformanceLoggerItem>(items);
 
-            List<IResourcesLoggerItem> aggregated = new List<IResourcesLoggerItem>();
+            List<IPerformanceLoggerItem> aggregated = new List<IPerformanceLoggerItem>();
 
             try
             {

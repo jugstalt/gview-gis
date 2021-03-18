@@ -322,7 +322,7 @@ namespace gView.Interoperability.ArcXML
             await map.Render();
 
             string title = map.Name.Replace(",", "_").Replace("/", "_") + "_" + System.Guid.NewGuid().ToString("N") + _imageExtension;
-            if (await map.SaveImage(context.MapServer.OutputPath + @"/" + title, _imageFormat))
+            if (await map.SaveImage(context.MapServer.OutputPath + @"/" + title, _imageFormat) >= 0)
             {
                 ret = response.IMAGE(context.MapServer.OutputPath, context.ServiceRequest.OutputUrl, title, map.Display.Envelope);
             }

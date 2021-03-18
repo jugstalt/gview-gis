@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gView.Azure.AD
+namespace gView.Framework.Azure.AD
 {
     public class Authentication
     {

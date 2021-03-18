@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gView.Azure.Storage
+namespace gView.Framework.Azure.Storage
 {
     public class TableStorage
     {

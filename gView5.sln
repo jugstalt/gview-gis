@@ -181,11 +181,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.GeoJson",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Win.DataSources.GeoJson.UI", "NetFramework\gView.Win.DataSources.GeoJson.UI\gView.Win.DataSources.GeoJson.UI.csproj", "{F66575E3-6821-48CF-A9F4-F673D913B1EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Logging", "gView.Logging\gView.Logging.csproj", "{7FC15EB9-D6EA-4C37-91B7-73C70C001EE3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Logging", "gView.Logging\gView.Logging.csproj", "{7FC15EB9-D6EA-4C37-91B7-73C70C001EE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Azure", "gView.Azure\gView.Azure.csproj", "{5C229CB1-4ED9-4771-B4D9-DAF3C1C7D15E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Azure", "gView.Azure\gView.Azure.csproj", "{5C229CB1-4ED9-4771-B4D9-DAF3C1C7D15E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Cmd.FillLuceneServer", "gView.Cmd.FillLuceneServer\gView.Cmd.FillLuceneServer.csproj", "{11421C27-F65E-4826-B0ED-84C4536A69BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.FillLuceneServer", "gView.Cmd.FillLuceneServer\gView.Cmd.FillLuceneServer.csproj", "{11421C27-F65E-4826-B0ED-84C4536A69BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -907,6 +907,30 @@ Global
 		{F66575E3-6821-48CF-A9F4-F673D913B1EF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F66575E3-6821-48CF-A9F4-F673D913B1EF}.Release|x64.ActiveCfg = Release|Any CPU
 		{F66575E3-6821-48CF-A9F4-F673D913B1EF}.Release|x64.Build.0 = Release|Any CPU
+		{7FC15EB9-D6EA-4C37-91B7-73C70C001EE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FC15EB9-D6EA-4C37-91B7-73C70C001EE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FC15EB9-D6EA-4C37-91B7-73C70C001EE3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7FC15EB9-D6EA-4C37-91B7-73C70C001EE3}.Debug|x64.Build.0 = Debug|Any CPU
+		{7FC15EB9-D6EA-4C37-91B7-73C70C001EE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FC15EB9-D6EA-4C37-91B7-73C70C001EE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FC15EB9-D6EA-4C37-91B7-73C70C001EE3}.Release|x64.ActiveCfg = Release|Any CPU
+		{7FC15EB9-D6EA-4C37-91B7-73C70C001EE3}.Release|x64.Build.0 = Release|Any CPU
+		{5C229CB1-4ED9-4771-B4D9-DAF3C1C7D15E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C229CB1-4ED9-4771-B4D9-DAF3C1C7D15E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C229CB1-4ED9-4771-B4D9-DAF3C1C7D15E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5C229CB1-4ED9-4771-B4D9-DAF3C1C7D15E}.Debug|x64.Build.0 = Debug|Any CPU
+		{5C229CB1-4ED9-4771-B4D9-DAF3C1C7D15E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C229CB1-4ED9-4771-B4D9-DAF3C1C7D15E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C229CB1-4ED9-4771-B4D9-DAF3C1C7D15E}.Release|x64.ActiveCfg = Release|Any CPU
+		{5C229CB1-4ED9-4771-B4D9-DAF3C1C7D15E}.Release|x64.Build.0 = Release|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Debug|x64.Build.0 = Debug|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Release|x64.ActiveCfg = Release|Any CPU
+		{11421C27-F65E-4826-B0ED-84C4536A69BF}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
