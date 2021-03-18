@@ -15,11 +15,9 @@
     "max-queue-length": 1000
   },
 
-  "external-auth-service": {
-    "url": "https://localhost:44313",
-    "assembly": "WebPortal.Client.Lib.dll",
-    "instance": "WebPortal.Client.Lib.PortalClient",
-    "method": "LoginAs"
+  "external-auth-authority": {
+    "url": "https://localhost:44300",
+    "allow-access-token": true
   },
 
   "Logging": {

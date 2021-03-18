@@ -78,6 +78,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Middleware\Authentication\" />
     <Folder Include="Views\GeoServices\" />
   </ItemGroup>
 

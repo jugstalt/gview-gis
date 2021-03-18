@@ -9,8 +9,6 @@ namespace gView.Server.AppCode
     {
         public const string AuthCookieName = "gview5-auth-token";
 
-        public static MapServerConfig.ExtAuthService ExternalAuthService = null;
-
         public static bool AllowFormsLogin { get; set; }
     }
 }

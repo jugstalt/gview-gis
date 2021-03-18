@@ -90,6 +90,18 @@ namespace gView.Server
                     }
                 });
 
+            if (!String.IsNullOrEmpty(Configuration["external-auth-authority:url"]))
+            {
+                services.AddHttpContextAccessor();
+
+                services.AddAccessTokenAuthService(config =>
+                {
+                    config.Authority = Configuration["external-auth-authority:url"];
+                    config.AllowAccessTokenAuthorization = Configuration["external-auth-authority:allow-access-token"]?.ToLower() == "true";
+                    config.AccessTokenParameterName = Configuration["external-auth-authority:access-token-url-parameter"] ?? "access-token";
+                });
+            }
+
             services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders =

@@ -5,6 +5,7 @@ using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace gView.Server.Controllers
 {
@@ -12,31 +13,34 @@ namespace gView.Server.Controllers
     {
         private readonly MapServiceManager _mapServiceMananger;
         private readonly LoginManager _loginManager;
+        private readonly AccessTokenAuthService _accessTokenAuth;
 
         public HomeController(
-            MapServiceManager mapServiceMananger, 
+            MapServiceManager mapServiceMananger,
             LoginManager loginManager,
-            EncryptionCertificateService encryptionCertificateService)
+            EncryptionCertificateService encryptionCertificateService,
+            AccessTokenAuthService accessTokenAuth = null)
             : base(mapServiceMananger, loginManager, encryptionCertificateService)
         {
             _mapServiceMananger = mapServiceMananger;
             _loginManager = loginManager;
+            _accessTokenAuth = accessTokenAuth;
         }
 
-        public IActionResult Index()
+        async public Task<IActionResult> Index()
         {
             if (_mapServiceMananger.Options.IsValid == false)
             {
                 return RedirectToAction("ConfigInvalid");
             }
 
-            var user = Globals.ExternalAuthService != null ?
-                Globals.ExternalAuthService.Perform(this.Request) :
+            string accessTokenUser = _accessTokenAuth != null ?
+                await _accessTokenAuth.GetAccessTokenUsername() :
                 null;
 
-            if (!String.IsNullOrWhiteSpace(user))
+            if (!String.IsNullOrWhiteSpace(accessTokenUser))
             {
-                var authToken = _loginManager.CreateUserAuthTokenWithoutPasswordCheck(user);
+                var authToken = _loginManager.CreateUserAuthTokenWithoutPasswordCheck(accessTokenUser);
                 if (authToken != null)
                 {
                     base.SetAuthCookie(authToken);

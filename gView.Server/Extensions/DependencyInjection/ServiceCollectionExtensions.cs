@@ -12,9 +12,8 @@ namespace gView.Server.Extensions.DependencyInjection
 {
     static public class ServiceCollectionExtensions
     {
-        static public IServiceCollection AddMapServerService(
-            this IServiceCollection services,
-            Action<MapServerManagerOptions> configAction)
+        static public IServiceCollection AddMapServerService(this IServiceCollection services,
+                                                             Action<MapServerManagerOptions> configAction)
         {
             services.Configure<MapServerManagerOptions>(configAction);
             services.AddSingleton<MapServiceManager>();
@@ -28,6 +27,13 @@ namespace gView.Server.Extensions.DependencyInjection
             services.AddTransient<MapServicesEventLogger>();
 
             return services;
-        } 
+        }
+        
+        static public IServiceCollection AddAccessTokenAuthService(this IServiceCollection services,
+                                                                   Action<AccessTokenAuthServiceOptions> configAction)
+        {
+            services.Configure<AccessTokenAuthServiceOptions>(configAction);
+            return services.AddTransient<AccessTokenAuthService>();
+        }
     }
 }
