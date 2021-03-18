@@ -1,11 +1,7 @@
 ﻿using gView.Framework.Logging.ResourceLogging;
 using gView.Interoperability.GeoServices.Rest.Json;
-using gView.Interoperability.GeoServices.Rest.Json.Response;
 using gView.Server.Services.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace gView.Server.Extensions
 {
