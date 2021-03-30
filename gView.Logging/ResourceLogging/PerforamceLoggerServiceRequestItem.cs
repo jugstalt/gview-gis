@@ -12,7 +12,7 @@ namespace gView.Framework.Logging.ResourceLogging
 
         public int Milliseconds { get; set; }
         public int ContentSize { get; set; }
-        public string ServiceId { get; set; }
+        public string WatchId { get; set; }
         public string TypeName { get; set; }
         public int Count { get; set; }
         public DateTime Created { get; set; }
@@ -23,7 +23,7 @@ namespace gView.Framework.Logging.ResourceLogging
             {
                 return this.PartitionKey == item.PartitionKey &&
                        this.TypeName == item.TypeName &&
-                       this.ServiceId == item.ServiceId;
+                       this.WatchId == item.WatchId;
             }
 
             return false;

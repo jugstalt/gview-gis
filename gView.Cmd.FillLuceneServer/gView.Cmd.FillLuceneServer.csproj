@@ -5,8 +5,19 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>..\..\..\..\..\_releases\core\web\gview5\gView.Cmd\app\</OutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="LuceneServerNET.Client" Version="1.0.0" />
+    <PackageReference Include="LuceneServerNET.Client" Version="1.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
+    <ProjectReference Include="..\gView.Data\gView.Data.csproj" />
+    <ProjectReference Include="..\gView.Geometry\gView.Geometry.csproj" />
+    <ProjectReference Include="..\gView.System\gView.System.csproj" />
   </ItemGroup>
 
 </Project>

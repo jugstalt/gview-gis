@@ -11,7 +11,7 @@ namespace gView.Framework.Logging.ResourceLogging
         int Count { get; set; }
 
 
-        string ServiceId { get; set; }
+        string WatchId { get; set; }
 
         DateTime Created { get; set; }
 

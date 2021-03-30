@@ -21,7 +21,7 @@ namespace gView.Server.Extensions
                     RowKey = $"{(long.MaxValue - DateTime.UtcNow.Ticks).ToString().PadLeft(19, '0')}_{new Random().Next(9999).ToString().PadLeft(4, '0')}",
 
                     Created = DateTime.UtcNow,
-                    ServiceId = serviceId?.ToLower(),
+                    WatchId = serviceId?.ToLower(),
                     Milliseconds = (int)response.DurationMilliseconds,
                     ContentSize = response.SizeBytes.HasValue ? response.SizeBytes.Value : 0,
                     Count = 1,
