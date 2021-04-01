@@ -9,6 +9,11 @@
     <OutputPath>..\..\..\..\..\_releases\core\web\gview5\gView.Cmd\app\</OutputPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <OutputPath>..\NetFramework\gView.Cmd.MxlInfo\bin\Debug</OutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\gView.Carto\gView.Carto.csproj" />
     <ProjectReference Include="..\gView.Data\gView.Data.csproj" />

@@ -1,9 +1,8 @@
-﻿using gView.Framework.IO;
+﻿using gView.Framework.Data;
+using gView.Framework.IO;
 using gView.Framework.UI;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Cmd.MxlInfo
@@ -37,7 +36,50 @@ namespace gView.Cmd.MxlInfo
 
                 foreach (var map in doc.Maps)
                 {
+                    if (map?.MapElements == null)
+                    {
+                        continue;
+                    }
 
+                    Console.WriteLine($"Map: { map.Name }");
+                    Console.WriteLine("==========================================================");
+
+                    var featureLayers = map.TOC.Layers.Where(l => l is IFeatureLayer)
+                                                      .Select(l => (IFeatureLayer)l);
+
+                    Console.WriteLine("FeatureLayers:");
+                    Console.WriteLine("-------------------------------------------------------------");
+
+                    if (map.Datasets != null)
+                    {
+                        int datasetID = 0;
+                        foreach (var dataset in map.Datasets)
+                        {
+                            Console.WriteLine($"Dataset: { dataset.DatasetName }");
+                            Console.WriteLine($"         { dataset.GetType().ToString() }");
+                            Console.WriteLine("-------------------------------------------------------");
+
+                                                           
+
+                            foreach (var dsElement in map.MapElements.Where(e=>e.DatasetID == datasetID))
+                            {
+                                if (dsElement?.Class == null)
+                                    continue;
+
+                                var featureLayer = featureLayers.Where(l => l.DatasetID == datasetID && l.Class == dsElement.Class)
+                                                                .FirstOrDefault();
+
+                                if(featureLayer==null)
+                                {
+                                    continue;
+                                }
+
+                                Console.WriteLine($"FeatureLayer: { featureLayer.Title }");
+                                Console.WriteLine($"       Class: { dsElement.Class.Name }");
+                                Console.WriteLine($"              { dsElement.Class.GetType().ToString() }");
+                            }
+                        }
+                    }
                 }
 
                 return 0;

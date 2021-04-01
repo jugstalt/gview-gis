@@ -9,6 +9,10 @@
     <OutputPath>..\..\..\..\..\_releases\core\web\gview5\gView.Cmd\app\</OutputPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\NetFramework\gView.Cmd.MxlInfo\bin\Debug</OutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="LuceneServerNET.Client" Version="1.0.4" />
   </ItemGroup>

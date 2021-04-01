@@ -9,4 +9,8 @@
     <OutputPath>..\..\..\..\..\_releases\core\web\gview5\gView.Cmd\app\</OutputPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\NetFramework\gView.Cmd.MxlInfo\bin\Debug</OutputPath>
+  </PropertyGroup>
+
 </Project>
