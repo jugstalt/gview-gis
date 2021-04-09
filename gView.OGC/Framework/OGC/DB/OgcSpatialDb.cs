@@ -1,6 +1,7 @@
 using gView.Db.Framework.Db;
 using gView.Framework.Data;
 using gView.Framework.Editor.Core;
+using gView.Framework.Extensions;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
@@ -726,7 +727,7 @@ namespace gView.Framework.OGC.DB
                                 parameter.ParameterName = DbParameterName(fvName);
                                 try
                                 {
-                                    parameter.Value = val;
+                                    parameter.Value = field.TryConvertType(val);
                                 }
                                 catch
                                 {
@@ -860,7 +861,7 @@ namespace gView.Framework.OGC.DB
 
                             DbParameter parameter = this.ProviderFactory.CreateParameter();
                             parameter.ParameterName = DbParameterName(fv.Name);
-                            parameter.Value = val;
+                            parameter.Value = field.TryConvertType(val);
                             //NpgsqlParameter parameter = new NpgsqlParameter("@" + fv.Name, val);
                             fields.Append(DbColumnName(fv.Name) + "=" + DbParameterName(fv.Name));
                             command.Parameters.Add(parameter);

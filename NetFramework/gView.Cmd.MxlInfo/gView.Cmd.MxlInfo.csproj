@@ -30,7 +30,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\..\..\..\_releases\core\web\gview5\gView.Cmd\app\</OutputPath>
+    <OutputPath>..\..\..\..\..\..\_releases\core\web\gview5\gView.Cmd\app\netcoreapp3.1\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
