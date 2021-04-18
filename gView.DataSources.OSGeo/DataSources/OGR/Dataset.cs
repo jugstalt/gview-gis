@@ -13,7 +13,7 @@ namespace gView.DataSources.OGR
     public class Dataset : DatasetMetadata, IFeatureDataset, IDisposable, IDataset2, IPlugInDependencies
     {
         private string _connectionString, _lastErrMsg = "";
-        private OSGeo.OGR.DataSource _dataSource = null;
+        private OSGeo_v1.OGR.DataSource _dataSource = null;
         private DatasetState _state = DatasetState.unknown;
         private List<IDatasetElement> _elements = null;
 
@@ -72,9 +72,9 @@ namespace gView.DataSources.OGR
         {
             try
             {
-                OSGeo.OGR.Ogr.RegisterAll();
+                OSGeo_v1.OGR.Ogr.RegisterAll();
 
-                _dataSource = OSGeo.OGR.Ogr.Open(_connectionString, 0);
+                _dataSource = OSGeo_v1.OGR.Ogr.Open(_connectionString, 0);
                 if (_dataSource != null)
                 {
                     _state = DatasetState.opened;
@@ -122,7 +122,7 @@ namespace gView.DataSources.OGR
             if (_dataSource == null) return Task.FromResult(_elements);
             for (int i = 0; i < _dataSource.GetLayerCount(); i++)
             {
-                OSGeo.OGR.Layer ogrLayer = _dataSource.GetLayerByIndex(i);
+                OSGeo_v1.OGR.Layer ogrLayer = _dataSource.GetLayerByIndex(i);
                 if (ogrLayer == null) continue;
 
                 _elements.Add(new DatasetElement(
@@ -186,7 +186,7 @@ namespace gView.DataSources.OGR
             {
                 try
                 {
-                    OSGeo.OGR.Ogr.RegisterAll();
+                    OSGeo_v1.OGR.Ogr.RegisterAll();
 
                     return false;
                 }
@@ -222,7 +222,7 @@ namespace gView.DataSources.OGR
             {
                 for (int i = 0; i < _dataSource.GetLayerCount(); i++)
                 {
-                    OSGeo.OGR.Layer ogrLayer = _dataSource.GetLayerByIndex(i);
+                    OSGeo_v1.OGR.Layer ogrLayer = _dataSource.GetLayerByIndex(i);
                     if (ogrLayer == null) continue;
 
                     if (ogrLayer.GetName() == elementName)

@@ -6,7 +6,7 @@ using System.IO;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Framework.IO;
-using OSGeo;
+using OSGeo_v1;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.GDAL
@@ -253,7 +253,7 @@ namespace gView.DataSources.GDAL
             {
                 try
                 {
-                    OSGeo.GDAL.Gdal.AllRegister();
+                    OSGeo_v1.GDAL.Gdal.AllRegister();
 
                     return false;
                 }

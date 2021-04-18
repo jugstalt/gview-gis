@@ -16,14 +16,14 @@ namespace gView.DataSources.OGR
         private bool _hasZ = false, _hasM = false;
         private geometryType _geomType = geometryType.Unknown;
         private Fields _fields;
-        private OSGeo.OGR.Layer _ogrLayer = null;
+        private OSGeo_v1.OGR.Layer _ogrLayer = null;
 
-        public FeatureClass(Dataset dataset, OSGeo.OGR.Layer layer)
+        public FeatureClass(Dataset dataset, OSGeo_v1.OGR.Layer layer)
         {
             _dataset = dataset;
             _ogrLayer = layer;
 
-            OSGeo.OGR.FeatureDefn defn = layer.GetLayerDefn();
+            OSGeo_v1.OGR.FeatureDefn defn = layer.GetLayerDefn();
             _name = defn.GetName();
             if (dataset.ConnectionString.ToLower().EndsWith(".dxf"))
             {
@@ -37,7 +37,7 @@ namespace gView.DataSources.OGR
             _fields = new Fields();
             for (int i = 0; i < defn.GetFieldCount(); i++)
             {
-                OSGeo.OGR.FieldDefn fdefn = defn.GetFieldDefn(i);
+                OSGeo_v1.OGR.FieldDefn fdefn = defn.GetFieldDefn(i);
                 Field field = new Field(fdefn.GetName());
 
                 switch (fdefn.GetFieldTypeName(fdefn.GetFieldType()).ToLower())
@@ -58,22 +58,22 @@ namespace gView.DataSources.OGR
                 _fields.Add(field);
             }
 
-            _countFeatures = layer.GetFeatureCount(1);
-            OSGeo.OGR.Envelope env = new OSGeo.OGR.Envelope();
+            _countFeatures = (int)layer.GetFeatureCount(1);
+            OSGeo_v1.OGR.Envelope env = new OSGeo_v1.OGR.Envelope();
             layer.GetExtent(env, 1);
             _envelope = new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY);
 
             switch (defn.GetGeomType())
             {
-                case OSGeo.OGR.wkbGeometryType.wkbPoint:
+                case OSGeo_v1.OGR.wkbGeometryType.wkbPoint:
                     _geomType = geometryType.Point;
                     break;
-                case OSGeo.OGR.wkbGeometryType.wkbLineString:
-                case OSGeo.OGR.wkbGeometryType.wkbMultiLineString:
+                case OSGeo_v1.OGR.wkbGeometryType.wkbLineString:
+                case OSGeo_v1.OGR.wkbGeometryType.wkbMultiLineString:
                     _geomType = geometryType.Polyline;
                     break;
-                case OSGeo.OGR.wkbGeometryType.wkbPolygon:
-                case OSGeo.OGR.wkbGeometryType.wkbMultiPolygon:
+                case OSGeo_v1.OGR.wkbGeometryType.wkbPolygon:
+                case OSGeo_v1.OGR.wkbGeometryType.wkbMultiPolygon:
                     _geomType=geometryType.Polygon;
                     break;
             }

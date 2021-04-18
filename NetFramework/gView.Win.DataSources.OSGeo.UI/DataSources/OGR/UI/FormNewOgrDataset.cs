@@ -35,15 +35,15 @@ namespace gView.DataSources.OGR.UI
 
         private void btnTestConnecton_Click(object sender, EventArgs e)
         {
-            OSGeo.OGR.Ogr.RegisterAll();
+            OSGeo_v1.OGR.Ogr.RegisterAll();
 
-            OSGeo.OGR.DataSource dataSource = OSGeo.OGR.Ogr.Open(this.ConnectionString, 0);
+            OSGeo_v1.OGR.DataSource dataSource = OSGeo_v1.OGR.Ogr.Open(this.ConnectionString, 0);
             if (dataSource != null)
             {
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < Math.Min(dataSource.GetLayerCount(),20); i++)
                 {
-                    OSGeo.OGR.Layer ogrLayer = dataSource.GetLayerByIndex(i);
+                    OSGeo_v1.OGR.Layer ogrLayer = dataSource.GetLayerByIndex(i);
                     if (ogrLayer == null) continue;
                     sb.Append("\n"+ogrLayer.GetName());
                 }

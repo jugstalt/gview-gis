@@ -26,7 +26,7 @@ namespace gView.DataSources.GDAL
         private IPolygon _polygon;
         private ISpatialReference _sRef = null;
         private IRasterDataset _dataset;
-        private OSGeo.GDAL.Dataset _gDS = null;
+        private OSGeo_v1.GDAL.Dataset _gDS = null;
         private Bitmap _bitmap = null;
         private RasterType _type = RasterType.image;
         private double _min = 0, _max = 0;
@@ -55,8 +55,8 @@ namespace gView.DataSources.GDAL
                 _filename = filename;
                 _dataset = dataset;
 
-                OSGeo.GDAL.Gdal.AllRegister();
-                _gDS = OSGeo.GDAL.Gdal.Open(fi.FullName, 0);
+                OSGeo_v1.GDAL.Gdal.AllRegister();
+                _gDS = OSGeo_v1.GDAL.Gdal.Open(fi.FullName, 0);
                 if (_gDS == null && _gDS.RasterCount == 0)
                 {
                     _valid = false;
@@ -77,11 +77,11 @@ namespace gView.DataSources.GDAL
                         //    break;
                 }
 
-                using (OSGeo.GDAL.Band band = _gDS.GetRasterBand(1))
+                using (OSGeo_v1.GDAL.Band band = _gDS.GetRasterBand(1))
                 {
                     if (_gDS.RasterCount == 1)
                     {
-                        if (band.DataType != OSGeo.GDAL.DataType.GDT_Byte)
+                        if (band.DataType != OSGeo_v1.GDAL.DataType.GDT_Byte)
                         {
                             _type = RasterType.grid;
                         }
@@ -90,7 +90,7 @@ namespace gView.DataSources.GDAL
                     band.GetMaximum(out _max, out _hasNoDataVal);
                     band.GetNoDataValue(out _nodata, out _hasNoDataVal);
                 }
-                OSGeo.GDAL.Driver driver = _gDS.GetDriver();
+                OSGeo_v1.GDAL.Driver driver = _gDS.GetDriver();
 
                 double[] tfw = new double[6];
                 _gDS.GetGeoTransform(tfw);
@@ -181,6 +181,14 @@ namespace gView.DataSources.GDAL
             catch (Exception ex)
             {
                 string errMsg = ex.Message;
+
+                Console.WriteLine($"GDAL Excepiton: { ex.Message }");
+                while(ex.InnerException!=null)
+                {
+                    ex = ex.InnerException;
+                    Console.WriteLine($"  Inner Exception: { ex.Message }");
+                }
+
                 _valid = false;
             }
         }
@@ -379,7 +387,7 @@ namespace gView.DataSources.GDAL
                 List<Color> colors = new List<Color>();
                 for (int i = 1; i <= (_gDS.RasterCount > 3 ? 3 : _gDS.RasterCount); ++i)
                 {
-                    using (OSGeo.GDAL.Band band = _gDS.GetRasterBand(i))
+                    using (OSGeo_v1.GDAL.Band band = _gDS.GetRasterBand(i))
                     {
 
                         int ch = 0;
@@ -401,7 +409,7 @@ namespace gView.DataSources.GDAL
                                 }
                                 break;
                             case ColorInterp.PaletteIndex:
-                                OSGeo.GDAL.ColorTable colTable = band.GetRasterColorTable();
+                                OSGeo_v1.GDAL.ColorTable colTable = band.GetRasterColorTable();
                                 if (colTable == null)
                                 {
                                     break;
@@ -410,7 +418,7 @@ namespace gView.DataSources.GDAL
                                 int colCount = colTable.GetCount();
                                 for (int iColor = 0; iColor < colCount; iColor++)
                                 {
-                                    OSGeo.GDAL.ColorEntry colEntry = colTable.GetColorEntry(iColor);
+                                    OSGeo_v1.GDAL.ColorEntry colEntry = colTable.GetColorEntry(iColor);
                                     colors.Add(Color.FromArgb(
                                         colEntry.c4, colEntry.c1, colEntry.c2, colEntry.c3));
                                 }
@@ -419,7 +427,7 @@ namespace gView.DataSources.GDAL
                         }
                         band.ReadRaster(x, y, wWidth, wHeight,
                             new IntPtr(buf.ToInt64() + ch),
-                            iWidth, iHeight, OSGeo.GDAL.DataType.GDT_Byte, pixelSpace, stride);
+                            iWidth, iHeight, OSGeo_v1.GDAL.DataType.GDT_Byte, pixelSpace, stride);
 
                         band.Dispose();
                     }
@@ -482,7 +490,7 @@ namespace gView.DataSources.GDAL
 
                 for (int i = 1; i <= (_gDS.RasterCount > 3 ? 3 : _gDS.RasterCount); ++i)
                 {
-                    using (OSGeo.GDAL.Band band = _gDS.GetRasterBand(i))
+                    using (OSGeo_v1.GDAL.Band band = _gDS.GetRasterBand(i))
                     {
 
                         int ch = 0;
@@ -500,7 +508,7 @@ namespace gView.DataSources.GDAL
                         }
                         band.ReadRaster(x, y, wWidth, wHeight,
                                 new IntPtr(buf.ToInt64() + ch),
-                                iWidth, iHeight, OSGeo.GDAL.DataType.GDT_Byte, pixelSpace, stride);
+                                iWidth, iHeight, OSGeo_v1.GDAL.DataType.GDT_Byte, pixelSpace, stride);
 
                         band.Dispose();
                     }
@@ -526,7 +534,7 @@ namespace gView.DataSources.GDAL
             using (Bitmap bitmap = new Bitmap(iWidth, iHeight + 100, PixelFormat.Format32bppArgb))
             {
                 BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, iWidth, iHeight + 100), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-                OSGeo.GDAL.Band band = null;
+                OSGeo_v1.GDAL.Band band = null;
 
                 try
                 {
@@ -538,7 +546,7 @@ namespace gView.DataSources.GDAL
                     {
                         band.ReadRaster(x, y, wWidth, wHeight,
                             buf,
-                            iWidth, iHeight, OSGeo.GDAL.DataType.GDT_CFloat32, pixelSpace, stride);
+                            iWidth, iHeight, OSGeo_v1.GDAL.DataType.GDT_CFloat32, pixelSpace, stride);
 
                         band.Dispose();
                     }
@@ -630,7 +638,7 @@ namespace gView.DataSources.GDAL
             using (Bitmap bitmap = new Bitmap(iWidth, iHeight + 100, PixelFormat.Format32bppArgb))
             {
                 BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, iWidth, iHeight + 100), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-                OSGeo.GDAL.Band band = null;
+                OSGeo_v1.GDAL.Band band = null;
 
                 try
                 {
@@ -643,7 +651,7 @@ namespace gView.DataSources.GDAL
 
                         band.ReadRaster(x, y, wWidth, wHeight,
                             buf,
-                            iWidth, iHeight, OSGeo.GDAL.DataType.GDT_CFloat32, pixelSpace, stride);
+                            iWidth, iHeight, OSGeo_v1.GDAL.DataType.GDT_CFloat32, pixelSpace, stride);
 
                         band.Dispose();
                     }
@@ -848,7 +856,7 @@ namespace gView.DataSources.GDAL
 
         #region IGridIdentify Member
 
-        private OSGeo.GDAL.Band _gridQueryBand = null;
+        private OSGeo_v1.GDAL.Band _gridQueryBand = null;
         public void InitGridQuery()
         {
             if (_gridQueryBand == null)
@@ -896,7 +904,7 @@ namespace gView.DataSources.GDAL
                 {
                     _gridQueryBand.ReadRaster((int)vecs[0].x, (int)vecs[0].y, 1, 1,
                         (IntPtr)buf,
-                        1, 1, OSGeo.GDAL.DataType.GDT_CFloat32, 4, 0);
+                        1, 1, OSGeo_v1.GDAL.DataType.GDT_CFloat32, 4, 0);
 
                     if ((_hasNoDataVal != 0 && buf[0] == _nodata) ||
                         (_useIgnoreValue && buf[0] == _ignoreValue))
@@ -931,7 +939,7 @@ namespace gView.DataSources.GDAL
 
                 for (int i = 1; i <= bandCount; ++i)
                 {
-                    OSGeo.GDAL.Band band = _gDS.GetRasterBand(i);
+                    OSGeo_v1.GDAL.Band band = _gDS.GetRasterBand(i);
 
                     string bandName = "";
                     switch ((ColorInterp)band.GetRasterColorInterpretation())
@@ -955,7 +963,7 @@ namespace gView.DataSources.GDAL
                             tags = new string[tags.Length + 4];
                             values = new object[values.Length + 4];
 
-                            OSGeo.GDAL.ColorTable colTable = band.GetRasterColorTable();
+                            OSGeo_v1.GDAL.ColorTable colTable = band.GetRasterColorTable();
                             if (colTable == null)
                             {
                                 break;
@@ -964,7 +972,7 @@ namespace gView.DataSources.GDAL
                             int colCount = colTable.GetCount();
                             for (int iColor = 0; iColor < colCount; iColor++)
                             {
-                                OSGeo.GDAL.ColorEntry colEntry = colTable.GetColorEntry(iColor);
+                                OSGeo_v1.GDAL.ColorEntry colEntry = colTable.GetColorEntry(iColor);
                                 colors.Add(Color.FromArgb(
                                     colEntry.c4, colEntry.c1, colEntry.c2, colEntry.c3));
                             }
@@ -978,7 +986,7 @@ namespace gView.DataSources.GDAL
 
                     band.ReadRaster(x, y, 1, 1,
                         (IntPtr)buf,
-                        1, 1, OSGeo.GDAL.DataType.GDT_Int32, 4, 0);
+                        1, 1, OSGeo_v1.GDAL.DataType.GDT_Int32, 4, 0);
 
                     band.Dispose();
 
@@ -1014,11 +1022,11 @@ namespace gView.DataSources.GDAL
                 {
                     fixed (float* buf = new float[2])
                     {
-                        OSGeo.GDAL.Band band = _gDS.GetRasterBand(1);
+                        OSGeo_v1.GDAL.Band band = _gDS.GetRasterBand(1);
 
                         band.ReadRaster(x, y, 1, 1,
                             (IntPtr)buf,
-                            1, 1, OSGeo.GDAL.DataType.GDT_CFloat32, 4, 0);
+                            1, 1, OSGeo_v1.GDAL.DataType.GDT_CFloat32, 4, 0);
 
                         if ((_hasNoDataVal != 0 && buf[0] == _nodata) ||
                             (_useIgnoreValue && buf[0] == _ignoreValue))

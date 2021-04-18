@@ -7,8 +7,8 @@ namespace gView.DataSources.OGR
 {
     internal class FeatureCursor : IFeatureCursor
     {
-        OSGeo.OGR.Layer _layer;
-        public FeatureCursor(OSGeo.OGR.Layer layer, IQueryFilter filter)
+        OSGeo_v1.OGR.Layer _layer;
+        public FeatureCursor(OSGeo_v1.OGR.Layer layer, IQueryFilter filter)
         {
             if (layer == null)
             {
@@ -53,20 +53,20 @@ namespace gView.DataSources.OGR
                 return Task.FromResult<IFeature>(null);
             }
 
-            OSGeo.OGR.Feature ogrfeature = _layer.GetNextFeature();
+            OSGeo_v1.OGR.Feature ogrfeature = _layer.GetNextFeature();
             if (ogrfeature == null)
             {
                 return Task.FromResult<IFeature>(null);
             }
 
             Feature feature = new Feature();
-            feature.OID = ogrfeature.GetFID();
+            feature.OID = (int)ogrfeature.GetFID();
 
-            OSGeo.OGR.FeatureDefn defn = ogrfeature.GetDefnRef();
+            OSGeo_v1.OGR.FeatureDefn defn = ogrfeature.GetDefnRef();
             int fieldCount = defn.GetFieldCount();
             for (int i = 0; i < fieldCount; i++)
             {
-                OSGeo.OGR.FieldDefn fdefn = defn.GetFieldDefn(i);
+                OSGeo_v1.OGR.FieldDefn fdefn = defn.GetFieldDefn(i);
                 FieldValue fv = new FieldValue(fdefn.GetName());
 
                 string fieldType = fdefn.GetFieldTypeName(fdefn.GetFieldType()).ToLower();
@@ -98,7 +98,7 @@ namespace gView.DataSources.OGR
 
             if (feature.Shape == null)
             {
-                OSGeo.OGR.Geometry geom = ogrfeature.GetGeometryRef();
+                OSGeo_v1.OGR.Geometry geom = ogrfeature.GetGeometryRef();
                 if (geom != null)
                 {
                     feature.Shape = gView.Framework.OGC.GML.GeometryTranslator.GML2Geometry(geom.ExportToGML(), GmlVersion.v1);
