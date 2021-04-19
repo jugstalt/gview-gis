@@ -10,6 +10,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
     [ServiceMethod("ExportMap", "export")]
     [ServiceMethod("All Layers", "layers")]
     [ServiceMethod("Legend", "legend")]
+    [ServiceMethod("Identify", "identify")]
     public class JsonMapService
     {
         public JsonMapService()

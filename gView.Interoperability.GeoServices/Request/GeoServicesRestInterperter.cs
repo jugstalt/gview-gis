@@ -6,7 +6,9 @@ using gView.Framework.Editor.Core;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
+using gView.Framework.system;
 using gView.Framework.UI;
+using gView.Interoperability.GeoServices.Extensions;
 using gView.Interoperability.GeoServices.Rest.Json;
 using gView.Interoperability.GeoServices.Rest.Json.Features;
 using gView.Interoperability.GeoServices.Rest.Json.FeatureServer;
@@ -57,6 +59,9 @@ namespace gView.Interoperability.GeoServices.Request
                 case "query":
                     await Query(context);
                     break;
+                case "identify":
+                    await Identify(context);
+                    break;
                 case "legend":
                     await Legend(context);
                     break;
@@ -87,6 +92,7 @@ namespace gView.Interoperability.GeoServices.Request
                     accessTypes |= AccessTypes.Map;
                     break;
                 case "query":
+                case "identify":
                     accessTypes |= AccessTypes.Query;
                     break;
                 case "legend":
@@ -632,6 +638,254 @@ namespace gView.Interoperability.GeoServices.Request
                         SpatialReference = featureSref,
                         Fields = jsonFields.ToArray(),
                         Features = jsonFeatures.ToArray()
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                context.ServiceRequest.Succeeded = false;
+                context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
+                {
+                    Error = new JsonError.ErrorDef()
+                    {
+                        Code = -1,
+                        Message = ex.Message
+                    }
+                });
+            }
+        }
+
+        #endregion
+
+        #region Identify
+
+        async private Task Identify(IServiceRequestContext context)
+        {
+            try
+            {
+                // https://developers.arcgis.com/rest/services-reference/identify-map-service-.htm
+
+                var identify = JsonConvert.DeserializeObject<JsonIdentify>(context.ServiceRequest.Request);
+                using(var serviceMap = await context.CreateServiceMapInstance())
+                {
+                    #region Parameters
+
+                    IGeometry geometry = null;
+                    switch(identify.geometryType?.ToLower())
+                    {
+                        case "esrigeometrypoint":
+                            var point = identify.Geometry.Split(',');
+                            if (point.Length == 2)
+                            {
+                                geometry = new Rest.Json.Features.Geometry.JsonGeometry()
+                                {
+                                    X = NumberConverter.ToDouble(point[0]),
+                                    Y = NumberConverter.ToDouble(point[1])
+                                }.ToGeometry();
+                            }
+                            break;
+                        case "esrigeometryenvelope":
+                            var envelope = identify.Geometry.Split(',');
+                            if (envelope.Length == 4)
+                            {
+                                geometry = new Rest.Json.Features.Geometry.JsonGeometry()
+                                {
+                                    XMin = NumberConverter.ToDouble(envelope[0]),
+                                    YMin = NumberConverter.ToDouble(envelope[1]),
+                                    XMax = NumberConverter.ToDouble(envelope[2]),
+                                    YMax = NumberConverter.ToDouble(envelope[3])
+                                }.ToGeometry();
+                            }
+                            break;
+                        default:
+                            geometry = JsonConvert.DeserializeObject<Rest.Json.Features.Geometry.JsonGeometry>(identify.Geometry)?.ToGeometry();
+                            break;
+                    }
+                    if(geometry==null)
+                    {
+                        throw new Exception("Invalid identify geometry");
+                    }
+
+                    var bbox = identify.MapExtent?.ToBBox();
+                    if (bbox == null || bbox.Length != 4)
+                    {
+                        throw new Exception("Invalid identify map extent. Use <xmin>, <ymin>, <xmax>, <ymax>");
+                    }
+                    var mapExtent = new Envelope(bbox[0], bbox[1], bbox[2], bbox[3]);
+
+                    var imageDisplay = identify.ImageDisplay?.Split(',').Select(f => NumberConverter.ToFloat(f)).ToArray();
+                    if(imageDisplay==null || imageDisplay.Length!=3)
+                    {
+                        throw new Exception("Invalid identify image display. Use <width>, <height>, <dpi>");
+                    }
+
+                    ISpatialReference sRef = SpatialReference.FromID("epsg:" + identify.SRef);
+
+                    #endregion
+
+                    #region Initialize Display
+
+                    serviceMap.Display.SpatialReference = sRef;
+                    serviceMap.Display.iWidth = (int)imageDisplay[0];
+                    serviceMap.Display.iHeight = (int)imageDisplay[1];
+                    serviceMap.Display.dpi = imageDisplay[2];
+
+                    serviceMap.Display.Limit = mapExtent;
+                    serviceMap.Display.ZoomTo(mapExtent);
+
+                    serviceMap.Display.Image2World(geometry);
+
+                    if(geometry is IPoint)
+                    {
+                        double tol = identify.PixelTolerance * serviceMap.Display.mapScale / (96 / 0.0254);  // [m]
+                        if (sRef != null &&
+                            sRef.SpatialParameters.IsGeographic)
+                        {
+                            tol = (180.0 * tol / Math.PI) / 6370000.0;
+                        }
+
+                        geometry = new Envelope(((IPoint)geometry).X - tol, ((IPoint)geometry).Y - tol, ((IPoint)geometry).X + tol, ((IPoint)geometry).Y + tol);
+                    }
+
+                    #endregion
+
+                    #region Collect Layers
+
+                    var layers = serviceMap.MapElements?
+                                           .Where(l => l is ILayer)
+                                           .Select(l => (ILayer)l)
+                                           .ToArray() ?? new ILayer[0];
+
+                    if (!String.IsNullOrWhiteSpace(identify?.Layers) && identify.Layers.Contains(":"))
+                    {
+                        #region Apply Visibility
+
+                        string option = identify.Layers.Substring(0, identify.Layers.IndexOf(":")).ToLower();
+                        int[] layerIds = identify.Layers.Substring(identify.Layers.IndexOf(":") + 1)
+                                                 .Split(',').Select(l => int.Parse(l)).ToArray();
+
+
+                        foreach (var layer in layers)
+                        {
+                            var tocElement = serviceMap.TOC.GetTOCElementByLayerId(layer.ID);
+                            bool layerIdContains = tocElement != null ?
+                                LayerOrParentIsInArray(serviceMap, tocElement, layerIds) :    // this is how AGS works: if group is shown -> all layers in group are shown...
+                                layerIds.Contains(layer.ID);
+
+                            switch (option)
+                            {
+                                case "show":
+                                    layer.Visible = layerIdContains;
+                                    break;
+                                case "hide":
+                                    layer.Visible = !layerIdContains;
+                                    break;
+                                case "include":
+                                    if (layerIdContains)
+                                        layer.Visible = true;
+                                    break;
+                                case "exclude":
+                                    if (layerIdContains)
+                                        layer.Visible = false;
+                                    break;
+                            }
+                        }
+
+                        #endregion
+                    }
+
+                    if (!String.IsNullOrEmpty(identify?.LayerDefs))
+                    {
+                        #region Apply Layer Definitions
+
+                        Dictionary<string, string> layerDefs = null;
+
+                        try
+                        {
+                            layerDefs = JsonConvert.DeserializeObject<Dictionary<string, string>>(identify.LayerDefs);
+
+                            foreach (var layerId in layerDefs.Keys)
+                            {
+                                var lID = int.Parse(layerId);
+                                var layer = layers.Where(l => l.ID == lID).FirstOrDefault();
+                                if (layer is IFeatureLayer)
+                                {
+                                    ((IFeatureLayer)layer).FilterQuery = ((IFeatureLayer)layer).FilterQuery.AppendWhereClause(layerDefs[layerId]);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception($"Can't parse layer definitions: { ex.Message }");
+                        }
+
+                        #endregion
+                    }
+
+                    #endregion
+
+                    #region Sptial Reference
+
+                    var spatialFilter = new SpatialFilter();
+                    spatialFilter.FilterSpatialReference = spatialFilter.FeatureSpatialReference = sRef;
+                    spatialFilter.Geometry = geometry;
+                    spatialFilter.SubFields = "*";
+
+                    #endregion
+
+                    var results = new List<JsonIdentifyResponse.Result>();
+
+                    #region Query Layers
+
+                    foreach (var layer in layers.Where(l => l.Visible))
+                    {
+                        ICursor cursor = null;
+
+                        if (layer.Class is IFeatureClass)
+                        {
+                            cursor = await ((IFeatureClass)layer.Class).GetFeatures(spatialFilter);
+                        }
+                        else if (layer.Class is IPointIdentify)
+                        {
+                            cursor = await ((IPointIdentify)layer.Class).PointQuery(serviceMap.Display, geometry.Envelope.Center, sRef, null);
+                        }
+
+                        if (cursor is IFeatureCursor)
+                        {
+                            IFeature feature;
+                            while ((feature = await ((IFeatureCursor)cursor).NextFeature()) != null)
+                            {
+                                var result = new JsonIdentifyResponse.Result() { LayerId = layer.ID, LayerName = layer.Title };
+
+                                result.ResultAttributes = feature.AttributesDictionary();
+                                if(identify.ReturnGeometry)
+                                {
+                                    // ToDo: Project?
+                                    result.Geometry = feature.Shape?.ToJsonGeometry();
+                                }
+
+                                results.Add(result);
+                            }
+                        }
+                        else if (cursor is IRowCursor)
+                        {
+                            IRow row;
+                            while ((row = await ((IRowCursor)cursor).NextRow()) != null)
+                            {
+                                var result = new JsonIdentifyResponse.Result() { LayerId = layer.ID, LayerName = layer.Title };
+
+                                result.ResultAttributes = row.AttributesDictionary();
+
+                                results.Add(result);
+                            }
+                        }
+                    }
+
+                    #endregion
+
+                    context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonIdentifyResponse()
+                    {
+                         Results = results.ToArray()
                     });
                 }
             }

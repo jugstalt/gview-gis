@@ -1452,6 +1452,7 @@ namespace gView.Interoperability.ArcXML
                 xWriter.WriteStartElement("SEPARATORS");
                 xWriter.WriteAttributeString("cs", " ");
                 xWriter.WriteAttributeString("ts", ";");
+                xWriter.WriteAttributeString("dec", System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
                 xWriter.WriteEndElement(); // SEPARATORS
 
                 xWriter.WriteStartElement("CAPABILITIES");

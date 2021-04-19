@@ -165,7 +165,16 @@ namespace gView.Server
                     template: "geoservices/rest/services/{id}/mapserver/{layerId}/query",
                     defaults: new { controller = "GeoServicesRest", Action = "Query" }
                 );
-
+                routes.MapRoute(
+                   name: "geoservices_rest_identify",
+                   template: "geoservices/rest/services/{folder}/{id}/mapserver/identify",
+                   defaults: new { controller = "GeoServicesRest", Action = "Identify" }
+                );
+                routes.MapRoute(
+                   name: "geoservices_rest_identify2",
+                   template: "geoservices/rest/services/{id}/mapserver/identify",
+                   defaults: new { controller = "GeoServicesRest", Action = "Identify" }
+                );
                 routes.MapRoute(
                     name: "geoservices_rest_servicelayers",
                     template: "geoservices/rest/services/{folder}/{id}/mapserver/layers",

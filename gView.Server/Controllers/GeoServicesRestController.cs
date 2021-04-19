@@ -404,6 +404,62 @@ namespace gView.Server.Controllers
             });
         }
 
+        async public Task<IActionResult> Identify(string id, string folder="")
+        {
+            return await SecureMethodHandler(async (identity) =>
+            {
+                var interpreter = _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter));
+
+                #region Request
+
+                JsonIdentify identify = Deserialize<JsonIdentify>(
+                    Request.HasFormContentType ?
+                    Request.Form :
+                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
+
+                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(identify))
+                {
+                    OnlineResource = _mapServerService.Options.OnlineResource,
+                    OutputUrl = _mapServerService.Options.OutputUrl,
+                    Method = "identify",
+                    Identity = identity
+                };
+
+                #endregion
+
+                #region Queue & Wait
+
+                IServiceRequestContext context = await ServiceRequestContext.TryCreate(
+                    _mapServerService.Instance,
+                    interpreter,
+                    serviceRequest);
+
+                string format = ResultFormat();
+                if (String.IsNullOrWhiteSpace(format))
+                {
+                    using (var serviceMap = await context.CreateServiceMapInstance())
+                    {
+                        identify.InitForm(serviceMap);
+                        return FormResult(identify);
+                    }
+                }
+
+                await _mapServerService.TaskQueue.AwaitRequest(interpreter.Request, context);
+
+                #endregion
+
+                if (serviceRequest.Succeeded)
+                {
+                    return Result(JsonConvert.DeserializeObject<JsonIdentifyResponse>(serviceRequest.Response), folder, id, "Identify");
+                }
+                else
+                {
+                    return Result(JsonConvert.DeserializeObject<JsonError>(serviceRequest.Response));
+                }
+                
+            });
+        }
+
         #endregion
 
         #region FeatureServer

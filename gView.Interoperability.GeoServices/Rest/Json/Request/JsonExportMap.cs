@@ -1,5 +1,6 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Interoperability.GeoServices.Rest.Reflection;
 using Newtonsoft.Json;
@@ -28,15 +29,25 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
 
                     foreach (var layer in map.MapElements)
                     {
+                        IEnvelope envelope = null; 
                         if (layer.Class is IFeatureClass && ((IFeatureClass)layer.Class).Envelope != null)
+                        {
+                            envelope = ((IFeatureClass)layer.Class).Envelope;
+                        }
+                        else if (layer.Class is IRasterClass && ((IRasterClass)layer.Class).Polygon != null)
+                        {
+                            envelope = ((IRasterClass)layer.Class).Polygon.Envelope;
+                        }
+
+                        if(envelope!=null)
                         {
                             if (fullExtent == null)
                             {
-                                fullExtent = new Framework.Geometry.Envelope(((IFeatureClass)layer.Class).Envelope);
+                                fullExtent = new Framework.Geometry.Envelope(envelope);
                             }
                             else
                             {
-                                fullExtent.Union(((IFeatureClass)layer.Class).Envelope);
+                                fullExtent.Union(envelope);
                             }
                         }
                     }
