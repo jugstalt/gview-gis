@@ -57,6 +57,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
                     if (fullExtent != null)
                     {
                         MapExtent = $"{fullExtent.minx.ToDoubleString()},{fullExtent.miny.ToDoubleString()},{fullExtent.maxx.ToDoubleString()},{fullExtent.maxy.ToDoubleString()}";
+                        this.Geometry = $"{ fullExtent.Center.X.ToDoubleString() },{ fullExtent.Center.Y.ToDoubleString() }";
                     }
                 }
 
@@ -67,7 +68,6 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
                 }
 
                 this.geometryType = "esriGeometryPoint";
-                this.Geometry = "400,300";
                 this.PixelTolerance = 1;
             }
         }

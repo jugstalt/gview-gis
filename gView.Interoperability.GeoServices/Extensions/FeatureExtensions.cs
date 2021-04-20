@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Data;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace gView.Interoperability.GeoServices.Extensions
@@ -20,6 +21,40 @@ namespace gView.Interoperability.GeoServices.Extensions
             }
 
             return dict;
+        }
+
+        static public bool IsGridResponse(this Dictionary<string, object> attributes)
+        {
+            if (attributes?.Keys != null)
+            {
+                int bandNumber = 0;
+                var countBands = attributes.Keys.Where(k => k.StartsWith("band") && int.TryParse(k.Substring(4), out bandNumber)).Count();
+
+                return countBands == 1 && attributes.Keys.Contains("band1") && attributes.Keys.Contains("Bands");
+            }
+
+            return false;
+        }
+
+        static public Dictionary<string, object>  AppendRasterAttributes(this Dictionary<string, object> attributes)
+        {
+            if(attributes.IsGridResponse())
+            {
+                var result = new Dictionary<string, object>()
+                {
+                    { "Stretched value","" },
+                    { "Pixel Value", attributes["band1"] }
+                };
+
+                foreach(var key in attributes.Keys)
+                {
+                    result[key] = attributes[key];
+                }
+
+                return result;
+            }
+
+            return attributes;
         }
     }
 }

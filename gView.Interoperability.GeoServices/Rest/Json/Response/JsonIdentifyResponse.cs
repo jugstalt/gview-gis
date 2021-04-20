@@ -27,7 +27,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Response
             [JsonProperty("attributes")]
             public Dictionary<string, object> ResultAttributes { get; set; }
 
-            [JsonProperty("geometry")]
+            [JsonProperty("geometry", NullValueHandling = NullValueHandling.Ignore)]
             public JsonGeometry Geometry { get; set; }
         }
 

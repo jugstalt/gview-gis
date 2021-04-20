@@ -701,7 +701,7 @@ namespace gView.Interoperability.GeoServices.Request
                             geometry = JsonConvert.DeserializeObject<Rest.Json.Features.Geometry.JsonGeometry>(identify.Geometry)?.ToGeometry();
                             break;
                     }
-                    if(geometry==null)
+                    if (geometry == null)
                     {
                         throw new Exception("Invalid identify geometry");
                     }
@@ -733,9 +733,9 @@ namespace gView.Interoperability.GeoServices.Request
                     serviceMap.Display.Limit = mapExtent;
                     serviceMap.Display.ZoomTo(mapExtent);
 
-                    serviceMap.Display.Image2World(geometry);
+                    //serviceMap.Display.Image2World(geometry);  // the geometry is in world coordinate system!
 
-                    if(geometry is IPoint)
+                    if (geometry is IPoint && mapExtent.Width > 0 && mapExtent.Height > 0)
                     {
                         double tol = identify.PixelTolerance * serviceMap.Display.mapScale / (96 / 0.0254);  // [m]
                         if (sRef != null &&
@@ -874,7 +874,12 @@ namespace gView.Interoperability.GeoServices.Request
                             {
                                 var result = new JsonIdentifyResponse.Result() { LayerId = layer.ID, LayerName = layer.Title };
 
-                                result.ResultAttributes = row.AttributesDictionary();
+                                result.ResultAttributes = row.AttributesDictionary()
+                                                             .AppendRasterAttributes();
+                                if (identify.ReturnGeometry)
+                                {
+                                    result.Geometry = geometry?.Envelope?.Center?.ToJsonGeometry();
+                                }
 
                                 results.Add(result);
                             }
