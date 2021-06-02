@@ -398,7 +398,7 @@ namespace gView.Framework.Symbology
             }
 
             float fac = 1;
-            if (display.refScale > 1)
+            if (options.ApplyRefScale)
             {
                 fac = (float)(display.refScale / display.mapScale);
                 fac = options.RefScaleFactor(fac);

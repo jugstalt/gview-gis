@@ -132,6 +132,7 @@ namespace gView.Interoperability.GeoServices.Request
                     #region Display
 
                     serviceMap.Display.dpi = _exportMap.Dpi;
+                    //serviceMap.ScaleSymbolFactor = (float)_exportMap.Dpi / 96f;
 
                     var size = _exportMap.Size.ToSize();
                     serviceMap.Display.iWidth = size[0];

@@ -135,7 +135,7 @@ namespace gView.Plugins.DbTools.Migrate
                     IFeatureLayer layer = LayerFactory.Create(destDatasetElement.Class) as IFeatureLayer;
                     if (layer != null)
                     {
-                        var cloneOptions = new CloneOptions(migMap.Display);
+                        var cloneOptions = new CloneOptions(migMap.Display, false);
                         if (sourceLayer.FeatureRenderer != null)
                         {
                             layer.FeatureRenderer = sourceLayer.FeatureRenderer.Clone(cloneOptions) as IFeatureRenderer;

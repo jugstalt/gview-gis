@@ -391,18 +391,14 @@ namespace gView.Framework.Symbology
 
             float fac = 1;
 
-            if (display.refScale > 1)
+            if (options.ApplyRefScale)
             {
                 fac = ReferenceScaleHelper.RefscaleFactor(
                     (float)(display.refScale / display.mapScale),
                     this.SymbolSize, this.MinSymbolSize, this.MaxSymbolSize);
                 fac = options.RefScaleFactor(fac);
             }
-
-            if (display.dpi != 96.0)
-            {
-                fac *= (float)(display.dpi / 96.0);
-            }
+            fac *= options.DpiFactor;
 
             SimplePointSymbol pSym = new SimplePointSymbol(_pen.Color, _pen.Width * fac, _brush.Color);
             pSym._size = Math.Max(_size * fac, 1f);

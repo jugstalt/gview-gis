@@ -197,9 +197,12 @@ namespace gView.Framework.Carto.LayerRenderers
                     // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
                     if (layer.FeatureRenderer != null && layer.FeatureRenderer.HasEffect(layer, _map))
                     {
-                        if (layer.RequiresFeatureRendererClone())
+                        if (layer.RequiresFeatureRendererClone(display))
                         {
-                            renderer = clonedRenderer = (IFeatureRenderer)layer.FeatureRenderer.Clone(new CloneOptions(display, maxRefScaleFactor: layer.MaxRefScaleFactor));
+                            renderer = clonedRenderer = (IFeatureRenderer)layer.FeatureRenderer.Clone(
+                                new CloneOptions(display, 
+                                                 layer.UseWithRefScale(display),
+                                                 maxRefScaleFactor: layer.MaxRefScaleFactor));
                         }
                         else
                         {
@@ -208,15 +211,17 @@ namespace gView.Framework.Carto.LayerRenderers
                     }
                     if (layer.LabelRenderer != null && _useLabelRenderer)
                     {
-                        if (layer.ApplyLabelRefScale == false && display.refScale > 0)
+                        if(layer.RequiresLabelRendererClone(display))
+                        {
+                            labelRenderer = (ILabelRenderer)layer.LabelRenderer.Clone(new CloneOptions(display,
+                                                                                                       layer.UseLabelsWithRefScale(display),
+                                                                                                       maxLabelRefscaleFactor: layer.MaxLabelRefScaleFactor));
+                        } 
+                        else  // Clone with null => simple clone
                         {
                             //display.refScale = 0;
                             labelRenderer = (ILabelRenderer)layer.LabelRenderer.Clone(null);
                             //display.refScale = refScale;
-                        }
-                        else
-                        {
-                            labelRenderer = (ILabelRenderer)layer.LabelRenderer.Clone(new CloneOptions(display, maxLabelRefscaleFactor: layer.MaxLabelRefScaleFactor));
                         }
                     }
                 }

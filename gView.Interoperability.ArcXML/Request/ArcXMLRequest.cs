@@ -244,7 +244,8 @@ namespace gView.Interoperability.ArcXML
                     imageSize.Attributes["scalesymbols"].Value.ToLower() == "true" &&
                     dpi != 96f)
                 {
-                    getImage.symbolScaleFactor = dpi / 96f;
+                    //getImage.symbolScaleFactor = dpi / 96f;
+                    getImage.Dpi = dpi;
                 }
             }
             XmlNode displaytransformation = properties.SelectSingleNode("DISPLAYTRANSFORMATION[@rotation]");

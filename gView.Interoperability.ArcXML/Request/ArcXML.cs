@@ -293,7 +293,8 @@ namespace gView.Interoperability.ArcXML
         public int iWidth = 0, iHeight = 0;
         public XmlNode layerDefs = null;
         public XmlNodeList LAYERS = null;
-        public float symbolScaleFactor = 1f;
+        public float Dpi = 96f;
+        //public float symbolScaleFactor = 1f;
         private System.Drawing.Imaging.ImageFormat _imageFormat;
         private string _imageExtension;
         private bool _useTOC = true;
@@ -312,13 +313,14 @@ namespace gView.Interoperability.ArcXML
 
             AXL response = new AXL("ARCXML", "1.1");
 
+            map.Display.dpi = Dpi;
             map.Display.iWidth = iWidth;
             map.Display.iHeight = iHeight;
             map.Display.Limit = Envelope;
             map.Display.ZoomTo(Envelope);
             //map.Display.drawScaleBar = false;
             map.BeforeRenderLayers += new BeforeRenderLayersEvent(map_BeforeRenderLayers);
-            map.ScaleSymbolFactor = symbolScaleFactor;
+            //map.ScaleSymbolFactor = symbolScaleFactor;
             await map.Render();
 
             string title = map.Name.Replace(",", "_").Replace("/", "_") + "_" + System.Guid.NewGuid().ToString("N") + _imageExtension;

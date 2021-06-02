@@ -305,16 +305,7 @@ namespace gView.Framework.Symbology
             float fac = 1;
             if (_widthUnit == DrawingUnit.Pixel)
             {
-                if (display.refScale > 1)
-                {
-                    fac = (float)(display.refScale / display.mapScale);
-                    fac = options.RefScaleFactor(fac);
-                }
-
-                if (display.dpi != 96.0)
-                {
-                    fac *= (float)(display.dpi / 96.0);
-                }
+                fac = ReferenceScaleHelper.CalcPixelUnitFactor(options);
             }
             else if (_widthUnit != DrawingUnit.Pixel && _pen.Width > 0)
             {
@@ -331,6 +322,8 @@ namespace gView.Framework.Symbology
             clone.LineEndCap = this.LineEndCap;
             clone.Smoothingmode = this.Smoothingmode;
             clone.LegendLabel = _legendLabel;
+            clone.MinPenWidth = _minWidth;
+            clone.MaxPenWidth = _maxWidth;
 
             clone.PenWidthUnit = _widthUnit;
 

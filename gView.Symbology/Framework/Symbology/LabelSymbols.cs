@@ -994,19 +994,18 @@ namespace gView.Framework.Symbology
             }
 
             float fac = 1;
-            if (display.refScale > 1)
+            if (options.ApplyRefScale)
             {
                 fac = ReferenceScaleHelper.RefscaleFactor(
                     (float)(display.refScale / display.mapScale),
-                    _font.Size, MinFontSize, MaxFontSize);
+                    _font.Size, 
+                    MinFontSize, 
+                    MaxFontSize);
                 fac = options.LabelRefScaleFactor(fac);
             }
-            if (display.dpi != 96.0)
-            {
-                fac *= (float)(display.dpi / 96.0);
-            }
+            fac *= options.DpiFactor;
 
-            SimpleTextSymbol tSym = new SimpleTextSymbol(new Font(_font.Name, Math.Max(_font.Size * fac, 2), _font.Style), _brush.Color);
+            SimpleTextSymbol tSym = new SimpleTextSymbol(new Font(_font.Name, Math.Max(_font.Size * fac / display.Screen.LargeFontsFactor, 2), _font.Style), _brush.Color);
             tSym.HorizontalOffset = HorizontalOffset * fac;
             tSym.VerticalOffset = VerticalOffset * fac;
             tSym.Angle = Angle;
@@ -1321,16 +1320,12 @@ namespace gView.Framework.Symbology
             }
 
             float fac = 1;
-            if (display.refScale > 1)
+            if (options.ApplyRefScale)
             {
                 fac = (float)(display.refScale / display.mapScale);
                 fac = options.LabelRefScaleFactor(fac);
             }
-
-            if (display.dpi != 96.0)
-            {
-                fac *= (float)(display.dpi / 96.0);
-            }
+            fac *= options.DpiFactor;
 
             GlowingTextSymbol tSym = new GlowingTextSymbol(new Font(_font.Name, Math.Max(_font.Size * fac, 2f), _font.Style), _brush.Color, _outlinebrush.Color);
             tSym.HorizontalOffset = HorizontalOffset * fac;
@@ -1522,16 +1517,12 @@ namespace gView.Framework.Symbology
             }
 
             float fac = 1;
-            if (display.refScale > 1)
+            if (options.ApplyRefScale)
             {
                 fac = (float)(display.refScale / display.mapScale);
                 fac = options.LabelRefScaleFactor(fac);
             }
-
-            if (display.dpi != 96.0)
-            {
-                fac *= (float)(display.dpi / 96.0);
-            }
+            fac *= options.DpiFactor;
 
             BlockoutTextSymbol tSym = new BlockoutTextSymbol(new Font(_font.Name, Math.Max(_font.Size * fac, 2f), _font.Style), _brush.Color, _outlinebrush.Color);
             tSym.HorizontalOffset = HorizontalOffset * fac;

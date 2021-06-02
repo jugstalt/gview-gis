@@ -179,17 +179,7 @@ namespace gView.Framework.Symbology
                 return Clone();
             }
 
-            float fac = 1;
-            if (display.refScale > 1)
-            {
-                fac = (float)(display.refScale / display.mapScale);
-                fac = options.RefScaleFactor(fac);
-            }
-
-            if (display.dpi != 96.0)
-            {
-                fac *= (float)(display.dpi / 96.0);
-            }
+            float fac =  ReferenceScaleHelper.CalcPixelUnitFactor(options);
 
             RasterMarkerSymbol marker = new RasterMarkerSymbol();
             marker.Angle = Angle;

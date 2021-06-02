@@ -303,16 +303,12 @@ namespace gView.Framework.Symbology
             }
 
             float fac = 1;
-            if (display.refScale > 1)
+            if (options.ApplyRefScale)
             {
                 fac = (float)(display.refScale / display.mapScale);
                 fac = options.RefScaleFactor(fac);
             }
-
-            if (display.dpi != 96.0)
-            {
-                fac *= (float)(display.dpi / 96.0);
-            }
+            fac *= options.DpiFactor;
 
             HatchSymbol hSym = new HatchSymbol(_forecolor, _backcolor, _brush.HatchStyle);
             if (_outlineSymbol != null)

@@ -149,7 +149,7 @@ namespace gView.Framework.Carto
         Task<int> SaveImage(Stream ms, global::System.Drawing.Imaging.ImageFormat format);
         void ReleaseImage();
 
-        float ScaleSymbolFactor { get; set; }
+        //float ScaleSymbolFactor { get; set; }
 
         T GetModule<T>();
 

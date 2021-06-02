@@ -288,16 +288,12 @@ namespace gView.Framework.Symbology
             }
 
             float fac = 1;
-            if (display.refScale > 1 && display.mapScale >= 1)
+            if (options.ApplyRefScale && display.mapScale >= 1)
             {
                 fac = (float)(display.refScale / display.mapScale);
                 fac = options.RefScaleFactor(fac);
             }
-
-            if (display.dpi != 96.0)
-            {
-                fac *= (float)(display.dpi / 96.0);
-            }
+            fac *= options.DpiFactor;
 
             SymbolDotedLineSymbol cloneSym = new SymbolDotedLineSymbol();
             if (this.LineSymbol != null)

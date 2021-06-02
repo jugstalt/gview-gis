@@ -7,11 +7,11 @@ namespace gView.Framework.Carto
 {
     static public class Extensions
     {
-        static public bool RequiresFeatureRendererClone(this IFeatureLayer layer)
+        static public bool RequiresFeatureRendererClone(this IFeatureLayer layer, IDisplay display)
         {
             if (layer?.FeatureRenderer != null)
             {
-                if (layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale)
+                if (layer.UseWithRefScale(display))
                 {
                     return true;
                 }
@@ -20,9 +20,42 @@ namespace gView.Framework.Carto
                 {
                     return true;
                 }
+
+                if (display.dpi != 96.0)
+                {
+                    return true;
+                }
             }
 
             return false;
+        }
+
+        static public bool RequiresLabelRendererClone(this IFeatureLayer layer, IDisplay display)
+        {
+            if (layer?.LabelRenderer != null)
+            {
+                if (layer.UseLabelsWithRefScale(display))
+                {
+                    return true;
+                }
+
+                if (display.dpi != 96.0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        static public bool UseWithRefScale(this IFeatureLayer layer, IDisplay display)
+        {
+            return display.refScale > 1 && layer.FeatureRenderer.UseReferenceScale && layer.ApplyRefScale;
+        }
+
+        static public bool UseLabelsWithRefScale(this IFeatureLayer layer, IDisplay display)
+        {
+            return display.refScale > 1 && layer.ApplyLabelRefScale;
         }
     }
 }

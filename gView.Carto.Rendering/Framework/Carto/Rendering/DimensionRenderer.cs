@@ -39,11 +39,11 @@ namespace gView.Framework.Carto.Rendering
 
             if (renderer != null && renderer._textSymbol != null)
             {
-                _textSymbol = renderer._textSymbol.Clone(_useRefScale ? new CloneOptions(display) : null) as ITextSymbol;
+                _textSymbol = renderer._textSymbol.Clone(_useRefScale ? new CloneOptions(display, true) : null) as ITextSymbol;
             }
             if (renderer != null && renderer._lineSymbol != null)
             {
-                _lineSymbol = renderer._lineSymbol.Clone(_useRefScale ? new CloneOptions(display) : null) as ILineSymbol;
+                _lineSymbol = renderer._lineSymbol.Clone(_useRefScale ? new CloneOptions(display, true) : null) as ILineSymbol;
             }
 
             _format = renderer._format;

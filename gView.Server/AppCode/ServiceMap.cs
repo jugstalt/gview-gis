@@ -368,7 +368,7 @@ namespace gView.Server.AppCode
 
                 _graphics = System.Drawing.Graphics.FromImage(_image);
                 //_graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
-                this.dpi = _graphics.DpiX * this.ScaleSymbolFactor;
+                //this.dpi = _graphics.DpiX * this.ScaleSymbolFactor;
 
                 if (BackgroundColor.A != 0 && !Display.MakeTransparent)
                 {
@@ -792,18 +792,18 @@ namespace gView.Server.AppCode
             return await RefreshMap(DrawPhase.All, null);
         }
 
-        private float _scaleSymbolFactor = 1f;
-        public float ScaleSymbolFactor
-        {
-            get
-            {
-                return _scaleSymbolFactor;
-            }
-            set
-            {
-                _scaleSymbolFactor = value;
-            }
-        }
+        //private float _scaleSymbolFactor = 1f;
+        //public float ScaleSymbolFactor
+        //{
+        //    get
+        //    {
+        //        return _scaleSymbolFactor;
+        //    }
+        //    set
+        //    {
+        //        _scaleSymbolFactor = value;
+        //    }
+        //}
 
         public void SetRequestContext(IServiceRequestContext context)
         {

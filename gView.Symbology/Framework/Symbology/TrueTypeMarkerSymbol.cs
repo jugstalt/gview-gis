@@ -340,17 +340,17 @@ namespace gView.Framework.Symbology
             }
 
             float fac = 1;
-            if (display.refScale > 1)
+            if (options.ApplyRefScale)
             {
                 fac = ReferenceScaleHelper.RefscaleFactor(
                     (float)(display.refScale / display.mapScale),
-                    this.SymbolSize, this.MinSymbolSize, this.MaxSymbolSize);
+                    this.SymbolSize, 
+                    this.MinSymbolSize, 
+                    this.MaxSymbolSize);
+
                 fac = options.RefScaleFactor(fac);
             }
-            if (display.dpi != 96.0)
-            {
-                fac *= (float)(display.dpi / 96.0);
-            }
+            fac *= options.DpiFactor;
 
             TrueTypeMarkerSymbol marker = new TrueTypeMarkerSymbol(new Font(Font.Name, Math.Max(Font.Size * fac / display.Screen.LargeFontsFactor, 2f), _font.Style), _brush.Color);
             marker.Angle = Angle;
