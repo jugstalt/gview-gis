@@ -55,6 +55,7 @@ namespace gView.Server.Controllers
         }
 
         public const double Version = 10.61;
+        public const string FullVersion = "10.6.1";
         //private const string DefaultFolder = "default";
 
         public int JsonExportResponse { get; private set; }
@@ -62,6 +63,21 @@ namespace gView.Server.Controllers
         public IActionResult Index()
         {
             return RedirectToAction("Services");
+        }
+
+        public IActionResult RestInfo()
+        {
+            return Result(new RestInfoResponse()
+            {
+                CurrentVersion = Version,
+                FullVersion = FullVersion,
+                AuthInfoInstance = new RestInfoResponse.AuthInfo()
+                {
+                    IsTokenBasedSecurity = true,
+                    ShortLivedTokenValidity = 60,
+                    TokenServicesUrl = $"{ _urlHelperService.AppRootUrl(this.Request) }/geoservices/tokens"
+                }
+            });
         }
 
         public Task<IActionResult> Services()
@@ -863,6 +879,7 @@ namespace gView.Server.Controllers
             }
 
             var tocElement = map.TOC.GetTOCElement(datasetElement as ILayer);
+            bool isJsonFeatureServiceLayer = result is JsonFeatureServerLayer;
 
             JsonLayerLink parentLayer = null;
             if (datasetElement is ILayer && ((ILayer)datasetElement).GroupLayer != null)
@@ -963,12 +980,27 @@ namespace gView.Server.Controllers
                 {
                     fields = ((ITableClass)datasetElement.Class).Fields.ToEnumerable().Select(f =>
                     {
-                        return new JsonField()
+                        if (isJsonFeatureServiceLayer)
                         {
-                            Name = f.name,
-                            Alias = f.aliasname,
-                            Type = JsonField.ToType(f.type).ToString()
-                        };
+                            return new JsonFeatureLayerField()
+                            {
+                                Name = f.name,
+                                Alias = f.aliasname,
+                                Type = JsonField.ToType(f.type).ToString(),
+                                Editable = f.type != FieldType.ID,
+                                Nullable = f.type != FieldType.ID,
+                                Length = f.size
+                            };
+                        }
+                        else
+                        {
+                            return new JsonField()
+                            {
+                                Name = f.name,
+                                Alias = f.aliasname,
+                                Type = JsonField.ToType(f.type).ToString()
+                            };
+                        }
                     }).ToArray();
                 }
 

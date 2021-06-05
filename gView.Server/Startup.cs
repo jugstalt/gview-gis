@@ -129,6 +129,7 @@ namespace gView.Server
 
             // Hack: app.UseForwardedHeaders() ... not working
             app.UseMiddleware<XForwardedMiddleware>();
+            app.UseMiddleware<ArcMapPathDoubleSlashesMiddleware>();
 
             app.UseCors(x => x
                 .AllowAnyOrigin()
@@ -295,6 +296,12 @@ namespace gView.Server
                  name: "geoservices_restgeneratetoken",
                  template: "geoservices/tokens/generateToken",
                  defaults: new { controller = "GeoServicesRest", Action = "GenerateToken" }
+               );
+
+                routes.MapRoute(
+                 name: "geoservices_rest_info",
+                 template: "geoservices/rest/info",
+                 defaults: new { controller = "GeoServicesRest", Action = "RestInfo" }
                );
 
                 // Ogc

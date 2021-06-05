@@ -15,7 +15,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Features
             this.Wkid = id;
         }
 
-        [JsonProperty("wkt")]
+        [JsonProperty("wkt", NullValueHandling = NullValueHandling.Ignore)]
         public string Wkt { get; set; }
 
         [JsonProperty("wkid")]
