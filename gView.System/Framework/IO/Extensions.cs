@@ -13,7 +13,7 @@ namespace gView.Framework.IO
     {
         static private HttpClient _httpClient = null;
 
-        static public string ToPlattformPath(this string path)
+        static public string ToPlatformPath(this string path)
         {
             return path.Replace(@"\", "/");
         }

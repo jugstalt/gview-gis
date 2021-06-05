@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static gView.Interoperability.GeoServices.Rest.Json.JsonMapService;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
@@ -46,6 +47,12 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
         [JsonProperty(PropertyName = "fullExtent")]
         public JsonMapService.Extent FullExtent { get; set; }
+
+        [JsonProperty(PropertyName = "initialExtent")]
+        public JsonMapService.Extent InitialExtend { get; set; }
+
+        [JsonProperty(PropertyName = "spatialReference")]
+        public SpatialReference SpatialReferenceInstance { get; set; }
 
         [JsonProperty(PropertyName = "units")]
         public string Units { get; set; }
