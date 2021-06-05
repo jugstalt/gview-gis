@@ -81,13 +81,13 @@ namespace gView.Server.Services.MapServer
             //if (IMS.mapServer == null || IMS.mapServer[mapName] == null)
             //    return String.Empty;
 
-            FileInfo fi = new FileInfo((_mapServerService.Options.ServicesPath + @"/" + mapName + ".meta").ToPlattformPath());
+            FileInfo fi = new FileInfo((_mapServerService.Options.ServicesPath + @"/" + mapName + ".meta").ToPlatformPath());
             if (!fi.Exists)
             {
                 return String.Empty;
             }
 
-            using (StreamReader sr = new StreamReader(fi.FullName.ToPlattformPath()))
+            using (StreamReader sr = new StreamReader(fi.FullName.ToPlatformPath()))
             {
                 string ret = sr.ReadToEnd();
                 sr.Close();
@@ -177,7 +177,7 @@ namespace gView.Server.Services.MapServer
             string folder = mapName.FolderName();
             if (!String.IsNullOrWhiteSpace(folder))
             {
-                if (!Directory.Exists((_mapServerService.Options.ServicesPath + "/" + folder).ToPlattformPath()))
+                if (!Directory.Exists((_mapServerService.Options.ServicesPath + "/" + folder).ToPlatformPath()))
                 {
                     throw new MapServerException("Folder not exists");
                 }

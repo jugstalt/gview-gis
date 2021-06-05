@@ -79,7 +79,7 @@ namespace gView.Server.Services.MapServer
         private void AddServices(string folder)
         {
 
-            foreach (var mapFileInfo in new DirectoryInfo((Options.ServicesPath + "/" + folder).ToPlattformPath()).GetFiles("*.mxl"))
+            foreach (var mapFileInfo in new DirectoryInfo((Options.ServicesPath + "/" + folder).ToPlatformPath()).GetFiles("*.mxl"))
             {
                 string mapName = String.Empty;
                 try
@@ -97,7 +97,7 @@ namespace gView.Server.Services.MapServer
 
             #region Add Folders on same level
 
-            foreach (var folderDirectory in new DirectoryInfo((Options.ServicesPath + "/" + folder).ToPlattformPath()).GetDirectories())
+            foreach (var folderDirectory in new DirectoryInfo((Options.ServicesPath + "/" + folder).ToPlatformPath()).GetDirectories())
             {
                 MapService folderService = new MapService(this, folderDirectory.FullName, folder, MapServiceType.Folder);
                 if (MapServices.Where(s => s.Fullname == folderService.Fullname && s.Type == folderService.Type).Count() == 0)
@@ -157,7 +157,7 @@ namespace gView.Server.Services.MapServer
                     foreach (var subFolder in folder.Split('/'))
                     {
                         folderName += (folderName.Length > 0 ? "/" : "") + subFolder;
-                        DirectoryInfo folderDirectory = new DirectoryInfo((Options.ServicesPath + "/" + folder).ToPlattformPath());
+                        DirectoryInfo folderDirectory = new DirectoryInfo((Options.ServicesPath + "/" + folder).ToPlatformPath());
                         MapService folderService = new MapService(this, folderDirectory.FullName, parentFolder, MapServiceType.Folder);
 
                         if (MapServices.Where(s => s.Fullname == folderService.Fullname && s.Type == folderService.Type).Count() == 0)

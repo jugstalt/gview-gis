@@ -70,6 +70,9 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         [JsonProperty(PropertyName = "fullExtent")]
         public Extent FullExtent { get; set; }
 
+        [JsonProperty(PropertyName = "initialExtent")]
+        public JsonMapService.Extent InitialExtend { get; set; }
+
         [JsonProperty(PropertyName = "minScale")]
         public int MinScale { get; set; }
 

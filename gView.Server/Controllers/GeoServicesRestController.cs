@@ -192,6 +192,14 @@ namespace gView.Server.Controllers
                             })
                             .ToArray(),
                         SpatialReferenceInstance = epsgCode > 0 ? new JsonMapService.SpatialReference(epsgCode) : null,
+                        //InitialExtend = map.Display.Envelope == null ? null : new JsonMapService.Extent()
+                        //{
+                        //    XMin = map.Display.Envelope.minx,
+                        //    YMin = map.Display.Envelope.miny,
+                        //    XMax = map.Display.Envelope.maxx,
+                        //    YMax = map.Display.Envelope.maxy,
+                        //    SpatialReference = new JsonMapService.SpatialReference(epsgCode)
+                        //},
                         FullExtent = new JsonMapService.Extent()
                         {
                             XMin = fullExtent != null ? fullExtent.minx : 0D,
@@ -374,6 +382,10 @@ namespace gView.Server.Controllers
                     {
                         return Result(JsonConvert.DeserializeObject<JsonFeatureCountResponse>(serviceRequest.Response), folder, id, "Query");
                     }
+                    else if(queryLayer.ReturnIdsOnly == true)
+                    {
+                        return Result(JsonConvert.DeserializeObject<JsonObjectIdResponse>(serviceRequest.Response), folder, id, "Query");
+                    }
                     else
                     {
                         var featureResponse = JsonConvert.DeserializeObject<JsonFeatureResponse>(serviceRequest.Response);
@@ -499,7 +511,8 @@ namespace gView.Server.Controllers
                 }
 
                 gView.Framework.Geometry.Envelope fullExtent = null;
-                int epsg = 0;
+                var spatialReference = map.Display.SpatialReference;
+                int epsg = spatialReference != null ? spatialReference.EpsgCode : 0;
 
                 return Result(new JsonFeatureService()
                 {
@@ -534,6 +547,7 @@ namespace gView.Server.Controllers
                             Name = tocElement != null ? tocElement.Name : e.Title
                         };
                     }).ToArray(),
+                    SpatialReferenceInstance = epsg > 0 ? new JsonMapService.SpatialReference(epsg) : null,
                     FullExtent = new JsonMapService.Extent()
                     {
                         XMin = fullExtent != null ? fullExtent.minx : 0D,
@@ -589,7 +603,18 @@ namespace gView.Server.Controllers
 
                 if (serviceRequest.Succeeded)
                 {
-                    return Result(JsonConvert.DeserializeObject<JsonFeatureServiceQueryResponse>(serviceRequest.Response));
+                    if (queryLayer.ReturnCountOnly == true)
+                    {
+                        return Result(JsonConvert.DeserializeObject<JsonFeatureCountResponse>(serviceRequest.Response), folder, id, "Query");
+                    }
+                    else if (queryLayer.ReturnIdsOnly == true)
+                    {
+                        return Result(JsonConvert.DeserializeObject<JsonObjectIdResponse>(serviceRequest.Response), folder, id, "Query");
+                    }
+                    else
+                    {
+                        return Result(JsonConvert.DeserializeObject<JsonFeatureServiceQueryResponse>(serviceRequest.Response));
+                    }
                 }
                 else
                 {
