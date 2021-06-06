@@ -192,14 +192,14 @@ namespace gView.Server.Controllers
                             })
                             .ToArray(),
                         SpatialReferenceInstance = epsgCode > 0 ? new JsonMapService.SpatialReference(epsgCode) : null,
-                        //InitialExtend = map.Display.Envelope == null ? null : new JsonMapService.Extent()
-                        //{
-                        //    XMin = map.Display.Envelope.minx,
-                        //    YMin = map.Display.Envelope.miny,
-                        //    XMax = map.Display.Envelope.maxx,
-                        //    YMax = map.Display.Envelope.maxy,
-                        //    SpatialReference = new JsonMapService.SpatialReference(epsgCode)
-                        //},
+                        InitialExtend = map.Display.Envelope == null ? null : new JsonMapService.Extent()
+                        {
+                            XMin = fullExtent != null ? fullExtent.minx : 0D,
+                            YMin = fullExtent != null ? fullExtent.miny : 0D,
+                            XMax = fullExtent != null ? fullExtent.maxx : 0D,
+                            YMax = fullExtent != null ? fullExtent.maxy : 0D,
+                            SpatialReference = new JsonMapService.SpatialReference(epsgCode)
+                        },
                         FullExtent = new JsonMapService.Extent()
                         {
                             XMin = fullExtent != null ? fullExtent.minx : 0D,
@@ -207,7 +207,7 @@ namespace gView.Server.Controllers
                             XMax = fullExtent != null ? fullExtent.maxx : 0D,
                             YMax = fullExtent != null ? fullExtent.maxy : 0D,
                             SpatialReference = new JsonMapService.SpatialReference(epsgCode)
-                        }
+                        },
                     });
                 }
             });
@@ -518,13 +518,24 @@ namespace gView.Server.Controllers
                 {
                     CurrentVersion = 10.61,
                     Layers = map.MapElements
-                    .Where(e => e.Class is IFeatureClass)
+                    .Where(e =>
+                    {
+                        var tocElement = map.TOC.GetTOCElement(e as ILayer);
+
+                        return tocElement == null ? false : tocElement.IsHidden() == false;
+                    })
                     .Select(e =>
                     {
                         var tocElement = map.TOC.GetTOCElement(e as ILayer);
+
+                        int parentLayerId =
+                                    (e is IFeatureLayer && ((IFeatureLayer)e).GroupLayer != null) ?
+                                    ((IFeatureLayer)e).GroupLayer.ID :
+                                    -1;
+
                         IFeatureClass fc = (IFeatureClass)e.Class;
 
-                        if (fc.Envelope != null)
+                        if (fc?.Envelope != null)
                         {
                             if (fullExtent == null)
                             {
@@ -533,20 +544,28 @@ namespace gView.Server.Controllers
                             else
                             {
                                 fullExtent.Union(fc.Envelope);
-                            }  
+                            }
                         }
 
-                        if (epsg == 0 && fc.SpatialReference != null && fc.SpatialReference.Name.ToLower().StartsWith("epsg:"))
+                        if (epsg == 0 && fc?.SpatialReference != null && fc.SpatialReference.Name.ToLower().StartsWith("epsg:"))
                         {
                             int.TryParse(fc.SpatialReference.Name.Substring(5), out epsg);
                         }
 
-                        return new JsonIdName()
+                        if (fc != null || tocElement.Layers?.FirstOrDefault() is IGroupLayer)
                         {
-                            Id = e.ID,
-                            Name = tocElement != null ? tocElement.Name : e.Title
-                        };
-                    }).ToArray(),
+                            return new JsonIdName()
+                            {
+                                Id = e.ID,
+                                Name = tocElement != null ? tocElement.Name : e.Title,
+                                ParentLayerId = parentLayerId
+                            };
+                        }
+
+                        return null;
+                    })
+                    .Where(e => e != null)
+                    .ToArray(),
                     SpatialReferenceInstance = epsg > 0 ? new JsonMapService.SpatialReference(epsg) : null,
                     FullExtent = new JsonMapService.Extent()
                     {

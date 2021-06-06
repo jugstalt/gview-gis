@@ -30,8 +30,11 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         [JsonProperty("gv_edit_operations", NullValueHandling = NullValueHandling.Ignore)]
         public string[] EditOperations { get; set; }
 
-        [JsonProperty("parentLayerId")]
-        public int ParentLayerId => -1;
+        [JsonProperty("parentLayer")]
+        new public JsonLayerLink ParentLayer { get; set; }
+
+        [JsonIgnore]
+        public int ParentLayerId => ParentLayer == null ? -1 : ParentLayer.Id;
 
         [JsonProperty("editFieldsInfo")]
         public object EidtFiedsInfo { get; set; }

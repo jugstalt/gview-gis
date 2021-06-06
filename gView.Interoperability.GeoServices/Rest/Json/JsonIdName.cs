@@ -14,5 +14,8 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
         [JsonProperty(PropertyName = "name")]
         public string Name { get; set; }
+
+        [JsonProperty(PropertyName = "parentLayerId")]
+        public int ParentLayerId { get; set; }
     }
 }

@@ -247,12 +247,16 @@ namespace gView.Interoperability.GeoServices.Request
 
         private void ServiceMap_BeforeRenderLayers(Framework.Carto.IServiceMap sender, List<Framework.Data.ILayer> layers)
         {
-            if (!String.IsNullOrWhiteSpace(_exportMap?.Layers) && _exportMap.Layers.Contains(":"))
+            var mapLayersString = _exportMap?.Layers.Trim();
+
+            if (!String.IsNullOrWhiteSpace(mapLayersString) &&
+                mapLayersString.Contains(":") &&
+                mapLayersString.IndexOf(":") < mapLayersString.Length - 1)  // show: ...
             {
                 #region Apply Visibility
 
-                string option = _exportMap.Layers.Substring(0, _exportMap.Layers.IndexOf(":")).ToLower();
-                int[] layerIds = _exportMap.Layers.Substring(_exportMap.Layers.IndexOf(":") + 1)
+                string option = _exportMap.Layers.Substring(0, mapLayersString.IndexOf(":")).ToLower();
+                int[] layerIds = _exportMap.Layers.Substring(mapLayersString.IndexOf(":") + 1)
                                         .Split(',').Select(l => int.Parse(l)).ToArray();
 
 
@@ -266,7 +270,7 @@ namespace gView.Interoperability.GeoServices.Request
                     switch (option)
                     {
                         case "show":
-                            layer.Visible = layerIdContains;
+                            layer.Visible =  layerIdContains;
                             break;
                         case "hide":
                             layer.Visible = !layerIdContains;
