@@ -552,13 +552,29 @@ namespace gView.Server.Controllers
                             int.TryParse(fc.SpatialReference.Name.Substring(5), out epsg);
                         }
 
+                        var geometryType = e.Class is IFeatureClass ?
+                            ((IFeatureClass)e.Class).GeometryType :
+                            Framework.Geometry.geometryType.Unknown;
+
+                        if (geometryType == Framework.Geometry.geometryType.Unknown && e is IFeatureLayer)   // if layer is SQL Spatial with undefined geometrytype...
+                        {
+                            geometryType = ((IFeatureLayer)e).LayerGeometryType;                             // take the settings from layer-properties
+                        }
+
                         if (fc != null || tocElement.Layers?.FirstOrDefault() is IGroupLayer)
                         {
-                            return new JsonIdName()
+                            return new JsonMapService.Layer()
                             {
                                 Id = e.ID,
+                                ParentLayerId = parentLayerId,
                                 Name = tocElement != null ? tocElement.Name : e.Title,
-                                ParentLayerId = parentLayerId
+                                DefaultVisibility = tocElement != null ? tocElement.LayerVisible : true,
+                                MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale > 1 ? tocElement.Layers[0].MinimumScale : 0, 0) : 0,
+                                MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale > 1 ? tocElement.Layers[0].MaximumScale : 0, 0) : 0,
+                                GeometryType = e.Class is IFeatureClass ?
+                                    Interoperability.GeoServices.Rest.Json.JsonLayer.ToGeometryType(geometryType).ToString() :
+                                    null,
+                                LayerType = fc != null ? "Feature Layer" : "Group Layer"
                             };
                         }
 
@@ -567,6 +583,14 @@ namespace gView.Server.Controllers
                     .Where(e => e != null)
                     .ToArray(),
                     SpatialReferenceInstance = epsg > 0 ? new JsonMapService.SpatialReference(epsg) : null,
+                    InitialExtend = new JsonMapService.Extent()
+                    {
+                        XMin = fullExtent != null ? fullExtent.minx : 0D,
+                        YMin = fullExtent != null ? fullExtent.miny : 0D,
+                        XMax = fullExtent != null ? fullExtent.maxx : 0D,
+                        YMax = fullExtent != null ? fullExtent.maxy : 0D,
+                        SpatialReference = new JsonMapService.SpatialReference(epsg)
+                    },
                     FullExtent = new JsonMapService.Extent()
                     {
                         XMin = fullExtent != null ? fullExtent.minx : 0D,

@@ -140,6 +140,12 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
             [JsonProperty(PropertyName = "maxScale")]
             public double MaxScale { get; set; }
+
+            [JsonProperty(PropertyName = "type", NullValueHandling = NullValueHandling.Ignore)]
+            public string LayerType { get; set; }
+
+            [JsonProperty(PropertyName = "geometryType", NullValueHandling = NullValueHandling.Ignore)]
+            public string GeometryType { get; set; }
         }
 
         public class Table { }
