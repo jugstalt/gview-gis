@@ -26,8 +26,13 @@ namespace gView.Interoperability.GeoServices.Rest.Json
             Capabilities = "Create,Query,Update,Delete";
             DatumTransformations = new JsonMapService.GeoTransformation[0];
             SupportsDatumTransformation = true;
+            Units = "esriMeters";
 
             MaxRecordCount = 1000;
+            MaxRecordCountFactor = 1;
+
+            AllowGeometryUpdates = true;
+            Tables = new object[0];
         }
 
         [JsonProperty(PropertyName = "currentVersion")]
@@ -71,6 +76,42 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
         [JsonProperty(PropertyName = "maxRecordCount")]
         public int MaxRecordCount { get; set; }
+
+        [JsonProperty("maxRecordCountFactor")]
+        public int MaxRecordCountFactor { get; set; }
+
+        [JsonProperty("hasVersionedData")]
+        public bool HasVersionedData { get; set; }
+
+        [JsonProperty("supportsDisconnectedEditing")]
+        public bool SupportsDisconnectedEditing { get; set; }
+
+        [JsonProperty("syncEnabled")]
+        public bool SyncEnabled { get; set; }
+
+        [JsonProperty("allowGeometryUpdates")]
+        public bool AllowGeometryUpdates { get; set; }
+
+        [JsonProperty("allowTrueCurvesUpdates")]
+        public bool AllowTrueCurvesUpdates { get; set; }
+
+        [JsonProperty("onlyAllowTrueCurveUpdatesByTrueCurveClients")]
+        public bool OnlyAllowTrueCurveUpdatesByTrueCurveClients { get; set; }
+
+        [JsonProperty("supportsApplyEditsWithGlobalIds")]
+        public bool SupportsApplyEditsWithGlobalIds { get; set; }
+
+        [JsonProperty("supportsTrueCurve")]
+        public bool supportsTrueCurve { get; set; }
+
+        [JsonProperty("tables")]
+        public IEnumerable<object> Tables { get; set; }
+
+        [JsonProperty("enableZDefaults")]
+        public bool EnableZDefaults { get; set; }
+
+        [JsonProperty("allowUpdateWithoutMValues")]
+        public bool AllowUpdateWithoutMValues { get; set; }
 
         #region Classes
 

@@ -22,6 +22,10 @@ namespace gView.Interoperability.GeoServices.Rest.Json
             this.AdvancedQueryCapabilities = new AdvancedQueryCapabilitiesClass();
             this.SupportsAdvancedQueries = true;
             this.SupportsValidateSQL = true;
+
+            MaxRecordCount = 1000;
+            MaxRecordCountFactor = 1;
+            StandardMaxRecordCount = 32000;
         }
 
         [JsonProperty("gv_is_editable")]
@@ -51,6 +55,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         [JsonProperty("supportsRollbackOnFailureParameter")]
         public bool SupportsRollbackOnFailureParameter { get; set; }
 
+        [JsonProperty("archivingInfo")]
         public ArchivingInfoClass ArchivingInfo { get; set; }
 
         [JsonProperty("supportsStatistics")]
@@ -68,7 +73,23 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         [JsonProperty("supportsCalculate")]
         public bool SupportsCalculate { get; set; }
 
+        [JsonProperty("advancedQueryCapabilities")]
         public AdvancedQueryCapabilitiesClass AdvancedQueryCapabilities { get; set; }
+
+        [JsonProperty(PropertyName = "maxRecordCount")]
+        public int MaxRecordCount { get; set; }
+
+        [JsonProperty("standardMaxRecordCount")]
+        public int StandardMaxRecordCount {get;set;}
+
+        [JsonProperty("maxRecordCountFactor")]
+        public int MaxRecordCountFactor { get; set; }
+
+        [JsonProperty(PropertyName = "supportedQueryFormats")]
+        public string SupportedQueryFormats => "JSON";
+
+        [JsonProperty("useStandardizedQueries")]
+        public bool UseStandardizedQueries => true;
 
         #region Classes
 

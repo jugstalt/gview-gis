@@ -105,6 +105,39 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
                 }
             }
 
+            if (featureRenderer is UniversalGeometryRenderer)
+            {
+                var univeralRenderer = (UniversalGeometryRenderer)featureRenderer;
+                if (univeralRenderer.Symbols != null && univeralRenderer.Symbols.Count() == 3)
+                {
+                    // take first
+                    if (univeralRenderer.UsePointSymbol)
+                    {
+                        return new JsonRenderer()
+                        {
+                            Type = "simple",
+                            Symbol = FromSymbol(univeralRenderer.Symbols[0])
+                        };
+                    }
+                    else if (univeralRenderer.UseLineSymbol)
+                    {
+                        return new JsonRenderer()
+                        {
+                            Type = "simple",
+                            Symbol = FromSymbol(univeralRenderer.Symbols[1])
+                        };
+                    }
+                    else if (univeralRenderer.UsePolygonSymbol)
+                    {
+                        return new JsonRenderer()
+                        {
+                            Type = "simple",
+                            Symbol = FromSymbol(univeralRenderer.Symbols[2])
+                        };
+                    }
+                }
+            }
+
             return null;
         }
 
@@ -174,6 +207,17 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
                         Style = "esriSFSSolid",
                         Color = fillSymbol.FillColor.ToArray(),
                         Outline = JsonRenderer.FromSymbol(fillSymbol.OutlineSymbol) as SimpleLineSymbol
+                    };
+                }
+
+                if(symbol is Framework.Symbology.HatchSymbol)
+                {
+                    var hatchSymbol = (Framework.Symbology.HatchSymbol)symbol;
+                    return new SimpleFillSymbol()
+                    {
+                        Style = "esriSFSSolid",
+                        Color = hatchSymbol.FillColor.ToArray(),
+                        Outline = JsonRenderer.FromSymbol(hatchSymbol.OutlineSymbol) as SimpleLineSymbol
                     };
                 }
             }
