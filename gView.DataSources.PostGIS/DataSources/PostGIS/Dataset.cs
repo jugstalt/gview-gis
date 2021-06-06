@@ -146,14 +146,23 @@ namespace gView.DataSources.PostGIS
             return String.IsNullOrEmpty(schema) ? tabName : "\"" + schema + "\"" + "." + tabName;
         }
 
-        protected override string AddGeometryColumn(string schemaName, string tableName, string colunName, string srid, string geomTypeString)
+        protected override string AddGeometryColumn(string schemaName, 
+                                                    string tableName, 
+                                                    string colunName, 
+                                                    IGeometryDef geomDef, 
+                                                    string geomTypeString)
         {
+
             if (_majorVersion >= 2)
             {
+                string srid = geomDef.SpatialReference != null && geomDef.SpatialReference.EpsgCode > 0 ?
+                                    geomDef.SpatialReference.EpsgCode.ToString() :
+                                    "-1";
+
                 return "SELECT " + DbSchemaPrefix + "AddGeometryColumn ('" + schemaName + "','" + tableName + "','" + colunName + "','" + srid + "','" + geomTypeString + "','2',true)";
             }
 
-            return base.AddGeometryColumn(schemaName, tableName, colunName, srid, geomTypeString);
+            return base.AddGeometryColumn(schemaName, tableName, colunName, geomDef, geomTypeString);
         }
 
         #region IPlugInDependencies Member

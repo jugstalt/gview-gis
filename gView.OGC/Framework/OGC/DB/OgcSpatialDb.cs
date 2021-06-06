@@ -464,7 +464,11 @@ namespace gView.Framework.OGC.DB
                         await command.ExecuteNonQueryAsync();
                     }
 
-                    command.CommandText = AddGeometryColumn("", fcname, OgcDictionary("the_geom"), "-1", geomTypeString);
+                    command.CommandText = AddGeometryColumn("",
+                                                            fcname,
+                                                            OgcDictionary("the_geom"),
+                                                            geomDef,
+                                                            geomTypeString);
                     if (!String.IsNullOrEmpty(command.CommandText))
                     {
                         await command.ExecuteNonQueryAsync();
@@ -996,8 +1000,12 @@ namespace gView.Framework.OGC.DB
                     return "nvarchar(256)";
             }
         }
-        virtual protected string AddGeometryColumn(string schemaName, string tableName, string colunName, string srid, string geomTypeString)
+        virtual protected string AddGeometryColumn(string schemaName, string tableName, string colunName, IGeometryDef geomDef, string geomTypeString)
         {
+            string srid = geomDef.SpatialReference != null && geomDef.SpatialReference.EpsgCode > 0 ? 
+                geomDef.SpatialReference.EpsgCode.ToString() : 
+                "-1";
+
             return "SELECT " + DbSchemaPrefix + "AddGeometryColumn ('" + schemaName + "','" + tableName + "','" + colunName + "','" + srid + "','" + geomTypeString + "','2')";
         }
 

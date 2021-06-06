@@ -352,7 +352,11 @@ namespace gView.DataSources.MSSqlSpatial
             return command;
         }
 
-        protected override string AddGeometryColumn(string schemaName, string tableName, string colunName, string srid, string geomTypeString)
+        protected override string AddGeometryColumn(string schemaName, 
+                                                    string tableName, 
+                                                    string colunName, 
+                                                    IGeometryDef geomDef, 
+                                                    string geomTypeString)
         {
             //return "CREATE SPATIAL INDEX SIndx_Postcodes_" + colunName + "_col1 ON " + tableName + "(" + colunName + ")";
             return String.Empty;
