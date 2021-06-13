@@ -117,8 +117,8 @@ namespace gView.Interoperability.GeoServices.Request
             {
                 _exportMap = JsonConvert.DeserializeObject<JsonExportMap>(context.ServiceRequest.Request);
 
-                Console.WriteLine(_exportMap.BBox);
-                Console.WriteLine(_exportMap.Size);
+                //Console.WriteLine(_exportMap.BBox);
+                //Console.WriteLine(_exportMap.Size);
 
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
