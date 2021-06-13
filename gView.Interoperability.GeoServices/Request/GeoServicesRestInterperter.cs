@@ -116,6 +116,10 @@ namespace gView.Interoperability.GeoServices.Request
             try
             {
                 _exportMap = JsonConvert.DeserializeObject<JsonExportMap>(context.ServiceRequest.Request);
+
+                Console.WriteLine(_exportMap.BBox);
+                Console.WriteLine(_exportMap.Size);
+
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
                     #region SpatialReference
@@ -188,6 +192,14 @@ namespace gView.Interoperability.GeoServices.Request
                             MemoryStream ms = new MemoryStream();
                             serviceMap.MapImage.Save(ms, iFormat);
                             context.ServiceRequest.Response = "base64:" + _exportMap.GetContentType() + ":" + Convert.ToBase64String(ms.ToArray());
+
+                            // debug
+                            //string fileName = serviceMap.Name
+                            //    .Replace("/", "_")
+                            //    .Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + "." + iFormat.ToString().ToLower();
+
+                            //string path = (_mapServer.OutputPath + @"/" + fileName).ToPlatformPath();
+                            //await serviceMap.SaveImage(path, iFormat);
                         }
                         else
                         {

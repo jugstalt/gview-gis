@@ -103,11 +103,11 @@ namespace gView.Framework.Carto.LayerRenderers
         }
         async private Task Render(IFeatureLayer layer)
         {
-            IFeatureRenderer clonedRenderer = null;
+            IFeatureRenderer clonedFeatureRenderer = null;
+            ILabelRenderer clonedLabelRenderer = null;
 
             System.Drawing.Bitmap compositionModeCopyBitmap = null;
             System.Drawing.Graphics compositionModeCopyGraphicsContext = null, originalGraphicsContext = null;
-
 
             try
             {
@@ -199,7 +199,7 @@ namespace gView.Framework.Carto.LayerRenderers
                     {
                         if (layer.RequiresFeatureRendererClone(display))
                         {
-                            renderer = clonedRenderer = (IFeatureRenderer)layer.FeatureRenderer.Clone(
+                            renderer = clonedFeatureRenderer = (IFeatureRenderer)layer.FeatureRenderer.Clone(
                                 new CloneOptions(display, 
                                                  layer.UseWithRefScale(display),
                                                  maxRefScaleFactor: layer.MaxRefScaleFactor));
@@ -213,14 +213,15 @@ namespace gView.Framework.Carto.LayerRenderers
                     {
                         if(layer.RequiresLabelRendererClone(display))
                         {
-                            labelRenderer = (ILabelRenderer)layer.LabelRenderer.Clone(new CloneOptions(display,
-                                                                                                       layer.UseLabelsWithRefScale(display),
-                                                                                                       maxLabelRefscaleFactor: layer.MaxLabelRefScaleFactor));
+                            labelRenderer = clonedLabelRenderer = 
+                                (ILabelRenderer)layer.LabelRenderer.Clone(new CloneOptions(display,
+                                                                                           layer.UseLabelsWithRefScale(display),
+                                                                                           maxLabelRefscaleFactor: layer.MaxLabelRefScaleFactor));
                         } 
                         else  // Clone with null => simple clone
                         {
                             //display.refScale = 0;
-                            labelRenderer = (ILabelRenderer)layer.LabelRenderer.Clone(null);
+                            labelRenderer = clonedLabelRenderer = (ILabelRenderer)layer.LabelRenderer.Clone(null);
                             //display.refScale = refScale;
                         }
                     }
@@ -362,9 +363,14 @@ namespace gView.Framework.Carto.LayerRenderers
             }
             finally
             {
-                if (clonedRenderer != null)
+                if (clonedFeatureRenderer != null)
                 {
-                    clonedRenderer.Release();
+                    clonedFeatureRenderer.Release();
+                }
+
+                if(clonedLabelRenderer!=null)
+                {
+                    clonedLabelRenderer.Release();
                 }
 
                 if (originalGraphicsContext != null)

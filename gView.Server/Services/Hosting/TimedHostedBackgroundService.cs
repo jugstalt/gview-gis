@@ -1,4 +1,6 @@
-﻿using gView.Server.Services.Logging;
+﻿using gView.Server.Extensions;
+using gView.Server.Services.Logging;
+using gView.Server.Services.MapServer;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
@@ -13,10 +15,13 @@ namespace gView.Server.Services.Hosting
         private Timer _timer;
         private int counter = 0;
 
+        private readonly MapServiceManager _mapServerService;
         private readonly PerformanceLoggerService _performanceLogger;
 
-        public TimedHostedBackgroundService(PerformanceLoggerService performanceLogger)
+        public TimedHostedBackgroundService(MapServiceManager mapServerService,
+                                            PerformanceLoggerService performanceLogger)
         {
+            _mapServerService = mapServerService;
             _performanceLogger = performanceLogger;
         }
 
@@ -53,12 +58,16 @@ namespace gView.Server.Services.Hosting
 
             if (counter % 10 == 0)
             {
-                // ToDo: Clean Output Directory
+                string outputDirectory = _mapServerService?.Options?.OutputPath;
+
+                outputDirectory.TryDeleteFilesOlderThan(DateTime.UtcNow.AddMinutes(-10));
             }
             
             counter++;
             if (counter >= 1440)
+            {
                 counter = 0;
+            }
         }
     }
 }

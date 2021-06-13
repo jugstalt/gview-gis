@@ -61,7 +61,7 @@ namespace gView.Server.Services.Security
 
         public void CreateTokenLogin(string username, string password)
         {
-            if (GetManageAndTokenUsernames().Where(u => username.Equals(u, StringComparison.InvariantCultureIgnoreCase)).Count() >= 0)
+            if (GetManageAndTokenUsernames().Where(u => username.Equals(u, StringComparison.InvariantCultureIgnoreCase)).Count() > 0)
             {
                 throw new MapServerException("User '" + username + "' already exists");
             }
@@ -184,7 +184,17 @@ namespace gView.Server.Services.Security
                 string cookie = request.Cookies[Globals.AuthCookieName];
                 if (!String.IsNullOrWhiteSpace(cookie))
                 {
-                    return authToken = _encryptionCertService.FromToken(cookie);
+                    try
+                    {
+                        return authToken = _encryptionCertService.FromToken(cookie);
+                    }
+                    catch (System.Security.Cryptography.CryptographicException ex)
+                    {
+                        return authToken = new AuthToken()
+                        {
+                            Username = String.Empty
+                        };
+                    }
                 }
 
                 #endregion
