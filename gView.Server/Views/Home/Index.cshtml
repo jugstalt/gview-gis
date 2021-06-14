@@ -5,6 +5,7 @@
     ViewData["Title"] = "Home Page";
     var username = LoginManager.LoginUsername(this.Context.Request);
     var isManageUser = LoginManager.IsManageUser(this.Context.Request);
+    var hasManagerLogin = LoginManager.HasManagerLogin();
 }
 
 <div>
@@ -12,15 +13,18 @@
         <div class="text">gView Server</div>
     </div>
     <div class="main-nav-panels">
-        <a class="main-nav-panel browse" asp-area="" asp-controller="BrowseServices" asp-action="Index">
+        <a class="main-nav-panel browse @(!hasManagerLogin ? "disabled":"")" 
+           asp-area="" 
+           asp-controller="BrowseServices" 
+           asp-action="Index">
             <div class="text">Browse Services</div>
         </a>
-        <a class="main-nav-panel geoservices" href="@(UrlHelperService.AppRootUrl(this.Context.Request))/geoservices/rest/services">
+        <a class="main-nav-panel geoservices @(!hasManagerLogin ? "disabled":"")" 
+           href="@(UrlHelperService.AppRootUrl(this.Context.Request))/geoservices/rest/services">
             <div class="text">GeoServices (REST)</div>
         </a>
         @if (isManageUser || (Globals.AllowFormsLogin && (isManageUser == true || String.IsNullOrWhiteSpace(username))))
         {
-        var hasManagerLogin = LoginManager.HasManagerLogin();
         <a class="main-nav-panel manage @(!hasManagerLogin ? "required":"")" asp-area="" asp-controller="Manage" asp-action="Index">
             <div class="text">Manage</div>
         </a>
