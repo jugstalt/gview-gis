@@ -319,7 +319,7 @@ namespace gView.Server.Controllers
 
                 if (serviceRequest.Succeeded)
                 {
-                    if (Request.Query["f"] == "image" && serviceRequest.Response.StartsWith("base64:"))
+                    if (ResultFormat() == "image" && serviceRequest.Response.StartsWith("base64:"))
                     {
                         return Base64Result(serviceRequest.Response);
                     }

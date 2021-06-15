@@ -199,9 +199,12 @@ ul {
         .main-nav-panels .main-nav-panel.manage {
             background-image: url('../images/icons/manage-50-w.png');
         }
-        .main-nav-panels .main-nav-panel.manage.required {
-            background-color: #ff0000;
-        }
+            .main-nav-panels .main-nav-panel.manage.required {
+                background-color: #ff0000;
+            }
+    .main-nav-panels .disabled {
+        opacity: .25;
+    }
 
 /****** Browse **********/
 table.service-capabilities {

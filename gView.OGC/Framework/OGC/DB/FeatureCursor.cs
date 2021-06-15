@@ -199,20 +199,9 @@ namespace gView.Framework.OGC.DB
                 }
                 if (_conn != null && _conn.State != ConnectionState.Closed)
                 {
-                    //if (base.CancelTracker != null && base.CancelTracker.Continue == false)
-                    //{
-                    //    // run & forget for a better UI experience
-                    //    Task.Run(() =>
-                    //    {
-                    //        _conn.Close();
-                    //        _conn = null;
-                    //    });
-                    //}
-                    //else
-                    {
-                        _conn.Close();
-                        _conn = null;
-                    }
+                    _conn.Close();
+                    _conn.Dispose();
+                    _conn = null;
                 }
             }
         }

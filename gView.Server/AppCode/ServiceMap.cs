@@ -20,8 +20,6 @@ namespace gView.Server.AppCode
 {
     public class ServiceMap : Map, IServiceMap, IDisposable
     {
-        private XmlNode _layerDefs = null;
-        private XmlNodeList _LAYERS = null;
         private IMapServer _mapServer = null;
         private IServiceRequestInterpreter _interpreter = null;
         private ServiceRequest _request = null;
@@ -65,15 +63,6 @@ namespace gView.Server.AppCode
             serviceMap.SetResourceContainer(original.ResourceContainer);
 
             return serviceMap;
-        }
-
-        public XmlNode LayerDefs
-        {
-            set { _layerDefs = value; }
-        }
-        public XmlNodeList LAYERS
-        {
-            set { _LAYERS = value; }
         }
 
         async public Task<int> SaveImage(string path, System.Drawing.Imaging.ImageFormat format)

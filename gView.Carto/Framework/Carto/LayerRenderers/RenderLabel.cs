@@ -22,6 +22,8 @@ namespace gView.Framework.Carto.LayerRenderers
 
         async public Task Render()
         {
+            ILabelRenderer clonedLabelRenderer = null;
+
             try
             {
                 if (_layer == null || _layer.LabelRenderer == null || _map == null)
@@ -72,15 +74,14 @@ namespace gView.Framework.Carto.LayerRenderers
 
                     if(_layer.RequiresLabelRendererClone(_map))
                     {
-                        labelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone(new CloneOptions(_map, 
-                                                                                                    _layer.UseLabelsWithRefScale(_map),
-                                                                                                    maxLabelRefscaleFactor: _layer.MaxLabelRefScaleFactor));
+                        labelRenderer = clonedLabelRenderer =
+                            (ILabelRenderer)_layer.LabelRenderer.Clone(new CloneOptions(_map, 
+                                                                                        _layer.UseLabelsWithRefScale(_map),
+                                                                                        maxLabelRefscaleFactor: _layer.MaxLabelRefScaleFactor));
                     } 
                     else
                     {
-                        //display.refScale = 0;
-                        labelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone(null);
-                        //display.refScale = refScale;
+                        labelRenderer = clonedLabelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone(null);
                     }
                 }
 
@@ -132,6 +133,13 @@ namespace gView.Framework.Carto.LayerRenderers
                     {
                         _map.AddException(new Exception("RenderLabelThread: " + ((_layer != null) ? _layer.Title : String.Empty) + "\n" + ex.Message, ex));
                     }
+                }
+            }
+            finally
+            {
+                if (clonedLabelRenderer != null)
+                {
+                    clonedLabelRenderer.Release();
                 }
             }
         }

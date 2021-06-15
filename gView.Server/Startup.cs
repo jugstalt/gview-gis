@@ -1,5 +1,6 @@
 ﻿using gView.Server.AppCode;
 using gView.Server.AppCode.Configuration;
+using gView.Server.Extensions;
 using gView.Server.Extensions.DependencyInjection;
 using gView.Server.Middleware;
 using gView.Server.Services.Hosting;
@@ -21,6 +22,14 @@ namespace gView.Server
         {
             Configuration = configuration.BuildConfigParsers();
             Environment = environment;
+
+            #region Create Folders
+
+            Configuration.TryCreateDirectoryIfNotExistes("services-folder");
+            Configuration.TryCreateDirectoryIfNotExistes("output-path");
+            Configuration.TryCreateDirectoryIfNotExistes("tilecache-root");
+
+            #endregion
         }
 
         public IConfiguration Configuration { get; }
@@ -144,6 +153,12 @@ namespace gView.Server
 
             app.UseMvc(routes =>
             {
+                routes.MapRoute(
+                    name: "output-path",
+                    template:"output/{id}",
+                    defaults: new {controller="Output", Action="Index" }
+                );
+
                 // geoservices Server
                 routes.MapRoute(
                     name: "geoservices_rest_exportmap",

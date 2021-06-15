@@ -273,6 +273,7 @@ namespace gView.Framework.Symbology
             //fSym.Smoothingmode = this.Smoothingmode;
             return fSym;
         }
+        
         #endregion
 
         #region IPenColor Member

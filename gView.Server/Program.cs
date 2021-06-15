@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using gView.Framework.system;
+using gView.Server.AppCode;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -16,17 +17,33 @@ namespace gView.Server
     {
         public static void Main(string[] args)
         {
-            #region Init the global PluginManager
+            try
+            {
+                #region Init the global PluginManager
 
-            PlugInManager.Init();
+                PlugInManager.Init();
 
-            #endregion
+                #endregion
 
-            CreateHostBuilder(args).Build().Run();
+                #region First Start => init configuration
+
+                new Setup().TrySetup(args);
+
+                #endregion
+
+                CreateHostBuilder(args).Build().Run();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("Exiting program:");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+            }
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
+        public static IWebHostBuilder CreateHostBuilder(string[] args)
+        {
+            var webhostBuilder = WebHost.CreateDefaultBuilder(args)
                 .ConfigureLogging(logging =>
                 {
                     logging.AddConsole();
@@ -35,9 +52,36 @@ namespace gView.Server
                 {
                     builder.AddJsonFile("_config/mapserver.json", optional: true, reloadOnChange: false);
                 })
-                .ConfigureWebHostDefaults(webBuilder =>
+                .UseStartup<Startup>();
+
+            #region Expose Ports
+
+            List<string> urls = new List<string>();
+            for (int i = 0; i < args.Length - 1; i++)
+            {
+                switch (args[i].ToLower())
                 {
-                    webBuilder.UseStartup<Startup>();
-                });
+                    case "-expose-http":
+                        urls.Add("http://localhost:" + int.Parse(args[++i]));
+                        break;
+                    case "-expose-https":
+                        urls.Add("https://localhost:" + int.Parse(args[++i]));
+                        break;
+                }
+            }
+            if (urls.Count > 0)
+            {
+                webhostBuilder = webhostBuilder.UseUrls(urls.ToArray());
+
+                foreach (var url in urls)
+                {
+                    Console.WriteLine($"Exposing: { url }");
+                }
+            }
+
+            #endregion
+
+            return webhostBuilder;
+        }
     }
 }

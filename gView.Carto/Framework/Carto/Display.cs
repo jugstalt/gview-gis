@@ -12,6 +12,7 @@ namespace gView.Framework.Carto
         public event RenderOverlayImageEvent RenderOverlayImage;
 
         #region Variablen
+
         protected double m_maxX, m_maxY, m_minX, m_minY;
         protected double m_actMinX = -10, m_actMinY = -10, m_actMaxX = 10, m_actMaxY = 10;
         protected int m_iWidth, m_iHeight, m_fixScaleIndex;
@@ -33,6 +34,7 @@ namespace gView.Framework.Carto
         private object lockThis = new object();
         private DisplayScreen _screen;
         private DisplayTransformation _displayTransformation = new DisplayTransformation();
+
         #endregion
 
         public Display(IMap map)

@@ -3,11 +3,11 @@
   "services-folder": "C:\\Development_OpenSource\\GeoDaten\\gview5",
   "output-path": "C:\\Development_OpenSource\\GeoDaten\\output",
   "output-path_": "E:\\geonet_sys\\development\\shared\\webgis\\Output",
-  "output-url": "http://localhost/output",
+  "output-url": "https://localhost:44331/output",
   "output-path__": "https://user1:passw0rd@localhost:44377/http/output",
   "output-url_": "https://localhost:44377/http/output",
-  "onlineresource-url_": "https://localhost:44331",
-  "onlineresource-url": "http://localhost:8889",
+  "onlineresource-url": "https://localhost:44331",
+  "onlineresource-url_": "http://localhost:8889",
   "tilecache-root": "C:\\temp\\tilecache",
 
   "task-queue": {

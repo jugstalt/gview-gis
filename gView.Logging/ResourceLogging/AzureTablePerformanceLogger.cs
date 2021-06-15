@@ -70,7 +70,7 @@ namespace gView.Framework.Logging.ResourceLogging
                     _bag = new ConcurrentBag<IPerformanceLoggerItem>();
                 }
 
-                if (currentBag.Count > 0)
+                if (_tableStorage != null && currentBag.Count > 0)
                 {
                     await _tableStorage.InsertEntitiesAsync<IPerformanceLoggerItem>(tableName, currentBag.ToArray());
                     await _tableStorage.InsertEntitiesAsync<IPerformanceLoggerItem>(tableNameAggregated,
