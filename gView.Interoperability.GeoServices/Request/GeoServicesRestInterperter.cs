@@ -282,7 +282,7 @@ namespace gView.Interoperability.GeoServices.Request
                     switch (option)
                     {
                         case "show":
-                            layer.Visible =  layerIdContains;
+                            layer.Visible = layerIdContains;
                             break;
                         case "hide":
                             layer.Visible = !layerIdContains;
@@ -1050,10 +1050,10 @@ namespace gView.Interoperability.GeoServices.Request
                         {
                             AddResults = new JsonFeatureServerResponse.JsonResponse[]
                             {
-                            new JsonFeatureServerResponse.JsonResponse()
-                            {
-                                Success=true
-                            }
+                                new JsonFeatureServerResponse.JsonResponse()
+                                {
+                                    Success = true
+                                }
                             }
                         });
                 }
@@ -1070,8 +1070,8 @@ namespace gView.Interoperability.GeoServices.Request
                             Success=false,
                             Error=new JsonFeatureServerResponse.JsonError()
                             {
-                                Code=999,
-                                Description=ex.Message.Split('\n')[0]
+                                Code = 999,
+                                Description = ex.Message.Split('\n')[0]
                             }
                         }
                     }
@@ -1111,13 +1111,7 @@ namespace gView.Interoperability.GeoServices.Request
                     context.ServiceRequest.Response = JsonConvert.SerializeObject(
                         new JsonFeatureServerResponse()
                         {
-                            UpdateResults = new JsonFeatureServerResponse.JsonResponse[]
-                            {
-                            new JsonFeatureServerResponse.JsonResponse()
-                            {
-                                Success=true
-                            }
-                            }
+                            UpdateResults = features.Select(f => f.OID).ToEditJsonResponse(true).ToArray()
                         });
                 }
             }
@@ -1133,8 +1127,8 @@ namespace gView.Interoperability.GeoServices.Request
                             Success=false,
                             Error=new JsonFeatureServerResponse.JsonError()
                             {
-                                Code=999,
-                                Description=ex.Message.Split('\n')[0]
+                                Code = 999,
+                                Description = ex.Message.Split('\n')[0]
                             }
                         }
                     }
@@ -1160,7 +1154,8 @@ namespace gView.Interoperability.GeoServices.Request
                         throw new Exception("Featureclass is not editable");
                     }
 
-                    foreach (int objectId in editRequest.ObjectIds.Split(',').Select(s => int.Parse(s)))
+                    var objectIds = editRequest.ObjectIds.Split(',').Select(s => int.Parse(s));
+                    foreach (int objectId in objectIds)
                     {
                         if (!await database.Delete(featureClass, objectId))
                             throw new Exception(database.LastErrorMessage);
@@ -1170,13 +1165,7 @@ namespace gView.Interoperability.GeoServices.Request
                     context.ServiceRequest.Response = JsonConvert.SerializeObject(
                         new JsonFeatureServerResponse()
                         {
-                            DeleteResults = new JsonFeatureServerResponse.JsonResponse[]
-                            {
-                            new JsonFeatureServerResponse.JsonResponse()
-                            {
-                                Success=true
-                            }
-                            }
+                            DeleteResults = objectIds.ToEditJsonResponse(true).ToArray()
                         });
                 }
             }
@@ -1192,8 +1181,8 @@ namespace gView.Interoperability.GeoServices.Request
                             Success=false,
                             Error=new JsonFeatureServerResponse.JsonError()
                             {
-                                Code=999,
-                                Description=ex.Message.Split('\n')[0]
+                                Code = 999,
+                                Description = ex.Message.Split('\n')[0]
                             }
                         }
                     }

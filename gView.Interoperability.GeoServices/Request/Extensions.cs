@@ -1,8 +1,10 @@
 ﻿using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Interoperability.GeoServices.Rest.Json.Features.Geometry;
+using gView.Interoperability.GeoServices.Rest.Json.FeatureServer;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace gView.Interoperability.GeoServices.Request
@@ -190,6 +192,19 @@ namespace gView.Interoperability.GeoServices.Request
             }
 
             return shape;
+        }
+
+        #endregion
+
+        #region EditResponse
+
+        static public IEnumerable<JsonFeatureServerResponse.JsonResponse> ToEditJsonResponse(this IEnumerable<int> objectIds, bool succeeded)
+        {
+            return objectIds.Select(objectId => new JsonFeatureServerResponse.JsonResponse()
+            {
+                Success = succeeded,
+                ObjectId = objectId
+            });
         }
 
         #endregion
