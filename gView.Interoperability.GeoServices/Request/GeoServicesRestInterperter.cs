@@ -480,8 +480,12 @@ namespace gView.Interoperability.GeoServices.Request
                         {
                             filter = new SpatialFilter();
                             var jsonGeometry = query.Geometry.ToJsonGeometry(); // JsonConvert.DeserializeObject<Rest.Json.Features.Geometry.JsonGeometry>(query.Geometry);
-                            ((SpatialFilter)filter).Geometry = jsonGeometry.ToGeometry();
-                            ((SpatialFilter)filter).FilterSpatialReference = SRef(query.InSRef);
+                            var filterGeometry = jsonGeometry.ToGeometry();
+
+                            ((SpatialFilter)filter).Geometry = filterGeometry;
+                            ((SpatialFilter)filter).FilterSpatialReference =
+                                SRef(query.InSRef) ??
+                                (filterGeometry.Srs > 0 ? SpatialReference.FromID($"epsg:{ filterGeometry.Srs }") : null);
                         }
                         else if (!String.IsNullOrWhiteSpace(query.ObjectIds))
                         {
@@ -510,8 +514,12 @@ namespace gView.Interoperability.GeoServices.Request
                         {
                             if (tableClass is ITableClass2 && !String.IsNullOrWhiteSpace(tableClass.IDFieldName))
                             {
+                                #region Fast Count
+
                                 featureCount += await ((ITableClass2)tableClass).ExecuteCount(filter);
                                 continue;
+
+                                #endregion
                             }
                             else
                             {

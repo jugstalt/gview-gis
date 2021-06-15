@@ -7,6 +7,7 @@ using gView.Framework.Geometry;
 using System.Data.Common;
 using System.Threading.Tasks;
 using gView.Framework.system;
+using gView.Data.Framework.Data.Extensions;
 
 namespace gView.Framework.OGC.DB
 {
@@ -365,6 +366,8 @@ namespace gView.Framework.OGC.DB
 
         async public Task<int> ExecuteCount(IQueryFilter filter)
         {
+            filter.GeometryToSpatialReference(this.SpatialReference);
+
             using (DbConnection connection = _dataset.ProviderFactory.CreateConnection())
             {
                 connection.ConnectionString = _dataset.ConnectionString;
