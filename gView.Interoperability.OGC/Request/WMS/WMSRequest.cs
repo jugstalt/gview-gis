@@ -64,24 +64,32 @@ namespace gView.Interoperability.OGC
             }
 
             WMSParameterDescriptor parameters = ParseParameters(context);
-
             //ServiceRequestContext context = new ServiceRequestContext(_mapServer, this, request);
             switch (parameters.Request)
             {
                 case WMSRequestType.GetCapabilities:
-                    context.ServiceRequest.Response = await WMS_GetCapabilities(context.ServiceRequest.OnlineResource, context.ServiceRequest.Service, parameters, context);
+                    var getCapabilitiesResponse = await WMS_GetCapabilities(context.ServiceRequest.OnlineResource, context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.Response = getCapabilitiesResponse.body;
+                    context.ServiceRequest.ResponseContentType = getCapabilitiesResponse.contentType;
                     break;
                 case WMSRequestType.GetMap:
-                    context.ServiceRequest.Response = await WMS_GetMap(context.ServiceRequest.Service, parameters, context);
+                    var getMapResponse = await WMS_GetMap(context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.Response = getMapResponse.body;
+                    context.ServiceRequest.ResponseContentType = getMapResponse.contentType;
                     break;
                 case WMSRequestType.GetFeatureInfo:
-                    context.ServiceRequest.Response = await WMS_FeatureInfo(context.ServiceRequest.Service, parameters, context);
+                    var featureInfoResponse = await WMS_FeatureInfo(context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.Response = featureInfoResponse.body;
+                    context.ServiceRequest.ResponseContentType = featureInfoResponse.contentType;
                     break;
                 case WMSRequestType.GetLegendGraphic:
-                    context.ServiceRequest.Response = await WMS_GetLegendGraphic(context.ServiceRequest.Service, parameters, context);
+                    var getLegendResponse = await WMS_GetLegendGraphic(context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.Response = getLegendResponse.body;
+                    context.ServiceRequest.ResponseContentType = getLegendResponse.contentType;
                     break;
                 case WMSRequestType.DescriptTiles:
                     context.ServiceRequest.Response = await WMSC_DescriptTiles(context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.ResponseContentType = "text/xml";
                     break;
                 case WMSRequestType.GetTile:
                     context.ServiceRequest.Response = await WMSC_GetTile(context.ServiceRequest.Service, parameters, context);
@@ -148,11 +156,13 @@ namespace gView.Interoperability.OGC
 
         #endregion
 
-        async private Task<string> WMS_GetCapabilities(string OnlineResource, string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
+        async private Task<(string body, string contentType)> WMS_GetCapabilities(string OnlineResource, string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
         {
             try
             {
-                if (_mapServer == null || parameters == null) return "";
+                if (_mapServer == null || parameters == null) 
+                    return (String.Empty, String.Empty);
+
                 await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request, "WMS GetCapabilities");
 
                 //if (parameters != null)
@@ -160,7 +170,8 @@ namespace gView.Interoperability.OGC
 
                 using (IServiceMap map = await context.CreateServiceMapInstance())// _mapServer[context];
                 {
-                    if (map == null) return "";
+                    if (map == null) 
+                        return (String.Empty, String.Empty);
 
                     WMS_Export_Metadata exMetadata = map.MetadataProvider(new Guid("0F6317BC-38FD-41d3-8E1A-82AB1873C526")) as WMS_Export_Metadata;
                     WMS_Export_Metadata.Metadata metadata = ((exMetadata != null) ? exMetadata.Data : null);
@@ -263,6 +274,7 @@ namespace gView.Interoperability.OGC
                         #endregion
 
                         #region Layer
+
                         caps.Capability.Layer = new Framework.OGC.WMS.Version_1_1_1.Layer();
                         caps.Capability.Layer.Name = map.Name;
                         caps.Capability.Layer.SRS = metadata.EPSGCodes;
@@ -320,7 +332,7 @@ namespace gView.Interoperability.OGC
                         ns.Add("xlink", "http://www.w3.org/1999/xlink");
                         XsdSchemaSerializer<gView.Framework.OGC.WMS.Version_1_1_1.WMT_MS_Capabilities> ser = new XsdSchemaSerializer<gView.Framework.OGC.WMS.Version_1_1_1.WMT_MS_Capabilities>();
                         string xml = ser.Serialize(caps, ns);
-                        return xml;
+                        return (xml, "");
 
                         #endregion
 
@@ -330,6 +342,7 @@ namespace gView.Interoperability.OGC
                         gView.Framework.OGC.WMS.Version_1_3_0.WMS_Capabilities caps = new Framework.OGC.WMS.Version_1_3_0.WMS_Capabilities();
 
                         #region Service
+
                         caps.Service = new Framework.OGC.WMS.Version_1_3_0.Service();
                         caps.Service.Name = new Framework.OGC.WMS.Version_1_3_0.ServiceName();
                         caps.Service.Title = map.Name;
@@ -339,12 +352,15 @@ namespace gView.Interoperability.OGC
                         caps.Service.Fees = "none";
                         caps.Service.AccessConstraints = "none";
                         caps.Service.MaxHeight = caps.Service.MaxWidth = "8000";
+
                         #endregion
 
                         #region Capability
+                        
                         caps.Capability = new Framework.OGC.WMS.Version_1_3_0.Capability();
 
                         #region Request
+
                         caps.Capability.Request = new Framework.OGC.WMS.Version_1_3_0.Request();
 
                         #region GetCapabilities
@@ -373,7 +389,7 @@ namespace gView.Interoperability.OGC
 
                         #region GetFeatureInfo
 
-                        List<string> gfiFormats = new List<string>(new string[] { "text/plain", "text/html", "text/xml", "application/vnd.ogc.gml" });
+                        List<string> gfiFormats = new List<string>(new string[] { "text/plain", "text/html", "text/xml", "application/vnd.ogc.gml", "application/json" });
                         DirectoryInfo di = new DirectoryInfo(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"/misc/wms/GetFeatureInfo/xsl");
                         if (di.Exists)
                         {
@@ -392,6 +408,7 @@ namespace gView.Interoperability.OGC
                         caps.Capability.Request.GetFeatureInfo.DCPType[0].HTTP.Get = new Framework.OGC.WMS.Version_1_3_0.Get();
                         caps.Capability.Request.GetFeatureInfo.DCPType[0].HTTP.Get.OnlineResource = new Framework.OGC.WMS.Version_1_3_0.OnlineResource();
                         caps.Capability.Request.GetFeatureInfo.DCPType[0].HTTP.Get.OnlineResource.href = sOnlineResource;
+                        
                         #endregion
 
                         #region GetLegendGraphic
@@ -459,7 +476,7 @@ namespace gView.Interoperability.OGC
                             fType.Name = "c" + layers.ID;
                             fType.Title = layers.Title;
                             IClass c = layers.FirstClass;
-                            fType.queryable = c is IFeatureClass;
+                            fType.queryable = (c is IFeatureClass ? 1 : 0);
 
                             if (layers.MinScale > 0.0)
                             {
@@ -479,7 +496,9 @@ namespace gView.Interoperability.OGC
                         }
                         caps.Capability.Layer[0].Layer1 = fTypes.ToArray();
                         #endregion
+
                         #endregion
+
                         #endregion
 
                         XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
@@ -488,20 +507,20 @@ namespace gView.Interoperability.OGC
                         ns.Add("xsi", "http://www.w3.org/2001/XMLSchema-instance");
                         XsdSchemaSerializer<gView.Framework.OGC.WMS.Version_1_3_0.WMS_Capabilities> ser = new XsdSchemaSerializer<gView.Framework.OGC.WMS.Version_1_3_0.WMS_Capabilities>();
                         string xml = ser.Serialize(caps, ns);
-                        return xml;
+                        return (xml, "text/xml");
                     }
 
-                    return String.Empty;
+                    return (String.Empty, String.Empty); ;
                 }
             }
             catch (Exception ex)
             {
                 await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
-                return String.Empty;
+                return (String.Empty, String.Empty); ;
             }
         }
 
-        async virtual public Task<string> WMS_GetMap(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
+        async virtual public Task<(string body, string contentType)> WMS_GetMap(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
         {
             // Immer neue Requestklasse erzeugen, damit Request multithreadfähig
             // ist.
@@ -511,8 +530,7 @@ namespace gView.Interoperability.OGC
             await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request, "WMS GetMap");
 
             WMS_GetMapRequest request = new WMS_GetMapRequest(_mapServer, service, parameters, _useTOC, context);
-            //request.GetLayerByIDCallback = GetLayerByID;
-
+            
             return await request.Request();
         }
 
@@ -628,13 +646,13 @@ namespace gView.Interoperability.OGC
                 _context = context;
             }
 
-            async public Task<string> Request()
+            async public Task<(string body, string contentType)> Request()
             {
-                if (_mapServer == null) return "";
+                if (_mapServer == null) return (String.Empty, String.Empty);
 
                 using (IServiceMap map = await _context.CreateServiceMapInstance()) //_mapServer[_context]
                 {
-                    if (map == null) return "";
+                    if (map == null) return (String.Empty, String.Empty);
 
                     ISpatialReference sRef = SpatialReference.FromID("epsg:" + _parameters.SRS);
                     map.Display.SpatialReference = sRef;
@@ -699,7 +717,7 @@ namespace gView.Interoperability.OGC
 
                                 MemoryStream ms = new MemoryStream();
                                 bm.Save(ms, _parameters.GetImageFormat());
-                                return "base64:" + _parameters.GetContentType() + ":" + Convert.ToBase64String(ms.ToArray());
+                                return ("base64:" + Convert.ToBase64String(ms.ToArray()), _parameters.GetContentType());
                             }
                         }
                         else
@@ -707,11 +725,11 @@ namespace gView.Interoperability.OGC
                             MemoryStream ms = new MemoryStream();
                             if (await map.SaveImage(ms, _parameters.GetImageFormat())>=0)
                             {
-                                return "base64:" + _parameters.GetContentType() + ":" + Convert.ToBase64String(ms.ToArray());
+                                return ("base64:" + Convert.ToBase64String(ms.ToArray()), _parameters.GetContentType());
                             }
                         }
                     }
-                    return "";
+                    return (String.Empty, String.Empty);
                 }
             }
 
@@ -776,15 +794,15 @@ namespace gView.Interoperability.OGC
             return context.ServiceRequest.Service;
         }
 
-        async public Task<string> WMS_FeatureInfo(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
+        async public Task<(string body, string contentType)> WMS_FeatureInfo(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
         {
-            if (parameters == null) return "";
-
-            if (_mapServer == null) return "";
+            if (parameters == null || _mapServer == null) 
+                return (String.Empty, String.Empty);
 
             using (IServiceMap map = await context.CreateServiceMapInstance()) // _mapServer[context];
             {
-                if (map == null || map.TOC == null) return "";
+                if (map == null || map.TOC == null) 
+                    return (String.Empty, String.Empty);
 
                 ISpatialReference sRef = SpatialReference.FromID("epsg:" + parameters.SRS);
 
@@ -858,13 +876,14 @@ namespace gView.Interoperability.OGC
                     }
                 }
 
-                GetFeatureResponse(features, response, parameters.InfoFormat, parameters.InfoFormatXsl);
+                string contentType;
+                GetFeatureResponse(features, response, parameters.InfoFormat, parameters.InfoFormatXsl, out contentType);
 
-                return response.ToString();
+                return (response.ToString(), contentType);
             }
         }
 
-        async public Task<string> WMS_GetLegendGraphic(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
+        async public Task<(string body, string contentType)> WMS_GetLegendGraphic(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
         {
             if (parameters == null || _mapServer == null)
                 throw new ArgumentException();
@@ -887,7 +906,7 @@ namespace gView.Interoperability.OGC
 
                     MemoryStream ms = new MemoryStream();
                     legendBitmap.Save(ms, parameters.GetImageFormat());
-                    return "base64:" + parameters.GetContentType() + ":" + Convert.ToBase64String(ms.ToArray());
+                    return ("base64:" + Convert.ToBase64String(ms.ToArray()), parameters.GetContentType());
                 }
             }
         }
@@ -1332,22 +1351,27 @@ namespace gView.Interoperability.OGC
             return envelope;
         }
 
-        private void GetFeatureResponse(List<FeatureType> features, StringBuilder sb, WMSInfoFormat format, string formatXsl)
+        private void GetFeatureResponse(List<FeatureType> features, StringBuilder sb, WMSInfoFormat format, string formatXsl, out string contentType)
         {
+            contentType = String.Empty;
 
             switch (format)
             {
                 case WMSInfoFormat.html:
                     GetFeatureResponseHTML(features, sb);
+                    contentType = "text/html";
                     break;
                 case WMSInfoFormat.xml:
                     GetFeatureResponseXML(features, sb);
+                    contentType = "text/xml";
                     break;
                 case WMSInfoFormat.gml:
                     GetFeatureResponseGML(features, sb);
+                    contentType = "text/html";
                     break;
                 case WMSInfoFormat.text:
                     GetFeatureResponseText(features, sb);
+                    contentType = "application/vnd.ogc.gml";
                     break;
                 case WMSInfoFormat.xsl:
                     StringBuilder xml = new StringBuilder();
@@ -1377,7 +1401,7 @@ namespace gView.Interoperability.OGC
                     }
 
                     sb.Append(output);
-
+                    contentType = "text/xml";
                     break;
             }
         }

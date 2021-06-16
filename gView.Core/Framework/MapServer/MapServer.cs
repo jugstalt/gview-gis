@@ -108,6 +108,7 @@ namespace gView.MapServer
         public string Folder { get; private set; }
         public string Request { get; private set; }
         public string Response = "";
+        public string ResponseContentType = "";
         public string OnlineResource = "";
         public string OutputUrl = "";
         public IIdentity Identity = null;

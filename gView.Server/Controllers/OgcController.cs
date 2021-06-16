@@ -45,8 +45,6 @@ namespace gView.Server.Controllers
 
                 IServiceRequestInterpreter interpreter = null;
 
-
-
                 switch (service.ToLower().Split(',')[0])
                 {
                     case "wms":
@@ -97,7 +95,7 @@ namespace gView.Server.Controllers
 
                 await _mapServiceMananger.TaskQueue.AwaitRequest(interpreter.Request, context);
 
-                return Result(serviceRequest.Response, "text/xml");
+                return Result(serviceRequest.Response, serviceRequest.ResponseContentType);
             }
             catch (Exception ex)
             {
@@ -179,12 +177,6 @@ namespace gView.Server.Controllers
             if (response.StartsWith("base64:"))
             {
                 response = response.Substring("base64:".Length);
-                if (response.Contains(":"))
-                {
-                    int pos = response.IndexOf(":");
-                    contentType = response.Substring(0, pos);
-                    response = response.Substring(pos + 1);
-                }
                 data = Convert.FromBase64String(response);
             }
             else
@@ -196,10 +188,9 @@ namespace gView.Server.Controllers
 
         private IActionResult Result(byte[] data, string contentType)
         {
-            //ViewData["content-type"] = contentType;
-            //ViewData["data"] = data;
+            if (String.IsNullOrEmpty(contentType))
+                contentType = "text/plain";
 
-            //return View("_binary");
             return File(data, contentType);
         }
 

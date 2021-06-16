@@ -53,6 +53,7 @@ namespace gView.Framework.OGC.WMS
     {
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
         #region request parameters
+
         private int miWidth = 200;
         private int miHeight = 200;
         private int miSRS = 4326;
@@ -81,6 +82,7 @@ namespace gView.Framework.OGC.WMS
         private string _requestKey = String.Empty;
 
         public double dpi = 96.0;
+
         #endregion
 
         public WMSParameterDescriptor()

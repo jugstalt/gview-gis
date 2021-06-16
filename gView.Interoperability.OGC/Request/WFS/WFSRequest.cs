@@ -75,12 +75,15 @@ namespace gView.Interoperability.OGC
             {
                 case WFSRequestType.GetCapabilities:
                     context.ServiceRequest.Response = await WFS_GetCapabilities(context.ServiceRequest.OnlineResource, context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.ResponseContentType = "text/xml";
                     break;
                 case WFSRequestType.DescribeFeatureType:
                     context.ServiceRequest.Response = await WFS_DescribeFeatureType(context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.ResponseContentType = "text/xml";
                     break;
                 case WFSRequestType.GetFeature:
                     context.ServiceRequest.Response = await WFS_GetFeature(context.ServiceRequest.OnlineResource, context.ServiceRequest.Service, parameters, context);
+                    context.ServiceRequest.ResponseContentType = "text/xml";
                     break;
             }
         }

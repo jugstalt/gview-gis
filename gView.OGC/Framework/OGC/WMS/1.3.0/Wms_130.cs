@@ -1145,7 +1145,7 @@ namespace gView.Framework.OGC.WMS.Version_1_3_0
 
         private Layer[] layer1Field;
 
-        private bool queryableField;
+        private int queryableField;
 
         private string cascadedField;
 
@@ -1159,7 +1159,7 @@ namespace gView.Framework.OGC.WMS.Version_1_3_0
 
         public Layer()
         {
-            this.queryableField = false;
+            this.queryableField = 0;
             this.opaqueField = false;
             this.noSubsetsField = false;
         }
@@ -1440,7 +1440,7 @@ namespace gView.Framework.OGC.WMS.Version_1_3_0
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
         [System.ComponentModel.DefaultValueAttribute(false)]
-        public bool queryable
+        public int queryable
         {
             get
             {
