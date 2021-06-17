@@ -388,6 +388,10 @@ namespace gView.Server.Controllers
                     }
                     else
                     {
+                        if(IsRawResultFormat())
+                        {
+                            return Result(serviceRequest.Response);
+                        }
                         var featureResponse = JsonConvert.DeserializeObject<JsonFeatureResponse>(serviceRequest.Response);
                         return Result(featureResponse);
                     }
@@ -1195,6 +1199,10 @@ namespace gView.Server.Controllers
                     Formatting = Formatting.Indented
                 });
             }
+            else if(format == "geojson")
+            {
+                return File(Encoding.UTF8.GetBytes(obj.ToString()), "application/json");
+            }
 
             #region ToHtml
 
@@ -1299,6 +1307,20 @@ namespace gView.Server.Controllers
             }
 
             return String.Empty;
+        }
+
+        private bool IsRawResultFormat(string resultFormat = null)
+        {
+            if (String.IsNullOrEmpty(resultFormat))
+                resultFormat = ResultFormat();
+
+            switch(resultFormat?.ToLower())
+            {
+                case "geojson":
+                    return true;
+            }
+
+            return false;
         }
 
         async private Task<IEnumerable<string>> ServiceTypes(IIdentity identity, IMapService mapService)

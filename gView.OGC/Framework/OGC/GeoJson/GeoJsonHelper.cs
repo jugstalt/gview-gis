@@ -54,7 +54,7 @@ namespace gView.Framework.OGC.GeoJson
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("{'type':'FeatureCollection','features':[");
+            sb.Append(@"{""type"":""FeatureCollection"",""features"":[");
 
             sb.Append(ToGeoJsonFeatures(features));
 
@@ -82,9 +82,9 @@ namespace gView.Framework.OGC.GeoJson
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("{'type':'Feature'");
+            sb.Append(@"{""type"":""Feature""");
 
-            sb.Append(",'properties':{");
+            sb.Append(@",""properties"":{");
             for (int i = 0, to = feature.Fields.Count; i < to; i++)
             {
                 if (i > 0) sb.Append(",");
@@ -96,7 +96,7 @@ namespace gView.Framework.OGC.GeoJson
 
             if (feature.Shape != null)
             {
-                sb.Append(",'geometry':");
+                sb.Append(@",""geometry"":");
                 sb.Append(ToGeoJsonGeometry(feature.Shape));
             }
 
@@ -111,13 +111,13 @@ namespace gView.Framework.OGC.GeoJson
 
             if (geometry is IPoint)
             {
-                sb.Append("{'type':'Point','coordinates':");
+                sb.Append(@"{""type"":""Point"",""coordinates"":");
                 sb.Append(ToGeoJsonPoint((IPoint)geometry));
                 sb.Append("}");
             }
             else if (geometry is IMultiPoint)
             {
-                sb.Append("{'type':'MultiPoint','coordinates':");
+                sb.Append(@"{""type"":""MultiPoint"",""coordinates"":");
                 sb.Append(ToGeoJsonPoints((IMultiPoint)geometry));
                 sb.Append("}");
             }
@@ -126,25 +126,25 @@ namespace gView.Framework.OGC.GeoJson
                 IPolyline pLine = (IPolyline)geometry;
                 if (pLine.PathCount == 0)
                 {
-                    sb.Append("{'type':'LineString','coordinates':");
+                    sb.Append(@"{""type"":""LineString"",""coordinates"":");
                     sb.Append("[]");
                     sb.Append("}");
                 }
                 else if (pLine.PathCount == 1)
                 {
-                    sb.Append("{'type':'LineString','coordinates':");
+                    sb.Append(@"{""type"":""LineString"",""coordinates"":[");
                     sb.Append(ToGeoJsonPoints(pLine[0]));
-                    sb.Append("}");
+                    sb.Append("]}");
                 }
                 else
                 {
-                    sb.Append("{'type':'MultiLineString','coordinates':[");
+                    sb.Append(@"{""type"":""MultiLineString"",""coordinates"":[[");
                     for (int p = 0, to = pLine.PathCount; p < to; p++)
                     {
-                        if (p > 0) sb.Append(",");
+                        if (p > 0) sb.Append("],[");
                         sb.Append(ToGeoJsonPoints(pLine[p]));
                     }
-                    sb.Append("]}");
+                    sb.Append("]]}");
                 }
             }
             else if (geometry is IPolygon)
@@ -152,25 +152,25 @@ namespace gView.Framework.OGC.GeoJson
                 IPolygon polygon = (IPolygon)geometry;
                 if (polygon.RingCount == 0)
                 {
-                    sb.Append("{'type':'Polygon','coordinates':");
+                    sb.Append(@"{""type"":""Polygon"",""coordinates"":");
                     sb.Append("[]");
                     sb.Append("}");
                 }
                 else if (polygon.RingCount == 1)
                 {
-                    sb.Append("{'type':'Polygon','coordinates':");
+                    sb.Append(@"{""type"":""Polygon"",""coordinates"":[");
                     sb.Append(ToGeoJsonPoints(polygon[0]));
-                    sb.Append("}");
+                    sb.Append("]}");
                 }
                 else
                 {
-                    sb.Append("{'type':'MultiPolygon','coordinates':[");
+                    sb.Append(@"{""type"":""MultiPolygon"",""coordinates"":[[");
                     for (int r = 0, to = polygon.RingCount; r < to; r++)
                     {
-                        if (r > 0) sb.Append(",");
+                        if (r > 0) sb.Append("],[");
                         sb.Append(ToGeoJsonPoints(polygon[r]));
                     }
-                    sb.Append("]}");
+                    sb.Append("]]}");
                 }
             }
             else

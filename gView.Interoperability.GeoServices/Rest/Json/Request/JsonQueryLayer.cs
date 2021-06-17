@@ -9,8 +9,10 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
 {
     public class JsonQueryLayer
     {
-        [JsonProperty(PropertyName = "text")]
-        public string Text { get; set; }
+        //[JsonProperty(PropertyName = "text")]
+        //public string Text { get; set; }
+        [JsonProperty(PropertyName = "where")]
+        public string Where { get; set; }
 
         [JsonProperty(PropertyName = "geometry")]
         public string Geometry { get; set; }
@@ -23,9 +25,6 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
 
         [JsonProperty(PropertyName = "relationParam")]
         public string relationParam { get; set; }
-
-        [JsonProperty(PropertyName = "where")]
-        public string Where { get; set; }
 
         [JsonProperty(PropertyName = "objectIds")]
         public string ObjectIds { get; set; }

@@ -5,6 +5,7 @@ using gView.Framework.Editor.Core;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
+using gView.Framework.OGC.GeoJson;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Interoperability.GeoServices.Extensions;
@@ -439,9 +440,24 @@ namespace gView.Interoperability.GeoServices.Request
                 int featureCount = 0;
                 List<JsonFeature> jsonFeatures = new List<JsonFeature>();
                 List<JsonFeatureResponse.Field> jsonFields = new List<JsonFeatureResponse.Field>();
+                
                 string objectIdFieldName = String.Empty;
                 EsriGeometryType esriGeometryType = EsriGeometryType.esriGeometryAny;
                 JsonSpatialReference featureSref = null;
+
+                #region GeoJson
+
+                bool returnGeoJson = "geojson".Equals(query.OutputFormat, StringComparison.InvariantCultureIgnoreCase) &&
+                         query.ReturnCountOnly == false &&
+                         query.ReturnIdsOnly == false;
+                List<IFeature> returnGeoJsonFeatures = new List<IFeature>();
+
+                if (returnGeoJson && String.IsNullOrEmpty(query.OutSRef))
+                {
+                    query.OutSRef = "4326";
+                }
+
+                #endregion
 
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
@@ -603,41 +619,48 @@ namespace gView.Interoperability.GeoServices.Request
                                             feature.Shape = geoTransfromer.Transform2D(feature.Shape) as IGeometry;
                                         }
 
-                                        var jsonFeature = new JsonFeature();
-                                        var attributesDict = (IDictionary<string, object>)jsonFeature.Attributes;
-
-                                        if (feature.Fields != null)
+                                        if (returnGeoJson)
                                         {
-                                            foreach (var field in feature.Fields)
-                                            {
-                                                object val = field.Value;
-                                                if (val is DateTime)
-                                                {
-                                                    val = Convert.ToInt64(((DateTime)val - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
-                                                }
-                                                attributesDict[field.Name] = val;
+                                            returnGeoJsonFeatures.Add(feature);
+                                        }
+                                        else
+                                        {
+                                            var jsonFeature = new JsonFeature();
+                                            var attributesDict = (IDictionary<string, object>)jsonFeature.Attributes;
 
-                                                if (firstFeature)
+                                            if (feature.Fields != null)
+                                            {
+                                                foreach (var field in feature.Fields)
                                                 {
-                                                    var tableField = tableClass.FindField(field.Name);
-                                                    if (tableField != null)
+                                                    object val = field.Value;
+                                                    if (val is DateTime)
                                                     {
-                                                        jsonFields.Add(new JsonFeatureResponse.Field()
+                                                        val = Convert.ToInt64(((DateTime)val - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
+                                                    }
+                                                    attributesDict[field.Name] = val;
+
+                                                    if (firstFeature)
+                                                    {
+                                                        var tableField = tableClass.FindField(field.Name);
+                                                        if (tableField != null)
                                                         {
-                                                            Name = tableField.name,
-                                                            Alias = tableField.aliasname,
-                                                            Length = tableField.size,
-                                                            Type = JsonField.ToType(tableField.type).ToString()
-                                                        });
+                                                            jsonFields.Add(new JsonFeatureResponse.Field()
+                                                            {
+                                                                Name = tableField.name,
+                                                                Alias = tableField.aliasname,
+                                                                Length = tableField.size,
+                                                                Type = JsonField.ToType(tableField.type).ToString()
+                                                            });
+                                                        }
                                                     }
                                                 }
                                             }
+
+                                            jsonFeature.Geometry = feature.Shape?.ToJsonGeometry();
+
+                                            jsonFeatures.Add(jsonFeature);
+                                            firstFeature = false;
                                         }
-
-                                        jsonFeature.Geometry = feature.Shape?.ToJsonGeometry();
-
-                                        jsonFeatures.Add(jsonFeature);
-                                        firstFeature = false;
                                     }
                                 }
                             }
@@ -661,6 +684,10 @@ namespace gView.Interoperability.GeoServices.Request
                         ObjectIdFieldName = objectIdFieldName,
                         ObjectIds = jsonFeatures.Select(f => Convert.ToInt32(((IDictionary<string, object>)f.Attributes)[objectIdFieldName]))
                     });
+                }
+                else if(returnGeoJson)
+                {
+                    context.ServiceRequest.Response = GeoJsonHelper.ToGeoJson(returnGeoJsonFeatures);
                 }
                 else if (isFeatureServer)
                 {
