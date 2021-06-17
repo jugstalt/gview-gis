@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using Newtonsoft.Json;
 
 namespace gView.Framework.OGC.GeoJson
 {
@@ -49,6 +50,34 @@ namespace gView.Framework.OGC.GeoJson
             return sb.ToString();
         }
 
+        public static string ToGeoJson(IEnumerable<IFeature> features)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("{'type':'FeatureCollection','features':[");
+
+            sb.Append(ToGeoJsonFeatures(features));
+
+            sb.Append("]}");
+
+            return sb.ToString();
+        }
+
+        public static string ToGeoJsonFeatures(IEnumerable<IFeature> features)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var feature in features)
+            {
+                if (sb.Length > 0)
+                    sb.Append(",");
+
+                sb.Append(ToGeoJson(feature));
+            }
+
+            return sb.ToString();
+        }
+
         public static string ToGeoJson(IFeature feature)
         {
             StringBuilder sb = new StringBuilder();
@@ -60,7 +89,8 @@ namespace gView.Framework.OGC.GeoJson
             {
                 if (i > 0) sb.Append(",");
                 FieldValue fv = feature.Fields[i];
-                sb.Append("'" + fv.Name + "':'" + fv.Value.ToString() + "'");
+                //sb.Append($"\"" + fv.Name + "\":\"" + fv.Value.ToString() + "\"");
+                sb.Append($"\"{ fv.Name }\":{ JsonConvert.SerializeObject(fv.Value) }");
             }
             sb.Append("}");
 

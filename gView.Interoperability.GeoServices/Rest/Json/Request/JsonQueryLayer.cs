@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using gView.Interoperability.GeoServices.Rest.Reflection;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -106,5 +107,9 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
 
         [JsonProperty(PropertyName = "layerId")]
         public int LayerId { get; set; }
+
+        [JsonProperty(PropertyName = "f")]
+        [FormInput(Values = new string[] { "json", "pjson", "geojson" })]
+        public string OutputFormat { get; set; }
     }
 }

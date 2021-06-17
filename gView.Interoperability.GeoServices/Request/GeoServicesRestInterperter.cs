@@ -597,6 +597,12 @@ namespace gView.Interoperability.GeoServices.Request
                                     while ((feature = await featureCursor.NextFeature()) != null)
                                     {
                                         featureCount++;
+
+                                        if (transform)
+                                        {
+                                            feature.Shape = geoTransfromer.Transform2D(feature.Shape) as IGeometry;
+                                        }
+
                                         var jsonFeature = new JsonFeature();
                                         var attributesDict = (IDictionary<string, object>)jsonFeature.Attributes;
 
@@ -626,11 +632,6 @@ namespace gView.Interoperability.GeoServices.Request
                                                     }
                                                 }
                                             }
-                                        }
-
-                                        if (transform)
-                                        {
-                                            feature.Shape = geoTransfromer.Transform2D(feature.Shape) as IGeometry;
                                         }
 
                                         jsonFeature.Geometry = feature.Shape?.ToJsonGeometry();

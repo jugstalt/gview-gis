@@ -24,6 +24,7 @@ using System.Xml.Serialization;
 using System.Threading.Tasks;
 using gView.Core.Framework.Exceptions;
 using System.Linq;
+using gView.Framework.OGC.GeoJson;
 
 namespace gView.Interoperability.OGC
 {
@@ -390,7 +391,7 @@ namespace gView.Interoperability.OGC
                         #region GetFeatureInfo
 
                         List<string> gfiFormats = new List<string>(new string[] { "text/plain", "text/html", "text/xml", "application/vnd.ogc.gml", "application/json" });
-                        DirectoryInfo di = new DirectoryInfo(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"/misc/wms/GetFeatureInfo/xsl");
+                        DirectoryInfo di = new DirectoryInfo($"{ _mapServer.EtcPath }/wms/getfeatureinfo/xsl");
                         if (di.Exists)
                         {
                             foreach (FileInfo fi in di.GetFiles("*.xsl"))
@@ -1373,6 +1374,10 @@ namespace gView.Interoperability.OGC
                     GetFeatureResponseText(features, sb);
                     contentType = "application/vnd.ogc.gml";
                     break;
+                case WMSInfoFormat.geojson:
+                    GetFeatureResponseGeoJson(features, sb);
+                    contentType = "application/json";
+                    break;
                 case WMSInfoFormat.xsl:
                     StringBuilder xml = new StringBuilder();
                     GetFeatureResponseXML(features, xml);
@@ -1380,8 +1385,8 @@ namespace gView.Interoperability.OGC
                     string output = String.Empty;
                     try
                     {
-                        output = this.TransformXML(xml.ToString(), System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"/misc/wms/GetFeatureInfo/" + formatXsl.Replace("/", "\\"));
-                    
+                        output = this.TransformXML(xml.ToString(), $"{ _mapServer.EtcPath }/wms/getfeatureinfo/{ formatXsl }");
+
                         /*
                         var xslTrans = new XslCompiledTransform();
                         xslTrans.Load(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"/misc/wms/GetFeatureInfo/" + formatXsl.Replace("\\", "/"));
@@ -1393,7 +1398,7 @@ namespace gView.Interoperability.OGC
                             xslTrans.Transform(xmlReader, xmlWriter);
                             output = strWriter.ToString();
                         }
-                         * */
+                        */
                     }
                     catch (Exception ex)
                     {
@@ -1563,6 +1568,11 @@ namespace gView.Interoperability.OGC
                     }
                 }
             }
+        }
+
+        private void GetFeatureResponseGeoJson(List<FeatureType> features, StringBuilder sb)
+        {
+            sb.Append(GeoJsonHelper.ToGeoJson(features.Select(f => f.Feature)));
         }
 
         private class FeatureType

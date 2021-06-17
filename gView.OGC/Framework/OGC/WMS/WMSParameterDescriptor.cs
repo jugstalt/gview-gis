@@ -36,7 +36,8 @@ namespace gView.Framework.OGC.WMS
         html,
         text,
         xml,
-        xsl
+        xsl,
+        geojson
     }
 
     public enum WMSImageFormat
@@ -457,6 +458,10 @@ namespace gView.Framework.OGC.WMS
                             break;
                         case "text/plain": this.InfoFormat = WMSInfoFormat.text;
                             break;
+                        case "application/json":
+                        case "application/geojeon":
+                            this.InfoFormat = WMSInfoFormat.geojson;
+                            break;
                         default:
                             if (request["INFO_FORMAT"].ToLower().StartsWith("xsl/"))
                             {
@@ -465,7 +470,7 @@ namespace gView.Framework.OGC.WMS
                             }
                             else
                             {
-                                WriteError("invalid INFORMAT parameter, may be: text/html, GML or application/vnd.ogc.gml.");
+                                WriteError("invalid INFORMAT parameter, may be: text/html, application/json or application/vnd.ogc.gml.");
                             }
                             break;
                     }

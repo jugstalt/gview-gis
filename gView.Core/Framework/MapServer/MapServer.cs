@@ -25,6 +25,8 @@ namespace gView.MapServer
         //string OutputUrl { get; }
         string OutputPath { get; }
 
+        string EtcPath { get; }
+
         string TileCachePath { get; }
 
         int FeatureQueryLimit { get; }

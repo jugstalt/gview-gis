@@ -86,7 +86,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         public int MaxRecordCountFactor { get; set; }
 
         [JsonProperty(PropertyName = "supportedQueryFormats")]
-        public string SupportedQueryFormats => "JSON";
+        public string SupportedQueryFormats => "JSON, geoJSON";
 
         [JsonProperty("useStandardizedQueries")]
         public bool UseStandardizedQueries => true;

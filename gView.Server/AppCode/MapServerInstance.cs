@@ -9,6 +9,7 @@ using gView.Server.Services.Logging;
 using gView.Server.Services.MapServer;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,6 +26,7 @@ namespace gView.Server.AppCode
         private readonly MapServiceManager _mapServiceMananger;
         private readonly MapServiceDeploymentManager _mapServiceDeploymentMananger;
         private readonly MapServicesEventLogger _logger;
+        private readonly string _etcPath;
 
         public MapServerInstance(
             MapServiceManager mapServiceMananger,
@@ -39,6 +41,8 @@ namespace gView.Server.AppCode
             _log_requests = _mapServiceMananger.Options.LogServiceRequests;
             _log_request_details = _mapServiceMananger.Options.LogServiceRequestDetails;
             _log_errors = _mapServiceMananger.Options.LogServiceErrors;
+
+            _etcPath = $"{ new DirectoryInfo(_mapServiceMananger.Options.ServicesPath).Parent.FullName }/etc";
         }
 
         async private Task<IServiceMap> Map(string name, string folder, IServiceRequestContext context)
@@ -259,6 +263,14 @@ namespace gView.Server.AppCode
             get
             {
                 return _mapServiceMananger.Options.OutputPath;
+            }
+        }
+
+        public string EtcPath
+        {
+            get
+            {
+                return _etcPath;
             }
         }
 
