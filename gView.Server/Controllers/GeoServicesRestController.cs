@@ -319,18 +319,19 @@ namespace gView.Server.Controllers
 
                 if (serviceRequest.Succeeded)
                 {
-                    if (ResultFormat() == "image" && serviceRequest.Response.StartsWith("base64:"))
+                    if (ResultFormat() == "image" && serviceRequest.Response is byte[])
                     {
-                        return Base64Result(serviceRequest.Response);
+                        return Result((byte[])serviceRequest.Response, serviceRequest.ResponseContentType);
                     }
                     else
                     {
-                        return Result(JsonConvert.DeserializeObject<JsonExportResponse>(serviceRequest.Response), folder, id, "ExportMap");
+                        return Result(serviceRequest.Response, folder, id, "ExportMap");
+                        //return Result(JsonConvert.DeserializeObject<JsonExportResponse>(serviceRequest.ResponseAsString), folder, id, "ExportMap");
                     }
                 }
                 else
                 {
-                    return Result(JsonConvert.DeserializeObject<JsonError>(serviceRequest.Response));
+                    return Result(serviceRequest.Response);
                 }
             });
         }
@@ -378,27 +379,11 @@ namespace gView.Server.Controllers
 
                 if (serviceRequest.Succeeded)
                 {
-                    if (queryLayer.ReturnCountOnly == true)
-                    {
-                        return Result(JsonConvert.DeserializeObject<JsonFeatureCountResponse>(serviceRequest.Response), folder, id, "Query");
-                    }
-                    else if(queryLayer.ReturnIdsOnly == true)
-                    {
-                        return Result(JsonConvert.DeserializeObject<JsonObjectIdResponse>(serviceRequest.Response), folder, id, "Query");
-                    }
-                    else
-                    {
-                        if(IsRawResultFormat())
-                        {
-                            return Result(serviceRequest.Response);
-                        }
-                        var featureResponse = JsonConvert.DeserializeObject<JsonFeatureResponse>(serviceRequest.Response);
-                        return Result(featureResponse);
-                    }
+                    return Result(serviceRequest.Response, folder, id, "Query", contentType: serviceRequest.ResponseContentType);
                 }
                 else
                 {
-                    return Result(JsonConvert.DeserializeObject<JsonError>(serviceRequest.Response));
+                    return Result(serviceRequest.Response);
                 }
             });
         }
@@ -432,7 +417,7 @@ namespace gView.Server.Controllers
 
                 #endregion
 
-                return Result(JsonConvert.DeserializeObject<LegendResponse>(serviceRequest.Response), folder, id, "Legend");
+                return Result(serviceRequest.Response, folder, id, "Legend");
             });
         }
 
@@ -482,11 +467,11 @@ namespace gView.Server.Controllers
 
                 if (serviceRequest.Succeeded)
                 {
-                    return Result(JsonConvert.DeserializeObject<JsonIdentifyResponse>(serviceRequest.Response), folder, id, "Identify");
+                    return Result(serviceRequest.Response, folder, id, "Identify");
                 }
                 else
                 {
-                    return Result(JsonConvert.DeserializeObject<JsonError>(serviceRequest.Response));
+                    return Result(serviceRequest.Response);
                 }
                 
             });
@@ -650,22 +635,11 @@ namespace gView.Server.Controllers
 
                 if (serviceRequest.Succeeded)
                 {
-                    if (queryLayer.ReturnCountOnly == true)
-                    {
-                        return Result(JsonConvert.DeserializeObject<JsonFeatureCountResponse>(serviceRequest.Response), folder, id, "Query");
-                    }
-                    else if (queryLayer.ReturnIdsOnly == true)
-                    {
-                        return Result(JsonConvert.DeserializeObject<JsonObjectIdResponse>(serviceRequest.Response), folder, id, "Query");
-                    }
-                    else
-                    {
-                        return Result(JsonConvert.DeserializeObject<JsonFeatureServiceQueryResponse>(serviceRequest.Response));
-                    }
+                    return Result(serviceRequest.Response, folder, id, "Query", contentType: serviceRequest.ResponseContentType);
                 }
                 else
                 {
-                    return Result(JsonConvert.DeserializeObject<JsonError>(serviceRequest.Response));
+                    return Result(serviceRequest.Response);
                 }
             });
         }
@@ -711,7 +685,7 @@ namespace gView.Server.Controllers
 
                 #endregion
 
-                return Result(JsonConvert.DeserializeObject<JsonFeatureServerResponse>(serviceRequest.Response));
+                return Result(JsonConvert.DeserializeObject<JsonFeatureServerResponse>(serviceRequest.ResponseAsString));
             },
             onException: (ex) =>
             {
@@ -774,7 +748,7 @@ namespace gView.Server.Controllers
 
                 #endregion
 
-                return Result(JsonConvert.DeserializeObject<JsonFeatureServerResponse>(serviceRequest.Response));
+                return Result(JsonConvert.DeserializeObject<JsonFeatureServerResponse>(serviceRequest.ResponseAsString));
             },
             onException: (ex) =>
             {
@@ -837,7 +811,7 @@ namespace gView.Server.Controllers
 
                 #endregion
 
-                return Result(JsonConvert.DeserializeObject<JsonFeatureServerResponse>(serviceRequest.Response));
+                return Result(JsonConvert.DeserializeObject<JsonFeatureServerResponse>(serviceRequest.ResponseAsString));
             },
             onException: (ex) =>
             {
@@ -1176,7 +1150,7 @@ namespace gView.Server.Controllers
 
         #endregion
 
-        private IActionResult Result(object obj, string folder = null, string id = null, string method = null)
+        private IActionResult Result(object obj, string folder = null, string id = null, string method = null, string contentType = "text/plain")
         {
             if (base.ActionStartTime.HasValue && obj is JsonStopWatch)
             {
@@ -1199,9 +1173,20 @@ namespace gView.Server.Controllers
                     Formatting = Formatting.Indented
                 });
             }
-            else if(format == "geojson")
+            else if (IsRawResultFormat(format))
             {
-                return File(Encoding.UTF8.GetBytes(obj.ToString()), "application/json");
+                if (obj is byte[])
+                {
+                    return File((byte[])obj, contentType);
+                }
+                else if (obj is string)
+                {
+                    return File(Encoding.UTF8.GetBytes(obj.ToString()), contentType);
+                }
+                else
+                {
+                    return Json(obj);
+                }
             }
 
             #region ToHtml
@@ -1213,35 +1198,8 @@ namespace gView.Server.Controllers
             #endregion
         }
 
-        private IActionResult Base64Result(string response)
-        {
-            byte[] data = null;
-            string contentType = "";
-
-            if (response.StartsWith("base64:"))
-            {
-                response = response.Substring("base64:".Length);
-                if (response.Contains(":"))
-                {
-                    int pos = response.IndexOf(":");
-                    contentType = response.Substring(0, pos);
-                    response = response.Substring(pos + 1);
-                }
-                data = Convert.FromBase64String(response);
-            }
-            else
-            {
-                data = Encoding.UTF8.GetBytes(response);
-            }
-            return Result(data, contentType);
-        }
-
         private IActionResult Result(byte[] data, string contentType)
         {
-            //ViewData["content-type"] = contentType;
-            //ViewData["data"] = data;
-
-            //return View("_binary");
             return File(data, contentType);
         }
 

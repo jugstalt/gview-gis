@@ -88,7 +88,7 @@ namespace gView.Server.Controllers
 
                 #endregion
 
-                return Result(serviceRequest.Response, "text/xml");
+                return Result(serviceRequest.ResponseAsString, "text/xml");
             });
         }
 

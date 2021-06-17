@@ -152,7 +152,7 @@ namespace gView.Server.Controllers
 
                 #endregion
 
-                string ret = serviceRequest.Response;
+                string ret = serviceRequest.ResponseAsString;
 
                 return Result(ret, "text/xml");
             }

@@ -95,7 +95,7 @@ namespace gView.Server.Controllers
 
                 await _mapServiceMananger.TaskQueue.AwaitRequest(interpreter.Request, context);
 
-                return Result(serviceRequest.Response, serviceRequest.ResponseContentType);
+                return Result(serviceRequest.ResponseAsString, serviceRequest.ResponseContentType);
             }
             catch (Exception ex)
             {
@@ -142,7 +142,7 @@ namespace gView.Server.Controllers
             //await interpreter.Request(context);
             await _mapServiceMananger.TaskQueue.AwaitRequest(interpreter.Request, context);
 
-            string ret = serviceRequest.Response;
+            string ret = serviceRequest.ResponseAsString;
             string contentType = col.Contains(".") ? "image/" + col.Split('.')[1] : "image/png";
 
             if (ret.StartsWith("image:"))

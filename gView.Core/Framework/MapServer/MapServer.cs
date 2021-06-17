@@ -6,6 +6,7 @@ using gView.Framework.system;
 using gView.Framework.IO;
 using System.Threading.Tasks;
 using gView.Core.Framework.Exceptions;
+using Newtonsoft.Json;
 
 namespace gView.MapServer
 {
@@ -109,8 +110,52 @@ namespace gView.MapServer
         public string Service { get; private set; }
         public string Folder { get; private set; }
         public string Request { get; private set; }
-        public string Response = "";
+
+        #region Response
+
+        private object _response = null;
+
+        public object Response
+        {
+            get
+            {
+                return _response;
+            }
+            set
+            {
+                _response = value;
+            }
+        }
+
+        public string ResponseAsString
+        {
+            get
+            {
+                if (_response == null)
+                {
+                    return String.Empty;
+                }
+
+                if(_response is string)
+                {
+                    return (string)_response;
+                }
+                else if(_response is byte[])
+                {
+                    return $"base64:{ Convert.ToBase64String((byte[])_response) }";
+                }
+                else
+                {
+                    return JsonConvert.SerializeObject(_response);
+                }
+            }
+        }
+
+        #endregion
+
         public string ResponseContentType = "";
+        public DateTime? ResponseExpries = null;
+
         public string OnlineResource = "";
         public string OutputUrl = "";
         public IIdentity Identity = null;

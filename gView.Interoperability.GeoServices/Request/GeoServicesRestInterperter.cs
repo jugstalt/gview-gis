@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.GeoServices.Request
@@ -160,7 +161,9 @@ namespace gView.Interoperability.GeoServices.Request
                     }
                     var iFormat = System.Drawing.Imaging.ImageFormat.Png;
                     if (imageFormat == ImageFormat.jpg)
+                    {
                         iFormat = System.Drawing.Imaging.ImageFormat.Jpeg;
+                    }
 
                     if (_exportMap.Transparent)
                     {
@@ -192,7 +195,9 @@ namespace gView.Interoperability.GeoServices.Request
                             context.ServiceRequest.Succeeded = true;
                             MemoryStream ms = new MemoryStream();
                             serviceMap.MapImage.Save(ms, iFormat);
-                            context.ServiceRequest.Response = "base64:" + _exportMap.GetContentType() + ":" + Convert.ToBase64String(ms.ToArray());
+
+                            context.ServiceRequest.ResponseContentType = _exportMap.GetContentType();
+                            context.ServiceRequest.Response = ms.ToArray();
 
                             // debug
                             //string fileName = serviceMap.Name
@@ -212,7 +217,7 @@ namespace gView.Interoperability.GeoServices.Request
                             await serviceMap.SaveImage(path, iFormat);
 
                             context.ServiceRequest.Succeeded = true;
-                            context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonExportResponse()
+                            context.ServiceRequest.Response = new JsonExportResponse()
                             {
                                 Href = context.ServiceRequest.OutputUrl + "/" + fileName,
                                 Width = serviceMap.Display.iWidth,
@@ -227,34 +232,34 @@ namespace gView.Interoperability.GeoServices.Request
                                     Ymax = serviceMap.Display.Envelope.maxy
                                     // ToDo: SpatialReference
                                 }
-                            });
+                            };
                         }
                     }
                     else
                     {
                         context.ServiceRequest.Succeeded = false;
-                        context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
+                        context.ServiceRequest.Response = new JsonError()
                         {
                             Error = new JsonError.ErrorDef()
                             {
                                 Code = -1,
                                 Message = "No image data"
                             }
-                        });
+                        };
                     }
                 }
             }
             catch (Exception ex)
             {
                 context.ServiceRequest.Succeeded = false;
-                context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
+                context.ServiceRequest.Response = new JsonError()
                 {
                     Error = new JsonError.ErrorDef()
                     {
                         Code = -1,
                         Message = ex.Message
                     }
-                });
+                };
             }
         }
 
@@ -672,56 +677,57 @@ namespace gView.Interoperability.GeoServices.Request
 
                 if (query.ReturnCountOnly == true)
                 {
-                    context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonFeatureCountResponse()
+                    context.ServiceRequest.Response = new JsonFeatureCountResponse()
                     {
                         Count = featureCount  //jsonFeatures.Count()
-                    });
+                    };
                 }
                 else if (query.ReturnIdsOnly)
                 {
-                    context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonObjectIdResponse()
+                    context.ServiceRequest.Response = new JsonObjectIdResponse()
                     {
                         ObjectIdFieldName = objectIdFieldName,
                         ObjectIds = jsonFeatures.Select(f => Convert.ToInt32(((IDictionary<string, object>)f.Attributes)[objectIdFieldName]))
-                    });
+                    };
                 }
                 else if(returnGeoJson)
                 {
-                    context.ServiceRequest.Response = GeoJsonHelper.ToGeoJson(returnGeoJsonFeatures);
+                    context.ServiceRequest.Response = Encoding.UTF8.GetBytes(GeoJsonHelper.ToGeoJson(returnGeoJsonFeatures));
+                    context.ServiceRequest.ResponseContentType = Constants.JsonContentType;
                 }
                 else if (isFeatureServer)
                 {
-                    context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonFeatureServiceQueryResponse()
+                    context.ServiceRequest.Response = new JsonFeatureServiceQueryResponse()
                     {
                         ObjectIdFieldName = objectIdFieldName,
                         GeometryType = esriGeometryType.ToString(),
                         SpatialReference = featureSref,
                         Fields = jsonFields.ToArray(),
                         Features = jsonFeatures.ToArray()
-                    });
+                    };
                 }
                 else
                 {
-                    context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonFeatureResponse()
+                    context.ServiceRequest.Response = new JsonFeatureResponse()
                     {
                         GeometryType = esriGeometryType.ToString(),
                         SpatialReference = featureSref,
                         Fields = jsonFields.ToArray(),
                         Features = jsonFeatures.ToArray()
-                    });
+                    };
                 }
             }
             catch (Exception ex)
             {
                 context.ServiceRequest.Succeeded = false;
-                context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
+                context.ServiceRequest.Response = new JsonError()
                 {
                     Error = new JsonError.ErrorDef()
                     {
                         Code = -1,
                         Message = ex.Message
                     }
-                });
+                };
             }
         }
 
@@ -938,23 +944,23 @@ namespace gView.Interoperability.GeoServices.Request
 
                     #endregion
 
-                    context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonIdentifyResponse()
+                    context.ServiceRequest.Response = new JsonIdentifyResponse()
                     {
                         Results = results.ToArray()
-                    });
+                    };
                 }
             }
             catch (Exception ex)
             {
                 context.ServiceRequest.Succeeded = false;
-                context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
+                context.ServiceRequest.Response = new JsonError()
                 {
                     Error = new JsonError.ErrorDef()
                     {
                         Code = -1,
                         Message = ex.Message
                     }
-                });
+                };
             }
         }
 
@@ -1021,22 +1027,22 @@ namespace gView.Interoperability.GeoServices.Request
                 }
 
                 context.ServiceRequest.Succeeded = true;
-                context.ServiceRequest.Response = JsonConvert.SerializeObject(new Rest.Json.Legend.LegendResponse()
+                context.ServiceRequest.Response = new Rest.Json.Legend.LegendResponse()
                 {
                     Layers = legendLayers.ToArray()
-                });
+                };
             }
             catch (Exception ex)
             {
                 context.ServiceRequest.Succeeded = false;
-                context.ServiceRequest.Response = JsonConvert.SerializeObject(new JsonError()
+                context.ServiceRequest.Response = new JsonError()
                 {
                     Error = new JsonError.ErrorDef()
                     {
                         Code = -1,
                         Message = ex.Message
                     }
-                });
+                };
             }
         }
 

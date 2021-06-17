@@ -66,7 +66,7 @@ namespace gView.Interoperability.ArcXML
                     AXL response = new AXL("ARCXML", "1.1");
 
                     context.ServiceRequest.Response = await response.GETCLIENTSERVICES(_mapServer, context.ServiceRequest.Identity);
-                    await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request_detail, context.ServiceRequest.Response);
+                    await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request_detail, context.ServiceRequest.ResponseAsString);
 
                     return;
                 }
@@ -205,7 +205,7 @@ namespace gView.Interoperability.ArcXML
             bool toc = false; //NodeAttributeBool(rType, "toc");
             serviceRequest.Response = await response.GET_SERVICE_INFO(context, fields, envelope, renderers, toc, gv_meta, _useTOC);
 
-            await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
+            await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.ResponseAsString);
         }
 
         async private Task PerformGetImageRequest(IServiceRequestContext context, XmlNode rType)
@@ -353,7 +353,7 @@ namespace gView.Interoperability.ArcXML
                 }
                 //map.Release();
             }
-            await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
+            await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.ResponseAsString);
         }
         async private Task PerformGetFeatureRequest(IServiceRequestContext context, XmlNode rType)
         {
@@ -702,7 +702,7 @@ namespace gView.Interoperability.ArcXML
                     serviceRequest.Response = await getFeatures.Request();
                 }
 
-                await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
+                await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.ResponseAsString);
                 return;
             }
             catch (Exception ex)
@@ -865,7 +865,7 @@ namespace gView.Interoperability.ArcXML
 
                 serviceRequest.Response = await raster_request.Request();
             }
-            await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.Response);
+            await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.request_detail, serviceRequest.ResponseAsString);
         }
 
         #region Network Methods
