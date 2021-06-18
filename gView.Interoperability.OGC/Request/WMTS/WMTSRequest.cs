@@ -118,7 +118,8 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     int row = int.Parse(args[5]);
                     int col = int.Parse(args[6].Split('.')[0]);
                     string format = ".png";
-                    if (args[6].ToLower().EndsWith(".jpg"))
+                    if (args[6].ToLower().EndsWith(".jpg") ||
+                        args[6].ToLower().EndsWith(".jpeg"))
                     {
                         format = ".jpg";
                     }
@@ -146,12 +147,15 @@ namespace gView.Interoperability.OGC.Request.WMTS
                         }
                     }
 
-                    context.ServiceRequest.Response = new MapServerResponse()
-                    {
-                        Data = imageData ?? _emptyPic,
-                        ContentType = "image/jpg",
-                        Expires = DateTime.UtcNow.AddDays(7)
-                    }.ToString();
+                    context.ServiceRequest.ResponseContentType = $"image/{ format.Substring(1) }";
+                    context.ServiceRequest.ResponseExpries = DateTime.UtcNow.AddDays(7);
+                    context.ServiceRequest.Response = imageData;
+                    //new MapServerResponse()
+                    //{
+                    //    Data = imageData ?? _emptyPic,
+                    //    ContentType = "image/jpg",
+                    //    Expires = DateTime.UtcNow.AddDays(7)
+                    //}.ToString();
                 }
             }
             return;

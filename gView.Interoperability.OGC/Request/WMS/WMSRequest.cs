@@ -88,14 +88,14 @@ namespace gView.Interoperability.OGC
                     context.ServiceRequest.Response = getLegendResponse.body;
                     context.ServiceRequest.ResponseContentType = getLegendResponse.contentType;
                     break;
-                case WMSRequestType.DescriptTiles:
-                    context.ServiceRequest.Response = await WMSC_DescriptTiles(context.ServiceRequest.Service, parameters, context);
-                    context.ServiceRequest.ResponseContentType = "text/xml";
-                    break;
-                case WMSRequestType.GetTile:
-                    context.ServiceRequest.Response = await WMSC_GetTile(context.ServiceRequest.Service, parameters, context);
-                    break;
 
+                //case WMSRequestType.DescriptTiles:
+                //    context.ServiceRequest.Response = await WMSC_DescriptTiles(context.ServiceRequest.Service, parameters, context);
+                //    context.ServiceRequest.ResponseContentType = "text/xml";
+                //    break;
+                //case WMSRequestType.GetTile:
+                //    context.ServiceRequest.Response = await WMSC_GetTile(context.ServiceRequest.Service, parameters, context);
+                //    break;
                 //case WMSRequestType.GenerateTiles:
                 //    context.ServiceRequest.Response = await WMS_GenerateTiles(context.ServiceRequest.Service, parameters, context);
                 //    break;
@@ -521,7 +521,7 @@ namespace gView.Interoperability.OGC
             }
         }
 
-        async virtual public Task<(string body, string contentType)> WMS_GetMap(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
+        async virtual public Task<(byte[] body, string contentType)> WMS_GetMap(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
         {
             // Immer neue Requestklasse erzeugen, damit Request multithreadfähig
             // ist.
@@ -647,13 +647,13 @@ namespace gView.Interoperability.OGC
                 _context = context;
             }
 
-            async public Task<(string body, string contentType)> Request()
+            async public Task<(byte[] body, string contentType)> Request()
             {
-                if (_mapServer == null) return (String.Empty, String.Empty);
+                if (_mapServer == null) return (null, String.Empty);
 
                 using (IServiceMap map = await _context.CreateServiceMapInstance()) //_mapServer[_context]
                 {
-                    if (map == null) return (String.Empty, String.Empty);
+                    if (map == null) return (null, String.Empty);
 
                     ISpatialReference sRef = SpatialReference.FromID("epsg:" + _parameters.SRS);
                     map.Display.SpatialReference = sRef;
@@ -718,7 +718,7 @@ namespace gView.Interoperability.OGC
 
                                 MemoryStream ms = new MemoryStream();
                                 bm.Save(ms, _parameters.GetImageFormat());
-                                return ("base64:" + Convert.ToBase64String(ms.ToArray()), _parameters.GetContentType());
+                                return (ms.ToArray(), _parameters.GetContentType());
                             }
                         }
                         else
@@ -726,11 +726,11 @@ namespace gView.Interoperability.OGC
                             MemoryStream ms = new MemoryStream();
                             if (await map.SaveImage(ms, _parameters.GetImageFormat())>=0)
                             {
-                                return ("base64:" + Convert.ToBase64String(ms.ToArray()), _parameters.GetContentType());
+                                return (ms.ToArray(), _parameters.GetContentType());
                             }
                         }
                     }
-                    return (String.Empty, String.Empty);
+                    return (null, String.Empty);
                 }
             }
 
@@ -884,7 +884,7 @@ namespace gView.Interoperability.OGC
             }
         }
 
-        async public Task<(string body, string contentType)> WMS_GetLegendGraphic(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
+        async public Task<(byte[] body, string contentType)> WMS_GetLegendGraphic(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
         {
             if (parameters == null || _mapServer == null)
                 throw new ArgumentException();
@@ -907,7 +907,7 @@ namespace gView.Interoperability.OGC
 
                     MemoryStream ms = new MemoryStream();
                     legendBitmap.Save(ms, parameters.GetImageFormat());
-                    return ("base64:" + Convert.ToBase64String(ms.ToArray()), parameters.GetContentType());
+                    return (ms.ToArray(), parameters.GetContentType());
                 }
             }
         }
@@ -1018,6 +1018,7 @@ namespace gView.Interoperability.OGC
             return new Size((int)width, (int)height);
         }
 
+        /*
         async public Task<string> WMSC_DescriptTiles(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
         {
             try
@@ -1192,32 +1193,33 @@ namespace gView.Interoperability.OGC
                 return "<Exception>" + ex.Message + "</Exception>";
             }
         }
-
+        */
         #region Helper
-        private string getValue(string parameter, string[] parameters)
-        {
-            foreach (string p in parameters)
-            {
-                if (p.ToLower().IndexOf(parameter.ToLower() + "=") == 0)
-                {
-                    return p.Substring(parameter.Length + 1, p.Length - parameter.Length - 1);
-                }
-            }
-            return null;
-        }
 
-        private string Concat(string[] parameters, string divider)
-        {
-            if (parameters == null) return "";
+        //private string getValue(string parameter, string[] parameters)
+        //{
+        //    foreach (string p in parameters)
+        //    {
+        //        if (p.ToLower().IndexOf(parameter.ToLower() + "=") == 0)
+        //        {
+        //            return p.Substring(parameter.Length + 1, p.Length - parameter.Length - 1);
+        //        }
+        //    }
+        //    return null;
+        //}
 
-            StringBuilder sb = new StringBuilder();
-            foreach (string str in parameters)
-            {
-                if (sb.Length > 0) sb.Append(divider);
-                sb.Append(str);
-            }
-            return sb.ToString();
-        }
+        //private string Concat(string[] parameters, string divider)
+        //{
+        //    if (parameters == null) return "";
+
+        //    StringBuilder sb = new StringBuilder();
+        //    foreach (string str in parameters)
+        //    {
+        //        if (sb.Length > 0) sb.Append(divider);
+        //        sb.Append(str);
+        //    }
+        //    return sb.ToString();
+        //}
 
         private string TransformXML(string xml, string xslPath)
         {

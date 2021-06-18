@@ -95,7 +95,14 @@ namespace gView.Server.Controllers
 
                 await _mapServiceMananger.TaskQueue.AwaitRequest(interpreter.Request, context);
 
-                return Result(serviceRequest.ResponseAsString, serviceRequest.ResponseContentType);
+                var response = serviceRequest.Response;
+
+                if(response is byte[])
+                {
+                    return Result((byte[])response, serviceRequest.ResponseContentType);
+                }
+
+                return Result(response?.ToString() ?? String.Empty, serviceRequest.ResponseContentType);
             }
             catch (Exception ex)
             {
@@ -142,28 +149,15 @@ namespace gView.Server.Controllers
             //await interpreter.Request(context);
             await _mapServiceMananger.TaskQueue.AwaitRequest(interpreter.Request, context);
 
-            string ret = serviceRequest.ResponseAsString;
-            string contentType = col.Contains(".") ? "image/" + col.Split('.')[1] : "image/png";
-
-            if (ret.StartsWith("image:"))
+            var imageData = serviceRequest.Response as byte[];
+            if (imageData != null)
             {
-                ret = ret.Substring(6, ret.Length - 6);
-                return Result(ret, contentType);
-            }
-            if (ret.StartsWith("{"))
-            {
-                try
+                if(serviceRequest.ResponseExpries.HasValue)
                 {
-                    var mapServerResponse = gView.Framework.system.MapServerResponse.FromString(ret);
-
-                    if (mapServerResponse.Expires != null)
-                    {
-                        base.AppendEtag((DateTime)mapServerResponse.Expires);
-                    }
-
-                    return Result(mapServerResponse.Data, contentType);
+                    base.AppendEtag(serviceRequest.ResponseExpries.Value);
                 }
-                catch { }
+
+                return Result(imageData, serviceRequest.ResponseContentType);
             }
 
             return null;
