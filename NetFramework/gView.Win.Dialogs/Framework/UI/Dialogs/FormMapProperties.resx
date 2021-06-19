@@ -370,7 +370,7 @@
     <value>Right</value>
   </data>
   <data name="panel2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>727, 0</value>
+    <value>704, 0</value>
   </data>
   <data name="panel2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 5, 4, 5</value>
@@ -397,13 +397,13 @@
     <value>Bottom</value>
   </data>
   <data name="panel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 877</value>
+    <value>0, 983</value>
   </data>
   <data name="panel1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 5, 4, 5</value>
   </data>
   <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>889, 60</value>
+    <value>866, 60</value>
   </data>
   <data name="panel1.TabIndex" type="System.Int32, mscorlib">
     <value>10</value>
@@ -866,7 +866,7 @@
     <value>4, 5, 4, 5</value>
   </data>
   <data name="tabMap.Size" type="System.Drawing.Size, System.Drawing">
-    <value>881, 844</value>
+    <value>858, 950</value>
   </data>
   <data name="tabMap.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -893,7 +893,7 @@
     <value>4, 5, 4, 5</value>
   </data>
   <data name="tabSR.Size" type="System.Drawing.Size, System.Drawing">
-    <value>881, 844</value>
+    <value>765, 950</value>
   </data>
   <data name="tabSR.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -923,7 +923,7 @@
     <value>4, 5, 4, 5</value>
   </data>
   <data name="panelDefaultLayerSR.Size" type="System.Drawing.Size, System.Drawing">
-    <value>881, 712</value>
+    <value>765, 818</value>
   </data>
   <data name="panelDefaultLayerSR.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -944,7 +944,7 @@
     <value>Bottom, Right</value>
   </data>
   <data name="btnDefaultLayerSRFromSpatialReference.Location" type="System.Drawing.Point, System.Drawing">
-    <value>519, 88</value>
+    <value>403, 88</value>
   </data>
   <data name="btnDefaultLayerSRFromSpatialReference.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 5, 4, 5</value>
@@ -1013,7 +1013,7 @@ to ensure all layers will be projected properly.
     <value>4, 5, 4, 5</value>
   </data>
   <data name="panel5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>881, 132</value>
+    <value>765, 132</value>
   </data>
   <data name="panel5.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1037,7 +1037,7 @@ to ensure all layers will be projected properly.
     <value>4, 5, 4, 5</value>
   </data>
   <data name="tabDefLayerSR.Size" type="System.Drawing.Size, System.Drawing">
-    <value>881, 844</value>
+    <value>765, 950</value>
   </data>
   <data name="tabDefLayerSR.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -1064,7 +1064,7 @@ to ensure all layers will be projected properly.
     <value>9, 37</value>
   </data>
   <data name="txtTitle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>858, 26</value>
+    <value>602, 26</value>
   </data>
   <data name="txtTitle.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -1115,13 +1115,13 @@ to ensure all layers will be projected properly.
     <value>Bottom, Left, Right</value>
   </data>
   <data name="txtCopyright.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 476</value>
+    <value>8, 461</value>
   </data>
   <data name="txtCopyright.Multiline" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="txtCopyright.Size" type="System.Drawing.Size, System.Drawing">
-    <value>863, 364</value>
+    <value>607, 364</value>
   </data>
   <data name="txtCopyright.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -1148,7 +1148,7 @@ to ensure all layers will be projected properly.
     <value>NoControl</value>
   </data>
   <data name="label10.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 453</value>
+    <value>10, 438</value>
   </data>
   <data name="label10.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 20</value>
@@ -1181,7 +1181,7 @@ to ensure all layers will be projected properly.
     <value>True</value>
   </data>
   <data name="txtDescription.Size" type="System.Drawing.Size, System.Drawing">
-    <value>863, 336</value>
+    <value>607, 321</value>
   </data>
   <data name="txtDescription.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -1229,7 +1229,7 @@ to ensure all layers will be projected properly.
     <value>4, 29</value>
   </data>
   <data name="tabDescription.Size" type="System.Drawing.Size, System.Drawing">
-    <value>881, 844</value>
+    <value>765, 950</value>
   </data>
   <data name="tabDescription.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -1295,7 +1295,7 @@ to ensure all layers will be projected properly.
     <value>62</value>
   </data>
   <data name="gridResources.Size" type="System.Drawing.Size, System.Drawing">
-    <value>865, 693</value>
+    <value>609, 678</value>
   </data>
   <data name="gridResources.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -1319,7 +1319,7 @@ to ensure all layers will be projected properly.
     <value>NoControl</value>
   </data>
   <data name="btnAddResources.Location" type="System.Drawing.Point, System.Drawing">
-    <value>519, 91</value>
+    <value>403, 91</value>
   </data>
   <data name="btnAddResources.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 5, 4, 5</value>
@@ -1385,7 +1385,7 @@ to ensure all layers will be projected properly.
     <value>4, 5, 4, 5</value>
   </data>
   <data name="panel6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>881, 135</value>
+    <value>765, 135</value>
   </data>
   <data name="panel6.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -1406,7 +1406,7 @@ to ensure all layers will be projected properly.
     <value>4, 29</value>
   </data>
   <data name="tabResources.Size" type="System.Drawing.Size, System.Drawing">
-    <value>881, 844</value>
+    <value>765, 950</value>
   </data>
   <data name="tabResources.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -1426,6 +1426,54 @@ to ensure all layers will be projected properly.
   <data name="&gt;&gt;tabResources.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
+  <data name="btnMapServiceMetadata.Location" type="System.Drawing.Point, System.Drawing">
+    <value>29, 35</value>
+  </data>
+  <data name="btnMapServiceMetadata.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 47</value>
+  </data>
+  <data name="btnMapServiceMetadata.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="btnMapServiceMetadata.Text" xml:space="preserve">
+    <value>Metadaten...</value>
+  </data>
+  <data name="&gt;&gt;btnMapServiceMetadata.Name" xml:space="preserve">
+    <value>btnMapServiceMetadata</value>
+  </data>
+  <data name="&gt;&gt;btnMapServiceMetadata.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btnMapServiceMetadata.Parent" xml:space="preserve">
+    <value>tabMapService</value>
+  </data>
+  <data name="&gt;&gt;btnMapServiceMetadata.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tabMapService.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 54</value>
+  </data>
+  <data name="tabMapService.Size" type="System.Drawing.Size, System.Drawing">
+    <value>765, 925</value>
+  </data>
+  <data name="tabMapService.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="tabMapService.Text" xml:space="preserve">
+    <value>MapService</value>
+  </data>
+  <data name="&gt;&gt;tabMapService.Name" xml:space="preserve">
+    <value>tabMapService</value>
+  </data>
+  <data name="&gt;&gt;tabMapService.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabMapService.Parent" xml:space="preserve">
+    <value>tabControl1</value>
+  </data>
+  <data name="&gt;&gt;tabMapService.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
   <data name="tabControl1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
@@ -1436,7 +1484,7 @@ to ensure all layers will be projected properly.
     <value>4, 5, 4, 5</value>
   </data>
   <data name="tabControl1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>889, 877</value>
+    <value>866, 983</value>
   </data>
   <data name="tabControl1.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
@@ -1460,7 +1508,7 @@ to ensure all layers will be projected properly.
     <value>9, 20</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>889, 937</value>
+    <value>866, 1043</value>
   </data>
   <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>6, 8, 6, 8</value>

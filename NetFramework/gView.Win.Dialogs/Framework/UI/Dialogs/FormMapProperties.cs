@@ -10,6 +10,9 @@ using gView.Framework.Geometry;
 using gView.Framework.Data;
 using gView.Framework.Symbology;
 using System.IO;
+using gView.Framework.IO;
+using gView.Framework.system;
+using System.Linq;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -296,9 +299,21 @@ namespace gView.Framework.UI.Dialogs
             }
         }
 
+
+
         #endregion
 
-        
+        async private void btnMapServiceMetadata_Click(object sender, EventArgs e)
+        {
+            XmlStream xmlStream = new XmlStream(String.Empty);
+            this._map.ReadMetadata(xmlStream);
+            
+            FormMetadata dlg = new FormMetadata(xmlStream, this._map);
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                await (this._map).WriteMetadata(await dlg.GetStream());
+            }
+        }
 
         private void btnDefaultLayerSRFromSpatialReference_Click(object sender, EventArgs e)
         {

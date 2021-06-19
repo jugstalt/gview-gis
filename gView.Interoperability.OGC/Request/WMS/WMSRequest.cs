@@ -1621,16 +1621,20 @@ namespace gView.Interoperability.OGC
     [gView.Framework.system.RegisterPlugIn("0F6317BC-38FD-41d3-8E1A-82AB1873C526")]
     public class WMS_Export_Metadata : IMetadataProvider, IPropertyPage, IEPSGMetadata
     {
-        private IServiceMap _map = null;
+        private IMap _map = null;
         private Metadata _metadata;
 
         #region IMetadataProvider Member
 
         public Task<bool> ApplyTo(object Object)
         {
-            if (Object is IServiceMap)
+            if (Object is IMap)
             {
-                _map = (IServiceMap)Object;
+                _map = (IMap)Object;
+                if(_metadata == null)
+                {
+                    _metadata = new Metadata(_map.Display?.SpatialReference?.Name);
+                }
                 return Task.FromResult(true);
             }
             return Task.FromResult(false);
@@ -1672,6 +1676,7 @@ namespace gView.Interoperability.OGC
         #endregion
 
         #region Classes
+
         internal class Metadata : IPersistable
         {
             private string _epsg;
@@ -1710,6 +1715,7 @@ namespace gView.Interoperability.OGC
                 foreach (string srs in WMSConfig.SRS.Split(';'))
                     _epsgCodes.Add(srs.ToUpper());
             }
+
             #region IPersistable Member
 
             public void Load(IPersistStream stream)

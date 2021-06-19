@@ -1016,15 +1016,19 @@ namespace gView.Interoperability.OGC
     public class WFS_Export_Metadata : IMetadataProvider, IPropertyPage, IEPSGMetadata
     {
         private Metadata _metadata = null;
-        private IServiceMap _map = null;
+        private IMap _map = null;
 
         #region IMetadataProvider Member
 
         public Task<bool> ApplyTo(object Object)
         {
-            if (Object is IServiceMap)
+            if (Object is IMap)
             {
-                _map = (IServiceMap)Object;
+                _map = (IMap)Object;
+                if (_metadata == null)
+                {
+                    _metadata = new Metadata(_map.Display?.SpatialReference?.Name);
+                }
                 return Task.FromResult(true);
             }
             return Task.FromResult(false);

@@ -72,9 +72,9 @@ namespace gView.Carto.Framework.Carto
             }
         }
 
-        public Task<List<IMetadataProvider>> GetProviders()
+        public Task<IEnumerable<IMetadataProvider>> GetMetadataProviders()
         {
-            return Task.FromResult(new List<IMetadataProvider>());
+            return Task.FromResult<IEnumerable<IMetadataProvider>>(new IMetadataProvider[0]);
         }
 
         public string Query_FieldPostfix
@@ -121,14 +121,19 @@ namespace gView.Carto.Framework.Carto
            
         }
 
-        async public Task RefreshClasses()
+        public Task UpdateMetadataProviders()
         {
-            
+            return Task.CompletedTask;
         }
 
-        async public Task WriteMetadata(IPersistStream stream)
+        public Task RefreshClasses()
         {
-           
+            return Task.CompletedTask;
+        }
+
+        public Task WriteMetadata(IPersistStream stream)
+        {
+            return Task.CompletedTask;
         }
 
         public Task<bool> LoadAsync(IPersistStream stream)

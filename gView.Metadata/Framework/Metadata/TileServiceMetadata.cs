@@ -8,6 +8,7 @@ using System.Reflection;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
 using System.Threading.Tasks;
+using gView.Framework.Carto;
 
 namespace gView.Framework.Metadata
 {
@@ -179,7 +180,8 @@ namespace gView.Framework.Metadata
             if (Object == null)
                 return Task.FromResult(false);
 
-            return Task.FromResult(Object.GetType().ToString() == "gView.Server.AppCode.ServiceMap");
+            return Task.FromResult(Object is IMap);
+            //return Task.FromResult(Object.GetType().ToString() == "gView.Server.AppCode.ServiceMap");
         }
 
         public string Name

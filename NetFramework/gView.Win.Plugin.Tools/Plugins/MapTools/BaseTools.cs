@@ -511,168 +511,169 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [RegisterPlugInAttribute("CC299CF6-2C88-45aa-BE75-9EE3D5DCC0A8")]
-    public class PublishMap : ITool, IMapContextMenuItem
-    {
-        private IMapDocument _doc = null;
+    // Use the WebUI
+    //[RegisterPlugInAttribute("CC299CF6-2C88-45aa-BE75-9EE3D5DCC0A8")]
+    //public class PublishMap : ITool, IMapContextMenuItem
+    //{
+    //    private IMapDocument _doc = null;
 
-        #region ITool Member
+    //    #region ITool Member
 
-        public string Name
-        {
-            get { return LocalizedResources.GetResString("Tools.PublishMap", "Publish Map..."); }
-        }
+    //    public string Name
+    //    {
+    //        get { return LocalizedResources.GetResString("Tools.PublishMap", "Publish Map..."); }
+    //    }
 
-        public bool Enabled
-        {
-            get
-            {
-                return _doc != null && _doc.FocusMap != null;
-            }
-        }
+    //    public bool Enabled
+    //    {
+    //        get
+    //        {
+    //            return _doc != null && _doc.FocusMap != null;
+    //        }
+    //    }
 
-        public string ToolTip
-        {
-            get { return String.Empty; }
-        }
+    //    public string ToolTip
+    //    {
+    //        get { return String.Empty; }
+    //    }
 
-        public ToolType toolType
-        {
-            get { return ToolType.command; }
-        }
+    //    public ToolType toolType
+    //    {
+    //        get { return ToolType.command; }
+    //    }
 
-        public object Image
-        {
-            get { return gView.Win.Plugin.Tools.Properties.Resources.publish; }
-        }
+    //    public object Image
+    //    {
+    //        get { return gView.Win.Plugin.Tools.Properties.Resources.publish; }
+    //    }
 
-        public void OnCreate(object hook)
-        {
-            if (hook is IMapDocument)
-            {
-                _doc = (IMapDocument)hook;
-            }
-        }
+    //    public void OnCreate(object hook)
+    //    {
+    //        if (hook is IMapDocument)
+    //        {
+    //            _doc = (IMapDocument)hook;
+    //        }
+    //    }
 
-        private FormPublishMap _formPublishMap = null;
-        public Task<bool> OnEvent(object mapEvent)
-        {
-            if (_doc == null || _doc.FocusMap == null)
-            {
-                return Task.FromResult(true);
-            }
+    //    private FormPublishMap _formPublishMap = null;
+    //    public Task<bool> OnEvent(object mapEvent)
+    //    {
+    //        if (_doc == null || _doc.FocusMap == null)
+    //        {
+    //            return Task.FromResult(true);
+    //        }
 
-            IMap map = _doc.FocusMap;
-            if (mapEvent is MapEvent && ((MapEvent)mapEvent).Map != null)
-            {
-                map = ((MapEvent)mapEvent).Map;
-            }
+    //        IMap map = _doc.FocusMap;
+    //        if (mapEvent is MapEvent && ((MapEvent)mapEvent).Map != null)
+    //        {
+    //            map = ((MapEvent)mapEvent).Map;
+    //        }
 
-            FormPublishMap dlg = _formPublishMap ?? (_formPublishMap = new FormPublishMap());  // reuse it => keep values
-            dlg.ServiceName = map.Name;
-            if (dlg.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    if (_doc.Application is IGUIApplication)
-                    {
-                        ((IGUIApplication)_doc.Application).SetCursor(Cursors.WaitCursor);
-                    }
+    //        FormPublishMap dlg = _formPublishMap ?? (_formPublishMap = new FormPublishMap());  // reuse it => keep values
+    //        dlg.ServiceName = map.Name;
+    //        if (dlg.ShowDialog() == DialogResult.OK)
+    //        {
+    //            try
+    //            {
+    //                if (_doc.Application is IGUIApplication)
+    //                {
+    //                    ((IGUIApplication)_doc.Application).SetCursor(Cursors.WaitCursor);
+    //                }
 
-                    XmlStream stream;
+    //                XmlStream stream;
 
-                    if (dlg.Version == FormPublishMap.ServerVersion.gViewServer5)
-                    {
-                        var mapDocument = new MapDocument(_doc.Application as IMapApplication);
-                        mapDocument.AddMap(map);
+    //                if (dlg.Version == FormPublishMap.ServerVersion.gViewServer5)
+    //                {
+    //                    var mapDocument = new MapDocument(_doc.Application as IMapApplication);
+    //                    mapDocument.AddMap(map);
 
-                        stream = new XmlStream("root");
-                        stream.Save("MapDocument", mapDocument);
+    //                    stream = new XmlStream("root");
+    //                    stream.Save("MapDocument", mapDocument);
 
-                        stream.ReduceDocument("//MapDocument");
-                    }
-                    else
-                    {
-                        stream = new XmlStream("MapDocument");
-                        stream.Save("IMap", map);
+    //                    stream.ReduceDocument("//MapDocument");
+    //                }
+    //                else
+    //                {
+    //                    stream = new XmlStream("MapDocument");
+    //                    stream.Save("IMap", map);
 
-                        stream.ReduceDocument("//IMap");
-                    }
+    //                    stream.ReduceDocument("//IMap");
+    //                }
 
-                    StringBuilder sb = new StringBuilder();
-                    StringWriter sw = new StringWriter(sb);
-                    stream.WriteStream(sw);
+    //                StringBuilder sb = new StringBuilder();
+    //                StringWriter sw = new StringWriter(sb);
+    //                stream.WriteStream(sw);
 
-                    //gView.MapServer.Connector.MapServerInstanceTypeService proxy = new gView.MapServer.Connector.MapServerInstanceTypeService(
-                    //    dlg.Server + ":" + dlg.Port.ToString());
+    //                //gView.MapServer.Connector.MapServerInstanceTypeService proxy = new gView.MapServer.Connector.MapServerInstanceTypeService(
+    //                //    dlg.Server + ":" + dlg.Port.ToString());
 
-                    string serverUrl = Server.Connector.ServerConnection.ServerUrl(dlg.Server, dlg.Port);
-                    Server.Connector.ServerConnection service = new Server.Connector.ServerConnection(serverUrl);
-                    if (!service.AddMap(dlg.ServiceName, sb.ToString(), dlg.Username, dlg.Password))
-                    {
-                        throw new Exception("Unable to add service..." + Environment.NewLine + service.LastErrorMessage);
-                    }
+    //                string serverUrl = Server.Connector.ServerConnection.ServerUrl(dlg.Server, dlg.Port);
+    //                Server.Connector.ServerConnection service = new Server.Connector.ServerConnection(serverUrl);
+    //                if (!service.AddMap(dlg.ServiceName, sb.ToString(), dlg.Username, dlg.Password))
+    //                {
+    //                    throw new Exception("Unable to add service..." + Environment.NewLine + service.LastErrorMessage);
+    //                }
 
-                    if (_doc.Application is IGUIApplication)
-                    {
-                        ((IGUIApplication)_doc.Application).SetCursor(Cursors.Default);
-                    }
+    //                if (_doc.Application is IGUIApplication)
+    //                {
+    //                    ((IGUIApplication)_doc.Application).SetCursor(Cursors.Default);
+    //                }
 
-                    MessageBox.Show("Service successfully add to server instance!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                catch (Exception ex)
-                {
-                    if (_doc.Application is IGUIApplication)
-                    {
-                        ((IGUIApplication)_doc.Application).SetCursor(Cursors.Default);
-                    }
+    //                MessageBox.Show("Service successfully add to server instance!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+    //            }
+    //            catch (Exception ex)
+    //            {
+    //                if (_doc.Application is IGUIApplication)
+    //                {
+    //                    ((IGUIApplication)_doc.Application).SetCursor(Cursors.Default);
+    //                }
 
-                    FormToolException.Show("Publish Map", ex.Message);
-                }
-            }
+    //                FormToolException.Show("Publish Map", ex.Message);
+    //            }
+    //        }
 
-            return Task.FromResult(true);
-        }
+    //        return Task.FromResult(true);
+    //    }
 
-        #endregion
+    //    #endregion
 
-        #region IContextMenuTool Member
+    //    #region IContextMenuTool Member
 
-        public bool Enable(object element)
-        {
-            return element is IMap && ((IMap)element).MapElements != null &&
-                ((IMap)element).MapElements.Count > 0;
-        }
+    //    public bool Enable(object element)
+    //    {
+    //        return element is IMap && ((IMap)element).MapElements != null &&
+    //            ((IMap)element).MapElements.Count > 0;
+    //    }
 
-        public bool Visible(object element)
-        {
-            return true;
-        }
+    //    public bool Visible(object element)
+    //    {
+    //        return true;
+    //    }
 
-        async public Task<bool> OnEvent(object element, object parent)
-        {
-            if (!(element is IMap))
-            {
-                return true;
-            }
+    //    async public Task<bool> OnEvent(object element, object parent)
+    //    {
+    //        if (!(element is IMap))
+    //        {
+    //            return true;
+    //        }
 
-            MapEvent mapEvent = new MapEvent(element as IMap);
-            await this.OnEvent(mapEvent);
+    //        MapEvent mapEvent = new MapEvent(element as IMap);
+    //        await this.OnEvent(mapEvent);
 
-            return true;
-        }
+    //        return true;
+    //    }
 
-        #endregion
+    //    #endregion
 
-        #region IOrder Member
+    //    #region IOrder Member
 
-        public int SortOrder
-        {
-            get { return 81; }
-        }
+    //    public int SortOrder
+    //    {
+    //        get { return 81; }
+    //    }
 
-        #endregion
-    }
+    //    #endregion
+    //}
 
     [RegisterPlugInAttribute("6351BCBE-809A-43cb-81AA-6414ED3FA459")]
     public class ZoomInStatic : gView.Framework.UI.ITool

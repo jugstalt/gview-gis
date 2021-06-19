@@ -374,6 +374,12 @@ namespace gView.Server.Services.MapServer
                     fi.Delete();
                 }
 
+                fi = new FileInfo(_mapServerService.Options.ServicesPath + "/" + mapName + ".meta");
+                if (fi.Exists)
+                {
+                    fi.Delete();
+                }
+
                 return true;
             }
             catch (Exception ex)
@@ -426,15 +432,16 @@ namespace gView.Server.Services.MapServer
 
                 if (map is Metadata)
                 {
-                    await map.SetProviders(await sMap.GetProviders());
+                    await map.SetMetadataProviders(await sMap.GetMetadataProviders(), map, true);
+                    await map.UpdateMetadataProviders();
                 }
 
                 // Overriding: no good idea -> problem, if multiple instances do this -> killing the metadata file!!!
-                fi.Refresh();
-                if (!fi.Exists)
-                {
-                    xmlStream.WriteStream(fi.FullName);
-                }
+                //fi.Refresh();
+                //if (!fi.Exists)
+                //{
+                //    xmlStream.WriteStream(fi.FullName);
+                //}
             }
             catch (Exception ex)
             {

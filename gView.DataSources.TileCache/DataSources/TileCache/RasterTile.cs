@@ -360,19 +360,18 @@ namespace gView.DataSources.TileCache
             throw new NotImplementedException();
         }
 
-        public Task WriteMetadata(IPersistStream stream)
-        {
-            throw new NotImplementedException();
-        }
+        public Task UpdateMetadataProviders() => Task.CompletedTask;
+
+        public Task WriteMetadata(IPersistStream stream) => Task.CompletedTask;
 
         public Framework.IO.IMetadataProvider MetadataProvider(Guid guid)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
-        public Task<List<IMetadataProvider>> GetProviders()
+        public Task<IEnumerable<IMetadataProvider>> GetMetadataProviders()
         {
-            throw new NotImplementedException();
+            return Task.FromResult<IEnumerable<IMetadataProvider>>(new IMetadataProvider[0]);
         }
 
         #endregion

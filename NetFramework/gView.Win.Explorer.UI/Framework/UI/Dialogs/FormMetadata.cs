@@ -29,25 +29,32 @@ namespace gView.Framework.UI.Dialogs
 
         async private void FormMetadata_Load(object sender, EventArgs e)
         {
-            if (await _metadata.GetProviders() == null) return;
-
-            foreach (IMetadataProvider provider in await _metadata.GetProviders())
+            if (_metadataObject is IMetadata)
             {
-                if (provider == null) continue;
-                TabPage page = new TabPage(provider.Name);
+                await ((IMetadata)_metadataObject).UpdateMetadataProviders();
+                await _metadata.SetMetadataProviders(await ((IMetadata)_metadataObject).GetMetadataProviders(), _metadataObject, true);
+            }
 
-                if (provider is IPropertyPage)
+            if (await _metadata.GetMetadataProviders() != null)
+            {
+                foreach (IMetadataProvider provider in await _metadata.GetMetadataProviders())
                 {
-                    Control ctrl = ((IPropertyPage)provider).PropertyPage(null) as Control;
-                    if (ctrl != null)
+                    if (provider == null) continue;
+                    TabPage page = new TabPage(provider.Name);
+
+                    if (provider is IPropertyPage)
                     {
-                        page.Controls.Add(ctrl);
-                        ctrl.Dock = DockStyle.Fill;
+                        Control ctrl = ((IPropertyPage)provider).PropertyPage(null) as Control;
+                        if (ctrl != null)
+                        {
+                            page.Controls.Add(ctrl);
+                            ctrl.Dock = DockStyle.Fill;
+                        }
+                        if (ctrl is IMetadataObjectParameter)
+                            ((IMetadataObjectParameter)ctrl).MetadataObject = _metadataObject;
                     }
-                    if (ctrl is IMetadataObjectParameter)
-                        ((IMetadataObjectParameter)ctrl).MetadataObject = _metadataObject;
+                    tabControl1.TabPages.Add(page);
                 }
-                tabControl1.TabPages.Add(page);
             }
         }
 

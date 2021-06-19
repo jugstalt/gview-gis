@@ -6,22 +6,56 @@ using gView.Framework.Carto;
 using gView.Framework.system;
 using System.Xml;
 using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.Concurrent;
 
 namespace gView.Framework.Data
 {
     public class Metadata : IMetadata
     {
-        private List<IMetadataProvider> _providers = null;
+        private ConcurrentBag<IMetadataProvider> _providers = null;
 
         #region IMetadata Member
 
         virtual public void ReadMetadata(IPersistStream stream)
         {
-            _providers = new List<IMetadataProvider>();
+            var providers = new List<IMetadataProvider>();
             IMetadataProvider provider = null;
+
             while ((provider = (IMetadataProvider)stream.Load("IMetadataProvider", null, this)) != null)
             {
-                _providers.Add(provider);
+                providers.Add(provider);
+            }
+
+            // Append Exising Providers
+            if (_providers != null)
+            {
+                foreach (var existingProvider in _providers)
+                {
+                    if (providers.Where(p => p.GetType().Equals(existingProvider.GetType())).Count() == 0)
+                    {
+                        providers.Add(existingProvider);
+                    }
+                }
+            }
+
+            _providers = new ConcurrentBag<IMetadataProvider>(providers);
+        }
+
+        async public Task UpdateMetadataProviders()
+        {
+            _providers = _providers ?? new ConcurrentBag<IMetadataProvider>();
+
+            var metadataProviders = new PlugInManager().GetPluginInstances(typeof(IMetadataProvider)).ToArray();
+            foreach (var metadataProvider in metadataProviders.Where(p => p is IMetadataProvider))
+            {
+                if (await ((IMetadataProvider)metadataProvider).ApplyTo(this))
+                {
+                    if (_providers.Where(p => p.GetType().Equals(metadataProvider.GetType())).Count() == 0)
+                    {
+                        _providers.Add((IMetadataProvider)metadataProvider);
+                    }
+                }
             }
         }
 
@@ -43,7 +77,7 @@ namespace gView.Framework.Data
             }
             else
             {
-                _providers = new List<IMetadataProvider>();
+                _providers = new ConcurrentBag<IMetadataProvider>();
             }
 
             foreach (Type providerType in plugins.GetPlugins(typeof(IMetadataProvider)))
@@ -76,24 +110,48 @@ namespace gView.Framework.Data
             return null;
         }
 
-        public Task<List<IMetadataProvider>> GetProviders()
+        public Task<IEnumerable<IMetadataProvider>> GetMetadataProviders()
         {
+            if (_providers == null)
+                return Task.FromResult<IEnumerable<IMetadataProvider>>(new IMetadataProvider[0]);
 
-                if (_providers == null)
-                    return Task.FromResult(new List<IMetadataProvider>());
+            return Task.FromResult<IEnumerable<IMetadataProvider>>(new ConcurrentBag<IMetadataProvider>(_providers));
+        }
 
-                return Task.FromResult(ListOperations<IMetadataProvider>.Clone(_providers));
+        async public Task SetMetadataProviders(IEnumerable<IMetadataProvider> providers, object Object = null, bool append = false)
+        {
+            Object = Object ?? this;
+            if (append == true)
+            {
+                _providers = _providers ?? new ConcurrentBag<IMetadataProvider>();
+
+                if (providers != null)
+                {
+                    foreach (IMetadataProvider provider in providers)
+                    {
+                        if (provider != null && await provider.ApplyTo(Object) &&
+                            _providers.Where(p => p.GetType().Equals(provider.GetType())).Count() == 0)
+                        {
+                            _providers.Add(provider);
+                        }
+                    }
+                }
             }
+            else
+            {
+                _providers = new ConcurrentBag<IMetadataProvider>(); //ListOperations<IMetadataProvider>.Clone(value);
 
-        async public Task SetProviders(List<IMetadataProvider> value)
-        {
-            if (value == null)
-                _providers = null;
-            _providers = ListOperations<IMetadataProvider>.Clone(value);
-
-            foreach (IMetadataProvider provider in _providers)
-                if (provider != null)
-                    await provider.ApplyTo(this);
+                if (providers != null)
+                {
+                    foreach (IMetadataProvider provider in providers)
+                    {
+                        if (provider != null && await provider.ApplyTo(Object))
+                        {
+                            _providers.Add(provider);
+                        }
+                    }
+                }
+            }
         }
         
         #endregion

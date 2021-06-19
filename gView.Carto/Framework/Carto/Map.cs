@@ -2063,7 +2063,19 @@ namespace gView.Framework.Carto
                 }
             }
 
-            if(stream.Warnings!=null)
+            #region Metadata
+
+            #region Metadata
+
+            var persistMetadataProviders = new PersistMetadataProviders();
+            stream.Load("MetadataProviders", null, persistMetadataProviders); 
+            await this.SetMetadataProviders(persistMetadataProviders.Providers);
+
+            #endregion
+
+            #endregion
+
+            if (stream.Warnings!=null)
             {
                 foreach(var warning in stream.Warnings)
                 {
@@ -2186,6 +2198,14 @@ namespace gView.Framework.Carto
             {
                 stream.Save("MapResources", _resourceContainer);
             }
+
+            #region Metadata
+
+            //this.WriteMetadata(stream).Wait();
+            var metadataProviders = this.GetMetadataProviders().Result;
+            stream.Save("MetadataProviders", new PersistMetadataProviders(new List<IMetadataProvider>(metadataProviders)));
+
+            #endregion
         }
 
         private class PersistableClasses : IPersistable
@@ -2204,7 +2224,6 @@ namespace gView.Framework.Carto
                 while ((pClass = (PersistableClass)stream.Load("IClass", null, new PersistableClass(_layers))) != null)
                 {
                 }
-
             }
 
             public void Save(IPersistStream stream)
@@ -2266,6 +2285,42 @@ namespace gView.Framework.Carto
 
             #endregion
         }
+
+        private class PersistMetadataProviders : IPersistable
+        {
+            private readonly ICollection<IMetadataProvider> _providers;
+            public PersistMetadataProviders(ICollection<IMetadataProvider> providers = null)
+            {
+                _providers = providers ?? new List<IMetadataProvider>();
+            }
+
+            public ICollection<IMetadataProvider> Providers => _providers;
+
+            #region IPersistable
+
+            public void Load(IPersistStream stream)
+            {
+                IMetadataProvider provider;
+                while ((provider = (IMetadataProvider)stream.Load("IMetadataProvider")) != null)
+                {
+                    _providers.Add(provider);
+                }
+            }
+
+            public void Save(IPersistStream stream)
+            {
+                if (_providers != null)
+                {
+                    foreach (var provider in _providers)
+                    {
+                        stream.Save("IMetadataProvider", provider);
+                    }
+                }
+            }
+
+            #endregion
+        }
+
         #endregion
 
         public TOC DataViewTOC

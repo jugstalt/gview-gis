@@ -54,7 +54,7 @@ namespace gView.Server.AppCode
             serviceMap._drawScaleBar = false;
 
             // Metadata
-            await serviceMap.SetProviders(await original.GetProviders());
+            await serviceMap.SetMetadataProviders(await original.GetMetadataProviders());
             serviceMap._debug = false;
 
             serviceMap._layerDescriptions = original.LayerDescriptions;

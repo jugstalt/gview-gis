@@ -998,7 +998,7 @@ namespace gView.MapServer.Lib.UI
             return null;
         }
 
-        public Task<List<IMetadataProvider>> GetProviders()
+        public Task<List<IMetadataProvider>> GetMetadataProviders()
         {
             return Task.FromResult(new List<IMetadataProvider>());
         }

@@ -78,6 +78,8 @@ namespace gView.Framework.UI.Dialogs
             this.panel6 = new System.Windows.Forms.Panel();
             this.btnAddResources = new System.Windows.Forms.Button();
             this.label12 = new System.Windows.Forms.Label();
+            this.tabMapService = new System.Windows.Forms.TabPage();
+            this.btnMapServiceMetadata = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -94,6 +96,7 @@ namespace gView.Framework.UI.Dialogs
             this.tabResources.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gridResources)).BeginInit();
             this.panel6.SuspendLayout();
+            this.tabMapService.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -170,7 +173,9 @@ namespace gView.Framework.UI.Dialogs
             this.tabControl1.Controls.Add(this.tabDefLayerSR);
             this.tabControl1.Controls.Add(this.tabDescription);
             this.tabControl1.Controls.Add(this.tabResources);
+            this.tabControl1.Controls.Add(this.tabMapService);
             resources.ApplyResources(this.tabControl1, "tabControl1");
+            this.tabControl1.Multiline = true;
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             // 
@@ -440,6 +445,20 @@ namespace gView.Framework.UI.Dialogs
             resources.ApplyResources(this.label12, "label12");
             this.label12.Name = "label12";
             // 
+            // tabMapService
+            // 
+            this.tabMapService.Controls.Add(this.btnMapServiceMetadata);
+            resources.ApplyResources(this.tabMapService, "tabMapService");
+            this.tabMapService.Name = "tabMapService";
+            this.tabMapService.UseVisualStyleBackColor = true;
+            // 
+            // btnMapServiceMetadata
+            // 
+            resources.ApplyResources(this.btnMapServiceMetadata, "btnMapServiceMetadata");
+            this.btnMapServiceMetadata.Name = "btnMapServiceMetadata";
+            this.btnMapServiceMetadata.UseVisualStyleBackColor = true;
+            this.btnMapServiceMetadata.Click += new System.EventHandler(this.btnMapServiceMetadata_Click);
+            // 
             // FormMapProperties
             // 
             resources.ApplyResources(this, "$this");
@@ -469,6 +488,7 @@ namespace gView.Framework.UI.Dialogs
             this.tabResources.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.gridResources)).EndInit();
             this.panel6.ResumeLayout(false);
+            this.tabMapService.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -524,5 +544,7 @@ namespace gView.Framework.UI.Dialogs
         private System.Windows.Forms.DataGridViewTextBoxColumn colName;
         private System.Windows.Forms.DataGridViewTextBoxColumn colSize;
         private System.Windows.Forms.DataGridViewButtonColumn colRemove;
+        private System.Windows.Forms.TabPage tabMapService;
+        private System.Windows.Forms.Button btnMapServiceMetadata;
     }
 }

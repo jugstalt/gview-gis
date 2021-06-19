@@ -84,7 +84,8 @@ namespace gView.Framework.IO
         Task WriteMetadata(IPersistStream stream);
 
         IMetadataProvider MetadataProvider(Guid guid);
-        Task<List<IMetadataProvider>> GetProviders();
+        Task<IEnumerable<IMetadataProvider>> GetMetadataProviders();
+        Task UpdateMetadataProviders();
     }
 
     
