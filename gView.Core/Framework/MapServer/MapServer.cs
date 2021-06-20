@@ -17,6 +17,8 @@ namespace gView.MapServer
         Task<IServiceMap> GetServiceMapAsync(IMapService service);
         Task<IServiceMap> GetServiceMapAsync(IServiceRequestContext context);
 
+        Task<IMetadataProvider> GetMetadtaProviderAsync(IServiceRequestContext context, Guid metadataProviderId);
+
         IMapService GetMapService(string name, string folder);
 
         bool LoggingEnabled(loggingMethod methode);
@@ -254,6 +256,8 @@ namespace gView.MapServer
         ServiceRequest ServiceRequest { get; }
 
         Task<IServiceMap> CreateServiceMapInstance();
+
+        Task<IMetadataProvider> GetMetadtaProviderAsync(Guid metadataProviderId);
     }
 
     public class ServiceRequestContext : IServiceRequestContext
@@ -304,18 +308,14 @@ namespace gView.MapServer
 
         async public Task<IServiceMap> CreateServiceMapInstance()
         {
-            return (_mapServer != null) ? await _mapServer.GetServiceMapAsync(this) : null;
+            return await _mapServer?.GetServiceMapAsync(this);
+        }
+
+        async public Task<IMetadataProvider> GetMetadtaProviderAsync(Guid metadataProviderId)
+        {
+            return await _mapServer?.GetMetadtaProviderAsync(this, metadataProviderId);
         }
 
         #endregion
     }
-
-    /*
-    public interface IServiceRequestInterpreterMetadata
-    {
-        //string MetadataNodeName { get; }
-        void ReadMetadta(IServiceMap map, IPersistStream stream);
-        void WriteMetadata(IServiceMap map, IPersistStream stream);
-    }
-     * */
 }

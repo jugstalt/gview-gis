@@ -104,7 +104,7 @@ namespace gView.Interoperability.Server.TileService
                                 string format = ".png";
                                 if (args[6].ToLower().EndsWith(".jpg")) format = ".jpg";
 
-                                GetTile(context, serviceMap, metadata, epsg, scale, row, col, format, (args[0] == "tms" ? GridOrientation.LowerLeft : GridOrientation.UpperLeft), renderOnTheFly);
+                                await GetTile(context, serviceMap, metadata, epsg, scale, row, col, format, (args[0] == "tms" ? GridOrientation.LowerLeft : GridOrientation.UpperLeft), renderOnTheFly);
                             }
                             else if (args.Length == 10)  // tms/srs/service/01/000/000/001/000/000/001.png
                             {
@@ -115,7 +115,7 @@ namespace gView.Interoperability.Server.TileService
                                 string format = ".png";
                                 if (args[9].ToLower().EndsWith(".jpg")) format = ".jpg";
 
-                                GetTile(context, serviceMap, metadata, epsg, scale, row, col, format, (args[0] == "tms" ? GridOrientation.LowerLeft : GridOrientation.UpperLeft), renderOnTheFly);
+                                await GetTile(context, serviceMap, metadata, epsg, scale, row, col, format, (args[0] == "tms" ? GridOrientation.LowerLeft : GridOrientation.UpperLeft), renderOnTheFly);
                             }
                             break;
                         case "init":
@@ -144,7 +144,7 @@ namespace gView.Interoperability.Server.TileService
                                 string format = ".png";
                                 if (args[4].ToLower().EndsWith(".jpg")) format = ".jpg";
 
-                                GetTile(context, serviceMap, metadata, epsg, scale, row, col, format, GridOrientation.UpperLeft, renderOnTheFly);
+                                await GetTile(context, serviceMap, metadata, epsg, scale, row, col, format, GridOrientation.UpperLeft, renderOnTheFly);
                             }
                             else if (args.Length == 6)
                             {
@@ -159,7 +159,7 @@ namespace gView.Interoperability.Server.TileService
                                 string format = ".png";
                                 if (args[5].ToLower().EndsWith(".jpg")) format = ".jpg";
 
-                                GetTile(context, serviceMap, metadata, epsg, scale, row, col, format,
+                                await GetTile(context, serviceMap, metadata, epsg, scale, row, col, format,
                                     (args[1].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft), renderOnTheFly);
                             }
                             else if (args.Length >= 7)
@@ -180,13 +180,12 @@ namespace gView.Interoperability.Server.TileService
                                 {
                                     var boundingTiles = args.Length > 7 ? new BoundingTiles(args[7]) : null;
 
-                                    GetCompactTile(context, serviceMap, metadata, epsg, scale, row, col, format,
+                                    await GetCompactTile(context, serviceMap, metadata, epsg, scale, row, col, format,
                                         (args[2].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft), boundingTiles, renderOnTheFly);
                                 }
                                 else
                                 {
-                                    GetTile(context, serviceMap, metadata, epsg, scale, row, col, format,
-                                        (args[2].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft), renderOnTheFly);
+                                    await GetTile(context, serviceMap, metadata, epsg, scale, row, col, format, (args[2].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft), renderOnTheFly);
                                 }
                             }
                             else
@@ -217,7 +216,7 @@ namespace gView.Interoperability.Server.TileService
 
         #endregion
 
-        private void GetTile(IServiceRequestContext context, IServiceMap serviceMap, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation, bool renderOnTheFly)
+        async private Task GetTile(IServiceRequestContext context, IServiceMap serviceMap, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation, bool renderOnTheFly)
         {
             if (!metadata.EPSGCodes.Contains(epsg))
                 throw new ArgumentException("Wrong epsg argument");
@@ -264,49 +263,47 @@ namespace gView.Interoperability.Server.TileService
             }
 
             ISpatialReference sRef = SpatialReference.FromID("epsg:" + epsg);
-            using (IServiceMap map = serviceMap)
+
+            serviceMap.Display.SpatialReference = sRef;
+            serviceMap.Display.dpi = metadata.Dpi;
+
+            serviceMap.Display.iWidth = metadata.TileWidth;
+            serviceMap.Display.iHeight = metadata.TileHeight;
+
+            double res = (double)scale / (metadata.Dpi / 0.0254);
+            if (serviceMap.Display.MapUnits != GeoUnits.Meters)
             {
-                map.Display.SpatialReference = sRef;
-                map.Display.dpi = metadata.Dpi;
-
-                map.Display.iWidth = metadata.TileWidth;
-                map.Display.iHeight = metadata.TileHeight;
-
-                double res = (double)scale / (metadata.Dpi / 0.0254);
-                if (map.Display.MapUnits != GeoUnits.Meters)
-                {
-                    GeoUnitConverter converter = new GeoUnitConverter();
-                    res = converter.Convert(res, GeoUnits.Meters, map.Display.MapUnits);
-                }
-
-                var origin = orientation == GridOrientation.UpperLeft ? metadata.GetOriginUpperLeft(epsg) : metadata.GetOriginLowerLeft(epsg);
-
-                double H = metadata.TileHeight * res;
-                double y = (orientation == GridOrientation.UpperLeft ?
-                    origin.Y - H * (row + 1) :
-                    origin.Y + H * row);
-
-                double W = metadata.TileWidth * res;
-                //if (map.Display.MapUnits == GeoUnits.DecimalDegrees)
-                //{
-                //    double phi = (2 * y + H) / 2.0;
-                //    W /= Math.Cos(phi / 180.0 * Math.PI);
-                //}
-                double x = origin.X + W * col;
-
-                map.Display.ZoomTo(new Envelope(x, y, x + W, y + H));
-                map.Render();
-
-                bool maketrans = map.Display.MakeTransparent;
-                map.Display.MakeTransparent = true;
-                map.SaveImage(path, format == ".jpg" ? System.Drawing.Imaging.ImageFormat.Jpeg : System.Drawing.Imaging.ImageFormat.Png);
-                map.Display.MakeTransparent = maketrans;
-
-                context.ServiceRequest.Response = path;
+                GeoUnitConverter converter = new GeoUnitConverter();
+                res = converter.Convert(res, GeoUnits.Meters, serviceMap.Display.MapUnits);
             }
+
+            var origin = orientation == GridOrientation.UpperLeft ? metadata.GetOriginUpperLeft(epsg) : metadata.GetOriginLowerLeft(epsg);
+
+            double H = metadata.TileHeight * res;
+            double y = (orientation == GridOrientation.UpperLeft ?
+                origin.Y - H * (row + 1) :
+                origin.Y + H * row);
+
+            double W = metadata.TileWidth * res;
+            //if (map.Display.MapUnits == GeoUnits.DecimalDegrees)
+            //{
+            //    double phi = (2 * y + H) / 2.0;
+            //    W /= Math.Cos(phi / 180.0 * Math.PI);
+            //}
+            double x = origin.X + W * col;
+
+            serviceMap.Display.ZoomTo(new Envelope(x, y, x + W, y + H));
+            await serviceMap.Render();
+
+            bool maketrans = serviceMap.Display.MakeTransparent;
+            serviceMap.Display.MakeTransparent = true;
+            await serviceMap.SaveImage(path, format == ".jpg" ? System.Drawing.Imaging.ImageFormat.Jpeg : System.Drawing.Imaging.ImageFormat.Png);
+            serviceMap.Display.MakeTransparent = maketrans;
+
+            context.ServiceRequest.Response = path;
         }
 
-        private void GetCompactTile(IServiceRequestContext context, IServiceMap serviceMap, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation, BoundingTiles boundingTiles, bool renderOnTheFly)
+        async private Task GetCompactTile(IServiceRequestContext context, IServiceMap serviceMap, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation, BoundingTiles boundingTiles, bool renderOnTheFly)
         {
             if (!metadata.EPSGCodes.Contains(epsg))
                 throw new ArgumentException("Wrong epsg argument");
@@ -373,138 +370,137 @@ namespace gView.Interoperability.Server.TileService
             int startRow = CompactTileStart(row), startCol = CompactTileStart(col);
 
             ISpatialReference sRef = SpatialReference.FromID("epsg:" + epsg);
-            IServiceMap map = serviceMap;  // using??
+
+            serviceMap.Display.SpatialReference = sRef;
+            serviceMap.Display.dpi = metadata.Dpi;
+
+            double res = (double)scale / (metadata.Dpi / 0.0254);
+            if (serviceMap.Display.MapUnits != GeoUnits.Meters)
             {
-                map.Display.SpatialReference = sRef;
-                map.Display.dpi = metadata.Dpi;
+                GeoUnitConverter converter = new GeoUnitConverter();
+                res = converter.Convert(res, GeoUnits.Meters, serviceMap.Display.MapUnits);
+            }
 
-                double res = (double)scale / (metadata.Dpi / 0.0254);
-                if (map.Display.MapUnits != GeoUnits.Meters)
+
+            string bundleTempFilename = path + @"\" + compactTileName + "." + Guid.NewGuid().ToString("N").ToLower() + ".tilebundle";
+            string bundleIndexFilename = path + @"\" + compactTileName + ".tilebundlx";
+
+            File.WriteAllBytes(bundleTempFilename, new byte[0]);
+            int bundlePos = 0;
+
+            int tileMatrixWidth = 8, tileMatrixHeight = 8;
+
+            serviceMap.Display.iWidth = metadata.TileWidth * tileMatrixWidth;
+            serviceMap.Display.iHeight = metadata.TileHeight * tileMatrixHeight;
+
+            for (int r = 0; r < 128; r += 8)
+            {
+                File.WriteAllText(bundleCalcFilename, "calc...row" + r);
+                for (int c = 0; c < 128; c += 8)
                 {
-                    GeoUnitConverter converter = new GeoUnitConverter();
-                    res = converter.Convert(res, GeoUnits.Meters, map.Display.MapUnits);
-                }
+                    int currentRow = r + startRow, currentCol = c + startCol;
 
-
-                string bundleTempFilename = path + @"\" + compactTileName + "." + Guid.NewGuid().ToString("N").ToLower() + ".tilebundle";
-                string bundleIndexFilename = path + @"\" + compactTileName + ".tilebundlx";
-
-                File.WriteAllBytes(bundleTempFilename, new byte[0]);
-                int bundlePos = 0;
-
-                int tileMatrixWidth = 8, tileMatrixHeight = 8;
-
-                map.Display.iWidth = metadata.TileWidth * tileMatrixWidth;
-                map.Display.iHeight = metadata.TileHeight * tileMatrixHeight;
-
-                for (int r = 0; r < 128; r += 8)
-                {
-                    File.WriteAllText(bundleCalcFilename, "calc...row" + r);
-                    for (int c = 0; c < 128; c += 8)
-                    {
-                        int currentRow = r + startRow, currentCol = c + startCol;
-
-                        if (boundingTiles != null)
-                            if (!boundingTiles.Check(currentRow, currentCol, 8, 8))
-                                continue;
-
-                        double H = metadata.TileHeight * res;
-                        double y = origin.Y - H * (currentRow + tileMatrixHeight);
-
-                        double W = metadata.TileWidth * res;
-                        double x = origin.X + W * currentCol;
-
-                        map.Display.ZoomTo(new Envelope(x, y, x + W * tileMatrixWidth, y + H * tileMatrixHeight));
-                        if (format != ".jpg") // Make PNG Transparent
-                            map.Display.BackgroundColor = System.Drawing.Color.Transparent;
-
-                        map.ReleaseImage();  // Delete old Image !!! Because there is no map.SaveImage()!!!!
-                        map.Render();
-
-                        if (IsEmptyBitmap(map.MapImage, map.Display.BackgroundColor))
+                    if (boundingTiles != null)
+                        if (!boundingTiles.Check(currentRow, currentCol, 8, 8))
                             continue;
 
-                        // Temp
-                        //map.MapImage.Save(pathTemp + @"\matrix_" + (startRow + r) + "_" + (startCol + c) + ".png", ImageFormat.Png);
+                    double H = metadata.TileHeight * res;
+                    double y = origin.Y - H * (currentRow + tileMatrixHeight);
 
-                        for (int j = 0; j < tileMatrixHeight; j++)
+                    double W = metadata.TileWidth * res;
+                    double x = origin.X + W * currentCol;
+
+                    serviceMap.Display.ZoomTo(new Envelope(x, y, x + W * tileMatrixWidth, y + H * tileMatrixHeight));
+                    if (format != ".jpg") // Make PNG Transparent
+                        serviceMap.Display.BackgroundColor = System.Drawing.Color.Transparent;
+
+                    serviceMap.ReleaseImage();  // Delete old Image !!! Because there is no map.SaveImage()!!!!
+                    await serviceMap.Render();
+
+                    if (IsEmptyBitmap(serviceMap.MapImage, serviceMap.Display.BackgroundColor))
+                        continue;
+
+                    // Temp
+                    //map.MapImage.Save(pathTemp + @"\matrix_" + (startRow + r) + "_" + (startCol + c) + ".png", ImageFormat.Png);
+
+                    for (int j = 0; j < tileMatrixHeight; j++)
+                    {
+                        for (int i = 0; i < tileMatrixWidth; i++)
                         {
-                            for (int i = 0; i < tileMatrixWidth; i++)
+                            int tileRow = currentRow + j, tileCol = currentCol + i;
+
+                            if (boundingTiles != null)
+                                if (!boundingTiles.Check(tileRow, tileCol, 8, 8))
+                                    continue;
+
+                            using (Bitmap bm = new Bitmap(metadata.TileWidth, metadata.TileHeight, serviceMap.MapImage.PixelFormat))
+                            using (Graphics gr = Graphics.FromImage(bm))
                             {
-                                int tileRow = currentRow + j, tileCol = currentCol + i;
+                                gr.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                                gr.DrawImage(serviceMap.MapImage,
+                                    new RectangleF(0f, 0f, (float)bm.Width, (float)bm.Height),
+                                    new RectangleF(-0.5f + (float)(i * metadata.TileWidth), -0.5f + (float)(j * metadata.TileHeight), (float)metadata.TileWidth, (float)metadata.TileHeight), GraphicsUnit.Pixel);
 
-                                if (boundingTiles != null)
-                                    if (!boundingTiles.Check(tileRow, tileCol, 8, 8))
-                                        continue;
+                                //for (int py = 0, to_py = bm.Height; py < to_py; py++)
+                                //{
+                                //    for (int px = 0, to_px = bm.Width; px < to_px; px++)
+                                //    {
+                                //        var pCol = map.MapImage.GetPixel(px + i * metadata.TileHeight, py + j * metadata.TileHeight);
+                                //        bm.SetPixel(px, py, pCol);
+                                //    }
+                                //}
 
-                                using (Bitmap bm = new Bitmap(metadata.TileWidth, metadata.TileHeight, map.MapImage.PixelFormat))
-                                using (Graphics gr = Graphics.FromImage(bm))
+                                if (IsEmptyBitmap(bm, serviceMap.Display.BackgroundColor))
+                                    continue;
+
+                                // Temp
+                                //bm.Save(pathTemp + @"\tile_" + tileRow + "_" + tileCol + ".png", ImageFormat.Png);
+
+                                //try
+                                //{
+                                //    if (format != ".jpg" && map.Display.BackgroundColor.A > 0)   // Make PNG Transparent
+                                //        bm.MakeTransparent(map.Display.BackgroundColor);
+                                //}
+                                //catch { }
+
+                                MemoryStream ms = new MemoryStream();
+                                bm.Save(ms, format == ".jpg" ? System.Drawing.Imaging.ImageFormat.Jpeg : System.Drawing.Imaging.ImageFormat.Png);
+
+
+                                byte[] imageBytes = ms.ToArray();
+                                using (var stream = new FileStream(bundleTempFilename, FileMode.Append))
                                 {
-                                    gr.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-                                    gr.DrawImage(map.MapImage,
-                                        new RectangleF(0f, 0f, (float)bm.Width, (float)bm.Height),
-                                        new RectangleF(-0.5f + (float)(i * metadata.TileWidth), -0.5f + (float)(j * metadata.TileHeight), (float)metadata.TileWidth, (float)metadata.TileHeight), GraphicsUnit.Pixel);
-
-                                    //for (int py = 0, to_py = bm.Height; py < to_py; py++)
-                                    //{
-                                    //    for (int px = 0, to_px = bm.Width; px < to_px; px++)
-                                    //    {
-                                    //        var pCol = map.MapImage.GetPixel(px + i * metadata.TileHeight, py + j * metadata.TileHeight);
-                                    //        bm.SetPixel(px, py, pCol);
-                                    //    }
-                                    //}
-
-                                    if (IsEmptyBitmap(bm, map.Display.BackgroundColor))
-                                        continue;
-
-                                    // Temp
-                                    //bm.Save(pathTemp + @"\tile_" + tileRow + "_" + tileCol + ".png", ImageFormat.Png);
-
-                                    //try
-                                    //{
-                                    //    if (format != ".jpg" && map.Display.BackgroundColor.A > 0)   // Make PNG Transparent
-                                    //        bm.MakeTransparent(map.Display.BackgroundColor);
-                                    //}
-                                    //catch { }
-
-                                    MemoryStream ms = new MemoryStream();
-                                    bm.Save(ms, format == ".jpg" ? System.Drawing.Imaging.ImageFormat.Jpeg : System.Drawing.Imaging.ImageFormat.Png);
-
-
-                                    byte[] imageBytes = ms.ToArray();
-                                    using (var stream = new FileStream(bundleTempFilename, FileMode.Append))
-                                    {
-                                        stream.Write(imageBytes, 0, imageBytes.Length);
-                                    }
-
-                                    indexBuilder.SetValue(r + j, c + i, bundlePos, imageBytes.Length);
-
-                                    bundlePos += imageBytes.Length;
+                                    stream.Write(imageBytes, 0, imageBytes.Length);
                                 }
+
+                                indexBuilder.SetValue(r + j, c + i, bundlePos, imageBytes.Length);
+
+                                bundlePos += imageBytes.Length;
                             }
                         }
                     }
-
-                    map.ReleaseImage();
-                    GC.Collect();
                 }
 
-                try { File.Delete(bundleFilename); }
-                catch { }
-                if (bundlePos == 0)
-                {
-                    File.Delete(bundleTempFilename);
-                    File.WriteAllText(bundleDoneFilename, "");
-                }
-                else
-                {
-                    File.Move(bundleTempFilename, bundleFilename);
-                    indexBuilder.Save(bundleIndexFilename);
-                }
-                try { File.Delete(bundleCalcFilename); }
-                catch { }
-
+                serviceMap.ReleaseImage();
+                GC.Collect();
             }
+
+            try { File.Delete(bundleFilename); }
+            catch { }
+            if (bundlePos == 0)
+            {
+                File.Delete(bundleTempFilename);
+                File.WriteAllText(bundleDoneFilename, "");
+            }
+            else
+            {
+                File.Move(bundleTempFilename, bundleFilename);
+                indexBuilder.Save(bundleIndexFilename);
+            }
+            try { File.Delete(bundleCalcFilename); }
+            catch { }
+
+
             GC.Collect();
         }
 

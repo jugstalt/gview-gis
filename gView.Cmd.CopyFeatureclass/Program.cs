@@ -212,9 +212,9 @@ namespace gView.Cmd.CopyFeatureclass
                 }
             }
             else
-            {
-                Console.WriteLine("Component with GUID '" + dest_guid.ToString() + "' is not a feature dataset...");
+            { Console.WriteLine("Component with GUID '" + dest_guid.ToString() + "' is not a feature dataset...");
                 return 1;
+               
             }
 
             string replIDField = String.Empty;

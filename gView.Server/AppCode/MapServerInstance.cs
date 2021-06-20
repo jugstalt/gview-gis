@@ -2,6 +2,7 @@
 using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.MapServer;
@@ -179,6 +180,12 @@ namespace gView.Server.AppCode
                 await LogAsync(ToMapName(context?.ServiceRequest?.Service, context?.ServiceRequest?.Folder), "MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace);
                 throw new MapServerException("unknown error");
             }
+        }
+
+        async public Task<IMetadataProvider> GetMetadtaProviderAsync(IServiceRequestContext context, Guid metadataProviderId)
+        {
+            var map = await this.FindMap(ToMapName(context?.ServiceRequest?.Service, context?.ServiceRequest?.Folder), context);
+            return map?.MetadataProvider(metadataProviderId);
         }
 
         public bool LoggingEnabled(loggingMethod method)

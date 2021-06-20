@@ -242,6 +242,7 @@ namespace gView.MapServer.Lib.UI
             int step = _cacheFormat == "compact" ? 128 : 1;
 
             #region Count Tiles
+
             report.featureMax = 0;
             foreach (double scale in _preRenderScales)
             {
@@ -251,6 +252,7 @@ namespace gView.MapServer.Lib.UI
 
                 report.featureMax += Math.Max(1, (Math.Abs(col1 - col0) + 1) * (Math.Abs(row1 - row0) + 1) / step / step);
             }
+
             #endregion
 
             RenderTileThreadPool threadPool = new RenderTileThreadPool(connector, service, user, pwd, _maxParallelRequests);
@@ -363,6 +365,7 @@ namespace gView.MapServer.Lib.UI
         #endregion
 
         #region Helper Classes
+
         private class RenderTileThreadPool
         {
             ServerConnection _connector;
@@ -438,6 +441,7 @@ namespace gView.MapServer.Lib.UI
                 }
             }
         }
+
         #endregion
 
         #region Helper

@@ -4,8 +4,6 @@ using gView.Framework.Geometry;
 using gView.Framework.IO;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.SQLite
@@ -35,7 +33,10 @@ namespace gView.DataSources.Fdb.SQLite
 
             ds._dsname = dsname;
             string connStr = fdb.DatabaseConnectionString;
-            if (!connStr.Contains(";dsname=" + dsname)) connStr += ";dsname=" + dsname;
+            if (!connStr.Contains(";dsname=" + dsname))
+            {
+                connStr += ";dsname=" + dsname;
+            }
 
             await ds.SetConnectionString(connStr);
             await ds.Open();
@@ -61,7 +62,9 @@ namespace gView.DataSources.Fdb.SQLite
         async public Task<IEnvelope> Envelope()
         {
             if (_layers == null)
+            {
                 return null;
+            }
 
             bool first = true;
             IEnvelope env = null;
@@ -73,14 +76,23 @@ namespace gView.DataSources.Fdb.SQLite
                 {
                     envelope = ((IFeatureClass)layer.Class).Envelope;
                     if (envelope.Width > 1e10 && await ((IFeatureClass)layer.Class).CountFeatures() == 0)
+                    {
                         envelope = null;
+                    }
                 }
                 else if (layer.Class is IRasterClass)
                 {
-                    if (((IRasterClass)layer.Class).Polygon == null) continue;
+                    if (((IRasterClass)layer.Class).Polygon == null)
+                    {
+                        continue;
+                    }
+
                     envelope = ((IRasterClass)layer.Class).Polygon.Envelope;
                 }
-                if (gView.Framework.Geometry.Envelope.IsNull(envelope)) continue;
+                if (gView.Framework.Geometry.Envelope.IsNull(envelope))
+                {
+                    continue;
+                }
 
                 if (first)
                 {
@@ -98,16 +110,24 @@ namespace gView.DataSources.Fdb.SQLite
         async public Task<ISpatialReference> GetSpatialReference()
         {
 
-            if (_sRef != null) return _sRef;
+            if (_sRef != null)
+            {
+                return _sRef;
+            }
 
-            if (_fdb == null) return null;
+            if (_fdb == null)
+            {
+                return null;
+            }
+
             return _sRef = await _fdb.SpatialReference(_dsname);
         }
-        public void SetSpatialReference(ISpatialReference sRef) {
+        public void SetSpatialReference(ISpatialReference sRef)
+        {
             // Nicht in Databank übernehmen !!!
             _sRef = sRef;
         }
-        
+
 
         #endregion
 
@@ -125,14 +145,22 @@ namespace gView.DataSources.Fdb.SQLite
         {
             get
             {
-                if (_fdb == null) return String.Empty;
+                if (_fdb == null)
+                {
+                    return String.Empty;
+                }
+
                 string c = _fdb._conn.ConnectionString;
 
                 if (!c.Contains(";dsname=" + ConfigTextStream.ExtractValue(_connStr, "dsname")))
+                {
                     c += ";dsname=" + ConfigTextStream.ExtractValue(_connStr, "dsname") + ";";
+                }
 
                 while (c.IndexOf(";;") != -1)
+                {
                     c = c.Replace(";;", ";");
+                }
 
                 return c;
             }
@@ -141,20 +169,35 @@ namespace gView.DataSources.Fdb.SQLite
         {
             _connStr = value;
             if (value == null)
+            {
                 return false;
+            }
 
             while (_connStr.IndexOf(";;") != -1)
+            {
                 _connStr = _connStr.Replace(";;", ";");
+            }
 
             _dsname = ConfigTextStream.ExtractValue(value, "dsname");
             _addedLayers.Clear();
             foreach (string layername in ConfigTextStream.ExtractValue(value, "layers").Split('@'))
             {
-                if (layername == "") continue;
-                if (_addedLayers.IndexOf(layername) != -1) continue;
+                if (layername == "")
+                {
+                    continue;
+                }
+
+                if (_addedLayers.IndexOf(layername) != -1)
+                {
+                    continue;
+                }
+
                 _addedLayers.Add(layername);
             }
-            if (_fdb == null) _fdb = new SQLiteFDB();
+            if (_fdb == null)
+            {
+                _fdb = new SQLiteFDB();
+            }
 
             _fdb.DatasetRenamed += new gView.DataSources.Fdb.MSAccess.AccessFDB.DatasetRenamedEventHandler(SqlFDB_DatasetRenamed);
             _fdb.FeatureClassRenamed += new gView.DataSources.Fdb.MSAccess.AccessFDB.FeatureClassRenamedEventHandler(SqlFDB_FeatureClassRenamed);
@@ -163,7 +206,7 @@ namespace gView.DataSources.Fdb.SQLite
 
             return true;
         }
-        
+
 
         public DatasetState State
         {
@@ -189,11 +232,15 @@ namespace gView.DataSources.Fdb.SQLite
         async public Task<bool> Open()
         {
             if (_fdb == null)
+            {
                 return false;
+            }
 
             _dsID = await _fdb.DatasetID(_dsname);
             if (_dsID < 0)
+            {
                 return false;
+            }
 
             _sRef = await this.GetSpatialReference();
             _state = DatasetState.opened;
@@ -225,17 +272,23 @@ namespace gView.DataSources.Fdb.SQLite
                         if (element is IFeatureLayer)
                         {
                             if (_addedLayers.Contains(((IFeatureLayer)element).FeatureClass.Name))
+                            {
                                 list.Add(element);
+                            }
                         }
                         else if (element is IRasterLayer)
                         {
                             if (_addedLayers.Contains(((IRasterLayer)element).Title))
+                            {
                                 list.Add(element);
+                            }
                         }
                         else
                         {
                             if (_addedLayers.Contains(element.Title))
+                            {
                                 list.Add(element);
+                            }
                         }
                     }
                     _layers = list;
@@ -244,7 +297,9 @@ namespace gView.DataSources.Fdb.SQLite
             }
 
             if (_layers == null)
+            {
                 return new List<IDatasetElement>();
+            }
 
             return _layers;
         }
@@ -267,7 +322,9 @@ namespace gView.DataSources.Fdb.SQLite
         async public Task<IDatasetElement> Element(string title)
         {
             if (_fdb == null)
+            {
                 return null;
+            }
 
             IDatasetElement element = await _fdb.DatasetElement(this, title);
 
@@ -282,7 +339,9 @@ namespace gView.DataSources.Fdb.SQLite
         async public Task RefreshClasses()
         {
             if (_fdb != null)
+            {
                 await _fdb.RefreshClasses(this);
+            }
         }
 
         #endregion
@@ -300,15 +359,24 @@ namespace gView.DataSources.Fdb.SQLite
 
         async public Task AppendElement(string elementName)
         {
-            if (_layers == null) _layers = new List<IDatasetElement>();
+            if (_layers == null)
+            {
+                _layers = new List<IDatasetElement>();
+            }
 
             foreach (IDatasetElement e in _layers)
             {
-                if (e.Title == elementName) return;
+                if (e.Title == elementName)
+                {
+                    return;
+                }
             }
 
             IDatasetElement element = await _fdb.DatasetElement(this, elementName);
-            if (element != null) _layers.Add(element);
+            if (element != null)
+            {
+                _layers.Add(element);
+            }
         }
 
         #endregion
@@ -371,7 +439,10 @@ namespace gView.DataSources.Fdb.SQLite
 
         void SqlFDB_FeatureClassRenamed(string oldName, string newName)
         {
-            if (_layers == null) return;
+            if (_layers == null)
+            {
+                return;
+            }
 
             foreach (IDatasetElement element in _layers)
             {
@@ -385,7 +456,10 @@ namespace gView.DataSources.Fdb.SQLite
 
         async void SqlFDB_TableAltered(string table)
         {
-            if (_layers == null) return;
+            if (_layers == null)
+            {
+                return;
+            }
 
             foreach (IDatasetElement element in _layers)
             {
@@ -408,7 +482,9 @@ namespace gView.DataSources.Fdb.SQLite
         void SqlFDB_DatasetRenamed(string oldName, string newName)
         {
             if (_dsname == oldName)
+            {
                 _dsname = newName;
+            }
         }
     }
 }

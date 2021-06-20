@@ -2,6 +2,7 @@
 using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
+using gView.Framework.IO;
 using gView.Framework.Metadata;
 using gView.Framework.system;
 using gView.MapServer;
@@ -66,97 +67,100 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
         async public Task Request(IServiceRequestContext context)
         {
-            using (var serviceMap = await context.CreateServiceMapInstance())
+            if (context == null || context.ServiceRequest == null)
             {
-                if (context == null || context.ServiceRequest == null || serviceMap == null)
+                return;
+            }
+
+            if (_mapServer == null)
+            {
+                context.ServiceRequest.Response = "<FATALERROR>MapServer Object is not available!</FATALERROR>";
+                context.ServiceRequest.ResponseContentType = "text/xml";
+                return;
+            }
+
+            TileServiceMetadata metadata = await context.GetMetadtaProviderAsync(_metaprovider) as TileServiceMetadata;
+            if (metadata == null || metadata.Use == false)
+            {
+                context.ServiceRequest.Response = "<ERROR>Service is not used with Tile Service</ERROR>";
+                context.ServiceRequest.ResponseContentType = "text/xml";
+                return;
+            }
+
+            string request = context.ServiceRequest.Request;
+
+            //_mapServer.Log("WMTSRequest", loggingMethod.request_detail, request);
+
+            if (request.Contains("=")) // QueryString
+            {
+                QueryString queryString = new QueryString(request);
+                if (queryString.HasValue("service", "wmts") && queryString.HasValue("request", "getcapabilities") && queryString.HasValue("version", "1.0.0"))
                 {
+                    WmtsCapabilities100(context, metadata);
                     return;
                 }
-
-                if (_mapServer == null)
+                else if (queryString.HasValue("service", "wmts") && queryString.HasValue("request", "getmetadata") && queryString.HasValue("version", "1.0.0"))
                 {
-                    context.ServiceRequest.Response = "<FATALERROR>MapServer Object is not available!</FATALERROR>";
+                    WmtsMetadata100(context, metadata);
                     return;
                 }
+            }
 
-                TileServiceMetadata metadata = serviceMap.MetadataProvider(_metaprovider) as TileServiceMetadata;
-                if (metadata == null || metadata.Use == false)
+            string[] args = request.Split('/');
+
+            if (args.Length == 7)
+            {
+                string cacheFormat = args[0].ToLower();
+                if (args[1].ToLower() != "ul" &&
+                    args[1].ToLower() != "ll")
                 {
-                    context.ServiceRequest.Response = "<ERROR>Service is not used with Tile Service</ERROR>";
-                    return;
+                    throw new ArgumentException();
                 }
 
-                string service = context.ServiceRequest.Service;
-                string request = context.ServiceRequest.Request;
-
-                //_mapServer.Log("WMTSRequest", loggingMethod.request_detail, request);
-
-                if (request.Contains("=")) // QueryString
+                int epsg = int.Parse(args[2]);
+                string style = args[3].ToLower();
+                double scale = GetScale(metadata, args[4]); // double.Parse(args[4].Replace(",", "."), _nhi);
+                int row = int.Parse(args[5]);
+                int col = int.Parse(args[6].Split('.')[0]);
+                string format = ".png";
+                if (args[6].ToLower().EndsWith(".jpg") ||
+                    args[6].ToLower().EndsWith(".jpeg"))
                 {
-                    QueryString queryString = new QueryString(request);
-                    if (queryString.HasValue("service", "wmts") && queryString.HasValue("request", "getcapabilities") && queryString.HasValue("version", "1.0.0"))
+                    format = ".jpg";
+                }
+
+                byte[] imageData = null;
+                if (scale > 0)
+                {
+                    if (cacheFormat == "compact")
                     {
-                        WmtsCapabilities100(context, metadata);
-                        return;
+                        imageData = await GetCompactTile(context, metadata, epsg, scale, row, col, format, (args[1].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft));
+                    }
+                    else
+                    {
+                        imageData = await GetTile(context, metadata, epsg, scale, row, col, format, (args[1].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft));
+                    }
+
+                    if (style != "default")
+                    {
+                        //throw new NotImplementedException("Not in .Net Standard...");
+                        ImageProcessingFilters filter;
+                        if (Enum.TryParse<ImageProcessingFilters>(style, true, out filter))
+                        {
+                            imageData = ImageProcessing.ApplyFilter(imageData, filter, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
+                        }
                     }
                 }
 
-                string[] args = request.Split('/');
-
-                if (args.Length == 7)
-                {
-                    string cacheFormat = args[0].ToLower();
-                    if (args[1].ToLower() != "ul" &&
-                        args[1].ToLower() != "ll")
-                    {
-                        throw new ArgumentException();
-                    }
-
-                    int epsg = int.Parse(args[2]);
-                    string style = args[3].ToLower();
-                    double scale = GetScale(metadata, args[4]); // double.Parse(args[4].Replace(",", "."), _nhi);
-                    int row = int.Parse(args[5]);
-                    int col = int.Parse(args[6].Split('.')[0]);
-                    string format = ".png";
-                    if (args[6].ToLower().EndsWith(".jpg") ||
-                        args[6].ToLower().EndsWith(".jpeg"))
-                    {
-                        format = ".jpg";
-                    }
-
-                    byte[] imageData = null;
-                    if (scale > 0)
-                    {
-                        if (cacheFormat == "compact")
-                        {
-                            imageData = await GetCompactTile(context, metadata, epsg, scale, row, col, format, (args[1].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft));
-                        }
-                        else
-                        {
-                            imageData = await GetTile(context, metadata, epsg, scale, row, col, format, (args[1].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft));
-                        }
-
-                        if (style != "default")
-                        {
-                            //throw new NotImplementedException("Not in .Net Standard...");
-                            ImageProcessingFilters filter;
-                            if (Enum.TryParse<ImageProcessingFilters>(style, true, out filter))
-                            {
-                                imageData = ImageProcessing.ApplyFilter(imageData, filter, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
-                            }
-                        }
-                    }
-
-                    context.ServiceRequest.ResponseContentType = $"image/{ format.Substring(1) }";
-                    context.ServiceRequest.ResponseExpries = DateTime.UtcNow.AddDays(7);
-                    context.ServiceRequest.Response = imageData;
-                    //new MapServerResponse()
-                    //{
-                    //    Data = imageData ?? _emptyPic,
-                    //    ContentType = "image/jpg",
-                    //    Expires = DateTime.UtcNow.AddDays(7)
-                    //}.ToString();
-                }
+                context.ServiceRequest.ResponseContentType = $"image/{ format.Substring(1) }";
+                context.ServiceRequest.ResponseExpries = DateTime.UtcNow.AddDays(7);
+                context.ServiceRequest.Response = imageData;
+                //new MapServerResponse()
+                //{
+                //    Data = imageData ?? _emptyPic,
+                //    ContentType = "image/jpg",
+                //    Expires = DateTime.UtcNow.AddDays(7)
+                //}.ToString();
             }
             return;
         }
@@ -717,7 +721,17 @@ namespace gView.Interoperability.OGC.Request.WMTS
             xml = xml.Replace(@"<ows:DatasetDescriptionSummary xsi:type=""LayerType"">", "<Layer>");
             xml = xml.Replace(@"</ows:DatasetDescriptionSummary>", "</Layer>");
 
+            context.ServiceRequest.ResponseContentType = "text/xml";
             context.ServiceRequest.Response = xml;
+        }
+
+        private void WmtsMetadata100(IServiceRequestContext context, TileServiceMetadata metadata)
+        {
+            XmlStream stream = new XmlStream("WmtsMetadata");
+            stream.Save("TileServiceMetadata", metadata);
+
+            context.ServiceRequest.Response = stream.ToString();
+            context.ServiceRequest.ResponseContentType = "text/xml";
         }
 
         #region Helper

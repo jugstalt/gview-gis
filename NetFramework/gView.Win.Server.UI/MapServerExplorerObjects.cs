@@ -963,11 +963,11 @@ namespace gView.MapServer.Lib.UI
             ((XmlStream)stream).ReadStream(sr);
         }
 
-        async public Task WriteMetadata(IPersistStream stream)
+        public Task WriteMetadata(IPersistStream stream)
         {
             if (!(stream is XmlStream))
             {
-                return;
+                return Task.CompletedTask;
             }
 
             string server = ConfigTextStream.ExtractValue(_connectionString, "server");
@@ -991,6 +991,8 @@ namespace gView.MapServer.Lib.UI
             {
                 MessageBox.Show("Error...");
             }
+
+            return Task.CompletedTask;
         }
 
         public IMetadataProvider MetadataProvider(Guid guid)
@@ -998,9 +1000,14 @@ namespace gView.MapServer.Lib.UI
             return null;
         }
 
-        public Task<List<IMetadataProvider>> GetMetadataProviders()
+        public Task<IEnumerable<IMetadataProvider>> GetMetadataProviders()
         {
-            return Task.FromResult(new List<IMetadataProvider>());
+            return Task.FromResult<IEnumerable<IMetadataProvider>>(new List<IMetadataProvider>());
+        }
+
+        public Task UpdateMetadataProviders()
+        {
+            return Task.CompletedTask;
         }
 
         #endregion

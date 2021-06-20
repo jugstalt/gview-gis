@@ -511,7 +511,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    // Use the WebUI
+    // Use the WebUI!!
     //[RegisterPlugInAttribute("CC299CF6-2C88-45aa-BE75-9EE3D5DCC0A8")]
     //public class PublishMap : ITool, IMapContextMenuItem
     //{

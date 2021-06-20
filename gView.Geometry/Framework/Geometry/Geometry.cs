@@ -318,14 +318,14 @@ namespace gView.Framework.Geometry
 
         public bool Contains(IEnvelope envelope)
         {
-            if (envelope.minx < m_minx
-                || envelope.maxx > m_maxx)
+            if (envelope.minx < m_minx || 
+                envelope.maxx > m_maxx)
             {
                 return false;
             }
 
-            if (envelope.miny < m_miny
-                || envelope.maxy > m_maxy)
+            if (envelope.miny < m_miny || 
+                envelope.maxy > m_maxy)
             {
                 return false;
             }
@@ -581,6 +581,21 @@ namespace gView.Framework.Geometry
 
             return false;
         }
+
+        public static IEnvelope FromBBox(string bboxString)
+        {
+            string[] bbox = bboxString.Split(',');
+            if (bbox.Length != 4)
+                throw new Exception("Invalid BBOX parameter. Must consist of 4 elements of type double or integer");
+
+            double MinX = bbox[0].ToDouble();
+            double MinY = bbox[1].ToDouble();
+            double MaxX = bbox[2].ToDouble();
+            double MaxY = bbox[3].ToDouble();
+
+            return new Envelope(MinX, MinY, MaxX, MaxY);
+        }
+
         #endregion
 
         public void Set(IPoint ll, IPoint ur)

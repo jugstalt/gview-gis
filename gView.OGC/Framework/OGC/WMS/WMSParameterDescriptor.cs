@@ -8,6 +8,7 @@ using System.IO;
 using gView.Framework.Web;
 using System.Text;
 using System.Linq;
+using gView.Framework.system;
 
 namespace gView.Framework.OGC.WMS
 {
@@ -52,7 +53,6 @@ namespace gView.Framework.OGC.WMS
 
     public class WMSParameterDescriptor
     {
-        private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
         #region request parameters
 
         private int miWidth = 200;
@@ -281,7 +281,7 @@ namespace gView.Framework.OGC.WMS
                     if (request["SCALE"] == null)
                         WriteError("mandatory SCALE parameter is missing.");
                     else
-                        this.Scale = double.Parse(request["SCALE"].Replace(",", "."), _nhi);
+                        this.Scale = request["SCALE"].Replace(",", ".").ToDouble();
 
                     if (request["TILEROW"] == null)
                         WriteError("mandatory TILEROW parameter is missing.");
@@ -319,14 +319,14 @@ namespace gView.Framework.OGC.WMS
                     {
                         WriteError("mandatory BBOX parameter is missing.");
                     }
-                    string[] bbox = request["BBOX"].Split(",".ToCharArray());
+                    string[] bbox = request["BBOX"].Split(',');
                     if (bbox.Length != 4)
                         WriteError("Invalid BBOX parameter. Must consist of 4 elements of type double or integer");
 
-                    double MinX = double.Parse(bbox[0], _nhi);
-                    double MinY = double.Parse(bbox[1], _nhi);
-                    double MaxX = double.Parse(bbox[2], _nhi);
-                    double MaxY = double.Parse(bbox[3], _nhi);
+                    double MinX = bbox[0].ToDouble();
+                    double MinY = bbox[1].ToDouble();
+                    double MaxX = bbox[2].ToDouble();
+                    double MaxY = bbox[3].ToDouble();
                     Envelope box = new Envelope(MinX, MinY, MaxX, MaxY);
                     if (box.minx >= box.maxx ||
                         box.miny >= box.maxy)
@@ -365,7 +365,7 @@ namespace gView.Framework.OGC.WMS
                     }
                     if (request["DPI"] != null)
                     {
-                        this.dpi = double.Parse(request["DPI"], _nhi);
+                        this.dpi = request["DPI"].ToDouble();
                     }
                     if (this.Request == WMSRequestType.GetMap)
                     {

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "gView.Cmd.RenderTileCache": {
+      "commandName": "Project",
+      "commandLineArgs": "-render -server https://localhost:44331 -service test@basis"
+    }
+  }
+}

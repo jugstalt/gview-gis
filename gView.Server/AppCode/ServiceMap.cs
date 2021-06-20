@@ -840,6 +840,11 @@ namespace gView.Server.AppCode
             //return this;
         }
 
+        public Task<IMetadataProvider> GetMetadtaProviderAsync(Guid metadataProviderId)
+        {
+            return Task.FromResult(this.MetadataProvider(metadataProviderId));
+        }
+
         #endregion
 
         public override void Dispose()

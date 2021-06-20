@@ -65,7 +65,7 @@ namespace gView.Cmd.CompactTileBundle
 
                 for (int r = 0; r < 128; r++)
                 {
-                    DirectoryInfo rDir = new DirectoryInfo(targetDirectory.FullName + @"\" + (r + startRow));
+                    DirectoryInfo rDir = new DirectoryInfo(targetDirectory.FullName + "/" + (r + startRow));
 
                     for (int c = 0; c < 128; c++)
                     {
@@ -80,7 +80,7 @@ namespace gView.Cmd.CompactTileBundle
 
                             if (!rDir.Exists)
                                 rDir.Create();
-                            File.WriteAllBytes(rDir.FullName + @"\" + (c + startCol).ToString() + ".jpg", data);
+                            File.WriteAllBytes(rDir.FullName + @"/" + (c + startCol).ToString() + ".jpg", data);
                         }
                     }
                 }
