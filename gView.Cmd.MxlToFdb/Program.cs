@@ -123,85 +123,92 @@ namespace gView.Cmd.MxlToFdb
                                 continue;
                             }
 
-                            var sIndexDef = new gViewSpatialIndexDef(null, 5);
-
-                            var tree2 = await SpatialIndex2(
-                                targetDatabase,
-                                sourceFc,
-                                sIndexDef);
-                            tree2.Trim();
-
-                            #region Create Target Featureclass
+                            #region Create Target Featureclass (if not exists)
 
                             string targetFcName = dsElement.Class.Name;
                             if (targetFcName.Contains("."))
                                 targetFcName = targetFcName.Substring(targetFcName.LastIndexOf(".") + 1);
 
-                            var fcId = await targetDatabase.CreateFeatureClass(
-                                targetFeatureDataset.DatasetName,
-                                targetFcName,
-                                new GeometryDef()
-                                {
-                                    GeometryType = sourceFc.GeometryType,
-                                    HasM = sourceFc.HasM,
-                                    HasZ = sourceFc.HasZ,
-                                    SpatialReference = sourceFc.SpatialReference
-                                },
-                                sourceFc.Fields);
-                            if (fcId <= 0)
+                            var targetFc = (await targetFeatureDataset.Element(targetFcName))?.Class as IFeatureClass;
+
+                            if (targetFc != null)
                             {
-                                throw new Exception($"Can't create featureclass { targetFcName }");
+                                Console.Write("Already exists in target fdb");
                             }
-
-                            var targetFc = (await targetFeatureDataset.Element(targetFcName)).Class as IFeatureClass;
-                            if (targetFc == null)
+                            else
                             {
-                                throw new Exception($"Can't load target FeatureClass { targetFcName }");
-                            }
+                                var sIndexDef = new gViewSpatialIndexDef(null, 5);
 
-                            List<long> nids = new List<long>();
-                            foreach (BinaryTree2BuilderNode node in tree2.Nodes)
-                            {
-                                nids.Add(node.Number);
-                            }
-                            await ((AccessFDB)targetDatabase).ShrinkSpatialIndex(targetFcName, nids);
-                            await ((AccessFDB)targetDatabase).SetSpatialIndexBounds(targetFcName, "BinaryTree2", tree2.Bounds, tree2.SplitRatio, tree2.MaxPerNode, tree2.maxLevels);
-                            await ((AccessFDB)targetDatabase).SetFeatureclassExtent(targetFcName, tree2.Bounds);
+                                var tree2 = await SpatialIndex2(
+                                    targetDatabase,
+                                    sourceFc,
+                                    sIndexDef);
+                                tree2.Trim();
 
-                            #endregion
-
-                            var featureBag = new List<IFeature>();
-                            IFeature feature = null;
-                            int counter = 0;
-
-                            Console.WriteLine("Copy features:");
-
-                            foreach (BinaryTree2BuilderNode node in tree2.Nodes)
-                            {
-                                RowIDFilter filter = new RowIDFilter(sourceFc.IDFieldName);
-                                filter.IDs = node.OIDs;
-                                filter.SubFields = "*";
-
-                                using (var featureCursor = await sourceFc.GetFeatures(filter))
-                                {
-                                    while ((feature = await featureCursor.NextFeature()) != null)
+                                var fcId = await targetDatabase.CreateFeatureClass(
+                                    targetFeatureDataset.DatasetName,
+                                    targetFcName,
+                                    new GeometryDef()
                                     {
-                                        featureBag.Add(feature);
-                                        counter++;
+                                        GeometryType = sourceFc.GeometryType,
+                                        HasM = sourceFc.HasM,
+                                        HasZ = sourceFc.HasZ,
+                                        SpatialReference = sourceFc.SpatialReference
+                                    },
+                                    sourceFc.Fields);
+                                if (fcId <= 0)
+                                {
+                                    throw new Exception($"Can't create featureclass { targetFcName }");
+                                }
 
-                                        if (counter % 1000 == 0)
+                                targetFc = (await targetFeatureDataset.Element(targetFcName)).Class as IFeatureClass;
+                                if (targetFc == null)
+                                {
+                                    throw new Exception($"Can't load target FeatureClass { targetFcName }");
+                                }
+
+                                List<long> nids = new List<long>();
+                                foreach (BinaryTree2BuilderNode node in tree2.Nodes)
+                                {
+                                    nids.Add(node.Number);
+                                }
+                                await ((AccessFDB)targetDatabase).ShrinkSpatialIndex(targetFcName, nids);
+                                await ((AccessFDB)targetDatabase).SetSpatialIndexBounds(targetFcName, "BinaryTree2", tree2.Bounds, tree2.SplitRatio, tree2.MaxPerNode, tree2.maxLevels);
+                                await ((AccessFDB)targetDatabase).SetFeatureclassExtent(targetFcName, tree2.Bounds);
+
+                                #endregion
+
+                                var featureBag = new List<IFeature>();
+                                IFeature feature = null;
+                                int counter = 0;
+
+                                Console.WriteLine("Copy features:");
+
+                                foreach (BinaryTree2BuilderNode node in tree2.Nodes)
+                                {
+                                    RowIDFilter filter = new RowIDFilter(sourceFc.IDFieldName);
+                                    filter.IDs = node.OIDs;
+                                    filter.SubFields = "*";
+
+                                    using (var featureCursor = await sourceFc.GetFeatures(filter))
+                                    {
+                                        while ((feature = await featureCursor.NextFeature()) != null)
                                         {
-                                            await Store(targetDatabase, targetFc, featureBag, counter);
+                                            featureBag.Add(feature);
+                                            counter++;
+
+                                            if (counter % 1000 == 0)
+                                            {
+                                                await Store(targetDatabase, targetFc, featureBag, counter);
+                                            }
                                         }
                                     }
                                 }
+                                await Store(targetDatabase, targetFc, featureBag, counter);
                             }
-                            await Store(targetDatabase, targetFc, featureBag, counter);
 
                             dsElement.Title = targetFc.Name;
-                            ((DatasetElement)dsElement).Class = sourceFc;
-
-                            //var tocElement = map.TOC.GetTOCElementByLayerId(dsElement.ID);
+                            ((DatasetElement)dsElement).Class = targetFc;
                         }
 
                         map.SetDataset(datasetId, targetFeatureDataset);
