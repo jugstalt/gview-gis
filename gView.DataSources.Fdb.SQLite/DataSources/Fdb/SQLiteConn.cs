@@ -392,10 +392,10 @@ namespace gView.DataSources.Fdb.Sqlite
                     for (int i = 0; i < fields.Length; i++)
                     {
                         string field = fields[i];
-                        if (field == "KEY") field = "KEY_";
-                        if (field == "USER") field = "USER_";
-                        if (field == "TEXT") field = "TEXT_";
-                        if (field == "COUNT") field = "COUNT_";
+                        //if (field == "KEY") field = "KEY_";
+                        //if (field == "USER") field = "USER_";
+                        //if (field == "TEXT") field = "TEXT_";
+                        //if (field == "COUNT") field = "COUNT_";
 
                         sql += field + " " + dataTypes[i];
                         if (i < (fields.Length - 1)) sql += ",";

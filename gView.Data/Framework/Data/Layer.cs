@@ -94,6 +94,7 @@ namespace gView.Framework.Data
         public IClass Class
         {
             get { return _class; }
+            set { _class = value; }
         }
         public virtual int DatasetID
         {

@@ -1,5 +1,6 @@
 ﻿using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
+using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.Document;
 using gView.Framework.FDB;
@@ -81,28 +82,27 @@ namespace gView.Cmd.MxlToFdb
 
                 #endregion
 
-                var map = doc.Maps.FirstOrDefault();
+                var map = doc.Maps.FirstOrDefault() as Map;
 
                 var featureLayers = map.TOC.Layers.Where(l => l is IFeatureLayer)
                                                   .Select(l => (IFeatureLayer)l);
 
                 if (map.Datasets != null)
                 {
-                    int datasetID = 0;
-                    foreach (var dataset in map.Datasets)
+                    int datasetId = 0;
+                    foreach (var dataset in map.Datasets.ToArray())
                     {
                         Console.WriteLine();
                         Console.WriteLine($"Dataset: { dataset.DatasetName }");
                         Console.WriteLine($"         { dataset.GetType() }");
                         Console.WriteLine("-------------------------------------------------------");
 
-
-                        foreach (var dsElement in map.MapElements.Where(e => e.DatasetID == datasetID))
+                        foreach (var dsElement in map.MapElements.Where(e => e.DatasetID == datasetId))
                         {
                             if (dsElement?.Class == null)
                                 continue;
 
-                            var featureLayer = featureLayers.Where(l => l.DatasetID == datasetID && l.Class == dsElement.Class)
+                            var featureLayer = featureLayers.Where(l => l.DatasetID == datasetId && l.Class == dsElement.Class)
                                                             .FirstOrDefault();
 
                             if (featureLayer == null)
@@ -170,8 +170,6 @@ namespace gView.Cmd.MxlToFdb
 
                             #endregion
 
-                            
-
                             var featureBag = new List<IFeature>();
                             IFeature feature = null;
                             int counter = 0;
@@ -199,9 +197,23 @@ namespace gView.Cmd.MxlToFdb
                                 }
                             }
                             await Store(targetDatabase, targetFc, featureBag, counter);
+
+                            dsElement.Title = targetFc.Name;
+                            ((DatasetElement)dsElement).Class = sourceFc;
+
+                            //var tocElement = map.TOC.GetTOCElementByLayerId(dsElement.ID);
                         }
+
+                        map.SetDataset(datasetId, targetFeatureDataset);
+                        datasetId++;
                     }
                 }
+
+                map.Compress();
+
+                stream = new XmlStream("");
+                stream.Save("MapDocument", doc);
+                stream.WriteStream(inFile + "_fdb.mxl");
 
                 return 0;
             }
