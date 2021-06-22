@@ -85,6 +85,8 @@ namespace gView.Framework.OGC.DB
                 await featureCursor._conn.OpenAsync();
 
                 featureCursor._reader = await command.ExecuteReaderAsync();
+
+                return featureCursor;
             }
             catch (Exception ex)
             {
@@ -100,9 +102,9 @@ namespace gView.Framework.OGC.DB
                 }
 
                 fc.LastException = ex;
-            }
 
-            return featureCursor;
+                return null;
+            }
         }
 
         #region IFeatureCursor Member

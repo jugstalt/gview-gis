@@ -367,6 +367,8 @@ namespace gView.Framework.Geometry
 
         public int? Srs { get; set; }
 
+        public int VertexCount => 4;
+
         #endregion
 
         public IPolygon ToPolygon(int accuracy = 0)
@@ -781,6 +783,8 @@ namespace gView.Framework.Geometry
         }
 
         public int? Srs { get; set; }
+
+        public int VertexCount => 1;
 
         #endregion
 
@@ -1198,7 +1202,7 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                return m_points.Count;
+                return m_points==null ? 0 : m_points.Count;
             }
         }
 
@@ -1414,6 +1418,8 @@ namespace gView.Framework.Geometry
                 return geometryType.Multipoint;
             }
         }
+
+        public int VertexCount => base.PointCount;
 
         #endregion
 
@@ -1907,7 +1913,7 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                return _paths.Count;
+                return _paths == null ? 0 : _paths.Count;
             }
         }
 
@@ -1988,6 +1994,8 @@ namespace gView.Framework.Geometry
             }
         }
 
+
+        public int VertexCount => PathCount == 0 ? 0 : _paths.Sum(p => p.PointCount);
 
         /// <summary>
         /// For the internal use of the framework
@@ -2226,6 +2234,7 @@ namespace gView.Framework.Geometry
                 this.AddRing(new Ring(polygon[i]));
             }
         }
+
         #region IPolygon Member
 
         /// <summary>
@@ -2290,7 +2299,7 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                return _rings.Count;
+                return _rings == null ? 0 : _rings.Count;
             }
         }
 
@@ -2409,6 +2418,8 @@ namespace gView.Framework.Geometry
                 return env;
             }
         }
+
+        public int VertexCount => RingCount == 0 ? 0 : _rings.Sum(r => r.PointCount);
 
 
         /// <summary>
@@ -2913,11 +2924,11 @@ namespace gView.Framework.Geometry
     /// </summary>
     public sealed class AggregateGeometry : IAggregateGeometry, ITopologicalOperation
     {
-        private List<IGeometry> m_geoms;
+        private List<IGeometry> _childGeometries;
 
         public AggregateGeometry()
         {
-            m_geoms = new List<IGeometry>();
+            _childGeometries = new List<IGeometry>();
         }
 
         #region IAggregateGeometry Member
@@ -2933,7 +2944,7 @@ namespace gView.Framework.Geometry
                 return;
             }
 
-            m_geoms.Add(geometry);
+            _childGeometries.Add(geometry);
         }
 
         /// <summary>
@@ -2948,9 +2959,9 @@ namespace gView.Framework.Geometry
                 return;
             }
 
-            if (pos > m_geoms.Count)
+            if (pos > _childGeometries.Count)
             {
-                pos = m_geoms.Count;
+                pos = _childGeometries.Count;
             }
 
             if (pos < 0)
@@ -2958,7 +2969,7 @@ namespace gView.Framework.Geometry
                 pos = 0;
             }
 
-            m_geoms.Insert(pos, geometry);
+            _childGeometries.Insert(pos, geometry);
         }
 
         /// <summary>
@@ -2967,12 +2978,12 @@ namespace gView.Framework.Geometry
         /// <param name="pos"></param>
         public void RemoveGeometry(int pos)
         {
-            if (pos < 0 || pos >= m_geoms.Count)
+            if (pos < 0 || pos >= _childGeometries.Count)
             {
                 return;
             }
 
-            m_geoms.RemoveAt(pos);
+            _childGeometries.RemoveAt(pos);
         }
 
         /// <summary>
@@ -2982,7 +2993,7 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                return m_geoms.Count;
+                return _childGeometries==null ? 0 : _childGeometries.Count;
             }
         }
 
@@ -2993,12 +3004,12 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                if (geometryIndex < 0 || geometryIndex >= m_geoms.Count)
+                if (geometryIndex < 0 || geometryIndex >= _childGeometries.Count)
                 {
                     return null;
                 }
 
-                return m_geoms[geometryIndex];
+                return _childGeometries[geometryIndex];
             }
         }
 
@@ -3008,7 +3019,7 @@ namespace gView.Framework.Geometry
             {
                 List<IPoint> points = new List<IPoint>();
 
-                foreach (IGeometry geom in m_geoms)
+                foreach (IGeometry geom in _childGeometries)
                 {
                     if (geom is IPoint)
                     {
@@ -3058,7 +3069,7 @@ namespace gView.Framework.Geometry
             get
             {
                 List<IPolyline> polylines = new List<IPolyline>();
-                foreach (IGeometry geom in m_geoms)
+                foreach (IGeometry geom in _childGeometries)
                 {
                     if (geom is IPolyline)
                     {
@@ -3109,7 +3120,7 @@ namespace gView.Framework.Geometry
             get
             {
                 List<IPolygon> polygons = new List<IPolygon>();
-                foreach (IGeometry geom in m_geoms)
+                foreach (IGeometry geom in _childGeometries)
                 {
                     if (geom is IPolygon)
                     {
@@ -3175,6 +3186,7 @@ namespace gView.Framework.Geometry
             }
         }
 
+        public int VertexCount => GeometryCount == 0 ? 0 : _childGeometries.Sum(g => g.VertexCount);
 
         /// <summary>
         /// For the internal use of the framework
@@ -3182,8 +3194,8 @@ namespace gView.Framework.Geometry
         /// <param name="w"></param>
         public void Serialize(BinaryWriter w, IGeometryDef geomDef)
         {
-            w.Write(m_geoms.Count);
-            foreach (IGeometry geom in m_geoms)
+            w.Write(_childGeometries.Count);
+            foreach (IGeometry geom in _childGeometries)
             {
                 w.Write((System.Int32)geom.GeometryType);
                 geom.Serialize(w, geomDef);
@@ -3195,7 +3207,7 @@ namespace gView.Framework.Geometry
         /// <param name="w"></param>
         public void Deserialize(BinaryReader r, IGeometryDef geomDef)
         {
-            m_geoms.Clear();
+            _childGeometries.Clear();
 
             int geoms = r.ReadInt32();
             for (int i = 0; i < geoms; i++)
@@ -3225,7 +3237,7 @@ namespace gView.Framework.Geometry
                 if (geom != null)
                 {
                     geom.Deserialize(r, geomDef);
-                    m_geoms.Add(geom);
+                    _childGeometries.Add(geom);
                 }
                 else
                 {
@@ -3244,7 +3256,7 @@ namespace gView.Framework.Geometry
         {
 
             AggregateGeometry aggregate = new AggregateGeometry();
-            foreach (IGeometry geom in m_geoms)
+            foreach (IGeometry geom in _childGeometries)
             {
                 if (geom == null)
                 {
@@ -3386,7 +3398,7 @@ namespace gView.Framework.Geometry
 
         public IEnumerator<IGeometry> GetEnumerator()
         {
-            return m_geoms.GetEnumerator();
+            return _childGeometries.GetEnumerator();
         }
 
         #endregion
@@ -3395,7 +3407,7 @@ namespace gView.Framework.Geometry
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return m_geoms.GetEnumerator();
+            return _childGeometries.GetEnumerator();
         }
 
         #endregion

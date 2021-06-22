@@ -156,6 +156,8 @@ namespace gView.Framework.Geometry
 
         public int? Srs { get; set; }
 
+        public int VertexCount => _points==null ? 0 : _points.Count;
+
         #endregion
 
         #region ICloneable Member

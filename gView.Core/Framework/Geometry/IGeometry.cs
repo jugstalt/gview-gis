@@ -28,6 +28,8 @@ namespace gView.Framework.Geometry
         IEnvelope Envelope { get; }
         int? Srs { get; set; }
 
+        int VertexCount { get; }
+
         void Serialize(BinaryWriter w, IGeometryDef geomDef);
         void Deserialize(BinaryReader r, IGeometryDef geomDef);
 

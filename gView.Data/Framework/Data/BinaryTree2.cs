@@ -1,10 +1,9 @@
+using gView.Framework.Geometry;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using gView.Framework.Geometry;
-using gView.Framework.Data;
-using gView.Framework.FDB;
-using gView.Framework.system;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data
@@ -14,6 +13,7 @@ namespace gView.Framework.Data
         protected Envelope _bounds;
         protected int _maxLevels = 30;
         protected int _maxPerNode = 200;
+        protected int _maxVerticesPerNode = -1;
         protected double SPLIT_RATIO = 0.55;
 
         private long[] _levelNodeCount;
@@ -25,17 +25,18 @@ namespace gView.Framework.Data
             InitLevelNodeCount();
         }
 
-        public BinaryTree2(IEnvelope envelope, int maxLevels, int maxPerNode)
+        public BinaryTree2(IEnvelope envelope, int maxLevels, int maxPerNode, int maxVerticesPerNode = -1)
         {
             _bounds = new Envelope(envelope);
 
             _maxLevels = maxLevels;
             _maxPerNode = maxPerNode;
+            _maxVerticesPerNode = maxVerticesPerNode;
 
             InitLevelNodeCount();
         }
-        public BinaryTree2(IEnvelope envelope, int maxLevels, int maxPerNode, double split_ratio)
-            : this(envelope, maxLevels, maxPerNode)
+        public BinaryTree2(IEnvelope envelope, int maxLevels, int maxPerNode, double split_ratio, int maxVerticesPerNode = -1)
+            : this(envelope, maxLevels, maxPerNode, maxVerticesPerNode)
         {
             SPLIT_RATIO = split_ratio;
         }
@@ -94,7 +95,10 @@ namespace gView.Framework.Data
 
         protected int NodeLevel(long n, int l, long x)
         {
-            if (n == x) return l;
+            if (n == x)
+            {
+                return l;
+            }
 
             long c1, c2;
             ChildNodeNumbers(n, l, out c1, out c2);
@@ -109,14 +113,21 @@ namespace gView.Framework.Data
         {
             get
             {
-                if (nodeNumber > maxNodeNumber) return _bounds;
+                if (nodeNumber > maxNodeNumber)
+                {
+                    return _bounds;
+                }
+
                 return NodeEnvelope(0, 0, _bounds, nodeNumber);
             }
         }
 
         protected IEnvelope NodeEnvelope(long n, int l, IEnvelope envelope, long x)
         {
-            if (n == x) return envelope;
+            if (n == x)
+            {
+                return envelope;
+            }
 
             long c1, c2;
             ChildNodeNumbers(n, l, out c1, out c2);
@@ -225,23 +236,20 @@ namespace gView.Framework.Data
 
     internal class FeatureEnvelope
     {
-        private int _OID;
-        private IEnvelope _envelope;
+        private readonly int _OID;
+        private readonly IEnvelope _envelope;
+        private readonly int _vertexCount;
 
         public FeatureEnvelope(IFeature feature)
         {
             _OID = feature.OID;
             _envelope = feature.Shape.Envelope;
+            _vertexCount = feature.Shape.VertexCount;
         }
 
-        public int OID
-        {
-            get { return _OID; }
-        }
-        public IEnvelope Envelope
-        {
-            get { return _envelope; }
-        }
+        public int OID => _OID;
+        public IEnvelope Envelope => _envelope;
+        public int VertexCount => _vertexCount;
     }
 
     public class BinaryTree2BuilderNode
@@ -282,8 +290,16 @@ namespace gView.Framework.Data
 
         public int Compare(BinaryTree2BuilderNode x, BinaryTree2BuilderNode y)
         {
-            if (x.Number < y.Number) return -1;
-            if (x.Number > y.Number) return 1;
+            if (x.Number < y.Number)
+            {
+                return -1;
+            }
+
+            if (x.Number > y.Number)
+            {
+                return 1;
+            }
+
             return 0;
         }
 
@@ -295,8 +311,16 @@ namespace gView.Framework.Data
 
         public int Compare(BinaryTree2BuilderNode x, BinaryTree2BuilderNode y)
         {
-            if (x.Level < y.Level) return -1;
-            if (x.Level > y.Level) return 1;
+            if (x.Level < y.Level)
+            {
+                return -1;
+            }
+
+            if (x.Level > y.Level)
+            {
+                return 1;
+            }
+
             return 0;
         }
 
@@ -309,8 +333,16 @@ namespace gView.Framework.Data
 
         public int Compare(BinaryTree2BuilderNode x, BinaryTree2BuilderNode y)
         {
-            if (x.OIDs.Count < y.OIDs.Count) return -1;
-            if (x.OIDs.Count > y.OIDs.Count) return 1;
+            if (x.OIDs.Count < y.OIDs.Count)
+            {
+                return -1;
+            }
+
+            if (x.OIDs.Count > y.OIDs.Count)
+            {
+                return 1;
+            }
+
             return 0;
         }
 
@@ -325,19 +357,22 @@ namespace gView.Framework.Data
             : base(envelope)
         {
         }
-        public BinaryTree2Builder(IEnvelope envelope, int maxLevels, int maxPerNode)
-            : base(envelope, maxLevels, maxPerNode)
+        public BinaryTree2Builder(IEnvelope envelope, int maxLevels, int maxPerNode, int maxVerticesPerNode = -1)
+            : base(envelope, maxLevels, maxPerNode, maxVerticesPerNode)
         {
         }
-        public BinaryTree2Builder(IEnvelope envelope, int maxLevels, int maxPerNode, double split_ratio)
-            : base(envelope, maxLevels, maxPerNode, split_ratio)
+        public BinaryTree2Builder(IEnvelope envelope, int maxLevels, int maxPerNode, double split_ratio, int maxVerticesPerNode = -1)
+            : base(envelope, maxLevels, maxPerNode, split_ratio, maxVerticesPerNode)
         {
         }
 
 
         public bool AddFeature(IFeature feature)
         {
-            if (feature == null || feature.Shape == null || feature.Shape.Envelope == null) return false;
+            if (feature == null || feature.Shape == null || feature.Shape.Envelope == null)
+            {
+                return false;
+            }
 
             if (_nodes == null)
             {
@@ -353,7 +388,10 @@ namespace gView.Framework.Data
             //
             // Überprüfen, ob Key schon vorhanden ist
             //
-            if (!_nodes.TryGetValue(n, out list)) return false;
+            if (!_nodes.TryGetValue(n, out list))
+            {
+                return false;
+            }
 
             if (l < _maxLevels)
             {
@@ -383,17 +421,28 @@ namespace gView.Framework.Data
                 }
             }
             list.Add(featEnv);
-            if (list.Count > _maxPerNode && l < _maxLevels)
+            if (l < _maxLevels)
             {
-                SplitNode(n, l);
+                if (list.Count > _maxPerNode)
+                {
+                    SplitNode(n, l);
+                }
+                else if (_maxVerticesPerNode > 0 && list.Sum(e => e.VertexCount) > _maxVerticesPerNode)
+                {
+                    SplitNode(n, l);
+                }
             }
+            
             return true;
         }
 
         private void SplitNode(long n, int l)
         {
             List<FeatureEnvelope> list;
-            if (!_nodes.TryGetValue(n, out list)) return;
+            if (!_nodes.TryGetValue(n, out list))
+            {
+                return;
+            }
 
             //
             //  Kindknoten
@@ -438,10 +487,18 @@ namespace gView.Framework.Data
             get
             {
                 List<BinaryTree2BuilderNode> nodes = new List<BinaryTree2BuilderNode>();
-                if (_nodes == null) return nodes;
+                if (_nodes == null)
+                {
+                    return nodes;
+                }
+
                 foreach (long n in _nodes.Keys)
                 {
-                    if (_nodes[n].Count == 0) continue;
+                    if (_nodes[n].Count == 0)
+                    {
+                        continue;
+                    }
+
                     nodes.Add(new BinaryTree2BuilderNode(this, n, _nodes[n]));
                 }
 
@@ -465,7 +522,11 @@ namespace gView.Framework.Data
 
         virtual public void Trim()
         {
-            if (_nodes == null) return;
+            if (_nodes == null)
+            {
+                return;
+            }
+
             int targetMaxLevels = this.MaxLevel;
 
             Dictionary<long, List<FeatureEnvelope>> nodes = new Dictionary<long, List<FeatureEnvelope>>();
@@ -572,7 +633,10 @@ namespace gView.Framework.Data
             public bool SetTo(long number)
             {
                 int i = _nn.BinarySearch(number);
-                if (i < 0 || i < Index) return false;
+                if (i < 0 || i < Index)
+                {
+                    return false;
+                }
 
                 Index = i;
                 return true;
@@ -584,7 +648,9 @@ namespace gView.Framework.Data
             public bool Contains(long from, long to)
             {
                 if (from == to)
+                {
                     return Contains(from);
+                }
 
                 return _nn.BinarySearch(from) != _nn.BinarySearch(to);
                 //for (long i = from; i <= to; i++)
@@ -602,7 +668,11 @@ namespace gView.Framework.Data
         {
             //if (actIndex >= _nodeNumbers.Count) return _nodeNumbers.Count;
             //long number = _nodeNumbers[actIndex];
-            if (nn.Cancel) return;
+            if (nn.Cancel)
+            {
+                return;
+            }
+
             long number = nn.Value;
 
             while (number <= ToNodeNumber)
@@ -612,7 +682,9 @@ namespace gView.Framework.Data
                     if (checkDuplicates)
                     {
                         if (ids.BinarySearch(number) < 0)
+                        {
                             ids.Add(number);
+                        }
                     }
                     else
                     {
@@ -623,7 +695,11 @@ namespace gView.Framework.Data
                 //if (actIndex >= _nodeNumbers.Count) return _nodeNumbers.Count;
                 //number = _nodeNumbers[actIndex];
                 nn.Inc();
-                if (nn.Cancel) return;
+                if (nn.Cancel)
+                {
+                    return;
+                }
+
                 number = nn.Value;
             }
             //return actIndex;
@@ -634,9 +710,15 @@ namespace gView.Framework.Data
         {
             //history.Add(number);
             long reachable = ReachableNodes(number, level); //(long)(number + (long)Math.Pow(2, _maxLevels - level + 1) - 2);
-            if (nn.Cancel || nn.Value > reachable) return;
+            if (nn.Cancel || nn.Value > reachable)
+            {
+                return;
+            }
 
-            if (!rect.Intersects(NodeEnvelope)) return;
+            if (!rect.Intersects(NodeEnvelope))
+            {
+                return;
+            }
 
             //int nodeIndex = _nodeNumbers.BinarySearch(number);
             //if (nodeIndex > -1 && ids.BinarySearch(number) < 0) ids.Add(number);
@@ -645,7 +727,10 @@ namespace gView.Framework.Data
             {
                 if (checkDuplicates)
                 {
-                    if (ids.BinarySearch(number) < 0) ids.Add(number);
+                    if (ids.BinarySearch(number) < 0)
+                    {
+                        ids.Add(number);
+                    }
                 }
                 else
                 {
@@ -675,13 +760,20 @@ namespace gView.Framework.Data
         private void CollectPlus(long number, int level, IEnvelope rect, IEnvelope NodeEnvelope, NodeNumbers nn, List<long> ids)
         {
             long reachable = ReachableNodes(number, level); //(long)(number + (long)Math.Pow(2, _maxLevels - level + 1) - 2);
-            if (nn.Cancel || nn.Value > reachable) 
+            if (nn.Cancel || nn.Value > reachable)
+            {
                 return;  // ???
+            }
 
-            if (!rect.Intersects(NodeEnvelope)) return;
+            if (!rect.Intersects(NodeEnvelope))
+            {
+                return;
+            }
 
             if (!nn.Contains(number, reachable))
+            {
                 return;
+            }
 
             if (number > 0 && rect.Contains(NodeEnvelope))
             {
@@ -744,7 +836,9 @@ namespace gView.Framework.Data
             while (!nn.Cancel)
             {
                 if (nn.Value > reachable)
+                {
                     return;
+                }
 
                 int level = NodeLevel(nn.Value);
                 long r = ReachableNodes(nn.Value, level); //(long)(nn.Value + (long)Math.Pow(2, _maxLevels - level + 1) - 2);
@@ -761,7 +855,10 @@ namespace gView.Framework.Data
                     while (nn.Value <= r)
                     {
                         nn.Inc();
-                        if (nn.Cancel) return;
+                        if (nn.Cancel)
+                        {
+                            return;
+                        }
                     }
                 }
                 nn.Inc();
@@ -779,17 +876,30 @@ namespace gView.Framework.Data
 
         public bool SplitNode(long nodeNumber)
         {
-            if (!_nodeNumbers.Contains(nodeNumber)) return false;
+            if (!_nodeNumbers.Contains(nodeNumber))
+            {
+                return false;
+            }
 
             int level = NodeLevel(nodeNumber);
-            if (level >= _maxLevels) return false;
+            if (level >= _maxLevels)
+            {
+                return false;
+            }
 
             lock (lockThis)
             {
                 long c1, c2;
                 ChildNodeNumbers(nodeNumber, level, out c1, out c2);
-                if (!_nodeNumbers.Contains(c1)) _nodeNumbers.Add(c1);
-                if (!_nodeNumbers.Contains(c2)) _nodeNumbers.Add(c2);
+                if (!_nodeNumbers.Contains(c1))
+                {
+                    _nodeNumbers.Add(c1);
+                }
+
+                if (!_nodeNumbers.Contains(c2))
+                {
+                    _nodeNumbers.Add(c2);
+                }
 
                 _nodeNumbers.Sort();
             }
@@ -801,17 +911,26 @@ namespace gView.Framework.Data
             lock (lockThis)
             {
                 int index = _nodeNumbers.BinarySearch(number);
-                if (index >= 0) return;
+                if (index >= 0)
+                {
+                    return;
+                }
 
                 //_nodeNumbers.Add(number);
                 _nodeNumbers.Insert(~index, number);
-                if (TreeNodeAdded != null) TreeNodeAdded(this, number);
+                if (TreeNodeAdded != null)
+                {
+                    TreeNodeAdded(this, number);
+                }
             }
         }
 
         public long InsertSINode(IEnvelope geometryEnvelope)
         {
-            if (geometryEnvelope == null) return 0;
+            if (geometryEnvelope == null)
+            {
+                return 0;
+            }
 
             long nodeNumber = this.ContainerNodeNumber(geometryEnvelope);
             IEnvelope nodeEnvelope = this[nodeNumber];
@@ -844,14 +963,21 @@ namespace gView.Framework.Data
                 }
             }
 
-            if (found || nodeNumber == 0) this.AddNodeNumber(nodeNumber);
+            if (found || nodeNumber == 0)
+            {
+                this.AddNodeNumber(nodeNumber);
+            }
+
             return nodeNumber;
         }
         public long InsertSINodeFast(IEnvelope geometryEnvelope)
         {
             //return InsertSINode(geometryEnvelope);
 
-            if (geometryEnvelope == null) return 0;
+            if (geometryEnvelope == null)
+            {
+                return 0;
+            }
 
             IEnvelope nodeEnvelope = this.Bounds;
             long nodeNumber = 0;
@@ -885,7 +1011,10 @@ namespace gView.Framework.Data
 
         public long UpdadeSINode(IEnvelope geometryEnvelope, long nid)
         {
-            if (geometryEnvelope == null) return 0;
+            if (geometryEnvelope == null)
+            {
+                return 0;
+            }
 
             IEnvelope nodeEnvelope = this[nid];
             if (nodeEnvelope.Contains(geometryEnvelope))
@@ -899,7 +1028,10 @@ namespace gView.Framework.Data
 
         public long UpdadeSINodeFast(IEnvelope geometryEnvelope, long nid)
         {
-            if (geometryEnvelope == null) return 0;
+            if (geometryEnvelope == null)
+            {
+                return 0;
+            }
 
             IEnvelope nodeEnvelope = this[nid];
             if (nid != 0 &&
@@ -936,7 +1068,11 @@ namespace gView.Framework.Data
             //
             foreach (IEnvelope envelope in envelops)
             {
-                if (envelops == null) continue;
+                if (envelops == null)
+                {
+                    continue;
+                }
+
                 NodeNumbers nn = new NodeNumbers(_nodeNumbers);
                 Collect(0, 0, envelope, _bounds, nn, ids, true);
                 ids.Sort();
@@ -955,8 +1091,13 @@ namespace gView.Framework.Data
             }
 
             if (ids.Count == 0)
+            {
                 ids.Add(0);
-            else if (ids.IndexOf(0) == -1 && _nodeNumbers.BinarySearch(0) > -1) ids.Add(0);
+            }
+            else if (ids.IndexOf(0) == -1 && _nodeNumbers.BinarySearch(0) > -1)
+            {
+                ids.Add(0);
+            }
 
             return ids;
         }
@@ -970,8 +1111,13 @@ namespace gView.Framework.Data
             //history = new List<long>();
             Collect(0, 0, bounds, _bounds, nn, ids, false);
             if (ids.Count == 0)
+            {
                 ids.Add(0);
-            else if (ids.IndexOf(0) == -1 && _nodeNumbers.BinarySearch(0) > -1) ids.Add(0);
+            }
+            else if (ids.IndexOf(0) == -1 && _nodeNumbers.BinarySearch(0) > -1)
+            {
+                ids.Add(0);
+            }
 
             return ids;
         }
@@ -980,7 +1126,9 @@ namespace gView.Framework.Data
         {
             // envelope fully contains bounds -> all nodes -> return Zero!
             if (envelope == null || envelope.Contains(_bounds))
+            {
                 return null;
+            }
 
             List<long> ids = new List<long>();
             NodeNumbers nn = new NodeNumbers(_nodeNumbers);
@@ -989,8 +1137,10 @@ namespace gView.Framework.Data
             if (!envelope.Intersects(_bounds))
             {
                 if (nn.Contains(0))  // if features outside bounds exists -> add zero node
+                {
                     ids.Add(0);
-                
+                }
+
                 return ids;
             }
             
@@ -1052,7 +1202,10 @@ namespace gView.Framework.Data
         }
         public bool ProjectTo(ISpatialReference sRef)
         {
-            if (_bounds == null) return false;
+            if (_bounds == null)
+            {
+                return false;
+            }
 
             if (_sRef != null && !_sRef.Equals(sRef))
             {
@@ -1070,7 +1223,9 @@ namespace gView.Framework.Data
         {
             IFormatProvider nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
             if (_bounds == null)
+            {
                 return String.Empty;
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.Append(_bounds.minx.ToString(nhi) + ";");
@@ -1090,7 +1245,10 @@ namespace gView.Framework.Data
             {
                 string[] s = str.Split(';');
 
-                if (s.Length != 7) return null;
+                if (s.Length != 7)
+                {
+                    return null;
+                }
 
                 IFormatProvider nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
 

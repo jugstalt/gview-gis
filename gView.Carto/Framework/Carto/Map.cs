@@ -625,7 +625,48 @@ namespace gView.Framework.Carto
                 _toc.RemoveLayer(removeLayer);
             }
 
-            _layers = _layers.Where(l => l.Class != null).ToList();
+            var newLayers = new List<ILayer>();
+
+            foreach (ILayer layer in _layers)
+            {
+                if (layer is IGroupLayer)
+                {
+                    if (((GroupLayer)layer).ChildLayer != null && ((GroupLayer)layer).ChildLayer.Count > 0)
+                    {
+                        newLayers.Add(layer);
+                    }
+                }
+                else /*if (layer is IRasterCatalogLayer)*/
+                {
+                    if (layer.Class != null)
+                    {
+                        newLayers.Add(layer);
+                    }
+                }
+                //else if (layer is IRasterLayer)
+                //{
+                //    if (layer.Class != null)
+                //    {
+                //        newLayers.Add(layer);
+                //    }
+                //}
+                //else if (layer is IWebServiceLayer)
+                //{
+                //    if (layer.Class != null)
+                //    {
+                //        newLayers.Add(layer);
+                //    }
+                //}
+                //else if (layer is IFeatureLayer)
+                //{
+                //    if (layer.Class != null)
+                //    {
+                //        newLayers.Add(layer);
+                //    }
+                //}
+            }
+
+            _layers = newLayers; //_layers.Where(l => l.Class != null).ToList();
         }
 
         public void RemoveDataset(IDataset dataset)

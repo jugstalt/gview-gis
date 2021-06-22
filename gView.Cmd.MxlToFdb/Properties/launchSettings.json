@@ -2,7 +2,7 @@
   "profiles": {
     "gView.Cmd.MxlToFdb": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\temp\\GeoDaten\\basis.mxl -target-connectionstring \"Data Source=C:\\temp\\GeoDaten\\database1.fdb;dsname=ds1\" -target-guid sqlite"
+      "commandLineArgs": "E:\\gstaltjr\\temp\\gv_estag_basis_sdep.mxl -target-connectionstring \"Data Source=E:\\gstaltjr\\temp\\geodata\\basis.fdb;dsname=M34\" -target-guid sqlite"
     }
   }
 }

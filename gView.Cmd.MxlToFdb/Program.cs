@@ -23,7 +23,9 @@ namespace gView.Cmd.MxlToFdb
             try
             {
                 string inFile = args.FirstOrDefault();
+                string outFile = String.IsNullOrEmpty(inFile) ? String.Empty : inFile.Substring(0, inFile.LastIndexOf(".")) + "_fdb.mxl";
                 string targetConnectionString = String.Empty;
+                IEnumerable<string> dontCopyFeatues = null;
                 Guid targetGuid = new Guid();
 
                 for (int i = 1; i < args.Length - 1; i++)
@@ -50,6 +52,12 @@ namespace gView.Cmd.MxlToFdb
                                     targetGuid = new Guid(guid);
                                     break;
                             }
+                            break;
+                        case "-out-mxl":
+                            outFile = args[++i];
+                            break;
+                        case "-dont-copy-features-from":
+                            dontCopyFeatues = args[++i].Split(',').Select(n => n.Trim().ToLower());
                             break;
                     }
                 }
@@ -137,14 +145,6 @@ namespace gView.Cmd.MxlToFdb
                             }
                             else
                             {
-                                var sIndexDef = new gViewSpatialIndexDef(null, 5);
-
-                                var tree2 = await SpatialIndex2(
-                                    targetDatabase,
-                                    sourceFc,
-                                    sIndexDef);
-                                tree2.Trim();
-
                                 var fcId = await targetDatabase.CreateFeatureClass(
                                     targetFeatureDataset.DatasetName,
                                     targetFcName,
@@ -158,7 +158,7 @@ namespace gView.Cmd.MxlToFdb
                                     sourceFc.Fields);
                                 if (fcId <= 0)
                                 {
-                                    throw new Exception($"Can't create featureclass { targetFcName }");
+                                    throw new Exception($"Can't create featureclass { targetFcName }: { targetDatabase.LastErrorMessage }");
                                 }
 
                                 targetFc = (await targetFeatureDataset.Element(targetFcName)).Class as IFeatureClass;
@@ -167,44 +167,66 @@ namespace gView.Cmd.MxlToFdb
                                     throw new Exception($"Can't load target FeatureClass { targetFcName }");
                                 }
 
-                                List<long> nids = new List<long>();
-                                foreach (BinaryTree2BuilderNode node in tree2.Nodes)
+                                var copyFeatures = dontCopyFeatues == null ||
+                                    (!dontCopyFeatues.Contains(sourceFc.Name.ToLower()) && !dontCopyFeatues.Contains(targetFc.Name.ToLower()));
+
+                                if (copyFeatures)
                                 {
-                                    nids.Add(node.Number);
-                                }
-                                await ((AccessFDB)targetDatabase).ShrinkSpatialIndex(targetFcName, nids);
-                                await ((AccessFDB)targetDatabase).SetSpatialIndexBounds(targetFcName, "BinaryTree2", tree2.Bounds, tree2.SplitRatio, tree2.MaxPerNode, tree2.maxLevels);
-                                await ((AccessFDB)targetDatabase).SetFeatureclassExtent(targetFcName, tree2.Bounds);
+                                    var sIndexDef = new gViewSpatialIndexDef(null, 62);
 
-                                #endregion
+                                    var tree2 = await SpatialIndex2(
+                                        targetDatabase,
+                                        sourceFc,
+                                        sIndexDef);
+                                    tree2.Trim();
 
-                                var featureBag = new List<IFeature>();
-                                IFeature feature = null;
-                                int counter = 0;
-
-                                Console.WriteLine("Copy features:");
-
-                                foreach (BinaryTree2BuilderNode node in tree2.Nodes)
-                                {
-                                    RowIDFilter filter = new RowIDFilter(sourceFc.IDFieldName);
-                                    filter.IDs = node.OIDs;
-                                    filter.SubFields = "*";
-
-                                    using (var featureCursor = await sourceFc.GetFeatures(filter))
+                                    List<long> nids = new List<long>();
+                                    foreach (BinaryTree2BuilderNode node in tree2.Nodes)
                                     {
-                                        while ((feature = await featureCursor.NextFeature()) != null)
-                                        {
-                                            featureBag.Add(feature);
-                                            counter++;
+                                        nids.Add(node.Number);
+                                    }
+                                    await ((AccessFDB)targetDatabase).ShrinkSpatialIndex(targetFcName, nids);
+                                    await ((AccessFDB)targetDatabase).SetSpatialIndexBounds(targetFcName, "BinaryTree2", tree2.Bounds, tree2.SplitRatio, tree2.MaxPerNode, tree2.maxLevels);
+                                    await ((AccessFDB)targetDatabase).SetFeatureclassExtent(targetFcName, tree2.Bounds);
 
-                                            if (counter % 1000 == 0)
+                                    #endregion
+
+                                    var featureBag = new List<IFeature>();
+                                    IFeature feature = null;
+                                    int counter = 0;
+
+                                    Console.WriteLine("Copy features:");
+
+                                    foreach (BinaryTree2BuilderNode node in tree2.Nodes)
+                                    {
+                                        RowIDFilter filter = new RowIDFilter(sourceFc.IDFieldName);
+                                        filter.IDs = node.OIDs;
+                                        filter.SubFields = "*";
+
+                                        using (var featureCursor = await sourceFc.GetFeatures(filter))
+                                        {
+                                            if (featureCursor == null)
                                             {
-                                                await Store(targetDatabase, targetFc, featureBag, counter);
+                                                throw new Exception($"Can't query features from soure featureclass: { (sourceFc is IDebugging ? ((IDebugging)sourceFc).LastException?.Message : "") }");
+                                            }
+
+                                            while ((feature = await featureCursor.NextFeature()) != null)
+                                            {
+                                                feature.Fields.Add(new FieldValue("$FDB_NID", node.Number));
+                                                featureBag.Add(feature);
+                                                counter++;
+
+                                                if (counter % 1000 == 0)
+                                                {
+                                                    await Store(targetDatabase, targetFc, featureBag, counter);
+                                                }
                                             }
                                         }
                                     }
+                                    await Store(targetDatabase, targetFc, featureBag, counter);
+
+                                    await ((AccessFDB)targetDatabase).CalculateExtent(targetFcName);
                                 }
-                                await Store(targetDatabase, targetFc, featureBag, counter);
                             }
 
                             dsElement.Title = targetFc.Name;
@@ -220,7 +242,10 @@ namespace gView.Cmd.MxlToFdb
 
                 stream = new XmlStream("");
                 stream.Save("MapDocument", doc);
-                stream.WriteStream(inFile + "_fdb.mxl");
+
+                Console.WriteLine($"Write: { outFile }");
+                stream.WriteStream(outFile);
+                Console.WriteLine("succeeded...");
 
                 return 0;
             }
@@ -270,7 +295,8 @@ namespace gView.Cmd.MxlToFdb
                 new BinaryTree2Builder(bounds,
                                 ((def.Levels != 0) ? def.Levels : maxAllowedLevel),
                                 ((def.MaxPerNode != 0) ? def.MaxPerNode : 500),
-                                ((def.SplitRatio != 0.0) ? def.SplitRatio : 0.55)) :
+                                ((def.SplitRatio != 0.0) ? def.SplitRatio : 0.55),
+                                maxVerticesPerNode: 500 * 50) :
                 new BinaryTree2Builder2(def.SpatialIndexBounds, def.Levels, def.MaxPerNode, def.SplitRatio));
 
             if (filters == null)
