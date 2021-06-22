@@ -27,7 +27,7 @@ namespace gView.Framework.Symbology.UI.Controls
 		private SymbolCollectionComposer symbolCollectionComposer;
 		private ISymbol _symbol=null;
         private Panel panel2;
-        private ListView lstViewSymbols;
+        private SymbolSelectorControl symbolSelectorControl1;
         private TextSymbolAlignment _txtSymbolAlignment = TextSymbolAlignment.Center;
 
         public SymbolControl()
@@ -103,8 +103,8 @@ namespace gView.Framework.Symbology.UI.Controls
             this.panelProperties = new System.Windows.Forms.Panel();
             this.splitter1 = new System.Windows.Forms.Splitter();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.symbolSelectorControl1 = new gView.Framework.Symbology.UI.Controls.SymbolSelectorControl();
             this.symbolCollectionComposer = new gView.Framework.Symbology.UI.Controls.SymbolCollectionComposer();
-            this.lstViewSymbols = new System.Windows.Forms.ListView();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -141,9 +141,14 @@ namespace gView.Framework.Symbology.UI.Controls
             // 
             // panel2
             // 
-            this.panel2.Controls.Add(this.lstViewSymbols);
+            this.panel2.Controls.Add(this.symbolSelectorControl1);
             resources.ApplyResources(this.panel2, "panel2");
             this.panel2.Name = "panel2";
+            // 
+            // symbolSelectorControl1
+            // 
+            resources.ApplyResources(this.symbolSelectorControl1, "symbolSelectorControl1");
+            this.symbolSelectorControl1.Name = "symbolSelectorControl1";
             // 
             // symbolCollectionComposer
             // 
@@ -151,13 +156,6 @@ namespace gView.Framework.Symbology.UI.Controls
             this.symbolCollectionComposer.Name = "symbolCollectionComposer";
             this.symbolCollectionComposer.Symbol = null;
             this.symbolCollectionComposer.SelectedSymbolChanged += new gView.Framework.Symbology.UI.Controls.SymbolCollectionComposer.SelectedSymbolChangedEvent(this.symbolCollectionComposer_SelectedSymbolChanged);
-            // 
-            // lstViewSymbols
-            // 
-            resources.ApplyResources(this.lstViewSymbols, "lstViewSymbols");
-            this.lstViewSymbols.HideSelection = false;
-            this.lstViewSymbols.Name = "lstViewSymbols";
-            this.lstViewSymbols.UseCompatibleStateImageBehavior = false;
             // 
             // SymbolControl
             // 
@@ -231,6 +229,8 @@ namespace gView.Framework.Symbology.UI.Controls
                     }
 				}
 			}
+
+            symbolSelectorControl1.SymbolProtoType = _symbol;
 		}
 
 		private void cmbSymbolTypes_SelectedIndexChanged(object sender, System.EventArgs e)
