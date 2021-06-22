@@ -26,6 +26,8 @@ namespace gView.Framework.Symbology.UI.Controls
         private System.Windows.Forms.Splitter splitter1;
 		private SymbolCollectionComposer symbolCollectionComposer;
 		private ISymbol _symbol=null;
+        private Panel panel2;
+        private ListView lstViewSymbols;
         private TextSymbolAlignment _txtSymbolAlignment = TextSymbolAlignment.Center;
 
         public SymbolControl()
@@ -99,16 +101,19 @@ namespace gView.Framework.Symbology.UI.Controls
             this.cmbSymbolTypes = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.panelProperties = new System.Windows.Forms.Panel();
-            this.symbolCollectionComposer = new gView.Framework.Symbology.UI.Controls.SymbolCollectionComposer();
             this.splitter1 = new System.Windows.Forms.Splitter();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.symbolCollectionComposer = new gView.Framework.Symbology.UI.Controls.SymbolCollectionComposer();
+            this.lstViewSymbols = new System.Windows.Forms.ListView();
             this.panel1.SuspendLayout();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
             // 
-            resources.ApplyResources(this.panel1, "panel1");
             this.panel1.Controls.Add(this.cmbSymbolTypes);
             this.panel1.Controls.Add(this.label1);
+            resources.ApplyResources(this.panel1, "panel1");
             this.panel1.Name = "panel1";
             // 
             // cmbSymbolTypes
@@ -128,6 +133,18 @@ namespace gView.Framework.Symbology.UI.Controls
             resources.ApplyResources(this.panelProperties, "panelProperties");
             this.panelProperties.Name = "panelProperties";
             // 
+            // splitter1
+            // 
+            resources.ApplyResources(this.splitter1, "splitter1");
+            this.splitter1.Name = "splitter1";
+            this.splitter1.TabStop = false;
+            // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.lstViewSymbols);
+            resources.ApplyResources(this.panel2, "panel2");
+            this.panel2.Name = "panel2";
+            // 
             // symbolCollectionComposer
             // 
             resources.ApplyResources(this.symbolCollectionComposer, "symbolCollectionComposer");
@@ -135,22 +152,25 @@ namespace gView.Framework.Symbology.UI.Controls
             this.symbolCollectionComposer.Symbol = null;
             this.symbolCollectionComposer.SelectedSymbolChanged += new gView.Framework.Symbology.UI.Controls.SymbolCollectionComposer.SelectedSymbolChangedEvent(this.symbolCollectionComposer_SelectedSymbolChanged);
             // 
-            // splitter1
+            // lstViewSymbols
             // 
-            resources.ApplyResources(this.splitter1, "splitter1");
-            this.splitter1.Name = "splitter1";
-            this.splitter1.TabStop = false;
+            resources.ApplyResources(this.lstViewSymbols, "lstViewSymbols");
+            this.lstViewSymbols.HideSelection = false;
+            this.lstViewSymbols.Name = "lstViewSymbols";
+            this.lstViewSymbols.UseCompatibleStateImageBehavior = false;
             // 
             // SymbolControl
             // 
-            resources.ApplyResources(this, "$this");
             this.Controls.Add(this.panelProperties);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.splitter1);
             this.Controls.Add(this.symbolCollectionComposer);
+            this.Controls.Add(this.panel2);
             this.Name = "SymbolControl";
+            resources.ApplyResources(this, "$this");
             this.Load += new System.EventHandler(this.FormSymbol_Load);
             this.panel1.ResumeLayout(false);
+            this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
 
 		}
@@ -167,7 +187,6 @@ namespace gView.Framework.Symbology.UI.Controls
 
 			symbolCollectionComposer.AddSymbol(_symbol);
 			symbolCollectionComposer.Init();
-			//_symbol=(ISymbol)((SymbolCollectionItem)((SymbolCollection)symbolCollectionComposer.Symbol).Symbols[0]).Symbol;
 			
 			MakeGUI();
 		}
@@ -213,6 +232,7 @@ namespace gView.Framework.Symbology.UI.Controls
 				}
 			}
 		}
+
 		private void cmbSymbolTypes_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
 			panelProperties.Controls.Clear();
@@ -255,6 +275,7 @@ namespace gView.Framework.Symbology.UI.Controls
         }
 
         #region Classes
+        
         internal class SymbolItem
         {
             private ISymbol _sym;
@@ -274,6 +295,7 @@ namespace gView.Framework.Symbology.UI.Controls
                 get { return _sym; }
             }
         }
+
         #endregion
     }
 }

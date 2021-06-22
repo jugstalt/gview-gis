@@ -252,9 +252,6 @@
     <EmbeddedResource Include="Framework\Symbology\UI\Controls\SymbolCollectionComposer.resx">
       <DependentUpon>SymbolCollectionComposer.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Framework\Symbology\UI\Controls\SymbolControl.de.resx">
-      <DependentUpon>SymbolControl.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Framework\Symbology\UI\Controls\SymbolControl.resx">
       <DependentUpon>SymbolControl.cs</DependentUpon>
     </EmbeddedResource>
