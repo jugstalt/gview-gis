@@ -8,7 +8,7 @@ The software consists of desktop applications for creating maps and the gView se
 Download the leatest release as ZIP from [Releases](https://github.com/jugstalt/gview5/releases)
 Unzip and run...
 
-Read the installation documentation:
+Read the installation documentation::
 * [English](docs/en/index.md)
 * [German](docs/de/index.md)
 
