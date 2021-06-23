@@ -114,7 +114,7 @@ namespace gView.Framework.Symbology.UI.Controls
                             PenWidth = 1f
                         },
                         FillColor = Color.FromArgb(200,Color.Red),
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new SimpleFillSymbol()
                     {
@@ -124,7 +124,7 @@ namespace gView.Framework.Symbology.UI.Controls
                             PenWidth = 1f
                         },
                         FillColor = Color.FromArgb(200,Color.Green),
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new SimpleFillSymbol()
                     {
@@ -134,7 +134,7 @@ namespace gView.Framework.Symbology.UI.Controls
                             PenWidth = 1f
                         },
                         FillColor = Color.FromArgb(200,Color.Blue),
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new SimpleFillSymbol()
                     {
@@ -144,7 +144,7 @@ namespace gView.Framework.Symbology.UI.Controls
                             PenWidth = 3f
                         },
                         FillColor = Color.FromArgb(200,Color.Yellow),
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new SimpleFillSymbol()
                     {
@@ -154,7 +154,7 @@ namespace gView.Framework.Symbology.UI.Controls
                             PenWidth = 3f
                         },
                         FillColor = Color.FromArgb(100, Color.AliceBlue),
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new HatchSymbol()
                     {
@@ -165,7 +165,7 @@ namespace gView.Framework.Symbology.UI.Controls
                         },
                         HatchStyle = System.Drawing.Drawing2D.HatchStyle.Cross,
                         FillColor = Color.Red,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new HatchSymbol()
                     {
@@ -176,7 +176,7 @@ namespace gView.Framework.Symbology.UI.Controls
                         },
                         HatchStyle = System.Drawing.Drawing2D.HatchStyle.DashedHorizontal,
                         FillColor = Color.Red,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new HatchSymbol()
                     {
@@ -187,7 +187,7 @@ namespace gView.Framework.Symbology.UI.Controls
                         },
                         HatchStyle = System.Drawing.Drawing2D.HatchStyle.DiagonalBrick,
                         FillColor = Color.Red,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new HatchSymbol()
                     {
@@ -198,7 +198,7 @@ namespace gView.Framework.Symbology.UI.Controls
                         },
                         HatchStyle = System.Drawing.Drawing2D.HatchStyle.DarkVertical,
                         FillColor = Color.Red,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new GradientFillSymbol()
                     {
