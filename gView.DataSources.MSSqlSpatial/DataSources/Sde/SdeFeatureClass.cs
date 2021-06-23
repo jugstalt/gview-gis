@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 {
-    public class SdeFeatureClass : gView.Framework.OGC.DB.OgcSpatialFeatureclass
+    public class SdeFeatureClass : gView.Framework.OGC.DB.OgcSpatialFeatureclass, IFeatureClassPerformanceInfo
     {
         private SdeFeatureClass()
         {
@@ -56,5 +56,11 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 return _sRef;
             }
         }
+
+        #region IFeatureClassPerformanceInfo
+
+        public bool SupportsHighperformanceOidQueries => String.IsNullOrEmpty(this.MultiVersionedViewName);
+
+        #endregion
     }
 }

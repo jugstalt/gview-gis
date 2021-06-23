@@ -108,7 +108,9 @@ namespace gView.Cmd.MxlToFdb
                         foreach (var dsElement in map.MapElements.Where(e => e.DatasetID == datasetId))
                         {
                             if (dsElement?.Class == null)
+                            {
                                 continue;
+                            }
 
                             var featureLayer = featureLayers.Where(l => l.DatasetID == datasetId && l.Class == dsElement.Class)
                                                             .FirstOrDefault();
@@ -135,13 +137,26 @@ namespace gView.Cmd.MxlToFdb
 
                             string targetFcName = dsElement.Class.Name;
                             if (targetFcName.Contains("."))
+                            {
                                 targetFcName = targetFcName.Substring(targetFcName.LastIndexOf(".") + 1);
+                            }
 
                             var targetFc = (await targetFeatureDataset.Element(targetFcName))?.Class as IFeatureClass;
 
                             if (targetFc != null)
                             {
-                                Console.Write("Already exists in target fdb");
+                                var count = await targetFc.CountFeatures();
+                                if (count > 0)
+                                {
+                                    Console.Write($"Already exists in target fdb ({ count } features)");
+                                }
+                                else
+                                {
+                                    if (!await targetDatabase.DeleteFeatureClass(targetFcName))
+                                    {
+                                        throw new Exception($"Can't delete existing (empty) featureclass { targetFcName }");
+                                    }
+                                }
                             }
                             else
                             {
@@ -197,31 +212,102 @@ namespace gView.Cmd.MxlToFdb
 
                                     Console.WriteLine("Copy features:");
 
-                                    foreach (BinaryTree2BuilderNode node in tree2.Nodes)
+                                    if (sourceFc is IFeatureClassPerformanceInfo && ((IFeatureClassPerformanceInfo)sourceFc).SupportsHighperformanceOidQueries == false)
                                     {
-                                        RowIDFilter filter = new RowIDFilter(sourceFc.IDFieldName);
-                                        filter.IDs = node.OIDs;
-                                        filter.SubFields = "*";
-
-                                        using (var featureCursor = await sourceFc.GetFeatures(filter))
+                                        using (var memoryFeatureBag = new FeatureBag())
                                         {
-                                            if (featureCursor == null)
+                                            #region Read all Features to FeatureBag (Memory)
+
+                                            //
+                                            //  eg. SDE Multiversion Views are very slow, queiried win OID Filter!!
+                                            //
+                                            Console.WriteLine("Source feature class do not support high performance oid quries!");
+
+                                            QueryFilter filter = new QueryFilter() { WhereClause = "1=1" };
+                                            filter.AddField("*");
+
+
+                                            Console.WriteLine("Read all features to memory feature bag...");
+
+                                            using (var featureCursor = await sourceFc.GetFeatures(filter))
                                             {
-                                                throw new Exception($"Can't query features from soure featureclass: { (sourceFc is IDebugging ? ((IDebugging)sourceFc).LastException?.Message : "") }");
+                                                if (featureCursor == null)
+                                                {
+                                                    throw new Exception($"Can't query features from soure featureclass: { (sourceFc is IDebugging ? ((IDebugging)sourceFc).LastException?.Message : "") }");
+                                                }
+
+                                                while ((feature = await featureCursor.NextFeature()) != null)
+                                                {
+                                                    memoryFeatureBag.AddFeature(feature);
+                                                    counter++;
+
+                                                    if (counter % 10000 == 0)
+                                                    {
+                                                        Console.Write($"...{ counter }");
+                                                    }
+                                                }
                                             }
 
-                                            while ((feature = await featureCursor.NextFeature()) != null)
-                                            {
-                                                feature.Fields.Add(new FieldValue("$FDB_NID", node.Number));
-                                                featureBag.Add(feature);
-                                                counter++;
+                                            #endregion
 
-                                                if (counter % 1000 == 0)
+                                            #region Write to target featureclass
+
+                                            Console.WriteLine($"...{ counter }");
+                                            Console.WriteLine("copy feature to target feature class");
+                                            counter = 0;
+
+                                            foreach (BinaryTree2BuilderNode node in tree2.Nodes)
+                                            {
+                                                foreach (var memoryFeature in memoryFeatureBag.GetFeatures(node.OIDs))
                                                 {
-                                                    await Store(targetDatabase, targetFc, featureBag, counter);
+                                                    memoryFeature.Fields.Add(new FieldValue("$FDB_NID", node.Number));
+                                                    featureBag.Add(memoryFeature);
+                                                    counter++;
+
+                                                    if (counter % 10000 == 0)
+                                                    {
+                                                        await Store(targetDatabase, targetFc, featureBag, counter);
+                                                    }
+                                                }
+                                            }
+
+                                            #endregion
+                                        }
+
+                                        GC.Collect();
+                                    }
+                                    else
+                                    {
+                                        #region Query all per Oid and Node 
+
+                                        foreach (BinaryTree2BuilderNode node in tree2.Nodes)
+                                        {
+                                            RowIDFilter filter = new RowIDFilter(sourceFc.IDFieldName);
+                                            filter.IDs = node.OIDs;
+                                            filter.SubFields = "*";
+
+                                            using (var featureCursor = await sourceFc.GetFeatures(filter))
+                                            {
+                                                if (featureCursor == null)
+                                                {
+                                                    throw new Exception($"Can't query features from soure featureclass: { (sourceFc is IDebugging ? ((IDebugging)sourceFc).LastException?.Message : "") }");
+                                                }
+
+                                                while ((feature = await featureCursor.NextFeature()) != null)
+                                                {
+                                                    feature.Fields.Add(new FieldValue("$FDB_NID", node.Number));
+                                                    featureBag.Add(feature);
+                                                    counter++;
+
+                                                    if (counter % 10000 == 0)
+                                                    {
+                                                        await Store(targetDatabase, targetFc, featureBag, counter);
+                                                    }
                                                 }
                                             }
                                         }
+
+                                        #endregion
                                     }
                                     await Store(targetDatabase, targetFc, featureBag, counter);
 
@@ -275,14 +361,25 @@ namespace gView.Cmd.MxlToFdb
 
         async static private Task<BinaryTree2Builder> SpatialIndex2(IFeatureDatabase fdb, IFeatureClass fc, ISpatialIndexDef def, List<IQueryFilter> filters = null)
         {
-            if (fc == null) return null;
+            if (fc == null)
+            {
+                return null;
+            }
 
             IEnvelope bounds = null;
             if (fc.Envelope != null)
+            {
                 bounds = fc.Envelope;
+            }
             else if (fc.Dataset is IFeatureDataset && await ((IFeatureDataset)fc.Dataset).Envelope() != null)
+            {
                 bounds = await ((IFeatureDataset)fc.Dataset).Envelope();
-            if (bounds == null) return null;
+            }
+
+            if (bounds == null)
+            {
+                return null;
+            }
             //if (_transformer != null)
             //{
             //    IGeometry transBounds = _transformer.Transform2D(bounds) as IGeometry;
@@ -343,7 +440,7 @@ namespace gView.Cmd.MxlToFdb
                         treeBuilder.AddFeature(feat);
 
                         counter++;
-                        if (counter % 1000 == 0)
+                        if (counter % 10000 == 0)
                         {
                             Console.Write($"...{ counter }");
                         }
