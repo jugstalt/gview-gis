@@ -234,34 +234,23 @@ namespace gView.Framework.Symbology.UI.Controls
             // 
             // boxPreview
             // 
-            this.boxPreview.AccessibleDescription = null;
-            this.boxPreview.AccessibleName = null;
             resources.ApplyResources(this.boxPreview, "boxPreview");
-            this.boxPreview.BackgroundImage = null;
             this.boxPreview.Controls.Add(this.panelPreview);
             this.boxPreview.Controls.Add(this.toolStrip2);
-            this.boxPreview.Font = null;
             this.boxPreview.Name = "boxPreview";
             this.boxPreview.TabStop = false;
             // 
             // panelPreview
             // 
-            this.panelPreview.AccessibleDescription = null;
-            this.panelPreview.AccessibleName = null;
             resources.ApplyResources(this.panelPreview, "panelPreview");
-            this.panelPreview.BackgroundImage = null;
-            this.panelPreview.Font = null;
             this.panelPreview.Name = "panelPreview";
             this.panelPreview.Paint += new System.Windows.Forms.PaintEventHandler(this.panelPreview_Paint_1);
             // 
             // toolStrip2
             // 
-            this.toolStrip2.AccessibleDescription = null;
-            this.toolStrip2.AccessibleName = null;
             resources.ApplyResources(this.toolStrip2, "toolStrip2");
-            this.toolStrip2.BackgroundImage = null;
-            this.toolStrip2.Font = null;
             this.toolStrip2.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.toolStrip2.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.toolStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripButton5,
             this.toolStripButton6,
@@ -276,70 +265,49 @@ namespace gView.Framework.Symbology.UI.Controls
             // 
             // toolStripButton5
             // 
-            this.toolStripButton5.AccessibleDescription = null;
-            this.toolStripButton5.AccessibleName = null;
             resources.ApplyResources(this.toolStripButton5, "toolStripButton5");
-            this.toolStripButton5.BackgroundImage = null;
             this.toolStripButton5.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButton5.Name = "toolStripButton5";
             this.toolStripButton5.Click += new System.EventHandler(this.btnLeft_Click);
             // 
             // toolStripButton6
             // 
-            this.toolStripButton6.AccessibleDescription = null;
-            this.toolStripButton6.AccessibleName = null;
             resources.ApplyResources(this.toolStripButton6, "toolStripButton6");
-            this.toolStripButton6.BackgroundImage = null;
             this.toolStripButton6.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButton6.Name = "toolStripButton6";
             this.toolStripButton6.Click += new System.EventHandler(this.btn_Up_Click);
             // 
             // toolStripButton7
             // 
-            this.toolStripButton7.AccessibleDescription = null;
-            this.toolStripButton7.AccessibleName = null;
             resources.ApplyResources(this.toolStripButton7, "toolStripButton7");
-            this.toolStripButton7.BackgroundImage = null;
             this.toolStripButton7.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButton7.Name = "toolStripButton7";
             this.toolStripButton7.Click += new System.EventHandler(this.btn_Down_Click);
             // 
             // toolStripButton8
             // 
-            this.toolStripButton8.AccessibleDescription = null;
-            this.toolStripButton8.AccessibleName = null;
             resources.ApplyResources(this.toolStripButton8, "toolStripButton8");
-            this.toolStripButton8.BackgroundImage = null;
             this.toolStripButton8.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButton8.Name = "toolStripButton8";
             this.toolStripButton8.Click += new System.EventHandler(this.btnRight_Click);
             // 
             // toolStripButton9
             // 
-            this.toolStripButton9.AccessibleDescription = null;
-            this.toolStripButton9.AccessibleName = null;
             resources.ApplyResources(this.toolStripButton9, "toolStripButton9");
-            this.toolStripButton9.BackgroundImage = null;
             this.toolStripButton9.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButton9.Name = "toolStripButton9";
             this.toolStripButton9.Click += new System.EventHandler(this.btnRotate2_Click);
             // 
             // toolStripButton10
             // 
-            this.toolStripButton10.AccessibleDescription = null;
-            this.toolStripButton10.AccessibleName = null;
             resources.ApplyResources(this.toolStripButton10, "toolStripButton10");
-            this.toolStripButton10.BackgroundImage = null;
             this.toolStripButton10.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButton10.Name = "toolStripButton10";
             this.toolStripButton10.Click += new System.EventHandler(this.btnRotate1_Click);
             // 
             // toolStripSplitButton1
             // 
-            this.toolStripSplitButton1.AccessibleDescription = null;
-            this.toolStripSplitButton1.AccessibleName = null;
             resources.ApplyResources(this.toolStripSplitButton1, "toolStripSplitButton1");
-            this.toolStripSplitButton1.BackgroundImage = null;
             this.toolStripSplitButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.None;
             this.toolStripSplitButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.txtXOffset,
@@ -349,8 +317,6 @@ namespace gView.Framework.Symbology.UI.Controls
             // 
             // txtXOffset
             // 
-            this.txtXOffset.AccessibleDescription = null;
-            this.txtXOffset.AccessibleName = null;
             resources.ApplyResources(this.txtXOffset, "txtXOffset");
             this.txtXOffset.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtXOffset.HideSelection = false;
@@ -359,8 +325,6 @@ namespace gView.Framework.Symbology.UI.Controls
             // 
             // txtYOffset
             // 
-            this.txtYOffset.AccessibleDescription = null;
-            this.txtYOffset.AccessibleName = null;
             resources.ApplyResources(this.txtYOffset, "txtYOffset");
             this.txtYOffset.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtYOffset.HideSelection = false;
@@ -369,8 +333,6 @@ namespace gView.Framework.Symbology.UI.Controls
             // 
             // txtRotation
             // 
-            this.txtRotation.AccessibleDescription = null;
-            this.txtRotation.AccessibleName = null;
             resources.ApplyResources(this.txtRotation, "txtRotation");
             this.txtRotation.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtRotation.HideSelection = false;
@@ -379,29 +341,20 @@ namespace gView.Framework.Symbology.UI.Controls
             // 
             // toolStripComboBox1
             // 
-            this.toolStripComboBox1.AccessibleDescription = null;
-            this.toolStripComboBox1.AccessibleName = null;
             resources.ApplyResources(this.toolStripComboBox1, "toolStripComboBox1");
             this.toolStripComboBox1.Name = "toolStripComboBox1";
             // 
             // panel2
             // 
-            this.panel2.AccessibleDescription = null;
-            this.panel2.AccessibleName = null;
             resources.ApplyResources(this.panel2, "panel2");
-            this.panel2.BackgroundImage = null;
             this.panel2.Controls.Add(this.toolStrip1);
-            this.panel2.Font = null;
             this.panel2.Name = "panel2";
             // 
             // toolStrip1
             // 
-            this.toolStrip1.AccessibleDescription = null;
-            this.toolStrip1.AccessibleName = null;
             resources.ApplyResources(this.toolStrip1, "toolStrip1");
-            this.toolStrip1.BackgroundImage = null;
-            this.toolStrip1.Font = null;
             this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.toolStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripButton1,
             this.btnRemove,
@@ -411,67 +364,47 @@ namespace gView.Framework.Symbology.UI.Controls
             // 
             // toolStripButton1
             // 
-            this.toolStripButton1.AccessibleDescription = null;
-            this.toolStripButton1.AccessibleName = null;
             resources.ApplyResources(this.toolStripButton1, "toolStripButton1");
-            this.toolStripButton1.BackgroundImage = null;
             this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButton1.Name = "toolStripButton1";
             this.toolStripButton1.Click += new System.EventHandler(this.btnAdd_Click);
             // 
             // btnRemove
             // 
-            this.btnRemove.AccessibleDescription = null;
-            this.btnRemove.AccessibleName = null;
             resources.ApplyResources(this.btnRemove, "btnRemove");
-            this.btnRemove.BackgroundImage = null;
             this.btnRemove.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnRemove.Name = "btnRemove";
             this.btnRemove.Click += new System.EventHandler(this.btnRemove_Click);
             // 
             // btnMoveDown
             // 
-            this.btnMoveDown.AccessibleDescription = null;
-            this.btnMoveDown.AccessibleName = null;
             resources.ApplyResources(this.btnMoveDown, "btnMoveDown");
-            this.btnMoveDown.BackgroundImage = null;
             this.btnMoveDown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnMoveDown.Name = "btnMoveDown";
             this.btnMoveDown.Click += new System.EventHandler(this.btnMoveDown_Click);
             // 
             // btnMoveUp
             // 
-            this.btnMoveUp.AccessibleDescription = null;
-            this.btnMoveUp.AccessibleName = null;
             resources.ApplyResources(this.btnMoveUp, "btnMoveUp");
-            this.btnMoveUp.BackgroundImage = null;
             this.btnMoveUp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnMoveUp.Name = "btnMoveUp";
             this.btnMoveUp.Click += new System.EventHandler(this.btnMoveUp_Click);
             // 
             // lbSymbols
             // 
-            this.lbSymbols.AccessibleDescription = null;
-            this.lbSymbols.AccessibleName = null;
             resources.ApplyResources(this.lbSymbols, "lbSymbols");
-            this.lbSymbols.BackgroundImage = null;
             this.lbSymbols.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lbSymbols.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.lbSymbols.Font = null;
             this.lbSymbols.Name = "lbSymbols";
             this.lbSymbols.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lbSymbols_DrawItem);
             this.lbSymbols.SelectedIndexChanged += new System.EventHandler(this.lbSymbols_SelectedIndexChanged);
-            this.lbSymbols.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lbSymbols_MouseUp);
-            this.lbSymbols.MouseMove += new System.Windows.Forms.MouseEventHandler(this.lbSymbols_MouseMove);
             this.lbSymbols.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lbSymbols_MouseDown);
+            this.lbSymbols.MouseMove += new System.Windows.Forms.MouseEventHandler(this.lbSymbols_MouseMove);
+            this.lbSymbols.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lbSymbols_MouseUp);
             // 
             // splitter1
             // 
-            this.splitter1.AccessibleDescription = null;
-            this.splitter1.AccessibleName = null;
             resources.ApplyResources(this.splitter1, "splitter1");
-            this.splitter1.BackgroundImage = null;
-            this.splitter1.Font = null;
             this.splitter1.Name = "splitter1";
             this.splitter1.TabStop = false;
             // 
@@ -484,15 +417,11 @@ namespace gView.Framework.Symbology.UI.Controls
             // 
             // SymbolCollectionComposer
             // 
-            this.AccessibleDescription = null;
-            this.AccessibleName = null;
             resources.ApplyResources(this, "$this");
-            this.BackgroundImage = null;
             this.Controls.Add(this.lbSymbols);
             this.Controls.Add(this.splitter1);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.boxPreview);
-            this.Font = null;
             this.Name = "SymbolCollectionComposer";
             this.boxPreview.ResumeLayout(false);
             this.boxPreview.PerformLayout();
@@ -696,23 +625,22 @@ namespace gView.Framework.Symbology.UI.Controls
 
         public void DrawPreview()
         {
-            System.Drawing.Graphics gr = System.Drawing.Graphics.FromHwnd(panelPreview.Handle);
-
-            Rectangle rect = new Rectangle(0, 0, panelPreview.Width, panelPreview.Height);
-            using (SolidBrush brush = new SolidBrush(Color.White))
+            using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromHwnd(panelPreview.Handle))
             {
-                gr.FillRectangle(brush, rect);
-            }
-            using (Pen pen = new Pen(Color.Gray, 0))
-            {
-                pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
-                gr.DrawLine(pen, 0, rect.Height / 2, rect.Width, rect.Height / 2);
-                gr.DrawLine(pen, rect.Width / 2, 0, rect.Width / 2, rect.Height);
-            }
+                Rectangle rect = new Rectangle(0, 0, panelPreview.Width, panelPreview.Height);
+                using (SolidBrush brush = new SolidBrush(Color.White))
+                {
+                    gr.FillRectangle(brush, rect);
+                }
+                using (Pen pen = new Pen(Color.Gray, 0))
+                {
+                    pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
+                    gr.DrawLine(pen, 0, rect.Height / 2, rect.Width, rect.Height / 2);
+                    gr.DrawLine(pen, rect.Width / 2, 0, rect.Width / 2, rect.Height);
+                }
 
-            new SymbolPreview(null).Draw(gr, rect, _symbol, false);
-            gr.Dispose();
-            gr = null;
+                new SymbolPreview(null).Draw(gr, rect, _symbol, false);
+            }
         }
 
         private void btnLeft_Click(object sender, System.EventArgs e)

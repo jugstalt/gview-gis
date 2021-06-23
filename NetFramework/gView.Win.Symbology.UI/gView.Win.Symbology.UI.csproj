@@ -144,6 +144,12 @@
     <Compile Include="Framework\Symbology\UI\Controls\SymbolControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Framework\Symbology\UI\Controls\SymbolSelectorControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\Symbology\UI\Controls\SymbolSelectorControl.Designer.cs">
+      <DependentUpon>SymbolSelectorControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Framework\Symbology\UI\Controls\ToolStripColorPicker.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -246,6 +252,9 @@
     <EmbeddedResource Include="Framework\Symbology\UI\Controls\ShadeAngleSetter.resx">
       <DependentUpon>ShadeAngleSetter.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Framework\Symbology\UI\Controls\SymbolCollectionComposer.de-DE.resx">
+      <DependentUpon>SymbolCollectionComposer.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Framework\Symbology\UI\Controls\SymbolCollectionComposer.de.resx">
       <DependentUpon>SymbolCollectionComposer.cs</DependentUpon>
     </EmbeddedResource>
@@ -254,6 +263,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Framework\Symbology\UI\Controls\SymbolControl.resx">
       <DependentUpon>SymbolControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\Symbology\UI\Controls\SymbolSelectorControl.resx">
+      <DependentUpon>SymbolSelectorControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Framework\Symbology\UI\Controls\ToolStripColorPicker.resx">
       <DependentUpon>ToolStripColorPicker.cs</DependentUpon>
