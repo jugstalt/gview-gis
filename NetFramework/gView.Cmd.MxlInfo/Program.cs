@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace gView.Cmd.MxlInfo
 {
-    class Program
+    internal class Program
     {
-        async static Task<int> Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
             try
             {
@@ -19,7 +19,6 @@ namespace gView.Cmd.MxlInfo
                 {
                     if (args[i] == "-??" && i < args.Length - 1)
                     {
-
                     }
                 }
 
@@ -59,9 +58,7 @@ namespace gView.Cmd.MxlInfo
                             Console.WriteLine($"         { dataset.GetType().ToString() }");
                             Console.WriteLine("-------------------------------------------------------");
 
-                                                           
-
-                            foreach (var dsElement in map.MapElements.Where(e=>e.DatasetID == datasetID))
+                            foreach (var dsElement in map.MapElements.Where(e => e.DatasetID == datasetID))
                             {
                                 if (dsElement?.Class == null)
                                     continue;
@@ -69,7 +66,7 @@ namespace gView.Cmd.MxlInfo
                                 var featureLayer = featureLayers.Where(l => l.DatasetID == datasetID && l.Class == dsElement.Class)
                                                                 .FirstOrDefault();
 
-                                if(featureLayer==null)
+                                if (featureLayer == null)
                                 {
                                     continue;
                                 }
