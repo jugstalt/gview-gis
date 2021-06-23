@@ -440,7 +440,7 @@ namespace gView.Cmd.MxlToFdb
                         treeBuilder.AddFeature(feat);
 
                         counter++;
-                        if (counter % 10000 == 0)
+                        if (counter % 10000 == 0) 
                         {
                             Console.Write($"...{ counter }");
                         }
