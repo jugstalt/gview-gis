@@ -202,6 +202,7 @@ namespace gView.Framework.Symbology.UI.Controls
                     },
                     new GradientFillSymbol()
                     {
+                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     }
                 }
             }
