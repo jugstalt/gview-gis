@@ -35,8 +35,9 @@ namespace gView.Framework.Symbology.UI.Controls
             InitializeComponent();
         }
         public SymbolControl(ISymbol symbol)
+            : this()
 		{
-			if(symbol!=null) 
+            if (symbol!=null) 
 			{
 				_symbol=(ISymbol)symbol.Clone();
                 if (_symbol is ILabel)
@@ -44,9 +45,9 @@ namespace gView.Framework.Symbology.UI.Controls
                     _txtSymbolAlignment = ((ILabel)_symbol).TextSymbolAlignment;
                     ((ILabel)_symbol).TextSymbolAlignment = TextSymbolAlignment.Center;
                 }
-			}
 
-			InitializeComponent();
+                symbolSelectorControl1.SymbolProtoType = _symbol;
+            }
 		}
 
 
@@ -71,6 +72,8 @@ namespace gView.Framework.Symbology.UI.Controls
                         _txtSymbolAlignment = ((ILabel)_symbol).TextSymbolAlignment;
                         ((ILabel)_symbol).TextSymbolAlignment = TextSymbolAlignment.Center;
                     }
+
+                    symbolSelectorControl1.SymbolProtoType = _symbol;
                 }
             }
 		}
@@ -149,6 +152,7 @@ namespace gView.Framework.Symbology.UI.Controls
             // 
             resources.ApplyResources(this.symbolSelectorControl1, "symbolSelectorControl1");
             this.symbolSelectorControl1.Name = "symbolSelectorControl1";
+            this.symbolSelectorControl1.OnSymbolSelected += new System.EventHandler(this.symbolSelectorControl1_OnSymbolSelected);
             // 
             // symbolCollectionComposer
             // 
@@ -189,7 +193,20 @@ namespace gView.Framework.Symbology.UI.Controls
 			MakeGUI();
 		}
 
-		private void MakeGUI() 
+        private void symbolSelectorControl1_OnSymbolSelected(object sender, EventArgs e)
+        {
+            var symbolSelector = sender as SymbolSelectorControl;
+
+            if (symbolSelector?.SelectedSymbol != null)
+            {
+                _symbol = symbolSelector.SelectedSymbol;
+            }
+
+            symbolCollectionComposer.Symbol = new SymbolCollection();
+            FormSymbol_Load(this, new EventArgs());
+        }
+
+        private void MakeGUI() 
 		{
 			cmbSymbolTypes.Items.Clear();
 
@@ -229,8 +246,6 @@ namespace gView.Framework.Symbology.UI.Controls
                     }
 				}
 			}
-
-            symbolSelectorControl1.SymbolProtoType = _symbol;
 		}
 
 		private void cmbSymbolTypes_SelectedIndexChanged(object sender, System.EventArgs e)
@@ -297,5 +312,7 @@ namespace gView.Framework.Symbology.UI.Controls
         }
 
         #endregion
+
+        
     }
 }

@@ -25,6 +25,18 @@ namespace gView.Framework.Symbology
             AddSymbol(symbol);
         }
 
+        public SymbolCollection(IEnumerable<ISymbol> symbols)
+            : this()
+        {
+            if(symbols!=null)
+            {
+                foreach(var symbol in symbols)
+                {
+                    AddSymbol(symbol);
+                }
+            }
+        }
+
         public void AddSymbol(ISymbol symbol)
         {
             AddSymbol(symbol, true);

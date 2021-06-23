@@ -37,7 +37,7 @@ namespace gView.Framework.Symbology.UI.Controls
             // listViewSymbols
             // 
             this.listViewSymbols.Activation = System.Windows.Forms.ItemActivation.TwoClick;
-            this.listViewSymbols.BackColor = System.Drawing.Color.White;
+            this.listViewSymbols.BackColor = System.Drawing.Color.LightGray;
             this.listViewSymbols.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listViewSymbols.GridLines = true;
             this.listViewSymbols.HideSelection = false;
@@ -52,6 +52,7 @@ namespace gView.Framework.Symbology.UI.Controls
             this.listViewSymbols.TileSize = new System.Drawing.Size(200, 60);
             this.listViewSymbols.UseCompatibleStateImageBehavior = false;
             this.listViewSymbols.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.listViewSymbols_DrawItem);
+            this.listViewSymbols.SelectedIndexChanged += new System.EventHandler(this.listViewSymbols_SelectedIndexChanged);
             // 
             // imageList1
             // 
