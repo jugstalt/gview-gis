@@ -64,6 +64,7 @@ namespace gView.Framework.Symbology.UI.Controls
                 ((SymbolListViewItem)e.Item).Symbol,
                 false);
         }
+
         private void SymbolSelectorControl_Load(object sender, EventArgs e)
         {
         }
@@ -96,7 +97,8 @@ namespace gView.Framework.Symbology.UI.Controls
                          PenColor = Color.Red,
                          PenWidth = 2,
                          Size = 20,
-                         Marker = SimplePointSymbol.MarkerType.Star
+                         Marker = SimplePointSymbol.MarkerType.Star,
+                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     }
                 }
             },
@@ -111,7 +113,8 @@ namespace gView.Framework.Symbology.UI.Controls
                             PenColor = Color.Gray,
                             PenWidth = 1f
                         },
-                        FillColor = Color.FromArgb(200,Color.Red)
+                        FillColor = Color.FromArgb(200,Color.Red),
+                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new SimpleFillSymbol()
                     {
@@ -120,7 +123,8 @@ namespace gView.Framework.Symbology.UI.Controls
                             PenColor = Color.Gray,
                             PenWidth = 1f
                         },
-                        FillColor = Color.FromArgb(200,Color.Green)
+                        FillColor = Color.FromArgb(200,Color.Green),
+                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new SimpleFillSymbol()
                     {
@@ -129,7 +133,8 @@ namespace gView.Framework.Symbology.UI.Controls
                             PenColor = Color.Gray,
                             PenWidth = 1f
                         },
-                        FillColor = Color.FromArgb(200,Color.Blue)
+                        FillColor = Color.FromArgb(200,Color.Blue),
+                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new SimpleFillSymbol()
                     {
@@ -138,7 +143,8 @@ namespace gView.Framework.Symbology.UI.Controls
                             PenColor = Color.Red,
                             PenWidth = 3f
                         },
-                        FillColor = Color.FromArgb(200,Color.Yellow)
+                        FillColor = Color.FromArgb(200,Color.Yellow),
+                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new SimpleFillSymbol()
                     {
@@ -147,7 +153,8 @@ namespace gView.Framework.Symbology.UI.Controls
                             PenColor = Color.Green,
                             PenWidth = 3f
                         },
-                        FillColor = Color.FromArgb(100, Color.AliceBlue)
+                        FillColor = Color.FromArgb(100, Color.AliceBlue),
+                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new HatchSymbol()
                     {
@@ -157,7 +164,8 @@ namespace gView.Framework.Symbology.UI.Controls
                             PenWidth = 1f
                         },
                         HatchStyle = System.Drawing.Drawing2D.HatchStyle.Cross,
-                        FillColor = Color.Red
+                        FillColor = Color.Red,
+                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new HatchSymbol()
                     {
@@ -167,7 +175,8 @@ namespace gView.Framework.Symbology.UI.Controls
                             PenWidth = 1f
                         },
                         HatchStyle = System.Drawing.Drawing2D.HatchStyle.DashedHorizontal,
-                        FillColor = Color.Red
+                        FillColor = Color.Red,
+                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new HatchSymbol()
                     {
@@ -177,7 +186,8 @@ namespace gView.Framework.Symbology.UI.Controls
                             PenWidth = 1f
                         },
                         HatchStyle = System.Drawing.Drawing2D.HatchStyle.DiagonalBrick,
-                        FillColor = Color.Red
+                        FillColor = Color.Red,
+                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new HatchSymbol()
                     {
@@ -187,7 +197,8 @@ namespace gView.Framework.Symbology.UI.Controls
                             PenWidth = 1f
                         },
                         HatchStyle = System.Drawing.Drawing2D.HatchStyle.DarkVertical,
-                        FillColor = Color.Red
+                        FillColor = Color.Red,
+                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
                     },
                     new GradientFillSymbol()
                     {
