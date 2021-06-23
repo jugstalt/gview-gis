@@ -1,5 +1,4 @@
 ﻿using gView.Framework.Carto.UI;
-using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,27 +11,6 @@ namespace gView.Framework.Symbology.UI.Controls
         public SymbolSelectorControl()
         {
             InitializeComponent();
-        }
-
-        private void listViewSymbols_DrawItem(object sender, DrawListViewItemEventArgs e)
-        {
-            Rectangle rect = new Rectangle(e.Bounds.X + 10, e.Bounds.Y + 10, e.Bounds.Width - 20, e.Bounds.Height -20);
-            using (SolidBrush brush = new SolidBrush(Color.Gray))
-            {
-                e.Graphics.FillRectangle(brush, e.Bounds);
-            }
-            //using (Pen pen = new Pen(Color.Gray, 0))
-            //{
-            //    pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
-            //    e.Graphics.DrawLine(pen, 0, rect.Height / 2, rect.Width, rect.Height / 2);
-            //    e.Graphics.DrawLine(pen, rect.Width / 2, 0, rect.Width / 2, rect.Height);
-            //}
-
-            
-
-            new SymbolPreview(null).Draw(e.Graphics, rect, 
-                ((SymbolListViewItem)e.Item).Symbol, 
-                false);
         }
 
         public ISymbol SymbolProtoType
@@ -49,7 +27,6 @@ namespace gView.Framework.Symbology.UI.Controls
                 }
                 if (symbolProtoType is ILineSymbol)
                 {
-                    
                 }
                 if (symbolProtoType is IFillSymbol)
                 {
@@ -57,22 +34,38 @@ namespace gView.Framework.Symbology.UI.Controls
                 }
                 if (symbolProtoType is ITextSymbol)
                 {
-                    
                 }
             }
         }
 
         private void AddSymbols(IEnumerable<ISymbol> symbols)
         {
-            foreach(var symbol in symbols)
+            foreach (var symbol in symbols)
             {
                 this.listViewSymbols.Items.Add(new SymbolListViewItem(symbol));
             }
         }
 
+        private void listViewSymbols_DrawItem(object sender, DrawListViewItemEventArgs e)
+        {
+            Rectangle rect = new Rectangle(e.Bounds.X + 10, e.Bounds.Y + 10, e.Bounds.Width - 20, e.Bounds.Height - 20);
+            using (SolidBrush brush = new SolidBrush(Color.Gray))
+            {
+                e.Graphics.FillRectangle(brush, e.Bounds);
+            }
+            //using (Pen pen = new Pen(Color.Gray, 0))
+            //{
+            //    pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
+            //    e.Graphics.DrawLine(pen, 0, rect.Height / 2, rect.Width, rect.Height / 2);
+            //    e.Graphics.DrawLine(pen, rect.Width / 2, 0, rect.Width / 2, rect.Height);
+            //}
+
+            new SymbolPreview(null).Draw(e.Graphics, rect,
+                ((SymbolListViewItem)e.Item).Symbol,
+                false);
+        }
         private void SymbolSelectorControl_Load(object sender, EventArgs e)
         {
-            
         }
 
         #region Item Classes
@@ -87,7 +80,7 @@ namespace gView.Framework.Symbology.UI.Controls
             public ISymbol Symbol { get; }
         }
 
-        #endregion
+        #endregion Item Classes
 
         #region Predefined Symbols
 
@@ -198,12 +191,11 @@ namespace gView.Framework.Symbology.UI.Controls
                     },
                     new GradientFillSymbol()
                     {
-                         
                     }
                 }
             }
-        };  
+        };
 
-        #endregion
+        #endregion Predefined Symbols
     }
 }
