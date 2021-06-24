@@ -704,14 +704,6 @@ namespace gView.Framework.Carto
             _layers.Clear();
         }
 
-        public void SetDataset(int datasetId, IDataset dataset)
-        {
-            if (datasetId >= 0 && datasetId < _datasets.Count())
-            {
-                _datasets[datasetId] = dataset;
-            }
-        }
-
         public string ActiveLayerNames
         {
             get

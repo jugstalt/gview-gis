@@ -17,13 +17,13 @@ namespace gView.Test
             try
             {
                 //TestProj4();
-                //TestPerformance();
+                TestPerformance();
 
                 //Console.ReadLine();
 
                 //TestVtc().Wait();
 
-                ParseSQL();
+                //ParseSQL();
             }
             catch (Exception ex)
             {
@@ -111,9 +111,14 @@ namespace gView.Test
 
             for (int i = 0; i < 100; i++)
             {
-                string server = "server.domain.com";
+                string server = "sever/gview5-basis";
+                string service = "geoservices/rest/services/sdep/gv_xyz_dkm_sdep";
+
+                //string server = "sever";
+                //string service = "arcgis/rest/services/sdep/xyz_dkm_sdep";
+
                 //string service = "geoservices/rest/services/default/UEBERSICHTSKARTE";
-                string service = "gview5/geoservices/rest/services/basis/KATASTER_BEV";
+                //string service = "geoservices/rest/services/sdep/gv_estag_dkm_sdep";
                 //string service = "arcgis/rest/services/sdep/estag_dkm_sdep";
 
                 string url = String.Empty;

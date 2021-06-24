@@ -326,7 +326,7 @@ namespace gView.Cmd.MxlToFdb
                             ((DatasetElement)dsElement).Class = targetFc;
                         }
 
-                        map.SetDataset(datasetId, targetFeatureDataset);
+                        ((MapPersist)map).SetDataset(datasetId, targetFeatureDataset);
                         datasetId++;
                     }
                 }

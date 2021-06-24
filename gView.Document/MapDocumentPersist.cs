@@ -242,7 +242,7 @@ namespace gView.Framework.Document
             _focusMapIndex = (int)stream.Load("focusMapIndex", (int)0);
 
             IMap map;
-            while ((map = (await stream.LoadAsync<IMap>("IMap", new gView.Framework.Carto.Map()))) != null)
+            while ((map = (await stream.LoadAsync<IMap>("IMap", new MapPersist()))) != null)
             {
                 this.AddMap(map);
             }
