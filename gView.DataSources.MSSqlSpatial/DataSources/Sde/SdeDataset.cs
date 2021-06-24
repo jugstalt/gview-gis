@@ -1,4 +1,5 @@
-﻿using gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo;
+﻿using gView.Data.Framework.Data.Extensions;
+using gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.DB;
@@ -17,6 +18,8 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
     {
         protected DbProviderFactory _factory = null;
         protected IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
+
+        private static string[] SupportedFunctions = new string[] { "STArea()", "STLength()" };
 
         internal RepoProvider RepoProvider = null;
 
@@ -183,8 +186,9 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             filter.fieldPrefix = "[";
             filter.fieldPostfix = "]";
 
-            if (filter.SubFields == "*")
+            if (filter.QuerySubFields.Contains("*"))
             {
+                // var subFieldFunctions = filter.QuerySubFields.Where(f => f.IsSubFieldFunction());
                 filter.SubFields = "";
 
                 foreach (IField field in fc.Fields.ToEnumerable())
@@ -193,6 +197,11 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 }
                 filter.AddField(fc.IDFieldName);
                 filter.AddField(fc.ShapeFieldName);
+
+                //foreach(var subFieldFunction in subFieldFunctions)
+                //{
+                //    filter.AddField(subFieldFunction);
+                //}
             }
             else
             {
@@ -268,7 +277,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             string filterWhereClause = (filter is IRowIDFilter) ? ((IRowIDFilter)filter).RowIDWhereClause : filter.WhereClause;
 
             StringBuilder fieldNames = new StringBuilder();
-            foreach (string fieldName in filter.SubFields.Split(' '))
+            foreach (string fieldName in filter.QuerySubFields)
             {
                 if (fieldNames.Length > 0)
                 {
@@ -330,6 +339,11 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             command.CommandText += orderBy + limit;
 
             return command;
+        }
+
+        public override IEnumerable<string> SupportedSubFieldFunctions()
+        {
+            return SupportedFunctions;
         }
 
         async public override Task<IEnvelope> FeatureClassEnvelope(IFeatureClass fc)

@@ -88,6 +88,43 @@ namespace gView.Interoperability.GeoServices.Rest.Json
             }
         }
 
+        static public EsriFieldType ToType(Type type)
+        {
+            if (type != null)
+            {
+                if (type == typeof(short))
+                {
+                    return EsriFieldType.esriFieldTypeSmallInteger;
+                }
+                if (type == typeof(int) || type == typeof(long))
+                {
+                    return EsriFieldType.esriFieldTypeInteger;
+                }
+                if (type == typeof(float))
+                {
+                    return EsriFieldType.esriFieldTypeSingle;
+                }
+                if (type == typeof(double))
+                {
+                    return EsriFieldType.esriFieldTypeDouble;
+                }
+                if (type == typeof(DateTime))
+                {
+                    return EsriFieldType.esriFieldTypeDate;
+                }
+                if(type == typeof(byte[]))
+                {
+                    return EsriFieldType.esriFieldTypeBlob;
+                }
+                if (type == typeof(Guid))
+                {
+                    return EsriFieldType.esriFieldTypeGUID;
+                }
+            }
+
+            return EsriFieldType.esriFieldTypeString;
+        }
+
         #endregion
     }
 }

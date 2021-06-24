@@ -4,6 +4,7 @@ using gView.Framework.system;
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.DB
@@ -15,6 +16,7 @@ namespace gView.Framework.OGC.DB
         //private OleDbConnection _conn = null;
         //private OleDbDataReader _reader = null;
         private ISpatialFilter _spatialfilter = null;
+        private string[] _subFields = null;
         private string _shapeField = "", _idField = "";
         OgcSpatialFeatureclass _fc = null;
 
@@ -68,6 +70,8 @@ namespace gView.Framework.OGC.DB
                 {
                     return featureCursor;
                 }
+
+                featureCursor._subFields = filter.QuerySubFields.ToArray();
 
                 featureCursor._conn = ((OgcSpatialDataset)fc.Dataset).ProviderFactory.CreateConnection();
                 featureCursor._conn.ConnectionString = fc.Dataset.ConnectionString;
@@ -123,7 +127,7 @@ namespace gView.Framework.OGC.DB
                     Feature feature = new Feature();
                     for (int i = 0; i < _reader.FieldCount; i++)
                     {
-                        string fieldname = _reader.GetName(i);
+                        string fieldname = _reader.GetName(i).OrTake(_subFields != null && _subFields.Length == _reader.FieldCount ? _subFields[i] : "");   // Functions Shape.STArea() as no fieldname
                         object obj = _reader.GetValue(i);
 
                         if (fieldname == _shapeField)

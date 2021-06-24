@@ -40,7 +40,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
             [JsonProperty("alias")]
             public string Alias { get; set; }
 
-            [JsonProperty("length")]
+            [JsonProperty("length", NullValueHandling = NullValueHandling.Ignore)]
             public int? Length { get; set; }
 
             //public class VType

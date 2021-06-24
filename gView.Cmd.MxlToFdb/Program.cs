@@ -170,7 +170,14 @@ namespace gView.Cmd.MxlToFdb
                                         HasZ = sourceFc.HasZ,
                                         SpatialReference = sourceFc.SpatialReference
                                     },
-                                    sourceFc.Fields);
+                                    new Fields(sourceFc.Fields.ToEnumerable().Select(f =>
+                                    {
+                                        if (f != null && f.type == FieldType.ID && f.name.ToUpper().Equals("FDB_OID") == false)  // also include original ID Column
+                                        {
+                                            return new Field(f.name, FieldType.integer);
+                                        }
+                                        return f;
+                                    })));
                                 if (fcId <= 0)
                                 {
                                     throw new Exception($"Can't create featureclass { targetFcName }: { targetDatabase.LastErrorMessage }");
@@ -340,6 +347,7 @@ namespace gView.Cmd.MxlToFdb
                 Console.WriteLine();
                 Console.WriteLine("Exception:");
                 Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
 
                 return 1;
             }

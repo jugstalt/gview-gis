@@ -1,13 +1,13 @@
+using gView.Data.Framework.Data.Extensions;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.system;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Text;
-using gView.Framework;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
-using gView.Framework.system;
-using gView.Framework.FDB;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data
@@ -38,7 +38,10 @@ namespace gView.Framework.Data
         public QueryFilter(IQueryFilter filter)
             : this()
         {
-            if (filter == null) return;
+            if (filter == null)
+            {
+                return;
+            }
 
             string fieldPrefix = filter.fieldPrefix;
             string fieldPostfix = filter.fieldPostfix;
@@ -83,9 +86,14 @@ namespace gView.Framework.Data
             copyto.m_fields = new List<string>();
             copyto.m_alias = new Dictionary<string, string>();
             foreach (string field in m_fields)
+            {
                 copyto.m_fields.Add(field);
+            }
+
             foreach (string alias in m_alias.Keys)
+            {
                 copyto.m_alias.Add(alias, m_alias[alias]);
+            }
 
             copyto.m_whereClause = m_whereClause;
             copyto.m_whereClause2 = m_whereClause2;
@@ -114,20 +122,33 @@ namespace gView.Framework.Data
 
         public virtual void AddField(string fieldname, bool caseSensitive=true)
         {
-            if (String.IsNullOrEmpty(fieldname)) return;
+            if (String.IsNullOrEmpty(fieldname))
+            {
+                return;
+            }
 
-            if (HasField("*")) return;
+            if (HasField("*") && !(fieldname.Contains("(") && fieldname.Contains(")")))
+            {
+                return;
+            }
 
             if (caseSensitive)
             {
-                if (m_fields.IndexOf(fieldname) != -1) return;
+                if (m_fields.IndexOf(fieldname) != -1)
+                {
+                    return;
+                }
             }
             else
             {
                 string lowerFieldname = fieldname.ToLower();
                 foreach (var f in m_fields)
+                {
                     if (f.ToLower() == lowerFieldname)
+                    {
                         return;
+                    }
+                }
             }
 
             m_fields.Add(fieldname);
@@ -138,7 +159,10 @@ namespace gView.Framework.Data
         public virtual void AddField(string fieldname, string alias)
         {
             AddField(fieldname);
-            if (fieldname == "*") return;
+            if (fieldname == "*")
+            {
+                return;
+            }
 
             string a;
             if (m_alias.TryGetValue(fieldname, out a))
@@ -162,38 +186,43 @@ namespace gView.Framework.Data
             return m_fields.IndexOf(fieldname) != -1;
         }
 
+        public IEnumerable<string> QuerySubFields => m_fields?.Select(f=>f.ToSubFieldName(m_fieldPrefix, m_fieldPostfix)).ToArray() ?? new string[0];
+
         public string SubFields
         {
             get
             {
-                string subfields = "";
+                var subfields = new StringBuilder();
                 foreach (string field in m_fields)
                 {
-                    if (subfields != "") subfields += " ";
-                    if (field == "*")
+                    if (subfields.Length > 0)
                     {
-                        subfields += field;
+                        subfields.Append(" ");
                     }
-                    else
-                    {
-                        if (field.IndexOf(m_fieldPrefix) != 0 && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
-                            subfields += m_fieldPrefix;
-                        subfields += field;
-                        if (field.IndexOf(m_fieldPostfix, Math.Min(m_fieldPrefix.Length, field.Length)) != field.Length - m_fieldPostfix.Length && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
-                            subfields += m_fieldPostfix;
-                    }
+
+                    subfields.Append(field.ToSubFieldName(m_fieldPrefix, m_fieldPostfix));
                 }
-                return subfields;
+                return subfields.ToString();
             }
             set
             {
                 m_fields = new List<string>();
+
                 if (value != null)
                 {
-                    foreach (string field in value.Replace(" ", ",").Replace(";", ",").Split(','))
+                    if(!value.ToLower().Contains(" as "))
+                    {
+                        value = value.Replace(" ", ",");
+                    }
+
+                    foreach (string field in value.Replace(";", ",").Split(','))
                     {
                         string f = field.Trim();
-                        if (f == "") continue;
+                        if (f == "")
+                        {
+                            continue;
+                        }
+
                         AddField(f);
                     }
                 }
@@ -206,7 +235,11 @@ namespace gView.Framework.Data
                 string subfields = "";
                 foreach (string field in m_fields)
                 {
-                    if (subfields != "") subfields += ",";
+                    if (subfields != "")
+                    {
+                        subfields += ",";
+                    }
+
                     if (field == "*")
                     {
                         subfields += field;
@@ -214,13 +247,22 @@ namespace gView.Framework.Data
                     else
                     {
                         if (m_fieldPrefix != null && field.IndexOf(m_fieldPrefix) != 0 && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                        {
                             subfields += m_fieldPrefix;
+                        }
+
                         subfields += field;
+
                         if (m_fieldPrefix != null && field.IndexOf(m_fieldPostfix, m_fieldPrefix.Length) != field.Length - m_fieldPostfix.Length && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                        {
                             subfields += m_fieldPostfix;
+                        }
 
                         string alias = Alias(field);
-                        if (alias != "" && alias != null) subfields += " as " + alias;
+                        if (alias != "" && alias != null)
+                        {
+                            subfields += " as " + alias;
+                        }
                     }
                 }
                 return subfields;
@@ -234,7 +276,9 @@ namespace gView.Framework.Data
                 if (m_whereClause.StartsWith("[") || m_whereClause.StartsWith("{"))
                 {
                     if (!String.IsNullOrEmpty(m_whereClause2))
+                    {
                         return m_whereClause2;
+                    }
 
                     DisplayFilterCollection dfc = DisplayFilterCollection.FromJSON(m_whereClause);
                     if (dfc != null)
@@ -243,9 +287,15 @@ namespace gView.Framework.Data
                         foreach (DisplayFilter df in dfc)
                         {
                             if (String.IsNullOrEmpty(df.Filter))
+                            {
                                 continue;
+                            }
 
-                            if (sb.Length > 0) sb.Append(" OR ");
+                            if (sb.Length > 0)
+                            {
+                                sb.Append(" OR ");
+                            }
+
                             sb.Append(df.Filter);
                         }
                         return m_whereClause2 = sb.ToString();
@@ -265,7 +315,10 @@ namespace gView.Framework.Data
             {
                 if ((m_whereClause.Trim().StartsWith("[") && m_whereClause.Trim().EndsWith("]")) ||
                     (m_whereClause.Trim().StartsWith("{") && m_whereClause.Trim().EndsWith("}")))
+                {
                     return m_whereClause;
+                }
+
                 return String.Empty;
             }
         }
@@ -274,10 +327,14 @@ namespace gView.Framework.Data
             get
             {
                 if (String.IsNullOrEmpty(m_orderBy))
+                {
                     return String.Empty;
+                }
 
                 if (String.IsNullOrEmpty(m_fieldPostfix) && String.IsNullOrEmpty(m_fieldPrefix))
+                {
                     return m_orderBy;
+                }
 
                 StringBuilder sb = new StringBuilder();
 
@@ -290,13 +347,20 @@ namespace gView.Framework.Data
                     else
                     {
                         if (sb.Length > 0)
+                        {
                             sb.Append(",");
+                        }
 
                         if (field.IndexOf(m_fieldPrefix) != 0 && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                        {
                             sb.Append(m_fieldPrefix);
+                        }
+
                         sb.Append(field);
                         if (field.IndexOf(m_fieldPostfix, Math.Min(m_fieldPrefix.Length, field.Length)) != field.Length - m_fieldPostfix.Length && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                        {
                             sb.Append(m_fieldPostfix);
+                        }
                     }
                 }
 
@@ -404,7 +468,11 @@ namespace gView.Framework.Data
                 string subfields = "";
                 foreach (string field in m_fields)
                 {
-                    if (subfields != "") subfields += ",";
+                    if (subfields != "")
+                    {
+                        subfields += ",";
+                    }
+
                     if (field == "*")
                     {
                         subfields += field;
@@ -413,14 +481,23 @@ namespace gView.Framework.Data
                     {
                         subfields += "DISTINCT(";
                         if (field.IndexOf(m_fieldPrefix) != 0 && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                        {
                             subfields += m_fieldPrefix;
+                        }
+
                         subfields += field;
                         if (field.IndexOf(m_fieldPostfix) != field.Length - m_fieldPostfix.Length && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                        {
                             subfields += m_fieldPostfix;
+                        }
+
                         subfields += ")";
 
                         string alias = Alias(field);
-                        if (alias != "" && alias != null) subfields += " as " + alias;
+                        if (alias != "" && alias != null)
+                        {
+                            subfields += " as " + alias;
+                        }
                     }
                 }
                 return subfields;
@@ -470,7 +547,11 @@ namespace gView.Framework.Data
                 string subfields = "";
                 foreach (string field in m_fields)
                 {
-                    if (subfields != "") subfields += ",";
+                    if (subfields != "")
+                    {
+                        subfields += ",";
+                    }
+
                     if (field == "*")
                     {
                         subfields += field;
@@ -479,14 +560,23 @@ namespace gView.Framework.Data
                     {
                         subfields += _function + "(";
                         if (field.IndexOf(m_fieldPrefix) != 0 && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                        {
                             subfields += m_fieldPrefix;
+                        }
+
                         subfields += field;
                         if (field.IndexOf(m_fieldPostfix) != field.Length - m_fieldPostfix.Length && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                        {
                             subfields += m_fieldPostfix;
+                        }
+
                         subfields += ")";
 
                         string alias = Alias(field);
-                        if (alias != "" && alias != null) subfields += " as " + alias;
+                        if (alias != "" && alias != null)
+                        {
+                            subfields += " as " + alias;
+                        }
                     }
                 }
                 return subfields;
@@ -498,12 +588,14 @@ namespace gView.Framework.Data
             get { return _function; }
         }
 
-        public string Alias
+        public string FunctionAlias
         {
             get
             {
                 if (m_fields.Count == 1 && m_alias.ContainsKey(m_fields[0]))
+                {
                     return m_alias[m_fields[0]];
+                }
 
                 return String.Empty;
             }
@@ -520,7 +612,10 @@ namespace gView.Framework.Data
 
         async public static Task<object> QueryScalar(IFeatureClass fc, FunctionFilter filter, string fieldName)
         {
-            if (fc == null || filter == null) return null;
+            if (fc == null || filter == null)
+            {
+                return null;
+            }
 
             using (IFeatureCursor cursor = await fc.Search(filter) as IFeatureCursor)
             {
@@ -567,15 +662,24 @@ namespace gView.Framework.Data
                     }
 
                     if (hasFeature == false)
+                    {
                         return null;
+                    }
+
                     return ret;
                 }
                 else
                 {
-                    if (cursor == null) return null;
+                    if (cursor == null)
+                    {
+                        return null;
+                    }
 
                     IFeature feature = await cursor.NextFeature();
-                    if (feature == null) return null;
+                    if (feature == null)
+                    {
+                        return null;
+                    }
 
                     return feature[fieldName];
                 }
@@ -632,7 +736,11 @@ namespace gView.Framework.Data
                 StringBuilder sb = new StringBuilder();
                 foreach (int i in _IDs)
                 {
-                    if (sb.Length > 0) sb.Append(",");
+                    if (sb.Length > 0)
+                    {
+                        sb.Append(",");
+                    }
+
                     sb.Append(i.ToString());
                 }
 
@@ -697,7 +805,11 @@ namespace gView.Framework.Data
                 StringBuilder sb = new StringBuilder();
                 foreach (long i in _IDs)
                 {
-                    if (sb.Length > 0) sb.Append(",");
+                    if (sb.Length > 0)
+                    {
+                        sb.Append(",");
+                    }
+
                     sb.Append(i.ToString());
                 }
 
@@ -737,7 +849,10 @@ namespace gView.Framework.Data
             base(filter)
         {
             ISpatialFilter spatialFilter = filter as ISpatialFilter;
-            if (spatialFilter == null) return;
+            if (spatialFilter == null)
+            {
+                return;
+            }
 
             this.Geometry = spatialFilter.Geometry;
             this.FilterSpatialReference = spatialFilter.FilterSpatialReference;
@@ -811,7 +926,10 @@ namespace gView.Framework.Data
         {
             if (filter == null ||
                 to == null || filter.FilterSpatialReference == null ||
-                to.Equals(filter.FilterSpatialReference)) return filter;
+                to.Equals(filter.FilterSpatialReference))
+            {
+                return filter;
+            }
 
             SpatialFilter pFilter = new SpatialFilter(filter);
             pFilter.FilterSpatialReference = to;
@@ -840,7 +958,10 @@ namespace gView.Framework.Data
             {
                 IBufferQueryFilter bProto = (IBufferQueryFilter)proto;
                 if (bProto.RootFilter != null)
+                {
                     _rootFilter = bProto.RootFilter.Clone() as IQueryFilter;
+                }
+
                 _rootFC = bProto.RootFeatureClass;
                 _bufferDistance = bProto.BufferDistance;
                 _units = bProto.BufferUnits;
@@ -886,7 +1007,10 @@ namespace gView.Framework.Data
             {
                 if (bufferQuery == null ||
                     bufferQuery.RootFilter == null ||
-                    bufferQuery.RootFeatureClass == null) return null;
+                    bufferQuery.RootFeatureClass == null)
+                {
+                    return null;
+                }
 
                 IQueryFilter rootFilter = bufferQuery.RootFilter.Clone() as IQueryFilter;
                 if (bufferQuery.RootFeatureClass.Dataset != null && bufferQuery.RootFeatureClass.Dataset.Database is IDatabaseNames)
@@ -916,7 +1040,10 @@ namespace gView.Framework.Data
                     IFeature feature;
                     while ((feature = await cursor.NextFeature()) != null)
                     {
-                        if (feature.Shape == null) continue;
+                        if (feature.Shape == null)
+                        {
+                            continue;
+                        }
 
                         if (!(feature.Shape is ITopologicalOperation))
                         {
@@ -1003,7 +1130,11 @@ namespace gView.Framework.Data
 
         async public Task<int> Fill(int next_N_Rows)
         {
-            if (_cursor == null) return 0;
+            if (_cursor == null)
+            {
+                return 0;
+            }
+
             int counter = 0;
 
             IRow feat = await _cursor.NextRow();
@@ -1014,7 +1145,11 @@ namespace gView.Framework.Data
                     DataRow row = _table.NewRow();
                     foreach (IFieldValue fv in feat.Fields)
                     {
-                        if (_table.Columns[fv.Name] == null) continue;
+                        if (_table.Columns[fv.Name] == null)
+                        {
+                            continue;
+                        }
+
                         try
                         {
                             row[fv.Name] = fv.Value;
@@ -1042,11 +1177,18 @@ namespace gView.Framework.Data
         {
             try
             {
-                if (fields == null) return false;
+                if (fields == null)
+                {
+                    return false;
+                }
 
                 foreach (IField pField in fields.ToEnumerable())
                 {
-                    if (pField.type == FieldType.Shape) continue;
+                    if (pField.type == FieldType.Shape)
+                    {
+                        continue;
+                    }
+
                     switch (pField.type)
                     {
                         case FieldType.ID:
@@ -1159,7 +1301,10 @@ namespace gView.Framework.Data
                 filter.IDs = IDs;
                 filter.SubFields = "*";
                 _cursor = await fc.GetFeatures(filter);
-                if (_cursor == null) return 0;
+                if (_cursor == null)
+                {
+                    return 0;
+                }
 
                 return await Fill(cancelTracker);
             }
@@ -1180,7 +1325,11 @@ namespace gView.Framework.Data
         }
         async public Task<int> Fill(int next_N_Rows, ICancelTracker cancelTracker)
         {
-            if (_cursor == null) return 0;
+            if (_cursor == null)
+            {
+                return 0;
+            }
+
             int counter = 0;
 
             IFeature feat = await _cursor.NextFeature();
@@ -1191,7 +1340,11 @@ namespace gView.Framework.Data
                     DataRow row = _table.NewRow();
                     foreach (IFieldValue fv in feat.Fields)
                     {
-                        if (_table.Columns[fv.Name] == null) continue;
+                        if (_table.Columns[fv.Name] == null)
+                        {
+                            continue;
+                        }
+
                         try
                         {
                             row[fv.Name] = fv.Value;
@@ -1235,11 +1388,18 @@ namespace gView.Framework.Data
         {
             try
             {
-                if (fields == null) return false;
+                if (fields == null)
+                {
+                    return false;
+                }
 
                 foreach (IField pField in fields.ToEnumerable())
                 {
-                    if (pField.type == FieldType.Shape) continue;
+                    if (pField.type == FieldType.Shape)
+                    {
+                        continue;
+                    }
+
                     switch (pField.type)
                     {
                         case FieldType.ID:
@@ -1330,13 +1490,21 @@ namespace gView.Framework.Data
 
         public void AddID(T ID)
         {
-            if (_IDs.IndexOf(ID) != -1) return;
+            if (_IDs.IndexOf(ID) != -1)
+            {
+                return;
+            }
+
             _IDs.Add(ID);
         }
 
         public void AddIDs(List<T> IDs)
         {
-            if (IDs == null) return;
+            if (IDs == null)
+            {
+                return;
+            }
+
             foreach (T id in IDs)
             {
                 this.AddID(id);
@@ -1345,13 +1513,21 @@ namespace gView.Framework.Data
 
         public void RemoveID(T ID)
         {
-            if (_IDs.IndexOf(ID) == -1) return;
+            if (_IDs.IndexOf(ID) == -1)
+            {
+                return;
+            }
+
             _IDs.Remove(ID);
         }
 
         public void RemoveIDs(List<T> IDs)
         {
-            if (IDs == null) return;
+            if (IDs == null)
+            {
+                return;
+            }
+
             foreach (T id in IDs)
             {
                 this.RemoveID(id);
@@ -1369,7 +1545,9 @@ namespace gView.Framework.Data
         public void Combine(ISelectionSet selSet, CombinationMethod method)
         {
             if (selSet == null)
+            {
                 return;
+            }
 
             if (!(selSet is IIDSelectionSet))
             {
@@ -1387,29 +1565,42 @@ namespace gView.Framework.Data
                 case CombinationMethod.Union:
                     foreach (T id in ((IDSetTemplate<T>)idSelSet).IDs)
                     {
-                        if (_IDs.IndexOf(id) == -1) _IDs.Add(id);
+                        if (_IDs.IndexOf(id) == -1)
+                        {
+                            _IDs.Add(id);
+                        }
                     }
                     break;
                 case CombinationMethod.Difference:  // Remove from Current Selection
                     foreach (T id in ((IDSetTemplate<T>)idSelSet).IDs)
                     {
-                        if (_IDs.IndexOf(id) != -1) _IDs.Remove(id);
+                        if (_IDs.IndexOf(id) != -1)
+                        {
+                            _IDs.Remove(id);
+                        }
                     }
                     break;
                 case CombinationMethod.Intersection:  // Select from Current Selection (nur die gleichen)
                     List<T> ids = ((IDSetTemplate<T>)idSelSet).IDs;
                     foreach (T id in ListOperations<T>.Clone(_IDs))
                     {
-                        if (ids.IndexOf(id) == -1) _IDs.Remove(id);
+                        if (ids.IndexOf(id) == -1)
+                        {
+                            _IDs.Remove(id);
+                        }
                     }
                     break;
                 case CombinationMethod.SymDifference:
                     foreach (T id in ((IDSetTemplate<T>)idSelSet).IDs)
                     {
                         if (_IDs.IndexOf(id) != -1)
+                        {
                             _IDs.Remove(id);
+                        }
                         else
+                        {
                             _IDs.Add(id);
+                        }
                     }
                     break;
             }
@@ -1423,7 +1614,11 @@ namespace gView.Framework.Data
         {
             get
             {
-                if (_IDs == null) return 0;
+                if (_IDs == null)
+                {
+                    return 0;
+                }
+
                 return _IDs.Count;
             }
         }
@@ -1465,7 +1660,10 @@ namespace gView.Framework.Data
                 ids = new IndexList<T>();
                 _NIDs.Add(NID, ids);
             }
-            if (ids.IndexOf(ID) == -1) ids.Add(ID);
+            if (ids.IndexOf(ID) == -1)
+            {
+                ids.Add(ID);
+            }
         }
 
         public long NID(T id)
@@ -1473,9 +1671,15 @@ namespace gView.Framework.Data
             foreach (long nid in _NIDs.Keys)
             {
                 List<T> ids = (List<T>)_NIDs[nid];
-                if (ids == null) continue;
+                if (ids == null)
+                {
+                    continue;
+                }
 
-                if (ids.IndexOf(id) != -1) return nid;
+                if (ids.IndexOf(id) != -1)
+                {
+                    return nid;
+                }
             }
             return 0;
         }
@@ -1541,7 +1745,10 @@ namespace gView.Framework.Data
         {
             foreach (List<T> list in _NIDs.Values)
             {
-                if (list.IndexOf(ID) != -1) list.Remove(ID);
+                if (list.IndexOf(ID) != -1)
+                {
+                    list.Remove(ID);
+                }
             }
         }
 
@@ -1571,7 +1778,10 @@ namespace gView.Framework.Data
 
             IIDSelectionSet idSelSet = selSet as IIDSelectionSet;
             SpatialIndexedIDSelectionSetTemplate<T> spSelSet = null;
-            if (selSet is SpatialIndexedIDSelectionSetTemplate<T>) spSelSet = (SpatialIndexedIDSelectionSetTemplate<T>)selSet;
+            if (selSet is SpatialIndexedIDSelectionSetTemplate<T>)
+            {
+                spSelSet = (SpatialIndexedIDSelectionSetTemplate<T>)selSet;
+            }
 
             List<T> _IDs = this.IDs;
             switch (method)
@@ -1582,23 +1792,33 @@ namespace gView.Framework.Data
                         if (_IDs.IndexOf(id) == -1)
                         {
                             if (spSelSet != null)
+                            {
                                 this.AddID(id, spSelSet.NodeEnvelope(id) /*spSelSet.NID(id)*/);
+                            }
                             else
+                            {
                                 this.AddID(id);  // to NodeID = 0
+                            }
                         }
                     }
                     break;
                 case CombinationMethod.Difference:  // Remove from Current Selection
                     foreach (T id in ((IDSetTemplate<T>)idSelSet).IDs)
                     {
-                        if (_IDs.IndexOf(id) != -1) this.RemoveID(id);
+                        if (_IDs.IndexOf(id) != -1)
+                        {
+                            this.RemoveID(id);
+                        }
                     }
                     break;
                 case CombinationMethod.Intersection:  // Select from Current Selection (nur die gleichen)
                     List<T> ids = ((IDSetTemplate<T>)idSelSet).IDs;
                     foreach (T id in _IDs)
                     {
-                        if (ids.IndexOf(id) == -1) this.RemoveID(id);
+                        if (ids.IndexOf(id) == -1)
+                        {
+                            this.RemoveID(id);
+                        }
                     }
                     break;
                 case CombinationMethod.SymDifference:
@@ -1611,9 +1831,13 @@ namespace gView.Framework.Data
                         else
                         {
                             if (spSelSet != null)
+                            {
                                 this.AddID(id, spSelSet.NodeEnvelope(id));
+                            }
                             else
+                            {
                                 this.AddID(id);
+                            }
                         }
                     }
                     break;
@@ -1630,12 +1854,19 @@ namespace gView.Framework.Data
         {
             get
             {
-                if (_NIDs == null) return 0;
+                if (_NIDs == null)
+                {
+                    return 0;
+                }
 
                 int count = 0;
                 foreach (long nid in _NIDs.Keys)
                 {
-                    if (_NIDs[nid] == null) continue;
+                    if (_NIDs[nid] == null)
+                    {
+                        continue;
+                    }
+
                     count += _NIDs[nid].Count;
                 }
                 return count;
@@ -1689,22 +1920,30 @@ namespace gView.Framework.Data
             var set = new QueryFilteredSelectionSet();
 
             if (fClass == null)
+            {
                 return set;
+            }
 
             set._filter = filter.Clone() as IQueryFilter;
             if (set._filter == null)
+            {
                 return set;
+            }
 
             try
             {
                 using (IFeatureCursor cursor = await fClass.GetFeatures(filter))
                 {
                     if (cursor == null)
+                    {
                         return set;
+                    }
 
                     IFeature feature;
                     while ((feature = await cursor.NextFeature()) != null)
+                    {
                         set._count++;
+                    }
                 }
             }
             catch
@@ -1861,11 +2100,19 @@ namespace gView.Framework.Data
                     Hashtable filter = (Hashtable)filters[i];
                     DisplayFilter displayFilter = new DisplayFilter();
                     if (filter["sql"] != null)
+                    {
                         displayFilter.Filter = (string)filter["sql"];
+                    }
+
                     if (filter["color"] != null)
+                    {
                         displayFilter.Color = ColorConverter2.ConvertFrom((string)filter["color"]);
+                    }
+
                     if (filter["penwidth"] is double)
+                    {
                         displayFilter.PenWidth = (float)((double)filter["penwidth"]);
+                    }
 
                     filterCollection.Add(displayFilter);
                 }

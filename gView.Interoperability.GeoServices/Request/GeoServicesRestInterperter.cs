@@ -8,6 +8,7 @@ using gView.Framework.IO;
 using gView.Framework.OGC.GeoJson;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.Interoperability.GeoServices.Exceptions;
 using gView.Interoperability.GeoServices.Extensions;
 using gView.Interoperability.GeoServices.Rest.Json;
 using gView.Interoperability.GeoServices.Rest.Json.Features;
@@ -256,7 +257,7 @@ namespace gView.Interoperability.GeoServices.Request
                 {
                     Error = new JsonError.ErrorDef()
                     {
-                        Code = -1,
+                        Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
                         Message = ex.Message
                     }
                 };
@@ -467,6 +468,7 @@ namespace gView.Interoperability.GeoServices.Request
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
                     string filterQuery;
+                    IDictionary<string, string> fieldFunctions = null;
 
                     var tableClasses = FindTableClass(serviceMap, query.LayerId.ToString(), out filterQuery);
                     if (isFeatureServer == true && tableClasses.Count > 1)
@@ -556,7 +558,9 @@ namespace gView.Interoperability.GeoServices.Request
                         }
                         else
                         {
-                            filter.SubFields = query.OutFields;
+                            var outFields = query.OutFields.FieldsNames().CheckAllowedFunctions(tableClass);
+
+                            filter.SubFields = String.Join(",", outFields);
                             if (query.ReturnGeometry && tableClass is IFeatureClass && !filter.HasField(((IFeatureClass)tableClass).ShapeFieldName))
                             {
                                 filter.AddField(((IFeatureClass)tableClass).ShapeFieldName);
@@ -610,6 +614,11 @@ namespace gView.Interoperability.GeoServices.Request
 
                             using (var cursor = await tableClass.Search(filter))
                             {
+                                if(cursor == null)
+                                {
+                                    throw new ExecuteQueryException();
+                                }
+
                                 bool firstFeature = true;
                                 if (cursor is IFeatureCursor)
                                 {
@@ -642,6 +651,7 @@ namespace gView.Interoperability.GeoServices.Request
                                                     {
                                                         val = Convert.ToInt64(((DateTime)val - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
                                                     }
+
                                                     attributesDict[field.Name] = val;
 
                                                     if (firstFeature)
@@ -653,7 +663,7 @@ namespace gView.Interoperability.GeoServices.Request
                                                             {
                                                                 Name = tableField.name,
                                                                 Alias = tableField.aliasname,
-                                                                Length = tableField.size,
+                                                                Length = tableField.size > 0 ? (int?)tableField.size : null,
                                                                 Type = JsonField.ToType(tableField.type).ToString()
                                                             });
                                                         }
@@ -724,7 +734,7 @@ namespace gView.Interoperability.GeoServices.Request
                 {
                     Error = new JsonError.ErrorDef()
                     {
-                        Code = -1,
+                        Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
                         Message = ex.Message
                     }
                 };
@@ -957,7 +967,7 @@ namespace gView.Interoperability.GeoServices.Request
                 {
                     Error = new JsonError.ErrorDef()
                     {
-                        Code = -1,
+                        Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
                         Message = ex.Message
                     }
                 };
@@ -1039,7 +1049,7 @@ namespace gView.Interoperability.GeoServices.Request
                 {
                     Error = new JsonError.ErrorDef()
                     {
-                        Code = -1,
+                        Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
                         Message = ex.Message
                     }
                 };
@@ -1104,7 +1114,7 @@ namespace gView.Interoperability.GeoServices.Request
                             Success=false,
                             Error=new JsonFeatureServerResponse.JsonError()
                             {
-                                Code = 999,
+                                Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : 999,
                                 Description = ex.Message.Split('\n')[0]
                             }
                         }
@@ -1161,7 +1171,7 @@ namespace gView.Interoperability.GeoServices.Request
                             Success=false,
                             Error=new JsonFeatureServerResponse.JsonError()
                             {
-                                Code = 999,
+                                Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : 999,
                                 Description = ex.Message.Split('\n')[0]
                             }
                         }
@@ -1215,7 +1225,7 @@ namespace gView.Interoperability.GeoServices.Request
                             Success=false,
                             Error=new JsonFeatureServerResponse.JsonError()
                             {
-                                Code = 999,
+                                Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : 999,
                                 Description = ex.Message.Split('\n')[0]
                             }
                         }

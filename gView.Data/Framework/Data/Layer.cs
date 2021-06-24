@@ -436,16 +436,23 @@ namespace gView.Framework.Data
             _fields = new List<IField>();
         }
         public Fields(IFields fields)
+            : this(fields?.ToEnumerable())
+        {
+        }
+
+        public Fields(IEnumerable<IField> fields)
             : this()
         {
-            if (fields == null) return;
-
-            foreach (IField field in fields.ToEnumerable())
+            if (fields != null)
             {
-                if (field == null) continue;
-                _fields.Add(field);
+                foreach (IField field in fields)
+                {
+                    if (field == null) continue;
+                    _fields.Add(field);
+                }
             }
         }
+
         public Fields(DataTable schemaTable)
         {
             _fields = new List<IField>();

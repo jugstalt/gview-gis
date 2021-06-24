@@ -35,6 +35,20 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 .Where(f => f.type == FieldType.Shape)
                 .FirstOrDefault()?.name;
 
+            if (!String.IsNullOrEmpty(featureClass._shapefield))
+            {
+                switch (featureClass._geomType)
+                {
+                    case geometryType.Polygon:
+                        featureClass._fields.Add(new Field($"{ featureClass._shapefield }.STArea()", FieldType.Double));
+                        featureClass._fields.Add(new Field($"{ featureClass._shapefield }.STLength()", FieldType.Double));
+                        break;
+                    case geometryType.Polyline:
+                        featureClass._fields.Add(new Field($"{ featureClass._shapefield }.STLength()", FieldType.Double));
+                        break;
+                }
+            }
+
             featureClass._dataset = dataset;
 
             if (featureClass._sRef == null && await dataset.RepoProvider.FeatureClassSpatialReference(featureClass) > 0)

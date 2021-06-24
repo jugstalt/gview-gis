@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.DB
 {
-    public abstract class OgcSpatialDataset : DatasetMetadata, IFeatureDataset2, IFeatureDatabase, IEditableDatabase
+    public abstract class OgcSpatialDataset : DatasetMetadata, IFeatureDataset2, IFeatureDatabase, IEditableDatabase, IDatasetCapabilities
     {
         protected string _connectionString = "", _errMsg = "";
         protected List<IDatasetElement> _layers;
@@ -1230,5 +1230,14 @@ namespace gView.Framework.OGC.DB
         {
             return true;
         }
+
+        #region IDatasetCapabilities
+
+        virtual public IEnumerable<string> SupportedSubFieldFunctions()
+        {
+            return new string[0];
+        }
+
+        #endregion
     }
 }

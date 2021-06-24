@@ -138,7 +138,7 @@ namespace gView.Framework.Data
                         using (join = (IFeatureLayerJoin)join.Clone())
                         {
                             join.Init(String.Empty);
-                            filter = new FunctionFilter(((IFunctionFilter)filter).Function, fn[1], ((IFunctionFilter)filter).Alias);
+                            filter = new FunctionFilter(((IFunctionFilter)filter).Function, fn[1], ((IFunctionFilter)filter).FunctionAlias);
                             return new FeatureCursorWrapper(await join.PerformQuery(filter));
                         }
                     }
