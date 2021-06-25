@@ -214,7 +214,14 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
                 layer = layers.LayerById(layer.ParentLayer.Id);
                 if (layer != null)
                 {
-                    name = layer.Name + "/" + name;
+                    if (layer.Type == "Annotation Layer" || layer.Type == "Annotation SubLayer")
+                    {
+                        name = $"{ layer.Name }/{ layer.Name } ({ name })";
+                    }
+                    else
+                    {
+                        name = $"{ layer.Name }/{ name }";
+                    }
                 }
             }
 
