@@ -217,12 +217,6 @@
     <EmbeddedResource Include="Framework\UI\Controls\ContentsControl.resx">
       <DependentUpon>ContentsControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Framework\UI\Controls\ContentsList.de-DE.resx">
-      <DependentUpon>ContentsList.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Framework\UI\Controls\ContentsList.de.resx">
-      <DependentUpon>ContentsList.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Framework\UI\Controls\ContentsList.resx">
       <DependentUpon>ContentsList.cs</DependentUpon>
     </EmbeddedResource>

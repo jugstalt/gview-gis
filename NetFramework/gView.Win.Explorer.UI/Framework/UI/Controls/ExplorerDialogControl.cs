@@ -30,7 +30,7 @@ namespace gView.Framework.UI.Controls
         {
             InitializeComponent();
 
-            contentsList1.View = View.List;
+            contentsList1.View = View.Details;
             contentsList1.AllowContextMenu = false;
 
             using (Graphics graphics = this.CreateGraphics())
