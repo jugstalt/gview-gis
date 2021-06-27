@@ -44,4 +44,26 @@ namespace gView.GraphicsEngine
         Dng = 10,
         Heif = 11
     }
+
+    public enum CompositingMode
+    {
+        SourceOver = 0,
+        SourceCopy = 1
+    }
+
+    public enum BitmapLockMode
+    {
+        ReadOnly = 1,
+        WriteOnly = 2,
+        ReadWrite = 3
+    }
+
+    public enum FontStyle
+    {
+        Regular = 0,
+        Bold = 1,
+        Italic = 2,
+        Underline = 4,
+        Strikeout = 8
+    }
 }

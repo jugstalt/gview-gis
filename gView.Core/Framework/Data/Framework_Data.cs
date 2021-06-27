@@ -1,13 +1,12 @@
-using System;
-using System.Data;
-using System.Collections;
-using System.Collections.Generic;
-using gView.Framework.Geometry;
 using gView.Framework.Carto;
-using gView.Framework.system;
 using gView.Framework.FDB;
-using System.Drawing;
+using gView.Framework.Geometry;
 using gView.Framework.IO;
+using gView.Framework.system;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data
@@ -72,25 +71,29 @@ namespace gView.Framework.Data
 
     public class GeorefBitmap : IDisposable
     {
-        public global::System.Drawing.Bitmap Bitmap = null;
+        public GraphicsEngine.Abstraction.IBitmap Bitmap = null;
         public IEnvelope Envelope = null;
         public ISpatialReference SpatialReference = null;
         public float Opacity = 1.0f;
 
-        public GeorefBitmap(global::System.Drawing.Bitmap bitmap)
+        public GeorefBitmap(GraphicsEngine.Abstraction.IBitmap bitmap)
         {
             Bitmap = bitmap;
         }
 
-        public void MakeTransparent(Color transColor)
+        public void MakeTransparent(GraphicsEngine.ArgbColor transColor)
         {
-            if (Bitmap == null) return;
+            if (Bitmap == null)
+            {
+                return;
+            }
+
             try
             {
-                Bitmap b = new global::System.Drawing.Bitmap(Bitmap.Width, Bitmap.Height, global::System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                using (global::System.Drawing.Graphics g = global::System.Drawing.Graphics.FromImage(b))
+                var b = GraphicsEngine.Current.Engine.CreateBitmap(Bitmap.Width, Bitmap.Height, GraphicsEngine.PixelFormat.Format32bppArgb);
+                using (var g = b.CreateCanvas())
                 {
-                    g.DrawImage(Bitmap, 0, 0);
+                    g.DrawBitmap(Bitmap, new GraphicsEngine.CanvasPoint(0, 0));
                 }
                 b.MakeTransparent(transColor);
                 Bitmap.Dispose();
@@ -470,12 +473,18 @@ namespace gView.Framework.Data
 
         static public Color FindColor(double Value, GridColorClass[] classes)
         {
-            if (classes == null) return Color.White;
+            if (classes == null)
+            {
+                return Color.White;
+            }
 
             foreach (GridColorClass cc in classes)
             {
                 if (Value >= cc.MinValue &&
-                    Value <= cc.MaxValue) return cc.Color;
+                    Value <= cc.MaxValue)
+                {
+                    return cc.Color;
+                }
             }
 
             return Color.Transparent;
@@ -613,7 +622,9 @@ namespace gView.Framework.Data
                 foreach (IFeatureLayerJoin join in this)
                 {
                     if (join.JoinName == joinName)
+                    {
                         return join;
+                    }
                 }
                 return null;
             }
@@ -661,7 +672,9 @@ namespace gView.Framework.Data
             FeatureLayerJoins joins = new FeatureLayerJoins();
 
             foreach (IFeatureLayerJoin join in this)
+            {
                 joins.Add((IFeatureLayerJoin)join.Clone());
+            }
 
             return joins;
         }
@@ -725,7 +738,7 @@ namespace gView.Framework.Data
 
     public interface IPointIdentify
     {
-       Task<ICursor> PointQuery(IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata);
+        Task<ICursor> PointQuery(IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata);
     }
 
     public interface IMulitPointIdentify

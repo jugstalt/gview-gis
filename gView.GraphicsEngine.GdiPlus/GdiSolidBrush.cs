@@ -16,6 +16,8 @@ namespace gView.GraphicsEngine.GdiPlus
             _brush = new SolidBrush(color.ToGdiColor());
         }
 
+        public object EngineElement => _brush;
+
         public void Dispose()
         {
             if (_brush != null)

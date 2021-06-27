@@ -6,5 +6,6 @@ namespace gView.GraphicsEngine.Abstraction
 {
     public interface IPen : IDisposable
     {
+        object EngineElement { get; }
     }
 }

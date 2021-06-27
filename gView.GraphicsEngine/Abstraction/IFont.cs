@@ -6,5 +6,6 @@ namespace gView.GraphicsEngine.Abstraction
 {
     public interface IFont : IDisposable 
     {
+        object EngineElement { get; }
     }
 }

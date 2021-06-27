@@ -1,17 +1,14 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Framework.Symbology;
-using gView.Framework.UI;
 using gView.Framework.IO;
+using gView.Framework.Symbology;
 using gView.Framework.system;
+using gView.Framework.UI;
 using gView.MapServer;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using System.Drawing.Drawing2D;
-using System.Drawing;
 
 namespace gView.Framework.Carto
 {
@@ -26,7 +23,7 @@ namespace gView.Framework.Carto
     //public delegate void DatasetAddedEvent(IMap sender,IDataset dataset);
     public delegate void LayerAddedEvent(IMap sender, ILayer layer);
     public delegate void LayerRemovedEvent(IMap sender, ILayer layer);
-    public delegate void NewBitmapEvent(global::System.Drawing.Image image);
+    public delegate void NewBitmapEvent(GraphicsEngine.Abstraction.IBitmap bitmap);
     public delegate void DoRefreshMapViewEvent();
     public delegate void StartRefreshMapEvent(IMap sender);
     public delegate void DrawingLayerEvent(string layerName);
@@ -65,7 +62,7 @@ namespace gView.Framework.Carto
         {
             get;
         }
-        IEnumerable<IDataset> Datasets { get; } 
+        IEnumerable<IDataset> Datasets { get; }
         string Name { get; set; }
 
         string Title { get; set; }
@@ -165,7 +162,7 @@ namespace gView.Framework.Carto
     }
 
     public delegate void MapScaleChangedEvent(IDisplay sender);
-    public delegate void RenderOverlayImageEvent(global::System.Drawing.Bitmap image, bool clearOld);
+    public delegate void RenderOverlayImageEvent(GraphicsEngine.Abstraction.IBitmap bitmap, bool clearOld);
 
     // Projective > 0
     // Geographic < 0
@@ -211,15 +208,11 @@ namespace gView.Framework.Carto
         double dpm { get; }
         double dpi { get; set; }
 
-        global::System.Drawing.Image Bitmap { get; }
-        global::System.Drawing.Graphics GraphicsContext { get; }
-        //IGraphicsEngine GraphicsContext { get; }
-        global::System.Drawing.Color BackgroundColor { get; set; }
-        global::System.Drawing.Color TransparentColor
-        {
-            get;
-            set;
-        }
+        gView.GraphicsEngine.Abstraction.IBitmap Bitmap { get; }
+        gView.GraphicsEngine.Abstraction.ICanvas GraphicsContext { get; }
+
+        gView.GraphicsEngine.ArgbColor BackgroundColor { get; set; }
+        gView.GraphicsEngine.ArgbColor TransparentColor { get; set; }
 
         bool MakeTransparent
         {
@@ -262,33 +255,33 @@ namespace gView.Framework.Carto
         }
     }
 
-    public interface IGraphicsEngine
-    {
-        SmoothingMode SmoothingMode { get; set; }
+    //public interface IGraphicsEngine
+    //{
+    //    SmoothingMode SmoothingMode { get; set; }
 
-        void TranslateTransform(float x, float y);
-        void RotateTransform(float angle);
-        void ResetTransform();
+    //    void TranslateTransform(float x, float y);
+    //    void RotateTransform(float angle);
+    //    void ResetTransform();
 
-        void FillEllipse(Brush brush, float x, float y, float width, float height);
-        void DrawEllipse(Pen pen, float x, float y, float width, float height);
+    //    void FillEllipse(Brush brush, float x, float y, float width, float height);
+    //    void DrawEllipse(Pen pen, float x, float y, float width, float height);
 
-        void FillPath(Brush brush, GraphicsPath path);
-        void DrawPath(Pen pen, GraphicsPath path);
+    //    void FillPath(Brush brush, GraphicsPath path);
+    //    void DrawPath(Pen pen, GraphicsPath path);
 
-        void FillRectangle(Brush brush, float x, float y, float width, float height);
-        void FillRectangle(Brush brush, Rectangle rect);
-        void FillRectangle(Brush brush, RectangleF rect);
-        void DrawRectangle(Pen pen, float x, float y, float width, float height);
+    //    void FillRectangle(Brush brush, float x, float y, float width, float height);
+    //    void FillRectangle(Brush brush, Rectangle rect);
+    //    void FillRectangle(Brush brush, RectangleF rect);
+    //    void DrawRectangle(Pen pen, float x, float y, float width, float height);
 
-        System.Drawing.Text.TextRenderingHint TextRenderingHint { get; set; }
+    //    System.Drawing.Text.TextRenderingHint TextRenderingHint { get; set; }
 
-        void DrawString(string text, Font font, Brush brush, float x, float y, System.Drawing.StringFormat format);
+    //    void DrawString(string text, Font font, Brush brush, float x, float y, System.Drawing.StringFormat format);
 
-        void DrawImage(Image image, Rectangle souceRect, Rectangle destRect, GraphicsUnit unit);
+    //    void DrawImage(Image image, Rectangle souceRect, Rectangle destRect, GraphicsUnit unit);
 
-        SizeF MeasureString(string text, Font font);
-    }
+    //    SizeF MeasureString(string text, Font font);
+    //}
 
     public interface IDisplayTransformation
     {

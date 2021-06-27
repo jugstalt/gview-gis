@@ -225,10 +225,6 @@ namespace gView.Framework.Carto
         {
             
         }
-        protected override void StreamImage(ref System.IO.MemoryStream stream, System.Drawing.Image image)
-        {
-           
-        }
 
         /*
         protected override void DrawRasterParentLayer(IParentRasterLayer rLayer, ICancelTracker cancelTracker,IRasterLayer rootLayer)

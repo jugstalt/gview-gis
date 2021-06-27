@@ -258,16 +258,16 @@ namespace gView.Framework.Carto
 
         public void DisposeGraphicsAndImage()
         {
-            if (_graphics != null)
+            if (_canvas != null)
             {
-                try { _graphics.Dispose(); }
+                try { _canvas.Dispose(); }
                 catch { }
-                _graphics = null;
+                _canvas = null;
             }
-            if (_image != null)
+            if (_bitmap != null)
             {
-                _image.Dispose();
-                _image = null;
+                _bitmap.Dispose();
+                _bitmap = null;
             }
         }
 
@@ -327,15 +327,15 @@ namespace gView.Framework.Carto
 
         internal bool DisposeImage()
         {
-            if (_image != null)
+            if (_bitmap != null)
             {
-                if (_graphics != null)
+                if (_canvas != null)
                 {
                     return false;  // irgendwas tut sich noch
-                    lock (_graphics)
+                    lock (_canvas)
                     {
-                        _graphics.Dispose();
-                        _graphics = null;
+                        _canvas.Dispose();
+                        _canvas = null;
                     }
                 }
                 if (NewBitmap != null)
@@ -343,8 +343,8 @@ namespace gView.Framework.Carto
                     NewBitmap(null);
                 }
 
-                _image.Dispose();
-                _image = null;
+                _bitmap.Dispose();
+                _bitmap = null;
                 DisposeStreams();
             }
             return true;
@@ -364,15 +364,15 @@ namespace gView.Framework.Carto
         }
         public bool DisposeGraphics()
         {
-            if (_graphics == null)
+            if (_canvas == null)
             {
                 return true;
             }
 
-            lock (_graphics)
+            lock (_canvas)
             {
-                _graphics.Dispose();
-                _graphics = null;
+                _canvas.Dispose();
+                _canvas = null;
             }
             return true;
         }
@@ -1026,7 +1026,7 @@ namespace gView.Framework.Carto
 
                     _lastException = null;
 
-                    if (_graphics != null && phase == DrawPhase.Graphics)
+                    if (_canvas != null && phase == DrawPhase.Graphics)
                     {
                         return true;
                     }
@@ -1045,7 +1045,7 @@ namespace gView.Framework.Carto
                     //geoTransformer.ToSpatialReference = this.SpatialReference;
                     if (!printerMap)
                     {
-                        if (_image != null && (_image.Width != iWidth || _image.Height != iHeight))
+                        if (_bitmap != null && (_bitmap.Width != iWidth || _bitmap.Height != iHeight))
                         {
 
                             if (!DisposeImage())
@@ -1054,26 +1054,25 @@ namespace gView.Framework.Carto
                             }
                         }
 
-                        if (_image == null)
+                        if (_bitmap == null)
                         {
                             DisposeStreams();
-                            _image = new System.Drawing.Bitmap(iWidth, iHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                            _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Format32bppArgb);
                             //if (NewBitmap != null && cancelTracker.Continue) NewBitmap(_image);
                         }
                         // NewBitmap immer aufrufen, da sonst neuer DataView nix mitbekommt
                         if (NewBitmap != null && cancelTracker.Continue)
                         {
-                            NewBitmap(_image);
+                            NewBitmap(_bitmap);
                         }
 
-                        _graphics = System.Drawing.Graphics.FromImage(_image);
+                        _canvas = _bitmap.CreateCanvas();
 
-                        this.dpi = _graphics.DpiX;
+                        this.dpi = _canvas.DpiX;
 
-                        using (System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(_backgroundColor))
+                        using (var brush = GraphicsEngine.Current.Engine.CreateSolidBrush(_backgroundColor))
                         {
-                            _graphics.FillRectangle(brush, 0, 0, /*_image.Width, _image.Height*/ iWidth, iHeight);
-                            brush.Dispose();
+                            _canvas.FillRectangle(brush, new GraphicsEngine.CanvasRectangle(0, 0, iWidth, iHeight));
                         }
                     }
 
@@ -1292,7 +1291,7 @@ namespace gView.Framework.Carto
 
                         if (labelLayers.Count != 0)
                         {
-                            StreamImage(ref _msGeometry, _image);
+                            StreamImage(ref _msGeometry, _bitmap);
                             foreach (IFeatureLayer fLayer in labelLayers)
                             {
                                 this.SetGeotransformer(fLayer, geoTransformer);
@@ -1346,11 +1345,11 @@ namespace gView.Framework.Carto
                         }
                         if (m_imageMerger.Count > 0)
                         {
-                            System.Drawing.Bitmap clonedBitmap = _image.Clone(new System.Drawing.Rectangle(0, 0, _image.Width, _image.Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                            var clonedBitmap = _bitmap.Clone(GraphicsEngine.PixelFormat.Format32bppArgb);
                             clonedBitmap.MakeTransparent(_backgroundColor);
                             m_imageMerger.Add(new GeorefBitmap(clonedBitmap), 999);
 
-                            if (!m_imageMerger.Merge(_image, this.Display) &&
+                            if (!m_imageMerger.Merge(_bitmap, this.Display) &&
                                 (this is IServiceMap) &&
                                 ((IServiceMap)this).MapServer != null)
                             {
@@ -1363,7 +1362,7 @@ namespace gView.Framework.Carto
                             m_imageMerger.Clear();
                         }
 
-                        StreamImage(ref _msGeometry, _image);
+                        StreamImage(ref _msGeometry, _bitmap);
 
                         #endregion
                     }
@@ -1421,7 +1420,7 @@ namespace gView.Framework.Carto
                             }
                         }
 
-                        StreamImage(ref _msSelection, _image);
+                        StreamImage(ref _msSelection, _bitmap);
                     }
                     #endregion
 
@@ -1499,12 +1498,12 @@ namespace gView.Framework.Carto
 
                 if (!printerMap)
                 {
-                    if (_graphics != null)
+                    if (_canvas != null)
                     {
-                        _graphics.Dispose();
+                        _canvas.Dispose();
                     }
 
-                    _graphics = null;
+                    _canvas = null;
                 }
 
                 this.IsRefreshing = false;
@@ -1513,7 +1512,7 @@ namespace gView.Framework.Carto
 
         public void HighlightGeometry(IGeometry geometry, int milliseconds)
         {
-            if (geometry == null || _image == null || _graphics != null)
+            if (geometry == null || _bitmap == null || _canvas != null)
             {
                 return;
             }
@@ -1556,10 +1555,10 @@ namespace gView.Framework.Carto
                 return;
             }
 
-            System.Drawing.Bitmap bm = new System.Drawing.Bitmap(_image.Width, _image.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            var bm = GraphicsEngine.Current.Engine.CreateBitmap(_bitmap.Width, _bitmap.Height, GraphicsEngine.PixelFormat.Format32bppArgb);
 
-            _graphics = System.Drawing.Graphics.FromImage(bm);
-            _graphics.DrawImage(_image, 0, 0);
+            _canvas = bm.CreateCanvas();
+            _canvas.DrawBitmap(_bitmap, new GraphicsEngine.CanvasPoint(0, 0));
 
             this.Draw(symbol, geometry);
             if (NewBitmap != null)
@@ -1575,7 +1574,7 @@ namespace gView.Framework.Carto
             Thread.Sleep(milliseconds);
             if (NewBitmap != null)
             {
-                NewBitmap(_image);
+                NewBitmap(_bitmap);
             }
 
             if (DoRefreshMapView != null)
@@ -1585,8 +1584,8 @@ namespace gView.Framework.Carto
 
             bm.Dispose();
             bm = null;
-            _graphics.Dispose();
-            _graphics = null;
+            _canvas.Dispose();
+            _canvas = null;
         }
 
         public ITOC TOC
@@ -1869,8 +1868,8 @@ namespace gView.Framework.Carto
             m_iWidth = (int)stream.Load("iwidth", 1);
             m_iHeight = (int)stream.Load("iheight", 1);
 
-            _backgroundColor = System.Drawing.Color.FromArgb(
-                (int)stream.Load("background", System.Drawing.Color.White.ToArgb()));
+            _backgroundColor = GraphicsEngine.ArgbColor.FromArgb(
+                (int)stream.Load("background", GraphicsEngine.ArgbColor.White.ToArgb()));
 
             _mapUnits = (GeoUnits)stream.Load("MapUnits", 0);
             _displayUnits = (GeoUnits)stream.Load("DisplayUnits", 0);
@@ -2387,7 +2386,7 @@ namespace gView.Framework.Carto
 
         protected virtual void DrawStream(Stream stream)
         {
-            if (stream == null || _graphics == null)
+            if (stream == null || _canvas == null)
             {
                 return;
             }
@@ -2395,21 +2394,20 @@ namespace gView.Framework.Carto
             try
             {
                 stream.Position = 0;
-                using (System.Drawing.Image image = System.Drawing.Image.FromStream(stream))
+                using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(stream))
                 {
-                    _graphics.DrawImage(image, new System.Drawing.Point(0, 0));
-                    image.Dispose();
+                    _canvas.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
                 }
             }
             catch
             {
             }
         }
-        protected virtual void StreamImage(ref MemoryStream stream, System.Drawing.Image image)
+        protected virtual void StreamImage(ref MemoryStream stream, GraphicsEngine.Abstraction.IBitmap bitmap)
         {
             try
             {
-                if (image == null)
+                if (bitmap == null)
                 {
                     return;
                 }
@@ -2420,7 +2418,7 @@ namespace gView.Framework.Carto
                 }
 
                 stream = new MemoryStream();
-                image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                bitmap.Save(stream, GraphicsEngine.ImageFormat.Png);
             }
             catch (Exception)
             {
@@ -2525,13 +2523,16 @@ namespace gView.Framework.Carto
                     sb.Append(ex.StackTrace + "\r\n");
                 }
 
-                using (System.Drawing.Font font = new System.Drawing.Font("Arial", 12))
+                using (var font = GraphicsEngine.Current.Engine.CreateFont("Arial", 12))
+                using (var backgroundBrush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.LightGray))
+                using (var borderPen = GraphicsEngine.Current.Engine.CreatePen(GraphicsEngine.ArgbColor.Black, 2f))
+                using (var textBrush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.Red))
                 {
-                    System.Drawing.SizeF size = this.Display.GraphicsContext.MeasureString(sb.ToString().ToString(), font);
-                    int mx = this.Display.iWidth / 2 - (int)size.Width / 2, my = this.Display.iHeight / 2 - (int)size.Height / 2;
-                    this.Display.GraphicsContext.FillRectangle(System.Drawing.Brushes.LightGray, new System.Drawing.Rectangle(mx - 30, my - 30, (int)size.Width + 60, (int)size.Height + 60));
-                    this.Display.GraphicsContext.DrawRectangle(System.Drawing.Pens.Black, new System.Drawing.Rectangle(mx - 30, my - 30, (int)size.Width + 60, (int)size.Height + 60));
-                    this.Display.GraphicsContext.DrawString(sb.ToString(), font, System.Drawing.Brushes.Red, mx, my);
+                    var sizeF = this.Display.GraphicsContext.MeasureText(sb.ToString().ToString(), font);
+                    int mx = this.Display.iWidth / 2 - (int)sizeF.Width / 2, my = this.Display.iHeight / 2 - (int)sizeF.Height / 2;
+                    this.Display.GraphicsContext.FillRectangle(backgroundBrush, new GraphicsEngine.CanvasRectangle(mx - 30, my - 30, (int)sizeF.Width + 60, (int)sizeF.Height + 60));
+                    this.Display.GraphicsContext.DrawRectangle(borderPen, new GraphicsEngine.CanvasRectangle(mx - 30, my - 30, (int)sizeF.Width + 60, (int)sizeF.Height + 60));
+                    this.Display.GraphicsContext.DrawText(sb.ToString(), font, textBrush, new GraphicsEngine.CanvasPoint(mx, my));
                 }
             }
         }

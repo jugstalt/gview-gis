@@ -5,8 +5,8 @@ using System.Text;
 
 namespace gView.GraphicsEngine
 {
-    static public class GraphicsEngineImplementation
+    static public class Current
     {
-        static public IGraphicsEngine Current { get; set; }
+        static public IGraphicsEngine Engine { get; set; }
     }
 }

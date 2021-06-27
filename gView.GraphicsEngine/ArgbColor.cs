@@ -11,6 +11,14 @@ namespace gView.GraphicsEngine
         public byte G { get; private set; }
         public byte B { get; private set; }
 
+        public int ToArgb() => (this.A << 24) | (this.R << 16) | (this.G << 8) | this.B;
+
+        public static ArgbColor White => ArgbColor.FromArgb(255, 255, 255);
+        public static ArgbColor Black => ArgbColor.FromArgb(0, 0, 0);
+        public static ArgbColor LightGray => ArgbColor.FromArgb(200, 200, 200);
+        public static ArgbColor Red => ArgbColor.FromArgb(255, 0, 0);
+
+
         public static ArgbColor FromArgb(int alpha, ArgbColor baseColor)
         {
             return new ArgbColor()
@@ -42,6 +50,14 @@ namespace gView.GraphicsEngine
                 G = (byte)green,
                 B = (byte)blue
             };
+        }
+
+        public static ArgbColor FromArgb(int argb)
+        {
+            return ArgbColor.FromArgb((byte)(argb >> 24),
+                                      (byte)(argb >> 16),
+                                      (byte)(argb >> 8),
+                                      (byte)(argb));
         }
     }
 }

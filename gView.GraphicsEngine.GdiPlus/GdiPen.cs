@@ -16,6 +16,8 @@ namespace gView.GraphicsEngine.GdiPlus
             _pen = new Pen(color.ToGdiColor(), width);
         }
 
+        public object EngineElement => _pen;
+
         public void Dispose()
         {
             if (_pen != null)
