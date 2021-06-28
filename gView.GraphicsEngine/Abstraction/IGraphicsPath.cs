@@ -13,6 +13,8 @@ namespace gView.GraphicsEngine.Abstraction
 
         void AddLine(CanvasPointF p1, CanvasPointF p2);
 
+        CanvasRectangleF GetBounds();
+
         object EngineElement { get; }
     }
 }

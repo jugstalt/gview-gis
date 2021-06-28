@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using gView.Framework.Data;
-using gView.Framework.Geometry.Tiling;
+﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.Tiling;
+using gView.GraphicsEngine.Abstraction;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.TileCache
@@ -12,7 +11,7 @@ namespace gView.DataSources.TileCache
     class ParentRasterClass : IRasterClass, IParentRasterLayer
     {
         private Dataset _dataset;
-        
+
         public ParentRasterClass(Dataset dataset)
         {
             _dataset = dataset;
@@ -32,7 +31,7 @@ namespace gView.DataSources.TileCache
             }
         }
 
-        public System.Drawing.Bitmap Bitmap
+        public IBitmap Bitmap
         {
             get { return null; }
         }
@@ -75,7 +74,7 @@ namespace gView.DataSources.TileCache
             }
             set
             {
-                
+
             }
         }
 
@@ -86,7 +85,7 @@ namespace gView.DataSources.TileCache
 
         public void EndPaint(Framework.system.ICancelTracker cancelTracker)
         {
-            
+
         }
 
         #endregion
@@ -116,7 +115,9 @@ namespace gView.DataSources.TileCache
         public Task<IRasterLayerCursor> ChildLayers(gView.Framework.Carto.IDisplay display, string filterClause)
         {
             if (_dataset == null || _dataset.Extent == null || _dataset.Scales == null)
+            {
                 return null;
+            }
 
             double dpi = 96.0;  // gView Default... //25.4D / 0.28D;   // wmts 0.28mm -> 1 Pixel in WebMercator;
 
@@ -132,7 +133,7 @@ namespace gView.DataSources.TileCache
             IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display); //display.Envelope;
             if (display.GeometricTransformer != null)
             {
-                dispEnvelope = (IEnvelope)((IGeometry)display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
+                dispEnvelope = ((IGeometry)display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
             }
 
             int level = grid.GetBestLevel(displayResolution, 90D);
@@ -174,7 +175,9 @@ namespace gView.DataSources.TileCache
             public Task<IRasterLayer> NextRasterLayer()
             {
                 if (_pos >= Layers.Count)
+                {
                     return Task.FromResult<IRasterLayer>(null);
+                }
 
                 return Task.FromResult<IRasterLayer>(Layers[_pos++]);
             }
@@ -185,7 +188,7 @@ namespace gView.DataSources.TileCache
 
             public void Dispose()
             {
-                
+
             }
 
             #endregion
@@ -207,20 +210,35 @@ namespace gView.DataSources.TileCache
                 IPolygon p1 = ((IRasterClass)x).Polygon;
                 IPolygon p2 = ((IRasterClass)y).Polygon;
 
-                if (p1 == null) return 1;
-                if (p2 == null) return -1;
+                if (p1 == null)
+                {
+                    return 1;
+                }
+
+                if (p2 == null)
+                {
+                    return -1;
+                }
 
                 double d1 = _center.Distance2(p1[0][0]);
                 double d2 = _center.Distance2(p2[0][0]);
 
-                if (d1 < d2) return -1;
-                if (d1 > d2) return 1;
+                if (d1 < d2)
+                {
+                    return -1;
+                }
+
+                if (d1 > d2)
+                {
+                    return 1;
+                }
+
                 return 0;
             }
 
             #endregion
         }
- 
+
 
         #endregion
     }

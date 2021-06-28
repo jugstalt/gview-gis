@@ -6,7 +6,6 @@ using gView.Framework.UI;
 using gView.MapServer;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,6 +14,8 @@ using gView.Framework.IO;
 using gView.Framework.Carto.LayerRenderers;
 using gView.Data.Framework.Data;
 using gView.Data.Framework.Data.Abstraction;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 
 namespace gView.Server.AppCode
 {
@@ -65,7 +66,7 @@ namespace gView.Server.AppCode
             return serviceMap;
         }
 
-        async public Task<int> SaveImage(string path, System.Drawing.Imaging.ImageFormat format)
+        async public Task<int> SaveImage(string path, ImageFormat format)
         {
             if (_bitmap == null)
             {
@@ -117,7 +118,7 @@ namespace gView.Server.AppCode
             }
         }
 
-        async public Task<int> SaveImage(Stream ms, System.Drawing.Imaging.ImageFormat format)
+        async public Task<int> SaveImage(Stream ms, ImageFormat format)
         {
             if (_bitmap == null)
             {
@@ -181,11 +182,11 @@ namespace gView.Server.AppCode
             catch { }
         }
 
-        public System.Drawing.Bitmap MapImage
+        public IBitmap MapImage
         {
             get { return _bitmap; }
         }
-        async public Task<System.Drawing.Bitmap> Legend()
+        async public Task<IBitmap> Legend()
         {
             ITOC toc = _toc.Clone(this) as ITOC;
 
@@ -352,18 +353,18 @@ namespace gView.Server.AppCode
 
                 if (_bitmap == null)
                 {
-                    _bitmap = new System.Drawing.Bitmap(iWidth, iHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    _bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, PixelFormat.Format32bppArgb);
                 }
 
-                _canvas = System.Drawing.Graphics.FromImage(_bitmap);
-                //_graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
-                //this.dpi = _graphics.DpiX * this.ScaleSymbolFactor;
+                _canvas = _bitmap.CreateCanvas();
+                //_canvas.CompositingMode = CompositingMode.SourceCopy;
+                //this.dpi = _canvas.DpiX * this.ScaleSymbolFactor;
 
                 if (BackgroundColor.A != 0 && !Display.MakeTransparent)
                 {
-                    using (System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(BackgroundColor))
+                    using (var brush = Current.Engine.CreateSolidBrush(BackgroundColor))
                     {
-                        _canvas.FillRectangle(brush, 0, 0, _bitmap.Width, _bitmap.Height);
+                        _canvas.FillRectangle(brush, new CanvasRectangle(0, 0, _bitmap.Width, _bitmap.Height));
                     }
                 }
 
@@ -766,7 +767,7 @@ namespace gView.Server.AppCode
         {
 
         }
-        protected override void StreamImage(ref System.IO.MemoryStream stream, System.Drawing.Image image)
+        protected override void StreamImage(ref System.IO.MemoryStream stream, IBitmap bitmap)
         {
 
         }

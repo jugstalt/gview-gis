@@ -3,10 +3,10 @@ using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
+using gView.GraphicsEngine;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Drawing;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data
@@ -461,21 +461,21 @@ namespace gView.Framework.Data
     {
         public double MinValue;
         public double MaxValue;
-        public Color Color;
+        public ArgbColor Color;
         public string Legend;
 
-        public GridColorClass(double minValue, double maxValue, Color color)
+        public GridColorClass(double minValue, double maxValue, ArgbColor color)
         {
             MinValue = minValue;
             MaxValue = maxValue;
             Color = color;
         }
 
-        static public Color FindColor(double Value, GridColorClass[] classes)
+        static public ArgbColor FindColor(double Value, GridColorClass[] classes)
         {
             if (classes == null)
             {
-                return Color.White;
+                return ArgbColor.White;
             }
 
             foreach (GridColorClass cc in classes)
@@ -487,7 +487,7 @@ namespace gView.Framework.Data
                 }
             }
 
-            return Color.Transparent;
+            return ArgbColor.Transparent;
         }
 
         #region IPersistable Member
@@ -496,7 +496,7 @@ namespace gView.Framework.Data
         {
             MinValue = (double)stream.Load("MinValue", 0.0);
             MaxValue = (double)stream.Load("MaxValue", 0.0);
-            Color = Color.FromArgb((int)stream.Load("Color", Color.White.ToArgb()));
+            Color = ArgbColor.FromArgb((int)stream.Load("Color", ArgbColor.White.ToArgb()));
             Legend = (string)stream.Load("Legend", String.Empty);
         }
 

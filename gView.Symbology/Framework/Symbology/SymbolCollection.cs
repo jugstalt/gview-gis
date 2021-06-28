@@ -3,6 +3,7 @@ using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
 using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -28,9 +29,9 @@ namespace gView.Framework.Symbology
         public SymbolCollection(IEnumerable<ISymbol> symbols)
             : this()
         {
-            if(symbols!=null)
+            if (symbols != null)
             {
-                foreach(var symbol in symbols)
+                foreach (var symbol in symbols)
                 {
                     AddSymbol(symbol);
                 }

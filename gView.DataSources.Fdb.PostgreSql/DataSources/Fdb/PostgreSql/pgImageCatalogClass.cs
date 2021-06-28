@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Data;
-using gView.Framework.system;
-using gView.Framework.IO;
+﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
-using System.IO;
+using gView.Framework.IO;
+using gView.Framework.system;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
+using System;
+using System.Collections.Generic;
 using System.Data;
-using System.Runtime.InteropServices;
-using System.Reflection;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.PostgreSql
@@ -49,9 +48,13 @@ namespace gView.DataSources.Fdb.PostgreSql
                 {
                     DirectoryInfo di = new DirectoryInfo(_imageSpace);
                     if (di.Exists)
+                    {
                         _imageSpaceType = ImageSpaceType.FileSystem;
+                    }
                     else
+                    {
                         _imageSpaceType = ImageSpaceType.Invalid;
+                    }
                 }
                 catch
                 {
@@ -62,7 +65,11 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         private void calcPolygon(IEnvelope env)
         {
-            if (env == null) return;
+            if (env == null)
+            {
+                return;
+            }
+
             _polygon = new Polygon();
             Ring ring = new Ring();
             ring.AddPoint(new Point(env.minx, env.miny));
@@ -76,7 +83,10 @@ namespace gView.DataSources.Fdb.PostgreSql
         {
             try
             {
-                if (_fc == null) return null;
+                if (_fc == null)
+                {
+                    return null;
+                }
 
                 QueryFilter filter = new QueryFilter();
                 filter.AddField("PATH");
@@ -95,27 +105,37 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         async public Task<IFeature> GetFeature(string filename)
         {
-                IFeatureCursor cursor = null;
-                try
-                {
-                    if (_fc == null) return null;
-
-                    QueryFilter filter = new QueryFilter();
-                    filter.AddField("*");
-                    filter.WhereClause = "\"PATH\"='" + filename + "'";
-                    cursor = await _fc.Search(filter) as IFeatureCursor;
-
-                    if (cursor == null) return null;
-                    return await cursor.NextFeature();
-                }
-                catch
+            IFeatureCursor cursor = null;
+            try
+            {
+                if (_fc == null)
                 {
                     return null;
                 }
-                finally
+
+                QueryFilter filter = new QueryFilter();
+                filter.AddField("*");
+                filter.WhereClause = "\"PATH\"='" + filename + "'";
+                cursor = await _fc.Search(filter) as IFeatureCursor;
+
+                if (cursor == null)
                 {
-                    if (cursor != null) cursor.Dispose();
+                    return null;
                 }
+
+                return await cursor.NextFeature();
+            }
+            catch
+            {
+                return null;
+            }
+            finally
+            {
+                if (cursor != null)
+                {
+                    cursor.Dispose();
+                }
+            }
         }
 
         #region IRasterClass Members
@@ -138,12 +158,12 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         }
 
-        public System.Drawing.Color GetPixel(double X, double Y)
+        public ArgbColor GetPixel(double X, double Y)
         {
-            return System.Drawing.Color.Transparent;
+            return ArgbColor.Transparent;
         }
 
-        public System.Drawing.Bitmap Bitmap
+        public IBitmap Bitmap
         {
             get { return null; }
         }
@@ -213,7 +233,9 @@ namespace gView.DataSources.Fdb.PostgreSql
         async public Task<IRasterLayerCursor> ChildLayers(gView.Framework.Carto.IDisplay display, string filterClause)
         {
             if (_fc == null || display == null || _fdb == null)
+            {
                 return new SimpleRasterlayerCursor(new List<IRasterLayer>());
+            }
 
             double dpm = Math.Max(display.Canvas.DpiX, display.Canvas.DpiY) / 0.0254;
             double pix = display.mapScale / dpm;/*display.dpm;*/  // [m]
@@ -221,7 +243,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display); //display.Envelope;
             if (display.GeometricTransformer != null)
             {
-                dispEnvelope = (IEnvelope)((IGeometry)display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
+                dispEnvelope = ((IGeometry)display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
             }
 
             SpatialFilter filter = new SpatialFilter();
@@ -273,13 +295,21 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         public void AddDirectory(DirectoryInfo di)
         {
-            if (_directories.Contains(di.FullName.ToLower())) return;
+            if (_directories.Contains(di.FullName.ToLower()))
+            {
+                return;
+            }
+
             _directories.Add(di.FullName.ToLower());
         }
 
         public void RemoveDirectory(DirectoryInfo di)
         {
-            if (!_directories.Contains(di.FullName.ToLower())) return;
+            if (!_directories.Contains(di.FullName.ToLower()))
+            {
+                return;
+            }
+
             _directories.Remove(di.FullName.ToLower());
         }
 
@@ -310,7 +340,11 @@ namespace gView.DataSources.Fdb.PostgreSql
         {
             get
             {
-                if (_fc == null) return String.Empty;
+                if (_fc == null)
+                {
+                    return String.Empty;
+                }
+
                 return _fc.ShapeFieldName;
             }
         }
@@ -319,20 +353,32 @@ namespace gView.DataSources.Fdb.PostgreSql
         {
             get
             {
-                if (_fc == null) return null;
+                if (_fc == null)
+                {
+                    return null;
+                }
+
                 return _fc.Envelope;
             }
         }
 
         async public Task<int> CountFeatures()
         {
-            if (_fc == null) return 0;
+            if (_fc == null)
+            {
+                return 0;
+            }
+
             return await _fc.CountFeatures();
         }
 
         async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
-            if (_fc == null) return null;
+            if (_fc == null)
+            {
+                return null;
+            }
+
             return await _fc.GetFeatures(filter);
         }
 
@@ -342,13 +388,21 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         async public Task<ICursor> Search(IQueryFilter filter)
         {
-            if (_fc == null) return null;
+            if (_fc == null)
+            {
+                return null;
+            }
+
             return await _fc.Search(filter);
         }
 
         async public Task<ISelectionSet> Select(IQueryFilter filter)
         {
-            if (_fc == null) return null;
+            if (_fc == null)
+            {
+                return null;
+            }
+
             return await _fc.Select(filter);
         }
 
@@ -356,14 +410,22 @@ namespace gView.DataSources.Fdb.PostgreSql
         {
             get
             {
-                if (_fc == null) return null;
+                if (_fc == null)
+                {
+                    return null;
+                }
+
                 return _fc.Fields;
             }
         }
 
         public IField FindField(string name)
         {
-            if (_fc == null) return null;
+            if (_fc == null)
+            {
+                return null;
+            }
+
             return _fc.FindField(name);
         }
 
@@ -371,7 +433,11 @@ namespace gView.DataSources.Fdb.PostgreSql
         {
             get
             {
-                if (_fc == null) return String.Empty;
+                if (_fc == null)
+                {
+                    return String.Empty;
+                }
+
                 return _fc.IDFieldName;
             }
         }
@@ -384,7 +450,11 @@ namespace gView.DataSources.Fdb.PostgreSql
         {
             get
             {
-                if (_fc == null) return false;
+                if (_fc == null)
+                {
+                    return false;
+                }
+
                 return _fc.HasZ; ;
             }
         }
@@ -393,7 +463,11 @@ namespace gView.DataSources.Fdb.PostgreSql
         {
             get
             {
-                if (_fc == null) return false;
+                if (_fc == null)
+                {
+                    return false;
+                }
+
                 return _fc.HasM;
             }
         }
@@ -402,7 +476,11 @@ namespace gView.DataSources.Fdb.PostgreSql
         {
             get
             {
-                if (_fc == null) return geometryType.Unknown;
+                if (_fc == null)
+                {
+                    return geometryType.Unknown;
+                }
+
                 return _fc.GeometryType;
             }
         }
@@ -421,14 +499,22 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         public void RefreshFrom(object obj)
         {
-            if (!(obj is pgImageCatalogClass)) return;
+            if (!(obj is pgImageCatalogClass))
+            {
+                return;
+            }
 
             pgImageCatalogClass ic = (pgImageCatalogClass)obj;
-            if (ic.Name != this.Name) return;
+            if (ic.Name != this.Name)
+            {
+                return;
+            }
 
             _polygon = ic._polygon.Clone() as IPolygon;
             if (_fc is IRefreshable)
+            {
                 ((IRefreshable)_fc).RefreshFrom(ic._fc);
+            }
         }
 
         #endregion
@@ -452,7 +538,11 @@ namespace gView.DataSources.Fdb.PostgreSql
             IMultiPoint mPoint = new MultiPoint(points);
             List<IRasterLayer> layers = await QueryChildLayers(mPoint, String.Empty);
 
-            if (layers == null || layers.Count == 0) return null;
+            if (layers == null || layers.Count == 0)
+            {
+                return null;
+            }
+
             List<IRow> cursorRows = new List<IRow>();
 
             for (int i = 0; i < mPoint.PointCount; i++)
@@ -462,7 +552,10 @@ namespace gView.DataSources.Fdb.PostgreSql
                 {
                     if (layer == null ||
                         !(layer.Class is IRasterClass) ||
-                        !(layer.Class is IPointIdentify)) continue;
+                        !(layer.Class is IPointIdentify))
+                    {
+                        continue;
+                    }
 
                     if (gView.Framework.SpatialAlgorithms.Algorithm.Jordan(
                         ((IRasterClass)layer.Class).Polygon,
@@ -495,7 +588,10 @@ namespace gView.DataSources.Fdb.PostgreSql
         async public Task<float[]> MultiGridQuery(gView.Framework.Carto.IDisplay display, IPoint[] Points, double dx, double dy, ISpatialReference sRef, IUserData userdata)
         {
             if (Points == null || Points.Length != 3)
+            {
                 return null;
+            }
+
             PointCollection pColl = new PointCollection();
             pColl.AddPoint(Points[0]);
             pColl.AddPoint(Points[1]);
@@ -512,8 +608,8 @@ namespace gView.DataSources.Fdb.PostgreSql
             d2x /= stepY; d2y /= stepY;
 
             List<float> vals = new List<float>();
-            vals.Add((float)(stepX + 1));
-            vals.Add((float)(stepY + 1));
+            vals.Add(stepX + 1);
+            vals.Add(stepY + 1);
 
             List<IRasterLayer> layers = await QueryChildLayers(pColl.Envelope, String.Empty);
             try
@@ -530,7 +626,10 @@ namespace gView.DataSources.Fdb.PostgreSql
                         {
                             if (layer == null ||
                                 !(layer.Class is IRasterClass) ||
-                                !(layer.Class is IGridIdentify)) continue;
+                                !(layer.Class is IGridIdentify))
+                            {
+                                continue;
+                            }
 
                             if (gView.Framework.SpatialAlgorithms.Algorithm.Jordan(((IRasterClass)layer.Class).Polygon, p.X, p.Y))
                             {
@@ -542,7 +641,9 @@ namespace gView.DataSources.Fdb.PostgreSql
                             }
                         }
                         if (!found)
+                        {
                             vals.Add(float.MinValue);
+                        }
                     }
                 }
             }
@@ -551,7 +652,9 @@ namespace gView.DataSources.Fdb.PostgreSql
                 foreach (IRasterLayer layer in layers)
                 {
                     if (layer.Class is IGridIdentify)
+                    {
                         ((IGridIdentify)layer.Class).ReleaseGridQuery();
+                    }
                 }
             }
 
@@ -610,7 +713,9 @@ namespace gView.DataSources.Fdb.PostgreSql
             set
             {
                 if (value != null && value.Length == 3)
+                {
                     _hillShadeVector = value;
+                }
             }
         }
 
@@ -660,7 +765,10 @@ namespace gView.DataSources.Fdb.PostgreSql
         {
             List<IRasterLayer> childlayers = new List<IRasterLayer>();
 
-            if (_fc == null || _fdb == null) return childlayers;
+            if (_fc == null || _fdb == null)
+            {
+                return childlayers;
+            }
 
             SpatialFilter filter = new SpatialFilter();
             filter.Geometry = geometry;
@@ -687,12 +795,14 @@ namespace gView.DataSources.Fdb.PostgreSql
             _colorClasses = null;
             List<GridColorClass> classes = new List<GridColorClass>();
             GridColorClass cc;
-            while ((cc = (GridColorClass)stream.Load("GridClass", null, new GridColorClass(0, 0, System.Drawing.Color.White))) != null)
+            while ((cc = (GridColorClass)stream.Load("GridClass", null, new GridColorClass(0, 0, ArgbColor.White))) != null)
             {
                 classes.Add(cc);
             }
             if (classes.Count > 0)
+            {
                 _colorClasses = classes.ToArray();
+            }
 
             _useHillShade = (bool)stream.Load("UseHillShade", true);
             _hillShadeVector[0] = (double)stream.Load("HillShadeDx", 0.0);
@@ -748,14 +858,20 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         async public Task<IRasterLayer> NextRasterLayer()
         {
-            if (_cursor == null || _layer == null) return null;
+            if (_cursor == null || _layer == null)
+            {
+                return null;
+            }
 
             try
             {
                 while (true)
                 {
                     IFeature feature = await _cursor.NextFeature();
-                    if (feature == null) return null;
+                    if (feature == null)
+                    {
+                        return null;
+                    }
 
                     IRasterLayer rLayer = null;
 
@@ -772,13 +888,20 @@ namespace gView.DataSources.Fdb.PostgreSql
                         else
                         {
                             IRasterFileDataset rDataset = _layer._compMan.CreateInstance(new Guid(feature["RF_PROVIDER"].ToString())) as IRasterFileDataset;
-                            if (rDataset == null) continue;
+                            if (rDataset == null)
+                            {
+                                continue;
+                            }
+
                             rLayer = rDataset.AddRasterFile((string)feature["PATH"], feature.Shape as IPolygon);
                         }
                         if (rLayer != null && rLayer.RasterClass != null)
                         {
                             rLayer.InterpolationMethod = _layer.InterpolationMethod;
-                            if (rLayer.RasterClass.SpatialReference == null) rLayer.RasterClass.SpatialReference = _layer._sRef;
+                            if (rLayer.RasterClass.SpatialReference == null)
+                            {
+                                rLayer.RasterClass.SpatialReference = _layer._sRef;
+                            }
                         }
                     }
 
@@ -812,7 +935,10 @@ namespace gView.DataSources.Fdb.PostgreSql
         public void Dispose()
         {
             if (_cursor != null)
+            {
                 _cursor.Dispose();
+            }
+
             _cursor = null;
         }
 
@@ -845,26 +971,38 @@ namespace gView.DataSources.Fdb.PostgreSql
             get { return _polygon; }
         }
 
-        System.Drawing.Bitmap _bm = null;
+        IBitmap _bitmap = null;
         async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
-            if (_fdb == null) return;
+            if (_fdb == null)
+            {
+                return;
+            }
+
             try
             {
                 DataTable tab = await _fdb._conn.Select("IMAGE,X,Y,dx1,dx2,dy1,dy2", _dsname + "_IMAGE_DATA", "ID=" + _ID);
-                if (tab == null) return;
-                if (tab.Rows.Count != 1) return;
+                if (tab == null)
+                {
+                    return;
+                }
+
+                if (tab.Rows.Count != 1)
+                {
+                    return;
+                }
+
                 DataRow row = tab.Rows[0];
 
-                _bm = (System.Drawing.Bitmap)System.Drawing.Bitmap.FromStream(new MemoryStream((byte[])row["IMG"]));
+                _bitmap = Current.Engine.CreateBitmap(new MemoryStream((byte[])row["IMG"]));
                 _X = (double)tab.Rows[0]["X"];
                 _Y = (double)tab.Rows[0]["Y"];
                 _dx_X = (double)tab.Rows[0]["dx1"];
                 _dx_Y = (double)tab.Rows[0]["dx2"];
                 _dy_X = (double)tab.Rows[0]["dy1"];
                 _dy_Y = (double)tab.Rows[0]["dy2"];
-                _iWidth = _bm.Width;
-                _iHeight = _bm.Height;
+                _iWidth = _bitmap.Width;
+                _iHeight = _bitmap.Height;
             }
             catch
             {
@@ -874,21 +1012,21 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         public void EndPaint(ICancelTracker cancelTracker)
         {
-            if (_bm != null)
+            if (_bitmap != null)
             {
-                _bm.Dispose();
-                _bm = null;
+                _bitmap.Dispose();
+                _bitmap = null;
             }
         }
 
-        public System.Drawing.Color GetPixel(double X, double Y)
+        public ArgbColor GetPixel(double X, double Y)
         {
-            return System.Drawing.Color.Transparent;
+            return ArgbColor.Transparent;
         }
 
-        public System.Drawing.Bitmap Bitmap
+        public IBitmap Bitmap
         {
-            get { return _bm; }
+            get { return _bitmap; }
         }
 
         public double oX { get { return _X; } }

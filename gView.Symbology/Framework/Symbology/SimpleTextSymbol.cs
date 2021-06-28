@@ -4,11 +4,12 @@ using gView.Framework.IO;
 using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using gView.Symbology.Framework.Symbology.IO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -20,29 +21,29 @@ namespace gView.Framework.Symbology
     public class SimpleTextSymbol : Symbol, ITextSymbol, IPropertyPage, IFontColor, IFontSymbol
     {
         protected string _text;
-        protected Font _font;
-        protected SolidBrush _brush;
+        protected IFont _font;
+        protected IBrush _brush;
         protected float _xOffset = 0, _yOffset = 0, _angle = 0, _hOffset = 0, _vOffset = 0, _rotation = 0;
         protected TextSymbolAlignment _align = TextSymbolAlignment.Center;
 
         public SimpleTextSymbol()
         {
-            _font = new Font("Arial", 10);
-            _brush = new SolidBrush(Color.Black);
+            _font = Current.Engine.CreateFont("Arial", 10);
+            _brush = Current.Engine.CreateSolidBrush(ArgbColor.Black);
 
             this.ShowInTOC = false;
         }
 
-        protected SimpleTextSymbol(Font font, Color color)
+        protected SimpleTextSymbol(IFont font, ArgbColor color)
         {
             _font = font;
-            _brush = new SolidBrush(color);
+            _brush = Current.Engine.CreateSolidBrush(color);
 
             this.ShowInTOC = false;
         }
 
         [Browsable(true)]
-        public Font Font
+        public IFont Font
         {
             get { return _font; }
             set
@@ -65,18 +66,18 @@ namespace gView.Framework.Symbology
         [Browsable(true)]
         //[Editor(typeof(gView.Framework.UI.ColorTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
         [UseColorPicker()]
-        public System.Drawing.Color Color
+        public ArgbColor Color
         {
             get { return _brush.Color; }
             set { _brush.Color = value; }
         }
 
         virtual protected int DrawingLevels { get { return 1; } }
-        private void DrawAtPoint(IDisplay display, IPoint point, string text, float angle, StringFormat format)
+        private void DrawAtPoint(IDisplay display, IPoint point, string text, float angle, IDrawTextFormat format)
         {
             DrawAtPoint(display, point, text, angle, format, -1);
         }
-        virtual protected void DrawAtPoint(IDisplay display, IPoint point, string text, float angle, StringFormat format, int level)
+        virtual protected void DrawAtPoint(IDisplay display, IPoint point, string text, float angle, IDrawTextFormat format, int level)
         {
             if (_font != null)
             {
@@ -85,9 +86,12 @@ namespace gView.Framework.Symbology
 
                 try
                 {
-                    display.Canvas.TextRenderingHint = ((this.Smoothingmode == SymbolSmoothing.None) ? System.Drawing.Text.TextRenderingHint.SystemDefault : System.Drawing.Text.TextRenderingHint.AntiAlias);
+                    display.Canvas.TextRenderingHint = 
+                        ((this.Smoothingmode == SymbolSmoothing.None) ? 
+                            TextRenderingHint.SystemDefault : 
+                            TextRenderingHint.AntiAlias);
 
-                    display.Canvas.TranslateTransform((float)point.X, (float)point.Y);
+                    display.Canvas.TranslateTransform(new CanvasPointF((float)point.X, (float)point.Y));
                     if (angle != 0 || _angle != 0 || _rotation != 0)
                     {
                         display.Canvas.RotateTransform(angle + _angle + _rotation);
@@ -97,15 +101,15 @@ namespace gView.Framework.Symbology
                 finally
                 {
                     display.Canvas.ResetTransform();
-                    display.Canvas.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
+                    display.Canvas.TextRenderingHint = TextRenderingHint.SystemDefault;
                 }
             }
         }
 
-        private StringFormat StringFormatFromAlignment(TextSymbolAlignment symbolAlignment)
+        private IDrawTextFormat StringFormatFromAlignment(TextSymbolAlignment symbolAlignment)
         {
 
-            StringFormat format = new StringFormat();
+            var format = Current.Engine.CreateDrawTextFormat();
             switch (symbolAlignment)
             {
                 case TextSymbolAlignment.rightAlignOver:
@@ -185,8 +189,8 @@ namespace gView.Framework.Symbology
                 return _measureTextWidth;
             }
 
-            StringFormat format = StringFormatFromAlignment(_align);
-            IDisplayCharacterRanges ranges = new DisplayCharacterRanges(display.Canvas, _font, format, _text);
+            var format = StringFormatFromAlignment(_align);
+            IDisplayCharacterRanges ranges = display.Canvas.DisplayCharacterRanges(_font, format, _text);
 
             return ranges;
         }
@@ -242,7 +246,7 @@ namespace gView.Framework.Symbology
                 IDisplayPath path = (IDisplayPath)geometry;
 
                 #region Text On Path
-                StringFormat format = StringFormatFromAlignment(_align);
+                var format = StringFormatFromAlignment(_align);
 
                 IDisplayCharacterRanges ranges = this.MeasureCharacterWidth(display);
                 float sizeW = ranges.Width;
@@ -253,19 +257,22 @@ namespace gView.Framework.Symbology
                 }
 
                 #region Richtung des Textes
-                PointF? p1_ = path.PointAt(stat0); //SpatialAlgorithms.Algorithm.DisplayPathPoint(path, stat0);
-                PointF? p2_ = path.PointAt(stat1); //SpatialAlgorithms.Algorithm.DisplayPathPoint(path, stat1);
-                if (p1_ == null || p2_ == null)
+
+                CanvasPointF? p1_ = path.PointAt(stat0); //SpatialAlgorithms.Algorithm.DisplayPathPoint(path, stat0);
+                CanvasPointF? p2_ = path.PointAt(stat1); //SpatialAlgorithms.Algorithm.DisplayPathPoint(path, stat1);
+                if (!p1_.HasValue || !p2_.HasValue)
                 {
                     return null;
                 }
 
-                if (((PointF)p1_).X > ((PointF)p2_).X)
+                if (p1_.Value.X > p2_.Value.X)
                 {
                     #region Swap Path Direction
+
                     path.ChangeDirection();
                     stat = stat0 = path.Length - stat1;
                     stat1 = stat0 + sizeW;
+
                     #endregion
                 }
                 #endregion
@@ -275,19 +282,19 @@ namespace gView.Framework.Symbology
 
                 for (int i = 0; i < _text.Length; i++)
                 {
-                    RectangleF cSize = ranges[i];
-                    PointF? p1, p2;
+                    CanvasRectangleF cSize = ranges[i];
                     int counter = 0;
+
                     while (true)
                     {
-                        p1 = path.PointAt(stat); //SpatialAlgorithms.Algorithm.DisplayPathPoint(path, stat);
-                        p2 = path.PointAt(stat + cSize.Width);
-                        if (p1 == null || p2 == null)
+                        CanvasPointF? p1 = path.PointAt(stat); //SpatialAlgorithms.Algorithm.DisplayPathPoint(path, stat);
+                        CanvasPointF? p2 = path.PointAt(stat + cSize.Width);
+                        if (!p1_.HasValue || !p2_.HasValue)
                         {
                             return null;
                         }
 
-                        angle = (float)(Math.Atan2(((PointF)p2).Y - ((PointF)p1).Y, ((PointF)p2).X - ((PointF)p1).X) * 180.0 / Math.PI);
+                        angle = (float)(Math.Atan2(p2.Value.Y - p1.Value.Y, p2.Value.X - p1.Value.X) * 180.0 / Math.PI);
 
                         //float ccc = 0f;
                         //angle = 0f;
@@ -301,7 +308,7 @@ namespace gView.Framework.Symbology
                         //}
                         //angle /= ccc;
 
-                        x = ((PointF)p1).X; y = ((PointF)p1).Y;
+                        x = p1.Value.X; y = p1.Value.Y;
                         AnnotationPolygon polygon = null;
                         switch (format.LineAlignment)
                         {
@@ -403,7 +410,7 @@ namespace gView.Framework.Symbology
                             angle -= 180;
                         }
 
-                        StringFormat format = StringFormatFromAlignment(_align);
+                        var format = StringFormatFromAlignment(_align);
                         double x, y;
                         if (format.Alignment == StringAlignment.Center)
                         {
@@ -441,18 +448,18 @@ namespace gView.Framework.Symbology
             return AnnotationPolygon(display, _text, x, y, symbolAlignment);
         }
 
-        private SizeF? _measureStringSize = null;
+        private CanvasSizeF? _measureStringSize = null;
 
-        private SizeF MeasureStringSize(IDisplay display, string text)
+        private CanvasSizeF MeasureStringSize(IDisplay display, string text)
         {
-            if (text == _text && _measureStringSize != null)
+            if (text == _text && _measureStringSize.HasValue)
             {
-                return (SizeF)_measureStringSize;
-            } 
+                return _measureStringSize.Value;
+            }
             else
             {
-                SizeF size = display.Canvas.MeasureString(text, _font);
-                if(text==_text)
+                CanvasSizeF size = display.Canvas.MeasureText(text, _font);
+                if (text == _text)
                 {
                     _measureStringSize = size;
                 }
@@ -468,7 +475,7 @@ namespace gView.Framework.Symbology
             return AnnotationPolygon(display, size, x, y, symbolAlignment);
         }
 
-        private AnnotationPolygon AnnotationPolygon(IDisplay display, SizeF size, float x, float y, TextSymbolAlignment alignment)
+        private AnnotationPolygon AnnotationPolygon(IDisplay display, CanvasSizeF size, float x, float y, TextSymbolAlignment alignment)
         {
             float x1 = 0, y1 = 0;
             switch (alignment)
@@ -579,17 +586,20 @@ namespace gView.Framework.Symbology
             if (geometry is IPoint)
             {
                 #region IPoint
+
                 double x = ((IPoint)geometry).X;
                 double y = ((IPoint)geometry).Y;
                 display.World2Image(ref x, ref y);
                 IPoint p = new gView.Framework.Geometry.Point(x, y);
 
                 DrawAtPoint(display, p, _text, 0, StringFormatFromAlignment(symbolAlignment));
+
                 #endregion
             }
             if (geometry is IMultiPoint)
             {
                 #region IMultiPoint
+
                 IMultiPoint pColl = (IMultiPoint)geometry;
                 for (int i = 0; i < pColl.PointCount; i++)
                 {
@@ -601,6 +611,7 @@ namespace gView.Framework.Symbology
 
                     DrawAtPoint(display, p, _text, 0, StringFormatFromAlignment(symbolAlignment));
                 }
+
                 #endregion
             }
             else if (geometry is IDisplayPath && ((IDisplayPath)geometry).AnnotationPolygonCollision is AnnotationPolygonCollection)
@@ -612,7 +623,7 @@ namespace gView.Framework.Symbology
 
                 IDisplayPath path = (IDisplayPath)geometry;
                 AnnotationPolygonCollection apc = path.AnnotationPolygonCollision as AnnotationPolygonCollection;
-                StringFormat format = StringFormatFromAlignment(symbolAlignment);
+                var format = StringFormatFromAlignment(symbolAlignment);
                 format.LineAlignment = StringAlignment.Center;
                 format.Alignment = StringAlignment.Center;
 
@@ -626,7 +637,7 @@ namespace gView.Framework.Symbology
                             AnnotationPolygon ap = apc[i] as AnnotationPolygon;
                             if (ap != null)
                             {
-                                PointF centerPoint = ap.CenterPoint;
+                                var centerPoint = ap.CenterPoint;
                                 DrawAtPoint(display, new Geometry.Point(centerPoint.X, centerPoint.Y), _text[i].ToString(), (float)ap.Angle, format, level);
                             }
                         }
@@ -760,7 +771,7 @@ namespace gView.Framework.Symbology
                             angle -= display.DisplayTransformation.DisplayRotation;
                         }
 
-                        StringFormat format = StringFormatFromAlignment(symbolAlignment);
+                        var format = StringFormatFromAlignment(symbolAlignment);
 
                         if (angle < 0)
                         {
@@ -894,7 +905,7 @@ namespace gView.Framework.Symbology
                 ms.Write(encoder.GetBytes(soap), 0, soap.Length);
                 ms.Position = 0;
                 SoapFormatter formatter = new SoapFormatter();
-                _font = (Font)formatter.Deserialize<Font>(ms, stream, this);
+                _font = (IFont)formatter.Deserialize<IFont>(ms, stream, this);
 
                 this.MaxFontSize = (float)stream.Load("maxfontsize", 0f);
                 this.MinFontSize = (float)stream.Load("minfontsize", 0f);
@@ -904,7 +915,7 @@ namespace gView.Framework.Symbology
                 err = ex.Message;
                 ex = null;
             }
-            this.Color = Color.FromArgb((int)stream.Load("color", Color.Red.ToArgb()));
+            this.Color = ArgbColor.FromArgb((int)stream.Load("color", ArgbColor.Red.ToArgb()));
 
             HorizontalOffset = (float)stream.Load("xOffset", (float)0);
             VerticalOffset = (float)stream.Load("yOffset", (float)0);
@@ -970,7 +981,7 @@ namespace gView.Framework.Symbology
         public override object Clone()
         {
             SimpleTextSymbol tSym = _font != null && _brush != null ?
-                new SimpleTextSymbol(new Font(_font.Name, _font.Size, _font.Style), _brush.Color) :
+                new SimpleTextSymbol(Current.Engine.CreateFont(_font.Name, _font.Size, _font.Style), _brush.Color) :
                 new SimpleTextSymbol();
 
             tSym.HorizontalOffset = HorizontalOffset;
@@ -1005,7 +1016,7 @@ namespace gView.Framework.Symbology
             }
             fac *= options.DpiFactor;
 
-            SimpleTextSymbol tSym = new SimpleTextSymbol(new Font(_font.Name, Math.Max(_font.Size * fac / display.Screen.LargeFontsFactor, 2), _font.Style), _brush.Color);
+            SimpleTextSymbol tSym = new SimpleTextSymbol(Current.Engine.CreateFont(_font.Name, Math.Max(_font.Size * fac / display.Screen.LargeFontsFactor, 2), _font.Style), _brush.Color);
             tSym.HorizontalOffset = HorizontalOffset * fac;
             tSym.VerticalOffset = VerticalOffset * fac;
             tSym.Angle = Angle;
@@ -1061,7 +1072,7 @@ namespace gView.Framework.Symbology
         #region IFontColor Member
 
         [Browsable(false)]
-        public Color FontColor
+        public ArgbColor FontColor
         {
             get
             {
@@ -1092,7 +1103,7 @@ namespace gView.Framework.Symbology
 
         #region Helper
 
-        protected void DrawString(System.Drawing.Graphics/*IGraphicsEngine*/ gr, string text, Font font, SolidBrush brush, float xOffset, float yOffset, StringFormat format)
+        protected void DrawString(ICanvas canvas, string text, IFont font, IBrush brush, float xOffset, float yOffset, IDrawTextFormat format)
         {
             float alignXOffset = xOffset,
                   alignYOffset = yOffset;
@@ -1110,7 +1121,7 @@ namespace gView.Framework.Symbology
             {
                 if (!text.Contains("^"))
                 {
-                    gr.DrawString(text, font, brush, alignXOffset, alignYOffset, format);
+                    canvas.DrawText(text, font, brush, alignXOffset, alignYOffset, format);
                 }
                 else
                 {
@@ -1158,10 +1169,10 @@ namespace gView.Framework.Symbology
                             subText = text.Substring(0, text.IndexOf(superScript ? "^" : "~"));
                         }
 
-                        using (var subFont = new Font(font.Name, fontSize))
+                        using (var subFont = Current.Engine.CreateFont(font.Name, fontSize))
                         {
-                            gr.DrawString(subText, subFont, brush, alignXOffset, alignYOffset, format);
-                            var size = gr.MeasureString(subText, subFont);
+                            canvas.DrawText(subText, subFont, brush, alignXOffset, alignYOffset, format);
+                            var size = canvas.MeasureText(subText, subFont);
                             if (!String.IsNullOrWhiteSpace(subText))
                             {
                                 alignXOffset += size.Width - subFont.Size * .2f;
@@ -1198,7 +1209,7 @@ namespace gView.Framework.Symbology
             }
             else
             {
-                gr.DrawString(text, font, brush, alignXOffset, alignYOffset, format);
+                canvas.DrawText(text, font, brush, alignXOffset, alignYOffset, format);
             }
         }
 
@@ -1222,397 +1233,5 @@ namespace gView.Framework.Symbology
         }
 
         #endregion
-    }
-
-    [gView.Framework.system.RegisterPlugIn("A5C2BB98-2B2D-4353-9262-4CDF4C7EB845")]
-    public class GlowingTextSymbol : SimpleTextSymbol
-    {
-        protected SolidBrush _outlinebrush;
-        private SymbolSmoothing _outlineSmothingMode = SymbolSmoothing.None;
-        private int _outlineWidth = 1;
-
-        public GlowingTextSymbol()
-            : base()
-        {
-            _outlinebrush = new SolidBrush(Color.Yellow);
-        }
-        protected GlowingTextSymbol(Font font, Color color, Color outlinecolor)
-            : base(font, color)
-        {
-            _outlinebrush = new SolidBrush(outlinecolor);
-        }
-
-        [Browsable(true)]
-        //[Editor(typeof(gView.Framework.UI.ColorTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
-        [UseColorPicker()]
-        [Category("Glowing")]
-        public System.Drawing.Color GlowingColor
-        {
-            get { return _outlinebrush.Color; }
-            set { _outlinebrush.Color = value; }
-        }
-
-        [Browsable(true)]
-        [Category("Glowing")]
-        public SymbolSmoothing GlowingSmoothingmode
-        {
-            get { return _outlineSmothingMode; }
-            set { _outlineSmothingMode = value; }
-        }
-
-        [Browsable(true)]
-        [Category("Glowing")]
-        public int GlowingWidth
-        {
-            get { return _outlineWidth; }
-            set { _outlineWidth = value; }
-        }
-
-        #region ISymbol Members
-
-        override public void Release()
-        {
-            base.Release();
-            if (_outlinebrush != null)
-            {
-                _outlinebrush.Dispose();
-            }
-
-            _outlinebrush = null;
-        }
-
-        [Browsable(false)]
-        override public string Name
-        {
-            get { return "Glowing Text Symbol"; }
-        }
-
-        #endregion
-
-        #region IClone2 Members
-
-        public override object Clone()
-        {
-            GlowingTextSymbol tSym = _font != null && _brush != null && _outlinebrush != null ?
-                new GlowingTextSymbol(new Font(_font.Name, _font.Size, _font.Style), _brush.Color, _outlinebrush.Color) :
-                new GlowingTextSymbol();
-
-            tSym.HorizontalOffset = HorizontalOffset;
-            tSym.VerticalOffset = VerticalOffset;
-            tSym.Angle = Angle;
-            tSym._align = _align;
-            tSym.Smoothingmode = this.Smoothingmode;
-            tSym.GlowingSmoothingmode = this.GlowingSmoothingmode;
-            tSym.GlowingWidth = this.GlowingWidth;
-            tSym.IncludesSuperScript = this.IncludesSuperScript;
-            tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
-
-            return tSym;
-        }
-
-        override public object Clone(CloneOptions options)
-        {
-            var display = options?.Display;
-
-            if (display == null)
-            {
-                return this.Clone();
-            }
-
-            float fac = 1;
-            if (options.ApplyRefScale)
-            {
-                fac = (float)(display.refScale / display.mapScale);
-                fac = options.LabelRefScaleFactor(fac);
-            }
-            fac *= options.DpiFactor;
-
-            GlowingTextSymbol tSym = new GlowingTextSymbol(new Font(_font.Name, Math.Max(_font.Size * fac, 2f), _font.Style), _brush.Color, _outlinebrush.Color);
-            tSym.HorizontalOffset = HorizontalOffset * fac;
-            tSym.VerticalOffset = VerticalOffset * fac;
-            tSym.Angle = Angle;
-            tSym._align = _align;
-            tSym.Smoothingmode = this.Smoothingmode;
-            tSym.GlowingSmoothingmode = this.GlowingSmoothingmode;
-            tSym.GlowingWidth = this.GlowingWidth;
-            tSym.IncludesSuperScript = this.IncludesSuperScript;
-            tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
-
-            return tSym;
-        }
-
-        #endregion
-
-        #region IPersistable Members
-
-        override public void Load(IPersistStream stream)
-        {
-            base.Load(stream);
-
-            this.GlowingColor = Color.FromArgb((int)stream.Load("outlinecolor", Color.Yellow.ToArgb()));
-            this.GlowingSmoothingmode = (SymbolSmoothing)stream.Load("outlinesmoothing", (int)this.Smoothingmode);
-            this.GlowingWidth = (int)stream.Load("outlinewidth", 1);
-        }
-
-        override public void Save(IPersistStream stream)
-        {
-            base.Save(stream);
-
-            stream.Save("outlinecolor", this.GlowingColor.ToArgb());
-            stream.Save("outlinesmoothing", (int)this.GlowingSmoothingmode);
-            stream.Save("outlinewidth", this.GlowingWidth);
-        }
-
-        #endregion
-
-        #region ISymbol Member
-
-        [Browsable(false)]
-        override public SymbolSmoothing SymbolSmothingMode
-        {
-            set
-            {
-                this.Smoothingmode = _outlineSmothingMode = value;
-            }
-        }
-
-        #endregion
-
-        override protected int DrawingLevels { get { return 2; } }
-        override protected void DrawAtPoint(IDisplay display, IPoint point, string text, float angle, StringFormat format, int level)
-        {
-            if (_font != null)
-            {
-                //point.X+=_xOffset;
-                //point.Y+=_yOffset;
-
-                try
-                {
-                    display.Canvas.TranslateTransform((float)point.X, (float)point.Y);
-                    if (angle != 0 || _angle != 0 || _rotation != 0)
-                    {
-                        display.Canvas.RotateTransform(angle + _angle + _rotation);
-                    }
-
-                    display.Canvas.TextRenderingHint = ((this.GlowingSmoothingmode == SymbolSmoothing.None) ? System.Drawing.Text.TextRenderingHint.SystemDefault : System.Drawing.Text.TextRenderingHint.AntiAlias);
-
-                    if (level < 0 || level == 0)
-                    {
-                        var outlineWidth = _outlineWidth;
-                        if (outlineWidth == 0)
-                        {
-                            outlineWidth = (int)Math.Max(1f, Font.Size / 10f);
-                        }
-
-                        //if(display.GraphicsContext.TextRenderingHint== System.Drawing.Text.TextRenderingHint.AntiAlias)
-                        //{
-                        //    outlineWidth = Math.Max(2, outlineWidth);
-                        //}
-
-                        if (outlineWidth > 0)
-                        {
-                            for (int x = outlineWidth; x >= -outlineWidth; x--)
-                            {
-                                for (int y = outlineWidth; y >= -outlineWidth; y--)
-                                {
-                                    if (x == 0 && y == 0)
-                                    {
-                                        continue;
-                                    }
-
-                                    DrawString(display.Canvas, text, _font, _outlinebrush, (float)_xOffset + x, (float)_yOffset + y, format);
-                                }
-                            }
-                        }
-                    }
-
-                    if (level < 0 || level == 1)
-                    {
-                        display.Canvas.TextRenderingHint = ((this.Smoothingmode == SymbolSmoothing.None) ? System.Drawing.Text.TextRenderingHint.SystemDefault : System.Drawing.Text.TextRenderingHint.AntiAlias);
-
-                        DrawString(display.Canvas, text, _font, _brush, (float)_xOffset, (float)_yOffset, format);
-                    }
-
-                }
-                finally
-                {
-                    display.Canvas.ResetTransform();
-                    display.Canvas.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
-                }
-            }
-        }
-    }
-
-    [RegisterPlugInAttribute("A06F8B12-394E-4F8E-8B9A-6025F96F6F4F")]
-    public class BlockoutTextSymbol : SimpleTextSymbol
-    {
-        protected SolidBrush _outlinebrush;
-
-        public BlockoutTextSymbol()
-            : base()
-        {
-            _outlinebrush = new SolidBrush(Color.Yellow);
-        }
-        protected BlockoutTextSymbol(Font font, Color color, Color outlinecolor)
-            : base(font, color)
-        {
-            _outlinebrush = new SolidBrush(outlinecolor);
-        }
-
-        [Browsable(true)]
-        [UseColorPicker()]
-        public System.Drawing.Color ColorOutline
-        {
-            get { return _outlinebrush.Color; }
-            set { _outlinebrush.Color = value; }
-        }
-
-        #region ISymbol Members
-
-        override public void Release()
-        {
-            base.Release();
-            if (_outlinebrush != null)
-            {
-                _outlinebrush.Dispose();
-            }
-
-            _outlinebrush = null;
-        }
-
-        [Browsable(false)]
-        override public string Name
-        {
-            get { return "Blockout Text Symbol"; }
-        }
-
-        #endregion
-
-        #region IClone2 Members
-
-        public override object Clone()
-        {
-            BlockoutTextSymbol tSym = _font != null && _brush != null && _outlinebrush != null ?
-                new BlockoutTextSymbol(new Font(_font.Name, _font.Size, _font.Style), _brush.Color, _outlinebrush.Color) :
-                new BlockoutTextSymbol();
-
-            tSym.HorizontalOffset = HorizontalOffset;
-            tSym.VerticalOffset = VerticalOffset;
-            tSym.Angle = Angle;
-            tSym._align = _align;
-            tSym.Smoothingmode = this.Smoothingmode;
-            tSym.IncludesSuperScript = this.IncludesSuperScript;
-            tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
-
-            return tSym;
-        }
-
-        override public object Clone(CloneOptions options)
-        {
-            var display = options?.Display;
-
-            if (display == null)
-            {
-                return this.Clone();
-            }
-
-            float fac = 1;
-            if (options.ApplyRefScale)
-            {
-                fac = (float)(display.refScale / display.mapScale);
-                fac = options.LabelRefScaleFactor(fac);
-            }
-            fac *= options.DpiFactor;
-
-            BlockoutTextSymbol tSym = new BlockoutTextSymbol(new Font(_font.Name, Math.Max(_font.Size * fac, 2f), _font.Style), _brush.Color, _outlinebrush.Color);
-            tSym.HorizontalOffset = HorizontalOffset * fac;
-            tSym.VerticalOffset = VerticalOffset * fac;
-            tSym.Angle = Angle;
-            tSym._align = _align;
-            tSym.Smoothingmode = this.Smoothingmode;
-            tSym.IncludesSuperScript = this.IncludesSuperScript;
-            tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
-
-            return tSym;
-        }
-        #endregion
-
-        #region IPersistable Members
-
-        override public void Load(IPersistStream stream)
-        {
-            base.Load(stream);
-
-            this.ColorOutline = Color.FromArgb((int)stream.Load("outlinecolor", Color.Yellow.ToArgb()));
-        }
-
-        override public void Save(IPersistStream stream)
-        {
-            base.Save(stream);
-
-            stream.Save("outlinecolor", this.ColorOutline.ToArgb());
-        }
-
-        #endregion
-
-        override protected int DrawingLevels { get { return 2; } }
-        override protected void DrawAtPoint(IDisplay display, IPoint point, string text, float angle, StringFormat format, int level)
-        {
-            if (_font != null)
-            {
-                //point.X+=_xOffset;
-                //point.Y+=_yOffset;
-
-                try
-                {
-                    display.Canvas.TranslateTransform((float)point.X, (float)point.Y);
-                    if (angle != 0 || _angle != 0 || _rotation != 0)
-                    {
-                        display.Canvas.RotateTransform(angle + _angle + _rotation);
-                    }
-
-                    if (level < 0 || level == 0)
-                    {
-                        SizeF size = display.Canvas.MeasureString(text, _font);
-                        RectangleF rect = new RectangleF(0f, 0f, size.Width, size.Height);
-                        switch (format.Alignment)
-                        {
-                            case StringAlignment.Center:
-                                rect.Offset(-size.Width / 2, 0f);
-                                break;
-                            case StringAlignment.Far:
-                                rect.Offset(-size.Width, 0f);
-                                break;
-                        }
-                        switch (format.LineAlignment)
-                        {
-                            case StringAlignment.Center:
-                                rect.Offset(0f, -size.Height / 2);
-                                break;
-                            case StringAlignment.Far:
-                                rect.Offset(0f, -size.Height);
-                                break;
-                        }
-
-                        display.Canvas.SmoothingMode = (System.Drawing.Drawing2D.SmoothingMode)this.Smoothingmode;
-                        display.Canvas.FillRectangle(_outlinebrush, rect);
-                        display.Canvas.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-                    }
-
-                    if (level < 0 || level == 1)
-                    {
-                        display.Canvas.TextRenderingHint = ((this.Smoothingmode == SymbolSmoothing.None) ? System.Drawing.Text.TextRenderingHint.SystemDefault : System.Drawing.Text.TextRenderingHint.AntiAlias);
-
-                        DrawString(display.Canvas, text, _font, _brush, (float)_xOffset, (float)_yOffset, format);
-
-                        display.Canvas.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
-                    }
-                }
-                finally
-                {
-                    display.Canvas.ResetTransform();
-                }
-            }
-        }
     }
 }

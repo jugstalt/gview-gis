@@ -1,16 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml;
 using gView.Framework.Carto;
-using gView.Framework.Symbology;
+using gView.Framework.Carto.Rendering;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using System.IO;
+using gView.Framework.Symbology;
 using gView.Framework.Xml;
+using gView.GraphicsEngine;
+using System;
 using System.Globalization;
-using gView.Framework.Carto.Rendering;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Framework.XML
 {
@@ -24,23 +24,37 @@ namespace gView.Framework.XML
         }
         public static IQueryFilter Query(XmlNode query, ITableClass tc, IFeatureClass rootFeateatureClass)
         {
-            if (tc == null || query == null) return null;
+            if (tc == null || query == null)
+            {
+                return null;
+            }
 
             IQueryFilter filter = (query.Name == "QUERY") ? new QueryFilter() : new SpatialFilter();
             if (query.Attributes["where"] != null)
+            {
                 filter.WhereClause = query.Attributes["where"].Value;
+            }
+
             if (query.Attributes["subfields"] != null)
             {
                 foreach (string field in query.Attributes["subfields"].Value.Split(' '))
                 {
                     if (field == "#ALL#")
+                    {
                         filter.AddField("*");
+                    }
                     else if (field == "#SHAPE#" && tc is IFeatureClass)
+                    {
                         filter.AddField(((IFeatureClass)tc).ShapeFieldName);
+                    }
                     else if (field == "#ID#")
+                    {
                         filter.AddField(tc.IDFieldName);
+                    }
                     else
+                    {
                         filter.AddField(field);
+                    }
                 }
             }
             else
@@ -98,7 +112,9 @@ namespace gView.Framework.XML
             {
                 ISymbol symbol = SimpleSymbol(child);
                 if (symbol != null)
+                {
                     renderer.Symbol = symbol;
+                }
             }
 
             renderer.SymbolRotation = SymbolRotationFromAXLAttribtures(axl);
@@ -106,9 +122,15 @@ namespace gView.Framework.XML
         }
         public static IFeatureRenderer ValueMapRenderer(XmlNode axl)
         {
-            if (axl == null || axl.Attributes["lookupfield"] == null) return null;
+            if (axl == null || axl.Attributes["lookupfield"] == null)
+            {
+                return null;
+            }
+
             if (axl.SelectSingleNode("RANGE") != null)
+            {
                 return QuantityRenderer(axl);
+            }
 
             ValueMapRenderer renderer = new ValueMapRenderer();
 
@@ -119,14 +141,20 @@ namespace gView.Framework.XML
                 {
                     ISymbol symbol = (child.ChildNodes.Count > 0) ? SimpleSymbol(child.ChildNodes[0]) : null;
                     if (symbol is ILegendItem && child.Attributes["label"] != null)
+                    {
                         ((LegendItem)symbol).LegendLabel = child.Attributes["label"].Value;
+                    }
+
                     renderer[child.Attributes["value"].Value] = symbol;
                 }
                 else if (child.Name == "OTHER")
                 {
                     ISymbol symbol = (child.ChildNodes.Count > 0) ? SimpleSymbol(child.ChildNodes[0]) : null;
                     if (symbol is ILegendItem && child.Attributes["label"] != null)
+                    {
                         ((LegendItem)symbol).LegendLabel = child.Attributes["label"].Value;
+                    }
+
                     renderer.DefaultSymbol = symbol;
                 }
             }
@@ -148,7 +176,9 @@ namespace gView.Framework.XML
                     {
                         ISymbol symbol = (child.ChildNodes.Count > 0) ? SimpleSymbol(child.ChildNodes[0]) : null;
                         if (symbol is ILegendItem && child.Attributes["label"] != null)
+                        {
                             ((LegendItem)symbol).LegendLabel = child.Attributes["label"].Value;
+                        }
 
                         renderer.AddClass(new QuantityRenderer.QuantityClass(
                             double.Parse(child.Attributes["lower"].Value.Replace(",", "."), _nhi),
@@ -159,7 +189,10 @@ namespace gView.Framework.XML
                     {
                         ISymbol symbol = (child.ChildNodes.Count > 0) ? SimpleSymbol(child.ChildNodes[0]) : null;
                         if (symbol is ILegendItem && child.Attributes["label"] != null)
+                        {
                             ((LegendItem)symbol).LegendLabel = child.Attributes["label"].Value;
+                        }
+
                         renderer.DefaultSymbol = symbol;
                     }
                 }
@@ -174,8 +207,15 @@ namespace gView.Framework.XML
 
         public static SimpleLabelRenderer SimpleLabelRenderer(XmlNode axl, IFeatureClass fc)
         {
-            if (axl == null || fc == null) return null;
-            if (axl.Attributes["field"] == null) return null;
+            if (axl == null || fc == null)
+            {
+                return null;
+            }
+
+            if (axl.Attributes["field"] == null)
+            {
+                return null;
+            }
 
             string fieldname = axl.Attributes["field"].Value;
             bool found = false;
@@ -188,17 +228,34 @@ namespace gView.Framework.XML
                 }
             }
 
-            if (fc.FindField(fieldname) == null) return null;
-            if (!found) return null;
+            if (fc.FindField(fieldname) == null)
+            {
+                return null;
+            }
+
+            if (!found)
+            {
+                return null;
+            }
 
             XmlNode symbol = axl.SelectSingleNode("TEXTSYMBOL");
-            if (symbol == null) symbol = axl.SelectSingleNode("TEXTMARKERSYMBOL");
-            if (symbol == null) return null;
+            if (symbol == null)
+            {
+                symbol = axl.SelectSingleNode("TEXTMARKERSYMBOL");
+            }
+
+            if (symbol == null)
+            {
+                return null;
+            }
 
             SimpleLabelRenderer renderer = new SimpleLabelRenderer();
             bool hasAlignment = false;
             renderer.TextSymbol = SimpleTextSymbol(symbol, out hasAlignment);
-            if (renderer.TextSymbol == null) return null;
+            if (renderer.TextSymbol == null)
+            {
+                return null;
+            }
 
             renderer.FieldName = fieldname;
 
@@ -206,9 +263,13 @@ namespace gView.Framework.XML
             {
                 renderer.TextSymbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignOver;
                 if (fc.GeometryType == geometryType.Polyline)
+                {
                     renderer.TextSymbol.TextSymbolAlignment = TextSymbolAlignment.Over;
+                }
                 else if (fc.GeometryType == geometryType.Polygon)
+                {
                     renderer.TextSymbol.TextSymbolAlignment = TextSymbolAlignment.Center;
+                }
             }
 
             if (axl.Attributes["howmanylabels"] != null)
@@ -282,30 +343,40 @@ namespace gView.Framework.XML
                 {
                     IFeatureRenderer r = ObjectFromAXLFactory.SimpleRenderer(child);
                     if (r != null)
+                    {
                         renderer.Renderers.Add(r);
+                    }
                 }
                 else if (child.Name == "VALUEMAPRENDERER")
                 {
                     IFeatureRenderer r = ObjectFromAXLFactory.ValueMapRenderer(child);
                     if (r != null)
+                    {
                         renderer.Renderers.Add(r);
+                    }
                 }
                 else if (child.Name == "GROUPRENDERER")
                 {
                     IFeatureRenderer r = ObjectFromAXLFactory.GroupRenderer(child);
                     if (r != null)
+                    {
                         renderer.Renderers.Add(r);
+                    }
                 }
                 else if (child.Name == "SCALEDEPENDENTRENDERER")
                 {
                     IFeatureRenderer r = ObjectFromAXLFactory.ScaleDependentRenderer(child);
                     if (r != null)
+                    {
                         renderer.Renderers.Add(r);
+                    }
                 }
             }
 
             if (renderer.Renderers.Count == 1)
+            {
                 return renderer.Renderers[0];
+            }
 
             return renderer;
         }
@@ -321,7 +392,9 @@ namespace gView.Framework.XML
 
                 object rendererObj = GroupRenderer(axl);
                 if (rendererObj == null)
+                {
                     return null;
+                }
 
                 if (rendererObj is IGroupRenderer)
                 {
@@ -362,7 +435,9 @@ namespace gView.Framework.XML
                 {
                     SimpleLabelRenderer labelRenderer = SimpleLabelRenderer(labelRendererNode, fc);
                     if (labelRenderer == null)
+                    {
                         continue;
+                    }
 
                     renderer.Renderers.Add(labelRenderer);
                 }
@@ -384,7 +459,9 @@ namespace gView.Framework.XML
         public static string ConvertToAXL(object gViewObject)
         {
             if (gViewObject is IToArcXml)
+            {
                 return ((IToArcXml)gViewObject).ArcXml;
+            }
 
             if (gViewObject is SimpleRenderer)
             {
@@ -422,7 +499,10 @@ namespace gView.Framework.XML
         }
         public static string SimpleRenderer2AXL(SimpleRenderer renderer)
         {
-            if (renderer == null) return "";
+            if (renderer == null)
+            {
+                return "";
+            }
 
             string symbol = Symbol2AXL(renderer.Symbol, renderer.SymbolRotation);
             if (symbol.Length > 0)
@@ -439,7 +519,10 @@ namespace gView.Framework.XML
         }
         public static string SimpleLabelRenderer2AXL(SimpleLabelRenderer renderer)
         {
-            if (renderer == null) return "";
+            if (renderer == null)
+            {
+                return "";
+            }
 
             string symbol = Symbol2AXL(renderer.TextSymbol, renderer.SymbolRotation);
             if (symbol.Length > 0)
@@ -504,7 +587,10 @@ namespace gView.Framework.XML
         }
         public static string ValueMapRenderer2AXL(ValueMapRenderer renderer)
         {
-            if (renderer == null) return "";
+            if (renderer == null)
+            {
+                return "";
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.Append("<VALUEMAPRENDERER");
@@ -520,7 +606,10 @@ namespace gView.Framework.XML
                     sb.Append("<EXACT");
                     sb.Append(" value=\"" + CheckEsc(key) + "\"");
                     if (renderer[key] is ILegendItem)
-                        sb.Append(" label=\"" + CheckEsc((((ILegendItem)renderer[key]).LegendLabel)) + "\"");
+                    {
+                        sb.Append(" label=\"" + CheckEsc((renderer[key].LegendLabel)) + "\"");
+                    }
+
                     sb.Append(">\n");
                     sb.Append(symbol);
                     sb.Append("\n</EXACT>\n");
@@ -540,7 +629,10 @@ namespace gView.Framework.XML
 
         public static string QuantityRenderer2AXL(QuantityRenderer renderer)
         {
-            if (renderer == null) return String.Empty;
+            if (renderer == null)
+            {
+                return String.Empty;
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.Append("<VALUEMAPRENDERER");
@@ -556,7 +648,10 @@ namespace gView.Framework.XML
                     sb.Append("<RANGE");
                     sb.Append(" lower=\"" + qClass.Min.ToString(_nhi) + "\" upper=\"" + qClass.Max.ToString(_nhi) + "\"");
                     if (qClass.Symbol is ILegendItem)
-                        sb.Append(" label=\"" + CheckEsc((((ILegendItem)qClass.Symbol).LegendLabel)) + "\"");
+                    {
+                        sb.Append(" label=\"" + CheckEsc((qClass.Symbol.LegendLabel)) + "\"");
+                    }
+
                     sb.Append(">\n");
                     sb.Append(symbol);
                     sb.Append("\n</RANGE>\n");
@@ -576,91 +671,120 @@ namespace gView.Framework.XML
 
         public static string SimpleFillSymbol2AXL(SimpleFillSymbol symbol, SymbolRotation rotation)
         {
-            if (symbol == null) return "";
+            if (symbol == null)
+            {
+                return "";
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.Append("<SIMPLEPOLYGONSYMBOL");
             sb.Append(" boundary=\"" + ((symbol.OutlineSymbol != null) ? "true" : "false") + "\"");
-            System.Drawing.Color col;
+            ArgbColor col;
+
             if (symbol.OutlineSymbol != null)
             {
                 col = symbol.OutlineColor;
                 sb.Append(" boundarycolor=\"" + Color2AXL(col) + "\"");
                 if (col.A != 255)
+                {
                     sb.Append(" boundarytransparency=\"" + ColorTransparency2AXL(col) + "\"");
-                if (symbol.OutlineDashStyle != System.Drawing.Drawing2D.DashStyle.Solid)
+                }
+
+                if (symbol.OutlineDashStyle != LineDashStyle.Solid)
+                {
                     sb.Append(" boundarytype=\"" + DashStyle2AXL(symbol.OutlineDashStyle) + "\"");
+                }
+
                 if (symbol.OutlineWidth != 1)
+                {
                     sb.Append(" boundarywidth=\"" + symbol.OutlineWidth.ToString() + "\"");
+                }
             }
             col = symbol.Color;
             sb.Append(" fillcolor=\"" + Color2AXL(col) + "\"");
             if (col.A != 255)
+            {
                 sb.Append(" filltransparency=\"" + ColorTransparency2AXL(col) + "\"");
+            }
+
             sb.Append("/>");
 
             return sb.ToString();
         }
         public static string HatchSymbol2AXL(HatchSymbol symbol, SymbolRotation rotation)
         {
-            if (symbol == null) return "";
+            if (symbol == null)
+            {
+                return "";
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.Append("<SIMPLEPOLYGONSYMBOL");
             sb.Append(" boundary=\"" + ((symbol.OutlineSymbol != null) ? "true" : "false") + "\"");
-            System.Drawing.Color col;
+            ArgbColor col;
+
             if (symbol.OutlineSymbol != null)
             {
                 col = symbol.OutlineColor;
                 sb.Append(" boundarycolor=\"" + Color2AXL(col) + "\"");
                 if (col.A != 255)
+                {
                     sb.Append(" boundarytransparency=\"" + ColorTransparency2AXL(col) + "\"");
-                if (symbol.OutlineDashStyle != System.Drawing.Drawing2D.DashStyle.Solid)
+                }
+
+                if (symbol.OutlineDashStyle != LineDashStyle.Solid)
+                {
                     sb.Append(" boundarytype=\"" + DashStyle2AXL(symbol.OutlineDashStyle) + "\"");
+                }
+
                 if (symbol.OutlineWidth != 1)
+                {
                     sb.Append(" boundarywidth=\"" + symbol.OutlineWidth.ToString() + "\"");
+                }
             }
             col = symbol.ForeColor;
             sb.Append(" fillcolor=\"" + Color2AXL(col) + "\"");
             if (col.A != 255)
+            {
                 sb.Append(" filltransparency=\"" + ColorTransparency2AXL(col) + "\"");
+            }
 
             switch (symbol.HatchStyle)
             {
-                case System.Drawing.Drawing2D.HatchStyle.BackwardDiagonal:
+                case HatchStyle.BackwardDiagonal:
                     sb.Append(" filltype=\"bdiagonal\"");
                     break;
-                case System.Drawing.Drawing2D.HatchStyle.ForwardDiagonal:
+                case HatchStyle.ForwardDiagonal:
                     sb.Append(" filltype=\"fdiagonal\"");
                     break;
-                case System.Drawing.Drawing2D.HatchStyle.Cross:
+                case HatchStyle.Cross:
                     sb.Append(" filltype=\"cross\"");
                     break;
-                case System.Drawing.Drawing2D.HatchStyle.DiagonalCross:
+                case HatchStyle.DiagonalCross:
                     sb.Append(" filltype=\"diagcross\"");
                     break;
-                case System.Drawing.Drawing2D.HatchStyle.Horizontal:
+                case HatchStyle.Horizontal:
                     sb.Append(" filltype=\"horizontal\"");
                     break;
-                case System.Drawing.Drawing2D.HatchStyle.Vertical:
+                case HatchStyle.Vertical:
                     sb.Append(" filltype=\"vertical\"");
                     break;
-                case System.Drawing.Drawing2D.HatchStyle.Percent05:
-                case System.Drawing.Drawing2D.HatchStyle.Percent10:
-                case System.Drawing.Drawing2D.HatchStyle.Percent20:
-                case System.Drawing.Drawing2D.HatchStyle.Percent25:
+                case HatchStyle.Percent05:
+                case HatchStyle.Percent10:
+                case HatchStyle.Percent20:
+                case HatchStyle.Percent25:
                     sb.Append(" filltype=\"lightgray\"");
                     break;
-                case System.Drawing.Drawing2D.HatchStyle.Percent30:
-                case System.Drawing.Drawing2D.HatchStyle.Percent40:
-                case System.Drawing.Drawing2D.HatchStyle.Percent50:
-                case System.Drawing.Drawing2D.HatchStyle.Percent60:
+                case HatchStyle.Percent30:
+                case HatchStyle.Percent40:
+                case HatchStyle.Percent50:
+                case HatchStyle.Percent60:
                     sb.Append(" filltype=\"gray\"");
                     break;
-                case System.Drawing.Drawing2D.HatchStyle.Percent70:
-                case System.Drawing.Drawing2D.HatchStyle.Percent75:
-                case System.Drawing.Drawing2D.HatchStyle.Percent80:
-                case System.Drawing.Drawing2D.HatchStyle.Percent90:
+                case HatchStyle.Percent70:
+                case HatchStyle.Percent75:
+                case HatchStyle.Percent80:
+                case HatchStyle.Percent90:
                     sb.Append(" filltype=\"darkgray\"");
                     break;
                 default:
@@ -673,28 +797,43 @@ namespace gView.Framework.XML
         }
         public static string SimpleLineSymbol2AXL(SimpleLineSymbol symbol, SymbolRotation rotation)
         {
-            if (symbol == null) return "";
+            if (symbol == null)
+            {
+                return "";
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.Append("<SIMPLELINESYMBOL");
             sb.Append(" color=\"" + Color2AXL(symbol.Color) + "\"");
             if (symbol.Color.A != 255)
+            {
                 sb.Append(" transparency=\"" + ColorTransparency2AXL(symbol.Color) + "\"");
+            }
+
             if (symbol.Width != 1)
+            {
                 sb.Append(" width=\"" + symbol.Width.ToString() + "\"");
-            if (symbol.DashStyle != System.Drawing.Drawing2D.DashStyle.Solid)
+            }
+
+            if (symbol.DashStyle != LineDashStyle.Solid)
+            {
                 sb.Append(" type=\"" + DashStyle2AXL(symbol.DashStyle) + "\"");
+            }
+
             if (symbol.Smoothingmode == SymbolSmoothing.AntiAlias)
+            {
                 sb.Append(" antialiasing=\"true\"");
-            if (symbol.LineStartCap != System.Drawing.Drawing2D.LineCap.Flat ||
-                symbol.LineEndCap != System.Drawing.Drawing2D.LineCap.Flat)
+            }
+
+            if (symbol.LineStartCap != LineCap.Flat ||
+                symbol.LineEndCap != LineCap.Flat)
             {
                 if (symbol.LineStartCap == symbol.LineEndCap)
                 {
                     sb.Append(" captype=\"");
                     switch (symbol.LineStartCap)
                     {
-                        case System.Drawing.Drawing2D.LineCap.Flat:
+                        case LineCap.Flat:
                             sb.Append("butt");
                             break;
                         default:
@@ -708,7 +847,7 @@ namespace gView.Framework.XML
                     sb.Append(" startcaptype=\"");
                     switch (symbol.LineStartCap)
                     {
-                        case System.Drawing.Drawing2D.LineCap.Flat:
+                        case LineCap.Flat:
                             sb.Append("butt");
                             break;
                         default:
@@ -720,7 +859,7 @@ namespace gView.Framework.XML
                     sb.Append(" endcaptype=\"");
                     switch (symbol.LineEndCap)
                     {
-                        case System.Drawing.Drawing2D.LineCap.Flat:
+                        case LineCap.Flat:
                             sb.Append("butt");
                             break;
                         default:
@@ -736,7 +875,10 @@ namespace gView.Framework.XML
         }
         public static string SimplePointSymbol2AXL(SimplePointSymbol symbol, SymbolRotation rotation)
         {
-            if (symbol == null) return "";
+            if (symbol == null)
+            {
+                return "";
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.Append("<SIMPLEMARKERSYMBOL");
@@ -744,7 +886,10 @@ namespace gView.Framework.XML
             sb.Append(" transparency=\"" + ColorTransparency2AXL(symbol.Color) + "\"");
             sb.Append(" outline=\"" + Color2AXL(symbol.OutlineColor) + "\"");
             if (symbol.Marker != SimplePointSymbol.MarkerType.Circle)
+            {
                 sb.Append(" type=\"" + MarkerType2AXL(symbol.Marker) + "\"");
+            }
+
             sb.Append(" width=\"" + symbol.Size.ToString() + "\"");
             sb.Append(" symbolwidth=\"" + symbol.SymbolWidth.ToString() + "\"");
             sb.Append(" gv_outlinetransparency=\"" + ColorTransparency2AXL(symbol.OutlineColor) + "\"");
@@ -755,12 +900,18 @@ namespace gView.Framework.XML
         }
         public static string SimpleTextSymbol2AXL(SimpleTextSymbol symbol, SymbolRotation rotation)
         {
-            if (symbol == null) return "";
+            if (symbol == null)
+            {
+                return "";
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.Append("<TEXTMARKERSYMBOL");
             if (symbol.Angle != 0f)
+            {
                 sb.Append(" angle=\"" + symbol.Angle + "\"");
+            }
+
             if (symbol.Font != null)
             {
                 sb.Append(" font=\"" + symbol.Font.Name + "\"");
@@ -771,17 +922,23 @@ namespace gView.Framework.XML
             sb.Append(" halignment=\"" + HTextSymbolAlignment2AXL(symbol.TextSymbolAlignment) + "\"");
             sb.Append(" valignment=\"" + VTextSymbolAlignment2AXL(symbol.TextSymbolAlignment) + "\"");
             if (symbol.Color.A != 255)
+            {
                 sb.Append(" transparency=\"" + ColorTransparency2AXL(symbol.Color) + "\"");
+            }
 
             if (symbol.Smoothingmode == SymbolSmoothing.AntiAlias)
+            {
                 sb.Append(" antialiasing=\"true\"");
+            }
 
             if (symbol is GlowingTextSymbol)
             {
                 sb.Append(" glowing=\"" + Color2AXL(((GlowingTextSymbol)symbol).GlowingColor) + "\"");
                 sb.Append(" glowingwidth=\"" + ((GlowingTextSymbol)symbol).GlowingWidth + "\"");
                 if (((GlowingTextSymbol)symbol).GlowingSmoothingmode == SymbolSmoothing.AntiAlias)
+                {
                     sb.Append(" glowing_antialiasing=\"true\"");
+                }
             }
 
             sb.Append("/>");
@@ -790,13 +947,19 @@ namespace gView.Framework.XML
         }
         public static string TrueTypeMarkerSymol2AXL(TrueTypeMarkerSymbol symbol, SymbolRotation rotation)
         {
-            if (symbol == null) return "";
+            if (symbol == null)
+            {
+                return "";
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.Append("<TRUETYPEMARKERSYMBOL");
             sb.Append(" character=\"" + symbol.Charakter + "\"");
             if (symbol.Angle != 0f)
+            {
                 sb.Append(" angle=\"" + symbol.Angle + "\"");
+            }
+
             if (symbol.Font != null)
             {
                 sb.Append(" font=\"" + symbol.Font.Name + "\"");
@@ -806,7 +969,9 @@ namespace gView.Framework.XML
 
             sb.Append(" fontcolor=\"" + Color2AXL(symbol.Color) + "\"");
             if (symbol.Color.A != 255)
+            {
                 sb.Append(" transparency=\"" + ColorTransparency2AXL(symbol.Color) + "\"");
+            }
 
             sb.Append(" hotspot=\"" + symbol.HorizontalOffset.ToString(_nhi) + "," + symbol.VerticalOffset.ToString(_nhi) + "\"");
             // Die Symbolrotation hängt bei gView am Renderer
@@ -819,7 +984,10 @@ namespace gView.Framework.XML
         private static string SymbolRotation2AXLParameters(SymbolRotation rotation)
         {
             if (rotation == null || rotation.RotationFieldName == null ||
-                rotation.RotationFieldName == String.Empty) return "";
+                rotation.RotationFieldName == String.Empty)
+            {
+                return "";
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.Append(" anglefield=\"" + rotation.RotationFieldName + "\"");
@@ -849,9 +1017,16 @@ namespace gView.Framework.XML
         }
         private static SymbolRotation SymbolRotationFromAXLAttribtures(XmlNode axl)
         {
-            if (axl == null) return null;
+            if (axl == null)
+            {
+                return null;
+            }
+
             if (axl.Attributes["anglefield"] == null ||
-                axl.Attributes["anglefield"].Value == String.Empty) return null;
+                axl.Attributes["anglefield"].Value == String.Empty)
+            {
+                return null;
+            }
 
             SymbolRotation rotation = new SymbolRotation();
             rotation.RotationFieldName = axl.Attributes["anglefield"].Value;
@@ -888,25 +1063,25 @@ namespace gView.Framework.XML
             return rotation;
         }
 
-        private static string Color2AXL(System.Drawing.Color col)
+        private static string Color2AXL(ArgbColor col)
         {
             return col.R + "," + col.G + "," + col.B;
         }
-        private static string ColorTransparency2AXL(System.Drawing.Color col)
+        private static string ColorTransparency2AXL(ArgbColor col)
         {
-            return ((float)col.A / 255f).ToString();
+            return (col.A / 255f).ToString();
         }
-        private static string DashStyle2AXL(System.Drawing.Drawing2D.DashStyle dashstyle)
+        private static string DashStyle2AXL(LineDashStyle dashstyle)
         {
             switch (dashstyle)
             {
-                case System.Drawing.Drawing2D.DashStyle.Dash:
+                case LineDashStyle.Dash:
                     return "dash";
-                case System.Drawing.Drawing2D.DashStyle.DashDot:
+                case LineDashStyle.DashDot:
                     return "dash_dot";
-                case System.Drawing.Drawing2D.DashStyle.DashDotDot:
+                case LineDashStyle.DashDotDot:
                     return "dash_dot_dot";
-                case System.Drawing.Drawing2D.DashStyle.Dot:
+                case LineDashStyle.Dot:
                     return "dot";
             }
             return "solid";
@@ -926,18 +1101,26 @@ namespace gView.Framework.XML
             }
             return "circle";
         }
-        private static string FontStyle2AXL(System.Drawing.FontStyle fontstyle)
+        private static string FontStyle2AXL(FontStyle fontstyle)
         {
-            if (((fontstyle & System.Drawing.FontStyle.Italic) != 0) &&
-                ((fontstyle & System.Drawing.FontStyle.Bold) != 0))
+            if (((fontstyle & FontStyle.Italic) != 0) &&
+                ((fontstyle & FontStyle.Bold) != 0))
+            {
                 return "bolditalic";
-            else if ((fontstyle & System.Drawing.FontStyle.Bold) != 0)
+            }
+            else if ((fontstyle & FontStyle.Bold) != 0)
+            {
                 return "bold";
-            else if ((fontstyle & System.Drawing.FontStyle.Italic) != 0)
+            }
+            else if ((fontstyle & FontStyle.Italic) != 0)
+            {
                 return "italic";
-            else if ((fontstyle & System.Drawing.FontStyle.Underline) != 0)
+            }
+            else if ((fontstyle & FontStyle.Underline) != 0)
+            {
                 return "underline";
-            //else if (fontstyle & System.Drawing.FontStyle.Strikeout)
+            }
+            //else if (fontstyle & FontStyle.Strikeout)
             //    return "outline";
 
             return "regular";
@@ -983,45 +1166,88 @@ namespace gView.Framework.XML
 
         public static ISymbol SimpleSymbol(XmlNode axl)
         {
-            if (axl == null) return null;
+            if (axl == null)
+            {
+                return null;
+            }
 
             if (axl.Name == "SIMPLEMARKERSYMBOL")
+            {
                 return SimpleMarkerSymbol(axl);
+            }
+
             if (axl.Name == "SIMPLELINESYMBOL")
+            {
                 return SimpleLineSymbol(axl);
+            }
+
             if (axl.Name == "SIMPLEPOLYGONSYMBOL")
+            {
                 return SimplePolygonSymbol(axl);
+            }
+
             if (axl.Name == "TRUETYPEMARKERSYMBOL")
+            {
                 return TrueTypeMarkerSymbol(axl);
+            }
+
             if (axl.Name == "TEXTSYMBOL" || axl.Name == "TEXTMARKERSYMBOL")
+            {
                 return SimpleTextSymbol(axl);
+            }
+
             if (axl.Name == "RASTERMARKERSYMBOL")
+            {
                 return RasterMarkerSymbol(axl);
+            }
+
             return null;
         }
         public static string Symbol2AXL(ISymbol symbol, SymbolRotation rotation)
         {
-            if (symbol == null) return "";
+            if (symbol == null)
+            {
+                return "";
+            }
 
             if (symbol is SimpleFillSymbol)
+            {
                 return SimpleFillSymbol2AXL(symbol as SimpleFillSymbol, rotation);
+            }
+
             if (symbol is HatchSymbol)
+            {
                 return HatchSymbol2AXL(symbol as HatchSymbol, rotation);
+            }
+
             if (symbol is SimpleLineSymbol)
+            {
                 return SimpleLineSymbol2AXL(symbol as SimpleLineSymbol, rotation);
+            }
+
             if (symbol is SimplePointSymbol)
+            {
                 return SimplePointSymbol2AXL(symbol as SimplePointSymbol, rotation);
+            }
+
             if (symbol is SimpleTextSymbol)
+            {
                 return SimpleTextSymbol2AXL(symbol as SimpleTextSymbol, rotation);
+            }
+
             if (symbol is TrueTypeMarkerSymbol)
+            {
                 return TrueTypeMarkerSymol2AXL(symbol as TrueTypeMarkerSymbol, rotation);
+            }
 
             return "";
         }
         public static IFillSymbol SimplePolygonSymbol(XmlNode axl)
         {
-            if (axl == null) return null;
-
+            if (axl == null)
+            {
+                return null;
+            }
 
             IFillSymbol symbol = null;
             if (axl.Attributes["filltype"] == null ||
@@ -1036,34 +1262,34 @@ namespace gView.Framework.XML
                 switch (axl.Attributes["filltype"].Value)
                 {
                     case "bdiagonal":
-                        ((HatchSymbol)symbol).HatchStyle = System.Drawing.Drawing2D.HatchStyle.BackwardDiagonal;
+                        ((HatchSymbol)symbol).HatchStyle = HatchStyle.BackwardDiagonal;
                         break;
                     case "fdiagonal":
-                        ((HatchSymbol)symbol).HatchStyle = System.Drawing.Drawing2D.HatchStyle.ForwardDiagonal;
+                        ((HatchSymbol)symbol).HatchStyle = HatchStyle.ForwardDiagonal;
                         break;
                     case "cross":
-                        ((HatchSymbol)symbol).HatchStyle = System.Drawing.Drawing2D.HatchStyle.Cross;
+                        ((HatchSymbol)symbol).HatchStyle = HatchStyle.Cross;
                         break;
                     case "diagcross":
-                        ((HatchSymbol)symbol).HatchStyle = System.Drawing.Drawing2D.HatchStyle.DiagonalCross;
+                        ((HatchSymbol)symbol).HatchStyle = HatchStyle.DiagonalCross;
                         break;
                     case "horizontal":
-                        ((HatchSymbol)symbol).HatchStyle = System.Drawing.Drawing2D.HatchStyle.Horizontal;
+                        ((HatchSymbol)symbol).HatchStyle = HatchStyle.Horizontal;
                         break;
                     case "vertical":
-                        ((HatchSymbol)symbol).HatchStyle = System.Drawing.Drawing2D.HatchStyle.Vertical;
+                        ((HatchSymbol)symbol).HatchStyle = HatchStyle.Vertical;
                         break;
                     case "gray":
-                        ((HatchSymbol)symbol).HatchStyle = System.Drawing.Drawing2D.HatchStyle.Percent50;
+                        ((HatchSymbol)symbol).HatchStyle = HatchStyle.Percent50;
                         break;
                     case "lightgray":
-                        ((HatchSymbol)symbol).HatchStyle = System.Drawing.Drawing2D.HatchStyle.Percent05;
+                        ((HatchSymbol)symbol).HatchStyle = HatchStyle.Percent05;
                         break;
                     case "darkgray":
-                        ((HatchSymbol)symbol).HatchStyle = System.Drawing.Drawing2D.HatchStyle.Percent80;
+                        ((HatchSymbol)symbol).HatchStyle = HatchStyle.Percent80;
                         break;
                     default:
-                        ((HatchSymbol)symbol).HatchStyle = System.Drawing.Drawing2D.HatchStyle.BackwardDiagonal;
+                        ((HatchSymbol)symbol).HatchStyle = HatchStyle.BackwardDiagonal;
                         break;
                 }
             }
@@ -1074,66 +1300,114 @@ namespace gView.Framework.XML
             if (axl.Attributes["filltransparency"] != null)
             {
                 A1 = (int)(double.Parse(axl.Attributes["filltransparency"].Value.Replace(",", "."), _nhi) * 255.0);
-                if (A1 < 0) A1 = 0;
-                if (A1 > 255) A1 = 255;
+                if (A1 < 0)
+                {
+                    A1 = 0;
+                }
+
+                if (A1 > 255)
+                {
+                    A1 = 255;
+                }
             }
             if (axl.Attributes["boundarytransparency"] != null)
             {
                 A2 = (int)(double.Parse(axl.Attributes["boundarytransparency"].Value.Replace(",", "."), _nhi) * 255.0);
-                if (A1 < 0) A2 = 0;
-                if (A1 > 255) A2 = 255;
+                if (A1 < 0)
+                {
+                    A2 = 0;
+                }
+
+                if (A1 > 255)
+                {
+                    A2 = 255;
+                }
             }
             if (axl.Attributes["transparency"] != null)
             {
                 A1 = A2 = (int)(double.Parse(axl.Attributes["transparency"].Value.Replace(",", "."), _nhi) * 255.0);
-                if (A1 < 0) A1 = A2 = 0;
-                if (A1 > 255) A1 = A2 = 255;
+                if (A1 < 0)
+                {
+                    A1 = A2 = 0;
+                }
+
+                if (A1 > 255)
+                {
+                    A1 = A2 = 255;
+                }
             }
 
             if (axl.Attributes["fillcolor"] != null)
             {
                 if (symbol is SimpleFillSymbol)
+                {
                     ((SimpleFillSymbol)symbol).Color = ColorFromRGB(A1, axl.Attributes["fillcolor"].Value);
+                }
                 else if (symbol is HatchSymbol)
+                {
                     ((HatchSymbol)symbol).ForeColor = ColorFromRGB(A1, axl.Attributes["fillcolor"].Value);
+                }
             }
             else
             {
                 if (symbol is SimpleFillSymbol)
-                    ((SimpleFillSymbol)symbol).Color = System.Drawing.Color.FromArgb(A1, ((SimpleFillSymbol)symbol).Color);
+                {
+                    ((SimpleFillSymbol)symbol).Color = ArgbColor.FromArgb(A1, ((SimpleFillSymbol)symbol).Color);
+                }
                 else if (symbol is HatchSymbol)
-                    ((HatchSymbol)symbol).ForeColor = System.Drawing.Color.FromArgb(A1, ((HatchSymbol)symbol).ForeColor);
+                {
+                    ((HatchSymbol)symbol).ForeColor = ArgbColor.FromArgb(A1, ((HatchSymbol)symbol).ForeColor);
+                }
             }
 
             if (axl.Attributes["boundarycolor"] != null)
             {
-                if (lSymbol == null) lSymbol = new SimpleLineSymbol();
+                if (lSymbol == null)
+                {
+                    lSymbol = new SimpleLineSymbol();
+                }
+
                 lSymbol.Color = ColorFromRGB(A2, axl.Attributes["boundarycolor"].Value);
             }
             else
             {
-                if (lSymbol == null) lSymbol = new SimpleLineSymbol();
-                lSymbol.Color = System.Drawing.Color.FromArgb(A2, System.Drawing.Color.Black);
+                if (lSymbol == null)
+                {
+                    lSymbol = new SimpleLineSymbol();
+                }
+
+                lSymbol.Color = ArgbColor.FromArgb(A2, ArgbColor.Black);
             }
 
             if (axl.Attributes["boundarywidth"] != null)
             {
-                if (lSymbol == null) lSymbol = new SimpleLineSymbol();
+                if (lSymbol == null)
+                {
+                    lSymbol = new SimpleLineSymbol();
+                }
+
                 lSymbol.Width = float.Parse(axl.Attributes["boundarywidth"].Value.Replace(",", "."), _nhi);
             }
 
             if (lSymbol != null)
             {
                 if (symbol is SimpleFillSymbol)
+                {
                     ((SimpleFillSymbol)symbol).OutlineSymbol = lSymbol;
+                }
                 else if (symbol is HatchSymbol)
+                {
                     ((HatchSymbol)symbol).OutlineSymbol = lSymbol;
+                }
             }
             return symbol;
         }
         public static SimpleLineSymbol SimpleLineSymbol(XmlNode axl)
         {
-            if (axl == null) return null;
+            if (axl == null)
+            {
+                return null;
+            }
 
             SimpleLineSymbol symbol = new SimpleLineSymbol();
 
@@ -1141,8 +1415,15 @@ namespace gView.Framework.XML
             if (axl.Attributes["transparency"] != null)
             {
                 A = (int)(double.Parse(axl.Attributes["transparency"].Value.Replace(",", "."), _nhi) * 255.0);
-                if (A < 0) A = 0;
-                if (A > 255) A = 255;
+                if (A < 0)
+                {
+                    A = 0;
+                }
+
+                if (A > 255)
+                {
+                    A = 255;
+                }
             }
 
             if (axl.Attributes["color"] != null)
@@ -1151,7 +1432,7 @@ namespace gView.Framework.XML
             }
             else if (A != 255)
             {
-                symbol.Color = System.Drawing.Color.FromArgb(A, symbol.Color);
+                symbol.Color = ArgbColor.FromArgb(A, symbol.Color);
             }
 
             if (axl.Attributes["width"] != null)
@@ -1163,16 +1444,16 @@ namespace gView.Framework.XML
                 switch (axl.Attributes["type"].Value)
                 {
                     case "dash":
-                        symbol.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+                        symbol.DashStyle = LineDashStyle.Dash;
                         break;
                     case "dot":
-                        symbol.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
+                        symbol.DashStyle = LineDashStyle.Dot;
                         break;
                     case "dash_dot":
-                        symbol.DashStyle = System.Drawing.Drawing2D.DashStyle.DashDot;
+                        symbol.DashStyle = LineDashStyle.DashDot;
                         break;
                     case "dash_dot_dot":
-                        symbol.DashStyle = System.Drawing.Drawing2D.DashStyle.DashDotDot;
+                        symbol.DashStyle = LineDashStyle.DashDotDot;
                         break;
                 }
             }
@@ -1186,37 +1467,37 @@ namespace gView.Framework.XML
                 switch (axl.Attributes["captype"].Value.ToLower())
                 {
                     case "butt":
-                        symbol.LineStartCap = symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.Flat;
+                        symbol.LineStartCap = symbol.LineEndCap = LineCap.Flat;
                         break;
                     case "round":
-                        symbol.LineStartCap = symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.Round;
+                        symbol.LineStartCap = symbol.LineEndCap = LineCap.Round;
                         break;
                     case "square":
-                        symbol.LineStartCap = symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.Square;
+                        symbol.LineStartCap = symbol.LineEndCap = LineCap.Square;
                         break;
                     case "anchormask":
-                        symbol.LineStartCap = symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.AnchorMask;
+                        symbol.LineStartCap = symbol.LineEndCap = LineCap.AnchorMask;
                         break;
                     case "arrowanchor":
-                        symbol.LineStartCap = symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.ArrowAnchor;
+                        symbol.LineStartCap = symbol.LineEndCap = LineCap.ArrowAnchor;
                         break;
                     case "custom":
-                        symbol.LineStartCap = symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.Custom;
+                        symbol.LineStartCap = symbol.LineEndCap = LineCap.Custom;
                         break;
                     case "diamondanchor":
-                        symbol.LineStartCap = symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.DiamondAnchor;
+                        symbol.LineStartCap = symbol.LineEndCap = LineCap.DiamondAnchor;
                         break;
                     case "noanchor":
-                        symbol.LineStartCap = symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.NoAnchor;
+                        symbol.LineStartCap = symbol.LineEndCap = LineCap.NoAnchor;
                         break;
                     case "roundanchor":
-                        symbol.LineStartCap = symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.RoundAnchor;
+                        symbol.LineStartCap = symbol.LineEndCap = LineCap.RoundAnchor;
                         break;
                     case "squareanchor":
-                        symbol.LineStartCap = symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.SquareAnchor;
+                        symbol.LineStartCap = symbol.LineEndCap = LineCap.SquareAnchor;
                         break;
                     case "triangle":
-                        symbol.LineStartCap = symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.Triangle;
+                        symbol.LineStartCap = symbol.LineEndCap = LineCap.Triangle;
                         break;
                 }
             }
@@ -1225,37 +1506,37 @@ namespace gView.Framework.XML
                 switch (axl.Attributes["startcaptype"].Value.ToLower())
                 {
                     case "butt":
-                        symbol.LineStartCap = System.Drawing.Drawing2D.LineCap.Flat;
+                        symbol.LineStartCap = LineCap.Flat;
                         break;
                     case "round":
-                        symbol.LineStartCap = System.Drawing.Drawing2D.LineCap.Round;
+                        symbol.LineStartCap = LineCap.Round;
                         break;
                     case "square":
-                        symbol.LineStartCap = System.Drawing.Drawing2D.LineCap.Square;
+                        symbol.LineStartCap = LineCap.Square;
                         break;
                     case "anchormask":
-                        symbol.LineStartCap = System.Drawing.Drawing2D.LineCap.AnchorMask;
+                        symbol.LineStartCap = LineCap.AnchorMask;
                         break;
                     case "arrowanchor":
-                        symbol.LineStartCap = System.Drawing.Drawing2D.LineCap.ArrowAnchor;
+                        symbol.LineStartCap = LineCap.ArrowAnchor;
                         break;
                     case "custom":
-                        symbol.LineStartCap = System.Drawing.Drawing2D.LineCap.Custom;
+                        symbol.LineStartCap = LineCap.Custom;
                         break;
                     case "diamondanchor":
-                        symbol.LineStartCap = System.Drawing.Drawing2D.LineCap.DiamondAnchor;
+                        symbol.LineStartCap = LineCap.DiamondAnchor;
                         break;
                     case "noanchor":
-                        symbol.LineStartCap = System.Drawing.Drawing2D.LineCap.NoAnchor;
+                        symbol.LineStartCap = LineCap.NoAnchor;
                         break;
                     case "roundanchor":
-                        symbol.LineStartCap = System.Drawing.Drawing2D.LineCap.RoundAnchor;
+                        symbol.LineStartCap = LineCap.RoundAnchor;
                         break;
                     case "squareanchor":
-                        symbol.LineStartCap = System.Drawing.Drawing2D.LineCap.SquareAnchor;
+                        symbol.LineStartCap = LineCap.SquareAnchor;
                         break;
                     case "triangle":
-                        symbol.LineStartCap = System.Drawing.Drawing2D.LineCap.Triangle;
+                        symbol.LineStartCap = LineCap.Triangle;
                         break;
                 }
             }
@@ -1264,37 +1545,37 @@ namespace gView.Framework.XML
                 switch (axl.Attributes["endcaptype"].Value.ToLower())
                 {
                     case "butt":
-                        symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.Flat;
+                        symbol.LineEndCap = LineCap.Flat;
                         break;
                     case "round":
-                        symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.Round;
+                        symbol.LineEndCap = LineCap.Round;
                         break;
                     case "square":
-                        symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.Square;
+                        symbol.LineEndCap = LineCap.Square;
                         break;
                     case "anchormask":
-                        symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.AnchorMask;
+                        symbol.LineEndCap = LineCap.AnchorMask;
                         break;
                     case "arrowanchor":
-                        symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.ArrowAnchor;
+                        symbol.LineEndCap = LineCap.ArrowAnchor;
                         break;
                     case "custom":
-                        symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.Custom;
+                        symbol.LineEndCap = LineCap.Custom;
                         break;
                     case "diamondanchor":
-                        symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.DiamondAnchor;
+                        symbol.LineEndCap = LineCap.DiamondAnchor;
                         break;
                     case "noanchor":
-                        symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.NoAnchor;
+                        symbol.LineEndCap = LineCap.NoAnchor;
                         break;
                     case "roundanchor":
-                        symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.RoundAnchor;
+                        symbol.LineEndCap = LineCap.RoundAnchor;
                         break;
                     case "squareanchor":
-                        symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.SquareAnchor;
+                        symbol.LineEndCap = LineCap.SquareAnchor;
                         break;
                     case "triangle":
-                        symbol.LineEndCap = System.Drawing.Drawing2D.LineCap.Triangle;
+                        symbol.LineEndCap = LineCap.Triangle;
                         break;
                 }
             }
@@ -1303,39 +1584,73 @@ namespace gView.Framework.XML
         }
         public static SimplePointSymbol SimpleMarkerSymbol(XmlNode axl)
         {
-            if (axl == null) return null;
+            if (axl == null)
+            {
+                return null;
+            }
 
             SimplePointSymbol symbol = new SimplePointSymbol();
             int A = 255, OA = 255;
             if (axl.Attributes["transparency"] != null)
             {
                 A = (int)(double.Parse(axl.Attributes["transparency"].Value.Replace(",", "."), _nhi) * 255.0);
-                if (A < 0) A = 0;
-                if (A > 255) A = 255;
+                if (A < 0)
+                {
+                    A = 0;
+                }
+
+                if (A > 255)
+                {
+                    A = 255;
+                }
+
                 OA = A;
             }
             if (axl.Attributes["gv_outlinetransparency"] != null)
             {
                 OA = (int)(double.Parse(axl.Attributes["gv_outlinetransparency"].Value.Replace(",", "."), _nhi) * 255.0);
-                if (OA < 0) OA = 0;
-                if (OA > 255) OA = 255;
+                if (OA < 0)
+                {
+                    OA = 0;
+                }
+
+                if (OA > 255)
+                {
+                    OA = 255;
+                }
             }
             if (axl.Attributes["color"] != null)
+            {
                 symbol.Color = ColorFromRGB(A, axl.Attributes["color"].Value);
+            }
             else if (A != 255)
-                symbol.Color = System.Drawing.Color.FromArgb(A, symbol.Color);
+            {
+                symbol.Color = ArgbColor.FromArgb(A, symbol.Color);
+            }
 
             if (axl.Attributes["outline"] != null)
+            {
                 symbol.OutlineColor = ColorFromRGB(OA, axl.Attributes["outline"].Value);
+            }
             else if (A != 255)
-                symbol.OutlineColor = System.Drawing.Color.FromArgb(A, symbol.OutlineColor);
+            {
+                symbol.OutlineColor = ArgbColor.FromArgb(A, symbol.OutlineColor);
+            }
 
             if (axl.Attributes["width"] != null)
+            {
                 symbol.Size = float.Parse(axl.Attributes["width"].Value.Replace(",", "."), _nhi);
+            }
+
             if (axl.Attributes["symbolwidth"] != null)
+            {
                 symbol.SymbolWidth = float.Parse(axl.Attributes["symbolwidth"].Value.Replace(",", "."), _nhi);
+            }
+
             if (axl.Attributes["gv_outlinewidth"] != null)
+            {
                 symbol.PenWidth = float.Parse(axl.Attributes["gv_outlinewidth"].Value.Replace(",", "."), _nhi);
+            }
 
             if (axl.Attributes["type"] != null)
             {
@@ -1366,7 +1681,10 @@ namespace gView.Framework.XML
         public static SimpleTextSymbol SimpleTextSymbol(XmlNode axl, out bool hasAlignment)
         {
             hasAlignment = false;
-            if (axl == null) return null;
+            if (axl == null)
+            {
+                return null;
+            }
 
             SimpleTextSymbol symbol = null;
 
@@ -1374,8 +1692,15 @@ namespace gView.Framework.XML
             if (axl.Attributes["transparency"] != null)
             {
                 A = (int)(double.Parse(axl.Attributes["transparency"].Value.Replace(",", "."), _nhi) * 255.0);
-                if (A < 0) A = 0;
-                if (A > 255) A = 255;
+                if (A < 0)
+                {
+                    A = 0;
+                }
+
+                if (A > 255)
+                {
+                    A = 255;
+                }
             }
 
             if (axl.Attributes["glowing"] != null)
@@ -1404,24 +1729,26 @@ namespace gView.Framework.XML
 
 
             if (axl.Attributes["fontcolor"] != null)
+            {
                 symbol.Color = ColorFromRGB(A, axl.Attributes["fontcolor"].Value);
+            }
 
-            System.Drawing.FontStyle fontstyle = System.Drawing.FontStyle.Regular;
+            FontStyle fontstyle = FontStyle.Regular;
             if (axl.Attributes["fontstyle"] != null)
             {
                 switch (axl.Attributes["fontstyle"].Value)
                 {
                     case "italicbold":
-                        fontstyle |= System.Drawing.FontStyle.Italic | System.Drawing.FontStyle.Bold;
+                        fontstyle |= FontStyle.Italic | FontStyle.Bold;
                         break;
                     case "italic":
-                        fontstyle |= System.Drawing.FontStyle.Italic;
+                        fontstyle |= FontStyle.Italic;
                         break;
                     case "bold":
-                        fontstyle |= System.Drawing.FontStyle.Bold;
+                        fontstyle |= FontStyle.Bold;
                         break;
                     case "underline":
-                        fontstyle |= System.Drawing.FontStyle.Underline;
+                        fontstyle |= FontStyle.Underline;
                         break;
                 }
             }
@@ -1430,13 +1757,17 @@ namespace gView.Framework.XML
             {
                 float size = 10;
                 if (axl.Attributes["fontsize"] != null)
+                {
                     size = float.Parse(axl.Attributes["fontsize"].Value.Replace(",", "."), _nhi);
+                }
 
-                symbol.Font = new System.Drawing.Font(axl.Attributes["font"].Value, size, fontstyle);
+                symbol.Font = Current.Engine.CreateFont(axl.Attributes["font"].Value, size, fontstyle);
             }
 
             if (axl.Attributes["angle"] != null)
+            {
                 symbol.Angle = float.Parse(axl.Attributes["angle"].Value.Replace(",", "."), _nhi);
+            }
 
             if (axl.Attributes["halignment"] != null && axl.Attributes["valignment"] != null)
             {
@@ -1445,25 +1776,49 @@ namespace gView.Framework.XML
                 string v = axl.Attributes["valignment"].Value;
 
                 if (h == "left" && v == "top")
+                {
                     symbol.TextSymbolAlignment = TextSymbolAlignment.leftAlignOver;
+                }
+
                 if (h == "left" && v == "center")
+                {
                     symbol.TextSymbolAlignment = TextSymbolAlignment.leftAlignCenter;
+                }
+
                 if (h == "left" && v == "bottom")
+                {
                     symbol.TextSymbolAlignment = TextSymbolAlignment.leftAlignUnder;
+                }
 
                 if (h == "center" && v == "top")
+                {
                     symbol.TextSymbolAlignment = TextSymbolAlignment.Over;
+                }
+
                 if (h == "center" && v == "center")
+                {
                     symbol.TextSymbolAlignment = TextSymbolAlignment.Center;
+                }
+
                 if (h == "center" && v == "bottom")
+                {
                     symbol.TextSymbolAlignment = TextSymbolAlignment.Under;
+                }
 
                 if (h == "right" && v == "top")
+                {
                     symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignOver;
+                }
+
                 if (h == "right" && v == "center")
+                {
                     symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignCenter;
+                }
+
                 if (h == "right" && v == "bottom")
+                {
                     symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignUnder;
+                }
             }
             else if (axl.Attributes["halignment"] != null)
             {
@@ -1471,11 +1826,19 @@ namespace gView.Framework.XML
                 string h = axl.Attributes["halignment"].Value;
 
                 if (h == "left")
+                {
                     symbol.TextSymbolAlignment = TextSymbolAlignment.leftAlignOver;
+                }
+
                 if (h == "center")
+                {
                     symbol.TextSymbolAlignment = TextSymbolAlignment.Over;
+                }
+
                 if (h == "right")
+                {
                     symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignOver;
+                }
             }
             else if (axl.Attributes["valignment"] != null)
             {
@@ -1483,11 +1846,19 @@ namespace gView.Framework.XML
                 string v = axl.Attributes["valignment"].Value;
 
                 if (v == "top")
+                {
                     symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignOver;
+                }
+
                 if (v == "center")
+                {
                     symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignCenter;
+                }
+
                 if (v == "bottom")
+                {
                     symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignUnder;
+                }
             }
 
             if (axl.Attributes["antialiasing"] != null &&
@@ -1500,26 +1871,36 @@ namespace gView.Framework.XML
         }
         public static TrueTypeMarkerSymbol TrueTypeMarkerSymbol(XmlNode axl)
         {
-            if (axl == null) return null;
+            if (axl == null)
+            {
+                return null;
+            }
 
             TrueTypeMarkerSymbol symbol = new TrueTypeMarkerSymbol();
 
             if (axl.Attributes["fontcolor"] != null)
+            {
                 symbol.Color = ColorFromRGB(255, axl.Attributes["fontcolor"].Value);
+            }
+
             if (axl.Attributes["font"] != null)
             {
                 float size = 10;
                 if (axl.Attributes["fontsize"] != null)
+                {
                     size = float.Parse(axl.Attributes["fontsize"].Value.Replace(",", "."), _nhi);
+                }
 
-                symbol.Font = new System.Drawing.Font(axl.Attributes["font"].Value, size);
+                symbol.Font = Current.Engine.CreateFont(axl.Attributes["font"].Value, size);
             }
             if (axl.Attributes["character"] != null)
+            {
                 try
                 {
                     symbol.Charakter = (byte)Convert.ToInt16(axl.Attributes["character"].Value);
                 }
                 catch { }
+            }
 
             if (axl.Attributes["angle"] != null)
             {
@@ -1562,7 +1943,10 @@ namespace gView.Framework.XML
 
         public static RasterMarkerSymbol RasterMarkerSymbol(XmlNode axl)
         {
-            if (axl == null || axl.Attributes["image"] == null) return null;
+            if (axl == null || axl.Attributes["image"] == null)
+            {
+                return null;
+            }
 
             RasterMarkerSymbol symbol = new RasterMarkerSymbol();
             symbol.Filename = axl.Attributes["image"].Value;
@@ -1574,20 +1958,28 @@ namespace gView.Framework.XML
                 {
                     float sizeX, sizeY;
                     if (float.TryParse(xy[0], System.Globalization.NumberStyles.Any, _nhi, out sizeX))
+                    {
                         symbol.SizeX = sizeX;
+                    }
 
                     if (float.TryParse(xy[1], System.Globalization.NumberStyles.Any, _nhi, out sizeY))
+                    {
                         symbol.SizeY = sizeY;
+                    }
                 }
             }
             return symbol;
         }
 
-        private static System.Drawing.Color ColorFromRGB(int A, string col)
+        private static ArgbColor ColorFromRGB(int A, string col)
         {
             string[] rgb = col.Split(',');
-            if (rgb.Length < 3) return System.Drawing.Color.Transparent;
-            return System.Drawing.Color.FromArgb(A,
+            if (rgb.Length < 3)
+            {
+                return ArgbColor.Transparent;
+            }
+
+            return ArgbColor.FromArgb(A,
                 Convert.ToInt32(rgb[0]),
                 Convert.ToInt32(rgb[1]),
                 Convert.ToInt32(rgb[2]));
@@ -1596,17 +1988,25 @@ namespace gView.Framework.XML
         private static double Scale(string scaleString)
         {
             if (String.IsNullOrEmpty(scaleString))
+            {
                 return 0.0;
+            }
 
             if (scaleString.Contains(":"))
+            {
                 return double.Parse(scaleString.Split(':')[1].Replace(",", "."), _nhi);
+            }
 
             return double.Parse(scaleString.Replace(",", "."), _nhi);
         }
 
         public static IGraphicElement GraphicElement(XmlNode axl)
         {
-            if (axl == null) return null;
+            if (axl == null)
+            {
+                return null;
+            }
+
             ISymbol symbol = null;
             IGeometry geometry = null;
 
@@ -1625,7 +2025,10 @@ namespace gView.Framework.XML
                         foreach (XmlNode child in node.ChildNodes)
                         {
                             symbol = SimpleSymbol(child);
-                            if (symbol != null) break;
+                            if (symbol != null)
+                            {
+                                break;
+                            }
                         }
                     }
                 }
@@ -1645,7 +2048,10 @@ namespace gView.Framework.XML
                     foreach (XmlNode child in node.ChildNodes)
                     {
                         symbol = SimpleSymbol(child);
-                        if (symbol != null) break;
+                        if (symbol != null)
+                        {
+                            break;
+                        }
                     }
 
                     if (symbol is ILabel)
@@ -1659,19 +2065,31 @@ namespace gView.Framework.XML
                     symbol = SimpleSymbol(node);
                 }
 
-                if (geometry != null && symbol != null) break;
+                if (geometry != null && symbol != null)
+                {
+                    break;
+                }
             }
             if (symbol != null && geometry != null)
+            {
                 return new AcetateGraphicElement(symbol, geometry);
+            }
 
             return null;
         }
 
         async public static Task<IGraphicElement> GraphicElement(ISymbol symbol, IBufferQueryFilter filter)
         {
-            if (symbol == null) return null;
+            if (symbol == null)
+            {
+                return null;
+            }
+
             ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(filter);
-            if (sFilter == null || sFilter.Geometry == null) return null;
+            if (sFilter == null || sFilter.Geometry == null)
+            {
+                return null;
+            }
 
             return new AcetateGraphicElement(symbol, sFilter.Geometry);
         }
@@ -1691,7 +2109,10 @@ namespace gView.Framework.XML
 
             public void Draw(IDisplay display)
             {
-                if (_symbol == null || _geometry == null) return;
+                if (_symbol == null || _geometry == null)
+                {
+                    return;
+                }
 
                 display.Draw(_symbol, _geometry);
             }
@@ -1709,7 +2130,10 @@ namespace gView.Framework.XML
     {
         public static string Renderers(IFeatureLayer layer)
         {
-            if (layer == null) return "";
+            if (layer == null)
+            {
+                return "";
+            }
 
             return "";
         }
@@ -1730,16 +2154,26 @@ namespace gView.Framework.XML
 
         static public string Query(IQueryFilter filter)
         {
-            if (filter == null) return "";
+            if (filter == null)
+            {
+                return "";
+            }
 
             if (filter is ISpatialFilter)
+            {
                 return SpatialQueryToAXL((ISpatialFilter)filter);
+            }
             else
+            {
                 return QueryToAXL(filter);
+            }
         }
         private static string QueryToAXL(IQueryFilter filter)
         {
-            if (filter == null) return "";
+            if (filter == null)
+            {
+                return "";
+            }
 
             try
             {
@@ -1747,7 +2181,9 @@ namespace gView.Framework.XML
 
                 axl.WriteStartElement("QUERY");
                 if (filter.SubFields == "" || filter.SubFields == "*")
+                {
                     axl.WriteAttribute("subfields", "#ALL#");
+                }
                 else
                 {
                     axl.WriteAttribute("subfields", filter.SubFields);
@@ -1789,7 +2225,11 @@ namespace gView.Framework.XML
         }
         private static string SpatialQueryToAXL(ISpatialFilter filter)
         {
-            if (filter == null) return "";
+            if (filter == null)
+            {
+                return "";
+            }
+
             try
             {
                 AXLWriter axl = new AXLWriter();
@@ -1799,7 +2239,9 @@ namespace gView.Framework.XML
                 if (where != "")
                 {
                     if (filter.SubFields == "" || filter.SubFields == "*")
+                    {
                         axl.WriteAttribute("subfields", "#ALL#");
+                    }
                     else
                     {
                         axl.WriteAttribute("subfields", filter.SubFields);

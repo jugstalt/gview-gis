@@ -325,7 +325,7 @@ namespace gView.Framework.Geometry
         gView.Framework.Symbology.IAnnotationPolygonCollision AnnotationPolygonCollision { get; set; }
 
         float Length { get; }
-        global::System.Drawing.PointF? PointAt(float stat);
+        GraphicsEngine.CanvasPointF? PointAt(float stat);
 
         void ChangeDirection();
     }

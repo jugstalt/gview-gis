@@ -1,30 +1,30 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using System.Xml;
-using System.Net;
-using gView.Framework.Web;
-using gView.Interoperability.OGC.Dataset.WFS;
-using gView.Framework.system;
-using System.IO;
-using gView.Interoperability.OGC.SLD;
 using gView.Framework.IO;
+using gView.Framework.system;
+using gView.Framework.Web;
+using gView.GraphicsEngine.Abstraction;
+using gView.Interoperability.OGC.Dataset.WFS;
+using gView.Interoperability.OGC.SLD;
 using gView.MapServer;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Interoperability.OGC.Dataset.WMS
 {
     public class WMSClass : IWebServiceClass
     {
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
-        private static object lockThis=new object();
+        private static object lockThis = new object();
 
         private string _name;
         private WMSDataset _dataset;
         private List<IWebServiceTheme> _themes = new List<IWebServiceTheme>();
-        private System.Drawing.Bitmap _legend = null;
+        private IBitmap _legend = null;
         private GeorefBitmap _image = null;
         private IEnvelope _envelope;
         private GetCapabilities _getCapabilities;
@@ -43,7 +43,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         public WMSClass(WMSDataset dataset)
         {
             _dataset = dataset;
-            if (_dataset != null) _name = _dataset._name;
+            if (_dataset != null)
+            {
+                _name = _dataset._name;
+            }
         }
 
         internal void Init(string CapabilitiesString, WFSDataset wfsDataset)
@@ -67,7 +70,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
                 XmlNode service = CapabilitiesNode.SelectSingleNode("Layer");
                 XmlNode title = service.SelectSingleNode("Title");
-                if (title != null) _name = title.InnerText;
+                if (title != null)
+                {
+                    _name = title.InnerText;
+                }
 
                 _srs = new SRS(service);
                 this.SRSCode = _srs.Srs[_srs.SRSIndex];
@@ -78,9 +84,17 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                     XmlNode nameNode = layer.SelectSingleNode("Name");
                     XmlNode titleNode = layer.SelectSingleNode("Title");
 
-                    if (nameNode == null) continue;
+                    if (nameNode == null)
+                    {
+                        continue;
+                    }
+
                     name = Title = nameNode.InnerText;
-                    if (titleNode != null) Title = titleNode.InnerText;
+                    if (titleNode != null)
+                    {
+                        Title = titleNode.InnerText;
+                    }
+
                     XmlNodeList styles = layer.SelectNodes("Style");
 
                     WFSFeatureClass wfsFc = null;
@@ -88,7 +102,9 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                     {
                         IDatasetElement wfsElement = wfsDataset[name];
                         if (wfsElement != null && wfsElement.Class is WFSFeatureClass)
+                        {
                             wfsFc = wfsElement.Class as WFSFeatureClass;
+                        }
                     }
 
                     if (styles.Count == 0)
@@ -130,9 +146,16 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                             XmlNode sNameNode = style.SelectSingleNode("Name");
                             XmlNode sTitleNode = style.SelectSingleNode("Title");
 
-                            if (sNameNode == null) continue;
+                            if (sNameNode == null)
+                            {
+                                continue;
+                            }
+
                             sName = sTitle = sNameNode.InnerText;
-                            if (sTitleNode != null) sTitle = sTitleNode.InnerText;
+                            if (sTitleNode != null)
+                            {
+                                sTitle = sTitleNode.InnerText;
+                            }
 
                             IClass wClass = null;
                             if (wfsFc is WFSFeatureClass)
@@ -168,7 +191,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 }
                 doc = null;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 string errMsg = ex.Message;
             }
@@ -178,7 +201,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         {
             get
             {
-                if (_srs == null) return null;
+                if (_srs == null)
+                {
+                    return null;
+                }
 
                 string[] codes = new string[_srs.Srs.Count];
                 int i = 0;
@@ -190,17 +216,24 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 return codes;
             }
         }
+
         public string SRSCode
         {
             get
             {
-                if (_srs == null || _srs.Srs == null || _srs.Srs.Count <= _srs.SRSIndex) return null;
+                if (_srs == null || _srs.Srs == null || _srs.Srs.Count <= _srs.SRSIndex)
+                {
+                    return null;
+                }
 
                 return _srs.Srs[_srs.SRSIndex];
             }
             set
             {
-                if (_srs == null || value == null) return;
+                if (_srs == null || value == null)
+                {
+                    return;
+                }
 
                 for (int i = 0; i < _srs.Srs.Count; i++)
                 {
@@ -226,7 +259,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         {
             get
             {
-                if (_getFeatureInfo == null || _getFeatureInfo.Formats == null) return null;
+                if (_getFeatureInfo == null || _getFeatureInfo.Formats == null)
+                {
+                    return null;
+                }
 
                 string[] formats = new string[_getFeatureInfo.Formats.Count];
                 int i = 0;
@@ -238,18 +274,25 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 return formats;
             }
         }
+
         public string FeatureInfoFormat
         {
             get
             {
                 if (_getFeatureInfo == null || _getFeatureInfo.Formats == null ||
-                    _getFeatureInfo.Formats.Count <= _getFeatureInfo.FormatIndex) return null;
+                    _getFeatureInfo.Formats.Count <= _getFeatureInfo.FormatIndex)
+                {
+                    return null;
+                }
 
                 return _getFeatureInfo.Formats[_getFeatureInfo.FormatIndex];
             }
             set
             {
-                if (_getFeatureInfo == null || _getFeatureInfo.Formats == null) return;
+                if (_getFeatureInfo == null || _getFeatureInfo.Formats == null)
+                {
+                    return;
+                }
 
                 for (int i = 0; i < _getFeatureInfo.Formats.Count; i++)
                 {
@@ -266,7 +309,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         {
             get
             {
-                if (_getMap == null || _getMap.Formats == null) return null;
+                if (_getMap == null || _getMap.Formats == null)
+                {
+                    return null;
+                }
 
                 string[] formats = new string[_getMap.Formats.Count];
                 int i = 0;
@@ -278,17 +324,24 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 return formats;
             }
         }
+
         public string GetMapFormat
         {
             get
             {
-                if (_getMap == null || _getMap.Formats == null) return null;
+                if (_getMap == null || _getMap.Formats == null)
+                {
+                    return null;
+                }
 
                 return _getMap.Formats[_getMap.FormatIndex];
             }
             set
             {
-                if (_getMap == null || _getMap.Formats == null) return;
+                if (_getMap == null || _getMap.Formats == null)
+                {
+                    return;
+                }
 
                 for (int i = 0; i < _getMap.Formats.Count; i++)
                 {
@@ -305,10 +358,15 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         {
             get
             {
-                if(_userDefinedSymbolization==null) return false;
+                if (_userDefinedSymbolization == null)
+                {
+                    return false;
+                }
+
                 return _userDefinedSymbolization.SupportSLD;
             }
         }
+
         public bool UseSLD_BODY
         {
             get { return _use_SLD_BODY; }
@@ -318,28 +376,49 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         #region IWebServiceClass Member
 
         public event BeforeMapRequestEventHandler BeforeMapRequest = null;
+
         public event AfterMapRequestEventHandler AfterMapRequest = null;
 
         async public Task<bool> MapRequest(gView.Framework.Carto.IDisplay display)
         {
             if (_srs == null)
+            {
                 return false;
+            }
 
             if (!_dataset.IsOpened)
             {
-                if (!await _dataset.Open()) return false;
+                if (!await _dataset.Open())
+                {
+                    return false;
+                }
             }
 
             List<IWebServiceTheme> themes = Themes;
-            if (themes == null) return false;
+            if (themes == null)
+            {
+                return false;
+            }
 
             #region Check for visible Layers
+
             bool visFound = false;
             foreach (IWebServiceTheme theme in themes)
             {
-                if (!theme.Visible) continue;
-                if (theme.MinimumScale > 1 && theme.MinimumScale > display.mapScale) continue;
-                if (theme.MaximumScale > 1 && theme.MaximumScale < display.mapScale) continue;
+                if (!theme.Visible)
+                {
+                    continue;
+                }
+
+                if (theme.MinimumScale > 1 && theme.MinimumScale > display.mapScale)
+                {
+                    continue;
+                }
+
+                if (theme.MaximumScale > 1 && theme.MaximumScale < display.mapScale)
+                {
+                    continue;
+                }
 
                 visFound = true;
                 break;
@@ -353,7 +432,8 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 }
                 return true;
             }
-            #endregion
+
+            #endregion Check for visible Layers
 
             int iWidth = display.iWidth;
             int iHeight = display.iHeight;
@@ -369,7 +449,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             }
 
             IEnvelope displayEnv = display.Envelope;
-            
+
             if (display.SpatialReference != null && !display.SpatialReference.Equals(this.SpatialReference))
             {
                 displayEnv = GeometricTransformerFactory.Transform2D(displayEnv, display.SpatialReference, this.SpatialReference).Envelope;
@@ -381,9 +461,12 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             StringBuilder layers = new StringBuilder(), styles = new StringBuilder();
             foreach (IWebServiceTheme theme in themes)
             {
-                if (!theme.Visible || theme.Locked || 
+                if (!theme.Visible || theme.Locked ||
                     (!(theme.Class is WMSThemeClass) &&
-                     !(theme.Class is WFSFeatureClass))) continue;
+                     !(theme.Class is WFSFeatureClass)))
+                {
+                    continue;
+                }
 
                 if (layers.Length > 0)
                 {
@@ -392,14 +475,19 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 }
                 layers.Append(theme.Class.Name);
                 if (theme.Class is IWMSStyle)
+                {
                     styles.Append(((IWMSStyle)theme.Class).Style);
+                }
+
                 if (theme.FeatureRenderer != null &&
                     _userDefinedSymbolization.SupportSLD &&
                     _userDefinedSymbolization.UserStyle)
                 {
                     SLDRenderer sldRenderer = null;
                     if (theme.FeatureRenderer is SLDRenderer)
+                    {
                         sldRenderer = (SLDRenderer)theme.FeatureRenderer;
+                    }
                     else
                     {
                         //if (theme.FilterQuery is ISpatialFilter)
@@ -418,11 +506,15 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                         {
                             sldRenderer = await SLDRenderer.CreateAync(theme);
                             if (display.SpatialReference != null)
+                            {
                                 sldRenderer.SetDefaultSrsName(display.SpatialReference.Name);
+                            }
                         }
                     }
                     if (sldWriter == null)
+                    {
                         sldWriter = new StyledLayerDescriptorWriter();
+                    }
 
                     sldWriter.WriteNamedLayer(theme.Class.Name, sldRenderer);
                 }
@@ -457,7 +549,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             request.Append("&WIDTH=" + iWidth);
             request.Append("&HEIGHT=" + iHeight);
             request.Append("&FORMAT=" + _getMap.Formats[_getMap.FormatIndex]);
-            request.Append("&BBOX=" + 
+            request.Append("&BBOX=" +
                 displayEnv.minx.ToString(_nhi) + "," +
                 displayEnv.miny.ToString(_nhi) + "," +
                 displayEnv.maxx.ToString(_nhi) + "," +
@@ -469,9 +561,8 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             {
                 _image.Dispose();
                 _image = null;
-
             }
-            System.Drawing.Bitmap bm = null;
+            IBitmap bitmap = null;
             //if (_getMap.Post_OnlineResource != String.Empty && sldWriter != null)
             //{
             //    //bm = WebFunctions.DownloadImage(WMSDataset.Append2Url(_getMap.Post_OnlineResource, request.ToString() + "&SLD="),
@@ -484,10 +575,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 #if(DEBUG)
                 gView.Framework.system.Logger.LogDebug("Start WMS DownloadImage");
 #endif
-                string url=WMSDataset.Append2Url(_getMap.Get_OnlineResource, request.ToString());
+                string url = WMSDataset.Append2Url(_getMap.Get_OnlineResource, request.ToString());
                 try
                 {
-                    bm = WebFunctions.DownloadImage(url,
+                    bitmap = WebFunctions.DownloadImage(url,
                         ConfigTextStream.ExtractValue(_dataset._connectionString, "usr"),
                         ConfigTextStream.ExtractValue(_dataset._connectionString, "pwd"));
                 }
@@ -500,14 +591,16 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 gView.Framework.system.Logger.LogDebug("WMS DownloadImage Finished");
 #endif
             }
-            if (bm != null)
+            if (bitmap != null)
             {
-                _image = new GeorefBitmap(bm);
+                _image = new GeorefBitmap(bitmap);
                 _image.Envelope = displayEnv;
                 _image.SpatialReference = this.SpatialReference;
 
                 if (AfterMapRequest != null)
+                {
                     AfterMapRequest(this, display, _image);
+                }
             }
             return _image != null;
         }
@@ -522,7 +615,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             get { return _image; }
         }
 
-        public System.Drawing.Bitmap Legend
+        public IBitmap Legend
         {
             get { return _legend; }
         }
@@ -539,7 +632,9 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 }
 
                 if (ret == null)
+                {
                     ret = new Envelope(-180, -90, 180, 90);
+                }
 
                 return ret;
             }
@@ -553,7 +648,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             }
             set
             {
-                if (value == null) return;
+                if (value == null)
+                {
+                    return;
+                }
 
                 for (int i = 0; i < _srs.Srs.Count; i++)
                 {
@@ -569,14 +667,18 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
         public List<IWebServiceTheme> Themes
         {
-            get 
+            get
             {
-                if (_clonedThemes != null) return _clonedThemes;
+                if (_clonedThemes != null)
+                {
+                    return _clonedThemes;
+                }
+
                 return _themes;
             }
         }
 
-        #endregion
+        #endregion IWebServiceClass Member
 
         #region IClass Member
 
@@ -595,7 +697,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             get { return _dataset; }
         }
 
-        #endregion
+        #endregion IClass Member
 
         #region IClone Member
 
@@ -606,7 +708,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
             foreach (IWebServiceTheme theme in Themes)
             {
-                if (theme == null || theme.Class == null) continue;
+                if (theme == null || theme.Class == null)
+                {
+                    continue;
+                }
 
                 WebServiceTheme clonedTheme = new WebServiceTheme(
                     theme.Class, theme.Title, theme.LayerID, theme.Visible, clone);
@@ -627,9 +732,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             return clone;
         }
 
-        #endregion
+        #endregion IClone Member
 
         #region HelperClasses
+
         internal class GetRequest
         {
             public string Get_OnlineResource = "";
@@ -638,15 +744,22 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
             public GetRequest(XmlNode node)
             {
-                if (node == null) return;
+                if (node == null)
+                {
+                    return;
+                }
 
                 XmlNode onlineResource = node.SelectSingleNode("DCPType/HTTP/Get/OnlineResource");
                 if (onlineResource != null && onlineResource.Attributes["xlink:href"] != null)
+                {
                     Get_OnlineResource = onlineResource.Attributes["xlink:href"].Value;
+                }
 
                 onlineResource = node.SelectSingleNode("DCPType/HTTP/Post/OnlineResource");
                 if (onlineResource != null && onlineResource.Attributes["xlink:href"] != null)
+                {
                     Post_OnlineResource = onlineResource.Attributes["xlink:href"].Value;
+                }
 
                 foreach (XmlNode format in node.SelectNodes("Format"))
                 {
@@ -654,6 +767,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 }
             }
         }
+
         internal class GetCapabilities : GetRequest
         {
             public GetCapabilities(XmlNode node)
@@ -661,6 +775,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             {
             }
         }
+
         internal class GetMap : GetRequest
         {
             public int FormatIndex = -1;
@@ -675,17 +790,25 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                         case "image/png":
                             FormatIndex = i;
                             break;
+
                         case "image/jpg":
                         case "image/jpeg":
                             if (FormatIndex == -1)
+                            {
                                 FormatIndex = i;
+                            }
+
                             break;
                     }
                 }
 
-                if (FormatIndex == -1) FormatIndex = 0;
+                if (FormatIndex == -1)
+                {
+                    FormatIndex = 0;
+                }
             }
         }
+
         internal class GetFeatureInfo : GetRequest
         {
             public int FormatIndex = -1;
@@ -700,16 +823,24 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                         case "text/xml":
                             FormatIndex = i;
                             break;
+
                         case "text/html":
                             if (FormatIndex == -1)
+                            {
                                 FormatIndex = i;
+                            }
+
                             break;
                     }
                 }
 
-                if (FormatIndex == -1) FormatIndex = 0;
+                if (FormatIndex == -1)
+                {
+                    FormatIndex = 0;
+                }
             }
         }
+
         internal class DescribeLayer : GetRequest
         {
             public int FormatIndex = -1;
@@ -717,9 +848,13 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             public DescribeLayer(XmlNode node)
                 : base(node)
             {
-                if (FormatIndex == -1 && Formats.Count > 0) FormatIndex = 0;
+                if (FormatIndex == -1 && Formats.Count > 0)
+                {
+                    FormatIndex = 0;
+                }
             }
         }
+
         internal class GetLegendGraphic : GetRequest
         {
             public int FormatIndex = -1;
@@ -727,9 +862,13 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             public GetLegendGraphic(XmlNode node)
                 : base(node)
             {
-                if (FormatIndex == -1 && Formats.Count > 0) FormatIndex = 0;
+                if (FormatIndex == -1 && Formats.Count > 0)
+                {
+                    FormatIndex = 0;
+                }
             }
         }
+
         internal class GetStyles : GetRequest
         {
             public int FormatIndex = -1;
@@ -737,9 +876,13 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             public GetStyles(XmlNode node)
                 : base(node)
             {
-                if (FormatIndex == -1 && Formats.Count > 0) FormatIndex = 0;
+                if (FormatIndex == -1 && Formats.Count > 0)
+                {
+                    FormatIndex = 0;
+                }
             }
         }
+
         internal class WMSExceptions
         {
             public List<string> Formats = new List<string>();
@@ -752,6 +895,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 }
             }
         }
+
         internal class SRS : IClone
         {
             public int SRSIndex = -1;
@@ -759,17 +903,26 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             public IEnvelope LatLonBoundingBox = null;
             private Dictionary<string, IEnvelope> _boundaryBoxes = new Dictionary<string, IEnvelope>();
 
-            private SRS() { }
+            private SRS()
+            {
+            }
+
             public SRS(XmlNode node)
                 : this(node, null, String.Empty)
             {
-
             }
+
             public SRS(XmlNode node, XmlNamespaceManager ns, string nsName)
             {
-                if (node == null) return;
+                if (node == null)
+                {
+                    return;
+                }
 
-                if (nsName != String.Empty) nsName += ":";
+                if (nsName != String.Empty)
+                {
+                    nsName += ":";
+                }
 
                 foreach (XmlNode srs in node.SelectNodes(nsName + "SRS", ns))
                 {
@@ -779,19 +932,31 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                         Srs.Add(srscode);
                         if (srscode.ToUpper() != "EPSG:4326" && SRSIndex == -1 &&
                             srscode.ToLower().StartsWith("EPSG:"))
+                        {
                             SRSIndex = Srs.Count - 1;
+                        }
                     }
                 }
 
-                if (Srs.Count == 0) Srs.Add("EPSG:4326"); // WGS84 immer verwenden, wenn nix anders vorgegeben wird...
-                if (SRSIndex == -1) SRSIndex = 0;
+                if (Srs.Count == 0)
+                {
+                    Srs.Add("EPSG:4326"); // WGS84 immer verwenden, wenn nix anders vorgegeben wird...
+                }
 
-                foreach (XmlNode box in node.SelectNodes(nsName+"BoundingBox[@SRS]",ns))
+                if (SRSIndex == -1)
+                {
+                    SRSIndex = 0;
+                }
+
+                foreach (XmlNode box in node.SelectNodes(nsName + "BoundingBox[@SRS]", ns))
                 {
                     if (box.Attributes["minx"] == null ||
                         box.Attributes["miny"] == null ||
                         box.Attributes["maxx"] == null ||
-                        box.Attributes["maxy"] == null) continue;
+                        box.Attributes["maxy"] == null)
+                    {
+                        continue;
+                    }
 
                     IEnvelope env = new Envelope(
                         double.Parse(box.Attributes["minx"].Value, _nhi),
@@ -802,7 +967,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                     _boundaryBoxes.Add(box.Attributes["SRS"].Value.ToUpper(), env);
                 }
 
-                XmlNode latlonbox = node.SelectSingleNode(nsName+"LatLonBoundingBox",ns);
+                XmlNode latlonbox = node.SelectSingleNode(nsName + "LatLonBoundingBox", ns);
                 if (latlonbox != null &&
                         latlonbox.Attributes["minx"] != null &&
                         latlonbox.Attributes["miny"] != null &&
@@ -815,7 +980,6 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                         double.Parse(latlonbox.Attributes["maxx"].Value, _nhi),
                         double.Parse(latlonbox.Attributes["maxy"].Value, _nhi));
                 }
-
             }
 
             public IEnvelope Envelope(string srs)
@@ -830,7 +994,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                     ISpatialReference epsg_4326 = gView.Framework.Geometry.SpatialReference.FromID("epsg:4326");
 
                     IGeometry geom = GeometricTransformerFactory.Transform2D(LatLonBoundingBox, epsg_4326, sRef);
-                    if (geom != null) env = geom.Envelope;
+                    if (geom != null)
+                    {
+                        env = geom.Envelope;
+                    }
                 }
 
                 return (env != null) ? env : new Envelope(-180, -90, 180, 90);
@@ -849,8 +1016,9 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 return clone;
             }
 
-            #endregion
+            #endregion IClone Member
         }
+
         internal class UserDefinedSymbolization
         {
             public bool SupportSLD = false;
@@ -860,25 +1028,43 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
             public UserDefinedSymbolization(XmlNode node)
             {
-                if (node == null) return;
+                if (node == null)
+                {
+                    return;
+                }
 
                 if (node.Attributes["SupportSLD"] != null)
+                {
                     SupportSLD = node.Attributes["SupportSLD"].Value == "1";
+                }
+
                 if (node.Attributes["UserLayer"] != null)
+                {
                     UserLayer = node.Attributes["UserLayer"].Value == "1";
+                }
+
                 if (node.Attributes["UserStyle"] != null)
+                {
                     UserStyle = node.Attributes["UserStyle"].Value == "1";
+                }
+
                 if (node.Attributes["RemoteWFS"] != null)
+                {
                     RemoteWFS = node.Attributes["RemoteWFS"].Value == "1";
+                }
             }
         }
-        #endregion
+
+        #endregion HelperClasses
 
         async public static Task LogAsync(IServiceRequestContext context, string header, string server, string service, string axl)
         {
             if (context == null ||
                 context.MapServer == null ||
-                context.MapServer.LoggingEnabled(loggingMethod.request_detail_pro) == false) return;
+                context.MapServer.LoggingEnabled(loggingMethod.request_detail_pro) == false)
+            {
+                return;
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.Append("\n");
@@ -890,19 +1076,27 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
             await context.MapServer.LogAsync(context, "gView.Interoperability.ArcXML", loggingMethod.request_detail_pro, sb.ToString());
         }
+
         async public static Task Log(IServiceRequestContext context, string header, string server, string service, StringBuilder axl)
         {
             if (context == null ||
                 context.MapServer == null ||
-                context.MapServer.LoggingEnabled(loggingMethod.request_detail_pro) == false) return;
+                context.MapServer.LoggingEnabled(loggingMethod.request_detail_pro) == false)
+            {
+                return;
+            }
 
             await LogAsync(context, header, server, service, axl.ToString());
         }
+
         async public static Task ErrorLogAsync(IServiceRequestContext context, string header, string url, Exception ex)
         {
             if (context == null ||
                 context.MapServer == null ||
-                context.MapServer.LoggingEnabled(loggingMethod.error) == false) return;
+                context.MapServer.LoggingEnabled(loggingMethod.error) == false)
+            {
+                return;
+            }
 
             StringBuilder msg = new StringBuilder();
             if (ex != null)
@@ -921,6 +1115,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         }
 
         /*
+
         #region IMetadata Member
 
         public void ReadMetadata(IPersistStream stream)
@@ -954,7 +1149,8 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             stream.Save("EPSGCodes", srscodes);
         }
 
-        #endregion
+        #endregion IMetadata Member
+
          * */
     }
 }

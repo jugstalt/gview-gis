@@ -4,9 +4,9 @@ using gView.Framework.IO;
 using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Reflection;
 
 namespace gView.Framework.Symbology
@@ -22,7 +22,7 @@ namespace gView.Framework.Symbology
 
         public GradientFillSymbol()
         {
-            _gradient = new ColorGradient(Color.Red, Color.Blue);
+            _gradient = new ColorGradient(ArgbColor.Red, ArgbColor.Blue);
             _gradient.Angle = 45f;
         }
 
@@ -103,7 +103,7 @@ namespace gView.Framework.Symbology
         [DisplayName("Color")]
         [Category("Outline Symbol")]
         [UseColorPicker()]
-        public Color OutlineColor
+        public ArgbColor OutlineColor
         {
             get { return PenColor; }
             set { PenColor = value; }
@@ -112,9 +112,8 @@ namespace gView.Framework.Symbology
         [Browsable(true)]
         [DisplayName("DashStyle")]
         [Category("Outline Symbol")]
-        //[Editor(typeof(gView.Framework.UI.DashStyleTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
         [UseDashStylePicker()]
-        public DashStyle OutlineDashStyle
+        public LineDashStyle OutlineDashStyle
         {
             get { return PenDashStyle; }
             set { PenDashStyle = value; }
@@ -133,7 +132,7 @@ namespace gView.Framework.Symbology
         #region IPenColor Member
 
         [Browsable(false)]
-        public Color PenColor
+        public ArgbColor PenColor
         {
             get
             {
@@ -141,7 +140,7 @@ namespace gView.Framework.Symbology
                 {
                     return ((IPenColor)_outlineSymbol).PenColor;
                 }
-                return Color.Transparent;
+                return ArgbColor.Transparent;
             }
             set
             {
@@ -245,7 +244,7 @@ namespace gView.Framework.Symbology
         #region IPenDashStyle Member
 
         [Browsable(false)]
-        public DashStyle PenDashStyle
+        public LineDashStyle PenDashStyle
         {
             get
             {
@@ -253,7 +252,7 @@ namespace gView.Framework.Symbology
                 {
                     return ((IPenDashStyle)_outlineSymbol).PenDashStyle;
                 }
-                return DashStyle.Solid;
+                return LineDashStyle.Solid;
             }
             set
             {
@@ -268,18 +267,18 @@ namespace gView.Framework.Symbology
 
         #region IFillSymbol Member
 
-        public void FillPath(IDisplay display, System.Drawing.Drawing2D.GraphicsPath path)
+        public void FillPath(IDisplay display, IGraphicsPath path)
         {
             //display.GraphicsContext.SmoothingMode = (SmoothingMode)this.Smoothingmode;
 
             if (_gradient != null)
             {
-                RectangleF rect =
+                CanvasRectangleF rect =
                     (_rectType == GradientRectType.Feature ?
                     path.GetBounds() :
-                    new RectangleF(0, 0, display.iWidth, display.iHeight));
+                    new CanvasRectangleF(0, 0, display.iWidth, display.iHeight));
 
-                using (LinearGradientBrush brush = _gradient.CreateNewLinearGradientBrush(rect))
+                using (var brush = _gradient.CreateNewLinearGradientBrush(rect))
                 {
                     display.Canvas.FillPath(brush, path);
                 }
@@ -308,7 +307,7 @@ namespace gView.Framework.Symbology
 
         public void Draw(IDisplay display, IGeometry geometry)
         {
-            GraphicsPath gp = DisplayOperations.Geometry2GraphicsPath(display, geometry);
+            var gp = DisplayOperations.Geometry2GraphicsPath(display, geometry);
             if (gp != null)
             {
                 this.FillPath(display, gp);

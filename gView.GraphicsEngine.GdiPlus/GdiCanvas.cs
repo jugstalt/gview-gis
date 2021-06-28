@@ -271,6 +271,13 @@ namespace gView.GraphicsEngine.GdiPlus
             return new CanvasSizeF(sizeF.Width, sizeF.Height);
         }
 
+        public IDisplayCharacterRanges DisplayCharacterRanges(IFont font, IDrawTextFormat format, string text)
+        {
+            CheckUsability();
+
+            return new DisplayCharacterRanges(_graphics, (Font)font.EngineElement, (StringFormat)format.EngineElement, text);
+        }
+
         public void DrawLine(IPen pen, CanvasPoint p1, CanvasPoint p2)
         {
             CheckUsability();

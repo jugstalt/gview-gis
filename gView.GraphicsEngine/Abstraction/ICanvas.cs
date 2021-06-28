@@ -48,6 +48,7 @@ namespace gView.GraphicsEngine.Abstraction
         void FillEllipse(IBrush brush, float x1, float y1, float x2, float y2);
 
         CanvasSizeF MeasureText(string text, IFont font);
+        IDisplayCharacterRanges DisplayCharacterRanges(IFont font, IDrawTextFormat format, string text);
 
         void DrawPath(IPen pen, IGraphicsPath path);
         void FillPath(IBrush brush, IGraphicsPath path);

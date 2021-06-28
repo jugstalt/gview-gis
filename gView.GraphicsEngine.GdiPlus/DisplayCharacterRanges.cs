@@ -1,20 +1,21 @@
-﻿using gView.Framework.Carto;
+﻿using gView.GraphicsEngine.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 
-namespace gView.Framework.Symbology
+namespace gView.GraphicsEngine.GdiPlus
 {
     class DisplayCharacterRanges : IDisplayCharacterRanges
     {
-        private RectangleF[] _rectF;
+        private CanvasRectangleF[] _rectF;
 
-        public DisplayCharacterRanges(System.Drawing.Graphics gr, System.Drawing.Font font, StringFormat format, string text)
+        public DisplayCharacterRanges(Graphics graphics, System.Drawing.Font font, StringFormat format, string text)
         {
-            _rectF = new RectangleF[text.Length];
+            _rectF = new CanvasRectangleF[text.Length];
             int c = 0;
             float xOffset = 0;
+
             for (int l = 0; l < text.Length; l += 32, c += 32)
             {
                 string t = text.Substring(l, Math.Min(32, text.Length - l));
@@ -25,21 +26,22 @@ namespace gView.Framework.Symbology
 
                 format.SetMeasurableCharacterRanges(ranges);
 
-                SizeF size = gr.MeasureString(t, font);
-                Region[] regions = gr.MeasureCharacterRanges(t, font, new RectangleF(0, 0, size.Width, size.Height), format);
+                SizeF size = graphics.MeasureString(t, font);
+                Region[] regions = graphics.MeasureCharacterRanges(t, font, new RectangleF(0, 0, size.Width, size.Height), format);
 
                 for (int i = 0; i < regions.Length; i++)
                 {
-                    _rectF[c + i] = regions[i].GetBounds(gr);
-                    _rectF[c + i].X += xOffset;
+                    var bounds = regions[i].GetBounds(graphics);
+                    _rectF[c + i] = new CanvasRectangleF(bounds.X, bounds.Y, bounds.Width, bounds.Height);
+                    _rectF[c + i].Left += xOffset;
                     regions[i].Dispose();
                 }
 
-                xOffset = _rectF[c + t.Length - 1].X + _rectF[c + t.Length - 1].Width;
+                xOffset = _rectF[c + t.Length - 1].Left + _rectF[c + t.Length - 1].Width;
             }
         }
 
-        public RectangleF this[int i]
+        public CanvasRectangleF this[int i]
         {
             get { return _rectF[i]; }
         }

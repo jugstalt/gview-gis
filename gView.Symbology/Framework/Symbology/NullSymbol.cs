@@ -5,7 +5,6 @@ using gView.Framework.system;
 using System;
 using System.ComponentModel;
 
-
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("D03DE1E2-B2D1-4C25-A39E-29DE828C43BC")]

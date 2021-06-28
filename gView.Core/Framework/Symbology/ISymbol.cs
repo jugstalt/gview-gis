@@ -403,12 +403,6 @@ namespace gView.Framework.Symbology
         #endregion
     }
 
-    public interface IDisplayCharacterRanges
-    {
-        float Width { get; }
-        GraphicsEngine.CanvasRectangleF this[int i] { get; }
-    }
-
     public interface ILabel
     {
         string Text { get; set; }
@@ -416,7 +410,7 @@ namespace gView.Framework.Symbology
 
         TextSymbolAlignment[] SecondaryTextSymbolAlignments { get; set; }
 
-        IDisplayCharacterRanges MeasureCharacterWidth(IDisplay display);
+        GraphicsEngine.Abstraction.IDisplayCharacterRanges MeasureCharacterWidth(IDisplay display);
 
         List<IAnnotationPolygonCollision> AnnotationPolygon(IDisplay display, IGeometry geometry, TextSymbolAlignment symbolAlignment);
     }

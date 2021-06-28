@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
+﻿using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -18,11 +17,11 @@ namespace gView.Framework.IO
             return path.Replace(@"\", "/");
         }
 
-        static public void SetRequestUrl(this HttpRequestMessage requestMessage, string url) 
+        static public void SetRequestUrl(this HttpRequestMessage requestMessage, string url)
         {
             var uri = new Uri(url);
 
-            if(!String.IsNullOrEmpty(uri.UserInfo))
+            if (!String.IsNullOrEmpty(uri.UserInfo))
             {
                 requestMessage.Headers.Add("Authorization", $"Basic { Convert.ToBase64String(Encoding.UTF8.GetBytes(uri.UserInfo)) }");
                 uri = new Uri($"{ uri.Scheme }://{ uri.Authority }{ uri.PathAndQuery }");
@@ -31,7 +30,7 @@ namespace gView.Framework.IO
             requestMessage.RequestUri = uri;
         }
 
-        async static public Task<int> SaveOrUpload(this Bitmap bitmap, string path, ImageFormat format)
+        async static public Task<int> SaveOrUpload(this IBitmap bitmap, string path, ImageFormat format)
         {
             if (path.StartsWith("http://") || path.StartsWith("https://"))
             {
@@ -67,7 +66,7 @@ namespace gView.Framework.IO
                         }
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     throw new Exception($"SaveOrUpload: { ex.Message }", ex);
                 }

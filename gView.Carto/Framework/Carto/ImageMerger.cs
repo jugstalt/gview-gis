@@ -131,18 +131,18 @@ namespace gView.Framework.Carto
 
     public class ImageMerger2 : IDisposable
     {
-        protected List<GeorefBitmap> m_picList;
-        protected List<int> m_orderList;
-        protected int m_max = 0;
-        protected double m_scale = -1.0, m_dpi = 96.0;
+        protected List<GeorefBitmap> _picList;
+        protected List<int> _orderList;
+        protected int _max = 0;
+        protected double _scale = -1.0, m_dpi = 96.0;
 
         private string _errMsg = String.Empty;
         private object lockThis = new object();
 
         public ImageMerger2()
         {
-            m_picList = new List<GeorefBitmap>();
-            m_orderList = new List<int>();
+            _picList = new List<GeorefBitmap>();
+            _orderList = new List<int>();
         }
 
         public void Dispose()
@@ -152,28 +152,28 @@ namespace gView.Framework.Carto
 
         public void Clear()
         {
-            foreach (var georefBitmap in m_picList)
+            foreach (var georefBitmap in _picList)
             {
                 georefBitmap.Dispose();
             }
 
-            m_picList.Clear();
-            m_orderList.Clear();
-            m_max = 0;
-            m_scale = -1.0;
+            _picList.Clear();
+            _orderList.Clear();
+            _max = 0;
+            _scale = -1.0;
         }
 
         public int Count
         {
             get
             {
-                return m_picList.Count;
+                return _picList.Count;
             }
         }
 
         public double mapScale
         {
-            set { m_scale = value; }
+            set { _scale = value; }
         }
 
         public double dpi
@@ -185,26 +185,26 @@ namespace gView.Framework.Carto
         {
             lock (lockThis)
             {
-                for (int i = 0; i < m_picList.Count; i++)
+                for (int i = 0; i < _picList.Count; i++)
                 {
-                    int o = Convert.ToInt32(m_orderList[i]);
+                    int o = Convert.ToInt32(_orderList[i]);
                     if (order < o)
                     {
-                        m_picList.Insert(i, image);
-                        m_orderList.Insert(i, order);
+                        _picList.Insert(i, image);
+                        _orderList.Insert(i, order);
                         return;
                     }
                 }
 
-                m_picList.Add(image);
-                m_orderList.Add(order);
+                _picList.Add(image);
+                _orderList.Add(order);
             }
         }
 
         public int max
         {
-            get { return m_max; }
-            set { m_max = value; }
+            get { return _max; }
+            set { _max = value; }
         }
 
         public string LastErrorMessage
@@ -223,7 +223,7 @@ namespace gView.Framework.Carto
                 {
                     canvas.CompositingMode = GraphicsEngine.CompositingMode.SourceOver;
 
-                    foreach (GeorefBitmap geoBmp in m_picList)
+                    foreach (GeorefBitmap geoBmp in _picList)
                     {
                         if (geoBmp == null || geoBmp.Bitmap == null)
                         {
@@ -287,9 +287,9 @@ namespace gView.Framework.Carto
                     canvas.Dispose();
                 }
 
-                if (m_scale > 0)
+                if (_scale > 0)
                 {
-                    Scalebar bar = new Scalebar(m_scale, m_dpi);
+                    Scalebar bar = new Scalebar(_scale, m_dpi);
                     bar.Create(bitmap, bitmap.Width - (int)(50 * m_dpi / 96.0) - bar.ScaleBarWidth, bitmap.Height - (int)(32 * m_dpi / 96.0));
                 }
                 return true;
@@ -328,7 +328,7 @@ namespace gView.Framework.Carto
             GraphicsEngine.Abstraction.IBitmap ret = null;
             try
             {
-                foreach (GeorefBitmap geoBmp in m_picList)
+                foreach (GeorefBitmap geoBmp in _picList)
                 {
                     if (geoBmp == null || geoBmp.Bitmap == null)
                     {

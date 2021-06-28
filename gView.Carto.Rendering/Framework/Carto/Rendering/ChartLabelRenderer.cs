@@ -385,7 +385,7 @@ namespace gView.Framework.Carto.Rendering
             if (!(disp is Display) || disp.LabelEngine.LabelCanvas == null)
                 return;
 
-            System.Drawing.Graphics original = disp.Canvas;
+            var originalCanvas = disp.Canvas;
             try
             {
                 ((Display)disp).Canvas = disp.LabelEngine.LabelCanvas;
@@ -554,7 +554,7 @@ namespace gView.Framework.Carto.Rendering
             }
             finally
             {
-                ((Display)disp).Canvas = original;
+                ((Display)disp).Canvas = originalCanvas;
             }
         }
 

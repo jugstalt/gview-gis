@@ -61,5 +61,15 @@ namespace gView.GraphicsEngine.GdiPlus
         {
             return new GdiSolidBrush(color);
         }
+
+        public IBrush CreateLinearGradientBrush(CanvasRectangleF rect, ArgbColor col1, ArgbColor col2, float angle)
+        {
+            return new GdiLinearGradientBrush(rect, col1, col2, angle);
+        }
+
+        public IBrush CreateHatchBrush(HatchStyle hatchStyle, ArgbColor foreColor, ArgbColor backColor)
+        {
+            return new GdiHatchBrush(hatchStyle, foreColor, backColor);
+        }
     }
 }

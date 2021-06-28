@@ -4,10 +4,10 @@ using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.Web;
 using gView.Framework.XML;
+using gView.GraphicsEngine.Abstraction;
 using gView.MapServer;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -20,7 +20,7 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         private string _name;
         private ArcIMSDataset _dataset;
-        private System.Drawing.Bitmap _legend = null;
+        private GraphicsEngine.Abstraction.IBitmap _legend = null;
         private GeorefBitmap _image = null;
         private List<IWebServiceTheme> _clonedThemes = null;
 
@@ -251,28 +251,28 @@ namespace gView.Interoperability.ArcXML.Dataset
 #if(DEBUG)
                 //gView.Framework.system.Logger.LogDebug("Start ArcXML DownloadImage");
 #endif
-                System.Drawing.Bitmap bm = null;
+                IBitmap bitmap = null;
                 if (outputNode != null)
                 {
 #if(DEBUG)
                     gView.Framework.system.Logger.LogDebug("Start ArcXML DownloadImage");
 #endif
-                    bm = WebFunctions.DownloadImage(outputNode/*_dataset._connector.Proxy*/);
+                    bitmap = WebFunctions.DownloadImage(outputNode/*_dataset._connector.Proxy*/);
 #if(DEBUG)
                     gView.Framework.system.Logger.LogDebug("ArcXML DownloadImage Finished");
 #endif
                 }
                 else
                 {
-                    bm = null;
+                    bitmap = null;
                 }
 #if(DEBUG)
                 //gView.Framework.system.Logger.LogDebug("ArcXML DownloadImage Finished");
 #endif
 
-                if (bm != null)
+                if (bitmap != null)
                 {
-                    _image = new GeorefBitmap(bm);
+                    _image = new GeorefBitmap(bitmap);
                     //_image.MakeTransparent(display.TransparentColor);
                     if (envelopeNode != null &&
                         envelopeNode.Attributes["minx"] != null &&
@@ -450,7 +450,7 @@ namespace gView.Interoperability.ArcXML.Dataset
                     _legend.Dispose();
                 }
 
-                _legend = WebFunctions.DownloadImage(output/*_dataset._connector.Proxy*/);
+                _legend = WebFunctions.DownloadImage(output);
                 return true;
             }
             catch (Exception ex)
@@ -465,7 +465,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             get { return _image; }
         }
 
-        System.Drawing.Bitmap IWebServiceClass.Legend
+        GraphicsEngine.Abstraction.IBitmap IWebServiceClass.Legend
         {
             get { return _legend; }
         }
@@ -544,7 +544,7 @@ namespace gView.Interoperability.ArcXML.Dataset
                     continue;
                 }
 
-                clone._clonedThemes.Add(LayerFactory.Create(theme.Class, theme as ILayer, clone) as IWebServiceTheme);
+                clone._clonedThemes.Add(LayerFactory.Create(theme.Class, theme, clone) as IWebServiceTheme);
             }
             clone.BeforeMapRequest = BeforeMapRequest;
             clone.AfterMapRequest = AfterMapRequest;
@@ -554,7 +554,7 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         #endregion
 
-        private string Color2AXL(System.Drawing.Color col)
+        private string Color2AXL(GraphicsEngine.ArgbColor col)
         {
             return col.R + "," + col.G + "," + col.B;
         }

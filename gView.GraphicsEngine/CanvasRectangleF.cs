@@ -23,6 +23,12 @@ namespace gView.GraphicsEngine
             this.Height = rectangle.Height;
         }
 
+        public void Offset(float x, float y)
+        {
+            this.Left += x;
+            this.Top += y;
+        }
+
         public float Left { get; set; }
         public float Top { get; set; }
 
