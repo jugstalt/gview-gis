@@ -17,6 +17,10 @@ namespace gView.GraphicsEngine.Abstraction
         IPen CreatePen(ArgbColor color, float width);
         IBrush CreateSolidBrush(ArgbColor color);
 
-        IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular);
+        IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit grUnit = GraphicsUnit.Point);
+
+        IDrawTextFormat CreateDrawTextFormat();
+
+        IGraphicsPath CreateGraphicsPath();
     }
 }

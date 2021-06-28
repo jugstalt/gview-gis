@@ -13,12 +13,15 @@ namespace gView.GraphicsEngine
 
         public int ToArgb() => (this.A << 24) | (this.R << 16) | (this.G << 8) | this.B;
 
+        public bool IsTransparent => this.A == 0;
+
         public static ArgbColor Transparent => ArgbColor.FromArgb(0, 0, 0, 0);
         public static ArgbColor White => ArgbColor.FromArgb(255, 255, 255);
         public static ArgbColor Black => ArgbColor.FromArgb(0, 0, 0);
         public static ArgbColor LightGray => ArgbColor.FromArgb(200, 200, 200);
         public static ArgbColor Red => ArgbColor.FromArgb(255, 0, 0);
-
+        public static ArgbColor Green => ArgbColor.FromArgb(0, 255, 0);
+        public static ArgbColor Blue => ArgbColor.FromArgb(0, 0, 255);
 
         public static ArgbColor FromArgb(int alpha, ArgbColor baseColor)
         {

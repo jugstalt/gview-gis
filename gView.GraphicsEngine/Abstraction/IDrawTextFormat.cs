@@ -4,9 +4,10 @@ using System.Text;
 
 namespace gView.GraphicsEngine.Abstraction
 {
-    public interface IBrush : IDisposable
+    public interface IDrawTextFormat
     {
-        ArgbColor Color { get; set; }
+        StringAlignment Alignment { get; set; }
+        StringAlignment LineAlignment { get; set; }
 
         object EngineElement { get; }
     }

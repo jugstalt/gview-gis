@@ -1616,10 +1616,10 @@ namespace gView.Plugins.MapTools.Graphics
 
             foreach (IGraphicElement grElement in _doc.FocusMap.Display.GraphicsContainer.SelectedElements)
             {
-                if (grElement is IFont)
+                if (grElement is IFontSymbol)
                 {
-                    System.Drawing.Font font = ((IFont)grElement).Font;
-                    ((IFont)grElement).Font = new System.Drawing.Font(_combo.SelectedItem.ToString(), font.Size);
+                    System.Drawing.Font font = ((IFontSymbol)grElement).Font;
+                    ((IFontSymbol)grElement).Font = new System.Drawing.Font(_combo.SelectedItem.ToString(), font.Size);
                 }
             }
             if (_doc.Application is IMapApplication)
@@ -1707,10 +1707,10 @@ namespace gView.Plugins.MapTools.Graphics
 
             foreach (IGraphicElement grElement in _doc.FocusMap.Display.GraphicsContainer.SelectedElements)
             {
-                if (grElement is IFont)
+                if (grElement is IFontSymbol)
                 {
-                    System.Drawing.Font font = ((IFont)grElement).Font;
-                    ((IFont)grElement).Font = new System.Drawing.Font(font.FontFamily, (float)Convert.ToDecimal(_combo.SelectedItem.ToString()));
+                    System.Drawing.Font font = ((IFontSymbol)grElement).Font;
+                    ((IFontSymbol)grElement).Font = new System.Drawing.Font(font.FontFamily, (float)Convert.ToDecimal(_combo.SelectedItem.ToString()));
                 }
             }
             if (_doc.Application is IMapApplication)

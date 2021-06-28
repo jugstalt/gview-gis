@@ -66,7 +66,7 @@ namespace gView.GraphicsEngine.GdiPlus
 
         public ICanvas CreateCanvas()
         {
-            return new Canvas(_bitmap);
+            return new GdiCanvas(_bitmap);
         }
 
         public void MakeTransparent()

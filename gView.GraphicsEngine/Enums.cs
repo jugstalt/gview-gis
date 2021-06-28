@@ -67,6 +67,17 @@ namespace gView.GraphicsEngine
         Strikeout = 8
     }
 
+    public enum GraphicsUnit
+    {
+        World = 0,
+        Display = 1,
+        Pixel = 2,
+        Point = 3,
+        Inch = 4,
+        Document = 5,
+        Millimeter = 6
+    }
+
     public enum InterpolationMode
     {
         Invalid = -1,
@@ -78,5 +89,62 @@ namespace gView.GraphicsEngine
         NearestNeighbor = 5,
         HighQualityBilinear = 6,
         HighQualityBicubic = 7
+    }
+
+    public enum SmoothingMode
+    {
+        Default = 0,
+        None = 3,
+        AntiAlias = 4
+    }
+
+    public enum TextRenderingHint
+    {
+        SystemDefault = 0,
+        SingleBitPerPixelGridFit = 1,
+        SingleBitPerPixel = 2,
+        AntiAliasGridFit = 3,
+        AntiAlias = 4,
+        ClearTypeGridFit = 5
+    }
+
+    public enum LineDashStyle
+    {
+        Solid = 0,
+        Dash = 1,
+        Dot = 2,
+        DashDot = 3,
+        DashDotDot = 4,
+        Custom = 5
+    }
+
+    public enum LineCap
+    {
+        Flat = 0,
+        Square = 1,
+        Round = 2,
+        Triangle = 3,
+        NoAnchor = 16,
+        SquareAnchor = 17,
+        RoundAnchor = 18,
+        DiamondAnchor = 19,
+        ArrowAnchor = 20,
+        AnchorMask = 240,
+        Custom = 255
+    }
+
+    public enum LineJoin
+    {
+        Miter = 0,
+        Bevel = 1,
+        Round = 2,
+        MiterClipped = 3
+    }
+
+    public enum StringAlignment
+    {
+        Near = 0,
+        Center = 1,
+        Far = 2
     }
 }

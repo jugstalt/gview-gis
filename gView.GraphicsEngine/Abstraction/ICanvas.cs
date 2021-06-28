@@ -10,6 +10,12 @@ namespace gView.GraphicsEngine.Abstraction
 
         CompositingMode CompositingMode { set; }
         InterpolationMode InterpolationMode { get;  set; }
+        SmoothingMode SmoothingMode { get; set; }
+        TextRenderingHint TextRenderingHint { get; set; }
+
+        void TranslateTransform(CanvasPointF point);
+        void RotateTransform(float angle);
+        void ResetTransform();
 
         void DrawRectangle(IPen pen, CanvasRectangle rectangle);
         void DrawRectangle(IPen pen, CanvasRectangleF rectangleF);
@@ -28,11 +34,22 @@ namespace gView.GraphicsEngine.Abstraction
         void DrawText(string text, IFont font, IBrush brush, CanvasPointF pointF);
         void DrawText(string text, IFont font, IBrush brush, float x, float y);
 
+        void DrawText(string text, IFont font, IBrush brush, CanvasPoint point, IDrawTextFormat format);
+        void DrawText(string text, IFont font, IBrush brush, int x, int y, IDrawTextFormat format);
+        void DrawText(string text, IFont font, IBrush brush, CanvasPointF pointF, IDrawTextFormat format);
+        void DrawText(string text, IFont font, IBrush brush, float x, float y, IDrawTextFormat format);
+
         void DrawLine(IPen pen, CanvasPoint p1, CanvasPoint p2);
         void DrawLine(IPen pen, CanvasPointF p1, CanvasPointF p2);
         void DrawLine(IPen pen, int x1, int y1, int x2, int y2);
         void DrawLine(IPen pen, float x1, float y1, float x2, float y2);
 
+        void DrawEllipse(IPen pen, float x1, float y1, float x2, float y2);
+        void FillEllipse(IBrush brush, float x1, float y1, float x2, float y2);
+
         CanvasSizeF MeasureText(string text, IFont font);
+
+        void DrawPath(IPen pen, IGraphicsPath path);
+        void FillPath(IBrush brush, IGraphicsPath path);
     }
 }

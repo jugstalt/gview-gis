@@ -1,13 +1,14 @@
 using gView.Framework.Carto;
 using gView.Framework.Geometry;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using System;
-using System.Drawing.Drawing2D;
 
 namespace gView.Framework.Symbology
 {
     internal class DisplayOperations
     {
-        public static System.Drawing.Drawing2D.GraphicsPath Geometry2GraphicsPath(IDisplay display, IGeometry geometry)
+        public static IGraphicsPath Geometry2GraphicsPath(IDisplay display, IGeometry geometry)
         {
             try
             {
@@ -30,12 +31,12 @@ namespace gView.Framework.Symbology
             return null;
         }
 
-        private static System.Drawing.Drawing2D.GraphicsPath ConvertPolygon(IDisplay display, IPolygon polygon)
+        private static IGraphicsPath ConvertPolygon(IDisplay display, IPolygon polygon)
         {
             //if (polygon == null || polygon.RingCount == 0)
             //    return null;
 
-            GraphicsPath gp = new GraphicsPath();
+            var gp = Current.Engine.CreateGraphicsPath();
 
             for (int r = 0; r < polygon.RingCount; r++)
             {
@@ -90,9 +91,9 @@ namespace gView.Framework.Symbology
 
             return gp;
         }
-        private static System.Drawing.Drawing2D.GraphicsPath ConvertEnvelope(IDisplay display, IEnvelope envelope)
+        private static IGraphicsPath ConvertEnvelope(IDisplay display, IEnvelope envelope)
         {
-            GraphicsPath gp = new GraphicsPath();
+            var gp = Current.Engine.CreateGraphicsPath();
 
             double minx = envelope.minx, miny = envelope.miny;
             double maxx = envelope.maxx, maxy = envelope.maxy;
@@ -107,12 +108,12 @@ namespace gView.Framework.Symbology
 
             return gp;
         }
-        private static System.Drawing.Drawing2D.GraphicsPath ConvertPolyline(IDisplay display, IPolyline polyline)
+        private static IGraphicsPath ConvertPolyline(IDisplay display, IPolyline polyline)
         {
             //if (polyline == null || polyline.PathCount == 0)
             //    return null;
 
-            GraphicsPath gp = new GraphicsPath();
+            var gp = Current.Engine.CreateGraphicsPath();
 
             for (int r = 0; r < polyline.PathCount; r++)
             {

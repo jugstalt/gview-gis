@@ -394,17 +394,17 @@ namespace gView.Plugins.MapTools.Graphics
         {
             get
             {
-                if (_symbol is IFont)
+                if (_symbol is IFontSymbol)
                 {
-                    return ((IFont)_symbol).Font;
+                    return ((IFontSymbol)_symbol).Font;
                 }
                 return new System.Drawing.Font("Arial", 10);
             }
             set
             {
-                if (_symbol is IFont)
+                if (_symbol is IFontSymbol)
                 {
-                    ((IFont)_symbol).Font = value;
+                    ((IFontSymbol)_symbol).Font = value;
                 }
             }
         }

@@ -5,11 +5,11 @@ using System.Drawing;
 
 namespace gView.GraphicsEngine.GdiPlus
 {
-    internal class Canvas : ICanvas
+    internal class GdiCanvas : ICanvas
     {
         private Graphics _graphics;
 
-        public Canvas(Bitmap bitmap)
+        public GdiCanvas(Bitmap bitmap)
         {
             _graphics = Graphics.FromImage(bitmap);
         }
@@ -44,6 +44,59 @@ namespace gView.GraphicsEngine.GdiPlus
 
                 _graphics.InterpolationMode = value.ToGdiInterpolationMode();
             }
+        }
+
+        public SmoothingMode SmoothingMode
+        {
+            get
+            {
+                CheckUsability();
+
+                return _graphics.SmoothingMode.ToSmoothingMode();
+            }
+            set
+            {
+                CheckUsability();
+
+                _graphics.SmoothingMode = value.ToGdiSmoothingMode();
+            }
+        }
+
+        public TextRenderingHint TextRenderingHint
+        {
+            get
+            {
+                CheckUsability();
+
+                return (TextRenderingHint)_graphics.TextRenderingHint;
+            }
+            set
+            {
+                CheckUsability();
+
+                _graphics.TextRenderingHint = (System.Drawing.Text.TextRenderingHint)value;
+            }
+        }
+
+        public void TranslateTransform(CanvasPointF point)
+        {
+            CheckUsability();
+
+            _graphics.TranslateTransform(point.X, point.Y);
+        }
+
+        public void RotateTransform(float angle)
+        {
+            CheckUsability();
+
+            _graphics.RotateTransform(angle);
+        }
+
+        public void ResetTransform()
+        {
+            CheckUsability();
+
+            _graphics.ResetTransform();
         }
 
         public void FillRectangle(IBrush brush, int left, int right, int width, int height)
@@ -110,14 +163,14 @@ namespace gView.GraphicsEngine.GdiPlus
                 _graphics.DrawImage((Bitmap)bitmap.EngineElement,
                     dest.ToGdiRectangle(),
                     source.Left, source.Top, source.Width, source.Height,
-                    GraphicsUnit.Pixel,
+                    System.Drawing.GraphicsUnit.Pixel,
                     imageAttrs: imageAttributes);
             } else
             {
                 _graphics.DrawImage((Bitmap)bitmap.EngineElement,
                     dest.ToGdiRectangle(),
                     source.ToGdiRectangle(),
-                    GraphicsUnit.Pixel);
+                    System.Drawing.GraphicsUnit.Pixel);
             }
         }
 
@@ -128,7 +181,7 @@ namespace gView.GraphicsEngine.GdiPlus
             _graphics.DrawImage((Bitmap)bitmap.EngineElement,
                 dest.ToGdiRectangleF(),
                 source.ToGdiRectangleF(),
-                GraphicsUnit.Pixel);
+                System.Drawing.GraphicsUnit.Pixel);
         }
 
         public void DrawBitmap(IBitmap bitmap, CanvasPointF[] points, CanvasRectangleF source, float opacity = 1)
@@ -142,7 +195,7 @@ namespace gView.GraphicsEngine.GdiPlus
                 _graphics.DrawImage((Bitmap)bitmap.EngineElement,
                     points.ToGdiPointFArray(),
                     source.ToGdiRectangleF(),
-                    GraphicsUnit.Pixel,
+                    System.Drawing.GraphicsUnit.Pixel,
                     imageAttr: imageAttributes);
             }
             else
@@ -150,7 +203,7 @@ namespace gView.GraphicsEngine.GdiPlus
                 _graphics.DrawImage((Bitmap)bitmap.EngineElement,
                     points.ToGdiPointFArray(),
                     source.ToGdiRectangleF(),
-                    GraphicsUnit.Pixel);
+                    System.Drawing.GraphicsUnit.Pixel);
             }
         }
 
@@ -180,6 +233,34 @@ namespace gView.GraphicsEngine.GdiPlus
             CheckUsability();
 
             _graphics.DrawString(text, (Font)font.EngineElement, (Brush)brush.EngineElement, x, y);
+        }
+
+        public void DrawText(string text, IFont font, IBrush brush, CanvasPoint point, IDrawTextFormat format)
+        {
+            CheckUsability();
+
+            _graphics.DrawString(text, (Font)font.EngineElement, (Brush)brush.EngineElement, point.ToGdiPoint(), (StringFormat)format?.EngineElement);
+        }
+
+        public void DrawText(string text, IFont font, IBrush brush, CanvasPointF pointF, IDrawTextFormat format)
+        {
+            CheckUsability();
+
+            _graphics.DrawString(text, (Font)font.EngineElement, (Brush)brush.EngineElement, pointF.ToGdiPointF(), (StringFormat)format?.EngineElement);
+        }
+
+        public void DrawText(string text, IFont font, IBrush brush, int x, int y, IDrawTextFormat format)
+        {
+            CheckUsability();
+
+            _graphics.DrawString(text, (Font)font.EngineElement, (Brush)brush.EngineElement, x, y, (StringFormat)format?.EngineElement);
+        }
+
+        public void DrawText(string text, IFont font, IBrush brush, float x, float y, IDrawTextFormat format)
+        {
+            CheckUsability();
+
+            _graphics.DrawString(text, (Font)font.EngineElement, (Brush)brush.EngineElement, x, y, (StringFormat)format?.EngineElement);
         }
 
         public CanvasSizeF MeasureText(string text, IFont font)
@@ -216,6 +297,33 @@ namespace gView.GraphicsEngine.GdiPlus
             CheckUsability();
 
             _graphics.DrawLine((Pen)pen.EngineElement, x1, y1, x2, y2);
+        }
+
+        public void DrawEllipse(IPen pen, float x1, float y1, float x2, float y2)
+        {
+            CheckUsability();
+
+            _graphics.DrawEllipse((Pen)pen.EngineElement, x1, y1, x2, y2);
+        }
+
+        public void FillEllipse(IBrush brush, float x1, float y1, float x2, float y2)
+        {
+            CheckUsability();
+
+            _graphics.FillRectangle((Brush)brush.EngineElement, x1, y1, x2, y2);
+        }
+
+        public void DrawPath(IPen pen, IGraphicsPath path)
+        {
+            CheckUsability();
+
+            _graphics.DrawPath((Pen)pen.EngineElement, (System.Drawing.Drawing2D.GraphicsPath)path.EngineElement);
+        }
+        public void FillPath(IBrush brush, IGraphicsPath path)
+        {
+            CheckUsability();
+
+            _graphics.FillPath((Brush)brush.EngineElement, (System.Drawing.Drawing2D.GraphicsPath)path.EngineElement);
         }
 
         #endregion ICanvas

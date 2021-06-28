@@ -18,6 +18,12 @@ namespace gView.GraphicsEngine.GdiPlus
 
         public object EngineElement => _brush;
 
+        public ArgbColor Color
+        {
+            get { return _brush.Color.ToArgbColor(); }
+            set { _brush.Color = value.ToGdiColor(); }
+        }
+
         public void Dispose()
         {
             if (_brush != null)

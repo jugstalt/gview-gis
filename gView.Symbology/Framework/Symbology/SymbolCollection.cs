@@ -2,9 +2,9 @@
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
+using gView.GraphicsEngine;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.Linq;
 
 namespace gView.Framework.Symbology
@@ -395,7 +395,7 @@ namespace gView.Framework.Symbology
 
         #region ITextSymbol Member
 
-        public Font Font
+        public GraphicsEngine.Abstraction.IFont Font
         {
             get
             {
@@ -486,11 +486,11 @@ namespace gView.Framework.Symbology
 
         #region IPenColor Member
 
-        public Color PenColor
+        public ArgbColor PenColor
         {
             get
             {
-                return Color.Black;
+                return ArgbColor.Black;
             }
             set
             {
@@ -513,11 +513,11 @@ namespace gView.Framework.Symbology
 
         #region IBrushColor Member
 
-        public Color FillColor
+        public ArgbColor FillColor
         {
             get
             {
-                return Color.Black;
+                return ArgbColor.Black;
             }
             set
             {
@@ -540,11 +540,11 @@ namespace gView.Framework.Symbology
 
         #region IFontColor Member
 
-        public Color FontColor
+        public ArgbColor FontColor
         {
             get
             {
-                return Color.Black;
+                return ArgbColor.Black;
             }
             set
             {

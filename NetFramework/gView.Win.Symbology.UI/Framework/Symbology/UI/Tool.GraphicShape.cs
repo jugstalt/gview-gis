@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace gView.Framework.Symbology.UI
 {
     [Serializable]
-    public abstract class GraphicShape : Cloner, IClone, IGraphicElement2, IGraphicsElementScaling, IGraphicsElementRotation, IIGraphicsElementTranslation,IGraphicsElementDesigning,IBrushColor,IPenColor,IFontColor,IPenWidth,IPenDashStyle,IFont,IPersistable,IToolMouseActions
+    public abstract class GraphicShape : Cloner, IClone, IGraphicElement2, IGraphicsElementScaling, IGraphicsElementRotation, IIGraphicsElementTranslation,IGraphicsElementDesigning,IBrushColor,IPenColor,IFontColor,IPenWidth,IPenDashStyle,IFontSymbol,IPersistable,IToolMouseActions
     {
         private IGeometry _template = null;
         private IPoint _origin = new Point(0, 0), _rotationCenter = new Point(0.5, 0.5);
@@ -1149,17 +1149,17 @@ namespace gView.Framework.Symbology.UI
         {
             get
             {
-                if (_symbol is IFont)
+                if (_symbol is IFontSymbol)
                 {
-                    return ((IFont)_symbol).Font;
+                    return ((IFontSymbol)_symbol).Font;
                 }
                 return new System.Drawing.Font("Arial",10);
             }
             set
             {
-                if (_symbol is IFont)
+                if (_symbol is IFontSymbol)
                 {
-                    ((IFont)_symbol).Font = value;
+                    ((IFontSymbol)_symbol).Font = value;
                 }
             }
         }

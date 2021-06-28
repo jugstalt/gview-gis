@@ -37,9 +37,19 @@ namespace gView.GraphicsEngine.GdiPlus
             return GdiBitmap.FromHbitmap(hBitmap);
         }
 
-        public IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular)
+        public IDrawTextFormat CreateDrawTextFormat()
+        {
+            return new DrawTextFormat();
+        }
+
+        public IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit grUnit = GraphicsUnit.Point)
         {
             return new GdiFont(fontFamily, size, fontStyle);
+        }
+
+        public IGraphicsPath CreateGraphicsPath()
+        {
+            return new GdiGraphicsPath();
         }
 
         public IPen CreatePen(ArgbColor color, float width)

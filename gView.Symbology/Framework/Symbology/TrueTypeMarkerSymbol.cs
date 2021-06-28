@@ -4,10 +4,11 @@ using gView.Framework.IO;
 using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using gView.Symbology.Framework.Symbology.IO;
 using System;
 using System.ComponentModel;
-using System.Drawing;
 using System.Reflection;
 using System.Text;
 using System.Xml;
@@ -18,25 +19,25 @@ namespace gView.Framework.Symbology
     public sealed class TrueTypeMarkerSymbol : LegendItem, IPropertyPage, IPointSymbol, ISymbolRotation, IFontColor, ISymbolPositioningUI, ISymbolSize
     {
         private float _xOffset = 0, _yOffset = 0, _angle = 0, _rotation = 0, _hOffset = 0, _vOffset = 0;
-        private SolidBrush _brush;
-        private Font _font;
+        private IBrush _brush;
+        private IFont _font;
         private char _char = 'A';
 
         public TrueTypeMarkerSymbol()
         {
-            _brush = new SolidBrush(Color.Black);
-            _font = new Font("Arial", 10);
+            _brush = Current.Engine.CreateSolidBrush(ArgbColor.Black);
+            _font = Current.Engine.CreateFont("Arial", 10f);
         }
-        private TrueTypeMarkerSymbol(Font font, Color color)
+        private TrueTypeMarkerSymbol(IFont font, ArgbColor color)
         {
-            _brush = new SolidBrush(color);
+            _brush = Current.Engine.CreateSolidBrush(color);
             _font = font;
         }
 
         [Browsable(true)]
         //[Editor(typeof(gView.Framework.UI.ColorTypeEditor),typeof(System.Drawing.Design.UITypeEditor))]
         [UseColorPicker()]
-        public System.Drawing.Color Color
+        public ArgbColor Color
         {
             get
             {
@@ -48,7 +49,7 @@ namespace gView.Framework.Symbology
             }
         }
 
-        public Font Font
+        public IFont Font
         {
             get { return _font; }
             set
@@ -80,15 +81,15 @@ namespace gView.Framework.Symbology
                 //point.X+=_xOffset;
                 //point.Y+=_yOffset;
 
-                display.Canvas.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
-                StringFormat format = new StringFormat();
+                display.Canvas.TextRenderingHint = GraphicsEngine.TextRenderingHint.AntiAlias;
+                var format = Current.Engine.CreateDrawTextFormat();
                 format.Alignment = StringAlignment.Center;
                 format.LineAlignment = StringAlignment.Center;
-                format.FormatFlags = StringFormatFlags.DirectionRightToLeft;
+                //format.FormatFlags = System.Drawing.StringFormatFlags.DirectionRightToLeft;
 
                 try
                 {
-                    display.Canvas.TranslateTransform((float)point.X, (float)point.Y);
+                    display.Canvas.TranslateTransform(new CanvasPointF((float)point.X, (float)point.Y));
                     display.Canvas.RotateTransform(_angle + _rotation);
 
                     double xo = _xOffset, yo = _yOffset;
@@ -106,7 +107,7 @@ namespace gView.Framework.Symbology
                         yo = -_xOffset * sin_a + _yOffset * cos_a;
                     }
 
-                    display.Canvas.DrawString(_char.ToString(), _font, _brush, (float)xo, (float)yo, format);
+                    display.Canvas.DrawText(_char.ToString(), _font, _brush, (float)xo, (float)yo, format);
                 }
                 finally
                 {
@@ -242,12 +243,12 @@ namespace gView.Framework.Symbology
                 ms.Write(encoder.GetBytes(soap), 0, soap.Length);
                 ms.Position = 0;
                 SoapFormatter formatter = new SoapFormatter();
-                _font = (Font)formatter.Deserialize<Font>(ms, stream, this, true);
+                _font = (IFont)formatter.Deserialize<IFont>(ms, stream, this, true); 
             }
             catch { }
 
             _char = (char)stream.Load("char", 'A');
-            _brush.Color = Color.FromArgb((int)stream.Load("color", Color.Black.ToArgb()));
+            _brush.Color = ArgbColor.FromArgb((int)stream.Load("color", ArgbColor.Black.ToArgb()));
             HorizontalOffset = (float)stream.Load("x", 0f);
             VerticalOffset = (float)stream.Load("y", 0f);
             Angle = (float)stream.Load("a", 0f);
@@ -314,7 +315,7 @@ namespace gView.Framework.Symbology
         public override object Clone()
         {
             TrueTypeMarkerSymbol marker = Font != null && _brush != null ?
-                new TrueTypeMarkerSymbol(new Font(Font.Name, Font.Size, Font.Style), _brush.Color) :
+                new TrueTypeMarkerSymbol(Current.Engine.CreateFont(Font.Name, Font.Size, Font.Style), _brush.Color) :
                 new TrueTypeMarkerSymbol();
 
             marker.Angle = Angle;
@@ -352,7 +353,7 @@ namespace gView.Framework.Symbology
             }
             fac *= options.DpiFactor;
 
-            TrueTypeMarkerSymbol marker = new TrueTypeMarkerSymbol(new Font(Font.Name, Math.Max(Font.Size * fac / display.Screen.LargeFontsFactor, 2f), _font.Style), _brush.Color);
+            TrueTypeMarkerSymbol marker = new TrueTypeMarkerSymbol(Current.Engine.CreateFont(Font.Name, Math.Max(Font.Size * fac / display.Screen.LargeFontsFactor, 2f), _font.Style), _brush.Color);
             marker.Angle = Angle;
             marker.HorizontalOffset = HorizontalOffset * fac;
             marker.VerticalOffset = VerticalOffset * fac;
@@ -388,7 +389,7 @@ namespace gView.Framework.Symbology
         #region IFontColor Member
 
         [Browsable(false)]
-        public Color FontColor
+        public ArgbColor FontColor
         {
             get
             {
@@ -397,7 +398,7 @@ namespace gView.Framework.Symbology
                     return _brush.Color;
                 }
 
-                return Color.Transparent;
+                return ArgbColor.Transparent;
             }
             set
             {
@@ -448,8 +449,8 @@ namespace gView.Framework.Symbology
             }
             set
             {
-                this.Font = new Font(
-                    (_font != null ? _font.FontFamily.Name : "Arial"), value);
+                this.Font = Current.Engine.CreateFont(
+                    (_font != null ? _font.Name : "Arial"), value);
             }
         }
 

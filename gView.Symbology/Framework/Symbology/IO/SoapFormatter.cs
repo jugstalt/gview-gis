@@ -12,8 +12,13 @@ namespace gView.Symbology.Framework.Symbology.IO
     {
         public void Serialize(MemoryStream ms, object obj)
         {
+            if(obj==null)
+            {
+                return;
+            }
+
             // DoTo:
-            if (obj?.GetType() == typeof(System.Drawing.Font))
+            if (obj.GetType().IsAssignableFrom(typeof(GraphicsEngine.Abstraction.IFont)))
             {
                 var xml =
     @"<?xml version=""1.0""?>
@@ -28,7 +33,7 @@ namespace gView.Symbology.Framework.Symbology.IO
 </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>".Replace("\n", "").Replace("\n", "");
 
-                var font = (System.Drawing.Font)obj;
+                var font = (GraphicsEngine.Abstraction.IFont)obj;
                 xml = xml.Replace("{font-name}", EscapeXml(font.Name));   // Replace & => &amp; , > to &lt;
                 xml = xml.Replace("{font-size}", font.Size.ToString().Replace(",", "."));
                 xml = xml.Replace("{font-style}", font.Style.ToString());
@@ -42,7 +47,7 @@ namespace gView.Symbology.Framework.Symbology.IO
         public object Deserialize<T>(MemoryStream ms, IErrorReport errorReport, object source, bool writeError=false)
         {
             // ToDo:
-            if (typeof(T) == typeof(System.Drawing.Font))
+            if (typeof(T) == typeof(GraphicsEngine.Abstraction.IFont))
             {
                 var soap = Encoding.ASCII.GetString(ms.ToArray());
                 XmlDocument doc = new XmlDocument();
@@ -50,8 +55,8 @@ namespace gView.Symbology.Framework.Symbology.IO
 
                 string name = "Arial";
                 float size = 8;
-                System.Drawing.FontStyle fontStyle = System.Drawing.FontStyle.Regular;
-                System.Drawing.GraphicsUnit grUnit = System.Drawing.GraphicsUnit.Point;
+                GraphicsEngine.FontStyle fontStyle = GraphicsEngine.FontStyle.Regular;
+                GraphicsEngine.GraphicsUnit grUnit = GraphicsEngine.GraphicsUnit.Point;
 
                 XmlNode nameNode = doc.SelectSingleNode("//Name");
                 if (nameNode != null)
@@ -63,11 +68,11 @@ namespace gView.Symbology.Framework.Symbology.IO
 
                 XmlNode styleNode = doc.SelectSingleNode("//Style");
                 if (styleNode != null)
-                    fontStyle = (System.Drawing.FontStyle)Enum.Parse(typeof(System.Drawing.FontStyle), styleNode.InnerText);
+                    fontStyle = (GraphicsEngine.FontStyle)Enum.Parse(typeof(GraphicsEngine.FontStyle), styleNode.InnerText);
 
                 XmlNode unitNode = doc.SelectSingleNode("//Unit");
                 if (styleNode != null)
-                    grUnit = (System.Drawing.GraphicsUnit)Enum.Parse(typeof(System.Drawing.GraphicsUnit), unitNode.InnerText);
+                    grUnit = (GraphicsEngine.GraphicsUnit)Enum.Parse(typeof(GraphicsEngine.GraphicsUnit), unitNode.InnerText);
 
                 var fontFamily = System.Drawing.FontFamily.Families.Where(f => f.Name == name).FirstOrDefault();
                 if(fontFamily == null)
@@ -88,7 +93,7 @@ namespace gView.Symbology.Framework.Symbology.IO
                     }
                 }
 
-                var font = new System.Drawing.Font(fontFamily, size, fontStyle, grUnit);
+                var font = GraphicsEngine.Current.Engine.CreateFont(fontFamily.Name, size, fontStyle, grUnit);
                 return font;
             }
 

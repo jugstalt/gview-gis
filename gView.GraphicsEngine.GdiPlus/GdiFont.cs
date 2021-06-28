@@ -17,6 +17,14 @@ namespace gView.GraphicsEngine.GdiPlus
 
         public object EngineElement => _font;
 
+        public string Name => _font.Name;
+
+        public float Size => _font.Size;
+
+        public FontStyle Style => (FontStyle)_font.Style;
+
+        public GraphicsUnit Unit => (GraphicsUnit)_font.Unit;
+
         public void Dispose()
         {
             if (_font != null)

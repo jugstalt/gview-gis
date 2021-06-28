@@ -17,7 +17,7 @@ using System.Xml;
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("A5DA4D8D-879F-41a5-9795-F22BE5B85877")]
-    public class SimpleTextSymbol : Symbol, ITextSymbol, IPropertyPage, IFontColor, IFont
+    public class SimpleTextSymbol : Symbol, ITextSymbol, IPropertyPage, IFontColor, IFontSymbol
     {
         protected string _text;
         protected Font _font;
