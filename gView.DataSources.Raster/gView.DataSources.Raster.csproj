@@ -20,8 +20,4 @@
     <ProjectReference Include="..\gView.System\gView.System.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DataSources\" />
-  </ItemGroup>
-
 </Project>

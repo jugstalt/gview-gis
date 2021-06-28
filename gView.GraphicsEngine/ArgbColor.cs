@@ -13,6 +13,7 @@ namespace gView.GraphicsEngine
 
         public int ToArgb() => (this.A << 24) | (this.R << 16) | (this.G << 8) | this.B;
 
+        public static ArgbColor Transparent => ArgbColor.FromArgb(0, 0, 0, 0);
         public static ArgbColor White => ArgbColor.FromArgb(255, 255, 255);
         public static ArgbColor Black => ArgbColor.FromArgb(0, 0, 0);
         public static ArgbColor LightGray => ArgbColor.FromArgb(200, 200, 200);
@@ -58,6 +59,21 @@ namespace gView.GraphicsEngine
                                       (byte)(argb >> 16),
                                       (byte)(argb >> 8),
                                       (byte)(argb));
+        }
+
+        public override bool Equals(object obj)
+        {
+           if(obj is ArgbColor)
+            {
+                return ((ArgbColor)obj).ToArgb() == this.ToArgb();
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }

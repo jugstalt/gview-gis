@@ -209,7 +209,7 @@ namespace gView.Framework.Carto
         double dpi { get; set; }
 
         gView.GraphicsEngine.Abstraction.IBitmap Bitmap { get; }
-        gView.GraphicsEngine.Abstraction.ICanvas GraphicsContext { get; }
+        gView.GraphicsEngine.Abstraction.ICanvas Canvas { get; }
 
         gView.GraphicsEngine.ArgbColor BackgroundColor { get; set; }
         gView.GraphicsEngine.ArgbColor TransparentColor { get; set; }
@@ -320,7 +320,7 @@ namespace gView.Framework.Carto
         void Draw(IDisplay display, ICancelTracker cancelTracker);
         void Release();
 
-        global::System.Drawing.Graphics LabelGraphicsContext { get; }
+        GraphicsEngine.Abstraction.ICanvas LabelCanvas { get; }
     }
 
     public interface ISmartLabelPoint : IPoint

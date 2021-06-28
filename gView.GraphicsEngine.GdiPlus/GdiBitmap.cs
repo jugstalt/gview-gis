@@ -49,6 +49,17 @@ namespace gView.GraphicsEngine.GdiPlus
         public int Width => _bitmap != null ? _bitmap.Width : 0;
         public int Height => _bitmap != null ? _bitmap.Height : 0;
 
+        public float DpiX => _bitmap != null ? _bitmap.HorizontalResolution : 0f;
+        public float DpiY => _bitmap != null ? _bitmap.VerticalResolution : 0f;
+
+        public void SetResolution(float dpiX, float dpiY)
+        {
+            if(_bitmap!=null)
+            {
+                _bitmap.SetResolution(dpiX, DpiY);
+            }
+        }
+
         public PixelFormat PixelFormat => _bitmap != null ? _bitmap.PixelFormat.ToPixelFormat() : PixelFormat.DontCare;
 
         public object EngineElement => _bitmap;
@@ -105,6 +116,10 @@ namespace gView.GraphicsEngine.GdiPlus
             }
         }
 
+        public ArgbColor GetPixel(int x, int y)
+        {
+            return _bitmap.GetPixel(x, y).ToArgbColor();
+        }
 
         #endregion IBitmap
 
@@ -140,7 +155,16 @@ namespace gView.GraphicsEngine.GdiPlus
 
             internal System.Drawing.Imaging.BitmapData BitmapData;
         }
- 
+
+        #endregion
+
+        #region Static Members
+
+        static internal IBitmap FromHbitmap(IntPtr hBitmap)
+        {
+            return new GdiBitmap(Bitmap.FromHbitmap(hBitmap));
+        }
+
         #endregion
     }
 }

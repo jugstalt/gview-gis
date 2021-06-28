@@ -26,7 +26,23 @@ namespace gView.GraphicsEngine.GdiPlus
             {
                 CheckUsability();
 
-                _graphics.CompositingMode = value.ToCompositionMode();
+                _graphics.CompositingMode = value.ToGdiCompositionMode();
+            }
+        }
+
+        public InterpolationMode InterpolationMode
+        {
+            get
+            {
+                CheckUsability();
+
+                return _graphics.InterpolationMode.ToInterpolationMode();
+            }
+            set
+            {
+                CheckUsability();
+
+                _graphics.InterpolationMode = value.ToGdiInterpolationMode();
             }
         }
 

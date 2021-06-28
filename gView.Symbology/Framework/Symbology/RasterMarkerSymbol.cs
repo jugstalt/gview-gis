@@ -87,8 +87,8 @@ namespace gView.Framework.Symbology
 
                 try
                 {
-                    display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
-                    display.GraphicsContext.RotateTransform(_angle + _rotation);
+                    display.Canvas.TranslateTransform((float)point.X, (float)point.Y);
+                    display.Canvas.RotateTransform(_angle + _rotation);
 
                     var rect = new Rectangle((int)x, (int)y, (int)sizeX, (int)sizeY);
 
@@ -108,7 +108,7 @@ namespace gView.Framework.Symbology
 
                         if (_image != null)
                         {
-                            display.GraphicsContext.DrawImage(
+                            display.Canvas.DrawImage(
                                     _image,
                                     rect,
                                     new Rectangle(0, 0, _image.Width, _image.Height),
@@ -121,7 +121,7 @@ namespace gView.Framework.Symbology
                 }
                 finally
                 {
-                    display.GraphicsContext.ResetTransform();
+                    display.Canvas.ResetTransform();
                 }
             }
         }

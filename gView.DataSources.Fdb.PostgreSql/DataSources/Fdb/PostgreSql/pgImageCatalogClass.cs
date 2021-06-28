@@ -215,7 +215,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             if (_fc == null || display == null || _fdb == null)
                 return new SimpleRasterlayerCursor(new List<IRasterLayer>());
 
-            double dpm = Math.Max(display.GraphicsContext.DpiX, display.GraphicsContext.DpiY) / 0.0254;
+            double dpm = Math.Max(display.Canvas.DpiX, display.Canvas.DpiY) / 0.0254;
             double pix = display.mapScale / dpm;/*display.dpm;*/  // [m]
 
             IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display); //display.Envelope;

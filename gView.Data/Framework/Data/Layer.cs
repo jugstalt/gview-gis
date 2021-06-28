@@ -1257,7 +1257,7 @@ namespace gView.Framework.Data
     {
         private InterpolationMethod _interpolMethod = InterpolationMethod.Fast;
         private float _transparency = 0.0f;
-        private System.Drawing.Color _transColor = System.Drawing.Color.Transparent;
+        private GraphicsEngine.ArgbColor _transColor = GraphicsEngine.ArgbColor.Transparent;
 
         public RasterLayer() { }
         public RasterLayer(IRasterClass rasterClass)
@@ -1309,7 +1309,7 @@ namespace gView.Framework.Data
             }
         }
 
-        public System.Drawing.Color TransparentColor
+        public GraphicsEngine.ArgbColor TransparentColor
         {
             get
             {
@@ -1349,7 +1349,7 @@ namespace gView.Framework.Data
 
             _interpolMethod = (InterpolationMethod)stream.Load("interpolation", (int)InterpolationMethod.Fast);
             _transparency = (float)stream.Load("transparency", 0f);
-            _transColor = System.Drawing.Color.FromArgb((int)stream.Load("transcolor", System.Drawing.Color.Transparent.ToArgb()));
+            _transColor = GraphicsEngine.ArgbColor.FromArgb((int)stream.Load("transcolor", GraphicsEngine.ArgbColor.Transparent.ToArgb()));
         }
 
         override public void Save(IPersistStream stream)
@@ -1368,7 +1368,7 @@ namespace gView.Framework.Data
     {
         private InterpolationMethod _interpolMethod = InterpolationMethod.Fast;
         private float _transparency = 0.0f;
-        private System.Drawing.Color _transColor = System.Drawing.Color.Transparent;
+        private GraphicsEngine.ArgbColor _transColor = GraphicsEngine.ArgbColor.Transparent;
 
         public RasterCatalogLayer() { }
         public RasterCatalogLayer(IRasterCatalogClass rasterClass) :
@@ -1423,7 +1423,7 @@ namespace gView.Framework.Data
             }
         }
 
-        public System.Drawing.Color TransparentColor
+        public GraphicsEngine.ArgbColor TransparentColor
         {
             get
             {
@@ -1458,8 +1458,7 @@ namespace gView.Framework.Data
 
             _interpolMethod = (InterpolationMethod)stream.Load("interpolation", (int)InterpolationMethod.Fast);
             _transparency = (float)stream.Load("transparency", 0f);
-            int argb = (int)stream.Load("transcolor", System.Drawing.Color.Transparent.ToArgb());
-            _transColor = System.Drawing.Color.FromArgb(argb);
+            _transColor = GraphicsEngine.ArgbColor.FromArgb((int)stream.Load("transcolor", GraphicsEngine.ArgbColor.Transparent.ToArgb()));
         }
 
         override public void Save(IPersistStream stream)

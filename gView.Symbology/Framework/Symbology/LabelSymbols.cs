@@ -85,19 +85,19 @@ namespace gView.Framework.Symbology
 
                 try
                 {
-                    display.GraphicsContext.TextRenderingHint = ((this.Smoothingmode == SymbolSmoothing.None) ? System.Drawing.Text.TextRenderingHint.SystemDefault : System.Drawing.Text.TextRenderingHint.AntiAlias);
+                    display.Canvas.TextRenderingHint = ((this.Smoothingmode == SymbolSmoothing.None) ? System.Drawing.Text.TextRenderingHint.SystemDefault : System.Drawing.Text.TextRenderingHint.AntiAlias);
 
-                    display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
+                    display.Canvas.TranslateTransform((float)point.X, (float)point.Y);
                     if (angle != 0 || _angle != 0 || _rotation != 0)
                     {
-                        display.GraphicsContext.RotateTransform(angle + _angle + _rotation);
+                        display.Canvas.RotateTransform(angle + _angle + _rotation);
                     }
-                    DrawString(display.GraphicsContext, text, _font, _brush, (float)_xOffset, (float)_yOffset, format);
+                    DrawString(display.Canvas, text, _font, _brush, (float)_xOffset, (float)_yOffset, format);
                 }
                 finally
                 {
-                    display.GraphicsContext.ResetTransform();
-                    display.GraphicsContext.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
+                    display.Canvas.ResetTransform();
+                    display.Canvas.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
                 }
             }
         }
@@ -186,14 +186,14 @@ namespace gView.Framework.Symbology
             }
 
             StringFormat format = StringFormatFromAlignment(_align);
-            IDisplayCharacterRanges ranges = new DisplayCharacterRanges(display.GraphicsContext, _font, format, _text);
+            IDisplayCharacterRanges ranges = new DisplayCharacterRanges(display.Canvas, _font, format, _text);
 
             return ranges;
         }
 
         public List<IAnnotationPolygonCollision> AnnotationPolygon(IDisplay display, IGeometry geometry, TextSymbolAlignment symbolAlignment)
         {
-            if (_font == null || _text == null || display.GraphicsContext == null)
+            if (_font == null || _text == null || display.Canvas == null)
             {
                 return null;
             }
@@ -451,7 +451,7 @@ namespace gView.Framework.Symbology
             } 
             else
             {
-                SizeF size = display.GraphicsContext.MeasureString(text, _font);
+                SizeF size = display.Canvas.MeasureString(text, _font);
                 if(text==_text)
                 {
                     _measureStringSize = size;
@@ -1388,13 +1388,13 @@ namespace gView.Framework.Symbology
 
                 try
                 {
-                    display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
+                    display.Canvas.TranslateTransform((float)point.X, (float)point.Y);
                     if (angle != 0 || _angle != 0 || _rotation != 0)
                     {
-                        display.GraphicsContext.RotateTransform(angle + _angle + _rotation);
+                        display.Canvas.RotateTransform(angle + _angle + _rotation);
                     }
 
-                    display.GraphicsContext.TextRenderingHint = ((this.GlowingSmoothingmode == SymbolSmoothing.None) ? System.Drawing.Text.TextRenderingHint.SystemDefault : System.Drawing.Text.TextRenderingHint.AntiAlias);
+                    display.Canvas.TextRenderingHint = ((this.GlowingSmoothingmode == SymbolSmoothing.None) ? System.Drawing.Text.TextRenderingHint.SystemDefault : System.Drawing.Text.TextRenderingHint.AntiAlias);
 
                     if (level < 0 || level == 0)
                     {
@@ -1420,7 +1420,7 @@ namespace gView.Framework.Symbology
                                         continue;
                                     }
 
-                                    DrawString(display.GraphicsContext, text, _font, _outlinebrush, (float)_xOffset + x, (float)_yOffset + y, format);
+                                    DrawString(display.Canvas, text, _font, _outlinebrush, (float)_xOffset + x, (float)_yOffset + y, format);
                                 }
                             }
                         }
@@ -1428,16 +1428,16 @@ namespace gView.Framework.Symbology
 
                     if (level < 0 || level == 1)
                     {
-                        display.GraphicsContext.TextRenderingHint = ((this.Smoothingmode == SymbolSmoothing.None) ? System.Drawing.Text.TextRenderingHint.SystemDefault : System.Drawing.Text.TextRenderingHint.AntiAlias);
+                        display.Canvas.TextRenderingHint = ((this.Smoothingmode == SymbolSmoothing.None) ? System.Drawing.Text.TextRenderingHint.SystemDefault : System.Drawing.Text.TextRenderingHint.AntiAlias);
 
-                        DrawString(display.GraphicsContext, text, _font, _brush, (float)_xOffset, (float)_yOffset, format);
+                        DrawString(display.Canvas, text, _font, _brush, (float)_xOffset, (float)_yOffset, format);
                     }
 
                 }
                 finally
                 {
-                    display.GraphicsContext.ResetTransform();
-                    display.GraphicsContext.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
+                    display.Canvas.ResetTransform();
+                    display.Canvas.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
                 }
             }
         }
@@ -1565,15 +1565,15 @@ namespace gView.Framework.Symbology
 
                 try
                 {
-                    display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
+                    display.Canvas.TranslateTransform((float)point.X, (float)point.Y);
                     if (angle != 0 || _angle != 0 || _rotation != 0)
                     {
-                        display.GraphicsContext.RotateTransform(angle + _angle + _rotation);
+                        display.Canvas.RotateTransform(angle + _angle + _rotation);
                     }
 
                     if (level < 0 || level == 0)
                     {
-                        SizeF size = display.GraphicsContext.MeasureString(text, _font);
+                        SizeF size = display.Canvas.MeasureString(text, _font);
                         RectangleF rect = new RectangleF(0f, 0f, size.Width, size.Height);
                         switch (format.Alignment)
                         {
@@ -1594,23 +1594,23 @@ namespace gView.Framework.Symbology
                                 break;
                         }
 
-                        display.GraphicsContext.SmoothingMode = (System.Drawing.Drawing2D.SmoothingMode)this.Smoothingmode;
-                        display.GraphicsContext.FillRectangle(_outlinebrush, rect);
-                        display.GraphicsContext.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+                        display.Canvas.SmoothingMode = (System.Drawing.Drawing2D.SmoothingMode)this.Smoothingmode;
+                        display.Canvas.FillRectangle(_outlinebrush, rect);
+                        display.Canvas.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
                     }
 
                     if (level < 0 || level == 1)
                     {
-                        display.GraphicsContext.TextRenderingHint = ((this.Smoothingmode == SymbolSmoothing.None) ? System.Drawing.Text.TextRenderingHint.SystemDefault : System.Drawing.Text.TextRenderingHint.AntiAlias);
+                        display.Canvas.TextRenderingHint = ((this.Smoothingmode == SymbolSmoothing.None) ? System.Drawing.Text.TextRenderingHint.SystemDefault : System.Drawing.Text.TextRenderingHint.AntiAlias);
 
-                        DrawString(display.GraphicsContext, text, _font, _brush, (float)_xOffset, (float)_yOffset, format);
+                        DrawString(display.Canvas, text, _font, _brush, (float)_xOffset, (float)_yOffset, format);
 
-                        display.GraphicsContext.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
+                        display.Canvas.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
                     }
                 }
                 finally
                 {
-                    display.GraphicsContext.ResetTransform();
+                    display.Canvas.ResetTransform();
                 }
             }
         }

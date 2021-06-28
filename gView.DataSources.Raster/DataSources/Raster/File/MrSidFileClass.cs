@@ -1,10 +1,9 @@
-using gView.Framework.Carto;
+ï»¿using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.MapServer;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -12,562 +11,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Raster.File
 {
-    [gView.Framework.system.RegisterPlugIn("D4812641-3F53-48eb-A66C-FC0203980C79")]
-    public class RasterFileDataset : DatasetMetadata, IRasterFileDataset
-    {
-        private List<IDatasetElement> _layers = new List<IDatasetElement>();
-        private string _directory = "";
-        private DatasetState _state = DatasetState.opened;
-
-        public RasterFileDataset() { }
-
-        #region IDataset Members
-
-        public void Dispose()
-        {
-
-        }
-
-        public string ConnectionString
-        {
-            get
-            {
-                return _directory;
-            }
-        }
-        public Task<bool> SetConnectionString(string value)
-        {
-            _directory = value;
-
-            return Task.FromResult(true);
-        }
-
-        public string DatasetGroupName
-        {
-            get { return "Raster"; }
-        }
-
-        public string DatasetName
-        {
-            get { return "Raster File"; }
-        }
-
-        public string ProviderName
-        {
-            get { return "Raster File"; }
-        }
-
-        public DatasetState State
-        {
-            get { return _state; }
-        }
-
-        public Task<bool> Open()
-        {
-            return Task.FromResult(false);
-        }
-
-        public string LastErrorMessage
-        {
-            get { return ""; }
-            set { }
-        }
-
-        public int order
-        {
-            get
-            {
-                return 0;
-            }
-            set
-            {
-
-            }
-        }
-
-        public gView.Framework.Data.IDatasetEnum DatasetEnum
-        {
-            get { return null; }
-        }
-
-        public Task<List<IDatasetElement>> Elements()
-        {
-            List<IDatasetElement> ret = new List<IDatasetElement>();
-            foreach (gView.Framework.Data.IRasterLayer layer in _layers)
-            {
-                ret.Add(layer);
-            }
-
-            return Task.FromResult(ret);
-        }
-
-        public string Query_FieldPrefix
-        {
-            get { return ""; }
-        }
-
-        public string Query_FieldPostfix
-        {
-            get { return ""; }
-        }
-
-        public gView.Framework.FDB.IDatabase Database
-        {
-            get { return null; }
-        }
-
-        public Task<IDatasetElement> Element(string title)
-        {
-            foreach (IDatasetElement element in _layers)
-            {
-                if (element == null)
-                {
-                    continue;
-                }
-
-                if (element.Title == title)
-                {
-                    return Task.FromResult(element);
-                }
-            }
-
-            try
-            {
-                if (_directory != "")
-                {
-                    FileInfo fi = new FileInfo(_directory + @"/" + title);
-                    if (fi.Exists)
-                    {
-                        return Task.FromResult<IDatasetElement>(AddRasterFile(fi.FullName));
-                    } 
-                }
-            }
-            catch { }
-
-            return Task.FromResult<IDatasetElement>(null);
-        }
-
-        async public Task RefreshClasses()
-        {
-        }
-        #endregion
-
-        #region IRasterFileDataset Member
-
-        public IRasterLayer AddRasterFile(string filename)
-        {
-            return AddRasterFile(filename, null);
-        }
-        public IRasterLayer AddRasterFile(string filename, IPolygon polygon)
-        {
-            try
-            {
-                FileInfo fi = new FileInfo(filename);
-                if (_directory == "")
-                {
-                    _directory = fi.Directory.FullName;
-                }
-                else if (_directory.ToLower() != fi.Directory.FullName.ToLower())
-                {
-                    return null;
-                }
-                if (fi.Extension.ToLower() == ".sid" || fi.Extension.ToLower() == ".jp2")
-                {
-                    MrSidFileClass rasterClass = (polygon == null) ?
-                        new MrSidFileClass(this, filename) : 
-                        new MrSidFileClass(this, filename, polygon);
-
-                    RasterLayer layer = new RasterLayer(rasterClass);
-                    if (rasterClass.isValid)
-                    {
-                        _layers.Add(layer);
-                    }
-                    return layer;
-                }
-                else
-                {
-                    RasterFileClass rasterClass = (polygon == null) ? new RasterFileClass(this, filename) : new RasterFileClass(this, filename, polygon);
-                    RasterLayer layer = new RasterLayer(rasterClass);
-                    if (rasterClass.isValid)
-                    {
-                        _layers.Add(layer);
-                    }
-                    return layer;
-                }
-            }
-            catch { }
-            return null;
-        }
-
-        public string SupportedFileFilter
-        {
-            get
-            {
-                if (PlugInManager.Create(new Guid("43DFABF1-3D19-438c-84DA-F8BA0B266592")) is IRasterFileDataset)
-                {
-                    // GDAL is installed!!
-                    return "*.sid|*.jp2";
-                }
-                return "*.sid|*.jp2|*.tif|*.tiff|*.png|*.jpg|*.jpeg";
-            }
-        }
-
-        public int SupportsFormat(string extension)
-        {
-            switch (extension.ToLower())
-            {
-                case ".sid":
-                case ".jp2":
-                case ".tif":
-                case ".tiff":
-                case ".png":
-                case ".jpg":
-                case ".jpeg":
-                    return 100;
-            }
-            return -1;
-        }
-
-        #endregion
-
-        #region IRasterDataset Members
-
-        public Task<IEnvelope> Envelope()
-        {
-            Envelope env = null;
-
-            foreach (gView.Framework.Data.IRasterLayer layer in _layers)
-            {
-                if (layer.RasterClass == null || layer.RasterClass.Polygon == null)
-                {
-                    continue;
-                }
-
-                if (env == null)
-                {
-                    env = new Envelope(layer.RasterClass.Polygon.Envelope);
-                }
-                else
-                {
-                    env.Union(layer.RasterClass.Polygon.Envelope);
-                }
-            }
-            return Task.FromResult((IEnvelope)env);
-        }
-
-        public Task<ISpatialReference> GetSpatialReference()
-        {
-            return Task.FromResult<ISpatialReference>(null);
-        }
-        public void SetSpatialReference(ISpatialReference sRef)
-        {
-
-        }
-
-        #endregion
-
-        #region IPersistableLoadAsync Members
-
-        public string PersistID
-        {
-            get { return ""; }
-        }
-
-        public Task<bool> LoadAsync(gView.Framework.IO.IPersistStream stream)
-        {
-            _directory = (string)stream.Load("Directory");
-            if (_directory == null)
-            {
-                _directory = "";
-            }
-
-            return Task.FromResult(true);
-        }
-
-        public void Save(gView.Framework.IO.IPersistStream stream)
-        {
-            stream.Save("Directory", _directory);
-        }
-
-        #endregion
-    }
-
-    public class RasterFileClass : IRasterClass, IBitmap, IRasterFile
-    {
-        private string _filename, _title;
-        private bool _valid = true;
-        private int _iWidth = 0, _iHeight = 0;
-        internal TFWFile _tfw;
-        private IPolygon _polygon;
-        private ISpatialReference _sRef = null;
-        private IRasterDataset _dataset;
-
-        public RasterFileClass()
-        {
-        }
-
-        public RasterFileClass(IRasterDataset dataset, string filename)
-            : this(dataset, filename, null)
-        {
-        }
-        public RasterFileClass(IRasterDataset dataset, string filename, IPolygon polygon)
-        {
-            try
-            {
-                FileInfo fi = new FileInfo(filename);
-                _title = fi.Name;
-                _filename = filename;
-                _dataset = dataset;
-
-                string tfwfilename = filename.Substring(0, filename.Length - fi.Extension.Length);
-                if (fi.Extension.ToLower() == ".jpg")
-                {
-                    tfwfilename += ".jgw";
-                }
-                else
-                {
-                    tfwfilename += ".tfw";
-                }
-
-                _tfw = new TFWFile(tfwfilename);
-                //if (!_tfw.isValid)
-                //{
-                //    _valid = false;
-                //    return;
-                //}
-
-                FileInfo fiPrj = new FileInfo(fi.FullName.Substring(0, fi.FullName.Length - fi.Extension.Length) + ".prj");
-                if (fiPrj.Exists)
-                {
-                    StreamReader sr = new StreamReader(fiPrj.FullName);
-                    string wkt = sr.ReadToEnd();
-                    sr.Close();
-
-                    _sRef = gView.Framework.Geometry.SpatialReference.FromWKT(wkt);
-                }
-
-                if (polygon != null)
-                {
-                    _polygon = polygon;
-                }
-                else
-                {
-                    calcPolygon();
-                }
-            }
-            catch { _valid = false; }
-        }
-
-        public bool isValid { get { return _valid; } }
-
-        private void calcPolygon()
-        {
-            try
-            {
-                if (_tfw == null)
-                {
-                    FileInfo fi = new FileInfo(_filename);
-
-                    string tfwfilename = _filename.Substring(0, _filename.Length - fi.Extension.Length);
-                    if (fi.Extension.ToLower() == ".jpg")
-                    {
-                        tfwfilename += ".jgw";
-                    }
-                    else
-                    {
-                        tfwfilename += ".tfw";
-                    }
-
-                    _tfw = new TFWFile(tfwfilename);
-                }
-                Bitmap image = null;
-                if (_iWidth == 0 || _iHeight == 0)
-                {
-                    image = (Bitmap)Bitmap.FromFile(_filename);
-                }
-                setBounds(image);
-                if (image != null)
-                {
-                    image.Dispose();
-                    image = null;
-                }
-            }
-            catch
-            {
-                _polygon = null;
-            }
-        }
-        private void setBounds(Image image)
-        {
-            if (image != null)
-            {
-                _iWidth = image.Width;
-                _iHeight = image.Height;
-            }
-            _polygon = new Polygon();
-            Ring ring = new Ring();
-            gView.Framework.Geometry.Point p1 = new gView.Framework.Geometry.Point(
-                _tfw.X - _tfw.dx_X / 2.0 - _tfw.dy_X / 2.0,
-                _tfw.Y - _tfw.dx_Y / 2.0 - _tfw.dy_Y / 2.0);
-
-            ring.AddPoint(p1);
-            ring.AddPoint(new gView.Framework.Geometry.Point(p1.X + _tfw.dx_X * _iWidth, p1.Y + _tfw.dx_Y * _iWidth));
-            ring.AddPoint(new gView.Framework.Geometry.Point(p1.X + _tfw.dx_X * _iWidth + _tfw.dy_X * _iHeight, p1.Y + _tfw.dx_Y * _iWidth + _tfw.dy_Y * _iHeight));
-            ring.AddPoint(new gView.Framework.Geometry.Point(p1.X + _tfw.dy_X * _iHeight, p1.Y + _tfw.dy_Y * _iHeight));
-            _polygon.AddRing(ring);
-        }
-
-        #region IRasterClass
-        public IPolygon Polygon
-        {
-            get { return _polygon; }
-        }
-
-        Bitmap _bm;
-        BitmapData _bmData;
-
-        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
-        {
-            if (_bm != null)
-            {
-                _bm.Dispose();
-                _bm = null;
-            }
-
-            _bm = (Bitmap)Bitmap.FromFile(_filename);
-
-            /*
-            _bmData = _bm.LockBits(new Rectangle(0, 0, _bm.Width, _bm.Height),
-                 ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-            */
-        }
-        public void EndPaint(ICancelTracker cancelTracker)
-        {
-            //return;
-            if (_bm != null)
-            {
-                if (_bmData != null)
-                {
-                    /*
-                    _bm.UnlockBits(_bmData);
-                    _bmData = null;
-                     */
-                }
-                _bm.Dispose();
-                _bm = null;
-            }
-        }
-        public Bitmap Bitmap
-        {
-            get { return _bm; }
-        }
-
-        public Color GetPixel(double X, double Y)
-        {
-            //return Color.Beige;
-            if (_bm == null)
-            {
-                return Color.Transparent;
-            }
-
-            int x, y;
-            _tfw.World2Image(X, Y, out x, out y);
-            if (x < 0 || y < 0 || x >= _iWidth || y >= _iHeight)
-            {
-                return Color.Transparent;
-            }
-
-            if (_bmData != null)
-            {
-                unsafe
-                {
-                    int* p = (int*)(void*)_bmData.Scan0;
-                    p += y * _iWidth + x;
-                    return Color.FromArgb(*p);
-                }
-            }
-            else
-            {
-                return _bm.GetPixel(x, y);
-            }
-        }
-
-        public double oX { get { return _tfw.X; } }
-        public double oY { get { return _tfw.Y; } }
-        public double dx1 { get { return _tfw.dx_X; } }
-        public double dx2 { get { return _tfw.dx_Y; } }
-        public double dy1 { get { return _tfw.dy_X; } }
-        public double dy2 { get { return _tfw.dy_Y; } }
-
-        public ISpatialReference SpatialReference
-        {
-            get { return _sRef; }
-            set { _sRef = value; }
-        }
-
-        public IRasterDataset Dataset
-        {
-            get { return _dataset; }
-        }
-
-        #endregion
-
-        #region IBitmap Members
-
-        public Bitmap LoadBitmap()
-        {
-            try
-            {
-                if (_filename == "" || _filename == null)
-                {
-                    return null;
-                }
-
-                return (System.Drawing.Bitmap)Bitmap.FromFile(_filename);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        #endregion
-
-        #region IRasterFile Members
-
-        public string Filename
-        {
-            get { return _filename; }
-        }
-
-        public IRasterWorldFile WorldFile
-        {
-            get { return _tfw; }
-        }
-
-        #endregion
-
-        #region IClass Member
-
-        public string Name
-        {
-            get { return _title; }
-        }
-
-        public string Aliasname
-        {
-            get { return _title; }
-        }
-
-        IDataset IClass.Dataset
-        {
-            get { return _dataset; }
-        }
-
-        #endregion
-    }
-
-    public class MrSidFileClass : IRasterClass2, IBitmap, IRasterFile, IDisposable
+    public class MrSidFileClass : IRasterClass2, IRasterFileBitmap, IRasterFile, IDisposable
     {
         private enum RasterType { sid, jp2, unknown }
 
@@ -577,7 +21,7 @@ namespace gView.DataSources.Raster.File
         private IntPtr _reader = (IntPtr)0;
         private MrSidGeoCoord _geoCoord = new MrSidGeoCoord();
         private ISpatialReference _sRef = null;
-        private Bitmap _bm = null;
+        private GraphicsEngine.Abstraction.IBitmap _bitmap = null;
         private RasterType _type;
         private bool _isValid = false;
 
@@ -749,9 +193,9 @@ namespace gView.DataSources.Raster.File
             get { return _polygon; }
         }
 
-        public Bitmap Bitmap
+        public GraphicsEngine.Abstraction.IBitmap Bitmap
         {
-            get { return _bm; }
+            get { return _bitmap; }
         }
 
         public double oX
@@ -800,7 +244,7 @@ namespace gView.DataSources.Raster.File
         {
             IntPtr hbmp = (IntPtr)0;
             //IntPtr bufferData = (IntPtr)0;
-            double mag = 1f; // mag immer als float, läuft stabiler!!!
+            double mag = 1f; // mag immer als float, lÃ¤uft stabiler!!!
 
             int x = 0;
             int y = 0;
@@ -860,7 +304,7 @@ namespace gView.DataSources.Raster.File
                 picEnv.maxx = Math.Min(picEnv.maxx, _geoCoord.iWidth);
                 picEnv.maxy = Math.Min(picEnv.maxy, _geoCoord.iHeight);
 
-                // Ecken zurücktransformieren -> Welt
+                // Ecken zurÃ¼cktransformieren -> Welt
                 vecs = new vector2[3];
                 vecs[0] = new vector2(picEnv.minx, picEnv.maxy);
                 vecs[1] = new vector2(picEnv.maxx, picEnv.maxy);
@@ -875,7 +319,7 @@ namespace gView.DataSources.Raster.File
                 double c2 = Math.Sqrt(_geoCoord.yRes * _geoCoord.yRes + _geoCoord.yRot * _geoCoord.yRot);
                 mag = Math.Round((Math.Min(c1, c2) / pix), 8);
 
-                // Immer in auf float runden! Läuft stabiler!!!
+                // Immer in auf float runden! LÃ¤uft stabiler!!!
                 //mag = (float)mag; //1.03;
                 if (mag > 1f)
                 {
@@ -903,7 +347,7 @@ namespace gView.DataSources.Raster.File
                     return;
                 }
 
-                _bm = Bitmap.FromHbitmap(hbmp);
+                _bitmap = GraphicsEngine.Current.Engine.CreateBitmapFromHbitmap(hbmp);
                 //_bm.Save(@"C:\temp\pic\" + Guid.NewGuid() + ".jpg", ImageFormat.Jpeg);
             }
             catch (Exception ex)
@@ -942,8 +386,8 @@ namespace gView.DataSources.Raster.File
 
 
             IntPtr bufferData = (IntPtr)0;
-            BitmapData bitmapData = null;
-            double mag = 1f; // mag immer als float, läuft stabiler!!!
+            GraphicsEngine.BitmapPixelData bitmapData = null;
+            double mag = 1f; // mag immer als float, lÃ¤uft stabiler!!!
 
             int x = 0;
             int y = 0;
@@ -1008,7 +452,7 @@ namespace gView.DataSources.Raster.File
                 picEnv.maxx = Math.Min(picEnv.maxx, _geoCoord.iWidth);
                 picEnv.maxy = Math.Min(picEnv.maxy, _geoCoord.iHeight);
 
-                // Ecken zurücktransformieren -> Welt
+                // Ecken zurÃ¼cktransformieren -> Welt
                 vecs = new vector2[3];
                 vecs[0] = new vector2(picEnv.minx, picEnv.miny);
                 vecs[1] = new vector2(picEnv.maxx, picEnv.miny);
@@ -1023,7 +467,7 @@ namespace gView.DataSources.Raster.File
                 double c2 = Math.Sqrt(_geoCoord.yRes * _geoCoord.yRes + _geoCoord.yRot * _geoCoord.yRot);
                 mag = Math.Round((Math.Min(c1, c2) / pix), 8);
 
-                // Immer in auf float runden! Läuft stabiler!!!
+                // Immer in auf float runden! LÃ¤uft stabiler!!!
                 //mag = (float)mag; //1.03;
                 if (mag > 1f)
                 {
@@ -1049,13 +493,13 @@ namespace gView.DataSources.Raster.File
                 int totalWidth = MrSidWrapper.GetTotalCols(bufferData);
                 int totalHeight = MrSidWrapper.GetTotalRows(bufferData);
 
-                if (_bm != null)
+                if (_bitmap != null)
                 {
-                    _bm.Dispose();
+                    _bitmap.Dispose();
                 }
 
-                _bm = new Bitmap(totalWidth, totalHeight, PixelFormat.Format24bppRgb);
-                bitmapData = _bm.LockBits(new Rectangle(0, 0, totalWidth, totalHeight), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+                _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(totalWidth, totalHeight, GraphicsEngine.PixelFormat.Format24bppRgb);
+                bitmapData = _bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Format24bppRgb);
 
                 Console.Write(bitmapData.Scan0);
 
@@ -1092,7 +536,7 @@ namespace gView.DataSources.Raster.File
             {
                 if (bitmapData != null)
                 {
-                    _bm.UnlockBits(bitmapData);
+                    _bitmap.UnlockBitmapPixelData(bitmapData);
                 }
 
                 MrSidWrapper.ReleaseBandData(bufferData);
@@ -1102,10 +546,10 @@ namespace gView.DataSources.Raster.File
 
         public void EndPaint(ICancelTracker cancelTracker)
         {
-            if (_bm != null)
+            if (_bitmap != null)
             {
-                _bm.Dispose();
-                _bm = null;
+                _bitmap.Dispose();
+                _bitmap = null;
             }
         }
 
@@ -1144,7 +588,7 @@ namespace gView.DataSources.Raster.File
 
         #region IBitmap Member
 
-        public Bitmap LoadBitmap()
+        public GraphicsEngine.Abstraction.IBitmap LoadBitmap()
         {
             return null;
         }

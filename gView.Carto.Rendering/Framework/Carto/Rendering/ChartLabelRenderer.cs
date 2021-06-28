@@ -382,13 +382,13 @@ namespace gView.Framework.Carto.Rendering
 
         private void DrawChart(IDisplay disp, IPoint point, double[] values, double valSum, double valMin, double valMax)
         {
-            if (!(disp is Display) || disp.LabelEngine.LabelGraphicsContext == null)
+            if (!(disp is Display) || disp.LabelEngine.LabelCanvas == null)
                 return;
 
-            System.Drawing.Graphics original = disp.GraphicsContext;
+            System.Drawing.Graphics original = disp.Canvas;
             try
             {
-                ((Display)disp).GraphicsContext = disp.LabelEngine.LabelGraphicsContext;
+                ((Display)disp).Canvas = disp.LabelEngine.LabelCanvas;
 
                 if (_symbolTable.Keys.Count == 0)
                     return;
@@ -554,7 +554,7 @@ namespace gView.Framework.Carto.Rendering
             }
             finally
             {
-                ((Display)disp).GraphicsContext = original;
+                ((Display)disp).Canvas = original;
             }
         }
 

@@ -12,10 +12,10 @@ namespace gView.Framework.Carto
     {
         private enum OverlapMethod { Pixel = 1, Geometry = 0 };
         private OverlapMethod _method = OverlapMethod.Geometry;
-        private Bitmap _bm;
+        private GraphicsEngine.Abstraction.IBitmap _bitmap;
         //private Display _display;
-        private System.Drawing.Graphics _graphics = null;
-        private Color _back;
+        private GraphicsEngine.Abstraction.ICanvas _canvas = null;
+        private GraphicsEngine.ArgbColor _back;
         private bool _first = true, _directDraw = false;
         private GridArray<List<IAnnotationPolygonCollision>> _gridArrayPolygons = null;
 
@@ -26,15 +26,15 @@ namespace gView.Framework.Carto
 
         public void Dispose()
         {
-            if (_graphics != null)
+            if (_canvas != null)
             {
-                _graphics.Dispose();
-                _graphics = null;
+                _canvas.Dispose();
+                _canvas = null;
             }
-            if (_bm != null)
+            if (_bitmap != null)
             {
-                _bm.Dispose();
-                _bm = null;
+                _bitmap.Dispose();
+                _bitmap = null;
             }
             _gridArrayPolygons = null;
         }
@@ -54,18 +54,18 @@ namespace gView.Framework.Carto
                     Dispose();
                 }
 
-                if (_bm == null)
+                if (_bitmap == null)
                 {
-                    _bm = new Bitmap(display.iWidth, display.iHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(display.iWidth, display.iHeight, GraphicsEngine.PixelFormat.Format32bppArgb);
                 }
 
-                _graphics = System.Drawing.Graphics.FromImage(_bm);
+                _canvas = _bitmap.CreateCanvas();
 
-                using (SolidBrush brush = new SolidBrush(Color.Transparent))
+                using (var brush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.Transparent))
                 {
-                    _graphics.FillRectangle(brush, 0, 0, _bm.Width, _bm.Height);
+                    _canvas.FillRectangle(brush, new GraphicsEngine.CanvasRectangle(0, 0, _bitmap.Width, _bitmap.Height));
                 }
-                _back = _bm.GetPixel(0, 0);
+                _back = _bitmap.GetPixel(0, 0);
                 _first = true;
                 _directDraw = directDraw;
                 //_bm.MakeTransparent(Color.White);
@@ -115,7 +115,7 @@ namespace gView.Framework.Carto
                         foreach (IAnnotationPolygonCollision polyCollision in aPolygons)
                         {
                             AnnotationPolygonEnvelope env = polyCollision.Envelope;
-                            if (env.MinX < 0 || env.MinY < 0 || env.MaxX > _bm.Width || env.MaxY > _bm.Height)
+                            if (env.MinX < 0 || env.MinY < 0 || env.MaxX > _bitmap.Width || env.MaxY > _bitmap.Height)
                             {
                                 return LabelAppendResult.Outside;
                             }
@@ -153,7 +153,7 @@ namespace gView.Framework.Carto
                                             if (polyCollision.Contains(x, y))
                                             {
                                                 //_bm.SetPixel(x, y, Color.Yellow);
-                                                if (_bm.GetPixel(x, y) != _back)
+                                                if (!_back.Equals(_bitmap.GetPixel(x, y)))
                                                 {
                                                     return LabelAppendResult.Overlap;
                                                 }
@@ -223,12 +223,12 @@ namespace gView.Framework.Carto
                 //}
             }
 
-            System.Drawing.Graphics original = display.GraphicsContext;
-            ((Display)display).GraphicsContext = _graphics;
+            var originalCanvas = display.Canvas;
+            ((Display)display).Canvas = _canvas;
 
             symbol.Draw(display, geometry);
 
-            ((Display)display).GraphicsContext = original;
+            ((Display)display).Canvas = originalCanvas;
 
             if (_directDraw)
             {
@@ -288,11 +288,11 @@ namespace gView.Framework.Carto
                     AnnotationPolygonEnvelope env = polyCollision.Envelope;
 
                     int minx = (int)Math.Max(0, env.MinX);
-                    int maxx = (int)Math.Min(_bm.Width - 1, env.MaxX);
+                    int maxx = (int)Math.Min(_bitmap.Width - 1, env.MaxX);
                     int miny = (int)Math.Max(0, env.MinY);
-                    int maxy = (int)Math.Min(_bm.Height, env.MaxY);
+                    int maxy = (int)Math.Min(_bitmap.Height, env.MaxY);
 
-                    if (minx > _bm.Width || maxx <= 0 || miny > _bm.Height || maxy <= 0)
+                    if (minx > _bitmap.Width || maxx <= 0 || miny > _bitmap.Height || maxy <= 0)
                     {
                         continue;  // liegt außerhalb!!
                     }
@@ -314,7 +314,7 @@ namespace gView.Framework.Carto
                                     if (polyCollision.Contains(x, y))
                                     {
                                         //_bm.SetPixel(x, y, Color.Yellow);
-                                        if (_bm.GetPixel(x, y) != _back)
+                                        if (!_back.Equals(_bitmap.GetPixel(x, y)))
                                         {
                                             return LabelAppendResult.Overlap;
                                         }
@@ -348,7 +348,9 @@ namespace gView.Framework.Carto
                         if (_method == OverlapMethod.Geometry)
                         {
                             #region Geometrie Methode
+
                             labelPolyon = polyCollision;
+
                             #endregion
                         }
                     }
@@ -375,7 +377,7 @@ namespace gView.Framework.Carto
             try
             {
                 
-                display.GraphicsContext.DrawImage(_bm, new PointF(0, 0));
+                display.Canvas.DrawBitmap(_bitmap, new GraphicsEngine.CanvasPoint(0, 0));
 
                 //_bm.Save(@"c:\temp\label.png", System.Drawing.Imaging.ImageFormat.Png);
             }
@@ -387,9 +389,9 @@ namespace gView.Framework.Carto
             Dispose();
         }
 
-        public System.Drawing.Graphics LabelGraphicsContext
+        public GraphicsEngine.Abstraction.ICanvas LabelCanvas
         {
-            get { return _graphics; }
+            get { return _canvas; }
         }
 
         #endregion
@@ -410,7 +412,7 @@ namespace gView.Framework.Carto
                 foreach (IAnnotationPolygonCollision polyCollision in aPolygons)
                 {
                     AnnotationPolygonEnvelope env = polyCollision.Envelope;
-                    if (env.MinX < 0 || env.MinY < 0 || env.MaxX > _bm.Width || env.MaxY > _bm.Height)
+                    if (env.MinX < 0 || env.MinY < 0 || env.MaxX > _bitmap.Width || env.MaxY > _bitmap.Height)
                     {
                         return LabelAppendResult.Outside;
                     }
@@ -448,7 +450,7 @@ namespace gView.Framework.Carto
                                     if (polyCollision.Contains(x, y))
                                     {
                                         //_bm.SetPixel(x, y, Color.Yellow);
-                                        if (_bm.GetPixel(x, y) != _back)
+                                        if (!_back.Equals(_bitmap.GetPixel(x, y)))
                                         {
                                             return LabelAppendResult.Overlap;
                                         }
@@ -516,12 +518,12 @@ namespace gView.Framework.Carto
                 //}
             }
 
-            System.Drawing.Graphics original = display.GraphicsContext;
-            ((Display)display).GraphicsContext = _graphics;
+            var originalCanvas = display.Canvas;
+            ((Display)display).Canvas = _canvas;
 
             symbol.Draw(display, geometry, symbolAlignment);
 
-            ((Display)display).GraphicsContext = original;
+            ((Display)display).Canvas = originalCanvas;
 
             if (_directDraw)
             {

@@ -16,7 +16,7 @@ namespace gView.Framework.Symbology
         {
             using (SolidBrush brush = new SolidBrush(display.BackgroundColor))
             {
-                display.GraphicsContext.FillPath(brush, path);
+                display.Canvas.FillPath(brush, path);
             }
         }
 

@@ -171,7 +171,7 @@ namespace gView.Framework.Symbology
         {
             if (_forecolor.A > 0 || _backcolor.A > 0)
             {
-                display.GraphicsContext.FillPath(_brush, path);
+                display.Canvas.FillPath(_brush, path);
             }
             //if(_outlineSymbol!=null) 
             //{

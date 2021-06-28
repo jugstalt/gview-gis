@@ -141,22 +141,22 @@ namespace gView.Framework.Symbology
                 float x = _xOffset - _size / 2;
                 float y = _yOffset - _size / 2;
 
-                display.GraphicsContext.SmoothingMode = (SmoothingMode)this.Smoothingmode;
+                display.Canvas.SmoothingMode = (SmoothingMode)this.Smoothingmode;
 
-                display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
-                display.GraphicsContext.RotateTransform(_angle + _rotation);
+                display.Canvas.TranslateTransform((float)point.X, (float)point.Y);
+                display.Canvas.RotateTransform(_angle + _rotation);
 
                 switch (_type)
                 {
                     case MarkerType.Circle:
                         if (_brush.Color != Color.Transparent)
                         {
-                            display.GraphicsContext.FillEllipse(_brush, x, y, _size, _size);
+                            display.Canvas.FillEllipse(_brush, x, y, _size, _size);
                         }
 
                         if (_pen.Color != Color.Transparent)
                         {
-                            display.GraphicsContext.DrawEllipse(_pen, x, y, _size, _size);
+                            display.Canvas.DrawEllipse(_pen, x, y, _size, _size);
                         }
 
                         break;
@@ -170,24 +170,24 @@ namespace gView.Framework.Symbology
 
                             if (_brush.Color != Color.Transparent)
                             {
-                                display.GraphicsContext.FillPath(_brush, gp);
+                                display.Canvas.FillPath(_brush, gp);
                             }
 
                             if (_pen.Color != Color.Transparent)
                             {
-                                display.GraphicsContext.DrawPath(_pen, gp);
+                                display.Canvas.DrawPath(_pen, gp);
                             }
                         }
                         break;
                     case MarkerType.Square:
                         if (_brush.Color != Color.Transparent)
                         {
-                            display.GraphicsContext.FillRectangle(_brush, x, y, _size, _size);
+                            display.Canvas.FillRectangle(_brush, x, y, _size, _size);
                         }
 
                         if (_pen.Color != Color.Transparent)
                         {
-                            display.GraphicsContext.DrawRectangle(_pen, x, y, _size, _size);
+                            display.Canvas.DrawRectangle(_pen, x, y, _size, _size);
                         }
 
                         break;
@@ -207,12 +207,12 @@ namespace gView.Framework.Symbology
 
                             if (_brush.Color != Color.Transparent && sw > 0.0)
                             {
-                                display.GraphicsContext.FillPath(_brush, gp2);
+                                display.Canvas.FillPath(_brush, gp2);
                             }
 
                             if (_pen.Color != Color.Transparent)
                             {
-                                display.GraphicsContext.DrawPath(_pen, gp2);
+                                display.Canvas.DrawPath(_pen, gp2);
                             }
                         }
                         break;
@@ -233,12 +233,12 @@ namespace gView.Framework.Symbology
 
                             if (_brush.Color != Color.Transparent)
                             {
-                                display.GraphicsContext.FillPath(_brush, gp3);
+                                display.Canvas.FillPath(_brush, gp3);
                             }
 
                             if (_pen.Color != Color.Transparent)
                             {
-                                display.GraphicsContext.DrawPath(_pen, gp3);
+                                display.Canvas.DrawPath(_pen, gp3);
                             }
                         }
                         break;
@@ -246,8 +246,8 @@ namespace gView.Framework.Symbology
             }
             finally
             {
-                display.GraphicsContext.ResetTransform();
-                display.GraphicsContext.SmoothingMode = SmoothingMode.None;
+                display.Canvas.ResetTransform();
+                display.Canvas.SmoothingMode = SmoothingMode.None;
             }
         }
 

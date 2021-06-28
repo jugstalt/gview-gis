@@ -381,8 +381,8 @@ namespace gView.Framework.Symbology.UI
             IMultiPoint grabbers = Grabbers(display,true);
             if (grabbers == null) return;
 
-            System.Drawing.Drawing2D.SmoothingMode smode = display.GraphicsContext.SmoothingMode;
-            display.GraphicsContext.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            System.Drawing.Drawing2D.SmoothingMode smode = display.Canvas.SmoothingMode;
+            display.Canvas.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
             SimplePointSymbol pointSymbol = new SimplePointSymbol();
             pointSymbol.Color = System.Drawing.Color.White;
@@ -429,7 +429,7 @@ namespace gView.Framework.Symbology.UI
                 }
             }
 
-            display.GraphicsContext.SmoothingMode = smode;
+            display.Canvas.SmoothingMode = smode;
         }
 
         public IGeometry Geometry
@@ -443,7 +443,7 @@ namespace gView.Framework.Symbology.UI
 
         private void DrawRotationGrabberline(IDisplay display)
         {
-            if (display == null || display.GraphicsContext == null) return;
+            if (display == null || display.Canvas == null) return;
 
             Envelope env = new Envelope(0, 0, 1, 1);
 

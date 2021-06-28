@@ -112,7 +112,7 @@ namespace gView.Framework.Carto
             y = (m_iHeight - y) * (m_actMaxY - m_actMinY) / m_iHeight + m_actMinY;
         }
 
-        public gView.GraphicsEngine.Abstraction.ICanvas GraphicsContext
+        public gView.GraphicsEngine.Abstraction.ICanvas Canvas
         {
             get { return _canvas; }
             set { _canvas = value; }

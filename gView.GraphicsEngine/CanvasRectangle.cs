@@ -5,21 +5,28 @@ using System.Text;
 
 namespace gView.GraphicsEngine
 {
-    public class CanvasRectangle : CanvasRectangleGeneric<int>
-    {
-        public CanvasRectangle()
-            : base(0, 0, 0, 0)
-        { }
-
+    public struct CanvasRectangle
+    { 
         public CanvasRectangle(int left, int top, int width, int height)
-            : base(left, top, width, height)
         {
+            this.Left = left;
+            this.Top = top;
+            this.Width = width;
+            this.Height = height;
         }
 
         public CanvasRectangle(CanvasRectangle rectangle)
-            : base(rectangle?.Left ?? 0, rectangle?.Top ?? 0,
-                   rectangle?.Width ?? 0, rectangle?.Height ?? 0)
         {
+            this.Left = rectangle.Left;
+            this.Top = rectangle.Top;
+            this.Width = rectangle.Width;
+            this.Height = rectangle.Height;
         }
+
+        public int Left { get; set; }
+        public int Top { get; set; }
+
+        public int Width { get; set; }
+        public int Height { get; set; }
     }
 }

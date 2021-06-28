@@ -80,7 +80,7 @@ namespace gView.Framework.Symbology
                 //point.X+=_xOffset;
                 //point.Y+=_yOffset;
 
-                display.GraphicsContext.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+                display.Canvas.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
                 StringFormat format = new StringFormat();
                 format.Alignment = StringAlignment.Center;
                 format.LineAlignment = StringAlignment.Center;
@@ -88,8 +88,8 @@ namespace gView.Framework.Symbology
 
                 try
                 {
-                    display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
-                    display.GraphicsContext.RotateTransform(_angle + _rotation);
+                    display.Canvas.TranslateTransform((float)point.X, (float)point.Y);
+                    display.Canvas.RotateTransform(_angle + _rotation);
 
                     double xo = _xOffset, yo = _yOffset;
                     if (_angle != 0 || _rotation != 0)
@@ -106,11 +106,11 @@ namespace gView.Framework.Symbology
                         yo = -_xOffset * sin_a + _yOffset * cos_a;
                     }
 
-                    display.GraphicsContext.DrawString(_char.ToString(), _font, _brush, (float)xo, (float)yo, format);
+                    display.Canvas.DrawString(_char.ToString(), _font, _brush, (float)xo, (float)yo, format);
                 }
                 finally
                 {
-                    display.GraphicsContext.ResetTransform();
+                    display.Canvas.ResetTransform();
                 }
 
                 // Rotationspunkt muss gegen den Uhrzeiger mitbewegen,

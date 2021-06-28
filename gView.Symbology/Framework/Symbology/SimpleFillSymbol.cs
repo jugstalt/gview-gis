@@ -132,15 +132,15 @@ namespace gView.Framework.Symbology
         {
             if (_outlineSymbol == null || this.OutlineColor == null || this.OutlineColor.A == 0)
             {
-                display.GraphicsContext.SmoothingMode = (SmoothingMode)this.SmoothingMode;
+                display.Canvas.SmoothingMode = (SmoothingMode)this.SmoothingMode;
             }
 
             if (_color.A > 0)
             {
-                display.GraphicsContext.FillPath(_brush, path);
+                display.Canvas.FillPath(_brush, path);
             }
 
-            display.GraphicsContext.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+            display.Canvas.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
 
             //if (_outlineSymbol != null)
             //{

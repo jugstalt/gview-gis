@@ -9,6 +9,7 @@ namespace gView.GraphicsEngine.Abstraction
         float DpiY { get; }
 
         CompositingMode CompositingMode { set; }
+        InterpolationMode InterpolationMode { get;  set; }
 
         void DrawRectangle(IPen pen, CanvasRectangle rectangle);
         void DrawRectangle(IPen pen, CanvasRectangleF rectangleF);

@@ -5,14 +5,15 @@ using System.Text;
 
 namespace gView.GraphicsEngine
 {
-    public class CanvasSize : CanvasSizeGeneric<int>
+    public struct CanvasSize
     {
-        public CanvasSize()
-            : base(0,0)
-        { }
-
         public CanvasSize(int width, int height)
-            : base(width, height)
-        { }
+        {
+            this.Width = width;
+            this.Height = height;
+        }
+
+        public int Width { get; set; }
+        public int Height { get; set; }
     }
 }

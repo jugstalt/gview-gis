@@ -10,7 +10,7 @@ namespace gView.Framework.Symbology
     {
         private RectangleF[] _rectF;
 
-        public DisplayCharacterRanges(System.Drawing.Graphics/*IGraphicsEngine*/ gr, System.Drawing.Font font, StringFormat format, string text)
+        public DisplayCharacterRanges(System.Drawing.Graphics gr, System.Drawing.Font font, StringFormat format, string text)
         {
             _rectF = new RectangleF[text.Length];
             int c = 0;

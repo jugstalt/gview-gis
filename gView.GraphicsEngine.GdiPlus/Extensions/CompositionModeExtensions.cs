@@ -6,7 +6,7 @@ namespace gView.GraphicsEngine.GdiPlus.Extensions
 {
     static class CompositionModeExtensions
     {
-        static public System.Drawing.Drawing2D.CompositingMode ToCompositionMode(this CompositingMode mode)
+        static public System.Drawing.Drawing2D.CompositingMode ToGdiCompositionMode(this CompositingMode mode)
         {
             switch (mode)
             {

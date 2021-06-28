@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.GDAL
 {
-    public class RasterClass : IRasterClass2, IRasterFile, IBitmap, IPointIdentify, IGridIdentify, IGridClass, IPersistable, IDisposable
+    public class RasterClass : IRasterClass2, IRasterFile, IRasterFileBitmap, IPointIdentify, IGridIdentify, IGridClass, IPersistable, IDisposable
     {
         internal enum RasterType { image = 0, grid = 1, wavelet = 2 }
 
@@ -27,7 +27,7 @@ namespace gView.DataSources.GDAL
         private ISpatialReference _sRef = null;
         private IRasterDataset _dataset;
         private OSGeo_v1.GDAL.Dataset _gDS = null;
-        private Bitmap _bitmap = null;
+        private GraphicsEngine.Abstraction.IBitmap _bitmap = null;
         private RasterType _type = RasterType.image;
         private double _min = 0, _max = 0;
         private double _nodata = 0;
@@ -221,7 +221,7 @@ namespace gView.DataSources.GDAL
             get { return _polygon; }
         }
 
-        public System.Drawing.Bitmap Bitmap
+        public GraphicsEngine.Abstraction.IBitmap Bitmap
         {
             get { return _bitmap; }
         }
@@ -376,8 +376,8 @@ namespace gView.DataSources.GDAL
             }
 
             int pixelSpace = 3;
-            _bitmap = new Bitmap(iWidth, iHeight, PixelFormat.Format24bppRgb);
-            BitmapData bitmapData = _bitmap.LockBits(new Rectangle(0, 0, iWidth, iHeight), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Format24bppRgb);
+            var bitmapData = _bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Format24bppRgb);
 
             try
             {
@@ -467,7 +467,7 @@ namespace gView.DataSources.GDAL
             {
                 if (_bitmap != null)
                 {
-                    _bitmap.UnlockBits(bitmapData);
+                    _bitmap.UnlockBitmapPixelData(bitmapData);
                 }
             }
         }
@@ -480,8 +480,8 @@ namespace gView.DataSources.GDAL
             }
 
             int pixelSpace = 3;
-            _bitmap = new Bitmap(iWidth, iHeight, PixelFormat.Format24bppRgb);
-            BitmapData bitmapData = _bitmap.LockBits(new Rectangle(0, 0, iWidth, iHeight), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Format24bppRgb);
+            var bitmapData = _bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Format24bppRgb);
 
             try
             {
@@ -518,7 +518,7 @@ namespace gView.DataSources.GDAL
             {
                 if (_bitmap != null)
                 {
-                    _bitmap.UnlockBits(bitmapData);
+                    _bitmap.UnlockBitmapPixelData(bitmapData);
                 }
             }
         }
@@ -531,9 +531,9 @@ namespace gView.DataSources.GDAL
             }
 
             int pixelSpace = 4;
-            using (Bitmap bitmap = new Bitmap(iWidth, iHeight + 100, PixelFormat.Format32bppArgb))
+            using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight + 100, GraphicsEngine.PixelFormat.Format32bppArgb))
             {
-                BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, iWidth, iHeight + 100), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+                var bitmapData = bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Format32bppArgb);
                 OSGeo_v1.GDAL.Band band = null;
 
                 try
@@ -607,13 +607,13 @@ namespace gView.DataSources.GDAL
 
                     if (bitmap != null)
                     {
-                        bitmap.UnlockBits(bitmapData);
+                        bitmap.UnlockBitmapPixelData(bitmapData);
                     }
 
-                    _bitmap = new Bitmap(iWidth, iHeight, PixelFormat.Format32bppArgb);
-                    using (Graphics gr = Graphics.FromImage(_bitmap))
+                    _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Format32bppArgb);
+                    using (var canvas = _bitmap.CreateCanvas())
                     {
-                        gr.DrawImage(bitmap, 0, 0);
+                        canvas.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
                     }
                 }
 
@@ -635,9 +635,9 @@ namespace gView.DataSources.GDAL
             }
 
             int pixelSpace = 4;
-            using (Bitmap bitmap = new Bitmap(iWidth, iHeight + 100, PixelFormat.Format32bppArgb))
+            using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight + 100, GraphicsEngine.PixelFormat.Format32bppArgb))
             {
-                BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, iWidth, iHeight + 100), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+                var bitmapData = bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Format32bppArgb);
                 OSGeo_v1.GDAL.Band band = null;
 
                 try
@@ -725,13 +725,13 @@ namespace gView.DataSources.GDAL
                     }
                     if (bitmap != null)
                     {
-                        bitmap.UnlockBits(bitmapData);
+                        bitmap.UnlockBitmapPixelData(bitmapData);
                     }
 
-                    _bitmap = new Bitmap(iWidth, iHeight, PixelFormat.Format32bppArgb);
-                    using (Graphics gr = Graphics.FromImage(_bitmap))
+                    _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Format32bppArgb);
+                    using (var gr =_bitmap.CreateCanvas())
                     {
-                        gr.DrawImage(bitmap, 0, 0);
+                        gr.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
                     }
                 }
                 catch (Exception ex)
@@ -799,7 +799,7 @@ namespace gView.DataSources.GDAL
 
         #region IBitmap Member
 
-        public Bitmap LoadBitmap()
+        public GraphicsEngine.Abstraction.IBitmap LoadBitmap()
         {
             return null;
         }
@@ -1297,53 +1297,5 @@ namespace gView.DataSources.GDAL
         }
 
         #endregion
-    }
-
-    public enum ColorInterp
-    {
-        Undefined = 0,
-        GrayIndex = 1,
-        PaletteIndex = 2,
-        RedBand = 3,
-        GreenBand = 4,
-        BlueBand = 5,
-        AlphaBand = 6,
-        HueBand = 7,
-        SaturationBand = 8,
-        LightnessBand = 9,
-        CyanBand = 10,
-        MagentaBand = 11,
-        YellowBand = 12,
-        BlackBand = 13,
-        YCbCr_YBand = 14,
-        YCbCr_CbBand = 15,
-        YCbCr_CrBand = 16,
-        Max = 16
-    }
-
-    public enum GDALDataType
-    {
-        /*! Eight bit unsigned integer */
-        GDT_Byte = 1,
-        /*! Sixteen bit unsigned integer */
-        GDT_UInt16 = 2,
-        /*! Sixteen bit signed integer */
-        GDT_Int16 = 3,
-        /*! Thirty two bit unsigned integer */
-        GDT_UInt32 = 4,
-        /*! Thirty two bit signed integer */
-        GDT_Int32 = 5,
-        /*! Thirty two bit floating point */
-        GDT_Float32 = 6,
-        /*! Sixty four bit floating point */
-        GDT_Float64 = 7,
-        /*! Complex Int16 */
-        GDT_CInt16 = 8,
-        /*! Complex Int32 */
-        GDT_CInt32 = 9,
-        /*! Complex Float32 */
-        GDT_CFloat32 = 10,
-        /*! Complex Float64 */
-        GDT_CFloat64 = 11
     }
 }

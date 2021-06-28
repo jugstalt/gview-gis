@@ -124,9 +124,9 @@ namespace gView.Framework.Symbology
         {
             if (path != null)
             {
-                display.GraphicsContext.SmoothingMode = (SmoothingMode)this.Smoothingmode;
-                display.GraphicsContext.DrawPath(_pen, path);
-                display.GraphicsContext.SmoothingMode = SmoothingMode.None;
+                display.Canvas.SmoothingMode = (SmoothingMode)this.Smoothingmode;
+                display.Canvas.DrawPath(_pen, path);
+                display.Canvas.SmoothingMode = SmoothingMode.None;
             }
         }
 

@@ -57,7 +57,7 @@ namespace gView.Plugins.MapTools
             _map.setScale(_map.mapScale,
                 _envelope.minx * 0.5 + _envelope.maxx * 0.5,
                 _envelope.miny * 0.5 + _envelope.maxy * 0.5);
-            _map.GraphicsContext = e.Graphics;
+            _map.Canvas = e.Graphics;
             _map.SetOrigin(e.MarginBounds.X, e.MarginBounds.Y);
 
             RectangleF rect = e.Graphics.ClipBounds;

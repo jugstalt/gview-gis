@@ -281,7 +281,7 @@ namespace gView.Framework.Symbology
 
                 using (LinearGradientBrush brush = _gradient.CreateNewLinearGradientBrush(rect))
                 {
-                    display.GraphicsContext.FillPath(brush, path);
+                    display.Canvas.FillPath(brush, path);
                 }
             }
             //if (_outlineSymbol != null)

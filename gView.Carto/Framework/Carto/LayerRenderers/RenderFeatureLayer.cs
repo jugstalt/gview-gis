@@ -106,8 +106,8 @@ namespace gView.Framework.Carto.LayerRenderers
             IFeatureRenderer clonedFeatureRenderer = null;
             ILabelRenderer clonedLabelRenderer = null;
 
-            System.Drawing.Bitmap compositionModeCopyBitmap = null;
-            System.Drawing.Graphics compositionModeCopyGraphicsContext = null, originalGraphicsContext = null;
+            GraphicsEngine.Abstraction.IBitmap compositionModeCopyBitmap = null;
+            GraphicsEngine.Abstraction.ICanvas compositionModeCopyCanvas= null, originalCanvas = null;
 
             try
             {
@@ -260,15 +260,15 @@ namespace gView.Framework.Carto.LayerRenderers
 
                             if (useCompostionModeCopy)
                             {
-                                originalGraphicsContext = _map.Display.GraphicsContext;
-                                compositionModeCopyBitmap = new System.Drawing.Bitmap(_map.Display.Bitmap.Width, _map.Display.Bitmap.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                                compositionModeCopyGraphicsContext = System.Drawing.Graphics.FromImage(compositionModeCopyBitmap);
+                                originalCanvas = _map.Display.Canvas;
+                                compositionModeCopyBitmap = GraphicsEngine.Current.Engine.CreateBitmap(_map.Display.Bitmap.Width, _map.Display.Bitmap.Height, GraphicsEngine.PixelFormat.Format32bppArgb);
+                                compositionModeCopyCanvas = compositionModeCopyBitmap.CreateCanvas();
 
                                 compositionModeCopyBitmap.MakeTransparent();
-                                compositionModeCopyBitmap.SetResolution(_map.Display.Bitmap.HorizontalResolution,
-                                                                        _map.Display.Bitmap.VerticalResolution);
+                                compositionModeCopyBitmap.SetResolution(_map.Display.Bitmap.DpiX,
+                                                                        _map.Display.Bitmap.DpiY);
 
-                                ((Display)_map.Display).GraphicsContext = compositionModeCopyGraphicsContext;
+                                ((Display)_map.Display).Canvas = compositionModeCopyCanvas;
                             }
 
                             while ((feature = await fCursor.NextFeature()) != null)
@@ -326,22 +326,12 @@ namespace gView.Framework.Carto.LayerRenderers
                             renderer.FinishDrawing(_map, _cancelTracker);
                         }
 
-                        if (compositionModeCopyGraphicsContext != null && compositionModeCopyBitmap != null)
+                        if (compositionModeCopyCanvas != null && compositionModeCopyBitmap != null)
                         {
-                            var matrix = new System.Drawing.Imaging.ColorMatrix();
-                            //set the opacity  
-                            matrix.Matrix33 =  (float)Math.Min(1, (100f - ((IFeatureLayerComposition)layer).CompositionModeCopyTransparency) / 100);
-                            //create image attributes  
-                            var attributes = new System.Drawing.Imaging.ImageAttributes();
-
-                            //set the color(opacity) of the image  
-                            attributes.SetColorMatrix(matrix, System.Drawing.Imaging.ColorMatrixFlag.Default, System.Drawing.Imaging.ColorAdjustType.Bitmap);
-
-                            originalGraphicsContext.DrawImage(compositionModeCopyBitmap,
-                                new System.Drawing.Rectangle(0, 0, compositionModeCopyBitmap.Width, compositionModeCopyBitmap.Height),
-                                0, 0, compositionModeCopyBitmap.Width, compositionModeCopyBitmap.Height,
-                                System.Drawing.GraphicsUnit.Pixel,
-                                attributes);
+                            originalCanvas.DrawBitmap(compositionModeCopyBitmap,
+                                new GraphicsEngine.CanvasRectangle(0, 0, compositionModeCopyBitmap.Width, compositionModeCopyBitmap.Height),
+                                new GraphicsEngine.CanvasRectangle(0, 0, compositionModeCopyBitmap.Width, compositionModeCopyBitmap.Height),
+                                opacity: (float)Math.Min(1, (100f - ((IFeatureLayerComposition)layer).CompositionModeCopyTransparency) / 100));
                         }
                     }
                 }
@@ -373,15 +363,15 @@ namespace gView.Framework.Carto.LayerRenderers
                     clonedLabelRenderer.Release();
                 }
 
-                if (originalGraphicsContext != null)
+                if (originalCanvas != null)
                 {
-                    ((Display)_map.Display).GraphicsContext = originalGraphicsContext;
+                    ((Display)_map.Display).Canvas = originalCanvas;
                 }
 
-                if (compositionModeCopyGraphicsContext != null)
+                if (compositionModeCopyCanvas != null)
                 {
-                    compositionModeCopyGraphicsContext.Dispose();
-                    compositionModeCopyGraphicsContext = null;
+                    compositionModeCopyCanvas.Dispose();
+                    compositionModeCopyCanvas = null;
                 }
 
                 if (compositionModeCopyBitmap != null)

@@ -10,6 +10,11 @@ namespace gView.GraphicsEngine.Abstraction
         int Width { get; }
         int Height { get; }
 
+        float DpiX { get; }
+        float DpiY { get; }
+
+        void SetResolution(float dpiX, float dpiY);
+
         PixelFormat PixelFormat { get; }
 
         ICanvas CreateCanvas();
@@ -24,6 +29,8 @@ namespace gView.GraphicsEngine.Abstraction
 
         BitmapPixelData LockBitmapPixelData(BitmapLockMode lockMode, PixelFormat pixelFormat);
         void UnlockBitmapPixelData(BitmapPixelData bitmapPixelData);
+
+        ArgbColor GetPixel(int x, int y);
 
         object EngineElement { get; }
     }

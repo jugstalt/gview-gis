@@ -129,7 +129,7 @@ namespace gView.Framework.Data
         Task<bool> MapRequest(IDisplay display);
         Task<bool> LegendRequest(IDisplay display);
         GeorefBitmap Image { get; }
-        global::System.Drawing.Bitmap Legend { get; }
+        GraphicsEngine.Abstraction.IBitmap Legend { get; }
 
         IEnvelope Envelope { get; }
         ISpatialReference SpatialReference { get; set; }
@@ -407,10 +407,10 @@ namespace gView.Framework.Data
 
     public enum InterpolationMethod
     {
-        Fast = global::System.Drawing.Drawing2D.InterpolationMode.Low,
-        NearestNeighbor = global::System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor,
-        Bilinear = global::System.Drawing.Drawing2D.InterpolationMode.Bilinear,
-        Bicubic = global::System.Drawing.Drawing2D.InterpolationMode.Bicubic /*,
+        Fast = GraphicsEngine.InterpolationMode.Low,
+        NearestNeighbor = GraphicsEngine.InterpolationMode.NearestNeighbor,
+        Bilinear = GraphicsEngine.InterpolationMode.Bilinear,
+        Bicubic = GraphicsEngine.InterpolationMode.Bicubic /*,
         HighQuality = System.Drawing.Drawing2D.InterpolationMode.High */
     }
 
@@ -429,7 +429,7 @@ namespace gView.Framework.Data
     public interface IRasterClass : IClass
     {
         IPolygon Polygon { get; }
-        global::System.Drawing.Bitmap Bitmap { get; }
+        GraphicsEngine.Abstraction.IBitmap Bitmap { get; }
 
         double oX { get; }
         double oY { get; }
@@ -535,7 +535,7 @@ namespace gView.Framework.Data
     {
         InterpolationMethod InterpolationMethod { get; set; }
         float Transparency { get; set; }
-        global::System.Drawing.Color TransparentColor { get; set; }
+        GraphicsEngine.ArgbColor TransparentColor { get; set; }
 
         IRasterClass RasterClass { get; }
     }
@@ -570,9 +570,9 @@ namespace gView.Framework.Data
         double Y { get; }
     }
 
-    public interface IBitmap
+    public interface IRasterFileBitmap
     {
-        global::System.Drawing.Bitmap LoadBitmap();
+        GraphicsEngine.Abstraction.IBitmap LoadBitmap();
     }
 
     public interface IRasterLayerCursor : ICursor

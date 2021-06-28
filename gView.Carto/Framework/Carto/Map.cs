@@ -2509,7 +2509,7 @@ namespace gView.Framework.Carto
 
         public void AppendExceptionsToImage()
         {
-            if (_requestExceptions == null || this.Display.GraphicsContext == null)
+            if (_requestExceptions == null || this.Display.Canvas == null)
             {
                 return;
             }
@@ -2528,11 +2528,11 @@ namespace gView.Framework.Carto
                 using (var borderPen = GraphicsEngine.Current.Engine.CreatePen(GraphicsEngine.ArgbColor.Black, 2f))
                 using (var textBrush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.Red))
                 {
-                    var sizeF = this.Display.GraphicsContext.MeasureText(sb.ToString().ToString(), font);
+                    var sizeF = this.Display.Canvas.MeasureText(sb.ToString().ToString(), font);
                     int mx = this.Display.iWidth / 2 - (int)sizeF.Width / 2, my = this.Display.iHeight / 2 - (int)sizeF.Height / 2;
-                    this.Display.GraphicsContext.FillRectangle(backgroundBrush, new GraphicsEngine.CanvasRectangle(mx - 30, my - 30, (int)sizeF.Width + 60, (int)sizeF.Height + 60));
-                    this.Display.GraphicsContext.DrawRectangle(borderPen, new GraphicsEngine.CanvasRectangle(mx - 30, my - 30, (int)sizeF.Width + 60, (int)sizeF.Height + 60));
-                    this.Display.GraphicsContext.DrawText(sb.ToString(), font, textBrush, new GraphicsEngine.CanvasPoint(mx, my));
+                    this.Display.Canvas.FillRectangle(backgroundBrush, new GraphicsEngine.CanvasRectangle(mx - 30, my - 30, (int)sizeF.Width + 60, (int)sizeF.Height + 60));
+                    this.Display.Canvas.DrawRectangle(borderPen, new GraphicsEngine.CanvasRectangle(mx - 30, my - 30, (int)sizeF.Width + 60, (int)sizeF.Height + 60));
+                    this.Display.Canvas.DrawText(sb.ToString(), font, textBrush, new GraphicsEngine.CanvasPoint(mx, my));
                 }
             }
         }

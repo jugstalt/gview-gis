@@ -2,18 +2,21 @@
 
 namespace gView.GraphicsEngine
 {
-    public class CanvasPoint : CanvasPointGeneric<int>
+    public struct CanvasPoint
     {
-        public CanvasPoint()
-            : base(0, 0)
-        { }
-
         public CanvasPoint(int x, int y)
-            : base(x, y)
-        { }
+        {
+            this.X = x;
+            this.Y = y;
+        }
 
         public CanvasPoint(CanvasPoint point)
-            : base(point?.X ?? 0, point?.Y ?? 0)
-        { }
+        {
+            this.X = point.X;
+            this.Y = point.Y;
+        }
+
+        public int X { get; set; }
+        public int Y { get; set; }
     }
 }

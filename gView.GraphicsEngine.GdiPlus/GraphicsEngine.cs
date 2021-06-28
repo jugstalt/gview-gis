@@ -32,6 +32,11 @@ namespace gView.GraphicsEngine.GdiPlus
             return new GdiBitmap(filename);
         }
 
+        public IBitmap CreateBitmapFromHbitmap(IntPtr hBitmap)
+        {
+            return GdiBitmap.FromHbitmap(hBitmap);
+        }
+
         public IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular)
         {
             return new GdiFont(fontFamily, size, fontStyle);

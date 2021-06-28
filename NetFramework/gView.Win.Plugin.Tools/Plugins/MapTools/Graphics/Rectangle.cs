@@ -325,13 +325,13 @@ namespace gView.Plugins.MapTools.Graphics
 
         public override void Draw(IDisplay display)
         {
-            if (display == null || display.GraphicsContext == null) return;
+            if (display == null || display.Canvas == null) return;
 
             SimpleTextSymbol sym = _symbol.Clone(new CloneOptions(display, false)) as SimpleTextSymbol;
             sym.Text = _text;
             sym.Angle = (float)this.Rotation;
 
-            System.Drawing.SizeF size = display.GraphicsContext.MeasureString(_text, sym.Font);
+            System.Drawing.SizeF size = display.Canvas.MeasureString(_text, sym.Font);
             double dx = size.Width * display.mapScale / (display.dpi / 0.0254);  // [m]
             double dy = size.Height * display.mapScale / (display.dpi / 0.0254);  // [m]
             base.Scale(dx, dy);
