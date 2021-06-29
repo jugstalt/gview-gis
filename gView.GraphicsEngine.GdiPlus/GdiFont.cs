@@ -1,4 +1,5 @@
 ﻿using gView.GraphicsEngine.Abstraction;
+using gView.GraphicsEngine.GdiPlus.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,7 +13,7 @@ namespace gView.GraphicsEngine.GdiPlus
 
         public GdiFont(string fontFamily, float size, FontStyle fontStyle)
         {
-            _font = new Font(fontFamily, size);
+            _font = new Font(fontFamily, size, fontStyle.ToGdiFontStyle());
         }
 
         public object EngineElement => _font;

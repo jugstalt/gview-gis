@@ -40,7 +40,7 @@ namespace gView.Framework.UI.Dialogs
             {
                 GridColorClass colorClass = new GridColorClass(
                     this.MinValue, this.MaxValue,
-                    Color.Gray);
+                    GraphicsEngine.ArgbColor.Gray);
                 colorClass.Legend = txtLabel.Text;
 
                 return colorClass;

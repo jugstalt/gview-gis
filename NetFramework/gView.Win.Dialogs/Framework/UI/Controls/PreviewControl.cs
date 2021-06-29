@@ -1,6 +1,7 @@
 using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.system;
+using gView.GraphicsEngine.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -165,7 +166,7 @@ namespace gView.Framework.UI.Controls
             
         }
 
-        private void InvokeNewBitmapCreated(Image image)
+        private void InvokeNewBitmapCreated(IBitmap image)
         {
             mapView1.NewBitmapCreated(image);
         }

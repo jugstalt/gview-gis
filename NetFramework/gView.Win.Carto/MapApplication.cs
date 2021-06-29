@@ -10,6 +10,7 @@ using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Framework.UI.Controls;
 using gView.Framework.XML;
+using gView.GraphicsEngine.Abstraction;
 using gView.system.UI.Framework.system.UI;
 using System;
 using System.Collections;
@@ -111,24 +112,24 @@ namespace gView.Win.Carto
             _appWindow.AddDataView(map);
         }
 
-        void Display_RenderOverlayImage(System.Drawing.Bitmap image, bool clearOld)
+        void Display_RenderOverlayImage(IBitmap bitmap, bool clearOld)
         {
             if (_activeDataView == null || _activeDataView.MapView == null)
             {
                 return;
             }
 
-            _activeDataView.MapView.RenderOverlayImage(image, clearOld);
+            _activeDataView.MapView.RenderOverlayImage(bitmap, clearOld);
         }
 
-        private void NewBitmapCreated(System.Drawing.Image image)
+        private void NewBitmapCreated(IBitmap bitmap)
         {
             if (_activeDataView == null)
             {
                 return;
             }
 
-            if (image == null)
+            if (bitmap == null)
             {
                 // Before Disposing Image
                 foreach (DataView dv in _dataViews)
@@ -138,7 +139,7 @@ namespace gView.Win.Carto
             }
             else
             {
-                _activeDataView.MapView.NewBitmapCreated(image);
+                _activeDataView.MapView.NewBitmapCreated(bitmap);
             }
         }
 

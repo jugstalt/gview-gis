@@ -13,6 +13,8 @@ using System.Drawing.Drawing2D;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
+using gView.Framework.Sys.UI.Extensions;
+using gView.GraphicsEngine.Abstraction;
 
 namespace gView.Framework.UI.Controls
 {
@@ -156,7 +158,7 @@ namespace gView.Framework.UI.Controls
                 {
                     _map.Display.iWidth = this.Width;
                     _map.Display.iHeight = this.Height;
-                    this.BackColor = _map.Display.BackgroundColor;
+                    this.BackColor = _map.Display.BackgroundColor.ToGdiColor();
                     //m_map.NewBitmap+=new NewBitmapEvent(NewBitmapCreated);
                     _map.DoRefreshMapView += new DoRefreshMapViewEvent(MakeMapViewRefresh);
                     //m_map.DrawingLayer+=new gView.Framework.Carto.DrawingLayerEvent(OnDrawingLayer);
@@ -194,6 +196,7 @@ namespace gView.Framework.UI.Controls
             get { return _navType; }
             set { _navType = value; }
         }
+
         [Browsable(false)]
         public gView.Framework.UI.IMapDocument MapDocument
         {
@@ -265,10 +268,10 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public void NewBitmapCreated(System.Drawing.Image image)
+        public void NewBitmapCreated(IBitmap bitmap)
         {
             /*this.BackgroundImage = */
-            _image = image;
+            _image = bitmap.ToGdiBitmap();
             //this.BackgroundImage = _image;
         }
 
@@ -303,17 +306,17 @@ namespace gView.Framework.UI.Controls
             catch { }
         }
 
-        private delegate void RenderOverlayImageCallback(Bitmap bm, bool clearOld);
-        public void RenderOverlayImage(Bitmap bm, bool clearOld)
+        private delegate void RenderOverlayImageCallback(IBitmap bitmap, bool clearOld);
+        public void RenderOverlayImage(IBitmap bitmap, bool clearOld)
         {
             if (this.InvokeRequired)
             {
                 RenderOverlayImageCallback d = new RenderOverlayImageCallback(RenderOverlayImage);
-                this.Invoke(d, new object[] { bm, clearOld });
+                this.Invoke(d, new object[] { bitmap, clearOld });
             }
             else
             {
-                if (bm == null)
+                if (bitmap == null)
                 {
                     MakeMapViewRefresh();
                     return;
@@ -324,16 +327,16 @@ namespace gView.Framework.UI.Controls
                     System.Drawing.Graphics gr = null;
                     try
                     {
-                        bm1 = new Bitmap(bm.Width, bm.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                        bm1 = new Bitmap(bitmap.Width, bitmap.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                         gr = System.Drawing.Graphics.FromImage(bm1);
                         if (_image != null)
                         {
                             gr.DrawImage(_image, new PointF(0, 0));
                         }
 
-                        if (bm != null)
+                        if (bitmap != null)
                         {
-                            gr.DrawImage(bm, new PointF(0, 0));
+                            gr.DrawImage(bitmap.ToGdiBitmap(), new PointF(0, 0));
                         }
 
                         gr.Dispose();
@@ -359,13 +362,13 @@ namespace gView.Framework.UI.Controls
                 }
                 else
                 {
-                    if (bm != null)
+                    if (bitmap != null)
                     {
                         System.Drawing.Graphics gr = null;
                         try
                         {
                             gr = System.Drawing.Graphics.FromHwnd(this.Handle);
-                            gr.DrawImage(bm, new PointF(0, 0));
+                            gr.DrawImage(bitmap.ToGdiBitmap(), new PointF(0, 0));
                         }
                         catch
                         {
@@ -459,19 +462,22 @@ namespace gView.Framework.UI.Controls
                     while (_cancelTracker.Continue || (_map != null ? _map.IsRefreshing : false))
                     {
                         _cancelTracker.Cancel();
-                        //Task.Delay(5);
-                        Thread.Sleep(5);
-                        if((DateTime.UtcNow-timeStamp).TotalSeconds>5)
-                        {
-                            if (_refreshMapThread != null)
-                            {
-                                _refreshMapThread.Abort();
-                            }
-                            break;
-                        }
+                        Thread.Sleep(10);
+                        //if ((DateTime.UtcNow - timeStamp).TotalSeconds > 5)
+                        //{
+                        //    if (_refreshMapThread != null)
+                        //    {
+                        //        _refreshMapThread.Abort();
+                        //    }
+                        //    break;
+                        //}
                     }
                     if (_map is Map)
                     {
+                        while(_map.IsRefreshing)
+                        {
+                            Thread.Sleep(5);
+                        }
                         ((Map)_map).DisposeGraphics();
                     }
 
@@ -906,7 +912,7 @@ namespace gView.Framework.UI.Controls
 
             using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromHwnd(this.Handle))
             {
-                using (SolidBrush brush = new SolidBrush((_map != null) ? _map.Display.BackgroundColor : Color.White))
+                using (SolidBrush brush = new SolidBrush((_map != null) ? _map.Display.BackgroundColor.ToGdiColor() : Color.White))
                 {
                     gr.FillRectangle(brush, 0, 0, this.Width, this.Height);
                 }
@@ -971,7 +977,7 @@ namespace gView.Framework.UI.Controls
 
             using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromHwnd(this.Handle))
             {
-                using (SolidBrush brush = new SolidBrush((_map != null) ? _map.Display.BackgroundColor : Color.White))
+                using (SolidBrush brush = new SolidBrush((_map != null) ? _map.Display.BackgroundColor.ToGdiColor() : Color.White))
                 {
                     gr.FillRectangle(brush, 0, 0, this.Width, this.Height);
                 }
@@ -1134,7 +1140,7 @@ namespace gView.Framework.UI.Controls
 
                         System.Drawing.Graphics gr = System.Drawing.Graphics.FromHwnd(this.Handle);
 
-                        using (SolidBrush brush = new SolidBrush((_map != null) ? _map.Display.BackgroundColor : Color.White))
+                        using (SolidBrush brush = new SolidBrush((_map != null) ? _map.Display.BackgroundColor.ToGdiColor() : Color.White))
                         {
                             /*
                             if (rect.Y > 0)

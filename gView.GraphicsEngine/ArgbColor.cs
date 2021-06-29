@@ -20,11 +20,14 @@ namespace gView.GraphicsEngine
         public static ArgbColor White => ArgbColor.FromArgb(255, 255, 255);
         public static ArgbColor Black => ArgbColor.FromArgb(0, 0, 0);
         public static ArgbColor LightGray => ArgbColor.FromArgb(200, 200, 200);
+        public static ArgbColor Gray => ArgbColor.FromArgb(128, 128, 128);
         public static ArgbColor Red => ArgbColor.FromArgb(255, 0, 0);
         public static ArgbColor Green => ArgbColor.FromArgb(0, 255, 0);
         public static ArgbColor Blue => ArgbColor.FromArgb(0, 0, 255);
+        public static ArgbColor AliceBlue => ArgbColor.FromArgb(240, 248, 255);
         public static ArgbColor Yellow => ArgbColor.FromArgb(255, 255, 0);
         public static ArgbColor Cyan => ArgbColor.FromArgb(0, 255, 255);
+        public static ArgbColor Orange => ArgbColor.FromArgb(255, 165, 0);
 
         public static ArgbColor FromArgb(int alpha, ArgbColor baseColor)
         {
@@ -80,6 +83,11 @@ namespace gView.GraphicsEngine
         public override int GetHashCode()
         {
             return base.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return String.Join("; ", A < 255 ? new int[] { A, R, G, B } : new int[] { R, G, B });
         }
     }
 }

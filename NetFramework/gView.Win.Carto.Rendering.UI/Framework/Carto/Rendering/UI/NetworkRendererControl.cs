@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Symbology;
-using gView.Framework.Carto.UI;
+﻿using gView.Framework.Symbology;
 using gView.Framework.Symbology.UI;
+using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -34,66 +30,65 @@ namespace gView.Framework.Carto.Rendering.UI
         private void btnChooseEdgeSymbol_Paint(object sender, PaintEventArgs e)
         {
             if (_renderer == null)
+            {
                 return;
+            }
 
             ISymbol symbol = _renderer[NetworkRenderer.RendererType.Edges];
             if (symbol != null)
             {
-                new SymbolPreview(null).Draw(
-                    e.Graphics,
-                    new Rectangle(5, 5, btnChooseEdgeSymbol.Width - 10, btnChooseEdgeSymbol.Height - 10),
-                    symbol, false);
+                e.Graphics.DrawSymbol(symbol, new Rectangle(5, 5, btnChooseEdgeSymbol.Width - 10, btnChooseEdgeSymbol.Height - 10));
             }
         }
 
         private void btnChooseSimpeSwitchSymbol_Paint(object sender, PaintEventArgs e)
         {
             if (_renderer == null)
+            {
                 return;
+            }
 
             ISymbol symbol = _renderer[NetworkRenderer.RendererType.SimpleNodes];
             if (symbol != null)
             {
-                new SymbolPreview(null).Draw(
-                    e.Graphics,
-                    new Rectangle(5, 5, btnChooseSimpeSwitchSymbol.Width - 10, btnChooseSimpeSwitchSymbol.Height - 10),
-                    symbol, false);
+                e.Graphics.DrawSymbol(symbol, new Rectangle(5, 5, btnChooseSimpeSwitchSymbol.Width - 10, btnChooseSimpeSwitchSymbol.Height - 10));
             }
         }
 
         private void btnChooseSwitchOnSymbol_Paint(object sender, PaintEventArgs e)
         {
             if (_renderer == null)
+            {
                 return;
+            }
 
             ISymbol symbol = _renderer[NetworkRenderer.RendererType.SwitchesOn];
             if (symbol != null)
             {
-                new SymbolPreview(null).Draw(
-                    e.Graphics,
-                    new Rectangle(5, 5, btnChooseSwitchOnSymbol.Width - 10, btnChooseSwitchOnSymbol.Height - 10),
-                    symbol, false);
+                e.Graphics.DrawSymbol(symbol, new Rectangle(5, 5, btnChooseSwitchOnSymbol.Width - 10, btnChooseSwitchOnSymbol.Height - 10));
             }
         }
 
         private void btnChooseSwitchOffSymbol_Paint(object sender, PaintEventArgs e)
         {
             if (_renderer == null)
+            {
                 return;
+            }
 
             ISymbol symbol = _renderer[NetworkRenderer.RendererType.SwitchesOff];
             if (symbol != null)
             {
-                new SymbolPreview(null).Draw(
-                    e.Graphics,
-                    new Rectangle(5, 5, btnChooseSwitchOffSymbol.Width - 10, btnChooseSwitchOffSymbol.Height - 10),
-                    symbol, false);
+                e.Graphics.DrawSymbol(symbol, new Rectangle(5, 5, btnChooseSwitchOffSymbol.Width - 10, btnChooseSwitchOffSymbol.Height - 10));
             }
         }
 
         private void btnChooseEdgeSymbol_Click(object sender, EventArgs e)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             ISymbol symbol = _renderer[NetworkRenderer.RendererType.Edges];
             if (symbol != null)
@@ -108,7 +103,10 @@ namespace gView.Framework.Carto.Rendering.UI
         
         private void btnChooseSimpeSwitchSymbol_Click(object sender, EventArgs e)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             ISymbol symbol = _renderer[NetworkRenderer.RendererType.SimpleNodes];
             if (symbol != null)
@@ -123,7 +121,10 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnChooseSwitchOnSymbol_Click(object sender, EventArgs e)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             ISymbol symbol = _renderer[NetworkRenderer.RendererType.SwitchesOn];
             if (symbol != null)
@@ -138,7 +139,10 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnChooseSwitchOffSymbol_Click(object sender, EventArgs e)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             ISymbol symbol = _renderer[NetworkRenderer.RendererType.SwitchesOff];
             if (symbol != null)

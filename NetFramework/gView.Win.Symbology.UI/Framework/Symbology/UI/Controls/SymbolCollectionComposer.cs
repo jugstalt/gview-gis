@@ -8,6 +8,7 @@ using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.Framework.Carto;
 using gView.Framework.Carto.UI;
+using gView.Framework.Sys.UI.Extensions;
 
 namespace gView.Framework.Symbology.UI.Controls
 {
@@ -472,7 +473,13 @@ namespace gView.Framework.Symbology.UI.Controls
                             rect.Y += 1;
                             rect.Width -= 2;
                             rect.Height -= 2;
-                            new SymbolPreview(null).Draw(e.Graphics, rect, item.Symbol, false);
+
+                            using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(rect.Width, rect.Height))
+                            using (var canvas = bitmap.CreateCanvas())
+                            {
+                                new SymbolPreview(null).Draw(canvas, rect.ToCanvasRectangle(), _symbol, false);
+                                e.Graphics.DrawImage(bitmap.ToGdiBitmap(), new Point(rect.X, rect.Y));
+                            }
                         }
                     }
                     catch { }
@@ -628,18 +635,25 @@ namespace gView.Framework.Symbology.UI.Controls
             using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromHwnd(panelPreview.Handle))
             {
                 Rectangle rect = new Rectangle(0, 0, panelPreview.Width, panelPreview.Height);
+
                 using (SolidBrush brush = new SolidBrush(Color.White))
                 {
                     gr.FillRectangle(brush, rect);
                 }
+
+                using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(rect.Width, rect.Height))
+                using (var canvas = bitmap.CreateCanvas())
+                {
+                    new SymbolPreview(null).Draw(canvas, rect.ToCanvasRectangle(), _symbol, false);
+                    gr.DrawImage(bitmap.ToGdiBitmap(), new Point(rect.X, rect.Y));
+                }
+
                 using (Pen pen = new Pen(Color.Gray, 0))
                 {
                     pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
                     gr.DrawLine(pen, 0, rect.Height / 2, rect.Width, rect.Height / 2);
                     gr.DrawLine(pen, rect.Width / 2, 0, rect.Width / 2, rect.Height);
                 }
-
-                new SymbolPreview(null).Draw(gr, rect, _symbol, false);
             }
         }
 

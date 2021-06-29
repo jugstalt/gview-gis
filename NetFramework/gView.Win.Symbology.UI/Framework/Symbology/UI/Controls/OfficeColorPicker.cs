@@ -44,7 +44,7 @@ namespace gView.Framework.Symbology.UI.Controls
         /// Gets or sets the selected color from the OfficeColorPicker
         /// </summary>
         [Category("Data"), Description("The color selected in the dialog"),
-       DefaultValue(typeof(Color), "System.Drawing.Color.Black")]
+        DefaultValue(typeof(Color), "System.Drawing.Color.Black")]
         public Color Color
         {
             get { return _color; }

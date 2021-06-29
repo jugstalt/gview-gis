@@ -324,7 +324,7 @@ namespace gView.GraphicsEngine.GdiPlus
         {
             CheckUsability();
 
-            _graphics.FillRectangle((Brush)brush.EngineElement, x1, y1, x2, y2);
+            _graphics.FillEllipse((Brush)brush.EngineElement, x1, y1, x2, y2);
         }
 
         public void DrawPath(IPen pen, IGraphicsPath path)

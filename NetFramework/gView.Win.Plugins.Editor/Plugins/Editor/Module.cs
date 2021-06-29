@@ -1,20 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+using gView.Framework.Carto;
+using gView.Framework.Data;
+using gView.Framework.Editor.Core;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.IO;
+using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.Framework.UI;
-using gView.Framework.Data;
-using gView.Framework.FDB;
-using gView.Framework.Carto;
-using gView.Framework.Geometry;
-using gView.Framework.Symbology;
-using System.Drawing;
-using gView.Framework.IO;
-using System.Windows.Forms;
-using gView.Framework.Editor.Core;
+using gView.GraphicsEngine;
 using gView.Plugins.Editor.Dialogs;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.Editor
 {
@@ -60,7 +59,9 @@ namespace gView.Plugins.Editor
                 {
                     _task = value;
                     if (OnChangeEditTask != null)
+                    {
                         OnChangeEditTask(this, _task);
+                    }
 
                     this.Feature = null;
                 }
@@ -88,7 +89,9 @@ namespace gView.Plugins.Editor
                     _doc.MapAdded -= new MapAddedEvent(_doc_MapAdded);
                     _doc.MapDeleted -= new MapDeletedEvent(_doc_MapDeleted);
                     if (_doc.Application is IMapApplication)
+                    {
                         ((IMapApplication)_doc.Application).AfterLoadMapDocument -= new AfterLoadMapDocumentEvent(Module_AfterLoadMapDocument);
+                    }
                 }
                 _doc = (IMapDocument)hook;
 
@@ -97,7 +100,9 @@ namespace gView.Plugins.Editor
                 _doc.MapAdded += new MapAddedEvent(_doc_MapAdded);
                 _doc.MapDeleted += new MapDeletedEvent(_doc_MapDeleted);
                 if(_doc.Application is IMapApplication)
+                {
                     ((IMapApplication)_doc.Application).AfterLoadMapDocument += new AfterLoadMapDocumentEvent(Module_AfterLoadMapDocument);
+                }
             }
         }
         #endregion
@@ -107,7 +112,10 @@ namespace gView.Plugins.Editor
         {
             EditorEventArgument args = new EditorEventArgument(fc, feature);
             if (OnBeginEditFeature != null)
+            {
                 OnBeginEditFeature(this, args);
+            }
+
             if (args.Cancel)
             {
                 _lastMsg = args.Message;
@@ -121,7 +129,10 @@ namespace gView.Plugins.Editor
         {
             EditorEventArgument args = new EditorEventArgument(fc, feature);
             if (OnCreateFeature != null)
+            {
                 OnCreateFeature(this, args);
+            }
+
             if (args.Cancel)
             {
                 _lastMsg = args.Message;
@@ -135,7 +146,10 @@ namespace gView.Plugins.Editor
         {
             if (fc == null || feature == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureUpdater)) return false;
+                !(fc.Dataset.Database is IFeatureUpdater))
+            {
+                return false;
+            }
 
             if (_attributEditor != null && !_attributEditor.CommitValues())
             {
@@ -145,7 +159,10 @@ namespace gView.Plugins.Editor
 
             EditorEventArgument args = new EditorEventArgument(fc, feature);
             if (OnInsertFeature != null)
+            {
                 OnInsertFeature(this, args);
+            }
+
             if (args.Cancel)
             {
                 _lastMsg = args.Message;
@@ -168,7 +185,10 @@ namespace gView.Plugins.Editor
             feature.Shape = shape;
 
             if (!ret)
+            {
                 _lastMsg = fc.Dataset.Database.LastErrorMessage;
+            }
+
             return ret;
         }
 
@@ -176,7 +196,10 @@ namespace gView.Plugins.Editor
         {
             if (fc == null || feature == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureUpdater)) return false;
+                !(fc.Dataset.Database is IFeatureUpdater))
+            {
+                return false;
+            }
 
             if (_attributEditor != null && !_attributEditor.CommitValues())
             {
@@ -186,7 +209,10 @@ namespace gView.Plugins.Editor
 
             EditorEventArgument args = new EditorEventArgument(fc, feature);
             if (OnUpdateFeature != null)
+            {
                 OnUpdateFeature(this, args);
+            }
+
             if (args.Cancel)
             {
                 _lastMsg = args.Message;
@@ -209,7 +235,10 @@ namespace gView.Plugins.Editor
             feature.Shape = shape;
 
             if (!ret)
+            {
                 _lastMsg = fc.Dataset.Database.LastErrorMessage;
+            }
+
             return ret;
         }
 
@@ -217,11 +246,17 @@ namespace gView.Plugins.Editor
         {
             if (fc == null || feature == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureUpdater)) return false;
+                !(fc.Dataset.Database is IFeatureUpdater))
+            {
+                return false;
+            }
 
             EditorEventArgument args = new EditorEventArgument(fc, feature);
             if (OnDeleteFeature != null)
+            {
                 OnDeleteFeature(this, args);
+            }
+
             if (args.Cancel)
             {
                 _lastMsg = args.Message;
@@ -230,7 +265,10 @@ namespace gView.Plugins.Editor
 
             bool ret = await ((IFeatureUpdater)fc.Dataset.Database).Delete(fc, feature.OID);
             if (!ret)
+            {
                 _lastMsg = fc.Dataset.Database.LastErrorMessage;
+            }
+
             return ret;
         }
         #endregion
@@ -263,12 +301,18 @@ namespace gView.Plugins.Editor
                 _feature = value;
 
                 if (_feature == null || _feature.Shape == null)
+                {
                     Sketch = null;
+                }
                 else
+                {
                     Sketch = new EditSketch(_feature.Shape);
+                }
 
                 if (OnChangeSelectedFeature != null)
+                {
                     OnChangeSelectedFeature(this, _feature);
+                }
             }
         }
         internal string LastMessage
@@ -292,7 +336,10 @@ namespace gView.Plugins.Editor
         //}
         internal void CreateStandardFeature()
         {
-            if (_fc == null) return;
+            if (_fc == null)
+            {
+                return;
+            }
 
             Feature feature = new Feature();
 
@@ -327,7 +374,9 @@ namespace gView.Plugins.Editor
             _feature = feature;
 
             if (OnCreateStandardFeature != null)
+            {
                 OnCreateStandardFeature(this, _feature);
+            }
 
             Sketch = new EditSketch(_feature.Shape);
         }
@@ -350,7 +399,10 @@ namespace gView.Plugins.Editor
             }
             set
             {
-                if (!_editLayers.Contains(value)) return;
+                if (!_editLayers.Contains(value))
+                {
+                    return;
+                }
 
                 _selectedEditLayer = value;
                 if (_selectedEditLayer == null || _selectedEditLayer.FeatureLayer == null)
@@ -369,7 +421,9 @@ namespace gView.Plugins.Editor
         internal void FireOnEditLayerCollectionChanged()
         {
             if (OnEditLayerCollectionChanged != null)
+            {
                 OnEditLayerCollectionChanged(this);
+            }
         }
         #endregion
 
@@ -379,24 +433,34 @@ namespace gView.Plugins.Editor
             get
             {
                 if (_sketchContainer.Elements.Count == 1)
+                {
                     return _sketchContainer.Elements[0] as EditSketch;
+                }
+
                 return null;
             }
             set
             {
                 if (_doc == null || _doc.FocusMap == null || 
-                    _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null) return;
+                    _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
+                {
+                    return;
+                }
 
                 foreach (IGraphicElement grElement in _doc.FocusMap.Display.GraphicsContainer.SelectedElements.Clone())
                 {
                     if (grElement is EditSketch)
+                    {
                         _doc.FocusMap.Display.GraphicsContainer.SelectedElements.Remove(grElement);
+                    }
                 }
 
                 foreach (IGraphicElement grElement in _doc.FocusMap.Display.GraphicsContainer.Elements.Clone())
                 {
                     if (grElement is EditSketch)
+                    {
                         _doc.FocusMap.Display.GraphicsContainer.Elements.Remove(grElement);
+                    }
                 }
 
                 EditSketch sketch = null;  
@@ -405,8 +469,15 @@ namespace gView.Plugins.Editor
                     sketch = _sketchContainer.Elements[0] as EditSketch;
                 }
                 // hat sich sketch nicht verändert...
-                if (value != null && value.Equals(sketch)) return;
-                if (value == null && sketch == null) return;
+                if (value != null && value.Equals(sketch))
+                {
+                    return;
+                }
+
+                if (value == null && sketch == null)
+                {
+                    return;
+                }
 
                 _sketchContainer.Elements.Clear();
                 if (value != null)
@@ -420,7 +491,9 @@ namespace gView.Plugins.Editor
                 // und Sketch sich geändert hat;
                 if (_doc.Application is IMapApplication && 
                     !_afterLoadMapDocument)
+                {
                     ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+                }
             }
         }
 
@@ -440,7 +513,9 @@ namespace gView.Plugins.Editor
                 {
                     ((MoverGraphics)_moverContainer.Elements[0]).Mover = value;
                     if (((MoverGraphics)_moverContainer.Elements[0]).IsValid)
+                    {
                         _doc.FocusMap.Display.DrawOverlay(_moverContainer, true);
+                    }
                 }
             }
         }
@@ -458,7 +533,7 @@ namespace gView.Plugins.Editor
                 _module = module;
 
                 _symbol = new SimpleLineSymbol();
-                _symbol.Color = Color.Gray;
+                _symbol.Color = ArgbColor.Gray;
             }
 
             public IPoint Mover
@@ -471,13 +546,19 @@ namespace gView.Plugins.Editor
 
             public void Draw(IDisplay display)
             {
-                if (_mover == null || _module == null || _module.Sketch == null) return;
+                if (_mover == null || _module == null || _module.Sketch == null)
+                {
+                    return;
+                }
 
                 switch (_module.Sketch.GeometryType)
                 {
                     case geometryType.Polyline:
                         IPointCollection pColl1 = _module.Sketch.Part;
-                        if (pColl1 == null || pColl1.PointCount == 0) return;
+                        if (pColl1 == null || pColl1.PointCount == 0)
+                        {
+                            return;
+                        }
 
                         IPolyline pLine1 = new Polyline();
                         IPath path1 = new Path();
@@ -490,7 +571,10 @@ namespace gView.Plugins.Editor
                         break;
                     case geometryType.Polygon:
                         IPointCollection pColl2 = _module.Sketch.Part;
-                        if (pColl2 == null || pColl2.PointCount < 2) return;
+                        if (pColl2 == null || pColl2.PointCount < 2)
+                        {
+                            return;
+                        }
 
                         IPolyline pLine2 = new Polyline();
                         IPath path2 = new Path();
@@ -511,7 +595,10 @@ namespace gView.Plugins.Editor
             {
                 get
                 {
-                    if (_mover == null || _module == null || _module.Sketch == null) return false;
+                    if (_mover == null || _module == null || _module.Sketch == null)
+                    {
+                        return false;
+                    }
 
                     switch (_module.Sketch.GeometryType)
                     {
@@ -519,11 +606,19 @@ namespace gView.Plugins.Editor
                             return false;
                         case geometryType.Polyline:
                             IPointCollection pColl1 = _module.Sketch.Part;
-                            if (pColl1 == null || pColl1.PointCount == 0) return false;
+                            if (pColl1 == null || pColl1.PointCount == 0)
+                            {
+                                return false;
+                            }
+
                             break;
                         case geometryType.Polygon:
                             IPointCollection pColl2 = _module.Sketch.Part;
-                            if (pColl2 == null || pColl2.PointCount < 2) return false;
+                            if (pColl2 == null || pColl2.PointCount < 2)
+                            {
+                                return false;
+                            }
+
                             break;
                     }
 
@@ -551,15 +646,25 @@ namespace gView.Plugins.Editor
             {
                 if (stream == null ||
                     _module == null ||
-                    _module.MapDocument == null) return;
+                    _module.MapDocument == null)
+                {
+                    return;
+                }
 
                 int index = (int)stream.Load("index", -1);
-                if (index == -1 || index >= _module.MapDocument.Maps.Count()) return;
+                if (index == -1 || index >= _module.MapDocument.Maps.Count())
+                {
+                    return;
+                }
+
                 string name = (string)stream.Load("name", string.Empty);
 
                 var mapsList = _module.MapDocument.Maps.ToList();
                 if (mapsList[index] == null ||
-                    mapsList[index].Name != name) return;
+                    mapsList[index].Name != name)
+                {
+                    return;
+                }
 
                 _map = mapsList[index];
 
@@ -567,7 +672,9 @@ namespace gView.Plugins.Editor
                 while ((eLayer = (EditLayer)stream.Load("EditLayer", null, new EditLayer())) != null)
                 {
                     if (eLayer.SetLayer(_map))
+                    {
                         _module.AddEditLayer(eLayer);
+                    }
                 }
             }
 
@@ -576,16 +683,26 @@ namespace gView.Plugins.Editor
                 if (stream == null || 
                     _module == null ||
                     _module.MapDocument == null ||
-                    _map == null) return;
+                    _map == null)
+                {
+                    return;
+                }
 
                 int index = _module.MapDocument.Maps.ToList().IndexOf(_map);
-                if (index == -1) return;
+                if (index == -1)
+                {
+                    return;
+                }
 
                 stream.Save("index", index);
                 stream.Save("name", _map.Name);
                 foreach (IEditLayer editLayer in _module.EditLayers)
                 {
-                    if (editLayer == null) continue;
+                    if (editLayer == null)
+                    {
+                        continue;
+                    }
+
                     stream.Save("EditLayer", editLayer);
                 }
             }
@@ -597,11 +714,18 @@ namespace gView.Plugins.Editor
         #region Helper
         static internal void SetValueOrAppendFieldValueIfNotExist(IFeature feature, string fieldName, object val)
         {
-            if (feature == null || feature.Fields == null) return;
+            if (feature == null || feature.Fields == null)
+            {
+                return;
+            }
 
             foreach (IFieldValue fv in feature.Fields)
             {
-                if (fv == null) continue;
+                if (fv == null)
+                {
+                    continue;
+                }
+
                 if (fv.Name == fieldName)
                 {
                     fv.Value = val;
@@ -620,22 +744,33 @@ namespace gView.Plugins.Editor
         }
         internal IFeatureLayer GetFeatureClassLayer(IFeatureClass fc)
         {
-            if (_doc == null || _doc.FocusMap == null) return null;
+            if (_doc == null || _doc.FocusMap == null)
+            {
+                return null;
+            }
 
             foreach (IDatasetElement element in _doc.FocusMap.MapElements)
             {
                 if (element is IFeatureLayer && element.Class == fc)
+                {
                     return element as IFeatureLayer;
+                }
             }
             return null;
         }
         private IEditLayer EditLayerByFeatureLayer(IFeatureLayer layer)
         {
-            if (_editLayers == null) return null;
+            if (_editLayers == null)
+            {
+                return null;
+            }
+
             foreach (IEditLayer editLayer in _editLayers)
             {
                 if (editLayer != null && editLayer.FeatureLayer == layer)
+                {
                     return editLayer;
+                }
             }
             return null;
         }
@@ -646,7 +781,10 @@ namespace gView.Plugins.Editor
         public void Load(IPersistStream stream)
         {
             _editLayers.Clear();
-            if (_doc == null || stream == null) return;
+            if (_doc == null || stream == null)
+            {
+                return;
+            }
 
             MapEditLayerPersist mapEditLayers;
             while ((mapEditLayers = (MapEditLayerPersist)stream.Load("MapEditLayers", null, new MapEditLayerPersist(this, null))) != null)
@@ -656,11 +794,18 @@ namespace gView.Plugins.Editor
 
         public void Save(IPersistStream stream)
         {
-            if (_doc == null || _doc.Maps == null) return;
+            if (_doc == null || _doc.Maps == null)
+            {
+                return;
+            }
 
             foreach (IMap map in _doc.Maps)
             {
-                if (map == null) continue;
+                if (map == null)
+                {
+                    continue;
+                }
+
                 stream.Save("MapEditLayers", new MapEditLayerPersist(this, map));
             }
         }
@@ -670,7 +815,10 @@ namespace gView.Plugins.Editor
         #region Document Events
         void _doc_MapDeleted(IMap map)
         {
-            if (map == null) return;
+            if (map == null)
+            {
+                return;
+            }
 
             bool found = false;
             foreach (IEditLayer editLayer in ListOperations<IEditLayer>.Clone(_editLayers))
@@ -689,7 +837,9 @@ namespace gView.Plugins.Editor
 
             if (found &&
                 OnEditLayerCollectionChanged != null)
+            {
                 OnEditLayerCollectionChanged(this);
+            }
         }
 
         void _doc_MapAdded(IMap map)
@@ -699,7 +849,10 @@ namespace gView.Plugins.Editor
 
         void _doc_LayerRemoved(IMap sender, ILayer layer)
         {
-            if (sender == null || layer == null || _doc == null) return;
+            if (sender == null || layer == null || _doc == null)
+            {
+                return;
+            }
 
             bool found = false;
             foreach (IEditLayer editLayer in ListOperations<IEditLayer>.Clone(_editLayers))
@@ -718,35 +871,55 @@ namespace gView.Plugins.Editor
 
             if (found &&
                 OnEditLayerCollectionChanged != null)
+            {
                 OnEditLayerCollectionChanged(this);
+            }
         }
 
         void _doc_LayerAdded(IMap sender, ILayer layer)
         {
-            if (!(layer is IFeatureLayer)) return;
+            if (!(layer is IFeatureLayer))
+            {
+                return;
+            }
 
             IFeatureLayer fl = (IFeatureLayer)layer;
             if (fl.Class == null || fl.Class.Dataset == null ||
-                !(fl.Class.Dataset.Database is IEditableDatabase)) return;
+                !(fl.Class.Dataset.Database is IEditableDatabase))
+            {
+                return;
+            }
 
             EditLayer editLayer = new EditLayer(fl, EditStatements.NONE);
 
             _editLayers.Add(editLayer);
             if (OnEditLayerCollectionChanged != null)
+            {
                 OnEditLayerCollectionChanged(this);
+            }
         }
         private bool _afterLoadMapDocument = false;
         void Module_AfterLoadMapDocument(IMapDocument mapDocument)
         {
-            if (_doc != mapDocument) OnCreate(mapDocument);
-            if (_doc == null) return;
+            if (_doc != mapDocument)
+            {
+                OnCreate(mapDocument);
+            }
+
+            if (_doc == null)
+            {
+                return;
+            }
 
             _afterLoadMapDocument = true;
             foreach (IMap map in _doc.Maps)
             {
                 foreach (IDatasetElement element in map.MapElements)
                 {
-                    if (!(element is IFeatureLayer)) continue;
+                    if (!(element is IFeatureLayer))
+                    {
+                        continue;
+                    }
 
                     if (EditLayerByFeatureLayer(element as IFeatureLayer) == null)
                     {
@@ -756,7 +929,9 @@ namespace gView.Plugins.Editor
             }
 
             if (OnEditLayerCollectionChanged != null)
+            {
                 OnEditLayerCollectionChanged(this);
+            }
 
             _afterLoadMapDocument = false;
         }
@@ -765,7 +940,9 @@ namespace gView.Plugins.Editor
         private void AddEditLayer(IEditLayer eLayer)
         {
             if (eLayer != null)
+            {
                 _editLayers.Add(eLayer);
+            }
         }
     }
 
@@ -791,11 +968,17 @@ namespace gView.Plugins.Editor
         private string persistClassName;
         internal bool SetLayer(IMap map)
         {
-            if (map == null || map.MapElements == null) return false;
+            if (map == null || map.MapElements == null)
+            {
+                return false;
+            }
 
             foreach (IDatasetElement element in map.MapElements)
             {
-                if (!(element is IFeatureLayer) || element.Class == null) continue;
+                if (!(element is IFeatureLayer) || element.Class == null)
+                {
+                    continue;
+                }
 
                 if (element.ID == persistLayerID && element.Class.Name == persistClassName)
                 {
@@ -820,7 +1003,10 @@ namespace gView.Plugins.Editor
 
         public void Save(IPersistStream stream)
         {
-            if (_layer == null || _layer.Class == null) return;
+            if (_layer == null || _layer.Class == null)
+            {
+                return;
+            }
 
             stream.Save("id", _layer.ID);
             stream.Save("class", _layer.Class.Name);

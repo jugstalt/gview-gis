@@ -2,6 +2,7 @@ using gView.Framework.Carto;
 using gView.Framework.Carto.Rendering;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using gView.Framework.Sys.UI.Extensions;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
@@ -429,6 +430,7 @@ namespace gView.Framework.UI.Dialogs
             this.tabCompostionMode = new System.Windows.Forms.TabPage();
             this.groupBox8 = new System.Windows.Forms.GroupBox();
             this.panelCompModeCopy = new System.Windows.Forms.Panel();
+            this.label24 = new System.Windows.Forms.Label();
             this.label23 = new System.Windows.Forms.Label();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -442,7 +444,6 @@ namespace gView.Framework.UI.Dialogs
             this.panel2 = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
-            this.label24 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabGeneral.SuspendLayout();
             this.groupBox6.SuspendLayout();
@@ -1210,6 +1211,11 @@ namespace gView.Framework.UI.Dialogs
             this.panelCompModeCopy.Controls.Add(this.numCompModeCopyTransparency);
             this.panelCompModeCopy.Name = "panelCompModeCopy";
             // 
+            // label24
+            // 
+            resources.ApplyResources(this.label24, "label24");
+            this.label24.Name = "label24";
+            // 
             // label23
             // 
             resources.ApplyResources(this.label23, "label23");
@@ -1292,11 +1298,6 @@ namespace gView.Framework.UI.Dialogs
             resources.ApplyResources(this.btnOK, "btnOK");
             this.btnOK.Name = "btnOK";
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
-            // 
-            // label24
-            // 
-            resources.ApplyResources(this.label24, "label24");
-            this.label24.Name = "label24";
             // 
             // FormLayerProperties
             // 
@@ -1449,7 +1450,7 @@ namespace gView.Framework.UI.Dialogs
                 tbTransparency.Value = (int)Math.Max(Math.Min((int)(((IRasterLayer)_layer).Transparency * 100f), 100), 0);
                 lblTransPercent.Text = tbTransparency.Value.ToString() + "%";
 
-                btnTranscolor.BackColor = ((IRasterLayer)_layer).TransparentColor;
+                btnTranscolor.BackColor = ((IRasterLayer)_layer).TransparentColor.ToGdiColor();
             }
             if (_layer.Class is IGridClass)
             {
@@ -1937,7 +1938,7 @@ namespace gView.Framework.UI.Dialogs
             {
                 ((IRasterLayer)_layer).InterpolationMethod = (InterpolationMethod)cmbInterpolationMode.SelectedItem;
                 ((IRasterLayer)_layer).Transparency = ((float)tbTransparency.Value) / 100f;
-                ((IRasterLayer)_layer).TransparentColor = btnTranscolor.BackColor;
+                ((IRasterLayer)_layer).TransparentColor = btnTranscolor.BackColor.ToArgbColor();
             }
             if (_layer.Class is IGridClass)
             {

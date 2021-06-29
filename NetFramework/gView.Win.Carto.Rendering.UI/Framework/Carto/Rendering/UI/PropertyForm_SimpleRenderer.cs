@@ -9,6 +9,7 @@ using gView.Framework.UI;
 using gView.Framework.Geometry;
 using gView.Framework.Carto.UI;
 using gView.Framework.Symbology.UI;
+using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -186,10 +187,7 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_renderer == null) return;
 
-            new SymbolPreview(null).Draw(
-                e.Graphics,
-                new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10),
-                ((IFeatureRenderer2)_renderer).Symbol, false);
+            e.Graphics.DrawSymbol(((IFeatureRenderer2)_renderer).Symbol, new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10));
         }
 
         private void btnRotation_Click(object sender, EventArgs e)

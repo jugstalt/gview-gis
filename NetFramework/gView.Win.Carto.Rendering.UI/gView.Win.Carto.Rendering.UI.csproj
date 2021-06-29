@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Framework\Carto\Rendering\Extensions\GraphicsExtensions.cs" />
     <Compile Include="Framework\Carto\Rendering\UI\FormCartographicInterpretation.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -188,6 +189,10 @@
       <Project>{9b556868-8431-4d6c-b002-3fef15df0498}</Project>
       <Name>gView.Data</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\gView.GraphicsEngine\gView.GraphicsEngine.csproj">
+      <Project>{ED711BDA-7FD3-42AE-A6A0-DDF07C20014D}</Project>
+      <Name>gView.GraphicsEngine</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\gView.Symbology\gView.Symbology.csproj">
       <Project>{c37d6d4b-5670-49b9-8592-48e9dcc0aa3c}</Project>
       <Name>gView.Symbology</Name>
@@ -203,6 +208,10 @@
     <ProjectReference Include="..\gView.Win.Symbology.UI\gView.Win.Symbology.UI.csproj">
       <Project>{9957f5fa-1e21-4d79-883e-88ffe3a7f01b}</Project>
       <Name>gView.Win.Symbology.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Sys.UI\gView.Win.Sys.UI.csproj">
+      <Project>{A82D4F52-BDCD-4721-9363-09CCF4A3BB7A}</Project>
+      <Name>gView.Win.Sys.UI</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

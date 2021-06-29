@@ -1,22 +1,18 @@
-using System;
-using System.ComponentModel;
-using System.ComponentModel.Design;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Design;
-using System.Windows.Forms;
-using System.Reflection;
-using System.Windows.Forms.Design;
-using gView.Framework.Symbology;
-using gView.Framework.system;
-using gView.Framework.Carto;
 using gView.Framework.Carto.UI;
 using gView.Framework.Symbology.UI.Controls;
+using gView.Framework.Sys.UI.Extensions;
 using gView.Framework.UI.Symbology.Dialogs;
+using System;
+using System.ComponentModel;
+using System.Drawing;
+using System.Drawing.Design;
+using System.Drawing.Drawing2D;
+using System.Windows.Forms;
+using System.Windows.Forms.Design;
 
 namespace gView.Framework.Symbology.UI
 {
-	internal class ColorTypeEditor : UITypeEditor 
+    internal class ColorTypeEditor : UITypeEditor 
 	{
 		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
 		{
@@ -30,20 +26,21 @@ namespace gView.Framework.Symbology.UI
 
             if (wfes != null)
             {
-                gView.Framework.Symbology.UI.Controls.OfficeColorPicker picker = new gView.Framework.Symbology.UI.Controls.OfficeColorPicker(wfes, (Color)value);
+                OfficeColorPicker picker = new OfficeColorPicker(wfes, (Color)value);
                 picker.AllowNoColor = true;
                 picker.Height = picker.PreferredHeight;
                 wfes.DropDownControl(picker);
                 return picker.Color;
             }
+
 			return value;
 		}
 
 		public override void PaintValue(PaintValueEventArgs e)
 		{
-			using(SolidBrush brush=new SolidBrush((Color)e.Value)) 
+			using (SolidBrush brush = new SolidBrush((Color)e.Value))
 			{
-				e.Graphics.FillRectangle(brush,e.Bounds);
+				e.Graphics.FillRectangle(brush, e.Bounds);
 			}
 		}
 
@@ -172,7 +169,7 @@ namespace gView.Framework.Symbology.UI
 					symbol=new SimpleLineSymbol();
 				}
 
-				Form_UITypeEditor_Color dlg=new Form_UITypeEditor_Color(wfes,symbol);
+				Form_UITypeEditor_Color dlg=new Form_UITypeEditor_Color(wfes, symbol);
 				wfes.DropDownControl(dlg.panelSymbol);
 				return dlg.Symbol;
 			}
@@ -186,8 +183,17 @@ namespace gView.Framework.Symbology.UI
 
 		public override void PaintValue(PaintValueEventArgs e)
 		{
-			if(!(e.Value is ISymbol)) return;
-			new SymbolPreview(null).Draw(e.Graphics,e.Bounds,(ISymbol)e.Value);
+			if(!(e.Value is ISymbol))
+            {
+                return;
+            }
+
+			using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(e.Bounds.Width, e.Bounds.Height))
+			using (var canvas = bitmap.CreateCanvas())
+			{
+				new SymbolPreview(null).Draw(canvas, new GraphicsEngine.CanvasRectangle(0, 0, bitmap.Width, bitmap.Height), (ISymbol)e.Value);
+				e.Graphics.DrawImage(bitmap.ToGdiBitmap(), new Point(e.Bounds.X, e.Bounds.Y));
+			}
 		}
 
 	}
@@ -226,12 +232,21 @@ namespace gView.Framework.Symbology.UI
 
         public override void PaintValue(PaintValueEventArgs e)
         {
-            if (!(e.Value is ISymbol)) return;
-            new SymbolPreview(null) .Draw(e.Graphics, e.Bounds, (ISymbol)e.Value);
+            if (!(e.Value is ISymbol))
+            {
+                return;
+            }
+
+			using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(e.Bounds.Width, e.Bounds.Height))
+			using (var canvas = bitmap.CreateCanvas())
+			{
+				new SymbolPreview(null).Draw(canvas, new GraphicsEngine.CanvasRectangle(0, 0, bitmap.Width, bitmap.Height), (ISymbol)e.Value);
+				e.Graphics.DrawImage(bitmap.ToGdiBitmap(), new Point(e.Bounds.X, e.Bounds.Y));
+			}
         }
     }
 
-	internal class CharacterTypeEditor : UITypeEditor 
+	internal class CharacterTypeEditor : UITypeEditor
 	{
 		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
 		{
@@ -239,27 +254,33 @@ namespace gView.Framework.Symbology.UI
 		}
 		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
 		{
-			Font font=null;
-			if(context.Instance is TrueTypeMarkerSymbol) 
+			GraphicsEngine.Abstraction.IFont iFont = null;
+			if (context.Instance is TrueTypeMarkerSymbol)
 			{
-				font=((TrueTypeMarkerSymbol)context.Instance).Font;
+				iFont = ((TrueTypeMarkerSymbol)context.Instance).Font;
 			}
-            if (context.Instance is CustomClass &&
-                ((CustomClass)context.Instance).ObjectInstance is TrueTypeMarkerSymbol)
-            {
-                font = ((TrueTypeMarkerSymbol)((CustomClass)context.Instance).ObjectInstance).Font;
-            }
-            
-			if(font==null) return value;
+			if (context.Instance is CustomClass &&
+				((CustomClass)context.Instance).ObjectInstance is TrueTypeMarkerSymbol)
+			{
+				iFont = ((TrueTypeMarkerSymbol)((CustomClass)context.Instance).ObjectInstance).Font;
+			}
 
-			IWindowsFormsEditorService wfes=provider.GetService(
+			if (iFont == null)
+			{
+				return value;
+			}
+
+			IWindowsFormsEditorService wfes = provider.GetService(
 				typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
 
-			if(wfes!=null) 
+			if (wfes != null)
 			{
-				Form_UITypeEditor_Character dlg=new Form_UITypeEditor_Character(wfes,font,(byte)value);
-				wfes.DropDownControl(dlg.panelChars);
-				return dlg.Charakter;
+				using (var font = new Font(iFont.Name, iFont.Size))
+				{
+					Form_UITypeEditor_Character dlg = new Form_UITypeEditor_Character(wfes, font, (byte)value);
+					wfes.DropDownControl(dlg.panelChars);
+					return dlg.Charakter;
+				}
 			}
 			return value;
 		}
@@ -327,7 +348,7 @@ namespace gView.Framework.Symbology.UI
         public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
         {
             FormColorGradient dlg = new FormColorGradient();
-            ColorGradient gradient = new ColorGradient(Color.Red, Color.Blue);
+            ColorGradient gradient = new ColorGradient(GraphicsEngine.ArgbColor.Red, GraphicsEngine.ArgbColor.Blue);
 
             if (context.Instance is GradientFillSymbol)
             {

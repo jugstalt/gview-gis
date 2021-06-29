@@ -12,6 +12,7 @@ using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Framework.Carto.UI;
 using gView.Framework.Symbology.UI;
+using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -261,13 +262,13 @@ namespace gView.Framework.Carto.Rendering.UI
                                 ts.Angle = 0;
                                 ts.HorizontalOffset = ts.VerticalOffset = 0;
 
-                                new SymbolPreview(null).Draw(e.Graphics, rect, ts);
+                                e.Graphics.DrawSymbol(ts, rect);
                                 ts.Release();
                             }
                         }
                         else
                         {
-                            new SymbolPreview(null).Draw(e.Graphics, rect, (ISymbol)legendItem);
+                            e.Graphics.DrawSymbol((ISymbol)legendItem, rect);
                         }
                     }
                     if (legendItem.LegendLabel != String.Empty)

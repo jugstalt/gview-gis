@@ -291,9 +291,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
                                         map.ZoomTo(new Envelope(x, y, x + _tileSizeX, y + _tileSizeY));
                                         await map.RefreshMap(DrawPhase.All, _cancelTracker);
                                         if (_gridType == TileGridType.image_png)
-                                            map.Bitmap.Save(filename + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                                            map.Bitmap.Save(filename + ".png", GraphicsEngine.ImageFormat.Png);
                                         else if (_gridType == TileGridType.image_jpg)
-                                            map.Bitmap.Save(filename + ".jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+                                            map.Bitmap.Save(filename + ".jpg", GraphicsEngine.ImageFormat.Jpeg);
                                     }
                                 }
 

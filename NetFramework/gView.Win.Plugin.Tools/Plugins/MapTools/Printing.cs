@@ -48,32 +48,33 @@ namespace gView.Plugins.MapTools
             Document.QueryPageSettings -= new QueryPageSettingsEventHandler(Document_QueryPageSettings);
         }
 
-        private void Document_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
+        async private void Document_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
         {
-            if (_map == null || _envelope == null) return;
+            throw new NotImplementedException();
 
-            _map.iWidth = e.MarginBounds.Width;
-            _map.iHeight = e.MarginBounds.Height;
-            _map.setScale(_map.mapScale,
-                _envelope.minx * 0.5 + _envelope.maxx * 0.5,
-                _envelope.miny * 0.5 + _envelope.maxy * 0.5);
-            _map.Canvas = e.Graphics;
-            _map.SetOrigin(e.MarginBounds.X, e.MarginBounds.Y);
+            //if (_map == null || _envelope == null) return;
 
-            RectangleF rect = e.Graphics.ClipBounds;
-            e.Graphics.SetClip(e.MarginBounds);
+            //_map.iWidth = e.MarginBounds.Width;
+            //_map.iHeight = e.MarginBounds.Height;
+            //_map.setScale(_map.mapScale,
+            //    _envelope.minx * 0.5 + _envelope.maxx * 0.5,
+            //    _envelope.miny * 0.5 + _envelope.maxy * 0.5);
 
-            _map.RefreshMap(DrawPhase.All, null);
+            //_map.Canvas = e.Graphics;
 
-            e.Graphics.SetClip(rect);
-            //if(_map._image==null) return;
+            //_map.SetOrigin(e.MarginBounds.X, e.MarginBounds.Y);
 
-            //e.Graphics.DrawImage(_map._image, e.MarginBounds, 0, 0, _map.iWidth, _map.iHeight, GraphicsUnit.Pixel);
+            //RectangleF rect = e.Graphics.ClipBounds;
+            //e.Graphics.SetClip(e.MarginBounds);
 
-            using (Pen pen = new Pen(Color.Black, 0))
-            {
-                e.Graphics.DrawRectangle(pen, e.MarginBounds);
-            }
+            //await _map.RefreshMap(DrawPhase.All, null);
+
+            //e.Graphics.SetClip(rect);
+
+            //using (Pen pen = new Pen(Color.Black, 0))
+            //{
+            //    e.Graphics.DrawRectangle(pen, e.MarginBounds);
+            //}
         }
 
         private void Document_BeginPrint(object sender, System.Drawing.Printing.PrintEventArgs e)

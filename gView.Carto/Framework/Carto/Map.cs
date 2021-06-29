@@ -338,10 +338,7 @@ namespace gView.Framework.Carto
                         _canvas = null;
                     }
                 }
-                if (NewBitmap != null)
-                {
-                    NewBitmap(null);
-                }
+                NewBitmap?.BeginInvoke(null, new AsyncCallback(AsyncInvoke.RunAndForget), null);
 
                 _bitmap.Dispose();
                 _bitmap = null;
@@ -1013,13 +1010,18 @@ namespace gView.Framework.Carto
             _requestExceptions = null;
             bool printerMap = (this.GetType() == typeof(PrinterMap));
 
-            if (StartRefreshMap != null)
-            {
-                StartRefreshMap(this);
-            }
-
             try
             {
+                //while(this.IsRefreshing)
+                //{
+                //    await Task.Delay(10);
+                //}
+
+                if (StartRefreshMap != null)
+                {
+                    StartRefreshMap(this);
+                }
+            
                 using (var datasetCachingContext = new DatasetCachingContext(this))
                 {
                     this.IsRefreshing = true;
@@ -1060,15 +1062,15 @@ namespace gView.Framework.Carto
                             _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Format32bppArgb);
                             //if (NewBitmap != null && cancelTracker.Continue) NewBitmap(_image);
                         }
+
+                        _canvas = _bitmap.CreateCanvas();
+                        this.dpi = _canvas.DpiX;
+
                         // NewBitmap immer aufrufen, da sonst neuer DataView nix mitbekommt
                         if (NewBitmap != null && cancelTracker.Continue)
                         {
-                            NewBitmap(_bitmap);
+                            NewBitmap?.BeginInvoke(_bitmap, new AsyncCallback(AsyncInvoke.RunAndForget), null);
                         }
-
-                        _canvas = _bitmap.CreateCanvas();
-
-                        this.dpi = _canvas.DpiX;
 
                         using (var brush = GraphicsEngine.Current.Engine.CreateSolidBrush(_backgroundColor))
                         {
@@ -1218,9 +1220,9 @@ namespace gView.Framework.Carto
                                     //thread = new Thread(new ThreadStart(rlt.Render));
                                     //thread.Start();
 
-                                    if (DrawingLayer != null && cancelTracker.Continue)
+                                    if (cancelTracker.Continue)
                                     {
-                                        DrawingLayer(layer.Title);
+                                        DrawingLayer.BeginInvoke(layer.Title, new AsyncCallback(AsyncInvoke.RunAndForget), null);
                                     }
 
                                     await rlt.Render();
@@ -1255,9 +1257,9 @@ namespace gView.Framework.Carto
                                         //thread = new Thread(new ThreadStart(rlt.Render));
                                         //thread.Start();
 
-                                        if (DrawingLayer != null && cancelTracker.Continue)
+                                        if (cancelTracker.Continue)
                                         {
-                                            DrawingLayer(layer.Title);
+                                            DrawingLayer?.BeginInvoke(layer.Title, new AsyncCallback(AsyncInvoke.RunAndForget), null);
                                         }
                                     }
                                 }
@@ -1300,9 +1302,9 @@ namespace gView.Framework.Carto
 
                                 RenderLabel rlt = new RenderLabel(this, fLayer, cancelTracker);
 
-                                if (DrawingLayer != null && cancelTracker.Continue)
+                                if (cancelTracker.Continue)
                                 {
-                                    DrawingLayer(fLayer.Title);
+                                    DrawingLayer?.BeginInvoke(fLayer.Title, new AsyncCallback(AsyncInvoke.RunAndForget), null);
                                 }
 
                                 await rlt.Render();
@@ -1328,10 +1330,7 @@ namespace gView.Framework.Carto
 
                         if (cancelTracker.Continue)
                         {
-                            if (DrawingLayer != null && m_imageMerger.max > 0)
-                            {
-                                DrawingLayer("...Waiting for WebServices...");
-                            }
+                            DrawingLayer?.BeginInvoke("...Waiting for WebServices...", new AsyncCallback(AsyncInvoke.RunAndForget), null);
 
                             while (m_imageMerger.Count < m_imageMerger.max)
                             {
@@ -1555,36 +1554,28 @@ namespace gView.Framework.Carto
                 return;
             }
 
-            var bm = GraphicsEngine.Current.Engine.CreateBitmap(_bitmap.Width, _bitmap.Height, GraphicsEngine.PixelFormat.Format32bppArgb);
-
-            _canvas = bm.CreateCanvas();
-            _canvas.DrawBitmap(_bitmap, new GraphicsEngine.CanvasPoint(0, 0));
-
-            this.Draw(symbol, geometry);
-            if (NewBitmap != null)
+            using (var bm = GraphicsEngine.Current.Engine.CreateBitmap(_bitmap.Width, _bitmap.Height, GraphicsEngine.PixelFormat.Format32bppArgb))
+            using (var _canvas = bm.CreateCanvas())
             {
-                NewBitmap(bm);
-            }
+                _canvas.DrawBitmap(_bitmap, new GraphicsEngine.CanvasPoint(0, 0));
 
-            if (DoRefreshMapView != null)
-            {
-                DoRefreshMapView();
-            }
+                this.Draw(symbol, geometry);
+                NewBitmap?.BeginInvoke(bm, new AsyncCallback(AsyncInvoke.RunAndForget), null);
 
-            Thread.Sleep(milliseconds);
-            if (NewBitmap != null)
-            {
-                NewBitmap(_bitmap);
-            }
+                if (DoRefreshMapView != null)
+                {
+                    DoRefreshMapView();
+                }
 
-            if (DoRefreshMapView != null)
-            {
-                DoRefreshMapView();
-            }
+                Thread.Sleep(milliseconds);
+                NewBitmap?.BeginInvoke(_bitmap, new AsyncCallback(AsyncInvoke.RunAndForget), null);
 
-            bm.Dispose();
-            bm = null;
-            _canvas.Dispose();
+
+                if (DoRefreshMapView != null)
+                {
+                    DoRefreshMapView();
+                }
+            }
             _canvas = null;
         }
 
@@ -1672,10 +1663,7 @@ namespace gView.Framework.Carto
             //Thread thread = new Thread(new ThreadStart(rlt.Render));
             //thread.Start();
 
-            if (DrawingLayer != null && cancelTracker.Continue)
-            {
-                DrawingLayer(fLayer.Title);
-            }
+            DrawingLayer.BeginInvoke(fLayer.Title, new AsyncCallback(AsyncInvoke.RunAndForget), null);
 
             await rlt.Render();
             //while (thread.IsAlive)
@@ -1801,7 +1789,7 @@ namespace gView.Framework.Carto
                         {
                             if (rLayer is ILayer)
                             {
-                                DrawingLayer(((ILayer)rLayer).Title);
+                                DrawingLayer?.BeginInvoke(((ILayer)rLayer).Title, new AsyncCallback(AsyncInvoke.RunAndForget), null);
                             }
                         }
 
@@ -2548,7 +2536,13 @@ namespace gView.Framework.Carto
 
         internal void FireOnUserInterface(bool lockUI)
         {
-            this.OnUserInterface?.Invoke(this, lockUI);
+            var thread = new Thread(new ParameterizedThreadStart(FireOnUserInterfaceTask));
+            thread.Start(lockUI);
+        }
+
+        private void FireOnUserInterfaceTask(object arg)
+        {
+            this.OnUserInterface?.BeginInvoke(this, (bool)arg, new AsyncCallback(AsyncInvoke.RunAndForget), null);
         }
 
         protected void SetResourceContainer(IResourceContainer resourceContainer)

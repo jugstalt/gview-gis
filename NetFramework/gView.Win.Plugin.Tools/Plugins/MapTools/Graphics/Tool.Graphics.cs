@@ -14,6 +14,8 @@ using gView.Framework.Globalisation;
 using gView.Framework.Symbology.UI;
 using gView.Framework.Symbology.UI.Controls;
 using System.Threading.Tasks;
+using gView.GraphicsEngine;
+using gView.Framework.Sys.UI.Extensions;
 
 namespace gView.Plugins.MapTools.Graphics
 {
@@ -249,11 +251,11 @@ namespace gView.Plugins.MapTools.Graphics
         public Rubberband()
         {
             _lineSymbol = new SimpleLineSymbol();
-            _lineSymbol.Color = System.Drawing.Color.Blue;
+            _lineSymbol.Color = ArgbColor.Blue;
             _lineSymbol.Width = 1;
-            _lineSymbol.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+            _lineSymbol.DashStyle = LineDashStyle.Dash;
             _fillSymbol = new SimpleFillSymbol();
-            _fillSymbol.Color = System.Drawing.Color.Transparent;
+            _fillSymbol.Color = ArgbColor.Transparent;
             _fillSymbol.OutlineSymbol = _lineSymbol;
             _envelope = new Envelope();
         }
@@ -1093,7 +1095,7 @@ namespace gView.Plugins.MapTools.Graphics
             {
                 if (grElement is IBrushColor)
                 {
-                    ((IBrushColor)grElement).FillColor = _picker.Color;
+                    ((IBrushColor)grElement).FillColor = _picker.Color.ToArgbColor();
                 }
             }
             if (_doc.Application is IMapApplication)
@@ -1192,7 +1194,7 @@ namespace gView.Plugins.MapTools.Graphics
             {
                 if (grElement is IPenColor)
                 {
-                    ((IPenColor)grElement).PenColor = _picker.Color;
+                    ((IPenColor)grElement).PenColor = _picker.Color.ToArgbColor();
                 }
             }
             if (_doc.Application is IMapApplication)
@@ -1291,7 +1293,7 @@ namespace gView.Plugins.MapTools.Graphics
             {
                 if (grElement is IFontColor)
                 {
-                    ((IFontColor)grElement).FontColor = _picker.Color;
+                    ((IFontColor)grElement).FontColor = _picker.Color.ToArgbColor();
                 }
             }
             if (_doc.Application is IMapApplication)
@@ -1618,8 +1620,8 @@ namespace gView.Plugins.MapTools.Graphics
             {
                 if (grElement is IFontSymbol)
                 {
-                    System.Drawing.Font font = ((IFontSymbol)grElement).Font;
-                    ((IFontSymbol)grElement).Font = new System.Drawing.Font(_combo.SelectedItem.ToString(), font.Size);
+                    var font = ((IFontSymbol)grElement).Font;
+                    ((IFontSymbol)grElement).Font = GraphicsEngine.Current.Engine.CreateFont(_combo.SelectedItem.ToString(), font.Size);
                 }
             }
             if (_doc.Application is IMapApplication)
@@ -1709,8 +1711,8 @@ namespace gView.Plugins.MapTools.Graphics
             {
                 if (grElement is IFontSymbol)
                 {
-                    System.Drawing.Font font = ((IFontSymbol)grElement).Font;
-                    ((IFontSymbol)grElement).Font = new System.Drawing.Font(font.FontFamily, (float)Convert.ToDecimal(_combo.SelectedItem.ToString()));
+                    var font = ((IFontSymbol)grElement).Font;
+                    ((IFontSymbol)grElement).Font = GraphicsEngine.Current.Engine.CreateFont(font.Name, (float)Convert.ToDecimal(_combo.SelectedItem.ToString()));
                 }
             }
             if (_doc.Application is IMapApplication)

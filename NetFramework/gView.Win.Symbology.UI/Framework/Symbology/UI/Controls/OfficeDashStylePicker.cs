@@ -1,8 +1,8 @@
+using gView.Framework.Sys.UI.Extensions;
+using gView.GraphicsEngine;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Data;
 using System.Text;
 using System.Windows.Forms;
@@ -15,7 +15,7 @@ namespace gView.Framework.Symbology.UI.Controls
         /// <summary>
         /// The preferred height to span the control to
         /// </summary>
-        public int PreferredHeight = Enum.GetValues(typeof(DashStyle)).Length * 22;
+        public int PreferredHeight = Enum.GetValues(typeof(LineDashStyle)).Length * 22;
         /// <summary>
         /// The preferred width to span the control to
         /// </summary>
@@ -24,7 +24,9 @@ namespace gView.Framework.Symbology.UI.Controls
         #endregion
 
         #region Events
+
         public event EventHandler DashStyleSelected = null;
+
         #endregion
 
         #region Ctor
@@ -48,7 +50,7 @@ namespace gView.Framework.Symbology.UI.Controls
         private ContextMenuForm _contextForm;
         private Control _parentControl;
 
-        public void Show(Control parent, Point startLocation)
+        public void Show(Control parent, System.Drawing.Point startLocation)
         {
             _parentControl = parent;
             // Creates new contextmenu form, adds the control to it, display it.      
@@ -59,49 +61,59 @@ namespace gView.Framework.Symbology.UI.Controls
             frm.Show(parent, startLocation, PreferredWidth);
         }
 
-        public DashStyle PenDashStyle
+        public LineDashStyle PenDashStyle
         {
             get
             {
                 if (_selectedIndex >= 0)
                 {
-                    return (DashStyle)Enum.GetValues(typeof(DashStyle)).GetValue(_selectedIndex);
+                    return (LineDashStyle)Enum.GetValues(typeof(LineDashStyle)).GetValue(_selectedIndex);
                 }
-                return DashStyle.Solid;
+                return LineDashStyle.Solid;
             }
         }
         #endregion
 
         #region Overrides
+
         protected override void OnPaint(PaintEventArgs e)
         {
-            using (Brush selectedBrush = new SolidBrush(CustomColors.ButtonHoverDark))
-            using (Pen selectedPen = new Pen(CustomColors.SelectedBorder))
-            using (Pen pen = new Pen(Color.Black, 3))
+            var count = Enum.GetValues(typeof(LineDashStyle)).Length;
+
+
+            using (var bitmap = Current.Engine.CreateBitmap(PreferredWidth, (count + 1) * 22))
+            using (var canvas = bitmap.CreateCanvas())
+            using (var selectedBrush = Current.Engine.CreateSolidBrush(CustomColors.ButtonHoverDark.ToArgbColor()))
+            using (var selectedPen = Current.Engine.CreatePen(CustomColors.SelectedBorder.ToArgbColor(), 1))
+            using (var pen = Current.Engine.CreatePen(ArgbColor.Black, 3))
             {
                 int x = 0, y = 0, i = 0;
-                foreach (DashStyle style in Enum.GetValues(typeof(DashStyle)))
+                foreach (LineDashStyle style in Enum.GetValues(typeof(LineDashStyle)))
                 {
                     pen.DashStyle = style;
 
                     if (_selectedIndex == i)
                     {
-                        Rectangle buttonRec = new Rectangle(x, y, PreferredWidth, 22);
+                        var buttonRec = new CanvasRectangle(x, y, PreferredWidth, 22);
 
-                        e.Graphics.FillRectangle(selectedBrush, buttonRec);
-                        e.Graphics.DrawRectangle(selectedPen, buttonRec);
+                        canvas.FillRectangle(selectedBrush, buttonRec);
+                        canvas.DrawRectangle(selectedPen, buttonRec);
                     }
-                    e.Graphics.DrawLine(pen, 3, y + 11, PreferredWidth - 6, y + 11);
+                    canvas.DrawLine(pen, 3, y + 11, PreferredWidth - 6, y + 11);
                     y += 22;
                     i++;
                 }
+
+                e.Graphics.DrawImage(bitmap.ToGdiBitmap(), 0, 0);
             }
         }
+
         protected override void OnMouseMove(MouseEventArgs e)
         {
             _selectedIndex = e.Y / 22;
             this.Refresh();
         }
+
         protected override void OnMouseClick(MouseEventArgs e)
         {
             if (_selectedIndex != -1)

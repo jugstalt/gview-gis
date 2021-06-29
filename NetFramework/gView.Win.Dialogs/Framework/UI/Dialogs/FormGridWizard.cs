@@ -39,7 +39,7 @@ namespace gView.Framework.UI.Dialogs
         }
 
         #region Helper
-        private Color GradientColor(double h)
+        private GraphicsEngine.ArgbColor GradientColor(double h)
         {
             Color c1, c2;
             if (chkUseAverage.Checked)
@@ -72,7 +72,7 @@ namespace gView.Framework.UI.Dialogs
             double g = (c2.G - c1.G) * h;
             double b = (c2.B - c1.B) * h;
 
-            return Color.FromArgb(
+            return GraphicsEngine.ArgbColor.FromArgb(
                 c1.R + (int)r,
                 c1.G + (int)g,
                 c1.B + (int)b);

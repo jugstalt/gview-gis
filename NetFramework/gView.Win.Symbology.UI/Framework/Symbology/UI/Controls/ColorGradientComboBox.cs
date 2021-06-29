@@ -1,11 +1,9 @@
+using gView.Framework.Globalisation;
+using gView.Framework.Sys.UI.Extensions;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using gView.Framework.Symbology;
-using gView.Framework.Globalisation;
+using System.Windows.Forms;
 
 namespace gView.Framework.Symbology.UI.Controls
 {
@@ -46,12 +44,12 @@ namespace gView.Framework.Symbology.UI.Controls
 
         public void AddColorGradient(Color col1, Color col2)
         {
-            AddColorGradient(new ColorGradient(col1, col2));
+            AddColorGradient(new ColorGradient(col1.ToArgbColor(), col2.ToArgbColor()));
         }
 
         public void AddColorGradientInv(Color col1, Color col2)
         {
-            AddColorGradient(new ColorGradient(col2, col1));
+            AddColorGradient(new ColorGradient(col2.ToArgbColor(), col1.ToArgbColor()));
         }
 
         public void AddColorGradient(ColorGradient gradient)
@@ -61,14 +59,20 @@ namespace gView.Framework.Symbology.UI.Controls
 
         void ColorGradientComboBox_DrawItem(object sender, DrawItemEventArgs e)
         {
-            if (e.Index < 0 || e.Index >= this.Items.Count) return;
+            if (e.Index < 0 || e.Index >= this.Items.Count)
+            {
+                return;
+            }
 
             object item = this.Items[e.Index];
             if (item is ColorGradient && e.Bounds.Width > 1 && e.Bounds.Height > 1)
             {
-                using (LinearGradientBrush brush = ((ColorGradient)item).CreateNewLinearGradientBrush(e.Bounds))
+                using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(e.Bounds.Width, e.Bounds.Height))
+                using (var canvas = bitmap.CreateCanvas())
+                using (var brush = ((ColorGradient)item).CreateNewLinearGradientBrush(e.Bounds.ToCanvasRectangleF()))
                 {
-                    e.Graphics.FillRectangle(brush, e.Bounds);
+                    canvas.FillRectangle(brush, new GraphicsEngine.CanvasRectangle(0, 0, bitmap.Width, bitmap.Height));
+                    e.Graphics.DrawImage(bitmap.ToGdiBitmap(), new Point(e.Bounds.X, e.Bounds.Y));
                 }
             }
             else
@@ -103,7 +107,9 @@ namespace gView.Framework.Symbology.UI.Controls
             if (this.SelectedItem is ColorGradient)
             {
                 if (GradientSelected != null)
+                {
                     GradientSelected(this, new GradientSelectedEventArgs((ColorGradient)this.SelectedItem));
+                }
             }
             else if (this.SelectedItem is UserDefItem)
             {
@@ -113,14 +119,18 @@ namespace gView.Framework.Symbology.UI.Controls
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
                     if (GradientSelected != null)
+                    {
                         GradientSelected(this, new GradientSelectedEventArgs(dlg.ColorGradient));
+                    }
                 }
             }
 
             if (this.Items.Count > 0 &&
                 this.Items[0] is ChooseItem &&
                 !(this.SelectedItem is ChooseItem))
+            {
                 this.SelectedIndex = 0;
+            }
         }
 
         #region ItemClasses 

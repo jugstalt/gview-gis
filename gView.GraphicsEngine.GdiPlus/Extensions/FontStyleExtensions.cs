@@ -6,7 +6,7 @@ namespace gView.GraphicsEngine.GdiPlus.Extensions
 {
     static class FontStyleExtensions
     {
-        static public System.Drawing.FontStyle ToGdiFontStyle(FontStyle fontStyle)
+        static public System.Drawing.FontStyle ToGdiFontStyle(this FontStyle fontStyle)
         {
             switch(fontStyle)
             {

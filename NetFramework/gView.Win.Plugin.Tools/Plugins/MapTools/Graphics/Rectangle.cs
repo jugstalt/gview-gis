@@ -1,15 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
 using gView.Framework.Carto;
 using gView.Framework.Geometry;
-using gView.Framework.Symbology;
-using gView.Framework.system;
 using gView.Framework.Globalisation;
+using gView.Framework.Symbology;
 using gView.Framework.Symbology.UI;
+using gView.Framework.system;
+using gView.Framework.UI;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using gView.Plugins.MapTools.Graphics.Dialogs;
-using System.Threading.Tasks;
+using System;
 
 namespace gView.Plugins.MapTools.Graphics
 {
@@ -19,7 +18,7 @@ namespace gView.Plugins.MapTools.Graphics
         public Rectangle()
         {
             SimpleFillSymbol fillSymbol = new SimpleFillSymbol();
-            fillSymbol.Color = System.Drawing.Color.FromArgb(40, 255, 255, 100);
+            fillSymbol.Color = ArgbColor.FromArgb(40, 255, 255, 100);
             SimpleLineSymbol lineSymbol = new SimpleLineSymbol();
             fillSymbol.OutlineSymbol = lineSymbol;
             this.Symbol = fillSymbol;
@@ -68,7 +67,7 @@ namespace gView.Plugins.MapTools.Graphics
         public Ellipse()
         {
             SimpleFillSymbol fillSymbol = new SimpleFillSymbol();
-            fillSymbol.Color = System.Drawing.Color.FromArgb(60, 255, 255, 100);
+            fillSymbol.Color = ArgbColor.FromArgb(60, 255, 255, 100);
             SimpleLineSymbol lineSymbol = new SimpleLineSymbol();
             fillSymbol.OutlineSymbol = lineSymbol;
             this.Symbol = fillSymbol;
@@ -117,7 +116,7 @@ namespace gView.Plugins.MapTools.Graphics
         public Arrow()
         {
             SimpleFillSymbol fillSymbol = new SimpleFillSymbol();
-            fillSymbol.Color = System.Drawing.Color.FromArgb(60, 255, 255, 100);
+            fillSymbol.Color = ArgbColor.FromArgb(60, 255, 255, 100);
             SimpleLineSymbol lineSymbol = new SimpleLineSymbol();
             fillSymbol.OutlineSymbol = lineSymbol;
             this.Symbol = fillSymbol;
@@ -218,7 +217,7 @@ namespace gView.Plugins.MapTools.Graphics
         public SimplePoint()
         {
             SimplePointSymbol pSymbol = new SimplePointSymbol();
-            pSymbol.Color = System.Drawing.Color.Red;
+            pSymbol.Color = ArgbColor.Red;
             pSymbol.Size = 10;
 
             this.Symbol = pSymbol;
@@ -265,7 +264,7 @@ namespace gView.Plugins.MapTools.Graphics
         public Text()
         {
             _symbol = new SimpleTextSymbol();
-            _symbol.Font = new System.Drawing.Font("Arial", 20);
+            _symbol.Font = Current.Engine.CreateFont("Arial", 20);
             _symbol.Text = _text;
             _symbol.TextSymbolAlignment = TextSymbolAlignment.leftAlignOver;
             //this.Symbol = _symbol;
@@ -314,8 +313,8 @@ namespace gView.Plugins.MapTools.Graphics
                     polygon.AddRing(ring);
 
                     SimpleLineSymbol lineSymbol = new SimpleLineSymbol();
-                    lineSymbol.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
-                    lineSymbol.Color = System.Drawing.Color.Gray;
+                    lineSymbol.DashStyle = LineDashStyle.Dash;
+                    lineSymbol.Color = ArgbColor.Gray;
 
                     _ghost = new Ghost(polygon, lineSymbol);
                 }
@@ -325,19 +324,25 @@ namespace gView.Plugins.MapTools.Graphics
 
         public override void Draw(IDisplay display)
         {
-            if (display == null || display.Canvas == null) return;
+            if (display == null || display.Canvas == null)
+            {
+                return;
+            }
 
             SimpleTextSymbol sym = _symbol.Clone(new CloneOptions(display, false)) as SimpleTextSymbol;
             sym.Text = _text;
             sym.Angle = (float)this.Rotation;
 
-            System.Drawing.SizeF size = display.Canvas.MeasureString(_text, sym.Font);
+            var size = display.Canvas.MeasureText(_text, sym.Font);
             double dx = size.Width * display.mapScale / (display.dpi / 0.0254);  // [m]
             double dy = size.Height * display.mapScale / (display.dpi / 0.0254);  // [m]
             base.Scale(dx, dy);
 
             IGeometry geometry = TransformGeometry();
-            if (geometry == null) return;
+            if (geometry == null)
+            {
+                return;
+            }
 
             display.Draw(sym, geometry);
             sym.Release();
@@ -367,7 +372,7 @@ namespace gView.Plugins.MapTools.Graphics
 
         #region IFontColor Member
 
-        override public System.Drawing.Color FontColor
+        override public ArgbColor FontColor
         {
             get
             {
@@ -375,7 +380,7 @@ namespace gView.Plugins.MapTools.Graphics
                 {
                     return ((IFontColor)_symbol).FontColor;
                 }
-                return System.Drawing.Color.Transparent;
+                return ArgbColor.Transparent;
             }
             set
             {
@@ -390,7 +395,7 @@ namespace gView.Plugins.MapTools.Graphics
 
         #region IFont Member
 
-        override public System.Drawing.Font Font
+        override public IFont Font
         {
             get
             {
@@ -398,7 +403,7 @@ namespace gView.Plugins.MapTools.Graphics
                 {
                     return ((IFontSymbol)_symbol).Font;
                 }
-                return new System.Drawing.Font("Arial", 10);
+                return Current.Engine.CreateFont("Arial", 10);
             }
             set
             {
@@ -523,7 +528,10 @@ namespace gView.Plugins.MapTools.Graphics
 
         public void ConstructMouseDown(IMapDocument doc, System.Windows.Forms.MouseEventArgs e)
         {
-            if (ActiveDisplay(doc) == null) return;
+            if (ActiveDisplay(doc) == null)
+            {
+                return;
+            }
 
             Freehand element = new Freehand();
 
@@ -542,10 +550,16 @@ namespace gView.Plugins.MapTools.Graphics
         {
             _mousePressed = false;
 
-            if (ActiveDisplay(doc) == null || _addContainer == null || _addContainer.Elements.Count == 0) return;
+            if (ActiveDisplay(doc) == null || _addContainer == null || _addContainer.Elements.Count == 0)
+            {
+                return;
+            }
 
             Freehand element = _addContainer.Elements[0] as Freehand;
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
 
             element.Symbol = _symbol.Clone() as ISymbol;
             element.Template = element._pLine;
@@ -619,7 +633,10 @@ namespace gView.Plugins.MapTools.Graphics
 
         private IDisplay ActiveDisplay(IMapDocument doc)
         {
-            if (doc == null || doc.FocusMap == null) return null;
+            if (doc == null || doc.FocusMap == null)
+            {
+                return null;
+            }
 
             return doc.FocusMap.Display;
         }
@@ -677,7 +694,10 @@ namespace gView.Plugins.MapTools.Graphics
 
         public void ConstructMouseClick(IMapDocument doc, System.Windows.Forms.MouseEventArgs e)
         {
-            if (ActiveDisplay(doc) == null) return;
+            if (ActiveDisplay(doc) == null)
+            {
+                return;
+            }
 
             if (_addContainer == null)
             {
@@ -704,10 +724,16 @@ namespace gView.Plugins.MapTools.Graphics
 
         public void ConstructMouseDoubleClick(IMapDocument doc, System.Windows.Forms.MouseEventArgs e)
         {
-            if (ActiveDisplay(doc) == null || _addContainer == null || _addContainer.Elements.Count == 0) return;
+            if (ActiveDisplay(doc) == null || _addContainer == null || _addContainer.Elements.Count == 0)
+            {
+                return;
+            }
 
             GraphicPolyline element = _addContainer.Elements[0] as GraphicPolyline;
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
 
             // Remove the last 1 Points...
             element._pLine[0].RemovePoint(element._pLine[0].PointCount - 1);
@@ -729,7 +755,10 @@ namespace gView.Plugins.MapTools.Graphics
 
         public void ConstructMouseMove(IMapDocument doc, System.Windows.Forms.MouseEventArgs e)
         {
-            if (ActiveDisplay(doc) == null || _addContainer == null) return;
+            if (ActiveDisplay(doc) == null || _addContainer == null)
+            {
+                return;
+            }
 
             double x = e.X;
             double y = e.Y;
@@ -789,7 +818,10 @@ namespace gView.Plugins.MapTools.Graphics
 
         private IDisplay ActiveDisplay(IMapDocument doc)
         {
-            if (doc == null || doc.FocusMap == null) return null;
+            if (doc == null || doc.FocusMap == null)
+            {
+                return null;
+            }
 
             return doc.FocusMap.Display;
         }
@@ -805,14 +837,18 @@ namespace gView.Plugins.MapTools.Graphics
         {
             _symbol = new SimpleFillSymbol();
             ((SimpleFillSymbol)_symbol).OutlineSymbol = new SimpleLineSymbol();
-            ((SimpleFillSymbol)_symbol).Color = System.Drawing.Color.FromArgb(150, 255, 255, 0);
+            ((SimpleFillSymbol)_symbol).Color = ArgbColor.FromArgb(150, 255, 255, 0);
         }
 
         internal GraphicPolygon(IPolygon polygon)
             : this()
         {
             Symbol = _symbol.Clone() as ISymbol;
-            if (polygon == null) return;
+            if (polygon == null)
+            {
+                return;
+            }
+
             Template = polygon;
 
             IEnvelope env = polygon.Envelope;
@@ -861,7 +897,10 @@ namespace gView.Plugins.MapTools.Graphics
 
         public void ConstructMouseClick(IMapDocument doc, System.Windows.Forms.MouseEventArgs e)
         {
-            if (ActiveDisplay(doc) == null) return;
+            if (ActiveDisplay(doc) == null)
+            {
+                return;
+            }
 
             if (_addContainer == null)
             {
@@ -888,10 +927,16 @@ namespace gView.Plugins.MapTools.Graphics
 
         public void ConstructMouseDoubleClick(IMapDocument doc, System.Windows.Forms.MouseEventArgs e)
         {
-            if (ActiveDisplay(doc) == null || _addContainer == null || _addContainer.Elements.Count == 0) return;
+            if (ActiveDisplay(doc) == null || _addContainer == null || _addContainer.Elements.Count == 0)
+            {
+                return;
+            }
 
             GraphicPolygon element = _addContainer.Elements[0] as GraphicPolygon;
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
 
             // Remove the last 1 Points...
             element._polygon[0].RemovePoint(element._polygon[0].PointCount - 1);
@@ -913,7 +958,10 @@ namespace gView.Plugins.MapTools.Graphics
 
         public void ConstructMouseMove(IMapDocument doc, System.Windows.Forms.MouseEventArgs e)
         {
-            if (ActiveDisplay(doc) == null || _addContainer == null) return;
+            if (ActiveDisplay(doc) == null || _addContainer == null)
+            {
+                return;
+            }
 
             double x = e.X;
             double y = e.Y;
@@ -973,7 +1021,10 @@ namespace gView.Plugins.MapTools.Graphics
 
         private IDisplay ActiveDisplay(IMapDocument doc)
         {
-            if (doc == null || doc.FocusMap == null) return null;
+            if (doc == null || doc.FocusMap == null)
+            {
+                return null;
+            }
 
             return doc.FocusMap.Display;
         }

@@ -6,6 +6,7 @@ using gView.Framework.Globalisation;
 using gView.Framework.Symbology;
 using gView.Framework.Symbology.UI;
 using gView.Framework.Sys.UI;
+using gView.Framework.Sys.UI.Extensions;
 using gView.Framework.system;
 using gView.Framework.UI.Dialogs;
 using System;
@@ -1189,12 +1190,17 @@ namespace gView.Framework.UI.Controls
                 {
                     ((LegendItem)item).level = _lastLayerLevel;
                     int l = _lastLayerLevel * 19 + 19;
-                    Rectangle rect = new Rectangle(l, e.Bounds.Top, 30, 20);
 
                     ILegendItem legendItem = ((LegendItem)item).legendItem;
                     if (legendItem is ISymbol)
                     {
-                        new SymbolPreview(null).Draw(e.Graphics, rect, (ISymbol)legendItem);
+                        using(var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(30,20))
+                        using(var canvas = bitmap.CreateCanvas())
+                        {
+                            new SymbolPreview(null).Draw(canvas, new GraphicsEngine.CanvasRectangle(0, 0, 30, 20), (ISymbol)legendItem);
+
+                            e.Graphics.DrawImage(bitmap.CloneToGdiBitmap(), new System.Drawing.Point(l, e.Bounds.Top));
+                        }
                     }
                     if (legendItem.LegendLabel != "")
                     {

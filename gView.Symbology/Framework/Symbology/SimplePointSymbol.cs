@@ -57,7 +57,6 @@ namespace gView.Framework.Symbology
         }
 
         [Browsable(true)]
-        //[Editor(typeof(gView.Framework.UI.ColorTypeEditor) ,typeof(System.Drawing.Design.UITypeEditor))]
         [UseColorPicker()]
         public ArgbColor Color
         {
@@ -72,7 +71,6 @@ namespace gView.Framework.Symbology
         }
 
         [Browsable(true)]
-        //[Editor(typeof(gView.Framework.UI.PenWidthTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
         [UseWidthPicker()]
         public float OutlineWidth
         {
@@ -81,7 +79,6 @@ namespace gView.Framework.Symbology
         }
 
         [Browsable(true)]
-        //[Editor(typeof(gView.Framework.UI.ColorTypeEditor),typeof(System.Drawing.Design.UITypeEditor))]
         [UseColorPicker()]
         public ArgbColor OutlineColor
         {

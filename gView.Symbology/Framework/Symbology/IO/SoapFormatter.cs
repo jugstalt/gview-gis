@@ -18,7 +18,7 @@ namespace gView.Symbology.Framework.Symbology.IO
             }
 
             // DoTo:
-            if (obj.GetType().IsAssignableFrom(typeof(GraphicsEngine.Abstraction.IFont)))
+            if (typeof(GraphicsEngine.Abstraction.IFont).IsAssignableFrom(obj.GetType()))
             {
                 var xml =
     @"<?xml version=""1.0""?>
@@ -47,7 +47,7 @@ namespace gView.Symbology.Framework.Symbology.IO
         public object Deserialize<T>(MemoryStream ms, IErrorReport errorReport, object source, bool writeError=false)
         {
             // ToDo:
-            if (typeof(T) == typeof(GraphicsEngine.Abstraction.IFont))
+            if (typeof(T).Equals(typeof(GraphicsEngine.Abstraction.IFont)))
             {
                 var soap = Encoding.ASCII.GetString(ms.ToArray());
                 XmlDocument doc = new XmlDocument();

@@ -13,6 +13,7 @@ using System.IO;
 using gView.Framework.IO;
 using gView.Framework.system;
 using System.Linq;
+using gView.Framework.Sys.UI.Extensions;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -90,7 +91,7 @@ namespace gView.Framework.UI.Dialogs
             _sr2.canModify = true;
             panelDefaultLayerSR.Controls.Add(_sr2.panelReferenceSystem);
 
-            btnBackgroundColor.BackColor = _display.BackgroundColor;
+            btnBackgroundColor.BackColor = _display.BackgroundColor.ToGdiColor();
 
             txtTitle.Text = _map.Title;
             txtDescription.Text = _map.GetLayerDescription(Map.MapDescriptionId);
@@ -113,7 +114,7 @@ namespace gView.Framework.UI.Dialogs
                     _display.MapUnits = ((GeoUnitsItem)cmbMapUnits.SelectedItem).Unit;
                 _display.DisplayUnits = ((GeoUnitsItem)cmbDisplayUnits.SelectedItem).Unit;
 
-                _display.BackgroundColor = btnBackgroundColor.BackColor;
+                _display.BackgroundColor = btnBackgroundColor.BackColor.ToArgbColor();
 
                 ISpatialReference oldSRef = _display.SpatialReference;
                 _display.SpatialReference = _sr.SpatialReference;

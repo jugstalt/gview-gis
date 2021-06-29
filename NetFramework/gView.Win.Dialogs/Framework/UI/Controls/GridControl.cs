@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using gView.Framework.Symbology;
 using gView.Framework.Data;
 using gView.Framework.UI.Dialogs;
+using gView.Framework.Sys.UI.Extensions;
 
 namespace gView.Framework.UI.Controls
 {
@@ -31,13 +32,13 @@ namespace gView.Framework.UI.Controls
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 GridColorClass cc = new GridColorClass(
-                    dlg.MinValue, dlg.MaxValue, Color.White);
+                    dlg.MinValue, dlg.MaxValue, GraphicsEngine.ArgbColor.White);
                 cc.Legend = dlg.Label;
 
                 _classes.Add(cc);
 
                 SimpleFillSymbol symbol = new SimpleFillSymbol();
-                symbol.OutlineColor = Color.Transparent;
+                symbol.OutlineColor = GraphicsEngine.ArgbColor.Transparent;
                 symbol.Color = cc.Color;
 
                 symbolsListView1.addSymbol(
@@ -101,7 +102,7 @@ namespace gView.Framework.UI.Controls
                     _classes.Add(cc);
 
                     SimpleFillSymbol symbol = new SimpleFillSymbol();
-                    symbol.OutlineColor = Color.Transparent;
+                    symbol.OutlineColor = GraphicsEngine.ArgbColor.Transparent;
                     symbol.Color = cc.Color;
 
                     symbolsListView1.addSymbol(
@@ -155,10 +156,10 @@ namespace gView.Framework.UI.Controls
             if (cc == null) return;
 
             ColorDialog dlg = new ColorDialog();
-            dlg.Color = cc.Color;
+            dlg.Color = cc.Color.ToGdiColor();
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                cc.Color = dlg.Color;
+                cc.Color = dlg.Color.ToArgbColor();
                 ((SimpleFillSymbol)symbol).Color = cc.Color;
             }
 
@@ -208,7 +209,7 @@ namespace gView.Framework.UI.Controls
             for (int y = 0; y < height; y++)
             {
                 double h = _max - (double)y * (_max - _min) / (double)height;
-                using (Pen pen = new Pen(GridColorClass.FindColor(h, classes), 1))
+                using (Pen pen = new Pen(GridColorClass.FindColor(h, classes).ToGdiColor(), 1))
                 {
                     e.Graphics.DrawLine(pen, 1, y + 10, 20, y + 10);
                 }

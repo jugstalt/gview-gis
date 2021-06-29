@@ -115,15 +115,15 @@ namespace gView.Framework.Symbology.UI
                     {
                         SimplePointSymbol pSymbol = new SimplePointSymbol();
                         pSymbol.Size = 10;
-                        pSymbol.Color = System.Drawing.Color.FromArgb(150, 255, 255, 0);
+                        pSymbol.Color = GraphicsEngine.ArgbColor.FromArgb(150, 255, 255, 0);
 
                         _ghost = new Ghost(_template, pSymbol);
                     }
                     if (_template is IPolygon || _template is IPolyline)
                     {
                         SimpleLineSymbol lineSymbol = new SimpleLineSymbol();
-                        lineSymbol.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
-                        lineSymbol.Color = System.Drawing.Color.Gray;
+                        lineSymbol.DashStyle = GraphicsEngine.LineDashStyle.Dash;
+                        lineSymbol.Color = GraphicsEngine.ArgbColor.Gray;
 
                         _ghost = new Ghost(_template, lineSymbol);
                     }
@@ -381,12 +381,12 @@ namespace gView.Framework.Symbology.UI
             IMultiPoint grabbers = Grabbers(display,true);
             if (grabbers == null) return;
 
-            System.Drawing.Drawing2D.SmoothingMode smode = display.Canvas.SmoothingMode;
-            display.Canvas.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            var smode = display.Canvas.SmoothingMode;
+            display.Canvas.SmoothingMode = GraphicsEngine.SmoothingMode.AntiAlias;
 
             SimplePointSymbol pointSymbol = new SimplePointSymbol();
-            pointSymbol.Color = System.Drawing.Color.White;
-            pointSymbol.OutlineColor = System.Drawing.Color.Black;
+            pointSymbol.Color = GraphicsEngine.ArgbColor.White;
+            pointSymbol.OutlineColor = GraphicsEngine.ArgbColor.Black;
             pointSymbol.OutlineWidth = 1;
             pointSymbol.Size = 8;
 
@@ -401,8 +401,8 @@ namespace gView.Framework.Symbology.UI
                 polygon.AddRing(ring);
 
                 SimpleLineSymbol lSymbol = new SimpleLineSymbol();
-                lSymbol.Color = System.Drawing.Color.Gray;
-                lSymbol.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+                lSymbol.Color = GraphicsEngine.ArgbColor.Gray;
+                lSymbol.DashStyle = GraphicsEngine.LineDashStyle.Dash;
                 display.Draw(lSymbol, polygon);
                 lSymbol.Release();
 
@@ -410,9 +410,9 @@ namespace gView.Framework.Symbology.UI
                 {
                     if (!UseGrabber((GrabberIDs)i)) continue;
 
-                    if (i > 7 && pointSymbol.Color == System.Drawing.Color.White)
+                    if (i > 7 && pointSymbol.Color.Equals(GraphicsEngine.ArgbColor.White))
                     {
-                        pointSymbol.Color = System.Drawing.Color.Yellow;
+                        pointSymbol.Color = GraphicsEngine.ArgbColor.Yellow;
                         DrawRotationGrabberline(display);
                     }
                     display.Draw(pointSymbol, grabbers[i]);
@@ -614,15 +614,15 @@ namespace gView.Framework.Symbology.UI
                 {
                     SimplePointSymbol pSymbol = new SimplePointSymbol();
                     pSymbol.Size = 10;
-                    pSymbol.Color = System.Drawing.Color.FromArgb(150, 255, 255, 0);
+                    pSymbol.Color = GraphicsEngine.ArgbColor.FromArgb(150, 255, 255, 0);
 
                     _ghost = new Ghost(_template, pSymbol);
                 }
                 if (_template is IPolygon || _template is IPolyline)
                 {
                     SimpleLineSymbol lineSymbol = new SimpleLineSymbol();
-                    lineSymbol.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
-                    lineSymbol.Color = System.Drawing.Color.Gray;
+                    lineSymbol.DashStyle = GraphicsEngine.LineDashStyle.Dash;
+                    lineSymbol.Color = GraphicsEngine.ArgbColor.Gray;
 
                     _ghost = new Ghost(_template, lineSymbol);
                 }
@@ -1021,7 +1021,7 @@ namespace gView.Framework.Symbology.UI
 
         #region IBrushColor Member
 
-        virtual public System.Drawing.Color FillColor
+        virtual public GraphicsEngine.ArgbColor FillColor
         {
             get
             {
@@ -1029,7 +1029,7 @@ namespace gView.Framework.Symbology.UI
                 {
                     return ((IBrushColor)_symbol).FillColor;
                 }
-                return System.Drawing.Color.Transparent;
+                return GraphicsEngine.ArgbColor.Transparent;
             }
             set
             {
@@ -1044,7 +1044,7 @@ namespace gView.Framework.Symbology.UI
 
         #region IPenColor Member
 
-        virtual public System.Drawing.Color PenColor
+        virtual public GraphicsEngine.ArgbColor PenColor
         {
             get
             {
@@ -1052,7 +1052,7 @@ namespace gView.Framework.Symbology.UI
                 {
                     return ((IPenColor)_symbol).PenColor;
                 }
-                return System.Drawing.Color.Transparent;
+                return GraphicsEngine.ArgbColor.Transparent;
             }
             set
             {
@@ -1067,7 +1067,7 @@ namespace gView.Framework.Symbology.UI
 
         #region IFontColor Member
 
-        virtual public System.Drawing.Color FontColor
+        virtual public GraphicsEngine.ArgbColor FontColor
         {
             get
             {
@@ -1075,7 +1075,7 @@ namespace gView.Framework.Symbology.UI
                 {
                     return ((IFontColor)_symbol).FontColor;
                 }
-                return System.Drawing.Color.Transparent;
+                return GraphicsEngine.ArgbColor.Transparent;
             }
             set
             {
@@ -1122,7 +1122,7 @@ namespace gView.Framework.Symbology.UI
 
         #region IPenDashStyle Member
 
-        public System.Drawing.Drawing2D.DashStyle PenDashStyle
+        public GraphicsEngine.LineDashStyle PenDashStyle
         {
             get
             {
@@ -1130,7 +1130,7 @@ namespace gView.Framework.Symbology.UI
                 {
                     return ((IPenDashStyle)_symbol).PenDashStyle;
                 }
-                return System.Drawing.Drawing2D.DashStyle.Solid;
+                return GraphicsEngine.LineDashStyle.Solid;
             }
             set
             {
@@ -1145,7 +1145,7 @@ namespace gView.Framework.Symbology.UI
 
         #region IFont Member
 
-        virtual public System.Drawing.Font Font
+        virtual public GraphicsEngine.Abstraction.IFont Font
         {
             get
             {
@@ -1153,7 +1153,7 @@ namespace gView.Framework.Symbology.UI
                 {
                     return ((IFontSymbol)_symbol).Font;
                 }
-                return new System.Drawing.Font("Arial",10);
+                return GraphicsEngine.Current.Engine.CreateFont("Arial",10);
             }
             set
             {

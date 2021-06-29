@@ -1,17 +1,11 @@
-using System;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
 using gView.Framework.UI;
-using gView.Framework.Symbology;
 
 namespace gView.Framework.Symbology.UI
 {
-	/// <summary>
-	/// Zusammenfassung für PropertyForm_SimplePointSymbol.
-	/// </summary>
-	internal class PropertyForm_SimplePointSymbol : System.Windows.Forms.Form,IPropertyPageUI,gView.Framework.Symbology.UI.IPropertyPanel
+    /// <summary>
+    /// Zusammenfassung für PropertyForm_SimplePointSymbol.
+    /// </summary>
+    internal class PropertyForm_SimplePointSymbol : System.Windows.Forms.Form,IPropertyPageUI,gView.Framework.Symbology.UI.IPropertyPanel
 	{
 		private System.Windows.Forms.TabControl tabControl1;
 		private System.Windows.Forms.TabPage tabPage1;
@@ -125,11 +119,16 @@ namespace gView.Framework.Symbology.UI
 
 		private void propertyGrid_PropertyValueChanged(object s, System.Windows.Forms.PropertyValueChangedEventArgs e)
 		{
-			if(PropertyChanged!=null) PropertyChanged(_symbol);
-		}
+			if(PropertyChanged!=null)
+            {
+                PropertyChanged(_symbol);
+            }
+        }
 
 		#region IPropertryPageUI
+
 		public event PropertyChangedEvent PropertyChanged=null;
+
 		#endregion
 
         #region IPropertyPanel Member

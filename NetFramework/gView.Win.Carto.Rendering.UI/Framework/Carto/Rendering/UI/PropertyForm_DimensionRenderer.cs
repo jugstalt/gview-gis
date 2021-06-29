@@ -9,6 +9,7 @@ using gView.Framework.Data;
 using gView.Framework.Symbology;
 using gView.Framework.Carto.UI;
 using gView.Framework.Symbology.UI;
+using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -55,20 +56,14 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_renderer == null) return;
 
-            new SymbolPreview(null).Draw(
-                e.Graphics,
-                new Rectangle(5, 5, btnLineSymbol.Width - 10, btnLineSymbol.Height - 10),
-                ((DimensionRenderer)_renderer).LineSymbol, false);
+            e.Graphics.DrawSymbol(((DimensionRenderer)_renderer).LineSymbol, new Rectangle(5, 5, btnLineSymbol.Width - 10, btnLineSymbol.Height - 10));
         }
 
         private void btnTextSymbol_Paint(object sender, PaintEventArgs e)
         {
             if (_renderer == null) return;
 
-            new SymbolPreview(null).Draw(
-                e.Graphics,
-                new Rectangle(5, 5, btnTextSymbol.Width - 10, btnTextSymbol.Height - 10),
-                ((DimensionRenderer)_renderer).TextSymbol, false);
+            e.Graphics.DrawSymbol(((DimensionRenderer)_renderer).TextSymbol, new Rectangle(5, 5, btnTextSymbol.Width - 10, btnTextSymbol.Height - 10));
         }
 
         private void btnLineSymbol_Click(object sender, EventArgs e)

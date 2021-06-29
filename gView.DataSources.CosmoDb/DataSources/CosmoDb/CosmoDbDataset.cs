@@ -94,9 +94,9 @@ namespace gView.DataSources.CosmoDb
             throw new NotImplementedException();
         }
 
-        async public Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
+        public Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
         {
-            return new CosmoDbFeatureCursor((CosmoDbFeatureClass)fc, filter);
+            return Task.FromResult<IFeatureCursor>(new CosmoDbFeatureCursor((CosmoDbFeatureClass)fc, filter));
         }
 
         public Task<string[]> DatasetNames()
@@ -242,9 +242,9 @@ namespace gView.DataSources.CosmoDb
 
         public int SuggestedInsertFeatureCountPerTransaction => throw new NotImplementedException();
 
-        async public Task AppendElement(string elementName)
+        public Task AppendElement(string elementName)
         {
-
+            return Task.CompletedTask;
         }
 
         public void Dispose()
@@ -298,9 +298,9 @@ namespace gView.DataSources.CosmoDb
             return dataset;
         }
 
-        async public Task<IEnvelope> Envelope()
+        public Task<IEnvelope> Envelope()
         {
-            return new Envelope();
+            return Task.FromResult<IEnvelope>(new Envelope());
         }
 
         internal ISpatialReference _spatialReference = null;
@@ -510,9 +510,9 @@ namespace gView.DataSources.CosmoDb
             return true;
         }
 
-        async public Task RefreshClasses()
+        public Task RefreshClasses()
         {
-
+            return Task.CompletedTask;
         }
 
         public Task<bool> SetConnectionString(string connectionString)
