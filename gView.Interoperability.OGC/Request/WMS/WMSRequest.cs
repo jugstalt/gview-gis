@@ -14,7 +14,6 @@ using gView.Framework.OGC.WMS;
 using System.Globalization;
 using gView.Framework.UI;
 using gView.Framework.OGC.GML;
-using System.Drawing;
 using gView.Interoperability.OGC.SLD;
 using gView.Framework.IO;
 using System.Reflection;
@@ -25,6 +24,8 @@ using System.Threading.Tasks;
 using gView.Core.Framework.Exceptions;
 using System.Linq;
 using gView.Framework.OGC.GeoJson;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 
 namespace gView.Interoperability.OGC
 {
@@ -537,98 +538,6 @@ namespace gView.Interoperability.OGC
 
         private static object thisLock = new object();
         private static Dictionary<string, object> lockers = new Dictionary<string, object>();
-        //async virtual public Task<string> WMS_GenerateTiles(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
-        //{
-        //    if (String.IsNullOrEmpty(parameters.RequestKey))
-        //        return String.Empty;
-
-        //    _mapServer.Log("Service:" + service, loggingMethod.request, "WMS GenerateTiles");
-
-        //    lock (thisLock)
-        //    {
-        //        if (!lockers.ContainsKey(parameters.RequestKey))
-        //            lockers.Add(parameters.RequestKey, new object());
-        //    }
-
-        //    lock (lockers[parameters.RequestKey])
-        //    {
-        //        // todo: zZ nur PNG!!
-        //        string imagePath = context.MapServer.OutputPath + @"\wms_" + parameters.RequestKey + "_{0}_{1}_{2}" + ".png";
-        //        FileInfo fi = new FileInfo(String.Format(imagePath, parameters.ZoomLevel, parameters.TileRow, parameters.TileCol));
-        //        if (fi.Exists)
-        //        {
-        //            //return context.MapServer.OutputUrl + "/" + fi.Name;
-        //            return fi.FullName;
-        //        }
-
-        //        if (parameters.BBoxSRS > 0)
-        //        {
-        //            ISpatialReference fromSrs = SpatialReference.FromID("epsg:" + parameters.BBoxSRS);
-        //            ISpatialReference toSrs = SpatialReference.FromID("epsg:" + parameters.SRS);
-
-        //            parameters.BBOX = new Envelope((IPoint)GeometricTransformer.Transform2D(parameters.BBOX.LowerLeft, fromSrs, toSrs),
-        //                                           (IPoint)GeometricTransformer.Transform2D(parameters.BBOX.UpperRight, fromSrs, toSrs));
-        //        }
-
-        //        int n = (int)Math.Pow(2.0, parameters.ZoomLevel);
-        //        double x0 = -20037508.342789244, y0 = 20037508.342789244;
-        //        double w = 20037508.342789244 * 2 / n, h = w;
-
-        //        double c0_ = (parameters.BBOX.minx - x0) / w, c1_ = (parameters.BBOX.maxx - x0) / w;
-        //        double r0_ = (y0 - parameters.BBOX.miny) / h, r1_ = (y0 - parameters.BBOX.maxy) / h;
-
-        //        int c0__ = Math.Max((int)Math.Round(c0_), 0), c1__ = Math.Min((int)Math.Round(c1_), n - 1);
-        //        int r1__ = Math.Min((int)Math.Round(r0_), n - 1), r0__ = Math.Min((int)Math.Round(r1_), 0);
-        //        int c0 = Math.Min(c0__, c1__), c1 = Math.Max(c0__, c1__);
-        //        int r0 = Math.Min(r0__, r1__), r1 = Math.Max(r0__, r1__);
-
-        //        parameters.Width = (Math.Abs(c1 - c0) + 1) * 256;
-        //        parameters.Height = (Math.Abs(r1 - r0) + 1) * 256;
-
-        //        parameters.BBOX = new Envelope(x0 + c0 * w,
-        //                                       y0 - r0 * w,
-        //                                       x0 + (c1 + 1) * w,
-        //                                       y0 - (r1 + 1) * h);
-        //        // Immer neue Requestklasse erzeugen, damit Request multithreadfähig
-        //        // ist.
-        //        // Parameter wie Layer müssen erhalten bleiben, wenn ServicMap später
-        //        // BeforeRenderlayers aufruft...
-        //        WMS_GetMapRequest request = new WMS_GetMapRequest(_mapServer, service, parameters, _useTOC, context);
-        //        //request.GetLayerByIDCallback = GetLayerByID;
-
-        //        string wmsImagePath = await request.Request();
-        //        if (!String.IsNullOrEmpty(wmsImagePath))
-        //        {
-        //            using (Image image = Image.FromFile(wmsImagePath))
-        //            {
-        //                for (int r = r0; r <= r1; r++)
-        //                {
-        //                    for (int c = c0; c <= c1; c++)
-        //                    {
-        //                        using (Bitmap bm = new Bitmap(256, 256))
-        //                        using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(bm))
-        //                        {
-        //                            gr.DrawImage(image, new Rectangle(0, 0, 256, 256), new Rectangle((c - c0) * 256, (r - r0) * 256, 256, 256), GraphicsUnit.Pixel);
-        //                            string outPath = String.Format(imagePath, parameters.ZoomLevel, r, c);
-        //                            switch (fi.Extension.ToLower())
-        //                            {
-        //                                case ".png":
-        //                                    bm.Save(outPath, System.Drawing.Imaging.ImageFormat.Png);
-        //                                    break;
-        //                                default:
-        //                                    bm.Save(outPath, System.Drawing.Imaging.ImageFormat.Jpeg);
-        //                                    break;
-        //                            }
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }
-
-        //        lockers.Remove(parameters.RequestKey);
-        //        return String.Format(imagePath, parameters.ZoomLevel, parameters.TileRow, parameters.TileCol);
-        //    }
-        //}
 
         private class WMS_GetMapRequest
         {
@@ -658,8 +567,6 @@ namespace gView.Interoperability.OGC
                     ISpatialReference sRef = SpatialReference.FromID("epsg:" + _parameters.SRS);
                     map.Display.SpatialReference = sRef;
 
-                    string ret = "";
-
                     if (_parameters.Version == "1.3.0" && map.Display.SpatialReference != null)
                     {
                         IPoint ll = _parameters.BBOX.LowerLeft;
@@ -680,7 +587,7 @@ namespace gView.Interoperability.OGC
                     if (_parameters.Transparent)
                     {
                         map.Display.MakeTransparent = true;
-                        map.Display.TransparentColor = System.Drawing.Color.White;
+                        map.Display.TransparentColor = GraphicsEngine.ArgbColor.White;
                     }
                     map.BeforeRenderLayers += new BeforeRenderLayersEvent(map_BeforeRenderLayers);
                     await map.Render();
@@ -700,24 +607,23 @@ namespace gView.Interoperability.OGC
                         if ((int)Math.Round(minx) != 0 || (int)Math.Round(maxy) != 0 ||
                             (int)Math.Round(maxx) != _parameters.Width || (int)Math.Round(miny) != _parameters.Height)
                         {
-                            using (Bitmap bm = new Bitmap(_parameters.Width, _parameters.Height))
+                            using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(_parameters.Width, _parameters.Height))
                             {
-                                using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(bm))
+                                using (var canvas = bitmap.CreateCanvas())
                                 {
-                                    RectangleF sourceRect = new RectangleF((float)minx, (float)maxy, (float)Math.Abs(maxx - minx), (float)Math.Abs(miny - maxy));
-                                    gr.DrawImage(map.MapImage,
-                                        new RectangleF(0f, 0f, (float)bm.Width, (float)bm.Height),
-                                        sourceRect,
-                                        GraphicsUnit.Pixel);
+                                    var sourceRect = new GraphicsEngine.CanvasRectangleF((float)minx, (float)maxy, (float)Math.Abs(maxx - minx), (float)Math.Abs(miny - maxy));
+                                    canvas.DrawBitmap(map.MapImage,
+                                        new GraphicsEngine.CanvasRectangleF(0f, 0f, (float)bitmap.Width, (float)bitmap.Height),
+                                        sourceRect);
                                 }
 
                                 if (_parameters.Transparent)
                                 {
-                                    bm.MakeTransparent(Color.White);
+                                    bitmap.MakeTransparent(GraphicsEngine.ArgbColor.White);
                                 }
 
                                 MemoryStream ms = new MemoryStream();
-                                bm.Save(ms, _parameters.GetImageFormat());
+                                bitmap.Save(ms, _parameters.GetImageFormat());
                                 return (ms.ToArray(), _parameters.GetContentType());
                             }
                         }
@@ -895,13 +801,13 @@ namespace gView.Interoperability.OGC
             using (var serviceMap = await context.CreateServiceMapInstance())
             {
                 int imageWidth, imageHeight;
-                using(var dummy=new Bitmap(1,1))
+                using (var dummy = Current.Engine.CreateBitmap(1, 1))
                 {
                     var size = await DrawLegend(serviceMap, parameters, dummy);
                     imageWidth = size.Width;
                     imageHeight = size.Height;
                 }
-                using(var legendBitmap = new Bitmap(imageWidth, imageHeight))
+                using(var legendBitmap = Current.Engine.CreateBitmap(imageWidth, imageHeight))
                 {
                     await DrawLegend(serviceMap, parameters, legendBitmap);
 
@@ -912,7 +818,7 @@ namespace gView.Interoperability.OGC
             }
         }
 
-        async private Task<Size> DrawLegend(IServiceMap serviceMap, WMSParameterDescriptor parameters, Bitmap image)
+        async private Task<CanvasSize> DrawLegend(IServiceMap serviceMap, WMSParameterDescriptor parameters, IBitmap bitmap)
         {
             if (serviceMap?.TOC == null)
                 throw new MapServerException("Map has not table of content (TOC)");
@@ -925,12 +831,13 @@ namespace gView.Interoperability.OGC
             bool defaultLayerVisibility = parameters.Layer == serviceMap.Name;
             var layerIds = parameters.Layer.Split(',');
 
-            using (Graphics gr = Graphics.FromImage(image))
-            using (Font fontBold = new Font("Arial", 9, FontStyle.Bold))
-            using (Font fontRegular = new Font("Arial", 8, FontStyle.Regular))
+            using (var canvas = bitmap.CreateCanvas())
+            using (var fontBold = Current.Engine.CreateFont("Arial", 9, FontStyle.Bold))
+            using (var fontRegular = Current.Engine.CreateFont("Arial", 8, FontStyle.Regular))
+            using(var blackBrush = Current.Engine.CreateSolidBrush(ArgbColor.Black))
             {
-                gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+                canvas.SmoothingMode = SmoothingMode.AntiAlias;
+                canvas.TextRenderingHint = TextRenderingHint.AntiAlias;
 
                 foreach (var element in serviceMap.MapElements)
                 {
@@ -965,13 +872,13 @@ namespace gView.Interoperability.OGC
                                 if (tocLegendItem == null && tocLegendItem.Image == null)
                                     continue;
 
-                                if (image.Width>1)
+                                if (bitmap.Width>1)
                                 {
-                                    gr.DrawImage(tocLegendItem.Image, new PointF(padding, offsetY));
-                                    gr.DrawString(tocElement.Name, fontBold, Brushes.Black, new PointF(padding * 2f + tocLegendItem.Image.Width, offsetY+3f));
+                                    canvas.DrawBitmap(tocLegendItem.Image, new CanvasPointF(padding, offsetY));
+                                    canvas.DrawText(tocElement.Name, fontBold, blackBrush, new CanvasPointF(padding * 2f + tocLegendItem.Image.Width, offsetY+3f));
                                 }
 
-                                var labelSize = gr.MeasureString(tocElement.Name, fontBold);
+                                var labelSize = canvas.MeasureText(tocElement.Name, fontBold);
                                 width = Math.Max(width, padding * 2f + tocLegendItem.Image.Width + labelSize.Width + padding);
                                 height = Math.Max(height, offsetY + Math.Max(tocLegendItem.Image.Height, labelSize.Height) + padding);
 
@@ -979,11 +886,11 @@ namespace gView.Interoperability.OGC
                             }
                             else
                             {
-                                if (image.Width > 1)
+                                if (bitmap.Width > 1)
                                 {
-                                    gr.DrawString(tocElement.Name, fontBold, Brushes.Black, new PointF(padding, offsetY));
+                                    canvas.DrawText(tocElement.Name, fontBold, blackBrush, new CanvasPointF(padding, offsetY));
                                 }
-                                var titleSize = gr.MeasureString(tocElement.Name, fontBold);
+                                var titleSize = canvas.MeasureText(tocElement.Name, fontBold);
                                 width = Math.Max(width, padding * 2f + titleSize.Width);
                                 height = Math.Max(height, offsetY + titleSize.Height + padding);
 
@@ -994,14 +901,14 @@ namespace gView.Interoperability.OGC
                                     if (tocLegendItem.Image == null)
                                         continue;
 
-                                    if (image.Width > 1)
+                                    if (bitmap.Width > 1)
                                     {
-                                        gr.DrawImage(tocLegendItem.Image, new PointF(padding, offsetY));
+                                        canvas.DrawBitmap(tocLegendItem.Image, new CanvasPointF(padding, offsetY));
                                         if (!String.IsNullOrWhiteSpace(tocLegendItem.Label))
-                                            gr.DrawString(tocLegendItem.Label, fontRegular, Brushes.Black, new PointF(padding * 2f + tocLegendItem.Image.Width, offsetY+3f));
+                                            canvas.DrawText(tocLegendItem.Label, fontRegular, blackBrush, new CanvasPointF(padding * 2f + tocLegendItem.Image.Width, offsetY+3f));
                                     }
 
-                                    var labelSize = String.IsNullOrEmpty(tocLegendItem.Label) ? new SizeF(0f, 0f) : gr.MeasureString(tocLegendItem.Label, fontRegular);
+                                    var labelSize = String.IsNullOrEmpty(tocLegendItem.Label) ? new CanvasSizeF(0f, 0f) : canvas.MeasureText(tocLegendItem.Label, fontRegular);
                                     width = Math.Max(width, padding * 2f + tocLegendItem.Image.Width + labelSize.Width + padding);
                                     height = Math.Max(height, Math.Max(tocLegendItem.Image.Height, labelSize.Height) + padding);
 
@@ -1015,185 +922,9 @@ namespace gView.Interoperability.OGC
 
             #endregion
 
-            return new Size((int)width, (int)height);
+            return new CanvasSize((int)width, (int)height);
         }
 
-        /*
-        async public Task<string> WMSC_DescriptTiles(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
-        {
-            try
-            {
-                using (var serviceMap = await context.CreateServiceMapInstance())
-                {
-                    TileServiceMetadata metadata = serviceMap.MetadataProvider(_tilemetaprovider) as TileServiceMetadata;
-                    if (metadata == null || metadata.Use == false)
-                    {
-                        return "<Exception>Service is not used with Tile Service</Exception>";
-                    }
-
-                    WMS_DescribeTilesResponse wms_descripeTiles = new WMS_DescribeTilesResponse();
-                    wms_descripeTiles.version = "1.4.0";
-
-                    wms_descripeTiles.TiledLayer = new TiledLayer[] { new TiledLayer() };
-                    wms_descripeTiles.TiledLayer[0].name = "_alllayers";
-
-                    wms_descripeTiles.TiledLayer[0].TiledStyles = new string[] { "default" };
-                    wms_descripeTiles.TiledLayer[0].TiledFormats = new string[] { "image/png", "image/jpeg" };
-                    wms_descripeTiles.TiledLayer[0].TiledDimension = new TiledDimension[] { new TiledDimension() };
-                    wms_descripeTiles.TiledLayer[0].TiledDimension[0].name = "unkown";
-                    wms_descripeTiles.TiledLayer[0].TiledDimension[0].Value = new string[] { "unkown" };
-
-                    List<TiledCrs> crss = new List<TiledCrs>();
-                    foreach (int epsg in metadata.EPSGCodes)
-                    {
-                        IEnvelope bounds = metadata.GetEPSGEnvelope(epsg);
-                        if (bounds == null || bounds.Width == 0.0 || bounds.Height == 0.0)
-                            continue;
-
-                        TiledCrs crs = new TiledCrs();
-                        crs.name = "EPSG:" + epsg;
-                        TileMatrixSet matrixSet = crs.TileMatrixSet = new TileMatrixSet();
-                        matrixSet.TileWidth = metadata.TileWidth.ToString();
-                        matrixSet.TileHeight = metadata.TileHeight.ToString();
-
-                        PointType point = new PointType();
-                        point.Item = new DirectPositionType();
-                        ((DirectPositionType)point.Item).Text = bounds.minx.ToString(_nhi) + " " + bounds.maxy.ToString(_nhi);
-                        point.srsDimension = "2";
-
-                        List<TileMatrix> matrixs = new List<TileMatrix>();
-                        foreach (double scale in metadata.Scales)
-                        {
-                            TileMatrix matrix = new TileMatrix();
-                            matrix.scale = scale;
-                            matrix.Point = point;
-                            double res = matrix.scale / (96.0 / 0.0254);
-                            int mw = (int)(bounds.Width / (double.Parse(matrixSet.TileWidth) * res)) + 1;
-                            int mh = (int)(bounds.Height / (double.Parse(matrixSet.TileHeight) * res)) + 1;
-                            matrix.MatrixWidth = mw.ToString();
-                            matrix.MatrixHeight = mh.ToString();
-                            matrixs.Add(matrix);
-                        }
-                        matrixSet.TileMatrix = matrixs.ToArray();
-                        crss.Add(crs);
-                    }
-                    wms_descripeTiles.TiledLayer[0].TiledCrs = crss.ToArray();
-
-                    XsdSchemaSerializer<WMS_DescribeTilesResponse> serializer = new XsdSchemaSerializer<WMS_DescribeTilesResponse>();
-                    string xml = serializer.Serialize(wms_descripeTiles);
-
-                    await _mapServer.LogAsync(context, "DescipeTiles:" + serviceMap.Name, loggingMethod.request_detail, xml);
-
-                    byte[] bytes = Encoding.UTF8.GetBytes(xml);
-                    return Convert.ToBase64String(bytes);
-                    //return xml;
-                }
-            }
-            catch (Exception ex)
-            {
-                return "<Exception>" + ex.Message + "</Exception>";
-            }
-        }
-
-        async public Task<string> WMSC_GetTile(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
-        {
-            try
-            {
-                await _mapServer.LogAsync(context, "GetTile", loggingMethod.request_detail, String.Empty);
-                using (IServiceMap map = await context.CreateServiceMapInstance())
-                {
-                    TileServiceMetadata metadata = map.MetadataProvider(_tilemetaprovider) as TileServiceMetadata;
-                    if (metadata == null || metadata.Use == false)
-                        return "<Exception>Service is not used with Tile Service</Exception>";
-
-                    //if (!metadata.Scales.Contains(parameters.Scale))
-                    //    return "<Exception>Scale is not defined with Tile Service</Exception>";
-                    parameters.Scale = metadata.Scales.GetScale(parameters.Scale);
-                    if (parameters.Scale <= 0.0)
-                        return "<Exception>Scale is not defined with Tile Service</Exception>";
-
-                    if (!metadata.EPSGCodes.Contains(parameters.SRS))
-                        return "<Exception>SRS is not defined with Tile Service</Exception>";
-
-                    IEnvelope bounds = metadata.GetEPSGEnvelope(parameters.SRS);
-                    if (bounds == null || bounds.Width == 0.0 || bounds.Height == 0.0)
-                        return "<Exception>Extent is not defined with Tile Service</Exception>";
-
-                    string path = _mapServer.TileCachePath + @"/" + service + @"/_alllayers/" +
-                        TileServiceMetadata.TilePath(
-                            gView.Framework.Geometry.Tiling.GridOrientation.UpperLeft,
-                            parameters.SRS, parameters.Scale, parameters.TileRow, parameters.TileCol);
-
-                    string ext = String.Empty;
-                    switch (parameters.Format)
-                    {
-                        case WMSImageFormat.png:
-                            if (metadata.FormatPng == false)
-                                return "<Exception>image/png not supported</Exception>";
-                            ext = ".png";
-                            break;
-                        case WMSImageFormat.jpeg:
-                            if (metadata.FormatJpg == false)
-                                return "<Exception>image/jpeg not supported</Exception>";
-                            ext = ".jpg";
-                            break;
-                        default:
-                            return "<Exception>Unsupported image format</Exception>";
-                    }
-                    FileInfo fi = new FileInfo(path + ext);
-                    if (metadata.UpperLeftCacheTiles == true && fi.Exists)
-                        return fi.FullName;
-
-                    if (!fi.Directory.Exists)
-                        fi.Directory.Create();
-
-                    ISpatialReference sRef = SpatialReference.FromID("epsg:" + parameters.SRS);
-
-                    map.Display.SpatialReference = sRef;
-
-                    map.Display.iWidth = metadata.TileWidth;
-                    map.Display.iHeight = metadata.TileHeight;
-
-                    double res = (double)parameters.Scale / (96.0 / 0.0254);
-                    if (map.Display.MapUnits != GeoUnits.Meters)
-                    {
-                        GeoUnitConverter converter = new GeoUnitConverter();
-                        res = converter.Convert(res, GeoUnits.Meters, map.Display.MapUnits);
-                    }
-                    double H = metadata.TileHeight * res;
-                    double y = bounds.maxy - H * (parameters.TileRow + 1);
-
-                    double W = metadata.TileWidth * res;
-                    double x = bounds.minx + W * parameters.TileCol;
-
-                    map.Display.ZoomTo(new Envelope(x, y, x + W, y + H));
-                    await map.Render();
-
-                    bool maketrans = map.Display.MakeTransparent;
-                    map.Display.MakeTransparent = true;
-                    switch (parameters.Format)
-                    {
-                        case WMSImageFormat.png:
-                            await map.SaveImage(fi.FullName, System.Drawing.Imaging.ImageFormat.Png);
-                            break;
-                        case WMSImageFormat.jpeg:
-                            await map.SaveImage(fi.FullName, System.Drawing.Imaging.ImageFormat.Jpeg);
-                            break;
-                    }
-                    map.Display.MakeTransparent = maketrans;
-
-                    await _mapServer.LogAsync(context, "CreateTile:", loggingMethod.request_detail, fi.FullName);
-
-                    return fi.FullName;
-                }
-            }
-            catch (Exception ex)
-            {
-                await _mapServer.LogAsync(context, "GetTile", loggingMethod.error, ex.Message);
-                return "<Exception>" + ex.Message + "</Exception>";
-            }
-        }
-        */
         #region Helper
 
         //private string getValue(string parameter, string[] parameters)
@@ -1592,26 +1323,6 @@ namespace gView.Interoperability.OGC
         }
         #endregion
     }
-
-    /*
-    [gView.Framework.system.RegisterPlugIn("1242DC9C-EF07-48af-98F9-16D90082B888")]
-    public class WMSRequest2 : WMSRequest
-    {
-        public WMSRequest2()
-            : base()
-        {
-            _useTOC = true;
-        }
-
-        public override string IntentityName
-        {
-            get
-            {
-                return "wms2";
-            }
-        }
-    }
-    */
 
     public interface IEPSGMetadata
     {

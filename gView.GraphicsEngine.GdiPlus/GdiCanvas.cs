@@ -235,6 +235,13 @@ namespace gView.GraphicsEngine.GdiPlus
             _graphics.DrawString(text, (Font)font.EngineElement, (Brush)brush.EngineElement, x, y);
         }
 
+        public void DrawText(string text, IFont font, IBrush brush, CanvasRectangleF rectangleF)
+        {
+            CheckUsability();
+
+            _graphics.DrawString(text, (Font)font.EngineElement, (Brush)brush.EngineElement, rectangleF.ToGdiRectangleF());
+        }
+
         public void DrawText(string text, IFont font, IBrush brush, CanvasPoint point, IDrawTextFormat format)
         {
             CheckUsability();

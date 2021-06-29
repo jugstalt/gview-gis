@@ -1,12 +1,10 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Carto.Rendering;
+using gView.GraphicsEngine;
 using gView.Interoperability.GeoServices.Rest.Json.Renderers.OtherRenderers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
 {
@@ -242,7 +240,9 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
         static public Framework.Symbology.ISymbol FromSymbolJObject(JObject jObject)
         {
             if (jObject == null)
+            {
                 return null;
+            }
 
             var type = jObject.GetValue("type").Value<string>();
 
@@ -277,7 +277,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
                 symbol.DashStyle = sls.Style.ToDashStyle();
                 symbol.Width = sls.Width;
                 symbol.SymbolSmothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
-                symbol.LineEndCap = symbol.LineStartCap = System.Drawing.Drawing2D.LineCap.Round;
+                symbol.LineEndCap = symbol.LineStartCap = LineCap.Round;
 
                 return symbol;
             }
@@ -296,8 +296,8 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
                         Width = sfs.Outline.Width,
                         DashStyle = sfs.Outline.Style.ToDashStyle(),
                         SymbolSmothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias,
-                        LineStartCap = System.Drawing.Drawing2D.LineCap.Round,
-                        LineEndCap = System.Drawing.Drawing2D.LineCap.Round
+                        LineStartCap = LineCap.Round,
+                        LineEndCap = LineCap.Round
                     };
                 }
 
@@ -360,17 +360,23 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
                     }
                     symbol.SymbolSmothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
 
-                    var fontStyle = System.Drawing.FontStyle.Regular;
+                    var fontStyle = FontStyle.Regular;
                     if (ts.Font.Weight == "bold" || ts.Font.Weight == "bolder")
-                        fontStyle |= System.Drawing.FontStyle.Bold;
+                    {
+                        fontStyle |= FontStyle.Bold;
+                    }
 
                     if (ts.Font.Style == "italic")
-                        fontStyle |= System.Drawing.FontStyle.Italic;
+                    {
+                        fontStyle |= FontStyle.Italic;
+                    }
 
                     if (ts.Font.Decoration == "underline")
-                        fontStyle |= System.Drawing.FontStyle.Underline;
+                    {
+                        fontStyle |= FontStyle.Underline;
+                    }
 
-                    symbol.Font = new System.Drawing.Font(ts.Font.Family, ts.Font.Size, fontStyle);
+                    symbol.Font = Current.Engine.CreateFont(ts.Font.Family, ts.Font.Size, fontStyle);
                     //symbol.Font.Style = ts.Font.Style;
                     //if(ts.Font.Weight)
 

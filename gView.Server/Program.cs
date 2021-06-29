@@ -17,6 +17,8 @@ namespace gView.Server
     {
         public static void Main(string[] args)
         {
+            gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GraphicsEngine();
+
             try
             {
                 #region Init the global PluginManager

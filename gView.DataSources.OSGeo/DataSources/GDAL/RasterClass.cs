@@ -3,9 +3,9 @@ using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.LinAlg;
 using gView.Framework.system;
+using gView.GraphicsEngine;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -32,8 +32,8 @@ namespace gView.DataSources.GDAL
         private double _min = 0, _max = 0;
         private double _nodata = 0;
         private int _hasNoDataVal = 0;
-        private Color _minColor = Color.Black;
-        private Color _maxColor = Color.White;
+        private ArgbColor _minColor = ArgbColor.Black;
+        private ArgbColor _maxColor = ArgbColor.White;
         private double[] _hillShade = { 0.0, 1.0, 1.0 };
         private bool _useHillShade = true;
         private GridColorClass[] _colorClasses = null;
@@ -384,7 +384,7 @@ namespace gView.DataSources.GDAL
                 int stride = bitmapData.Stride;
                 IntPtr buf = bitmapData.Scan0;
 
-                List<Color> colors = new List<Color>();
+                List<ArgbColor> colors = new List<ArgbColor>();
                 for (int i = 1; i <= (_gDS.RasterCount > 3 ? 3 : _gDS.RasterCount); ++i)
                 {
                     using (OSGeo_v1.GDAL.Band band = _gDS.GetRasterBand(i))
@@ -405,7 +405,7 @@ namespace gView.DataSources.GDAL
                             case ColorInterp.GrayIndex:
                                 for (int iColor = 0; iColor < 256; iColor++)
                                 {
-                                    colors.Add(Color.FromArgb(255, iColor, iColor, iColor));
+                                    colors.Add(ArgbColor.FromArgb(255, iColor, iColor, iColor));
                                 }
                                 break;
                             case ColorInterp.PaletteIndex:
@@ -419,7 +419,7 @@ namespace gView.DataSources.GDAL
                                 for (int iColor = 0; iColor < colCount; iColor++)
                                 {
                                     OSGeo_v1.GDAL.ColorEntry colEntry = colTable.GetColorEntry(iColor);
-                                    colors.Add(Color.FromArgb(
+                                    colors.Add(ArgbColor.FromArgb(
                                         colEntry.c4, colEntry.c1, colEntry.c2, colEntry.c3));
                                 }
 
@@ -448,7 +448,7 @@ namespace gView.DataSources.GDAL
                             {
                                 // write the logic implementation here
                                 byte c = ptr[0];
-                                Color col = colors[(int)c];
+                                ArgbColor col = colors[(int)c];
                                 ptr[0] = col.B;
                                 ptr[1] = col.G;
                                 ptr[2] = col.R;
@@ -541,7 +541,7 @@ namespace gView.DataSources.GDAL
                     int stride = bitmapData.Stride;
                     IntPtr buf = bitmapData.Scan0;
 
-                    List<Color> colors = new List<Color>();
+                    List<ArgbColor> colors = new List<ArgbColor>();
                     using (band = _gDS.GetRasterBand(1))
                     {
                         band.ReadRaster(x, y, wWidth, wHeight,
@@ -645,7 +645,7 @@ namespace gView.DataSources.GDAL
                     int stride = bitmapData.Stride;
                     IntPtr buf = bitmapData.Scan0;
 
-                    List<Color> colors = new List<Color>();
+                    List<ArgbColor> colors = new List<ArgbColor>();
                     using (band = _gDS.GetRasterBand(1))
                     {
 
@@ -663,7 +663,7 @@ namespace gView.DataSources.GDAL
                     sun.Normalize();
                     int rowStride = stride / pixelSpace;
 
-                    Color col = Color.White;
+                    ArgbColor col = ArgbColor.White;
                     unsafe
                     {
                         byte* ptr = (byte*)(bitmapData.Scan0);
@@ -935,7 +935,7 @@ namespace gView.DataSources.GDAL
                 int bandCount = _gDS.RasterCount;
                 string[] tags = new string[bandCount + 2];
                 object[] values = new object[bandCount + 2];
-                List<Color> colors = new List<Color>();
+                List<ArgbColor> colors = new List<ArgbColor>();
 
                 for (int i = 1; i <= bandCount; ++i)
                 {
@@ -956,7 +956,7 @@ namespace gView.DataSources.GDAL
                         case ColorInterp.GrayIndex:
                             for (int iColor = 0; iColor < 256; iColor++)
                             {
-                                colors.Add(Color.FromArgb(255, iColor, iColor, iColor));
+                                colors.Add(ArgbColor.FromArgb(255, iColor, iColor, iColor));
                             }
                             break;
                         case ColorInterp.PaletteIndex:
@@ -973,7 +973,7 @@ namespace gView.DataSources.GDAL
                             for (int iColor = 0; iColor < colCount; iColor++)
                             {
                                 OSGeo_v1.GDAL.ColorEntry colEntry = colTable.GetColorEntry(iColor);
-                                colors.Add(Color.FromArgb(
+                                colors.Add(ArgbColor.FromArgb(
                                     colEntry.c4, colEntry.c1, colEntry.c2, colEntry.c3));
                             }
 
@@ -995,7 +995,7 @@ namespace gView.DataSources.GDAL
 
                     if (colors.Count > 0 && c >= 0 && c < colors.Count)
                     {
-                        Color col = colors[c];
+                        ArgbColor col = colors[c];
                         tags[i + 2] = "Alpha";
                         values[i + 2] = col.A;
                         tags[i + 3] = "Red";
@@ -1241,7 +1241,7 @@ namespace gView.DataSources.GDAL
                 _colorClasses = null;
                 List<GridColorClass> classes = new List<GridColorClass>();
                 GridColorClass cc;
-                while ((cc = (GridColorClass)stream.Load("GridClass", null, new GridColorClass(0, 0, Color.White))) != null)
+                while ((cc = (GridColorClass)stream.Load("GridClass", null, new GridColorClass(0, 0, ArgbColor.White))) != null)
                 {
                     classes.Add(cc);
                 }

@@ -534,7 +534,7 @@ namespace gView.Framework.OGC.WMS
                 if (this.Format == WMSImageFormat.gif)
                     bt = this.CreateTransparentGif(bt, bt.Palette);
                 MemoryStream oStr = new MemoryStream();
-                bt.Save(oStr, GetImageFormat());
+                bt.Save(oStr, SystemDrawingGetImageFormat());
                 //Response.ContentType = this.MimeType;
                 //byte[] img = oStr.ToArray();
                 //Response.OutputStream.Write(img, 0, img.Length);
@@ -555,7 +555,7 @@ namespace gView.Framework.OGC.WMS
                 if (this.Format == WMSImageFormat.gif)
                     bt = this.CreateTransparentGif(bt, bt.Palette);
                 MemoryStream oStr = new MemoryStream();
-                bt.Save(oStr, GetImageFormat());
+                bt.Save(oStr, SystemDrawingGetImageFormat());
                 //Response.ContentType = this.MimeType;
                 //byte[] img = oStr.ToArray();
                 //Response.OutputStream.Write(img, 0, img.Length);
@@ -638,19 +638,35 @@ namespace gView.Framework.OGC.WMS
                 return null;
         }
 
-        public ImageFormat GetImageFormat()
+        public GraphicsEngine.ImageFormat GetImageFormat()
         {
             switch (this.Format)
             {
                 case WMSImageFormat.gif:
-                    return ImageFormat.Gif;
+                    return GraphicsEngine.ImageFormat.Gif;
                 case WMSImageFormat.bmp:
-                    return ImageFormat.Bmp;
+                    return GraphicsEngine.ImageFormat.Bmp;
                 case WMSImageFormat.jpeg:
-                    return ImageFormat.Jpeg;
+                    return GraphicsEngine.ImageFormat.Jpeg;
                 case WMSImageFormat.png:
-                    return ImageFormat.Png;
-                default: return ImageFormat.Png;
+                    return GraphicsEngine.ImageFormat.Png;
+                default: return GraphicsEngine.ImageFormat.Png;
+            }
+        }
+
+        public System.Drawing.Imaging.ImageFormat SystemDrawingGetImageFormat()
+        {
+            switch (this.Format)
+            {
+                case WMSImageFormat.gif:
+                    return System.Drawing.Imaging.ImageFormat.Gif;
+                case WMSImageFormat.bmp:
+                    return System.Drawing.Imaging.ImageFormat.Bmp;
+                case WMSImageFormat.jpeg:
+                    return System.Drawing.Imaging.ImageFormat.Jpeg;
+                case WMSImageFormat.png:
+                    return System.Drawing.Imaging.ImageFormat.Png;
+                default: return System.Drawing.Imaging.ImageFormat.Png;
             }
         }
 

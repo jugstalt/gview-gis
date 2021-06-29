@@ -1,4 +1,5 @@
-﻿using System;
+﻿using gView.GraphicsEngine;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using static gView.Framework.Symbology.SimplePointSymbol;
@@ -7,22 +8,19 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 {
     static public class Extensions
     {
-        static public int[] ToArray(this System.Drawing.Color color)
+        static public int[] ToArray(this ArgbColor color)
         {
-            if (color == null)
-                return null;
-
             return new int[] { color.R, color.G, color.B, color.A };
         }
 
-        static public System.Drawing.Color ToColor(this int[] col)
+        static public ArgbColor ToColor(this int[] col)
         {
             if (col == null)
-                return System.Drawing.Color.Transparent;
+                return ArgbColor.Transparent;
             if (col.Length == 3)
-                return System.Drawing.Color.FromArgb(col[0], col[1], col[2]);
+                return ArgbColor.FromArgb(col[0], col[1], col[2]);
             if (col.Length == 4)
-                return System.Drawing.Color.FromArgb(col[3], col[0], col[1], col[2]);
+                return ArgbColor.FromArgb(col[3], col[0], col[1], col[2]);
 
             throw new Exception("Invalid symbol color: [" + String.Join(",", col) + "]");
         }
@@ -68,39 +66,39 @@ namespace gView.Interoperability.GeoServices.Rest.Json
             return "esriSMSCircle";
         }
 
-        static public System.Drawing.Drawing2D.DashStyle ToDashStyle(this string style)
+        static public LineDashStyle ToDashStyle(this string style)
         {
             switch(style)
             {
                 case "esriSLSDash":
-                    return System.Drawing.Drawing2D.DashStyle.Dash;
+                    return LineDashStyle.Dash;
                 case "esriSLSDashDot":
-                    return System.Drawing.Drawing2D.DashStyle.DashDot;
+                    return LineDashStyle.DashDot;
                 case "esriSLSDashDotDot":
-                    return System.Drawing.Drawing2D.DashStyle.DashDotDot;
+                    return LineDashStyle.DashDotDot;
                 case "esriSLSDot":
-                    return System.Drawing.Drawing2D.DashStyle.Dot;
+                    return LineDashStyle.Dot;
                 case "esriSLSNull":
                 case "esriSLSSolid":
-                    return System.Drawing.Drawing2D.DashStyle.Solid;
+                    return LineDashStyle.Solid;
             }
 
-            return System.Drawing.Drawing2D.DashStyle.Solid;
+            return LineDashStyle.Solid;
         }
 
-        static public string FromDashStyle(this System.Drawing.Drawing2D.DashStyle dashStyle)
+        static public string FromDashStyle(this LineDashStyle dashStyle)
         {
             switch(dashStyle)
             {
-                case System.Drawing.Drawing2D.DashStyle.Solid:
+                case LineDashStyle.Solid:
                     return "esriSLSSolid";
-                case System.Drawing.Drawing2D.DashStyle.Dot:
+                case LineDashStyle.Dot:
                     return "esriSLSDot";
-                case System.Drawing.Drawing2D.DashStyle.DashDotDot:
+                case LineDashStyle.DashDotDot:
                     return "esriSLSDashDotDot";
-                case System.Drawing.Drawing2D.DashStyle.DashDot:
+                case LineDashStyle.DashDot:
                     return "esriSLSDashDotDot";
-                case System.Drawing.Drawing2D.DashStyle.Dash:
+                case LineDashStyle.Dash:
                     return "esriSLSDash";
             }
             return "esriSLSSolid";

@@ -33,6 +33,7 @@ namespace gView.GraphicsEngine.Abstraction
         void DrawText(string text, IFont font, IBrush brush, int x, int y);
         void DrawText(string text, IFont font, IBrush brush, CanvasPointF pointF);
         void DrawText(string text, IFont font, IBrush brush, float x, float y);
+        void DrawText(string text, IFont font, IBrush brush, CanvasRectangleF rectangleF);
 
         void DrawText(string text, IFont font, IBrush brush, CanvasPoint point, IDrawTextFormat format);
         void DrawText(string text, IFont font, IBrush brush, int x, int y, IDrawTextFormat format);

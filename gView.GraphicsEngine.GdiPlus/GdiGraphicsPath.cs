@@ -36,6 +36,12 @@ namespace gView.GraphicsEngine.GdiPlus
             _path.AddLine(p1.X, p1.Y, p2.X, p2.Y);
         }
 
+        public CanvasRectangleF GetBounds()
+        {
+            var rectangleF = _path.GetBounds();
+            return new CanvasRectangleF(rectangleF.X, rectangleF.Y, rectangleF.Width, rectangleF.Height);
+        }
+
         public object EngineElement => _path;
 
         #endregion

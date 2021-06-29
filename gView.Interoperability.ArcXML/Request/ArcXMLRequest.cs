@@ -263,20 +263,20 @@ namespace gView.Interoperability.ArcXML
                 switch (output.Attributes["type"].Value.ToLower())
                 {
                     case "gif":
-                        getImage.ImageFormat = System.Drawing.Imaging.ImageFormat.Gif;
+                        getImage.ImageFormat = ImageFormat.Gif;
                         break;
                     case "jpg":
                     case "jpeg":
-                        getImage.ImageFormat = System.Drawing.Imaging.ImageFormat.Jpeg;
+                        getImage.ImageFormat = ImageFormat.Jpeg;
                         break;
                     case "png":
                     case "png8":
                     case "png24":
                     case "png32":
-                        getImage.ImageFormat = System.Drawing.Imaging.ImageFormat.Png;
+                        getImage.ImageFormat = ImageFormat.Png;
                         break;
                     default:
-                        getImage.ImageFormat = System.Drawing.Imaging.ImageFormat.Png;
+                        getImage.ImageFormat = ImageFormat.Png;
                         break;
                 }
             }
@@ -330,7 +330,7 @@ namespace gView.Interoperability.ArcXML
                     }
                 }
 
-                if (map.Display.MakeTransparent && getImage.ImageFormat == System.Drawing.Imaging.ImageFormat.Png)
+                if (map.Display.MakeTransparent && getImage.ImageFormat == ImageFormat.Png)
                 {
                     // Beim Png sollt dann beim zeichnen keine Hintergrund Rectangle gemacht werden
                     // Darum Farbe mit A=0
