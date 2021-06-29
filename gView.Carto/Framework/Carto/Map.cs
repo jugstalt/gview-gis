@@ -1217,12 +1217,9 @@ namespace gView.Framework.Carto
                                         labelLayers.Remove(fLayer);
                                     }
 
-                                    //thread = new Thread(new ThreadStart(rlt.Render));
-                                    //thread.Start();
-
                                     if (cancelTracker.Continue)
                                     {
-                                        DrawingLayer.BeginInvoke(layer.Title, new AsyncCallback(AsyncInvoke.RunAndForget), null);
+                                        DrawingLayer?.BeginInvoke(layer.Title, new AsyncCallback(AsyncInvoke.RunAndForget), null);
                                     }
 
                                     await rlt.Render();
@@ -2536,13 +2533,12 @@ namespace gView.Framework.Carto
 
         internal void FireOnUserInterface(bool lockUI)
         {
-            var thread = new Thread(new ParameterizedThreadStart(FireOnUserInterfaceTask));
-            thread.Start(lockUI);
+            this.OnUserInterface?.BeginInvoke(this, lockUI, new AsyncCallback(AsyncInvoke.RunAndForget), null);
         }
 
-        private void FireOnUserInterfaceTask(object arg)
+        internal void FireDrawingLayer(string layername)
         {
-            this.OnUserInterface?.BeginInvoke(this, (bool)arg, new AsyncCallback(AsyncInvoke.RunAndForget), null);
+            this.DrawingLayer?.BeginInvoke(layername, new AsyncCallback(AsyncInvoke.RunAndForget), null);
         }
 
         protected void SetResourceContainer(IResourceContainer resourceContainer)
