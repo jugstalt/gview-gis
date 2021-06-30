@@ -264,6 +264,10 @@
       <Project>{27a01872-3e18-4c14-a267-f4093f7317b0}</Project>
       <Name>gView.GraphicsEngine.GdiPlus</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj">
+      <Project>{00332360-3466-4c26-8604-c43db166dd2b}</Project>
+      <Name>gView.GraphicsEngine.Skia</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\gView.GraphicsEngine\gView.GraphicsEngine.csproj">
       <Project>{ed711bda-7fd3-42ae-a6a0-ddf07c20014d}</Project>
       <Name>gView.GraphicsEngine</Name>

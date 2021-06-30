@@ -43,13 +43,13 @@ namespace gView.Framework.Symbology.UI.Controls
             this.listViewSymbols.HideSelection = false;
             this.listViewSymbols.LargeImageList = this.imageList1;
             this.listViewSymbols.Location = new System.Drawing.Point(0, 0);
-            this.listViewSymbols.Margin = new System.Windows.Forms.Padding(10);
+            this.listViewSymbols.Margin = new System.Windows.Forms.Padding(7, 6, 7, 6);
             this.listViewSymbols.MultiSelect = false;
             this.listViewSymbols.Name = "listViewSymbols";
             this.listViewSymbols.OwnerDraw = true;
-            this.listViewSymbols.Size = new System.Drawing.Size(829, 507);
+            this.listViewSymbols.Size = new System.Drawing.Size(730, 307);
             this.listViewSymbols.TabIndex = 0;
-            this.listViewSymbols.TileSize = new System.Drawing.Size(200, 60);
+            this.listViewSymbols.TileSize = new System.Drawing.Size(100, 50);
             this.listViewSymbols.UseCompatibleStateImageBehavior = false;
             this.listViewSymbols.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.listViewSymbols_DrawItem);
             this.listViewSymbols.SelectedIndexChanged += new System.EventHandler(this.listViewSymbols_SelectedIndexChanged);
@@ -62,11 +62,12 @@ namespace gView.Framework.Symbology.UI.Controls
             // 
             // SymbolSelectorControl
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.listViewSymbols);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "SymbolSelectorControl";
-            this.Size = new System.Drawing.Size(829, 507);
+            this.Size = new System.Drawing.Size(730, 307);
             this.Load += new System.EventHandler(this.SymbolSelectorControl_Load);
             this.ResumeLayout(false);
 

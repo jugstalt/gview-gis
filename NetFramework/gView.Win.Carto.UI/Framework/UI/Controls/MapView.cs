@@ -186,14 +186,18 @@ namespace gView.Framework.UI.Controls
             else
             {
                 _uiLocked = lockUI;
-                if (lockUI)
+                try
                 {
-                    this.Cursor = Cursors.WaitCursor;
+                    if (lockUI)
+                    {
+                        this.Cursor = Cursors.WaitCursor;
+                    }
+                    else
+                    {
+                        this.Cursor = Cursors.Default;
+                    }
                 }
-                else
-                {
-                    this.Cursor = Cursors.Default;
-                }
+                catch { }
             }
         }
 
