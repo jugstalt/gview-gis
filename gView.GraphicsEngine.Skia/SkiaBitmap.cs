@@ -2,16 +2,15 @@
 using gView.GraphicsEngine.Skia.Extensions;
 using SkiaSharp;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Runtime.InteropServices;
 
 namespace gView.GraphicsEngine.Skia
 {
-    class SkiaBitmap : IBitmap
+    internal class SkiaBitmap : IBitmap
     {
         private SKBitmap _bitmap;
-
+        private float _dpiX = 96f, _dpyY = 96f;
         private SkiaBitmap(SKBitmap bitmap)
         {
             _bitmap = bitmap;
@@ -43,29 +42,32 @@ namespace gView.GraphicsEngine.Skia
             _bitmap = SKBitmap.Decode(filename);
         }
 
-        public int Width => _bitmap.Width;
+        public int Width => _bitmap != null ? _bitmap.Width : 0;
 
-        public int Height => _bitmap.Height;
+        public int Height => _bitmap != null ? _bitmap.Height : 0;
 
-        public float DpiX => 144f;
+        public float DpiX => _dpiX;
 
-        public float DpiY => 144f;
+        public float DpiY => _dpyY;
 
         public PixelFormat PixelFormat
         {
             get
             {
-                switch(_bitmap.BytesPerPixel)
-                {
-                    case 4:
-                        return PixelFormat.Format32bppArgb;
-                    case 3:
-                        return PixelFormat.Format24bppRgb;
-                    case 1:
-                        return PixelFormat.Format8bppIndexed;
-                }
+                return _bitmap.ColorType.ToPixelFormat();
+                //switch (_bitmap.BytesPerPixel)
+                //{
+                //    case 4:
+                //        return PixelFormat.Format32bppArgb;
 
-                return PixelFormat.Format32bppArgb;
+                //    case 3:
+                //        return PixelFormat.Format24bppRgb;
+
+                //    case 1:
+                //        return PixelFormat.Format8bppIndexed;
+                //}
+
+                //return PixelFormat.Format32bppArgb;
             }
         }
 
@@ -73,12 +75,21 @@ namespace gView.GraphicsEngine.Skia
 
         public IBitmap Clone(PixelFormat format)
         {
-            return new SkiaBitmap(_bitmap.Copy(format.ToSKColorType()));
+            if (_bitmap != null)
+            {
+                return new SkiaBitmap(_bitmap.Copy(format.ToSKColorType()));
+            }
+
+            return null;
         }
 
         public ICanvas CreateCanvas()
         {
-            return new SkiaCanvas(new SKCanvas(_bitmap));
+            if (_bitmap != null)
+            {
+                return new SkiaCanvas(new SKCanvas(_bitmap));
+            }
+            return null;
         }
 
         public void Dispose()
@@ -92,51 +103,95 @@ namespace gView.GraphicsEngine.Skia
 
         public ArgbColor GetPixel(int x, int y)
         {
-            return _bitmap.GetPixel(x, y).ToArgbColor();
+            return _bitmap?.GetPixel(x, y).ToArgbColor() ?? ArgbColor.Empty;
         }
 
         public BitmapPixelData LockBitmapPixelData(BitmapLockMode lockMode, PixelFormat pixelFormat)
         {
-            var bytes = _bitmap.GetPixels();
-
-            return new BitmapPixelData()
+            if (_bitmap != null)
             {
-                Width = _bitmap.Width,
-                Height = _bitmap.Height,
-                Stride = _bitmap.Info.RowBytes,
-                PixelFormat = pixelFormat,
-                Scan0 = _bitmap.GetPixels()
-            };
-        }
+                IntPtr scan0 ;
+                if (lockMode == BitmapLockMode.Copy)
+                {
+                    scan0 = Marshal.AllocHGlobal(_bitmap.ByteCount /*+ _bitmap.RowBytes * 100*/);
+                    // Copy the array to unmanaged memory.
+                    Marshal.Copy(_bitmap.Bytes, 0, scan0, _bitmap.ByteCount);
+                }
+                else
+                {
+                    scan0 = _bitmap.GetPixels();
+                }
 
-        public void MakeTransparent()
-        {
-            
-        }
+                return new BitmapPixelData(lockMode)
+                {
+                    Width = _bitmap.Width,
+                    Height = _bitmap.Height,
+                    Stride = _bitmap.RowBytes,
+                    PixelFormat = _bitmap.ColorType.ToPixelFormat(),
+                    Scan0 = scan0
+                    //Scan0 = System.Runtime.InteropServices.Marshal.UnsafeAddrOfPinnedArrayElement(_bitmap.Bytes, 0)
+                    //Scan0 = _bitmap.GetPixels()
+                };
+            }
 
-        public void MakeTransparent(ArgbColor color)
-        {
-            
-        }
-
-        public void Save(string filename, ImageFormat format, int quality = 0)
-        {
-            
-        }
-
-        public void Save(Stream stream, ImageFormat format, int quality = 0)
-        {
-           
-        }
-
-        public void SetResolution(float dpiX, float dpiY)
-        {
-            
+            return null;
         }
 
         public void UnlockBitmapPixelData(BitmapPixelData bitmapPixelData)
         {
-            // DoTo ?
+            if (bitmapPixelData.LockMode == BitmapLockMode.Copy && bitmapPixelData.Scan0 != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(bitmapPixelData.Scan0);
+            }
+        }
+
+        public void MakeTransparent()
+        {
+        }
+
+        public void MakeTransparent(ArgbColor color)
+        {
+        }
+
+        public void Save(string filename, ImageFormat format, int quality = 0)
+        {
+            //var image = SKImage.FromBitmap(_bitmap);
+            //using (var data = image.Encode(SKEncodedImageFormat.Png, 75))
+            //{
+            //    using (var stream = File.OpenWrite(filename))
+            //    {
+            //        data.SaveTo(stream);
+            //    }
+            //}
+
+            using (var bm = new System.Drawing.Bitmap(
+                        _bitmap.Width,
+                        _bitmap.Height,
+                        _bitmap.RowBytes,
+                        System.Drawing.Imaging.PixelFormat.Format32bppArgb,
+                        System.Runtime.InteropServices.Marshal.UnsafeAddrOfPinnedArrayElement(_bitmap.Bytes, 0)))
+            {
+                bm.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
+            }
+        }
+
+        public void Save(Stream stream, ImageFormat format, int quality = 0)
+        {
+            using (var bm = new System.Drawing.Bitmap(
+                        _bitmap.Width,
+                        _bitmap.Height,
+                        _bitmap.RowBytes,
+                        System.Drawing.Imaging.PixelFormat.Format32bppArgb,
+                        System.Runtime.InteropServices.Marshal.UnsafeAddrOfPinnedArrayElement(_bitmap.Bytes, 0)))
+            {
+                bm.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+            }
+        }
+
+        public void SetResolution(float dpiX, float dpiY)
+        {
+            _dpiX = dpiX;
+            _dpyY = dpiY;
         }
     }
 }

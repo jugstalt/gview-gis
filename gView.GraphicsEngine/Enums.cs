@@ -55,7 +55,8 @@ namespace gView.GraphicsEngine
     {
         ReadOnly = 1,
         WriteOnly = 2,
-        ReadWrite = 3
+        ReadWrite = 3,
+        Copy = 4
     }
 
     public enum FontStyle

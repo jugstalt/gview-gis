@@ -28,16 +28,20 @@ namespace gView.Framework.Sys.UI.Extensions
             BitmapPixelData bmPixelData = null;
             try
             {
-                bmPixelData = iBitmap.LockBitmapPixelData(BitmapLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+                bmPixelData = iBitmap.LockBitmapPixelData(BitmapLockMode.Copy, PixelFormat.Format32bppArgb);
                 var bm = new Bitmap(bmPixelData.Width,
-                                  bmPixelData.Height,
-                                  bmPixelData.Stride,
-                                  System.Drawing.Imaging.PixelFormat.Format32bppArgb,
-                                  bmPixelData.Scan0);
+                                    bmPixelData.Height,
+                                    bmPixelData.Stride,
+                                    System.Drawing.Imaging.PixelFormat.Format32bppArgb,
+                                    bmPixelData.Scan0);
+                {
 
-                //bm.Save($"E:\\xxx\\temp\\bitmap_{ Guid.NewGuid().ToString("N").ToString() }.png", System.Drawing.Imaging.ImageFormat.Png);
+                    ////bm.Save($"C:\\temp\\bitmap_{ Guid.NewGuid().ToString("N").ToString() }.png", System.Drawing.Imaging.ImageFormat.Png);
 
-                return bm;
+                    bmPixelData.Scan0 = IntPtr.Zero;  // Don't give it back...
+                    return bm;
+                    
+                }
             }
             finally
             {
@@ -56,7 +60,7 @@ namespace gView.Framework.Sys.UI.Extensions
                 return gdiBitmap.Clone(new Rectangle(0, 0, iBitmap.Width, iBitmap.Height), gdiBitmap.PixelFormat);
             }
 
-            return iBitmap.Clone(PixelFormat.Format32bppArgb).ToGdiBitmap();
+            return iBitmap/*.Clone(PixelFormat.Format32bppArgb)*/.ToGdiBitmap();
         }
 
         static public IBitmap CloneToIBitmap(this Bitmap bitmap)

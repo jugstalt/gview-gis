@@ -16,7 +16,7 @@ namespace gView.GraphicsEngine.Skia
             _path = new SKPath();
         }
 
-        public object EngineElement => throw new NotImplementedException();
+        public object EngineElement => _path;
 
         public void AddLine(float x1, float y1, float x2, float y2)
         {

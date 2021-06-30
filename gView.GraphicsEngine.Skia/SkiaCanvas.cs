@@ -37,10 +37,10 @@ namespace gView.GraphicsEngine.Skia
 
         public void DrawBitmap(IBitmap bitmap, CanvasPoint point)
         {
-            _canvas.DrawBitmap((SKBitmap)bitmap.EngineElement, point.ToSKPoint(), new SKPaint()
-            {
-                FilterQuality = this.InterpolationMode.ToSKFilterQuality()
-            });
+            //_canvas.DrawBitmap((SKBitmap)bitmap.EngineElement, point.ToSKPoint(), new SKPaint()
+            //{
+            //    FilterQuality = this.InterpolationMode.ToSKFilterQuality()
+            //});
         }
 
         public void DrawBitmap(IBitmap bitmap, CanvasPointF pointF)
@@ -75,14 +75,14 @@ namespace gView.GraphicsEngine.Skia
             _canvas.DrawBitmap((SKBitmap)bitmap.EngineElement, source.ToSKRect(), dest.ToSKRect());
         }
 
-        public void DrawEllipse(IPen pen, float x1, float y1, float x2, float y2)
+        public void DrawEllipse(IPen pen, float x1, float y1, float width, float height)
         {
-            _canvas.DrawOval(new SKRect(x1, y1, x2, y2), GetSKPaint(pen));
+            _canvas.DrawOval(new SKRect(x1, y1, x1 + width, y1 + width), GetSKPaint(pen));
         }
 
-        public void FillEllipse(IBrush brush, float x1, float y1, float x2, float y2)
+        public void FillEllipse(IBrush brush, float x1, float y1, float width, float height)
         {
-            _canvas.DrawOval(new SKRect(x1, y1, x2, y2), GetSKPaint(brush));
+            _canvas.DrawOval(new SKRect(x1, y1, x1 + width, y1 + width), GetSKPaint(brush));
         }
 
         public void DrawRectangle(IPen pen, CanvasRectangle rectangle)

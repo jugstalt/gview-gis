@@ -60,6 +60,7 @@
     <ProjectReference Include="..\gView.Editor.Core\gView.Editor.Core.csproj" />
     <ProjectReference Include="..\gView.Geometry\gView.Geometry.csproj" />
     <ProjectReference Include="..\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj" />
+    <ProjectReference Include="..\gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj" />
     <ProjectReference Include="..\gView.GraphicsEngine\gView.GraphicsEngine.csproj" />
     <ProjectReference Include="..\gView.Interoperability.ArcXML\gView.Interoperability.ArcXML.csproj" />
     <ProjectReference Include="..\gView.Interoperability.GeoServices\gView.Interoperability.GeoServices.csproj" />
