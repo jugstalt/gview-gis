@@ -1,5 +1,6 @@
 ﻿using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
+using System;
 using System.Drawing;
 using System.IO;
 
@@ -28,13 +29,15 @@ namespace gView.Framework.Sys.UI.Extensions
             try
             {
                 bmPixelData = iBitmap.LockBitmapPixelData(BitmapLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-                return new Bitmap(bmPixelData.Width,
-                                  bmPixelData.Width,
+                var bm = new Bitmap(bmPixelData.Width,
+                                  bmPixelData.Height,
                                   bmPixelData.Stride,
                                   System.Drawing.Imaging.PixelFormat.Format32bppArgb,
                                   bmPixelData.Scan0);
 
-                //Marshal.UnsafeAddrOfPinnedArrayElement(newbytes, 0);
+                //bm.Save($"E:\\xxx\\temp\\bitmap_{ Guid.NewGuid().ToString("N").ToString() }.png", System.Drawing.Imaging.ImageFormat.Png);
+
+                return bm;
             }
             finally
             {

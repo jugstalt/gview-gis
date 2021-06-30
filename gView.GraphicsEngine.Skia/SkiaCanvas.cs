@@ -188,17 +188,17 @@ namespace gView.GraphicsEngine.Skia
 
         public void ResetTransform()
         {
-            //throw new NotImplementedException();
+            _canvas.ResetMatrix();
         }
 
         public void RotateTransform(float angle)
         {
-            //throw new NotImplementedException();
+            _canvas.RotateDegrees(angle);
         }
 
         public void TranslateTransform(CanvasPointF point)
         {
-            //throw new NotImplementedException();
+            _canvas.Translate(point.ToSKPoint());
         }
 
         #region Helper

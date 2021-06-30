@@ -32,7 +32,7 @@ namespace gView.GraphicsEngine.Skia.Extensions
                 case PixelFormat.Format24bppRgb:
                     return SKColorType.Rgb888x;
                 case PixelFormat.Format32bppArgb:
-                    return SKColorType.Rgba8888;
+                    return OsPlatform.IsWindows ? SKColorType.Bgra8888 : SKColorType.Rgba8888;
                 case PixelFormat.Format32bppPArgb:
                     return SKColorType.RgbaF32;  // ??
                 case PixelFormat.Format32bppRgb:
@@ -79,6 +79,7 @@ namespace gView.GraphicsEngine.Skia.Extensions
                 case SKColorType.Rgb888x:
                     return PixelFormat.Format24bppRgb;
                 case SKColorType.Rgba8888:
+                case SKColorType.Bgra8888:
                     return PixelFormat.Format32bppArgb;
                 case SKColorType.Rgba1010102: 
                     return PixelFormat.Format32bppPArgb;  // ??

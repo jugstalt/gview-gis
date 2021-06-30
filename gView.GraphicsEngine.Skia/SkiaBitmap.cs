@@ -47,9 +47,9 @@ namespace gView.GraphicsEngine.Skia
 
         public int Height => _bitmap.Height;
 
-        public float DpiX => 96f;
+        public float DpiX => 144f;
 
-        public float DpiY => 96f;
+        public float DpiY => 144f;
 
         public PixelFormat PixelFormat
         {
@@ -97,8 +97,16 @@ namespace gView.GraphicsEngine.Skia
 
         public BitmapPixelData LockBitmapPixelData(BitmapLockMode lockMode, PixelFormat pixelFormat)
         {
-            _bitmap.GetPixels();
-            
+            var bytes = _bitmap.GetPixels();
+
+            return new BitmapPixelData()
+            {
+                Width = _bitmap.Width,
+                Height = _bitmap.Height,
+                Stride = _bitmap.Info.RowBytes,
+                PixelFormat = pixelFormat,
+                Scan0 = _bitmap.GetPixels()
+            };
         }
 
         public void MakeTransparent()
@@ -128,7 +136,7 @@ namespace gView.GraphicsEngine.Skia
 
         public void UnlockBitmapPixelData(BitmapPixelData bitmapPixelData)
         {
-            throw new NotImplementedException();
+            // DoTo ?
         }
     }
 }
