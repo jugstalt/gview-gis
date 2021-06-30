@@ -47,6 +47,7 @@ namespace gView.Framework.UI.Controls
         public delegate void DrawingLayerEvent(string layerName);
         public event DrawingLayerEvent DrawingLayer;
         private IBitmap _iBitmap = null;
+        private Bitmap _bitmapSnapShot = null;
         private object lockThis = new object();
         private System.Windows.Forms.Timer timerResize;
         private bool _mouseWheel = true, _uiLocked = false;
@@ -267,18 +268,11 @@ namespace gView.Framework.UI.Controls
 
         public void OnDrawingLayer(string layerName)
         {
-            if (DrawingLayer != null)
-            {
-                DrawingLayer(layerName);
-            }
+            DrawingLayer?.Invoke(layerName);
         }
 
         public void NewBitmapCreated(IBitmap bitmap)
         {
-            if (_iBitmap != null)
-            {
-                _iBitmap.Dispose();
-            }
             _iBitmap = bitmap;
         }
 
@@ -297,12 +291,14 @@ namespace gView.Framework.UI.Controls
                     {
                         try
                         {
-                            using (var bm = _iBitmap.CloneToGdiBitmap())
-                            using (var gr = System.Drawing.Graphics.FromHwnd(_handle))
+                            if (CreateBitmapSnapshot())
                             {
-                                gr.DrawImage(bm, new PointF(0, 0));
+                                using (var gr = System.Drawing.Graphics.FromHwnd(_handle))
+                                {
+                                    gr.DrawImage(_bitmapSnapShot, new PointF(0, 0));
+                                }
+                                _iSnapX = _iSnapY = int.MinValue;
                             }
-                            _iSnapX = _iSnapY = int.MinValue;
                         }
                         catch (Exception)
                         {
@@ -413,22 +409,9 @@ namespace gView.Framework.UI.Controls
 
 
         private bool _cancelling = false;
-        private void CancelDrawing(bool runAndForget=false)
-        {
-            if (runAndForget)
-            {
-                Task.Run(() =>
-                {
-                    CancelDrawing(DrawPhase.All);
-                });
-            }
-            else
-            {
-                CancelDrawing(DrawPhase.All);
-            }
-        }
+        
 
-        public void CancelDrawing(DrawPhase phase)
+        public void CancelDrawing(DrawPhase phase = DrawPhase.All)
         {
             _canceled = _cancelling = true;
             try
@@ -438,29 +421,11 @@ namespace gView.Framework.UI.Controls
                     return;
                 }
 
+                // Create a Snapshot for mouse events (panning/zooming)
+                CreateBitmapSnapshot();
                 // Release events & cancel
                 ReleaseCurrentMapRendererInstance();
                 _cancelTracker.Cancel();
-
-                //lock (lockThis)
-                //{
-                //    DateTime timeStamp = DateTime.UtcNow;
-                //    while (_cancelTracker.Continue || (_map != null ? _map.IsRefreshing : false))
-                //    {
-                //        _cancelTracker.Cancel();
-                //        Thread.Sleep(10);
-                //    }
-                //    if (_map is Map)
-                //    {
-                //        while(_map.IsRefreshing)
-                //        {
-                //            Thread.Sleep(5);
-                //        }
-                //        ((Map)_map).DisposeGraphics();
-                //    }
-
-                //    AfterRefreshMap?.Invoke();
-                //}
             }
             finally
             {
@@ -506,11 +471,20 @@ namespace gView.Framework.UI.Controls
 
                       try 
                       {
-                          _mapRendererInstance = CreateMapRendererInstance();
-                          await _mapRendererInstance.RefreshMap(_phase, _cancelTracker);
+                          var myCancelTracker = _cancelTracker;
+                          var myMapRendererInstance = _mapRendererInstance = CreateMapRendererInstance();
+
+                          await myMapRendererInstance.RefreshMap(_phase, _cancelTracker);
                           MakeMapViewRefresh();
 
                           AfterRefreshMap?.Invoke();
+
+                          if (myCancelTracker.Continue)
+                          {
+                              CreateBitmapSnapshot();
+                              _iBitmap = null;
+                          }
+                          myMapRendererInstance.Dispose();
                       } 
                       catch(Exception ex)
                       {
@@ -774,12 +748,12 @@ namespace gView.Framework.UI.Controls
                     break;
                 case ToolType.smartnavigation:
                     //CancelDrawing(DrawPhase.All);
-                    CancelDrawing(true);
+                    CancelDrawing();
                     break;
                 case ToolType.pan:
                     if (_navType == NavigationType.Standard)
                     {
-                        CancelDrawing(true); //CancelDrawing(DrawPhase.All);
+                        CancelDrawing();
                     }
 
                     break;
@@ -838,9 +812,8 @@ namespace gView.Framework.UI.Controls
             {
                 return;
             }
-            //if (_canceled)
-            //    CancelDrawing(DrawPhase.All);
-            CancelDrawing(true);
+
+            CancelDrawing();
 
             bool first = (_wheelImageStartEnv == null);
 
@@ -879,12 +852,12 @@ namespace gView.Framework.UI.Controls
                     gr.FillRectangle(brush, 0, 0, this.Width, this.Height);
                 }
 
-                if (_iBitmap != null)
+                if (_bitmapSnapShot != null)
                 {
                     try
                     {
                         // ToDO: Snapshot...
-                        gr.DrawImage(_iBitmap.ToGdiBitmap(),
+                        gr.DrawImage(_bitmapSnapShot,
                             rect,
                             new Rectangle(0, 0, this.Width, this.Height),
                             System.Drawing.GraphicsUnit.Pixel);
@@ -945,11 +918,11 @@ namespace gView.Framework.UI.Controls
                     gr.FillRectangle(brush, 0, 0, this.Width, this.Height);
                 }
 
-                if (_iBitmap != null)
+                if (_bitmapSnapShot != null)
                 {
                     try
                     {
-                        gr.DrawImage(_iBitmap.ToGdiBitmap(),
+                        gr.DrawImage(_bitmapSnapShot,
                             rect,
                             new Rectangle(0, 0, this.Width, this.Height),
                             System.Drawing.GraphicsUnit.Pixel);
@@ -989,6 +962,7 @@ namespace gView.Framework.UI.Controls
             _map.Display.Image2World(ref _X, ref _Y);
 
             #region Snapping
+
             DrawReversibleSnapPoint(_iSnapX, _iSnapY);
             if (_actTool is ISnapTool)
             {
@@ -1011,6 +985,7 @@ namespace gView.Framework.UI.Controls
             {
                 _iSnapX = _iSnapY = int.MinValue;
             }
+
             #endregion
 
             if (CursorMove != null)
@@ -1118,11 +1093,11 @@ namespace gView.Framework.UI.Controls
                             gr.FillRectangle(brush, 0, 0, this.Width, this.Height);
                         }
 
-                        if (_iBitmap != null)
+                        if (_bitmapSnapShot != null)
                         {
                             try
                             {
-                                gr.DrawImage(_iBitmap.ToGdiBitmap(),
+                                gr.DrawImage(_bitmapSnapShot,
                                     rect,
                                     new Rectangle(dx, dy, this.Width, this.Height),
                                     System.Drawing.GraphicsUnit.Pixel);
@@ -1153,9 +1128,9 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        async private void Pan_MouseMove(System.Windows.Forms.MouseEventArgs e)
+        private void Pan_MouseMove(System.Windows.Forms.MouseEventArgs e)
         {
-            if (_iBitmap == null || _uiLocked)
+            if (_bitmapSnapShot == null || _uiLocked)
             {
                 return;
             }
@@ -1187,7 +1162,7 @@ namespace gView.Framework.UI.Controls
 
                 try
                 {
-                    gr.DrawImage(_iBitmap.ToGdiBitmap(),
+                    gr.DrawImage(_bitmapSnapShot,
                         new Rectangle(
                         Control.MousePosition.X - _mx,
                         Control.MousePosition.Y - _my,
@@ -1396,7 +1371,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        async private void MapView_MouseClick(object sender, MouseEventArgs e)
+        private void MapView_MouseClick(object sender, MouseEventArgs e)
         {
             if (_actTool is IToolMouseActions)
             {
@@ -1404,7 +1379,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        async private void MapView_MouseDoubleClick(object sender, MouseEventArgs e)
+        private void MapView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if (_actTool is IToolMouseActions)
             {
@@ -1469,7 +1444,7 @@ namespace gView.Framework.UI.Controls
         }
 
         #region Key
-        async private void MapView_KeyDown(object sender, KeyEventArgs e)
+        private void MapView_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.ControlKey)
             {
@@ -1484,7 +1459,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        async private void MapView_KeyPress(object sender, KeyPressEventArgs e)
+        private void MapView_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (_actTool is IToolKeyActions)
             {
@@ -1492,7 +1467,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        async private void MapView_KeyUp(object sender, KeyEventArgs e)
+        private void MapView_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.ControlKey)
             {
@@ -1591,8 +1566,6 @@ namespace gView.Framework.UI.Controls
                 _map.Display.ZoomTo(_map.Display.Envelope);
             }
 
-            _iBitmap = null;
-
             CancelDrawing();
 
             if (_mapDoc != null && _mapDoc.Application is IMapApplication)
@@ -1646,9 +1619,39 @@ namespace gView.Framework.UI.Controls
                 _mapRendererInstance.NewBitmap -= NewBitmapCreated;
                 _mapRendererInstance.DoRefreshMapView -= MakeMapViewRefresh;
 
-                //_mapRendererInstance.Dispose();
-
                 _mapRendererInstance = null;
+            }
+        }
+
+        private static object lockCreateBitmapSnapshot = new object();
+        private bool CreateBitmapSnapshot()
+        {
+            lock (lockCreateBitmapSnapshot)
+            {
+                if (_iBitmap != null)
+                {
+                    ReleaseBitmapSnapshot();
+                    try
+                    {
+                        _bitmapSnapShot = _iBitmap.CloneToGdiBitmap();
+                    }
+                    catch { }
+                }
+
+                return _bitmapSnapShot != null;
+            }
+        }
+
+        private static object lockReleaseSnapshot = new object();
+        private void ReleaseBitmapSnapshot()
+        {
+            lock(lockReleaseSnapshot)
+            {
+                if (_bitmapSnapShot != null)
+                {
+                    _bitmapSnapShot.Dispose();
+                    _bitmapSnapShot = null;
+                }
             }
         }
 
