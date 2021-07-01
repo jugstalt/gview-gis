@@ -11,6 +11,5 @@ namespace gView.Drawing.Pro.Filters
     {
         Bitmap Apply(Bitmap bitmap);
         Bitmap Apply(BitmapData bmData);
-        //Bitmap Apply(BitmapPixelData bmData);
     }
 }

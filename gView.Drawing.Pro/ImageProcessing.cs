@@ -135,6 +135,10 @@ namespace gView.Drawing.Pro
             }
 
             // DoTo
+            using(var iBitmap = GraphicsEngine.Current.Engine.CreateBitmap(new MemoryStream(imageBytes)))
+            {
+
+            }
 
             return imageBytes;
         }
