@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
 using gView.Framework.Data;
+using gView.GraphicsEngine.Abstraction;
+using gView.GraphicsEngine;
 
 namespace gView.Test
 {
@@ -17,13 +19,20 @@ namespace gView.Test
             try
             {
                 //TestProj4();
-                TestPerformance();
+                //TestPerformance();
 
                 //Console.ReadLine();
 
                 //TestVtc().Wait();
 
                 //ParseSQL();
+
+                //gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GraphicsEngine();
+                gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine();
+                using (var bitmap = CreateImage(600,500))
+                {
+                    SaveBitmap(bitmap, "E:\\gstaltjr\\temp\\graphic.png");
+                }
             }
             catch (Exception ex)
             {
@@ -264,6 +273,51 @@ namespace gView.Test
         {
             "OBJECTID in (1,2)".CheckWhereClauseForSqlInjection();
         }
+
+        #endregion
+
+        #region Test Graphicsengine
+
+        static public IBitmap CreateImage(int width, int height)
+        {
+            var bitmap = Current.Engine.CreateBitmap(width, height);
+
+            using (var canvas = bitmap.CreateCanvas())
+            using (var brush = Current.Engine.CreateSolidBrush(ArgbColor.Yellow))
+            using (var pen = Current.Engine.CreatePen(ArgbColor.Red, 10))
+            {
+                canvas.SmoothingMode = SmoothingMode.AntiAlias;
+                canvas.FillEllipse(brush, 10, 10, width - 20, height - 20);
+                canvas.DrawEllipse(pen, 10, 10, width - 20, height - 20);
+            }
+
+            return bitmap;
+        }
+
+        static public void SaveBitmap(IBitmap bitmap, string filename)
+        {
+            BitmapPixelData bmPixelData = null;
+            try
+            {
+                bmPixelData = bitmap.Clone(PixelFormat.Format32bppArgb).LockBitmapPixelData(BitmapLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+                using (var bm = new System.Drawing.Bitmap(bmPixelData.Width,
+                                  bmPixelData.Height,
+                                  bmPixelData.Stride,
+                                  System.Drawing.Imaging.PixelFormat.Format32bppArgb,
+                                  bmPixelData.Scan0))
+                {
+                    bm.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
+                }
+            }
+            finally
+            {
+                if (bmPixelData != null)
+                {
+                    bitmap.UnlockBitmapPixelData(bmPixelData);
+                }
+            }
+        }
+
 
         #endregion
     }

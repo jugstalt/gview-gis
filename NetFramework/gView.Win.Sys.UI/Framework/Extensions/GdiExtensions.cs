@@ -1,13 +1,8 @@
-﻿using gView.Framework.Symbology;
-using gView.GraphicsEngine;
+﻿using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gView.Framework.Sys.UI.Extensions
 {
@@ -30,8 +25,31 @@ namespace gView.Framework.Sys.UI.Extensions
                 return (Bitmap)iBitmap.EngineElement;
             }
 
-            // ToDo:
-            return null;
+            BitmapPixelData bmPixelData = null;
+            try
+            {
+                bmPixelData = iBitmap.LockBitmapPixelData(BitmapLockMode.Copy, PixelFormat.Format32bppArgb);
+                var bm = new Bitmap(bmPixelData.Width,
+                                    bmPixelData.Height,
+                                    bmPixelData.Stride,
+                                    System.Drawing.Imaging.PixelFormat.Format32bppArgb,
+                                    bmPixelData.Scan0);
+                {
+
+                    ////bm.Save($"C:\\temp\\bitmap_{ Guid.NewGuid().ToString("N").ToString() }.png", System.Drawing.Imaging.ImageFormat.Png);
+
+                    bmPixelData.Scan0 = IntPtr.Zero;  // Don't give it back...
+                    return bm;
+                    
+                }
+            }
+            finally
+            {
+                if(bmPixelData!=null)
+                {
+                    iBitmap.UnlockBitmapPixelData(bmPixelData);
+                }
+            }
         }
 
         static public Bitmap CloneToGdiBitmap(this IBitmap iBitmap)
@@ -42,8 +60,7 @@ namespace gView.Framework.Sys.UI.Extensions
                 return gdiBitmap.Clone(new Rectangle(0, 0, iBitmap.Width, iBitmap.Height), gdiBitmap.PixelFormat);
             }
 
-            // ToDo:
-            return null;
+            return iBitmap/*.Clone(PixelFormat.Format32bppArgb)*/.ToGdiBitmap();
         }
 
         static public IBitmap CloneToIBitmap(this Bitmap bitmap)
@@ -54,9 +71,11 @@ namespace gView.Framework.Sys.UI.Extensions
         static public IBitmap CloneToIBitmap(this Image image)
         {
             if (image == null)
+            {
                 return null;
+            }
 
-            using(var ms = new MemoryStream())
+            using (var ms = new MemoryStream())
             {
                 image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
 

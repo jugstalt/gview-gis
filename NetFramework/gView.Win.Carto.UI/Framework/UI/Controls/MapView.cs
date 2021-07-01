@@ -186,14 +186,18 @@ namespace gView.Framework.UI.Controls
             else
             {
                 _uiLocked = lockUI;
-                if (lockUI)
+                try
                 {
-                    this.Cursor = Cursors.WaitCursor;
+                    if (lockUI)
+                    {
+                        this.Cursor = Cursors.WaitCursor;
+                    }
+                    else
+                    {
+                        this.Cursor = Cursors.Default;
+                    }
                 }
-                else
-                {
-                    this.Cursor = Cursors.Default;
-                }
+                catch { }
             }
         }
 
@@ -1076,35 +1080,25 @@ namespace gView.Framework.UI.Controls
                             (int)(env.maxx - env.minx),
                             (int)(env.maxy - env.miny));
 
-                        System.Drawing.Graphics gr = System.Drawing.Graphics.FromHwnd(this.Handle);
-
-                        using (SolidBrush brush = new SolidBrush((_map != null) ? _map.Display.BackgroundColor.ToGdiColor() : Color.White))
+                        using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromHwnd(this.Handle))
                         {
-                            /*
-                            if (rect.Y > 0)
-                                gr.FillRectangle(brush, 0, 0, this.Width, rect.Y);
-                            if (rect.X > 0)
-                                gr.FillRectangle(brush, 0, 0, rect.X, this.Height);
-                            if (this.Width - rect.X - rect.Width > 0)
-                                gr.FillRectangle(brush, rect.X + rect.Width, 0, this.Width - rect.X - rect.Width, this.Height);
-                            if (this.Height - rect.Y - rect.Height > 0)
-                                gr.FillRectangle(brush, 0, rect.Y + rect.Height, this.Width, this.Height - rect.Y - rect.Height);
-                             * */
-                            gr.FillRectangle(brush, 0, 0, this.Width, this.Height);
-                        }
-
-                        if (_bitmapSnapShot != null)
-                        {
-                            try
+                            using (SolidBrush brush = new SolidBrush((_map != null) ? _map.Display.BackgroundColor.ToGdiColor() : Color.White))
                             {
-                                gr.DrawImage(_bitmapSnapShot,
-                                    rect,
-                                    new Rectangle(dx, dy, this.Width, this.Height),
-                                    System.Drawing.GraphicsUnit.Pixel);
+                                gr.FillRectangle(brush, 0, 0, this.Width, this.Height);
                             }
-                            catch { }
+
+                            if (_bitmapSnapShot != null)
+                            {
+                                try
+                                {
+                                    gr.DrawImage(_bitmapSnapShot,
+                                        rect,
+                                        new Rectangle(dx, dy, this.Width, this.Height),
+                                        System.Drawing.GraphicsUnit.Pixel);
+                                }
+                                catch { }
+                            }
                         }
-                        gr.Dispose(); gr = null;
                     }
                     else if (_button == MouseButtons.Left)
                     {
@@ -1624,16 +1618,20 @@ namespace gView.Framework.UI.Controls
         }
 
         private static object lockCreateBitmapSnapshot = new object();
+        private int snapshotCounter = 0;
         private bool CreateBitmapSnapshot()
         {
             lock (lockCreateBitmapSnapshot)
             {
                 if (_iBitmap != null)
                 {
-                    ReleaseBitmapSnapshot();
                     try
                     {
+                        var oldBitmapSnapShot = _bitmapSnapShot;
                         _bitmapSnapShot = _iBitmap.CloneToGdiBitmap();
+                        //_bitmapSnapShot.Save($"C:\\temp\\snapshot{ snapshotCounter++ }.png");
+
+                        ReleaseBitmapSnapshot(oldBitmapSnapShot);
                     }
                     catch { }
                 }
@@ -1643,14 +1641,13 @@ namespace gView.Framework.UI.Controls
         }
 
         private static object lockReleaseSnapshot = new object();
-        private void ReleaseBitmapSnapshot()
+        private void ReleaseBitmapSnapshot(Bitmap snapShot)
         {
             lock(lockReleaseSnapshot)
             {
-                if (_bitmapSnapShot != null)
+                if (snapShot != null)
                 {
-                    _bitmapSnapShot.Dispose();
-                    _bitmapSnapShot = null;
+                    snapShot.Dispose();
                 }
             }
         }

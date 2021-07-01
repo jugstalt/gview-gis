@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.system;
+using System;
 
 namespace gView.Framework.Carto.UI
 {
@@ -69,7 +67,10 @@ namespace gView.Framework.Carto.UI
         }
         public void Draw(GraphicsEngine.Abstraction.ICanvas canvas, GraphicsEngine.CanvasRectangle rectangle, ISymbol symbol, bool cls)
         {
-            if (symbol == null) return;
+            if (symbol == null)
+            {
+                return;
+            }
 
             Display display = new gView.Framework.Carto.Display(_map);
             display.dpi = canvas.DpiX;
@@ -83,10 +84,15 @@ namespace gView.Framework.Carto.UI
                                                                          rectangle.Height + rectangle.Top,
                                                                          rectangle.Width + rectangle.Left,
                                                                          rectangle.Top));
-            if (geometry == null) return;
+            if (geometry == null)
+            {
+                return;
+            }
 
             if (PlugInManager.PlugInID(symbol).Equals(KnownObjects.Symbology_PolygonMask))
+            {
                 return;
+            }
 
             display.Canvas = canvas;
 
@@ -102,7 +108,10 @@ namespace gView.Framework.Carto.UI
             if (sym != null)
             {
                 if (sym is ITextSymbol)
+                {
                     ((ITextSymbol)sym).Text = "Text";
+                }
+
                 sym.Draw(display, geometry);
                 sym.Release();
             }

@@ -8,6 +8,9 @@
   <ItemGroup>
     <ProjectReference Include="..\gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj" />
     <ProjectReference Include="..\gView.Geometry\gView.Geometry.csproj" />
+    <ProjectReference Include="..\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj" />
+    <ProjectReference Include="..\gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj" />
+    <ProjectReference Include="..\gView.GraphicsEngine\gView.GraphicsEngine.csproj" />
     <ProjectReference Include="..\gView.System\gView.System.csproj" />
   </ItemGroup>
 

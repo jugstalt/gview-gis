@@ -12,7 +12,8 @@ namespace gView.Win.Carto
         protected override void OnStartup(StartupEventArgs e)
         {
             Framework.system.PlugInManager.Usage = Framework.system.PluginUsage.Desktop;
-            gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GraphicsEngine();
+            //gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GraphicsEngine();
+            gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine();
 
             SplashScreen.Show();
             SplashScreen.Refresh();

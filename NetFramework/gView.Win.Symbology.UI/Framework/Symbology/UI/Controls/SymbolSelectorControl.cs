@@ -25,21 +25,24 @@ namespace gView.Framework.Symbology.UI.Controls
 
                 this.listViewSymbols.Items.Clear();
 
-                if (symbolProtoType is IPointSymbol)
+                if (SymbolDict != null)
                 {
-                    AddSymbols(SymbolDict[typeof(IPointSymbol)]);
-                }
-                if (symbolProtoType is ILineSymbol)
-                {
-                    AddSymbols(SymbolDict[typeof(ILineSymbol)]);
-                }
-                if (symbolProtoType is IFillSymbol)
-                {
-                    AddSymbols(SymbolDict[typeof(IFillSymbol)]);
-                }
-                if (symbolProtoType is ITextSymbol)
-                {
-                    AddSymbols(SymbolDict[typeof(ITextSymbol)]);
+                    if (symbolProtoType is IPointSymbol)
+                    {
+                        AddSymbols(SymbolDict[typeof(IPointSymbol)]);
+                    }
+                    if (symbolProtoType is ILineSymbol)
+                    {
+                        AddSymbols(SymbolDict[typeof(ILineSymbol)]);
+                    }
+                    if (symbolProtoType is IFillSymbol)
+                    {
+                        AddSymbols(SymbolDict[typeof(IFillSymbol)]);
+                    }
+                    if (symbolProtoType is ITextSymbol)
+                    {
+                        AddSymbols(SymbolDict[typeof(ITextSymbol)]);
+                    }
                 }
             }
         }
@@ -65,11 +68,14 @@ namespace gView.Framework.Symbology.UI.Controls
                 e.Graphics.DrawRectangle(pen, new Rectangle(e.Bounds.X + 5, e.Bounds.Y + 5, e.Bounds.Width - 10, e.Bounds.Height - 10));
             }
 
-            using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(rect.Width, rect.Height))
-            using (var canvas = bitmap.CreateCanvas())
+            if (GraphicsEngine.Current.Engine != null)
             {
-                new SymbolPreview(null).Draw(canvas, rect.ToCanvasRectangle(), ((SymbolListViewItem)e.Item).Symbol, false);
-                e.Graphics.DrawImage(bitmap.ToGdiBitmap(), new Point(rect.X, rect.Y));
+                using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(rect.Width, rect.Height))
+                using (var canvas = bitmap.CreateCanvas())
+                {
+                    new SymbolPreview(null).Draw(canvas, new GraphicsEngine.CanvasRectangle(0, 0, rect.Width, rect.Height), ((SymbolListViewItem)e.Item).Symbol.Clone(null) as ISymbol, false);
+                    e.Graphics.DrawImage(bitmap.ToGdiBitmap(), rect, new Rectangle(0, 0, rect.Width, rect.Height), GraphicsUnit.Pixel);
+                }
             }
         }
 
@@ -93,408 +99,416 @@ namespace gView.Framework.Symbology.UI.Controls
 
         #region Predefined Symbols
 
-        private static Dictionary<Type, List<ISymbol>> SymbolDict = new Dictionary<Type, List<ISymbol>>()
+        static SymbolSelectorControl()
         {
+            if(GraphicsEngine.Current.Engine!=null)
             {
-                typeof(IPointSymbol),
-                new List<ISymbol>()
+                SymbolDict = new Dictionary<Type, List<ISymbol>>()
                 {
-                    new SimplePointSymbol()
                     {
-                         FillColor = GraphicsEngine.ArgbColor.Yellow,
-                         PenColor = GraphicsEngine.ArgbColor.Red,
-                         PenWidth = 2,
-                         Size = 20,
-                         Marker = SimplePointSymbol.MarkerType.Star,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                        typeof(IPointSymbol),
+                        new List<ISymbol>()
+                        {
+                            new SimplePointSymbol()
+                            {
+                                 FillColor = GraphicsEngine.ArgbColor.Yellow,
+                                 PenColor = GraphicsEngine.ArgbColor.Red,
+                                 PenWidth = 2,
+                                 Size = 20,
+                                 Marker = SimplePointSymbol.MarkerType.Star,
+                                 SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimplePointSymbol()
+                            {
+                                 FillColor = GraphicsEngine.ArgbColor.Yellow,
+                                 PenColor = GraphicsEngine.ArgbColor.Red,
+                                 PenWidth = 2,
+                                 Size = 20,
+                                 Marker = SimplePointSymbol.MarkerType.Cross,
+                                 SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimplePointSymbol()
+                            {
+                                 FillColor = GraphicsEngine.ArgbColor.Yellow,
+                                 PenColor = GraphicsEngine.ArgbColor.Red,
+                                 PenWidth = 2,
+                                 Size = 20,
+                                 Marker = SimplePointSymbol.MarkerType.Square,
+                                 SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimplePointSymbol()
+                            {
+                                 FillColor = GraphicsEngine.ArgbColor.Yellow,
+                                 PenColor = GraphicsEngine.ArgbColor.Red,
+                                 PenWidth = 2,
+                                 Size = 20,
+                                 Marker = SimplePointSymbol.MarkerType.Triangle,
+                                 SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimplePointSymbol()
+                            {
+                                 FillColor = GraphicsEngine.ArgbColor.Yellow,
+                                 PenColor = GraphicsEngine.ArgbColor.Red,
+                                 PenWidth = 2,
+                                 Size = 20,
+                                 Angle = 90f,
+                                 Marker = SimplePointSymbol.MarkerType.Triangle,
+                                 SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimplePointSymbol()
+                            {
+                                 FillColor = GraphicsEngine.ArgbColor.Yellow,
+                                 PenColor = GraphicsEngine.ArgbColor.Red,
+                                 PenWidth = 2,
+                                 Size = 20,
+                                 Angle = 180f,
+                                 Marker = SimplePointSymbol.MarkerType.Triangle,
+                                 SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimplePointSymbol()
+                            {
+                                 FillColor = GraphicsEngine.ArgbColor.Red,
+                                 PenColor = GraphicsEngine.ArgbColor.Transparent,
+                                 PenWidth = 0,
+                                 Size = 20,
+                                 Marker = SimplePointSymbol.MarkerType.Star,
+                                 SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimplePointSymbol()
+                            {
+                                 FillColor = GraphicsEngine.ArgbColor.Red,
+                                 PenColor = GraphicsEngine.ArgbColor.Red,
+                                 PenWidth = 0,
+                                 Size = 20,
+                                 Marker = SimplePointSymbol.MarkerType.Cross,
+                                 SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimplePointSymbol()
+                            {
+                                 FillColor = GraphicsEngine.ArgbColor.Red,
+                                 PenColor = GraphicsEngine.ArgbColor.Transparent,
+                                 PenWidth = 0,
+                                 Size = 20,
+                                 Marker = SimplePointSymbol.MarkerType.Square,
+                                 SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimplePointSymbol()
+                            {
+                                 FillColor = GraphicsEngine.ArgbColor.Red,
+                                 PenColor = GraphicsEngine.ArgbColor.Transparent,
+                                 PenWidth = 0,
+                                 Size = 20,
+                                 Marker = SimplePointSymbol.MarkerType.Triangle,
+                                 SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimplePointSymbol()
+                            {
+                                 FillColor = GraphicsEngine.ArgbColor.Red,
+                                 PenColor = GraphicsEngine.ArgbColor.Transparent,
+                                 PenWidth = 0,
+                                 Size = 20,
+                                 Marker = SimplePointSymbol.MarkerType.Triangle,
+                                 Angle = 90f,
+                                 SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimplePointSymbol()
+                            {
+                                 FillColor = GraphicsEngine.ArgbColor.Red,
+                                 PenColor = GraphicsEngine.ArgbColor.Transparent,
+                                 PenWidth = 0,
+                                 Size = 20,
+                                 Marker = SimplePointSymbol.MarkerType.Triangle,
+                                 Angle = 180f,
+                                 SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            }
+                        }
                     },
-                    new SimplePointSymbol()
                     {
-                         FillColor = GraphicsEngine.ArgbColor.Yellow,
-                         PenColor = GraphicsEngine.ArgbColor.Red,
-                         PenWidth = 2,
-                         Size = 20,
-                         Marker = SimplePointSymbol.MarkerType.Cross,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                        typeof(ILineSymbol),
+                        new List<ISymbol>()
+                        {
+                            new SimpleLineSymbol()
+                            {
+                                Color = GraphicsEngine.ArgbColor.Red,
+                                Width = 3,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimpleLineSymbol()
+                            {
+                                Color = GraphicsEngine.ArgbColor.Red,
+                                Width = 3,
+                                DashStyle = GraphicsEngine.LineDashStyle.Dot,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimpleLineSymbol()
+                            {
+                                Color = GraphicsEngine.ArgbColor.Red,
+                                Width = 3,
+                                DashStyle = GraphicsEngine.LineDashStyle.Dash,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimpleLineSymbol()
+                            {
+                                Color = GraphicsEngine.ArgbColor.Red,
+                                Width = 3,
+                                DashStyle = GraphicsEngine.LineDashStyle.DashDot,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SymbolCollection(new List<ISymbol>(){
+                                new SimpleLineSymbol() { Color = GraphicsEngine.ArgbColor.Red, Width = 6 },
+                                new SimpleLineSymbol() { Color = GraphicsEngine.ArgbColor.Yellow, Width = 4 },
+                            }) { SymbolSmothingMode = SymbolSmoothing.AntiAlias },
+                            new SymbolCollection(new List<ISymbol>(){
+                                new SimpleLineSymbol() { Color = GraphicsEngine.ArgbColor.Red, Width = 6 },
+                                new SimpleLineSymbol() { Color = GraphicsEngine.ArgbColor.Yellow, Width = 2, DashStyle = GraphicsEngine.LineDashStyle.Dash },
+                            }) { SymbolSmothingMode = SymbolSmoothing.AntiAlias },
+                            new SymbolDotedLineSymbol()
+                            {
+                                LineSymbol=new SimpleLineSymbol()
+                                {
+                                    Color = GraphicsEngine.ArgbColor.Gray,
+                                    Width = 2
+                                },
+                                PointSymbol = new SimplePointSymbol()
+                                {
+                                    PenColor = GraphicsEngine.ArgbColor.Transparent,
+                                    FillColor = GraphicsEngine.ArgbColor.Gray,
+                                    Size = 10,
+                                    Marker = SimplePointSymbol.MarkerType.Triangle,
+                                    Angle = 90f,
+                                },
+                                DrawEndPoint = true,
+                                DrawStartPoint=true,
+                                DrawStepPoints=true,
+                                StepWidth = 20,
+                                StepWidthUnit = StepWidthUnit.Pixel,
+                                UseSymbolRotation = true,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SymbolDotedLineSymbol()
+                            {
+                                PointSymbol = new SimplePointSymbol()
+                                {
+                                    PenColor = GraphicsEngine.ArgbColor.Transparent,
+                                    FillColor = GraphicsEngine.ArgbColor.Gray,
+                                    Size = 10,
+                                    Marker = SimplePointSymbol.MarkerType.Circle,
+                                    Angle = 90f,
+                                },
+                                DrawEndPoint = true,
+                                DrawStartPoint=true,
+                                DrawStepPoints=true,
+                                StepWidth = 20,
+                                StepWidthUnit = StepWidthUnit.Pixel,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            }
+                        }
                     },
-                    new SimplePointSymbol()
                     {
-                         FillColor = GraphicsEngine.ArgbColor.Yellow,
-                         PenColor = GraphicsEngine.ArgbColor.Red,
-                         PenWidth = 2,
-                         Size = 20,
-                         Marker = SimplePointSymbol.MarkerType.Square,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                        typeof(IFillSymbol),
+                        new List<ISymbol>()
+                        {
+                            new SimpleFillSymbol()
+                            {
+                                OutlineSymbol = new SimpleLineSymbol()
+                                {
+                                    PenColor = GraphicsEngine.ArgbColor.Gray,
+                                    PenWidth = 1f
+                                },
+                                FillColor = GraphicsEngine.ArgbColor.FromArgb(200, GraphicsEngine.ArgbColor.Red),
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimpleFillSymbol()
+                            {
+                                OutlineSymbol = new SimpleLineSymbol()
+                                {
+                                    PenColor = GraphicsEngine.ArgbColor.Gray,
+                                    PenWidth = 1f
+                                },
+                                FillColor = GraphicsEngine.ArgbColor.FromArgb(200, GraphicsEngine.ArgbColor.Green),
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimpleFillSymbol()
+                            {
+                                OutlineSymbol = new SimpleLineSymbol()
+                                {
+                                    PenColor = GraphicsEngine.ArgbColor.Gray,
+                                    PenWidth = 1f
+                                },
+                                FillColor = GraphicsEngine.ArgbColor.FromArgb(200, GraphicsEngine.ArgbColor.Blue),
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimpleFillSymbol()
+                            {
+                                OutlineSymbol = new SimpleLineSymbol()
+                                {
+                                    PenColor = GraphicsEngine.ArgbColor.Gray,
+                                    PenWidth = 3f
+                                },
+                                FillColor = GraphicsEngine.ArgbColor.Transparent,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimpleFillSymbol()
+                            {
+                                OutlineSymbol = new SimpleLineSymbol()
+                                {
+                                    PenColor = GraphicsEngine.ArgbColor.Red,
+                                    PenWidth = 3f
+                                },
+                                FillColor = GraphicsEngine.ArgbColor.FromArgb(200,GraphicsEngine.ArgbColor.Yellow),
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimpleFillSymbol()
+                            {
+                                OutlineSymbol = new SimpleLineSymbol()
+                                {
+                                    PenColor = GraphicsEngine.ArgbColor.Green,
+                                    PenWidth = 3f
+                                },
+                                FillColor = GraphicsEngine.ArgbColor.FromArgb(100, GraphicsEngine.ArgbColor.AliceBlue),
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new HatchSymbol()
+                            {
+                                OutlineSymbol = new SimpleLineSymbol()
+                                {
+                                    PenColor = GraphicsEngine.ArgbColor.Red,
+                                    PenWidth = 1f
+                                },
+                                HatchStyle = GraphicsEngine.HatchStyle.Cross,
+                                FillColor = GraphicsEngine.ArgbColor.Red,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new HatchSymbol()
+                            {
+                                OutlineSymbol = new SimpleLineSymbol()
+                                {
+                                    PenColor = GraphicsEngine.ArgbColor.Red,
+                                    PenWidth = 1f
+                                },
+                                HatchStyle = GraphicsEngine.HatchStyle.DashedHorizontal,
+                                FillColor = GraphicsEngine.ArgbColor.Red,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new HatchSymbol()
+                            {
+                                OutlineSymbol = new SimpleLineSymbol()
+                                {
+                                    PenColor = GraphicsEngine.ArgbColor.Red,
+                                    PenWidth = 1f
+                                },
+                                HatchStyle = GraphicsEngine.HatchStyle.DiagonalBrick,
+                                FillColor = GraphicsEngine.ArgbColor.Red,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new HatchSymbol()
+                            {
+                                OutlineSymbol = new SimpleLineSymbol()
+                                {
+                                    PenColor = GraphicsEngine.ArgbColor.Red,
+                                    PenWidth = 1f
+                                },
+                                HatchStyle = GraphicsEngine.HatchStyle.DarkVertical,
+                                FillColor = GraphicsEngine.ArgbColor.Red,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new GradientFillSymbol()
+                            {
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            }
+                        }
                     },
-                    new SimplePointSymbol()
                     {
-                         FillColor = GraphicsEngine.ArgbColor.Yellow,
-                         PenColor = GraphicsEngine.ArgbColor.Red,
-                         PenWidth = 2,
-                         Size = 20,
-                         Marker = SimplePointSymbol.MarkerType.Triangle,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimplePointSymbol()
-                    {
-                         FillColor = GraphicsEngine.ArgbColor.Yellow,
-                         PenColor = GraphicsEngine.ArgbColor.Red,
-                         PenWidth = 2,
-                         Size = 20,
-                         Angle = 90f,
-                         Marker = SimplePointSymbol.MarkerType.Triangle,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimplePointSymbol()
-                    {
-                         FillColor = GraphicsEngine.ArgbColor.Yellow,
-                         PenColor = GraphicsEngine.ArgbColor.Red,
-                         PenWidth = 2,
-                         Size = 20,
-                         Angle = 180f,
-                         Marker = SimplePointSymbol.MarkerType.Triangle,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimplePointSymbol()
-                    {
-                         FillColor = GraphicsEngine.ArgbColor.Red,
-                         PenColor = GraphicsEngine.ArgbColor.Transparent,
-                         PenWidth = 0,
-                         Size = 20,
-                         Marker = SimplePointSymbol.MarkerType.Star,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimplePointSymbol()
-                    {
-                         FillColor = GraphicsEngine.ArgbColor.Red,
-                         PenColor = GraphicsEngine.ArgbColor.Red,
-                         PenWidth = 0,
-                         Size = 20,
-                         Marker = SimplePointSymbol.MarkerType.Cross,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimplePointSymbol()
-                    {
-                         FillColor = GraphicsEngine.ArgbColor.Red,
-                         PenColor = GraphicsEngine.ArgbColor.Transparent,
-                         PenWidth = 0,
-                         Size = 20,
-                         Marker = SimplePointSymbol.MarkerType.Square,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimplePointSymbol()
-                    {
-                         FillColor = GraphicsEngine.ArgbColor.Red,
-                         PenColor = GraphicsEngine.ArgbColor.Transparent,
-                         PenWidth = 0,
-                         Size = 20,
-                         Marker = SimplePointSymbol.MarkerType.Triangle,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimplePointSymbol()
-                    {
-                         FillColor = GraphicsEngine.ArgbColor.Red,
-                         PenColor = GraphicsEngine.ArgbColor.Transparent,
-                         PenWidth = 0,
-                         Size = 20,
-                         Marker = SimplePointSymbol.MarkerType.Triangle,
-                         Angle = 90f,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimplePointSymbol()
-                    {
-                         FillColor = GraphicsEngine.ArgbColor.Red,
-                         PenColor = GraphicsEngine.ArgbColor.Transparent,
-                         PenWidth = 0,
-                         Size = 20,
-                         Marker = SimplePointSymbol.MarkerType.Triangle,
-                         Angle = 180f,
-                         SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                        typeof(ITextSymbol),
+                        new List<ISymbol>()
+                        {
+                            new SimpleTextSymbol()
+                            {
+                                FontColor = GraphicsEngine.ArgbColor.Black,
+                                Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 10f),
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimpleTextSymbol()
+                            {
+                                FontColor = GraphicsEngine.ArgbColor.Black,
+                                Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 15f),
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimpleTextSymbol()
+                            {
+                                FontColor = GraphicsEngine.ArgbColor.Black,
+                                Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 20f),
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new SimpleTextSymbol()
+                            {
+                                FontColor = GraphicsEngine.ArgbColor.Black,
+                                Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 30f),
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new GlowingTextSymbol()
+                            {
+                                FontColor = GraphicsEngine.ArgbColor.Black,
+                                Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 10f),
+                                GlowingColor = GraphicsEngine.ArgbColor.Yellow,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new GlowingTextSymbol()
+                            {
+                                FontColor = GraphicsEngine.ArgbColor.Black,
+                                Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 15f),
+                                GlowingColor = GraphicsEngine.ArgbColor.Yellow,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new GlowingTextSymbol()
+                            {
+                                FontColor = GraphicsEngine.ArgbColor.Black,
+                                Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 20f),
+                                GlowingColor = GraphicsEngine.ArgbColor.Yellow,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new GlowingTextSymbol()
+                            {
+                                FontColor = GraphicsEngine.ArgbColor.Black,
+                                Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 30f),
+                                GlowingColor = GraphicsEngine.ArgbColor.Yellow,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new BlockoutTextSymbol()
+                            {
+                                FontColor = GraphicsEngine.ArgbColor.Black,
+                                Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 10f),
+                                ColorOutline = GraphicsEngine.ArgbColor.Yellow,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new BlockoutTextSymbol()
+                            {
+                                FontColor = GraphicsEngine.ArgbColor.Black,
+                                Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 15f),
+                                ColorOutline = GraphicsEngine.ArgbColor.Yellow,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new BlockoutTextSymbol()
+                            {
+                                FontColor = GraphicsEngine.ArgbColor.Black,
+                                Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 20f),
+                                ColorOutline = GraphicsEngine.ArgbColor.Yellow,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                            new BlockoutTextSymbol()
+                            {
+                                FontColor = GraphicsEngine.ArgbColor.Black,
+                                Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 30f),
+                                ColorOutline = GraphicsEngine.ArgbColor.Yellow,
+                                SymbolSmothingMode = SymbolSmoothing.AntiAlias
+                            },
+                        }
                     }
-                }
-            },
-            {
-                typeof(ILineSymbol),
-                new List<ISymbol>()
-                {
-                    new SimpleLineSymbol()
-                    {
-                        Color = GraphicsEngine.ArgbColor.Red,
-                        Width = 3,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimpleLineSymbol()
-                    {
-                        Color = GraphicsEngine.ArgbColor.Red,
-                        Width = 3,
-                        DashStyle = GraphicsEngine.LineDashStyle.Dot,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimpleLineSymbol()
-                    {
-                        Color = GraphicsEngine.ArgbColor.Red,
-                        Width = 3,
-                        DashStyle = GraphicsEngine.LineDashStyle.Dash,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimpleLineSymbol()
-                    {
-                        Color = GraphicsEngine.ArgbColor.Red,
-                        Width = 3,
-                        DashStyle = GraphicsEngine.LineDashStyle.DashDot,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SymbolCollection(new List<ISymbol>(){
-                        new SimpleLineSymbol() { Color = GraphicsEngine.ArgbColor.Red, Width = 6 },
-                        new SimpleLineSymbol() { Color = GraphicsEngine.ArgbColor.Yellow, Width = 4 },
-                    }) { SymbolSmothingMode = SymbolSmoothing.AntiAlias },
-                    new SymbolCollection(new List<ISymbol>(){
-                        new SimpleLineSymbol() { Color = GraphicsEngine.ArgbColor.Red, Width = 6 },
-                        new SimpleLineSymbol() { Color = GraphicsEngine.ArgbColor.Yellow, Width = 2, DashStyle = GraphicsEngine.LineDashStyle.Dash },
-                    }) { SymbolSmothingMode = SymbolSmoothing.AntiAlias },
-                    new SymbolDotedLineSymbol()
-                    {
-                        LineSymbol=new SimpleLineSymbol()
-                        {
-                            Color = GraphicsEngine.ArgbColor.Gray,
-                            Width = 2
-                        },
-                        PointSymbol = new SimplePointSymbol()
-                        {
-                            PenColor = GraphicsEngine.ArgbColor.Transparent,
-                            FillColor = GraphicsEngine.ArgbColor.Gray,
-                            Size = 10,
-                            Marker = SimplePointSymbol.MarkerType.Triangle,
-                            Angle = 90f,
-                        },
-                        DrawEndPoint = true,
-                        DrawStartPoint=true,
-                        DrawStepPoints=true,
-                        StepWidth = 20,
-                        StepWidthUnit = StepWidthUnit.Pixel,
-                        UseSymbolRotation = true,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SymbolDotedLineSymbol()
-                    {
-                        PointSymbol = new SimplePointSymbol()
-                        {
-                            PenColor = GraphicsEngine.ArgbColor.Transparent,
-                            FillColor = GraphicsEngine.ArgbColor.Gray,
-                            Size = 10,
-                            Marker = SimplePointSymbol.MarkerType.Circle,
-                            Angle = 90f,
-                        },
-                        DrawEndPoint = true,
-                        DrawStartPoint=true,
-                        DrawStepPoints=true,
-                        StepWidth = 20,
-                        StepWidthUnit = StepWidthUnit.Pixel,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    }
-                }
-            },
-            {
-                typeof(IFillSymbol),
-                new List<ISymbol>()
-                {
-                    new SimpleFillSymbol()
-                    {
-                        OutlineSymbol = new SimpleLineSymbol()
-                        {
-                            PenColor = GraphicsEngine.ArgbColor.Gray,
-                            PenWidth = 1f
-                        },
-                        FillColor = GraphicsEngine.ArgbColor.FromArgb(200, GraphicsEngine.ArgbColor.Red),
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimpleFillSymbol()
-                    {
-                        OutlineSymbol = new SimpleLineSymbol()
-                        {
-                            PenColor = GraphicsEngine.ArgbColor.Gray,
-                            PenWidth = 1f
-                        },
-                        FillColor = GraphicsEngine.ArgbColor.FromArgb(200, GraphicsEngine.ArgbColor.Green),
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimpleFillSymbol()
-                    {
-                        OutlineSymbol = new SimpleLineSymbol()
-                        {
-                            PenColor = GraphicsEngine.ArgbColor.Gray,
-                            PenWidth = 1f
-                        },
-                        FillColor = GraphicsEngine.ArgbColor.FromArgb(200, GraphicsEngine.ArgbColor.Blue),
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimpleFillSymbol()
-                    {
-                        OutlineSymbol = new SimpleLineSymbol()
-                        {
-                            PenColor = GraphicsEngine.ArgbColor.Gray,
-                            PenWidth = 3f
-                        },
-                        FillColor = GraphicsEngine.ArgbColor.Transparent,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimpleFillSymbol()
-                    {
-                        OutlineSymbol = new SimpleLineSymbol()
-                        {
-                            PenColor = GraphicsEngine.ArgbColor.Red,
-                            PenWidth = 3f
-                        },
-                        FillColor = GraphicsEngine.ArgbColor.FromArgb(200,GraphicsEngine.ArgbColor.Yellow),
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimpleFillSymbol()
-                    {
-                        OutlineSymbol = new SimpleLineSymbol()
-                        {
-                            PenColor = GraphicsEngine.ArgbColor.Green,
-                            PenWidth = 3f
-                        },
-                        FillColor = GraphicsEngine.ArgbColor.FromArgb(100, GraphicsEngine.ArgbColor.AliceBlue),
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new HatchSymbol()
-                    {
-                        OutlineSymbol = new SimpleLineSymbol()
-                        {
-                            PenColor = GraphicsEngine.ArgbColor.Red,
-                            PenWidth = 1f
-                        },
-                        HatchStyle = GraphicsEngine.HatchStyle.Cross,
-                        FillColor = GraphicsEngine.ArgbColor.Red,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new HatchSymbol()
-                    {
-                        OutlineSymbol = new SimpleLineSymbol()
-                        {
-                            PenColor = GraphicsEngine.ArgbColor.Red,
-                            PenWidth = 1f
-                        },
-                        HatchStyle = GraphicsEngine.HatchStyle.DashedHorizontal,
-                        FillColor = GraphicsEngine.ArgbColor.Red,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new HatchSymbol()
-                    {
-                        OutlineSymbol = new SimpleLineSymbol()
-                        {
-                            PenColor = GraphicsEngine.ArgbColor.Red,
-                            PenWidth = 1f
-                        },
-                        HatchStyle = GraphicsEngine.HatchStyle.DiagonalBrick,
-                        FillColor = GraphicsEngine.ArgbColor.Red,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new HatchSymbol()
-                    {
-                        OutlineSymbol = new SimpleLineSymbol()
-                        {
-                            PenColor = GraphicsEngine.ArgbColor.Red,
-                            PenWidth = 1f
-                        },
-                        HatchStyle = GraphicsEngine.HatchStyle.DarkVertical,
-                        FillColor = GraphicsEngine.ArgbColor.Red,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new GradientFillSymbol()
-                    {
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    }
-                }
-            },
-            {
-                typeof(ITextSymbol),
-                new List<ISymbol>()
-                {
-                    new SimpleTextSymbol()
-                    {
-                        FontColor = GraphicsEngine.ArgbColor.Black,
-                        Font = GraphicsEngine.Current.Engine.CreateFont("Arial", 10f),
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimpleTextSymbol()
-                    {
-                        FontColor = GraphicsEngine.ArgbColor.Black,
-                        Font = GraphicsEngine.Current.Engine.CreateFont("Arial", 15f),
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimpleTextSymbol()
-                    {
-                        FontColor = GraphicsEngine.ArgbColor.Black,
-                        Font = GraphicsEngine.Current.Engine.CreateFont("Arial", 20f),
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new SimpleTextSymbol()
-                    {
-                        FontColor = GraphicsEngine.ArgbColor.Black,
-                        Font = GraphicsEngine.Current.Engine.CreateFont("Arial", 30f),
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new GlowingTextSymbol()
-                    {
-                        FontColor = GraphicsEngine.ArgbColor.Black,
-                        Font = GraphicsEngine.Current.Engine.CreateFont("Arial", 10f),
-                        GlowingColor = GraphicsEngine.ArgbColor.Yellow,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new GlowingTextSymbol()
-                    {
-                        FontColor = GraphicsEngine.ArgbColor.Black,
-                        Font = GraphicsEngine.Current.Engine.CreateFont("Arial", 15f),
-                        GlowingColor = GraphicsEngine.ArgbColor.Yellow,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new GlowingTextSymbol()
-                    {
-                        FontColor = GraphicsEngine.ArgbColor.Black,
-                        Font = GraphicsEngine.Current.Engine.CreateFont("Arial", 20f),
-                        GlowingColor = GraphicsEngine.ArgbColor.Yellow,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new GlowingTextSymbol()
-                    {
-                        FontColor = GraphicsEngine.ArgbColor.Black,
-                        Font = GraphicsEngine.Current.Engine.CreateFont("Arial", 30f),
-                        GlowingColor = GraphicsEngine.ArgbColor.Yellow,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new BlockoutTextSymbol()
-                    {
-                        FontColor = GraphicsEngine.ArgbColor.Black,
-                        Font = GraphicsEngine.Current.Engine.CreateFont("Arial", 10f),
-                        ColorOutline = GraphicsEngine.ArgbColor.Yellow,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new BlockoutTextSymbol()
-                    {
-                        FontColor = GraphicsEngine.ArgbColor.Black,
-                        Font = GraphicsEngine.Current.Engine.CreateFont("Arial", 15f),
-                        ColorOutline = GraphicsEngine.ArgbColor.Yellow,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new BlockoutTextSymbol()
-                    {
-                        FontColor = GraphicsEngine.ArgbColor.Black,
-                        Font = GraphicsEngine.Current.Engine.CreateFont("Arial", 20f),
-                        ColorOutline = GraphicsEngine.ArgbColor.Yellow,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                    new BlockoutTextSymbol()
-                    {
-                        FontColor = GraphicsEngine.ArgbColor.Black,
-                        Font = GraphicsEngine.Current.Engine.CreateFont("Arial", 30f),
-                        ColorOutline = GraphicsEngine.ArgbColor.Yellow,
-                        SymbolSmothingMode = SymbolSmoothing.AntiAlias
-                    },
-                }
+                };
             }
-        };
+        }
+
+        private static Dictionary<Type, List<ISymbol>> SymbolDict = null;
 
         #endregion Predefined Symbols
 
@@ -507,10 +521,7 @@ namespace gView.Framework.Symbology.UI.Controls
                 ((SymbolListViewItem)listViewSymbols.SelectedItems[0]).Symbol.Clone(null) as ISymbol :
                 null;
 
-            if (this.SelectedSymbol != null)
-            {
-                OnSymbolSelected?.Invoke(this, new EventArgs());
-            }
+            OnSymbolSelected?.Invoke(this, new EventArgs());
         }
     }
 }

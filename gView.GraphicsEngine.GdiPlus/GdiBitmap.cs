@@ -105,7 +105,7 @@ namespace gView.GraphicsEngine.GdiPlus
                                              lockMode.ToGidImageLockMode(),
                                              pixelFormat.ToGdiPixelFormat());
 
-            return new GdiBitmapPixelData(bitmapData);
+            return new GdiBitmapPixelData(bitmapData, lockMode);
         }
 
         public void UnlockBitmapPixelData(BitmapPixelData bitmapPixelData)
@@ -140,8 +140,9 @@ namespace gView.GraphicsEngine.GdiPlus
 
         public class GdiBitmapPixelData : BitmapPixelData
         {
-            private readonly System.Drawing.Imaging.BitmapData _bitmapData; 
-            public GdiBitmapPixelData(System.Drawing.Imaging.BitmapData bitmapData)
+            private readonly System.Drawing.Imaging.BitmapData _bitmapData;
+            public GdiBitmapPixelData(System.Drawing.Imaging.BitmapData bitmapData, BitmapLockMode lockMode)
+               : base(lockMode)
             {
                 _bitmapData = bitmapData;
 

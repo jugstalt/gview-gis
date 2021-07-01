@@ -474,11 +474,18 @@ namespace gView.Framework.Symbology.UI.Controls
                             rect.Width -= 2;
                             rect.Height -= 2;
 
-                            using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(rect.Width, rect.Height))
-                            using (var canvas = bitmap.CreateCanvas())
+                            if (GraphicsEngine.Current.Engine != null)
                             {
-                                new SymbolPreview(null).Draw(canvas, rect.ToCanvasRectangle(), _symbol, false);
-                                e.Graphics.DrawImage(bitmap.ToGdiBitmap(), new Point(rect.X, rect.Y));
+                                using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(rect.Width, rect.Height))
+                                using (var canvas = bitmap.CreateCanvas())
+                                {
+                                    new SymbolPreview(null).Draw(canvas,
+                                        new GraphicsEngine.CanvasRectangle(0, 0, rect.Width, rect.Height),
+                                        //item.Symbol?.Clone(null) as ISymbol,
+                                        item.Symbol,
+                                        false);
+                                    e.Graphics.DrawImage(bitmap.ToGdiBitmap(), new Point(rect.X, rect.Y));
+                                }
                             }
                         }
                     }
@@ -641,11 +648,14 @@ namespace gView.Framework.Symbology.UI.Controls
                     gr.FillRectangle(brush, rect);
                 }
 
-                using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(rect.Width, rect.Height))
-                using (var canvas = bitmap.CreateCanvas())
+                if (GraphicsEngine.Current.Engine != null)
                 {
-                    new SymbolPreview(null).Draw(canvas, rect.ToCanvasRectangle(), _symbol, false);
-                    gr.DrawImage(bitmap.ToGdiBitmap(), new Point(rect.X, rect.Y));
+                    using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(rect.Width, rect.Height))
+                    using (var canvas = bitmap.CreateCanvas())
+                    {
+                        new SymbolPreview(null).Draw(canvas, rect.ToCanvasRectangle(), _symbol?.Clone(null) as ISymbol, false);
+                        gr.DrawImage(bitmap.ToGdiBitmap(), new Point(rect.X, rect.Y));
+                    }
                 }
 
                 using (Pen pen = new Pen(Color.Gray, 0))
