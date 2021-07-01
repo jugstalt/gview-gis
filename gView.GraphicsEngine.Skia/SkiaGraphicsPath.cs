@@ -10,6 +10,7 @@ namespace gView.GraphicsEngine.Skia
     class SkiaGraphicsPath : IGraphicsPath
     {
         private SKPath _path;
+        private bool _startFigure = true;
 
         public SkiaGraphicsPath()
         {
@@ -18,10 +19,13 @@ namespace gView.GraphicsEngine.Skia
 
         public object EngineElement => _path;
 
+        public GraphicsPathBuildPerferences PathBuildPerferences => GraphicsPathBuildPerferences.AddPointsPreferred;
+
         public void AddLine(float x1, float y1, float x2, float y2)
         {
-            if (_path.PointCount == 0)
+            if (_startFigure == true)
             {
+                _startFigure = false;
                 _path.MoveTo(x1, y1);
                 _path.LineTo(x2, y2);
             }
@@ -36,6 +40,7 @@ namespace gView.GraphicsEngine.Skia
         {
             if (_path.PointCount == 0)
             {
+                _startFigure = false;
                 _path.MoveTo(p1.ToSKPoint());
                 _path.LineTo(p2.ToSKPoint());
             }
@@ -43,6 +48,32 @@ namespace gView.GraphicsEngine.Skia
             {
                 _path.LineTo(p1.ToSKPoint());
                 _path.LineTo(p2.ToSKPoint());
+            }
+        }
+
+        public void AddPoint(float x, float y)
+        {
+            if (_startFigure == true)
+            {
+                _startFigure = false;
+                _path.MoveTo(x, y);
+            }
+            else
+            {
+                _path.LineTo(x, y);
+            }
+        }
+
+        public void AddPoint(CanvasPoint p)
+        {
+            if (_path.PointCount == 0)
+            {
+                _startFigure = false;
+                _path.MoveTo(p.ToSKPoint());
+            }
+            else
+            {
+                _path.LineTo(p.ToSKPoint());
             }
         }
 
@@ -63,7 +94,7 @@ namespace gView.GraphicsEngine.Skia
 
         public void StartFigure()
         {
-            
+            _startFigure = true;
         }
     }
 }

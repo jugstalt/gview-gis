@@ -208,4 +208,10 @@ namespace gView.GraphicsEngine
         Center = 1,
         Far = 2
     }
+
+    public enum GraphicsPathBuildPerferences
+    {
+        AddLinesPreferred = 0,
+        AddPointsPreferred = 1
+    }
 }

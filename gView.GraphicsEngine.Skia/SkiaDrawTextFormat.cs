@@ -7,36 +7,35 @@ using System.Text;
 
 namespace gView.GraphicsEngine.Skia
 {
-    class SkiaSolidBrush : IBrush
+    class SkiaDrawTextFormat : IDrawTextFormat
     {
         private SKPaint _skPaint;
 
-        public SkiaSolidBrush(ArgbColor color)
+        public SkiaDrawTextFormat()
         {
             _skPaint = new SKPaint()
             {
-                ColorF = color.ToSKColor(),
-                Style = SKPaintStyle.Fill
+                TextAlign = SKTextAlign.Left
             };
+            this.LineAlignment = StringAlignment.Near;
         }
 
-        public ArgbColor Color
+        public StringAlignment Alignment
         {
             get
             {
-                return _skPaint.Color.ToArgbColor();
+                return _skPaint.TextAlign.ToStringAlignment();
             }
             set
             {
-                _skPaint.Color = value.ToSKColor();
+                _skPaint.TextAlign = value.ToSkTextAlign();
             }
+        }
+        public StringAlignment LineAlignment
+        {
+            get; set;
         }
 
         public object EngineElement => _skPaint;
-
-        public void Dispose()
-        {
-            _skPaint.Dispose();
-        }
     }
 }

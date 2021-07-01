@@ -61,10 +61,12 @@ namespace gView.Framework.Carto
 
                 _canvas = _bitmap.CreateCanvas();
 
-                using (var brush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.Transparent))
-                {
-                    _canvas.FillRectangle(brush, new GraphicsEngine.CanvasRectangle(0, 0, _bitmap.Width, _bitmap.Height));
-                }
+                //using (var brush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.Transparent))
+                //{
+                //    _canvas.FillRectangle(brush, new GraphicsEngine.CanvasRectangle(0, 0, _bitmap.Width, _bitmap.Height));
+                //}
+                _bitmap.MakeTransparent();
+
                 _back = _bitmap.GetPixel(0, 0);
                 _first = true;
                 _directDraw = directDraw;

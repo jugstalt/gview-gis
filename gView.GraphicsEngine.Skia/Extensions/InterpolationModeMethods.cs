@@ -21,7 +21,7 @@ namespace gView.GraphicsEngine.Skia.Extensions
                     return SKFilterQuality.High;
             }
 
-            return SKFilterQuality.Medium;
+            return SKFilterQuality.None;
         }
 
         static public InterpolationMode ToInterpolationMode(this SKFilterQuality interpolation)
@@ -38,7 +38,7 @@ namespace gView.GraphicsEngine.Skia.Extensions
                     return InterpolationMode.HighQualityBicubic;
             }
 
-            return InterpolationMode.HighQualityBilinear;
+            return InterpolationMode.Default;
         }
     }
 }

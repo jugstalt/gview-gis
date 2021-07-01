@@ -19,7 +19,7 @@ namespace gView.Test
             try
             {
                 //TestProj4();
-                //TestPerformance();
+                TestPerformance();
 
                 //Console.ReadLine();
 
@@ -28,11 +28,11 @@ namespace gView.Test
                 //ParseSQL();
 
                 //gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GraphicsEngine();
-                gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine();
-                using (var bitmap = CreateImage(600,500))
-                {
-                    SaveBitmap(bitmap, "E:\\gstaltjr\\temp\\graphic.png");
-                }
+                //gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine();
+                //using (var bitmap = CreateImage(600,500))
+                //{
+                //    SaveBitmap(bitmap, "E:\\gstaltjr\\temp\\graphic.png");
+                //}
             }
             catch (Exception ex)
             {
@@ -118,10 +118,10 @@ namespace gView.Test
 
             var startTime = DateTime.UtcNow;
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 300; i++)
             {
-                string server = "sever/gview5-basis";
-                string service = "geoservices/rest/services/sdep/gv_xyz_dkm_sdep";
+                //string server = "sever/gview5-basis";
+                //string service = "geoservices/rest/services/sdep/gv_xyz_dkm_sdep";
 
                 //string server = "sever";
                 //string service = "arcgis/rest/services/sdep/xyz_dkm_sdep";
@@ -130,13 +130,16 @@ namespace gView.Test
                 //string service = "geoservices/rest/services/sdep/gv_estag_dkm_sdep";
                 //string service = "arcgis/rest/services/sdep/estag_dkm_sdep";
 
+                string server = "localhost:44331";
+                string service = "geoservices/rest/services/test/polygons";
+
                 string url = String.Empty;
 
                 #region Image Request
 
-                bbox = bbox.Select(x => x+ (i/1)).ToArray();
+                bbox = bbox.Select(x => x + (i / 1)).ToArray();
 
-                url = "https://"+server+"/" + service + "/MapServer/export?" +
+                url = "https://" + server + "/" + service + "/MapServer/export?" +
                 "size=800,800&dpi=96&imageSR=&bboxSR=&format=png&layerDefs=&layers=&transparent=true&time=&layerTimeOptions=&dynamicLayers=&mapScale=0&rotation=0&datumTransformations=&mapRangeValues=&layerRangeValues=&layerParameterValues=&historicMoment=0&f=pjson&";
                 //"bboxSR=&layers=&layerDefs=&size=800%2C800&imageSR=&format=png&transparent=true&dpi=&time=&layerTimeOptions=&dynamicLayers=&gdbVersion=&mapScale=&rotation=&f=pjson&";
 
@@ -148,11 +151,11 @@ namespace gView.Test
 
                 //url = "https://"+server+"/arcgis/rest/services/GRAZG81_SDET/estag_dkm_sdet_grazg81/MapServer/13/query?where=OBJECTID="+(i)+"&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&resultOffset=&resultRecordCount=&f=json";
                 //url = "https://"+server+"/gview5/geoservices/rest/services/KATASTER_BEV/MapServer/306/query?text=&geometry=&geometryType=&inSR=&relationParam=&where=OBJECTID="+(i)+"&objectIds=&time=0&distance=0&units=&outFields=*&returnGeometry=true&maxAllowableOffset=0&geometryPrecision=0&outSR=&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&orderByFields=&outStatistics=&groupByFieldsForStatistics=&returnZ=false&returnM=false&returnDistinctValues=false&returnTrueCurves=false&resultOffset=0&resultRecordCount=0&datumTransformation=&rangeValues=&quantizationParameters=&parameterValues=&historicMoment=0&layerId=306&f=json";
-                
+
                 #endregion
 
                 var task = ExportMapAsync(url);
-                
+
                 tasks.Add(task);
                 //task.Wait();
 

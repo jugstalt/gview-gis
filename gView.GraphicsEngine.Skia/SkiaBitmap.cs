@@ -23,12 +23,12 @@ namespace gView.GraphicsEngine.Skia
 
         public SkiaBitmap(int width, int height, PixelFormat format)
         {
-            _bitmap = new SKBitmap(width, height, colorType: format.ToSKColorType(), alphaType: SKAlphaType.Opaque);
+            _bitmap = new SKBitmap(width, height, colorType: format.ToSKColorType(), alphaType: SKAlphaType.Premul);
         }
 
         public SkiaBitmap(int width, int height, int stride, PixelFormat format, IntPtr scan0)
         {
-            _bitmap = new SKBitmap(width, height, colorType: format.ToSKColorType(), alphaType: SKAlphaType.Opaque);
+            _bitmap = new SKBitmap(width, height, colorType: format.ToSKColorType(), alphaType: SKAlphaType.Premul);
             _bitmap.SetPixels(scan0);
         }
 
@@ -55,19 +55,6 @@ namespace gView.GraphicsEngine.Skia
             get
             {
                 return _bitmap.ColorType.ToPixelFormat();
-                //switch (_bitmap.BytesPerPixel)
-                //{
-                //    case 4:
-                //        return PixelFormat.Format32bppArgb;
-
-                //    case 3:
-                //        return PixelFormat.Format24bppRgb;
-
-                //    case 1:
-                //        return PixelFormat.Format8bppIndexed;
-                //}
-
-                //return PixelFormat.Format32bppArgb;
             }
         }
 
@@ -147,6 +134,10 @@ namespace gView.GraphicsEngine.Skia
 
         public void MakeTransparent()
         {
+            using(var canvas = new SKCanvas(_bitmap))
+            {
+                canvas.Clear(SKColors.Transparent);
+            }
         }
 
         public void MakeTransparent(ArgbColor color)
@@ -156,7 +147,7 @@ namespace gView.GraphicsEngine.Skia
         public void Save(string filename, ImageFormat format, int quality = 0)
         {
             //var image = SKImage.FromBitmap(_bitmap);
-            //using (var data = image.Encode(SKEncodedImageFormat.Png, 75))
+            //using (var data = image.Encode(SKEncodedImageFormat.Png, 50))
             //{
             //    using (var stream = File.OpenWrite(filename))
             //    {
@@ -169,7 +160,7 @@ namespace gView.GraphicsEngine.Skia
                         _bitmap.Height,
                         _bitmap.RowBytes,
                         System.Drawing.Imaging.PixelFormat.Format32bppArgb,
-                        System.Runtime.InteropServices.Marshal.UnsafeAddrOfPinnedArrayElement(_bitmap.Bytes, 0)))
+                        Marshal.UnsafeAddrOfPinnedArrayElement(_bitmap.Bytes, 0)))
             {
                 bm.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
             }
@@ -177,12 +168,18 @@ namespace gView.GraphicsEngine.Skia
 
         public void Save(Stream stream, ImageFormat format, int quality = 0)
         {
+            //var image = SKImage.FromBitmap(_bitmap);
+            //using (var data = image.Encode(SKEncodedImageFormat.Png, 75))
+            //{
+            //    stream.Write(data.ToArray(), 0, (int)data.Size);
+            //}
+
             using (var bm = new System.Drawing.Bitmap(
                         _bitmap.Width,
                         _bitmap.Height,
                         _bitmap.RowBytes,
                         System.Drawing.Imaging.PixelFormat.Format32bppArgb,
-                        System.Runtime.InteropServices.Marshal.UnsafeAddrOfPinnedArrayElement(_bitmap.Bytes, 0)))
+                        Marshal.UnsafeAddrOfPinnedArrayElement(_bitmap.Bytes, 0)))
             {
                 bm.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
             }

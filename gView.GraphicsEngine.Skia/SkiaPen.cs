@@ -10,7 +10,9 @@ namespace gView.GraphicsEngine.Skia
     public class SkiaPen : IPen
     {
         private SKPaint _skPaint;
-
+        private LineDashStyle _dashStyle;
+        private LineCap _startCap, _endCap;
+   
         public SkiaPen(ArgbColor color, float width)
         {
             _skPaint = new SKPaint()
@@ -18,9 +20,11 @@ namespace gView.GraphicsEngine.Skia
                 Color = color.ToSKColor(),
                 Style = SKPaintStyle.Stroke,
                 StrokeWidth = width,
-                StrokeCap = SKStrokeCap.Round,
-                IsAntialias = true
+                StrokeJoin = SKStrokeJoin.Round
             };
+
+            this.DashStyle = LineDashStyle.Solid;
+            this.StartCap = this.EndCap = LineCap.Round;
         }
 
         public ArgbColor Color
@@ -44,18 +48,26 @@ namespace gView.GraphicsEngine.Skia
             set
             {
                 _skPaint.StrokeWidth = value;
+
+                this.DashStyle = _dashStyle;   // restet DashPickerArray
             }
         }
 
-        public LineDashStyle DashStyle 
+        public LineDashStyle DashStyle
         {
             get
             {
-                return LineDashStyle.Solid;
+                return _dashStyle;
             }
             set
             {
+                _dashStyle = value;
 
+                var pickerArray = _dashStyle.ToPickerArray(this.Width, this.StartCap);
+                if (pickerArray != null)
+                {
+                    _skPaint.PathEffect = SKPathEffect.CreateDash(pickerArray, 0f);
+                }
             }
         }
 
@@ -63,11 +75,14 @@ namespace gView.GraphicsEngine.Skia
         {
             get
             {
-                return LineCap.Round;
+                return _startCap;
             }
             set
             {
-
+                _startCap = _endCap = value;
+                _skPaint.StrokeCap = value.ToSKStrokeCap();
+                
+                this.DashStyle = _dashStyle;   // restet DashPickerArray
             }
         }
 
@@ -75,11 +90,14 @@ namespace gView.GraphicsEngine.Skia
         {
             get
             {
-                return LineCap.Round;
+                return _endCap;
             }
             set
             {
+                _startCap = _endCap = value;
+                _skPaint.StrokeCap = value.ToSKStrokeCap();
 
+                this.DashStyle = _dashStyle;   // restet DashPickerArray
             }
         }
 

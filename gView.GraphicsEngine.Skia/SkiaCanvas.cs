@@ -2,8 +2,7 @@
 using gView.GraphicsEngine.Skia.Extensions;
 using SkiaSharp;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Runtime.CompilerServices;
 
 namespace gView.GraphicsEngine.Skia
 {
@@ -37,10 +36,10 @@ namespace gView.GraphicsEngine.Skia
 
         public void DrawBitmap(IBitmap bitmap, CanvasPoint point)
         {
-            //_canvas.DrawBitmap((SKBitmap)bitmap.EngineElement, point.ToSKPoint(), new SKPaint()
-            //{
-            //    FilterQuality = this.InterpolationMode.ToSKFilterQuality()
-            //});
+            _canvas.DrawBitmap((SKBitmap)bitmap.EngineElement, point.ToSKPoint(), new SKPaint()
+            {
+                FilterQuality = this.InterpolationMode.ToSKFilterQuality(),
+            });
         }
 
         public void DrawBitmap(IBitmap bitmap, CanvasPointF pointF)
@@ -72,6 +71,8 @@ namespace gView.GraphicsEngine.Skia
             // ToDo: Nicht korrekt!!
             var dest = new CanvasRectangleF(points[0].X, points[0].Y, points[1].X - points[0].X, points[1].Y - points[0].Y);
 
+            // siehe: https://docs.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/transforms/3d-rotation
+            // ganz unten ... 4 Punkte möglich!!!
             _canvas.DrawBitmap((SKBitmap)bitmap.EngineElement, source.ToSKRect(), dest.ToSKRect());
         }
 
@@ -137,53 +138,67 @@ namespace gView.GraphicsEngine.Skia
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasPoint point)
         {
-            //throw new NotImplementedException();
+            _canvas.DrawText(text, point.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement));
         }
 
         public void DrawText(string text, IFont font, IBrush brush, int x, int y)
         {
-            //throw new NotImplementedException();
+            _canvas.DrawText(text, x, y, GetSKPaint(font, (SKPaint)brush.EngineElement));
         }
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasPointF pointF)
         {
-            //throw new NotImplementedException();
+            _canvas.DrawText(text, pointF.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement));
         }
 
         public void DrawText(string text, IFont font, IBrush brush, float x, float y)
         {
-            //throw new NotImplementedException();
+            _canvas.DrawText(text, x, y, GetSKPaint(font, (SKPaint)brush.EngineElement));
         }
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasRectangleF rectangleF)
         {
-            //throw new NotImplementedException();
+            _canvas.DrawText(text, rectangleF.Center.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement));
         }
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasPoint point, IDrawTextFormat format)
         {
-            //throw new NotImplementedException();
+            var skPoint = point.ToSKPoint();
+            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref skPoint);
+
+            _canvas.DrawText(text, skPoint, skPaint);
         }
 
         public void DrawText(string text, IFont font, IBrush brush, int x, int y, IDrawTextFormat format)
         {
-            //throw new NotImplementedException();
+            var skPoint = new SKPoint(x, y);
+            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref skPoint);
+
+            _canvas.DrawText(text, skPoint, skPaint);
         }
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasPointF pointF, IDrawTextFormat format)
         {
-            //throw new NotImplementedException();
+            var skPoint = pointF.ToSKPoint();
+            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref skPoint);
+
+            _canvas.DrawText(text, skPoint, skPaint);
         }
 
         public void DrawText(string text, IFont font, IBrush brush, float x, float y, IDrawTextFormat format)
         {
-            //throw new NotImplementedException();
+            var skPoint = new SKPoint(x, y);
+            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref skPoint);
+
+            _canvas.DrawText(text, skPoint, skPaint);
         }
 
         public CanvasSizeF MeasureText(string text, IFont font)
         {
-            return new CanvasSizeF(50, 10);
-            //throw new NotImplementedException();
+            SKRect bounds = new SKRect();
+            GetSKPaint(font).MeasureText(text, ref bounds);
+
+            return new CanvasSizeF(bounds.Width, bounds.Height);
         }
 
         public void ResetTransform()
@@ -203,23 +218,70 @@ namespace gView.GraphicsEngine.Skia
 
         #region Helper
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private SKPaint GetSKPaint(IPen pen)
         {
             var skPaint = (SKPaint)pen.EngineElement;
 
+            skPaint.IsAntialias = this.SmoothingMode == SmoothingMode.AntiAlias;
+
             return skPaint;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private SKPaint GetSKPaint(IBrush brush)
         {
             var skPaint = (SKPaint)brush.EngineElement;
 
+            skPaint.IsAntialias = this.SmoothingMode == SmoothingMode.AntiAlias;
+
             return skPaint;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private SKPaint GetSKPaint(IFont font)
         {
             var skPaint = (SKPaint)font.EngineElement;
+
+            skPaint.IsAntialias = this.SmoothingMode == SmoothingMode.AntiAlias;
+
+            return skPaint;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private SKPaint GetSKPaint(IFont font, SKPaint brush)
+        {
+            var skPaint = GetSKPaint(font);
+
+            skPaint.Color = brush.Color;
+            skPaint.ColorF = brush.ColorF;
+
+            return skPaint;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private SKPaint GetSKPaint(IFont font, SKPaint brush, IDrawTextFormat format, ref SKPoint point)
+        {
+            var skPaint = GetSKPaint(font, brush);
+
+            if(format!=null)
+            {
+                var skAlignment = (SKPaint)format.EngineElement;
+
+                skPaint.TextAlign = skAlignment.TextAlign;
+                if(format.LineAlignment != StringAlignment.Far)
+                {
+                    switch(format.LineAlignment)
+                    {
+                        case StringAlignment.Center:
+                            point.Y += skPaint.TextSize  *.375f;
+                            break;
+                        case StringAlignment.Near:
+                            point.Y += skPaint.TextSize * .75f;
+                            break;
+                    }
+                }
+            }
 
             return skPaint;
         }

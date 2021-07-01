@@ -44,6 +44,8 @@ namespace gView.GraphicsEngine.GdiPlus
 
         public object EngineElement => _path;
 
+        public GraphicsPathBuildPerferences PathBuildPerferences => GraphicsPathBuildPerferences.AddLinesPreferred;
+
         #endregion
 
         #region IDisposable
@@ -55,6 +57,16 @@ namespace gView.GraphicsEngine.GdiPlus
                 _path.Dispose();
                 _path = null;
             }
+        }
+
+        public void AddPoint(float x, float y)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddPoint(CanvasPoint p)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

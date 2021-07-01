@@ -44,7 +44,7 @@ namespace gView.GraphicsEngine.Skia
 
         public IDrawTextFormat CreateDrawTextFormat()
         {
-            throw new NotImplementedException();
+            return new SkiaDrawTextFormat();
         }
 
         public IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit grUnit = GraphicsUnit.Point)

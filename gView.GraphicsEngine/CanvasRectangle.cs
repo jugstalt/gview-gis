@@ -1,9 +1,4 @@
-﻿using gView.GraphicsEngine.Generics;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.GraphicsEngine
+﻿namespace gView.GraphicsEngine
 {
     public struct CanvasRectangle
     { 
@@ -22,6 +17,14 @@ namespace gView.GraphicsEngine
             this.Width = rectangle.Width;
             this.Height = rectangle.Height;
         }
+
+        public void Offset(int x, int y)
+        {
+            this.Left += x;
+            this.Top += y;
+        }
+
+        public CanvasPoint Center => new CanvasPoint(Left + Width / 2, Top + Height / 2);
 
         public int Left { get; set; }
         public int Top { get; set; }

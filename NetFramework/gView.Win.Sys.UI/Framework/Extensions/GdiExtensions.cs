@@ -20,7 +20,7 @@ namespace gView.Framework.Sys.UI.Extensions
 
         static public Bitmap ToGdiBitmap(this IBitmap iBitmap)
         {
-            if(iBitmap?.EngineElement is Bitmap)
+            if (iBitmap?.EngineElement is Bitmap)
             {
                 return (Bitmap)iBitmap.EngineElement;
             }
@@ -34,18 +34,13 @@ namespace gView.Framework.Sys.UI.Extensions
                                     bmPixelData.Stride,
                                     System.Drawing.Imaging.PixelFormat.Format32bppArgb,
                                     bmPixelData.Scan0);
-                {
 
-                    ////bm.Save($"C:\\temp\\bitmap_{ Guid.NewGuid().ToString("N").ToString() }.png", System.Drawing.Imaging.ImageFormat.Png);
-
-                    bmPixelData.Scan0 = IntPtr.Zero;  // Don't give it back...
-                    return bm;
-                    
-                }
+                bmPixelData.Scan0 = IntPtr.Zero;  // Don't give it back...
+                return bm;
             }
             finally
             {
-                if(bmPixelData!=null)
+                if (bmPixelData != null)
                 {
                     iBitmap.UnlockBitmapPixelData(bmPixelData);
                 }
@@ -60,7 +55,7 @@ namespace gView.Framework.Sys.UI.Extensions
                 return gdiBitmap.Clone(new Rectangle(0, 0, iBitmap.Width, iBitmap.Height), gdiBitmap.PixelFormat);
             }
 
-            return iBitmap/*.Clone(PixelFormat.Format32bppArgb)*/.ToGdiBitmap();
+            return iBitmap.ToGdiBitmap();
         }
 
         static public IBitmap CloneToIBitmap(this Bitmap bitmap)

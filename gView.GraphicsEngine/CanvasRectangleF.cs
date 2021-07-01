@@ -1,9 +1,4 @@
-﻿using gView.GraphicsEngine.Generics;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.GraphicsEngine
+﻿namespace gView.GraphicsEngine
 {
     public struct CanvasRectangleF
     {
@@ -28,6 +23,8 @@ namespace gView.GraphicsEngine
             this.Left += x;
             this.Top += y;
         }
+
+        public CanvasPointF Center => new CanvasPointF(Left + Width / 2f, Top + Height / 2f);
 
         public float Left { get; set; }
         public float Top { get; set; }
