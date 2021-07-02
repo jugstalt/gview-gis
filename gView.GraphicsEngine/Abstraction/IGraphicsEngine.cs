@@ -26,5 +26,7 @@ namespace gView.GraphicsEngine.Abstraction
         IGraphicsPath CreateGraphicsPath();
 
         float ScreenDpi { get; }
+
+        void DrawTextOffestPointsToFontUnit(ref CanvasPointF offset);
     }
 }

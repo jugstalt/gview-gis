@@ -1,4 +1,5 @@
 ﻿using gView.GraphicsEngine.Abstraction;
+using gView.GraphicsEngine.Skia.Extensions;
 using System;
 using System.IO;
 
@@ -83,6 +84,12 @@ namespace gView.GraphicsEngine.Skia
         public IBrush CreateSolidBrush(ArgbColor color)
         {
             return new SkiaSolidBrush(color);
+        }
+
+        public void DrawTextOffestPointsToFontUnit(ref CanvasPointF offset)
+        {
+            offset.X *= offset.X.PointsToPixels();
+            offset.Y *= offset.Y.PointsToPixels();
         }
 
         #endregion

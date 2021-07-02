@@ -93,11 +93,12 @@ namespace gView.Framework.Symbology
                     display.Canvas.RotateTransform(_angle + _rotation);
 
                     double xo = _xOffset, yo = _yOffset;
+                    
                     if (_angle != 0 || _rotation != 0)
                     {
                         if (_rotation != 0)
                         {
-                            SymbolTransformation.Transform(_angle + _rotation, _hOffset, _vOffset, out _xOffset, out _yOffset);
+                            PerformSymbolTransformation();
                         }
 
                         double cos_a = Math.Cos((-_angle - _rotation) / 180.0 * Math.PI);
@@ -134,7 +135,7 @@ namespace gView.Framework.Symbology
             set
             {
                 _hOffset = value;
-                SymbolTransformation.Transform(_angle, _hOffset, _vOffset, out _xOffset, out _yOffset);
+                PerformSymbolTransformation();
             }
         }
 
@@ -145,7 +146,7 @@ namespace gView.Framework.Symbology
             set
             {
                 _vOffset = value;
-                SymbolTransformation.Transform(_angle, _hOffset, _vOffset, out _xOffset, out _yOffset);
+                PerformSymbolTransformation();
             }
         }
 
@@ -156,7 +157,7 @@ namespace gView.Framework.Symbology
             set
             {
                 _angle = value;
-                SymbolTransformation.Transform(_angle, _hOffset, _vOffset, out _xOffset, out _yOffset);
+                PerformSymbolTransformation();
             }
         }
 
@@ -243,7 +244,7 @@ namespace gView.Framework.Symbology
                 ms.Write(encoder.GetBytes(soap), 0, soap.Length);
                 ms.Position = 0;
                 SoapFormatter formatter = new SoapFormatter();
-                _font = (IFont)formatter.Deserialize<IFont>(ms, stream, this, true); 
+                _font = (IFont)formatter.Deserialize<IFont>(ms, stream, this, true);
             }
             catch { }
 
@@ -345,8 +346,8 @@ namespace gView.Framework.Symbology
             {
                 fac = ReferenceScaleHelper.RefscaleFactor(
                     (float)(display.refScale / display.mapScale),
-                    this.SymbolSize, 
-                    this.MinSymbolSize, 
+                    this.SymbolSize,
+                    this.MinSymbolSize,
                     this.MaxSymbolSize);
 
                 fac = options.RefScaleFactor(fac);
@@ -475,6 +476,18 @@ namespace gView.Framework.Symbology
         public bool RequireClone()
         {
             return false;
+        }
+
+        #endregion
+
+        #region Helper
+
+        private void PerformSymbolTransformation()
+        {
+            var offset = new CanvasPointF(_hOffset, _vOffset);
+            Current.Engine.DrawTextOffestPointsToFontUnit(ref offset);
+
+            SymbolTransformation.Transform(_angle, offset.X, offset.Y, out _xOffset, out _yOffset);
         }
 
         #endregion

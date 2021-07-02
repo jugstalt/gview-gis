@@ -17,7 +17,7 @@ namespace gView.GraphicsEngine.Skia
             switch(unit)
             {
                 case GraphicsUnit.Point:
-                    pixelSize = size.PointsToPixels();
+                    pixelSize = size.FontSizePointsToPixels();
                     break;
             }
 

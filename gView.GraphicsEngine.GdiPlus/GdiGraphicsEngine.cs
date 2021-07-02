@@ -77,5 +77,10 @@ namespace gView.GraphicsEngine.GdiPlus
         {
             return new GdiHatchBrush(hatchStyle, foreColor, backColor);
         }
+
+        public void DrawTextOffestPointsToFontUnit(ref CanvasPointF offset)
+        {
+            // System.Drawing use unit "points" => do nothing
+        }
     }
 }

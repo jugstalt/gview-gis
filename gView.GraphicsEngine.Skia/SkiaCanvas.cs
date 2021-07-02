@@ -164,7 +164,7 @@ namespace gView.GraphicsEngine.Skia
         public void DrawText(string text, IFont font, IBrush brush, CanvasPoint point, IDrawTextFormat format)
         {
             var skPoint = point.ToSKPoint();
-            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref skPoint);
+            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, text, ref skPoint);
 
             _canvas.DrawText(text, skPoint, skPaint);
         }
@@ -172,7 +172,7 @@ namespace gView.GraphicsEngine.Skia
         public void DrawText(string text, IFont font, IBrush brush, int x, int y, IDrawTextFormat format)
         {
             var skPoint = new SKPoint(x, y);
-            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref skPoint);
+            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, text, ref skPoint);
 
             _canvas.DrawText(text, skPoint, skPaint);
         }
@@ -180,7 +180,7 @@ namespace gView.GraphicsEngine.Skia
         public void DrawText(string text, IFont font, IBrush brush, CanvasPointF pointF, IDrawTextFormat format)
         {
             var skPoint = pointF.ToSKPoint();
-            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref skPoint);
+            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, text, ref skPoint);
 
             _canvas.DrawText(text, skPoint, skPaint);
         }
@@ -188,7 +188,7 @@ namespace gView.GraphicsEngine.Skia
         public void DrawText(string text, IFont font, IBrush brush, float x, float y, IDrawTextFormat format)
         {
             var skPoint = new SKPoint(x, y);
-            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref skPoint);
+            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, text, ref skPoint);
 
             _canvas.DrawText(text, skPoint, skPaint);
         }
@@ -260,7 +260,7 @@ namespace gView.GraphicsEngine.Skia
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private SKPaint GetSKPaint(IFont font, SKPaint brush, IDrawTextFormat format, ref SKPoint point)
+        private SKPaint GetSKPaint(IFont font, SKPaint brush, IDrawTextFormat format, string text, ref SKPoint point)
         {
             var skPaint = GetSKPaint(font, brush);
 
@@ -271,7 +271,7 @@ namespace gView.GraphicsEngine.Skia
                 skPaint.TextAlign = skAlignment.TextAlign;
                 //if(format.LineAlignment != StringAlignment.Far)
                 {
-                    var height = font.Size.PointsToPixels() * 0.72f; //this.MeasureText("X", font).Height;
+                    var height = font.Size.FontSizePointsToPixels() * 0.72f; //this.MeasureText("X", font).Height;
                     //switch(format.LineAlignment)
                     //{
                     //    case StringAlignment.Center:
@@ -283,17 +283,20 @@ namespace gView.GraphicsEngine.Skia
                     //}
 
                     var capHeight = skPaint.FontMetrics != null ? skPaint.FontMetrics.CapHeight : height * 0.75f;
+                    var far = -skPaint.FontMetrics.Bottom - height * 0.00f;
+                    var near = -skPaint.FontMetrics.Top;
 
                     switch (format.LineAlignment)
                     {
                         case StringAlignment.Far:
-                            point.Y += capHeight - height;
+                            point.Y += far;
                             break;
                         case StringAlignment.Center:
-                            point.Y += capHeight / 2f;
+                            point.Y += (far + near) * .5f; // -(skPaint.FontMetrics.Bottom + skPaint.FontMetrics.Top) / 2.6f; // capHeight / 2f;
+                            //point.Y = this.MeasureText(text, font).Height;
                             break;
                         case StringAlignment.Near:
-                            point.Y += height;
+                            point.Y += near;
                             break;
                     }
                 }
