@@ -6,7 +6,15 @@ namespace gView.GraphicsEngine.Skia
 {
     public class SkiaGraphicsEngine : IGraphicsEngine
     {
+        public SkiaGraphicsEngine(float screenDpi)
+        {
+            ScreenDpi = screenDpi;
+        }
+        
+
         #region IGraphicsEngine
+
+        public float ScreenDpi { get; }
 
         #region Bitmap
 

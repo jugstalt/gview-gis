@@ -43,6 +43,12 @@ namespace gView.Win.Carto
             {
                 InitializeComponent();
 
+                using (var g = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
+                {
+                    //GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(g.DpiX);
+                    GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(g.DpiX);
+                }
+
                 #region Create Application
 
                 _mapApplication = new MapApplication(this, cartoDocPane);
@@ -146,6 +152,7 @@ namespace gView.Win.Carto
         }
 
         #region DockWindow Events
+
         private Dictionary<IDockableWindow, LayoutAnchorable> _anchorables = new Dictionary<IDockableWindow, LayoutAnchorable>();
         void mapApplication_OnShowDockableWindow(IDockableWindow window)
         {
@@ -1640,6 +1647,7 @@ namespace gView.Win.Carto
         #endregion
 
         #region IDocumentWindow
+
         private void dockManager_Loaded(object sender, RoutedEventArgs e)
         {
             anchorPaneRight.Children[0].Hide();
@@ -1671,6 +1679,7 @@ namespace gView.Win.Carto
         {
             throw new NotImplementedException();
         }
+
         #endregion
 
         #region Statusbar

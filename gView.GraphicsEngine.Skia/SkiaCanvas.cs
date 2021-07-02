@@ -271,13 +271,14 @@ namespace gView.GraphicsEngine.Skia
                 skPaint.TextAlign = skAlignment.TextAlign;
                 if(format.LineAlignment != StringAlignment.Far)
                 {
+                    var height = font.Size.PointsToPixels() * 0.72f; //this.MeasureText("X", font).Height;
                     switch(format.LineAlignment)
                     {
                         case StringAlignment.Center:
-                            point.Y += skPaint.TextSize  *.375f;
+                            point.Y += skPaint.FontMetrics != null ? skPaint.FontMetrics.XHeight / 2f : height / 2.5f;
                             break;
                         case StringAlignment.Near:
-                            point.Y += skPaint.TextSize * .75f;
+                            point.Y += skPaint.FontMetrics != null ? skPaint.FontMetrics.CapHeight : height;
                             break;
                     }
                 }

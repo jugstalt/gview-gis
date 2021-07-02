@@ -24,5 +24,7 @@ namespace gView.GraphicsEngine.Abstraction
         IDrawTextFormat CreateDrawTextFormat();
 
         IGraphicsPath CreateGraphicsPath();
+
+        float ScreenDpi { get; }
     }
 }

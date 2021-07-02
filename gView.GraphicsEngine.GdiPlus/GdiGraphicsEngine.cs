@@ -5,8 +5,14 @@ using System.IO;
 
 namespace gView.GraphicsEngine.GdiPlus
 {
-    public class GraphicsEngine : IGraphicsEngine
+    public class GdiGraphicsEngine : IGraphicsEngine
     {
+        public GdiGraphicsEngine(float screenDpi)
+        {
+            ScreenDpi = screenDpi;
+        }
+        public float ScreenDpi { get; }
+
         public IBitmap CreateBitmap(int width, int height)
         {
             return new GdiBitmap(width, height);

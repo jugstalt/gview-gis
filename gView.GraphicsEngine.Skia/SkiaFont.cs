@@ -25,7 +25,7 @@ namespace gView.GraphicsEngine.Skia
 
             _skPaint = new SKPaint(skFont)
             {
-                Style = SKPaintStyle.Fill
+                Style = SKPaintStyle.Fill,
             };
 
             this.Name = name;
