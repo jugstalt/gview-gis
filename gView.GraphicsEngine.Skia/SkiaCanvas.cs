@@ -269,16 +269,31 @@ namespace gView.GraphicsEngine.Skia
                 var skAlignment = (SKPaint)format.EngineElement;
 
                 skPaint.TextAlign = skAlignment.TextAlign;
-                if(format.LineAlignment != StringAlignment.Far)
+                //if(format.LineAlignment != StringAlignment.Far)
                 {
                     var height = font.Size.PointsToPixels() * 0.72f; //this.MeasureText("X", font).Height;
-                    switch(format.LineAlignment)
+                    //switch(format.LineAlignment)
+                    //{
+                    //    case StringAlignment.Center:
+                    //        point.Y += skPaint.FontMetrics != null ? skPaint.FontMetrics.XHeight / 2f : height / 2.5f;
+                    //        break;
+                    //    case StringAlignment.Near:
+                    //        point.Y += skPaint.FontMetrics != null ? skPaint.FontMetrics.CapHeight : height;
+                    //        break;
+                    //}
+
+                    var capHeight = skPaint.FontMetrics != null ? skPaint.FontMetrics.CapHeight : height * 0.75f;
+
+                    switch (format.LineAlignment)
                     {
+                        case StringAlignment.Far:
+                            point.Y += capHeight - height;
+                            break;
                         case StringAlignment.Center:
-                            point.Y += skPaint.FontMetrics != null ? skPaint.FontMetrics.XHeight / 2f : height / 2.5f;
+                            point.Y += capHeight / 2f;
                             break;
                         case StringAlignment.Near:
-                            point.Y += skPaint.FontMetrics != null ? skPaint.FontMetrics.CapHeight : height;
+                            point.Y += height;
                             break;
                     }
                 }

@@ -13,7 +13,7 @@ namespace gView.GraphicsEngine.GdiPlus
         public DrawTextFormat()
         {
             _stringFormat = new StringFormat();
-            //_stringFormat.FormatFlags = System.Drawing.StringFormatFlags.DirectionRightToLeft;
+            //_stringFormat.FormatFlags = StringFormatFlags.DirectionRightToLeft;
         }
 
         public StringAlignment Alignment
