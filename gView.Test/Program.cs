@@ -19,7 +19,7 @@ namespace gView.Test
             try
             {
                 //TestProj4();
-                TestPerformance();
+                //TestPerformance();
 
                 //Console.ReadLine();
 
@@ -28,11 +28,11 @@ namespace gView.Test
                 //ParseSQL();
 
                 //gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GraphicsEngine();
-                //gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine();
-                //using (var bitmap = CreateImage(600,500))
-                //{
-                //    SaveBitmap(bitmap, "E:\\gstaltjr\\temp\\graphic.png");
-                //}
+                gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96);
+                using (var bitmap = CreateImage(600, 500))
+                {
+                    SaveBitmap(bitmap, "C:\\temp\\graphic.png");
+                }
             }
             catch (Exception ex)
             {
@@ -287,11 +287,15 @@ namespace gView.Test
 
             using (var canvas = bitmap.CreateCanvas())
             using (var brush = Current.Engine.CreateSolidBrush(ArgbColor.Yellow))
+            using (var blackBrush = Current.Engine.CreateSolidBrush(ArgbColor.Black))
             using (var pen = Current.Engine.CreatePen(ArgbColor.Red, 10))
+            using (var font = Current.Engine.CreateFont("Arial", 20))
             {
                 canvas.SmoothingMode = SmoothingMode.AntiAlias;
                 canvas.FillEllipse(brush, 10, 10, width - 20, height - 20);
                 canvas.DrawEllipse(pen, 10, 10, width - 20, height - 20);
+
+                canvas.DrawText("Umlaute: ÄÜÖßöäü", font, blackBrush, new CanvasPoint(10, 50));
             }
 
             return bitmap;
