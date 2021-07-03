@@ -272,7 +272,7 @@ namespace gView.GraphicsEngine.Skia
                 skPaint.TextAlign = skAlignment.TextAlign;
                 //if(format.LineAlignment != StringAlignment.Far)
                 {
-                    var height = font.Size.FontSizePointsToPixels() * 0.72f; //this.MeasureText("X", font).Height;
+                    //var height = font.Size.FontSizePointsToPixels() * 0.72f; //this.MeasureText("X", font).Height;
                     //switch(format.LineAlignment)
                     //{
                     //    case StringAlignment.Center:
@@ -283,8 +283,9 @@ namespace gView.GraphicsEngine.Skia
                     //        break;
                     //}
 
-                    var capHeight = skPaint.FontMetrics != null ? skPaint.FontMetrics.CapHeight : height * 0.75f;
-                    var far = -skPaint.FontMetrics.Bottom - height * 0.00f;
+                    //var capHeight = skPaint.FontMetrics != null ? skPaint.FontMetrics.CapHeight : height * 0.75f;
+
+                    var far = -skPaint.FontMetrics.Bottom /*- height * 0.00f*/;
                     var near = -skPaint.FontMetrics.Top;
 
                     switch (format.LineAlignment)
@@ -293,7 +294,7 @@ namespace gView.GraphicsEngine.Skia
                             point.Y += far;
                             break;
                         case StringAlignment.Center:
-                            point.Y += (far + near) * .5f; // -(skPaint.FontMetrics.Bottom + skPaint.FontMetrics.Top) / 2.6f; // capHeight / 2f;
+                            point.Y += (far + near) * .5f;
                             //point.Y = this.MeasureText(text, font).Height;
                             break;
                         case StringAlignment.Near:
