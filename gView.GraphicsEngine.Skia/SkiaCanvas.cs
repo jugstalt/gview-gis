@@ -244,6 +244,7 @@ namespace gView.GraphicsEngine.Skia
             var skPaint = (SKPaint)font.EngineElement;
 
             skPaint.IsAntialias = this.SmoothingMode == SmoothingMode.AntiAlias;
+            skPaint.TextEncoding = SKTextEncoding.Utf16;
 
             return skPaint;
         }
