@@ -295,7 +295,7 @@ namespace gView.Test
                 canvas.FillEllipse(brush, 10, 10, width - 20, height - 20);
                 canvas.DrawEllipse(pen, 10, 10, width - 20, height - 20);
 
-                canvas.DrawText("Umlaute: ÄÜÖßöäü", font, blackBrush, new CanvasPoint(10, 50));
+                canvas.DrawText($"Umlaute: ÄÜÖßöäü{ Environment.NewLine }Und dann noch eine{ Environment.NewLine }Zeile", font, blackBrush, new CanvasPoint(10, 50));
             }
 
             return bitmap;
