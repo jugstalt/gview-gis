@@ -98,7 +98,7 @@ namespace gView.Framework.Symbology
                     {
                         if (_rotation != 0)
                         {
-                            PerformSymbolTransformation();
+                            PerformSymbolTransformation(_rotation);
                         }
 
                         double cos_a = Math.Cos((-_angle - _rotation) / 180.0 * Math.PI);
@@ -135,7 +135,7 @@ namespace gView.Framework.Symbology
             set
             {
                 _hOffset = value;
-                PerformSymbolTransformation();
+                PerformSymbolTransformation(0);
             }
         }
 
@@ -146,7 +146,7 @@ namespace gView.Framework.Symbology
             set
             {
                 _vOffset = value;
-                PerformSymbolTransformation();
+                PerformSymbolTransformation(0);
             }
         }
 
@@ -157,7 +157,7 @@ namespace gView.Framework.Symbology
             set
             {
                 _angle = value;
-                PerformSymbolTransformation();
+                PerformSymbolTransformation(0);
             }
         }
 
@@ -482,12 +482,12 @@ namespace gView.Framework.Symbology
 
         #region Helper
 
-        private void PerformSymbolTransformation()
+        private void PerformSymbolTransformation(float rotation)
         {
             var offset = new CanvasPointF(_hOffset, _vOffset);
             Current.Engine.DrawTextOffestPointsToFontUnit(ref offset);
 
-            SymbolTransformation.Transform(_angle, offset.X, offset.Y, out _xOffset, out _yOffset);
+            SymbolTransformation.Transform(_angle + rotation, offset.X, offset.Y, out _xOffset, out _yOffset);
         }
 
         #endregion

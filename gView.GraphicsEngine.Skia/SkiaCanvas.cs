@@ -138,67 +138,86 @@ namespace gView.GraphicsEngine.Skia
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasPoint point)
         {
-            _canvas.DrawText(text, point.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement));
+            DrawMultilineText(text.RemoveReturns(), point.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement));
         }
 
         public void DrawText(string text, IFont font, IBrush brush, int x, int y)
         {
-            _canvas.DrawText(text, x, y, GetSKPaint(font, (SKPaint)brush.EngineElement));
+            DrawMultilineText(text.RemoveReturns(), x, y, GetSKPaint(font, (SKPaint)brush.EngineElement));
         }
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasPointF pointF)
         {
-            _canvas.DrawText(text, pointF.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement));
+            DrawMultilineText(text.RemoveReturns(), pointF.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement));
         }
 
         public void DrawText(string text, IFont font, IBrush brush, float x, float y)
         {
-            _canvas.DrawText(text, x, y, GetSKPaint(font, (SKPaint)brush.EngineElement));
+            DrawMultilineText(text.RemoveReturns(), x, y, GetSKPaint(font, (SKPaint)brush.EngineElement));
         }
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasRectangleF rectangleF)
         {
-            _canvas.DrawText(text, rectangleF.Center.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement));
+            DrawMultilineText(text.RemoveReturns(), rectangleF.Center.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement));
         }
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasPoint point, IDrawTextFormat format)
         {
             var skPoint = point.ToSKPoint();
-            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, text, ref skPoint);
+            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref text, ref skPoint);
 
-            _canvas.DrawText(text, skPoint, skPaint);
+            DrawMultilineText(text, skPoint, skPaint);
         }
 
         public void DrawText(string text, IFont font, IBrush brush, int x, int y, IDrawTextFormat format)
         {
             var skPoint = new SKPoint(x, y);
-            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, text, ref skPoint);
+            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref text, ref skPoint);
 
-            _canvas.DrawText(text, skPoint, skPaint);
+            DrawMultilineText(text, skPoint, skPaint);
         }
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasPointF pointF, IDrawTextFormat format)
         {
             var skPoint = pointF.ToSKPoint();
-            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, text, ref skPoint);
+            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref text, ref skPoint);
 
-            _canvas.DrawText(text, skPoint, skPaint);
+            DrawMultilineText(text, skPoint, skPaint);
         }
 
         public void DrawText(string text, IFont font, IBrush brush, float x, float y, IDrawTextFormat format)
         {
             var skPoint = new SKPoint(x, y);
-            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, text, ref skPoint);
+            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref text, ref skPoint);
 
-            _canvas.DrawText(text, skPoint, skPaint);
+            DrawMultilineText(text, skPoint, skPaint);
         }
 
         public CanvasSizeF MeasureText(string text, IFont font)
         {
-            SKRect bounds = new SKRect();
-            GetSKPaint(font).MeasureText(text, ref bounds);
+            text = text.RemoveReturns();
 
-            return new CanvasSizeF(bounds.Width, bounds.Height);
+            SKRect bounds = new SKRect();
+            var size = new CanvasSizeF();
+
+            if (text.IsMultiline())
+            {
+                var fontHeight = font.Size.FontSizePointsToPixels();
+                foreach (var line in text.GetLines())
+                {
+                    GetSKPaint(font).MeasureText(line, ref bounds);
+                    size.Width = Math.Max(size.Width, bounds.Width);
+                    size.Height += fontHeight;
+                }
+            }
+            else
+            {
+                GetSKPaint(font).MeasureText(text, ref bounds);
+                size.Width = bounds.Width;
+                size.Height = bounds.Height;
+            }
+
+            return size;
         }
 
         public void ResetTransform()
@@ -244,6 +263,7 @@ namespace gView.GraphicsEngine.Skia
             var skPaint = (SKPaint)font.EngineElement;
 
             skPaint.IsAntialias = this.SmoothingMode == SmoothingMode.AntiAlias;
+            skPaint.TextEncoding = SKTextEncoding.Utf16;
 
             return skPaint;
         }
@@ -260,9 +280,10 @@ namespace gView.GraphicsEngine.Skia
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private SKPaint GetSKPaint(IFont font, SKPaint brush, IDrawTextFormat format, string text, ref SKPoint point)
+        private SKPaint GetSKPaint(IFont font, SKPaint brush, IDrawTextFormat format, ref string text, ref SKPoint point)
         {
             var skPaint = GetSKPaint(font, brush);
+            text = text.RemoveReturns();
 
             if(format!=null)
             {
@@ -304,6 +325,46 @@ namespace gView.GraphicsEngine.Skia
             }
 
             return skPaint;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DrawMultilineText(string text, SKPoint point, SKPaint paint)
+        {
+            if (text.Contains("\n"))
+            {
+                String[] lines = text.Replace("\r","").Split('\n');
+
+                foreach(var line in lines)
+                {
+                    _canvas.DrawText(line, point, paint);
+
+                    point.Y += paint.TextSize;
+                }
+            }
+            else
+            {
+                _canvas.DrawText(text, point, paint);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DrawMultilineText(string text, float x, float y, SKPaint paint)
+        {
+            if (text.Contains("\n"))
+            {
+                String[] lines = text.Replace("\r", "").Split('\n');
+
+                foreach (var line in lines)
+                {
+                    _canvas.DrawText(line, x, y, paint);
+
+                    y += paint.TextSize;
+                }
+            }
+            else
+            {
+                _canvas.DrawText(text, x, y, paint);
+            }
         }
 
         #endregion
