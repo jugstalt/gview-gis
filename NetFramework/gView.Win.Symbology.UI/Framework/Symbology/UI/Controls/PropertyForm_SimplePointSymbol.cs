@@ -56,43 +56,27 @@ namespace gView.Framework.Symbology.UI
             // 
             // panelSymbol
             // 
-            this.panelSymbol.AccessibleDescription = null;
-            this.panelSymbol.AccessibleName = null;
             resources.ApplyResources(this.panelSymbol, "panelSymbol");
-            this.panelSymbol.BackgroundImage = null;
             this.panelSymbol.Controls.Add(this.tabControl1);
-            this.panelSymbol.Font = null;
             this.panelSymbol.Name = "panelSymbol";
             // 
             // tabControl1
             // 
-            this.tabControl1.AccessibleDescription = null;
-            this.tabControl1.AccessibleName = null;
             resources.ApplyResources(this.tabControl1, "tabControl1");
-            this.tabControl1.BackgroundImage = null;
             this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Font = null;
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             // 
             // tabPage1
             // 
-            this.tabPage1.AccessibleDescription = null;
-            this.tabPage1.AccessibleName = null;
             resources.ApplyResources(this.tabPage1, "tabPage1");
-            this.tabPage1.BackgroundImage = null;
             this.tabPage1.Controls.Add(this.propertyGrid);
-            this.tabPage1.Font = null;
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // propertyGrid
             // 
-            this.propertyGrid.AccessibleDescription = null;
-            this.propertyGrid.AccessibleName = null;
             resources.ApplyResources(this.propertyGrid, "propertyGrid");
-            this.propertyGrid.BackgroundImage = null;
-            this.propertyGrid.Font = null;
             this.propertyGrid.HelpForeColor = System.Drawing.SystemColors.Control;
             this.propertyGrid.LineColor = System.Drawing.SystemColors.ScrollBar;
             this.propertyGrid.Name = "propertyGrid";
@@ -101,13 +85,8 @@ namespace gView.Framework.Symbology.UI
             // 
             // PropertyForm_SimplePointSymbol
             // 
-            this.AccessibleDescription = null;
-            this.AccessibleName = null;
             resources.ApplyResources(this, "$this");
-            this.BackgroundImage = null;
             this.Controls.Add(this.panelSymbol);
-            this.Font = null;
-            this.Icon = null;
             this.Name = "PropertyForm_SimplePointSymbol";
             this.panelSymbol.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);

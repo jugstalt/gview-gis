@@ -1475,30 +1475,30 @@ namespace gView.Framework.XML
                     case "square":
                         symbol.LineStartCap = symbol.LineEndCap = LineCap.Square;
                         break;
-                    case "anchormask":
-                        symbol.LineStartCap = symbol.LineEndCap = LineCap.AnchorMask;
-                        break;
-                    case "arrowanchor":
-                        symbol.LineStartCap = symbol.LineEndCap = LineCap.ArrowAnchor;
-                        break;
-                    case "custom":
-                        symbol.LineStartCap = symbol.LineEndCap = LineCap.Custom;
-                        break;
-                    case "diamondanchor":
-                        symbol.LineStartCap = symbol.LineEndCap = LineCap.DiamondAnchor;
-                        break;
-                    case "noanchor":
-                        symbol.LineStartCap = symbol.LineEndCap = LineCap.NoAnchor;
-                        break;
-                    case "roundanchor":
-                        symbol.LineStartCap = symbol.LineEndCap = LineCap.RoundAnchor;
-                        break;
-                    case "squareanchor":
-                        symbol.LineStartCap = symbol.LineEndCap = LineCap.SquareAnchor;
-                        break;
-                    case "triangle":
-                        symbol.LineStartCap = symbol.LineEndCap = LineCap.Triangle;
-                        break;
+                    //case "anchormask":
+                    //    symbol.LineStartCap = symbol.LineEndCap = LineCap.AnchorMask;
+                    //    break;
+                    //case "arrowanchor":
+                    //    symbol.LineStartCap = symbol.LineEndCap = LineCap.ArrowAnchor;
+                    //    break;
+                    //case "custom":
+                    //    symbol.LineStartCap = symbol.LineEndCap = LineCap.Custom;
+                    //    break;
+                    //case "diamondanchor":
+                    //    symbol.LineStartCap = symbol.LineEndCap = LineCap.DiamondAnchor;
+                    //    break;
+                    //case "noanchor":
+                    //    symbol.LineStartCap = symbol.LineEndCap = LineCap.NoAnchor;
+                    //    break;
+                    //case "roundanchor":
+                    //    symbol.LineStartCap = symbol.LineEndCap = LineCap.RoundAnchor;
+                    //    break;
+                    //case "squareanchor":
+                    //    symbol.LineStartCap = symbol.LineEndCap = LineCap.SquareAnchor;
+                    //    break;
+                    //case "triangle":
+                    //    symbol.LineStartCap = symbol.LineEndCap = LineCap.Triangle;
+                    //    break;
                 }
             }
             if (axl.Attributes["startcaptype"] != null)
@@ -1514,30 +1514,30 @@ namespace gView.Framework.XML
                     case "square":
                         symbol.LineStartCap = LineCap.Square;
                         break;
-                    case "anchormask":
-                        symbol.LineStartCap = LineCap.AnchorMask;
-                        break;
-                    case "arrowanchor":
-                        symbol.LineStartCap = LineCap.ArrowAnchor;
-                        break;
-                    case "custom":
-                        symbol.LineStartCap = LineCap.Custom;
-                        break;
-                    case "diamondanchor":
-                        symbol.LineStartCap = LineCap.DiamondAnchor;
-                        break;
-                    case "noanchor":
-                        symbol.LineStartCap = LineCap.NoAnchor;
-                        break;
-                    case "roundanchor":
-                        symbol.LineStartCap = LineCap.RoundAnchor;
-                        break;
-                    case "squareanchor":
-                        symbol.LineStartCap = LineCap.SquareAnchor;
-                        break;
-                    case "triangle":
-                        symbol.LineStartCap = LineCap.Triangle;
-                        break;
+                    //case "anchormask":
+                    //    symbol.LineStartCap = LineCap.AnchorMask;
+                    //    break;
+                    //case "arrowanchor":
+                    //    symbol.LineStartCap = LineCap.ArrowAnchor;
+                    //    break;
+                    //case "custom":
+                    //    symbol.LineStartCap = LineCap.Custom;
+                    //    break;
+                    //case "diamondanchor":
+                    //    symbol.LineStartCap = LineCap.DiamondAnchor;
+                    //    break;
+                    //case "noanchor":
+                    //    symbol.LineStartCap = LineCap.NoAnchor;
+                    //    break;
+                    //case "roundanchor":
+                    //    symbol.LineStartCap = LineCap.RoundAnchor;
+                    //    break;
+                    //case "squareanchor":
+                    //    symbol.LineStartCap = LineCap.SquareAnchor;
+                    //    break;
+                    //case "triangle":
+                    //    symbol.LineStartCap = LineCap.Triangle;
+                    //    break;
                 }
             }
             if (axl.Attributes["endcaptype"] != null)
@@ -1553,30 +1553,30 @@ namespace gView.Framework.XML
                     case "square":
                         symbol.LineEndCap = LineCap.Square;
                         break;
-                    case "anchormask":
-                        symbol.LineEndCap = LineCap.AnchorMask;
-                        break;
-                    case "arrowanchor":
-                        symbol.LineEndCap = LineCap.ArrowAnchor;
-                        break;
-                    case "custom":
-                        symbol.LineEndCap = LineCap.Custom;
-                        break;
-                    case "diamondanchor":
-                        symbol.LineEndCap = LineCap.DiamondAnchor;
-                        break;
-                    case "noanchor":
-                        symbol.LineEndCap = LineCap.NoAnchor;
-                        break;
-                    case "roundanchor":
-                        symbol.LineEndCap = LineCap.RoundAnchor;
-                        break;
-                    case "squareanchor":
-                        symbol.LineEndCap = LineCap.SquareAnchor;
-                        break;
-                    case "triangle":
-                        symbol.LineEndCap = LineCap.Triangle;
-                        break;
+                    //case "anchormask":
+                    //    symbol.LineEndCap = LineCap.AnchorMask;
+                    //    break;
+                    //case "arrowanchor":
+                    //    symbol.LineEndCap = LineCap.ArrowAnchor;
+                    //    break;
+                    //case "custom":
+                    //    symbol.LineEndCap = LineCap.Custom;
+                    //    break;
+                    //case "diamondanchor":
+                    //    symbol.LineEndCap = LineCap.DiamondAnchor;
+                    //    break;
+                    //case "noanchor":
+                    //    symbol.LineEndCap = LineCap.NoAnchor;
+                    //    break;
+                    //case "roundanchor":
+                    //    symbol.LineEndCap = LineCap.RoundAnchor;
+                    //    break;
+                    //case "squareanchor":
+                    //    symbol.LineEndCap = LineCap.SquareAnchor;
+                    //    break;
+                    //case "triangle":
+                    //    symbol.LineEndCap = LineCap.Triangle;
+                    //    break;
                 }
             }
 

@@ -8,6 +8,7 @@ using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.Symbology.Framework.Symbology.IO;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text;
@@ -22,6 +23,7 @@ namespace gView.Framework.Symbology
         private IBrush _brush;
         private IFont _font;
         private char _char = 'A';
+        //private Dictionary<string, Offset> _engineOffset = new Dictionary<string, Offset>();
 
         public TrueTypeMarkerSymbol()
         {
@@ -35,7 +37,6 @@ namespace gView.Framework.Symbology
         }
 
         [Browsable(true)]
-        //[Editor(typeof(gView.Framework.UI.ColorTypeEditor),typeof(System.Drawing.Design.UITypeEditor))]
         [UseColorPicker()]
         public ArgbColor Color
         {
@@ -64,7 +65,6 @@ namespace gView.Framework.Symbology
         }
 
         [Browsable(true)]
-        //[Editor(typeof(gView.Framework.UI.CharacterTypeEditor),typeof(System.Drawing.Design.UITypeEditor))]
         [UseCharacterPicker()]
         public byte Charakter
         {
@@ -135,6 +135,7 @@ namespace gView.Framework.Symbology
             set
             {
                 _hOffset = value;
+                RefreshEngineOffset();
                 PerformSymbolTransformation(0);
             }
         }
@@ -146,6 +147,7 @@ namespace gView.Framework.Symbology
             set
             {
                 _vOffset = value;
+                RefreshEngineOffset();
                 PerformSymbolTransformation(0);
             }
         }
@@ -489,6 +491,28 @@ namespace gView.Framework.Symbology
 
             SymbolTransformation.Transform(_angle + rotation, offset.X, offset.Y, out _xOffset, out _yOffset);
         }
+
+        private void RefreshEngineOffset()
+        {
+            //var offset = _engineOffset.ContainsKey(Current.Engine.EngineName) ?
+            //    _engineOffset[Current.Engine.EngineName] :
+            //    new Offset();
+
+            //offset.VerticalOffset = this.VerticalOffset;
+            //offset.HorizontalOffset = this.HorizontalOffset;
+
+            //_engineOffset[Current.Engine.EngineName] = offset;
+        }
+
+        #endregion
+
+        #region Helper Classes
+
+        //private struct Offset
+        //{
+        //    public float HorizontalOffset { get; set; }
+        //    public float VerticalOffset { get;  set; }
+        //}
 
         #endregion
     }

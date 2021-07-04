@@ -161,31 +161,31 @@ namespace gView.Framework.Symbology
             var gp = DisplayOperations.Geometry2GraphicsPath(display, geometry);
             if (gp != null)
             {
-                if (this.LineStartCap == LineCap.ArrowAnchor ||
-                    this.LineEndCap == LineCap.ArrowAnchor)
-                {
-                    //
-                    // bei LineCap Arrow (Pfeil...) kann es bei sehr kurzen Linen
-                    // zu einer Out of Memory Exception kommen...
-                    //
-                    try
-                    {
-                        this.DrawPath(display, gp);
-                    }
-                    catch
-                    {
-                        LineCap sCap = this.LineStartCap;
-                        LineCap eCap = this.LineEndCap;
-                        this.LineStartCap = (sCap == LineCap.ArrowAnchor) ? LineCap.Triangle : sCap;
-                        this.LineEndCap = (eCap == LineCap.ArrowAnchor) ? LineCap.Triangle : eCap;
+                //if (this.LineStartCap == LineCap.ArrowAnchor ||
+                //    this.LineEndCap == LineCap.ArrowAnchor)
+                //{
+                //    //
+                //    // bei LineCap Arrow (Pfeil...) kann es bei sehr kurzen Linen
+                //    // zu einer Out of Memory Exception kommen...
+                //    //
+                //    try
+                //    {
+                //        this.DrawPath(display, gp);
+                //    }
+                //    catch
+                //    {
+                //        LineCap sCap = this.LineStartCap;
+                //        LineCap eCap = this.LineEndCap;
+                //        this.LineStartCap = (sCap == LineCap.ArrowAnchor) ? LineCap.Triangle : sCap;
+                //        this.LineEndCap = (eCap == LineCap.ArrowAnchor) ? LineCap.Triangle : eCap;
 
-                        this.DrawPath(display, gp);
+                //        this.DrawPath(display, gp);
 
-                        this.LineStartCap = sCap;
-                        this.LineEndCap = eCap;
-                    }
-                }
-                else
+                //        this.LineStartCap = sCap;
+                //        this.LineEndCap = eCap;
+                //    }
+                //}
+                //else
                 {
                     this.DrawPath(display, gp);
                 }

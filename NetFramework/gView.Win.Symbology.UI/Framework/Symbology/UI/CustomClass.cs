@@ -178,47 +178,47 @@ namespace gView.Framework.Symbology.UI
                 {
                     if (propAttributes[p] is UseColorPicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.ColorTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(ColorTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if (propAttributes[p] is UseWidthPicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.PenWidthTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(PenWidthTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if (propAttributes[p] is UseDashStylePicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.DashStyleTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(DashStyleTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if (propAttributes[p] is UseHatchStylePicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.HatchStyleTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(HatchStyleTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if (propAttributes[p] is UseLineSymbolPicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.LineSymbolTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(LineSymbolTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if(propAttributes[p] is UsePointSymbolPicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.PointSymbolTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(PointSymbolTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if (propAttributes[p] is UseCharacterPicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.CharacterTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(CharacterTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if (propAttributes[p] is UseFilePicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.FileTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(FileTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if (propAttributes[p] is UseColorGradientPicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.ColorGradientEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(ColorGradientEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                 }

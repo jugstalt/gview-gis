@@ -36,6 +36,9 @@ namespace gView.Framework.Sys.UI.Extensions
                                     bmPixelData.Scan0);
 
                 bmPixelData.Scan0 = IntPtr.Zero;  // Don't give it back...
+
+                //bm.Save($"C:\\temp\\gr_{ Guid.NewGuid().ToString() }.png", System.Drawing.Imaging.ImageFormat.Png);
+
                 return bm;
             }
             finally

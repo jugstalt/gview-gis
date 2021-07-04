@@ -12,17 +12,17 @@ using System.Windows.Forms.Design;
 
 namespace gView.Framework.Symbology.UI
 {
-    internal class ColorTypeEditor : UITypeEditor 
-	{
-		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
-		{
-			return UITypeEditorEditStyle.DropDown; 
-		}
+    internal class ColorTypeEditor : UITypeEditor
+    {
+        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
+        {
+            return UITypeEditorEditStyle.DropDown;
+        }
 
-		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
-		{
-			IWindowsFormsEditorService wfes=provider.GetService(
-				typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
+        public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
+        {
+            IWindowsFormsEditorService wfes = provider.GetService(
+                typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
 
             if (wfes != null)
             {
@@ -33,60 +33,60 @@ namespace gView.Framework.Symbology.UI
                 return picker.Color;
             }
 
-			return value;
-		}
+            return value;
+        }
 
-		public override void PaintValue(PaintValueEventArgs e)
-		{
-			using (SolidBrush brush = new SolidBrush((Color)e.Value))
-			{
-				e.Graphics.FillRectangle(brush, e.Bounds);
-			}
-		}
+        public override void PaintValue(PaintValueEventArgs e)
+        {
+            using (SolidBrush brush = new SolidBrush((Color)e.Value))
+            {
+                e.Graphics.FillRectangle(brush, e.Bounds);
+            }
+        }
 
-		public override bool GetPaintValueSupported(ITypeDescriptorContext context)
-		{
-			return true;
-		}
+        public override bool GetPaintValueSupported(ITypeDescriptorContext context)
+        {
+            return true;
+        }
 
-	}
+    }
 
-	internal class DashStyleTypeEditor : UITypeEditor 
-	{
-		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
-		{
-			return UITypeEditorEditStyle.DropDown;
-		}
+    internal class DashStyleTypeEditor : UITypeEditor
+    {
+        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
+        {
+            return UITypeEditorEditStyle.DropDown;
+        }
 
-		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
-		{
-			IWindowsFormsEditorService wfes=provider.GetService(
-				typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
+        public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
+        {
+            IWindowsFormsEditorService wfes = provider.GetService(
+                typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
 
-			if(wfes!=null) 
-			{
-				Form_UITypeEditor_DashStyle dlg=new Form_UITypeEditor_DashStyle(wfes,(DashStyle)value);
-				dlg.TopLevel=false;
-				wfes.DropDownControl(dlg);
-				value=dlg.DashStyle;
-			}
-			return value;
-		}
+            if (wfes != null)
+            {
+                Form_UITypeEditor_DashStyle dlg = new Form_UITypeEditor_DashStyle(wfes, (DashStyle)value);
+                dlg.TopLevel = false;
+                wfes.DropDownControl(dlg);
+                value = dlg.DashStyle;
+            }
+            return value;
+        }
 
-		public override bool GetPaintValueSupported(ITypeDescriptorContext context)
-		{
-			return true;
-		}
+        public override bool GetPaintValueSupported(ITypeDescriptorContext context)
+        {
+            return true;
+        }
 
-		public override void PaintValue(PaintValueEventArgs e)
-		{
-			using(Pen pen=new Pen(Color.Black,1)) 
-			{
-				pen.DashStyle=(DashStyle)e.Value;
-				e.Graphics.DrawLine(pen,e.Bounds.Left+2,e.Bounds.Height/2,e.Bounds.Right-4,e.Bounds.Height/2);
-			}
-		}
-	}
+        public override void PaintValue(PaintValueEventArgs e)
+        {
+            using (Pen pen = new Pen(Color.Black, 1))
+            {
+                pen.DashStyle = (DashStyle)e.Value;
+                e.Graphics.DrawLine(pen, e.Bounds.Left + 2, e.Bounds.Height / 2, e.Bounds.Right - 4, e.Bounds.Height / 2);
+            }
+        }
+    }
 
     internal class PenWidthTypeEditor : UITypeEditor
     {
@@ -117,86 +117,86 @@ namespace gView.Framework.Symbology.UI
 
         public override void PaintValue(PaintValueEventArgs e)
         {
-            
-            using (Pen pen = new Pen(Color.Black, Math.Min(e.Bounds.Height,(float)e.Value)))
+
+            using (Pen pen = new Pen(Color.Black, Math.Min(e.Bounds.Height, (float)e.Value)))
             {
                 e.Graphics.DrawLine(pen, e.Bounds.Left + 1, e.Bounds.Height / 2, e.Bounds.Right - 1, e.Bounds.Height / 2);
             }
         }
     }
 
-	internal class HatchStyleTypeEditor : UITypeEditor
-	{
-		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
-		{
-			return UITypeEditorEditStyle.DropDown;
-		}
+    internal class HatchStyleTypeEditor : UITypeEditor
+    {
+        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
+        {
+            return UITypeEditorEditStyle.DropDown;
+        }
 
-		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
-		{
-			IWindowsFormsEditorService wfes=provider.GetService(
-				typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
+        public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
+        {
+            IWindowsFormsEditorService wfes = provider.GetService(
+                typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
 
-			if(wfes!=null) 
-			{
-				Form_UITypeEditor_DashStyle dlg=new Form_UITypeEditor_DashStyle(wfes,(HatchStyle)value);
-				dlg.TopLevel=false;
-				wfes.DropDownControl(dlg);
-				value=dlg.HatchStyle;
-			}
-			return value;
-		}
+            if (wfes != null)
+            {
+                Form_UITypeEditor_DashStyle dlg = new Form_UITypeEditor_DashStyle(wfes, (HatchStyle)value);
+                dlg.TopLevel = false;
+                wfes.DropDownControl(dlg);
+                value = dlg.HatchStyle;
+            }
+            return value;
+        }
 
-	}
+    }
 
-	internal class LineSymbolTypeEditor : UITypeEditor 
-	{
-		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
-		{
-			return UITypeEditorEditStyle.DropDown;
-		}
+    internal class LineSymbolTypeEditor : UITypeEditor
+    {
+        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
+        {
+            return UITypeEditorEditStyle.DropDown;
+        }
 
-		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
-		{
-			IWindowsFormsEditorService wfes=provider.GetService(
-				typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
+        public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
+        {
+            IWindowsFormsEditorService wfes = provider.GetService(
+                typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
 
-			if(wfes!=null) 
-			{
-				ISymbol symbol=(ISymbol)value;
-				if(symbol==null) 
-				{
-					symbol=new SimpleLineSymbol();
-				}
+            if (wfes != null)
+            {
+                ISymbol symbol = (ISymbol)value;
+                if (symbol == null)
+                {
+                    symbol = new SimpleLineSymbol();
+                }
 
-				Form_UITypeEditor_Color dlg=new Form_UITypeEditor_Color(wfes, symbol);
-				wfes.DropDownControl(dlg.panelSymbol);
-				return dlg.Symbol;
-			}
-			return value;
-		}
+                Form_UITypeEditor_Color dlg = new Form_UITypeEditor_Color(wfes, symbol);
+                wfes.DropDownControl(dlg.panelSymbol);
+                return dlg.Symbol;
+            }
+            return value;
+        }
 
-		public override bool GetPaintValueSupported(ITypeDescriptorContext context)
-		{
-			return true;
-		}
+        public override bool GetPaintValueSupported(ITypeDescriptorContext context)
+        {
+            return true;
+        }
 
-		public override void PaintValue(PaintValueEventArgs e)
-		{
-			if(!(e.Value is ISymbol))
+        public override void PaintValue(PaintValueEventArgs e)
+        {
+            if (!(e.Value is ISymbol))
             {
                 return;
             }
 
-			using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(e.Bounds.Width, e.Bounds.Height))
-			using (var canvas = bitmap.CreateCanvas())
-			{
-				new SymbolPreview(null).Draw(canvas, new GraphicsEngine.CanvasRectangle(0, 0, bitmap.Width, bitmap.Height), (ISymbol)e.Value);
-				e.Graphics.DrawImage(bitmap.ToGdiBitmap(), new Point(e.Bounds.X, e.Bounds.Y));
-			}
-		}
+            using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(e.Bounds.Width, e.Bounds.Height))
+            using (var canvas = bitmap.CreateCanvas())
+            {
+                new SymbolPreview(null).Draw(canvas, new GraphicsEngine.CanvasRectangle(0, 0, bitmap.Width, bitmap.Height), (ISymbol)e.Value);
+                e.Graphics.DrawImage(bitmap.ToGdiBitmap(), new Point(e.Bounds.X, e.Bounds.Y));
+            }
+        }
 
-	}
+    }
 
     internal class PointSymbolTypeEditor : UITypeEditor
     {
@@ -237,61 +237,58 @@ namespace gView.Framework.Symbology.UI
                 return;
             }
 
-			using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(e.Bounds.Width, e.Bounds.Height))
-			using (var canvas = bitmap.CreateCanvas())
-			{
-				new SymbolPreview(null).Draw(canvas, new GraphicsEngine.CanvasRectangle(0, 0, bitmap.Width, bitmap.Height), (ISymbol)e.Value);
-				e.Graphics.DrawImage(bitmap.ToGdiBitmap(), new Point(e.Bounds.X, e.Bounds.Y));
-			}
+            using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(e.Bounds.Width, e.Bounds.Height))
+            using (var canvas = bitmap.CreateCanvas())
+            {
+                new SymbolPreview(null).Draw(canvas, new GraphicsEngine.CanvasRectangle(0, 0, bitmap.Width, bitmap.Height), (ISymbol)e.Value);
+                e.Graphics.DrawImage(bitmap.ToGdiBitmap(), new Point(e.Bounds.X, e.Bounds.Y));
+            }
         }
     }
 
-	internal class CharacterTypeEditor : UITypeEditor
-	{
-		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
-		{
-			return UITypeEditorEditStyle.DropDown;
-		}
-		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
-		{
-			GraphicsEngine.Abstraction.IFont iFont = null;
-			if (context.Instance is TrueTypeMarkerSymbol)
-			{
-				iFont = ((TrueTypeMarkerSymbol)context.Instance).Font;
-			}
-			if (context.Instance is CustomClass &&
-				((CustomClass)context.Instance).ObjectInstance is TrueTypeMarkerSymbol)
-			{
-				iFont = ((TrueTypeMarkerSymbol)((CustomClass)context.Instance).ObjectInstance).Font;
-			}
+    internal class CharacterTypeEditor : UITypeEditor
+    {
+        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
+        {
+            return UITypeEditorEditStyle.DropDown;
+        }
+        public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
+        {
+            GraphicsEngine.Abstraction.IFont iFont = null;
+            if (context.Instance is TrueTypeMarkerSymbol)
+            {
+                iFont = ((TrueTypeMarkerSymbol)context.Instance).Font;
+            }
+            if (context.Instance is CustomClass &&
+                ((CustomClass)context.Instance).ObjectInstance is TrueTypeMarkerSymbol)
+            {
+                iFont = ((TrueTypeMarkerSymbol)((CustomClass)context.Instance).ObjectInstance).Font;
+            }
 
-			if (iFont == null)
-			{
-				return value;
-			}
+            if (iFont == null)
+            {
+                return value;
+            }
 
-			IWindowsFormsEditorService wfes = provider.GetService(
-				typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
+            IWindowsFormsEditorService wfes = provider.GetService(
+                typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
 
-			if (wfes != null)
-			{
-				using (var font = new Font(iFont.Name, iFont.Size))
-				{
-					Form_UITypeEditor_Character dlg = new Form_UITypeEditor_Character(wfes, font, (byte)value);
-					wfes.DropDownControl(dlg.panelChars);
-					return dlg.Charakter;
-				}
-			}
-			return value;
-		}
-	}
+            if (wfes != null)
+            {
+                Form_UITypeEditor_Character dlg = new Form_UITypeEditor_Character(wfes, iFont, (byte)value);
+                wfes.DropDownControl(dlg.panelChars);
+                return dlg.Charakter;
+            }
+            return value;
+        }
+    }
 
     internal class FileTypeEditor : UITypeEditor
     {
         public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
-		{
-			return UITypeEditorEditStyle.Modal;
-		}
+        {
+            return UITypeEditorEditStyle.Modal;
+        }
         public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
         {
 
@@ -306,29 +303,29 @@ namespace gView.Framework.Symbology.UI
                 filename = ((RasterMarkerSymbol)((CustomClass)context.Instance).ObjectInstance).Filename;
             }
 
-			#region Check Resources First
+            #region Check Resources First
 
-			var currentMap = SymbolPreview.CurrentMap;
-			if(currentMap?.ResourceContainer!=null && currentMap.ResourceContainer.HasResources)
+            var currentMap = SymbolPreview.CurrentMap;
+            if (currentMap?.ResourceContainer != null && currentMap.ResourceContainer.HasResources)
             {
-				var resourcePicker = new FormMapResourcePicker(currentMap);
-				resourcePicker.SetAbortButtonText("Or Select File...");
+                var resourcePicker = new FormMapResourcePicker(currentMap);
+                resourcePicker.SetAbortButtonText("Or Select File...");
 
-				switch(resourcePicker.ShowDialog())
+                switch (resourcePicker.ShowDialog())
                 {
-					case DialogResult.OK:
-						return $"resource:{ resourcePicker.SelectedResourceName }";
-					case DialogResult.Abort:
-						// Open Filedialog
-						break;
-					default:
-						return filename;
+                    case DialogResult.OK:
+                        return $"resource:{ resourcePicker.SelectedResourceName }";
+                    case DialogResult.Abort:
+                        // Open Filedialog
+                        break;
+                    default:
+                        return filename;
                 }
             }
 
-			#endregion
+            #endregion
 
-			OpenFileDialog dlg = new OpenFileDialog();
+            OpenFileDialog dlg = new OpenFileDialog();
             dlg.FileName = filename;
 
             if (dlg.ShowDialog() == DialogResult.OK)
