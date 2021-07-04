@@ -73,7 +73,7 @@ namespace gView.Framework.Carto.UI
             }
 
             Display display = new gView.Framework.Carto.Display(_map);
-            display.dpi = canvas.DpiX;
+            display.dpi = 96f; // canvas.DpiX;
 
             IEnvelope env = display.Limit = new Envelope(0, rectangle.Top + rectangle.Height, rectangle.Left + rectangle.Width, 0);
             display.iWidth = (int)env.maxx;

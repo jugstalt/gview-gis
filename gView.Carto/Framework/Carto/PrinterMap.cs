@@ -279,6 +279,11 @@ namespace gView.Framework.Carto
                 get { return 1f; }
             }
 
+            public void RefreshSettings(bool forceReloadAll = true)
+            {
+                
+            }
+
             #endregion
         }
     }

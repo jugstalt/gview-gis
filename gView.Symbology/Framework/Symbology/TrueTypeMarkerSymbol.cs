@@ -354,7 +354,7 @@ namespace gView.Framework.Symbology
             }
             fac *= options.DpiFactor;
 
-            TrueTypeMarkerSymbol marker = new TrueTypeMarkerSymbol(Current.Engine.CreateFont(Font.Name, Math.Max(Font.Size * fac / display.Screen.LargeFontsFactor, 2f), _font.Style), _brush.Color);
+            TrueTypeMarkerSymbol marker = new TrueTypeMarkerSymbol(Current.Engine.CreateFont(Font.Name, Math.Max(Font.Size * fac / display.Screen.LargeFontsFactor , 2f), _font.Style), _brush.Color);
             marker.Angle = Angle;
             marker.HorizontalOffset = HorizontalOffset * fac;
             marker.VerticalOffset = VerticalOffset * fac;

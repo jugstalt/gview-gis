@@ -66,7 +66,6 @@ namespace gView.Win.Carto
 
                 #endregion
 
-
                 _mapApplication.mapDocument = _mapDocument;
                 _mapApplication.DocumentFilename = String.Empty;
 
@@ -91,6 +90,7 @@ namespace gView.Win.Carto
                 _mapDocument.FocusMap = _mapDocument.Maps.First();
 
                 #region Create Modules
+
                 PlugInManager compMan = new PlugInManager();
                 foreach (var moduleType in compMan.GetPlugins(Framework.system.Plugins.Type.IMapApplicationModule))
                 {
@@ -101,6 +101,7 @@ namespace gView.Win.Carto
                         module.OnCreate(_mapDocument);
                     }
                 }
+
                 #endregion
 
                 _mapApplication.SendOnCreate2Tools(_mapDocument);

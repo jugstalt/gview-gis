@@ -27,9 +27,9 @@ namespace gView.Test
 
                 //ParseSQL();
 
-                //gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GraphicsEngine();
+                //gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96);
                 gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96);
-                using (var bitmap = CreateImage(600, 500))
+                using (var bitmap = CreateImage(850, 500))
                 {
                     SaveBitmap(bitmap, "C:\\temp\\graphic.png");
                 }
@@ -289,13 +289,24 @@ namespace gView.Test
             using (var brush = Current.Engine.CreateSolidBrush(ArgbColor.Yellow))
             using (var blackBrush = Current.Engine.CreateSolidBrush(ArgbColor.Black))
             using (var pen = Current.Engine.CreatePen(ArgbColor.Red, 10))
-            using (var font = Current.Engine.CreateFont("Arial", 20))
             {
+                canvas.TextRenderingHint = TextRenderingHint.AntiAlias;
                 canvas.SmoothingMode = SmoothingMode.AntiAlias;
-                canvas.FillEllipse(brush, 10, 10, width - 20, height - 20);
-                canvas.DrawEllipse(pen, 10, 10, width - 20, height - 20);
 
-                canvas.DrawText($"Umlaute: ÄÜÖßöäü{ Environment.NewLine }Und dann noch eine{ Environment.NewLine }Zeile", font, blackBrush, new CanvasPoint(10, 50));
+                for (int y = 0; y < 8; y++)
+                {
+                    for (int x = 0; x < 32; x++)
+                    {
+                        char c = (char)(byte)(x + y * 32);
+                        using (var font = Current.Engine.CreateFont("Arial", 20, typefaceCharakter: c))
+                            canvas.DrawText(c.ToString(), font, blackBrush, (x * 20) * 1.3f, ((y + 1) * 20) * 1.5f);
+                    }
+                }
+                //canvas.SmoothingMode = SmoothingMode.AntiAlias;
+                //canvas.FillEllipse(brush, 10, 10, width - 20, height - 20);
+                //canvas.DrawEllipse(pen, 10, 10, width - 20, height - 20);
+
+                //canvas.DrawText($"Umlaute: ÄÜÖßöäü{ Environment.NewLine }Und dann noch eine{ Environment.NewLine }Zeile", font, blackBrush, new CanvasPoint(10, 50));
             }
 
             return bitmap;
@@ -303,26 +314,28 @@ namespace gView.Test
 
         static public void SaveBitmap(IBitmap bitmap, string filename)
         {
-            BitmapPixelData bmPixelData = null;
-            try
-            {
-                bmPixelData = bitmap.Clone(PixelFormat.Format32bppArgb).LockBitmapPixelData(BitmapLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-                using (var bm = new System.Drawing.Bitmap(bmPixelData.Width,
-                                  bmPixelData.Height,
-                                  bmPixelData.Stride,
-                                  System.Drawing.Imaging.PixelFormat.Format32bppArgb,
-                                  bmPixelData.Scan0))
-                {
-                    bm.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
-                }
-            }
-            finally
-            {
-                if (bmPixelData != null)
-                {
-                    bitmap.UnlockBitmapPixelData(bmPixelData);
-                }
-            }
+            bitmap.Save(filename, ImageFormat.Png);
+
+            //BitmapPixelData bmPixelData = null;
+            //try
+            //{
+            //    bmPixelData = bitmap.Clone(PixelFormat.Format32bppArgb).LockBitmapPixelData(BitmapLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+            //    using (var bm = new System.Drawing.Bitmap(bmPixelData.Width,
+            //                      bmPixelData.Height,
+            //                      bmPixelData.Stride,
+            //                      System.Drawing.Imaging.PixelFormat.Format32bppArgb,
+            //                      bmPixelData.Scan0))
+            //    {
+            //        bm.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
+            //    }
+            //}
+            //finally
+            //{
+            //    if (bmPixelData != null)
+            //    {
+            //        bitmap.UnlockBitmapPixelData(bmPixelData);
+            //    }
+            //}
         }
 
 

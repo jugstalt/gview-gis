@@ -46,7 +46,9 @@ namespace gView.Framework.Carto
             //m_fixScales=new ArrayList();
 
             _labelEngine = new LabelEngine2();
-            InitEnvironment();
+
+            _screen = new DisplayScreen();
+            _screen.RefreshSettings();
         }
 
         internal Display(IMap map, bool createLabelEngine)
@@ -57,20 +59,8 @@ namespace gView.Framework.Carto
             //m_fixScales = new ArrayList();
 
             _labelEngine = (createLabelEngine) ? new LabelEngine2() : null;
-            InitEnvironment();
         }
 
-        private void InitEnvironment()
-        {
-            try
-            {
-                _screen = new DisplayScreen(
-                    SystemVariables.PrimaryScreenDPI / 96f);
-
-                //this.dpi = System.Drawing.Graphics.FromHwndInternal((IntPtr)0).DpiX;
-            }
-            catch { }
-        }
         public void setLimit(double minx, double miny, double maxx, double maxy)
         {
             m_minX = m_actMinX = minx;
@@ -522,6 +512,7 @@ namespace gView.Framework.Carto
         public void ZoomTo(double minx, double miny, double maxx, double maxy)
         {
             #region AutoResize
+
             double dx = Math.Abs(maxx - minx), mx = (maxx + minx) / 2.0;
             double dy = Math.Abs(maxy - miny), my = (maxy + miny) / 2.0;
 
@@ -708,15 +699,20 @@ namespace gView.Framework.Carto
         {
             private float _fac = 1f;
 
-            public DisplayScreen(float fac)
+            public DisplayScreen()
             {
-                _fac = fac;
             }
+
             #region IScreen Member
 
             public float LargeFontsFactor
             {
                 get { return _fac; }
+            }
+
+            public void RefreshSettings(bool forceReloadAll = true)
+            {
+                _fac = SystemVariables.PrimaryScreenDPI(forceReloadAll) / 96f;
             }
 
             #endregion

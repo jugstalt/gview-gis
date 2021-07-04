@@ -19,7 +19,7 @@ namespace gView.GraphicsEngine.Abstraction
         IBrush CreateLinearGradientBrush(CanvasRectangleF rect, ArgbColor col1, ArgbColor col2, float angle);
         IBrush CreateHatchBrush(HatchStyle hatchStyle, ArgbColor foreColor, ArgbColor backColor);
 
-        IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit grUnit = GraphicsUnit.Point);
+        IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit grUnit = GraphicsUnit.Point, char? typefaceCharakter = null);
 
         IDrawTextFormat CreateDrawTextFormat();
 

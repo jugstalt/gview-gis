@@ -1551,6 +1551,12 @@ namespace gView.Framework.UI.Controls
             _map.Display.iWidth = this.Width;
             _map.Display.iHeight = this.Height;
 
+            _map.Display.Screen?.RefreshSettings(true);
+            using (var gr = System.Drawing.Graphics.FromHwnd(_handle))
+            {
+                var dpi = gr.DpiX;
+            }
+
             if (_resizeMode == ResizeMode.SameScale)
             {
                 _map.Display.mapScale = _map.Display.mapScale;

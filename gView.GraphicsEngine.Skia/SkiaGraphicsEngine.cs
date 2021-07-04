@@ -56,9 +56,9 @@ namespace gView.GraphicsEngine.Skia
             return new SkiaDrawTextFormat();
         }
 
-        public IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit grUnit = GraphicsUnit.Point)
+        public IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit grUnit = GraphicsUnit.Point, char? typefaceCharakter = null)
         {
-            return new SkiaFont(fontFamily, size, fontStyle, grUnit);
+            return new SkiaFont(fontFamily, size, fontStyle, grUnit, typefaceCharakter);
         }
 
         public IGraphicsPath CreateGraphicsPath()
@@ -88,8 +88,8 @@ namespace gView.GraphicsEngine.Skia
 
         public void DrawTextOffestPointsToFontUnit(ref CanvasPointF offset)
         {
-            offset.X *= offset.X.PointsToPixels();
-            offset.Y *= offset.Y.PointsToPixels();
+            offset.X = offset.X.PointsToPixels() / 1.2f;
+            offset.Y = offset.Y.PointsToPixels() / 1.2f;
         }
 
         #endregion

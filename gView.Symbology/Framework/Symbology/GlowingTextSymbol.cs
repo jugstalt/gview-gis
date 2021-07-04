@@ -111,7 +111,7 @@ namespace gView.Framework.Symbology
             }
             fac *= options.DpiFactor;
 
-            GlowingTextSymbol tSym = new GlowingTextSymbol(Current.Engine.CreateFont(_font.Name, Math.Max(_font.Size * fac, 2f), _font.Style), _brush.Color, _outlinebrush.Color);
+            GlowingTextSymbol tSym = new GlowingTextSymbol(Current.Engine.CreateFont(_font.Name, Math.Max(_font.Size * fac / display.Screen.LargeFontsFactor, 2f), _font.Style), _brush.Color, _outlinebrush.Color);
             tSym.HorizontalOffset = HorizontalOffset * fac;
             tSym.VerticalOffset = VerticalOffset * fac;
             tSym.Angle = Angle;
