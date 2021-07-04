@@ -11,9 +11,10 @@ namespace gView.GraphicsEngine.Skia
         {
             ScreenDpi = screenDpi;
         }
-        
 
         #region IGraphicsEngine
+
+        public string EngineName => "SkiaSharp";
 
         public float ScreenDpi { get; }
 
@@ -88,8 +89,8 @@ namespace gView.GraphicsEngine.Skia
 
         public void DrawTextOffestPointsToFontUnit(ref CanvasPointF offset)
         {
-            offset.X = offset.X.PointsToPixels() / 1.2f;
-            offset.Y = offset.Y.PointsToPixels() / 1.2f;
+            //offset.X = offset.X.PointsToPixels() / 1.2f;
+            //offset.Y = offset.Y.PointsToPixels() / 1.2f;
         }
 
         #endregion

@@ -11,6 +11,9 @@ namespace gView.GraphicsEngine.GdiPlus
         {
             ScreenDpi = screenDpi;
         }
+
+        public string EngineName => "GdiPlus";
+
         public float ScreenDpi { get; }
 
         public IBitmap CreateBitmap(int width, int height)

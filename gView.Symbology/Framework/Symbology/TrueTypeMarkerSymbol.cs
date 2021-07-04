@@ -485,7 +485,7 @@ namespace gView.Framework.Symbology
         private void PerformSymbolTransformation(float rotation)
         {
             var offset = new CanvasPointF(_hOffset, _vOffset);
-            Current.Engine.DrawTextOffestPointsToFontUnit(ref offset);
+            //Current.Engine.DrawTextOffestPointsToFontUnit(ref offset);
 
             SymbolTransformation.Transform(_angle + rotation, offset.X, offset.Y, out _xOffset, out _yOffset);
         }

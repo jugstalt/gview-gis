@@ -19,7 +19,7 @@ namespace gView.GraphicsEngine.Skia
             {
                 Color = color.ToSKColor(),
                 Style = SKPaintStyle.Stroke,
-                StrokeWidth = Math.Max(1f, width),
+                StrokeWidth = Math.Max(0.1f, width),
                 StrokeJoin = SKStrokeJoin.Round
             };
 

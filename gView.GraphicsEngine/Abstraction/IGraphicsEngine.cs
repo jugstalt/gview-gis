@@ -7,6 +7,8 @@ namespace gView.GraphicsEngine.Abstraction
 {
     public interface IGraphicsEngine
     {
+        string EngineName { get; }
+
         IBitmap CreateBitmap(int width, int height);
         IBitmap CreateBitmap(int width, int height, PixelFormat format);
         IBitmap CreateBitmap(int width, int height, int stride, PixelFormat format, IntPtr scan0);

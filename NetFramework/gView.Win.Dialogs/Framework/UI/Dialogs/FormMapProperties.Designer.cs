@@ -43,6 +43,8 @@ namespace gView.Framework.UI.Dialogs
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabMap = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.gpGraphicsEngine = new System.Windows.Forms.GroupBox();
+            this.cmbGraphicsEngine = new System.Windows.Forms.ComboBox();
             this.panel4 = new System.Windows.Forms.Panel();
             this.btnNoAntialiasFeatures = new System.Windows.Forms.Button();
             this.btnAntialiasFeatures = new System.Windows.Forms.Button();
@@ -85,6 +87,7 @@ namespace gView.Framework.UI.Dialogs
             this.tabControl1.SuspendLayout();
             this.tabMap.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            this.gpGraphicsEngine.SuspendLayout();
             this.panel4.SuspendLayout();
             this.panel3.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -190,19 +193,34 @@ namespace gView.Framework.UI.Dialogs
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.gpGraphicsEngine);
             this.groupBox3.Controls.Add(this.panel4);
             this.groupBox3.Controls.Add(this.panel3);
             resources.ApplyResources(this.groupBox3, "groupBox3");
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.TabStop = false;
             // 
+            // gpGraphicsEngine
+            // 
+            this.gpGraphicsEngine.Controls.Add(this.cmbGraphicsEngine);
+            resources.ApplyResources(this.gpGraphicsEngine, "gpGraphicsEngine");
+            this.gpGraphicsEngine.Name = "gpGraphicsEngine";
+            this.gpGraphicsEngine.TabStop = false;
+            // 
+            // cmbGraphicsEngine
+            // 
+            this.cmbGraphicsEngine.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbGraphicsEngine.FormattingEnabled = true;
+            resources.ApplyResources(this.cmbGraphicsEngine, "cmbGraphicsEngine");
+            this.cmbGraphicsEngine.Name = "cmbGraphicsEngine";
+            // 
             // panel4
             // 
+            resources.ApplyResources(this.panel4, "panel4");
             this.panel4.BackColor = System.Drawing.Color.Gainsboro;
             this.panel4.Controls.Add(this.btnNoAntialiasFeatures);
             this.panel4.Controls.Add(this.btnAntialiasFeatures);
             this.panel4.Controls.Add(this.label7);
-            resources.ApplyResources(this.panel4, "panel4");
             this.panel4.Name = "panel4";
             // 
             // btnNoAntialiasFeatures
@@ -226,11 +244,11 @@ namespace gView.Framework.UI.Dialogs
             // 
             // panel3
             // 
+            resources.ApplyResources(this.panel3, "panel3");
             this.panel3.BackColor = System.Drawing.Color.Gainsboro;
             this.panel3.Controls.Add(this.btnNoAntialiasLabels);
             this.panel3.Controls.Add(this.btnAntialiasLabels);
             this.panel3.Controls.Add(this.label6);
-            resources.ApplyResources(this.panel3, "panel3");
             this.panel3.Name = "panel3";
             // 
             // btnNoAntialiasLabels
@@ -473,6 +491,7 @@ namespace gView.Framework.UI.Dialogs
             this.tabControl1.ResumeLayout(false);
             this.tabMap.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
+            this.gpGraphicsEngine.ResumeLayout(false);
             this.panel4.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
@@ -546,5 +565,7 @@ namespace gView.Framework.UI.Dialogs
         private System.Windows.Forms.DataGridViewButtonColumn colRemove;
         private System.Windows.Forms.TabPage tabMapService;
         private System.Windows.Forms.Button btnMapServiceMetadata;
+        private System.Windows.Forms.GroupBox gpGraphicsEngine;
+        private System.Windows.Forms.ComboBox cmbGraphicsEngine;
     }
 }

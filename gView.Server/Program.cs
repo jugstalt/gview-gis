@@ -17,8 +17,10 @@ namespace gView.Server
     {
         public static void Main(string[] args)
         {
-            GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96.0f);
-            //gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
+            //var dpi = gView.Framework.system.SystemVariables.PrimaryScreenDPI();
+
+            //GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96.0f);
+            gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
 
             try
             {
