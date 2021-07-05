@@ -329,21 +329,24 @@ namespace gView.Framework.Carto
                                 {
                                     if (rLayer.Class is IParentRasterLayer)
                                     {
+                                        if (cancelTracker.Continue)
+                                        {
+                                            DrawingLayer?.BeginInvoke(layer.Title, new AsyncCallback(AsyncInvoke.RunAndForget), null);
+                                        }
+
                                         await DrawRasterParentLayer((IParentRasterLayer)rLayer.Class, cancelTracker, rLayer);
                                         thread = null;
                                     }
                                     else
                                     {
                                         RenderRasterLayer rlt = new RenderRasterLayer(this, rLayer, rLayer, cancelTracker);
-                                        await rlt.Render();
-
-                                        //thread = new Thread(new ThreadStart(rlt.Render));
-                                        //thread.Start();
 
                                         if (cancelTracker.Continue)
                                         {
                                             DrawingLayer?.BeginInvoke(layer.Title, new AsyncCallback(AsyncInvoke.RunAndForget), null);
                                         }
+
+                                        await rlt.Render();
                                     }
                                 }
                             }
@@ -671,6 +674,19 @@ namespace gView.Framework.Carto
             finally
             {
                 _canvas = null;
+            }
+        }
+
+        private DateTime _lastRefresh = DateTime.UtcNow;
+        internal override void FireRefreshMapView()
+        {
+            if (this.DoRefreshMapView != null)
+            {
+                if ((DateTime.UtcNow - _lastRefresh).TotalMilliseconds > 100)
+                {
+                    this.DoRefreshMapView();
+                    _lastRefresh = DateTime.UtcNow;
+                }
             }
         }
 

@@ -200,6 +200,7 @@ namespace gView.Framework.Carto.LayerRenderers
                               rect, 
                               opacity: opaque);
 
+                _map.FireRefreshMapView();
             }
             catch (Exception ex)
             {

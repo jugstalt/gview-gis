@@ -1005,7 +1005,7 @@ namespace gView.Framework.Carto
         #endregion
 
         private DateTime _lastRefresh = DateTime.UtcNow;
-        internal void FireRefreshMapView()
+        internal virtual void FireRefreshMapView()
         {
             if (this.DoRefreshMapView != null)
             {

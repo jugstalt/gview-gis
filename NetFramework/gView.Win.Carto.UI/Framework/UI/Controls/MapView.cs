@@ -1618,7 +1618,6 @@ namespace gView.Framework.UI.Controls
         }
 
         private static object lockCreateBitmapSnapshot = new object();
-        private int snapshotCounter = 0;
         private bool CreateBitmapSnapshot()
         {
             lock (lockCreateBitmapSnapshot)

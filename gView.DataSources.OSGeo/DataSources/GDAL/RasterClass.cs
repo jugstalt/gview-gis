@@ -175,7 +175,7 @@ namespace gView.DataSources.GDAL
                 }
                 else
                 {
-                    calcPolygon();
+                    CalcPolygon();
                 }
             }
             catch (Exception ex)
@@ -199,7 +199,7 @@ namespace gView.DataSources.GDAL
             get { return _type; }
         }
 
-        private void calcPolygon()
+        private void CalcPolygon()
         {
             _polygon = new Polygon();
             Ring ring = new Ring();
@@ -375,9 +375,12 @@ namespace gView.DataSources.GDAL
                 return;
             }
 
-            int pixelSpace = 4;
-            _bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
-            var bitmapData = _bitmap.LockBitmapPixelData(BitmapLockMode.WriteOnly, GraphicsEngine.PixelFormat.Rgba32);
+            int pixelSpace = 3;
+            _bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgb24);
+            //using (var c = _bitmap.CreateCanvas())
+            //    c.Clear(ArgbColor.White);
+
+            var bitmapData = _bitmap.LockBitmapPixelData(BitmapLockMode.WriteOnly, GraphicsEngine.PixelFormat.Rgb24);
 
             try
             {
@@ -556,13 +559,14 @@ namespace gView.DataSources.GDAL
                         byte* ptr = (byte*)(bitmapData.Scan0);
                         float* v = (float*)(bitmapData.Scan0);
 
+                        var floatNodata = (float)_nodata;
                         for (int i = 0; i < iHeight; i++)
                         {
                             for (int j = 0; j < iWidth; j++)
                             {
                                 if (_renderRawGridValues)
                                 {
-                                    if (_hasNoDataVal == 1 && *v == _nodata)
+                                    if (_hasNoDataVal == 1 && *v == floatNodata)
                                     {
                                         ptr[0] = ptr[1] = ptr[2] = ptr[3] = 0;
                                     }
@@ -582,7 +586,7 @@ namespace gView.DataSources.GDAL
                                 }
                                 else
                                 {
-                                    if (_hasNoDataVal == 1 && *v == _nodata)
+                                    if (_hasNoDataVal == 1 && *v == floatNodata)
                                     {
                                         ptr[0] = ptr[1] = ptr[2] = ptr[3] = 0;
                                     }
@@ -669,6 +673,8 @@ namespace gView.DataSources.GDAL
                         byte* ptr = (byte*)(bitmapData.Scan0);
                         float* v = (float*)(bitmapData.Scan0);
 
+                        float floatNodata = (float)_nodata;
+
                         for (int i = 0; i < iHeight; i++)
                         {
                             if (CancelTracker.Canceled(cancelTracker))
@@ -678,7 +684,7 @@ namespace gView.DataSources.GDAL
 
                             for (int j = 0; j < iWidth; j++)
                             {
-                                if ((_hasNoDataVal == 1 && *v == _nodata) ||
+                                if ((_hasNoDataVal == 1 && *v == floatNodata) ||
                                     (_useIgnoreValue && *v == _ignoreValue))
                                 {
                                     ptr[0] = ptr[1] = ptr[2] = ptr[3] = 0;
@@ -697,9 +703,9 @@ namespace gView.DataSources.GDAL
                                     {
                                         double c1 = (j < iWidth - 1) ? (*(v + 1)) : c;
                                         double c2 = (i < iHeight - 1) ? (*(v + rowStride)) : c;
-                                        c1 = ((_hasNoDataVal != 0 && c1 == _nodata) ||
+                                        c1 = ((_hasNoDataVal != 0 && c1 == floatNodata) ||
                                               (_useIgnoreValue && c1 == _ignoreValue)) ? c : c1;
-                                        c2 = ((_hasNoDataVal != 0 && c2 == _nodata) ||
+                                        c2 = ((_hasNoDataVal != 0 && c2 == floatNodata) ||
                                               (_useIgnoreValue && c2 == _ignoreValue)) ? c : c2;
 
                                         Vector3d v1 = new Vector3d(cx, 0.0, c1 - c); v1.Normalize();
@@ -867,10 +873,12 @@ namespace gView.DataSources.GDAL
 
         public float GridQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef)
         {
+            float floatNodata = (float)_nodata;
+
             TFWFile tfw = this.WorldFile as TFWFile;
             if (tfw == null)
             {
-                return (float)_nodata;
+                return floatNodata;
             }
 
             if (this.SpatialReference != null && sRef != null &&
@@ -880,7 +888,7 @@ namespace gView.DataSources.GDAL
             }
             if (point == null)
             {
-                return (float)_nodata;
+                return floatNodata;
             }
 
             // Punkt transformieren -> Bild
@@ -889,27 +897,28 @@ namespace gView.DataSources.GDAL
 
             if (!tfw.ProjectInv(vecs))
             {
-                return (float)_nodata;
+                return floatNodata;
             }
 
             if (vecs[0].x < 0 || vecs[0].x >= _iWidth ||
                 vecs[0].y < 0 || vecs[0].y >= _iHeight)
             {
-                return (float)_nodata;
+                return floatNodata;
             }
 
             unsafe
             {
+                
                 fixed (float* buf = new float[2])
                 {
                     _gridQueryBand.ReadRaster((int)vecs[0].x, (int)vecs[0].y, 1, 1,
                         (IntPtr)buf,
                         1, 1, OSGeo_v1.GDAL.DataType.GDT_CFloat32, 4, 0);
 
-                    if ((_hasNoDataVal != 0 && buf[0] == _nodata) ||
+                    if ((_hasNoDataVal != 0 && buf[0] == floatNodata) ||
                         (_useIgnoreValue && buf[0] == _ignoreValue))
                     {
-                        return (float)_nodata;
+                        return floatNodata;
                     }
 
                     return buf[0];
@@ -1020,6 +1029,8 @@ namespace gView.DataSources.GDAL
             {
                 unsafe
                 {
+                    var floatNodata = (float)_nodata;
+
                     fixed (float* buf = new float[2])
                     {
                         OSGeo_v1.GDAL.Band band = _gDS.GetRasterBand(1);
@@ -1028,7 +1039,7 @@ namespace gView.DataSources.GDAL
                             (IntPtr)buf,
                             1, 1, OSGeo_v1.GDAL.DataType.GDT_CFloat32, 4, 0);
 
-                        if ((_hasNoDataVal != 0 && buf[0] == _nodata) ||
+                        if ((_hasNoDataVal != 0 && buf[0] == floatNodata) ||
                             (_useIgnoreValue && buf[0] == _ignoreValue))
                         {
                             return null;

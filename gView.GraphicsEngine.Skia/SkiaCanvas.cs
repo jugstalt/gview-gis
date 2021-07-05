@@ -59,8 +59,9 @@ namespace gView.GraphicsEngine.Skia
         {
             _canvas.DrawBitmap((SKBitmap)bitmap.EngineElement, source.ToSKRect(), dest.ToSKRect(), new SKPaint()
             {
-                FilterQuality = this.InterpolationMode.ToSKFilterQuality()
-            });
+                FilterQuality = this.InterpolationMode.ToSKFilterQuality(),
+                Color = SKColors.Black.WithAlpha((byte)(255 * opacity))
+            }); ;
         }
 
         public void DrawBitmap(IBitmap bitmap, CanvasRectangleF dest, CanvasRectangleF source)
@@ -88,7 +89,8 @@ namespace gView.GraphicsEngine.Skia
 
             _canvas.DrawBitmap((SKBitmap)bitmap.EngineElement, 0f, 0f, new SKPaint()
             {
-                FilterQuality = this.InterpolationMode.ToSKFilterQuality()
+                FilterQuality = this.InterpolationMode.ToSKFilterQuality(),
+                Color = SKColors.Black.WithAlpha((byte)(255 * opacity))
             });
 
             _canvas.ResetMatrix();
