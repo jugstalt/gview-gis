@@ -17,6 +17,8 @@ namespace gView.GraphicsEngine.Abstraction
         void RotateTransform(float angle);
         void ResetTransform();
 
+        void Clear(ArgbColor? argbColor = null);
+
         void DrawRectangle(IPen pen, CanvasRectangle rectangle);
         void DrawRectangle(IPen pen, CanvasRectangleF rectangleF);
 

@@ -90,7 +90,7 @@ namespace gView.Framework.Data
 
             try
             {
-                var b = GraphicsEngine.Current.Engine.CreateBitmap(Bitmap.Width, Bitmap.Height, GraphicsEngine.PixelFormat.Format32bppArgb);
+                var b = GraphicsEngine.Current.Engine.CreateBitmap(Bitmap.Width, Bitmap.Height, GraphicsEngine.PixelFormat.Rgba32);
                 using (var g = b.CreateCanvas())
                 {
                     g.DrawBitmap(Bitmap, new GraphicsEngine.CanvasPoint(0, 0));

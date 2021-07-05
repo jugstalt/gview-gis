@@ -9,14 +9,14 @@ namespace gView.GraphicsEngine.Filters
     {
         public static IBitmap CreateGrayscaleImage(int width, int height)
         {
-            var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(width, height, PixelFormat.Format8bppIndexed);
+            var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(width, height, PixelFormat.Gray8);
             SetGrayscalePalette(bitmap);
             return bitmap;
         }
 
         public static void SetGrayscalePalette(IBitmap image)
         {
-            if (image.PixelFormat != PixelFormat.Format8bppIndexed)
+            if (image.PixelFormat != PixelFormat.Gray8)
                 throw new Exception("Source image must be 8 bpp image.");
 
             // ToDo
@@ -33,34 +33,14 @@ namespace gView.GraphicsEngine.Filters
 			int result = 0;
 			switch (pixfmt)
 			{
-				case PixelFormat.Format16bppArgb1555:
-				case PixelFormat.Format16bppGrayScale:
-				case PixelFormat.Format16bppRgb555:
-				case PixelFormat.Format16bppRgb565:
-					result = 16;
-					break;
-				case PixelFormat.Format1bppIndexed:
-					result = 1;
-					break;
-				case PixelFormat.Format24bppRgb:
+				case PixelFormat.Rgb24:
 					result = 24;
 					break;
-				case PixelFormat.Format32bppArgb:
-				case PixelFormat.Format32bppPArgb:
-				case PixelFormat.Format32bppRgb:
+				case PixelFormat.Rgba32:
+				case PixelFormat.Rgb32:
 					result = 32;
 					break;
-				case PixelFormat.Format48bppRgb:
-					result = 48;
-					break;
-				case PixelFormat.Format4bppIndexed:
-					result = 4;
-					break;
-				case PixelFormat.Format64bppArgb:
-				case PixelFormat.Format64bppPArgb:
-					result = 64;
-					break;
-				case PixelFormat.Format8bppIndexed:
+				case PixelFormat.Gray8:
 					result = 8;
 					break;
 			}

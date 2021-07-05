@@ -41,11 +41,6 @@ namespace gView.GraphicsEngine.GdiPlus
             return new GdiBitmap(filename);
         }
 
-        public IBitmap CreateBitmapFromHbitmap(IntPtr hBitmap)
-        {
-            return GdiBitmap.FromHbitmap(hBitmap);
-        }
-
         public IDrawTextFormat CreateDrawTextFormat()
         {
             return new DrawTextFormat();

@@ -964,74 +964,14 @@ namespace gView.Framework.Carto
             return Task.FromResult(false);
         }
 
-        public void HighlightGeometry(IGeometry geometry, int milliseconds)
+        virtual public void HighlightGeometry(IGeometry geometry, int milliseconds)
         {
-            if (geometry == null || _bitmap == null || _canvas != null)
-            {
-                return;
-            }
+            var mapRenderInstance = MapRenderInstance.CreateAsync(this).Result;
 
-            geometryType type = geometryType.Unknown;
-            if (geometry is IPolygon)
-            {
-                type = geometryType.Polygon;
-            }
-            else if (geometry is IPolyline)
-            {
-                type = geometryType.Polyline;
-            }
-            else if (geometry is IPoint)
-            {
-                type = geometryType.Point;
-            }
-            else if (geometry is IMultiPoint)
-            {
-                type = geometryType.Multipoint;
-            }
-            else if (geometry is IEnvelope)
-            {
-                type = geometryType.Envelope;
-            }
-            if (type == geometryType.Unknown)
-            {
-                return;
-            }
+            mapRenderInstance.NewBitmap += (bitmap) => NewBitmap?.Invoke(bitmap);
+            mapRenderInstance.DoRefreshMapView += () => DoRefreshMapView?.Invoke();
 
-            ISymbol symbol = null;
-            PlugInManager compMan = new PlugInManager();
-            IFeatureRenderer renderer = compMan.CreateInstance(gView.Framework.system.KnownObjects.Carto_SimpleRenderer) as IFeatureRenderer;
-            if (renderer is ISymbolCreator)
-            {
-                symbol = ((ISymbolCreator)renderer).CreateStandardHighlightSymbol(type);
-            }
-            if (symbol == null)
-            {
-                return;
-            }
-
-            using (var bm = GraphicsEngine.Current.Engine.CreateBitmap(_bitmap.Width, _bitmap.Height, GraphicsEngine.PixelFormat.Format32bppArgb))
-            using (var _canvas = bm.CreateCanvas())
-            {
-                _canvas.DrawBitmap(_bitmap, new GraphicsEngine.CanvasPoint(0, 0));
-
-                this.Draw(symbol, geometry);
-                NewBitmap?.BeginInvoke(bm, new AsyncCallback(AsyncInvoke.RunAndForget), null);
-
-                if (DoRefreshMapView != null)
-                {
-                    DoRefreshMapView();
-                }
-
-                Thread.Sleep(milliseconds);
-                NewBitmap?.BeginInvoke(_bitmap, new AsyncCallback(AsyncInvoke.RunAndForget), null);
-
-
-                if (DoRefreshMapView != null)
-                {
-                    DoRefreshMapView();
-                }
-            }
-            _canvas = null;
+            mapRenderInstance.HighlightGeometry(geometry, milliseconds);
         }
 
         public ITOC TOC

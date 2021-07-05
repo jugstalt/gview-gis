@@ -39,11 +39,9 @@ namespace gView.GraphicsEngine.Filters
         public ExtractChannel()
         {
             // initialize format translation dictionary
-            _formatTranslations[PixelFormat.Format24bppRgb] = PixelFormat.Format8bppIndexed;
-            _formatTranslations[PixelFormat.Format32bppRgb] = PixelFormat.Format8bppIndexed;
-            _formatTranslations[PixelFormat.Format32bppArgb] = PixelFormat.Format8bppIndexed;
-            _formatTranslations[PixelFormat.Format48bppRgb] = PixelFormat.Format16bppGrayScale;
-            _formatTranslations[PixelFormat.Format64bppArgb] = PixelFormat.Format16bppGrayScale;
+            _formatTranslations[PixelFormat.Rgb24] = PixelFormat.Gray8;
+            _formatTranslations[PixelFormat.Rgb32] = PixelFormat.Gray8;
+            _formatTranslations[PixelFormat.Rgba32] = PixelFormat.Gray8;
         }
 
         public ExtractChannel(short channel) : this()

@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 
 namespace gView.GraphicsEngine.GdiPlus.Extensions
@@ -15,7 +16,7 @@ namespace gView.GraphicsEngine.GdiPlus.Extensions
             return new PointF(canvasPoint.X, canvasPoint.Y);
         }
 
-        static public PointF[] ToGdiPointFArray(this CanvasPointF[] canvasPoints)
+        static public PointF[] ToGdiPointFArray(this IEnumerable<CanvasPointF> canvasPoints)
         {
             return canvasPoints?.Select(p => p.ToGdiPointF())
                                 .ToArray();

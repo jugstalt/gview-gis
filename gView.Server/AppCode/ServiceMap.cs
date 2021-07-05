@@ -80,7 +80,7 @@ namespace gView.Server.AppCode
                     if (Display.MakeTransparent &&
                         format != ImageFormat.Jpeg &&
                         format != ImageFormat.Gif &&
-                        _bitmap.PixelFormat != PixelFormat.Format32bppArgb)  // dont make this transparent, this should be transparent from beginning !!!
+                        _bitmap.PixelFormat != PixelFormat.Rgba32)  // dont make this transparent, this should be transparent from beginning !!!
                     {
                         _bitmap.MakeTransparent(Display.TransparentColor);
                     }
@@ -132,7 +132,7 @@ namespace gView.Server.AppCode
                     if (Display.MakeTransparent &&
                         format != ImageFormat.Jpeg &&
                         format != ImageFormat.Gif &&
-                        _bitmap.PixelFormat != PixelFormat.Format32bppArgb)   // dont make this transparent, this should be transparent from beginning !!!
+                        _bitmap.PixelFormat != PixelFormat.Rgba32)   // dont make this transparent, this should be transparent from beginning !!!
                     {
                         _bitmap.MakeTransparent(Display.TransparentColor);
                     }
@@ -353,7 +353,7 @@ namespace gView.Server.AppCode
 
                 if (_bitmap == null)
                 {
-                    _bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, PixelFormat.Format32bppArgb);
+                    _bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, PixelFormat.Rgba32);
                 }
 
                 _canvas = _bitmap.CreateCanvas();

@@ -14,7 +14,7 @@ namespace gView.Win.DataExplorer
         protected override void OnStartup(StartupEventArgs e)
         {
             PlugInManager.Usage = Framework.system.PluginUsage.Desktop;
-            GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine();
+            GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96f);
 
             SplashScreen.Show();
             SplashScreen.Refresh();

@@ -56,7 +56,7 @@ namespace gView.Framework.Carto
 
                 if (_bitmap == null)
                 {
-                    _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(display.iWidth, display.iHeight, GraphicsEngine.PixelFormat.Format32bppArgb);
+                    _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(display.iWidth, display.iHeight, GraphicsEngine.PixelFormat.Rgba32);
                 }
 
                 _canvas = _bitmap.CreateCanvas();

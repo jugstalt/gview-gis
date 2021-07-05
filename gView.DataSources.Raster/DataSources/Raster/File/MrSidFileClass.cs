@@ -240,151 +240,8 @@ namespace gView.DataSources.Raster.File
             }
         }
 
-        async public Task BeginPaint2(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
-        {
-            IntPtr hbmp = (IntPtr)0;
-            //IntPtr bufferData = (IntPtr)0;
-            double mag = 1f; // mag immer als float, läuft stabiler!!!
-
-            int x = 0;
-            int y = 0;
-            int iWidth = 0;
-            int iHeight = 0;
-
-            try
-            {
-                if (_reader == (IntPtr)0)
-                {
-                    if (!InitReader())
-                    {
-                        return;
-                    }
-                }
-
-                if (!(_polygon is ITopologicalOperation) || _reader == (IntPtr)0)
-                {
-                    return;
-                }
-
-                TFWFile tfw = this.GeoCoord as TFWFile;
-                if (tfw == null)
-                {
-                    return;
-                }
-
-                IEnvelope dispEnvelope = display.Envelope;
-                if (display.GeometricTransformer != null)
-                {
-                    dispEnvelope = ((IGeometry)display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
-                }
-
-                IGeometry clipped;
-                ((ITopologicalOperation)_polygon).Clip(dispEnvelope, out clipped);
-                if (!(clipped is IPolygon))
-                {
-                    return;
-                }
-
-                IPolygon cPolygon = (IPolygon)clipped;
-
-                // geclipptes Polygon transformieren -> Bild
-                vector2[] vecs = new vector2[cPolygon[0].PointCount];
-                for (int i = 0; i < cPolygon[0].PointCount; i++)
-                {
-                    vecs[i] = new vector2(cPolygon[0][i].X, cPolygon[0][i].Y);
-                }
-                if (!tfw.ProjectInv(vecs))
-                {
-                    return;
-                }
-
-                IEnvelope picEnv = vector2.IntegerEnvelope(vecs);
-                picEnv.minx = Math.Max(0, picEnv.minx);
-                picEnv.miny = Math.Max(0, picEnv.miny);
-                picEnv.maxx = Math.Min(picEnv.maxx, _geoCoord.iWidth);
-                picEnv.maxy = Math.Min(picEnv.maxy, _geoCoord.iHeight);
-
-                // Ecken zurücktransformieren -> Welt
-                vecs = new vector2[3];
-                vecs[0] = new vector2(picEnv.minx, picEnv.maxy);
-                vecs[1] = new vector2(picEnv.maxx, picEnv.maxy);
-                vecs[2] = new vector2(picEnv.minx, picEnv.miny);
-                tfw.Project(vecs);
-                _p1 = new gView.Framework.Geometry.Point(vecs[0].x, vecs[0].y);
-                _p2 = new gView.Framework.Geometry.Point(vecs[1].x, vecs[1].y);
-                _p3 = new gView.Framework.Geometry.Point(vecs[2].x, vecs[2].y);
-
-                double pix = display.mapScale / (display.dpi / 0.0254);  // [m]
-                double c1 = Math.Sqrt(_geoCoord.xRes * _geoCoord.xRes + _geoCoord.xRot * _geoCoord.xRot);
-                double c2 = Math.Sqrt(_geoCoord.yRes * _geoCoord.yRes + _geoCoord.yRot * _geoCoord.yRot);
-                mag = Math.Round((Math.Min(c1, c2) / pix), 8);
-
-                // Immer in auf float runden! Läuft stabiler!!!
-                //mag = (float)mag; //1.03;
-                if (mag > 1f)
-                {
-                    mag = 1f;
-                }
-
-                if (mag < _geoCoord.MinMagnification)
-                {
-                    mag = (float)_geoCoord.MinMagnification;
-                }
-
-                //int x = (int)Math.Max(0, (picEnv.minx * mag));
-                //int y = (int)Math.Max(0, (picEnv.miny * mag));
-                //int iWidth = (int)((Math.Min(_geoCoord.iWidth, picEnv.Width) - 1) * mag);
-                //int iHeight = (int)((Math.Min(_geoCoord.iHeight, picEnv.Height) - 1) * mag);
-
-                x = (int)(picEnv.minx * mag);
-                y = (int)(picEnv.miny * mag);
-                iWidth = (int)((picEnv.Width - 1) * mag);
-                iHeight = (int)((picEnv.Height - 1) * mag);
-
-                hbmp = MrSidWrapper.ReadHBitmap(_reader, x, y, iWidth, iHeight, mag);
-                if (hbmp == (IntPtr)0)
-                {
-                    return;
-                }
-
-                _bitmap = GraphicsEngine.Current.Engine.CreateBitmapFromHbitmap(hbmp);
-                //_bm.Save(@"C:\temp\pic\" + Guid.NewGuid() + ".jpg", ImageFormat.Jpeg);
-            }
-            catch (Exception ex)
-            {
-                //string errMsg = ex.Message;
-                EndPaint(cancelTracker);
-
-                if (display is IServiceMap && ((IServiceMap)display).MapServer != null)
-                {
-                    IMapServer mapServer = ((IServiceMap)display).MapServer;
-                    await mapServer.LogAsync(
-                        ((IServiceMap)display).Name,
-                        "RenderRasterLayerThread", loggingMethod.error,
-                        ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace + "\n" +
-                        "filename=" + _filename + "\n" +
-                        "x=" + x.ToString() + "\n" +
-                        "y=" + y.ToString() + "\n" +
-                        "iWidth=" + iWidth.ToString() + "\n" +
-                        "iHeight=" + iHeight.ToString() + "\n" +
-                        "mag=" + mag.ToString() + "\n");
-                }
-                else
-                {
-                    throw ex;
-                }
-            }
-            finally
-            {
-                MrSidWrapper.ReleaseHBitmap(hbmp);
-                ReleaseReader();
-            }
-        }
-
         async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
-
-
             IntPtr bufferData = (IntPtr)0;
             GraphicsEngine.BitmapPixelData bitmapData = null;
             double mag = 1f; // mag immer als float, läuft stabiler!!!
@@ -498,15 +355,10 @@ namespace gView.DataSources.Raster.File
                     _bitmap.Dispose();
                 }
 
-                _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(totalWidth, totalHeight, GraphicsEngine.PixelFormat.Format24bppRgb);
-                bitmapData = _bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Format24bppRgb);
-
-                Console.Write(bitmapData.Scan0);
-
+                _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(totalWidth, totalHeight, GraphicsEngine.PixelFormat.Rgb24);
+                bitmapData = _bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.WriteOnly, GraphicsEngine.PixelFormat.Rgb24);
+                
                 MrSidWrapper.ReadBandData(bufferData, bitmapData.Scan0, 3, (uint)bitmapData.Stride);
-
-                //_bm.Save(@"C:\temp\pic\" + Guid.NewGuid() + ".jpg", ImageFormat.Jpeg);
-
             }
             catch (Exception ex)
             {

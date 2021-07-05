@@ -22,11 +22,11 @@ namespace gView.GraphicsEngine.Filters
             GreenCoefficient = cg;
             BlueCoefficient = cb;
 
-            _formatTranslations[PixelFormat.Format24bppRgb] = PixelFormat.Format8bppIndexed;
-            _formatTranslations[PixelFormat.Format32bppRgb] = PixelFormat.Format8bppIndexed;
-            _formatTranslations[PixelFormat.Format32bppArgb] = PixelFormat.Format8bppIndexed;
-            _formatTranslations[PixelFormat.Format48bppRgb] = PixelFormat.Format16bppGrayScale;
-            _formatTranslations[PixelFormat.Format64bppArgb] = PixelFormat.Format16bppGrayScale;
+            _formatTranslations[PixelFormat.Rgb24] = PixelFormat.Gray8;
+            _formatTranslations[PixelFormat.Rgb32] = PixelFormat.Gray8;
+            _formatTranslations[PixelFormat.Rgba32] = PixelFormat.Gray8;
+            //_formatTranslations[PixelFormat.Format48bppRgb] = PixelFormat.Format16bppGrayScale;
+            //_formatTranslations[PixelFormat.Format64bppArgb] = PixelFormat.Format16bppGrayScale;
         }
 
         public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
@@ -42,11 +42,11 @@ namespace gView.GraphicsEngine.Filters
             PixelFormat srcPixelFormat = sourceData.PixelFormat;
 
             if (
-                (srcPixelFormat == PixelFormat.Format24bppRgb) ||
-                (srcPixelFormat == PixelFormat.Format32bppRgb) ||
-                (srcPixelFormat == PixelFormat.Format32bppArgb))
+                (srcPixelFormat == PixelFormat.Rgb24) ||
+                (srcPixelFormat == PixelFormat.Rgb32) ||
+                (srcPixelFormat == PixelFormat.Rgba32))
             {
-                int pixelSize = (srcPixelFormat == PixelFormat.Format24bppRgb) ? 3 : 4;
+                int pixelSize = (srcPixelFormat == PixelFormat.Rgb24) ? 3 : 4;
                 int srcOffset = sourceData.Stride - width * pixelSize;
                 int dstOffset = destinationData.Stride - width;
 
@@ -74,27 +74,6 @@ namespace gView.GraphicsEngine.Filters
                     }
                     src += srcOffset;
                     dst += dstOffset;
-                }
-            }
-            else
-            {
-                int pixelSize = (srcPixelFormat == PixelFormat.Format48bppRgb) ? 3 : 4;
-                byte* srcBase = (byte*)sourceData.Scan0.ToPointer();
-                byte* dstBase = (byte*)destinationData.Scan0.ToPointer();
-                int srcStride = sourceData.Stride;
-                int dstStride = destinationData.Stride;
-
-                // for each line
-                for (int y = 0; y < height; y++)
-                {
-                    ushort* src = (ushort*)(srcBase + y * srcStride);
-                    ushort* dst = (ushort*)(dstBase + y * dstStride);
-
-                    // for each pixel
-                    for (int x = 0; x < width; x++, src += pixelSize, dst++)
-                    {
-                        *dst = (ushort)(RedCoefficient * src[RGB.R] + GreenCoefficient * src[RGB.G] + BlueCoefficient * src[RGB.B]);
-                    }
                 }
             }
         }

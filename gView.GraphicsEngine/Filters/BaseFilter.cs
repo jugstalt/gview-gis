@@ -38,7 +38,7 @@ namespace gView.GraphicsEngine.Filters
             PixelFormat dstPixelFormat = FormatTranslations[bmData.PixelFormat];
 
             // create new image of required format
-            IBitmap dstImage = (dstPixelFormat == PixelFormat.Format8bppIndexed) ?
+            IBitmap dstImage = (dstPixelFormat == PixelFormat.Gray8) ?
                 Helper.CreateGrayscaleImage(width, height) :
                 GraphicsEngine.Current.Engine.CreateBitmap(width, height, dstPixelFormat);
 

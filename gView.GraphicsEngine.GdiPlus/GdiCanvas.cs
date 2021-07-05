@@ -2,16 +2,19 @@
 using gView.GraphicsEngine.GdiPlus.Extensions;
 using System;
 using System.Drawing;
+using System.Linq;
 
 namespace gView.GraphicsEngine.GdiPlus
 {
     internal class GdiCanvas : ICanvas
     {
         private Graphics _graphics;
+        private CanvasRectangle _bounds;
 
         public GdiCanvas(Bitmap bitmap)
         {
             _graphics = Graphics.FromImage(bitmap);
+            _bounds = new CanvasRectangle(0, 0, bitmap.Width, bitmap.Height);
         }
 
         #region ICanvas
@@ -75,6 +78,14 @@ namespace gView.GraphicsEngine.GdiPlus
                 CheckUsability();
 
                 _graphics.TextRenderingHint = (System.Drawing.Text.TextRenderingHint)value;
+            }
+        }
+
+        public void Clear(ArgbColor? argbColor = null)
+        {
+            using (var brush = new SolidBrush(argbColor.HasValue ? argbColor.Value.ToGdiColor() : Color.White))
+            {
+                _graphics.FillRectangle(brush, _bounds.ToGdiRectangle());
             }
         }
 
@@ -193,7 +204,7 @@ namespace gView.GraphicsEngine.GdiPlus
             if (imageAttributes != null)
             {
                 _graphics.DrawImage((Bitmap)bitmap.EngineElement,
-                    points.ToGdiPointFArray(),
+                    points.Take(3).ToGdiPointFArray(),
                     source.ToGdiRectangleF(),
                     System.Drawing.GraphicsUnit.Pixel,
                     imageAttr: imageAttributes);
@@ -201,7 +212,7 @@ namespace gView.GraphicsEngine.GdiPlus
             else
             {
                 _graphics.DrawImage((Bitmap)bitmap.EngineElement,
-                    points.ToGdiPointFArray(),
+                    points.Take(3).ToGdiPointFArray(),
                     source.ToGdiRectangleF(),
                     System.Drawing.GraphicsUnit.Pixel);
             }

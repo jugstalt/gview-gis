@@ -28,7 +28,7 @@ namespace gView.Framework.Sys.UI.Extensions
             BitmapPixelData bmPixelData = null;
             try
             {
-                bmPixelData = iBitmap.LockBitmapPixelData(BitmapLockMode.Copy, PixelFormat.Format32bppArgb);
+                bmPixelData = iBitmap.LockBitmapPixelData(BitmapLockMode.Copy, PixelFormat.Rgba32);
                 var bm = new Bitmap(bmPixelData.Width,
                                     bmPixelData.Height,
                                     bmPixelData.Stride,

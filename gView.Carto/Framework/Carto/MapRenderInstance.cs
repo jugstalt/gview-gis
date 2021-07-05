@@ -3,6 +3,7 @@ using gView.Data.Framework.Data.Abstraction;
 using gView.Framework.Carto.LayerRenderers;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using gView.Framework.Symbology;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
@@ -144,7 +145,7 @@ namespace gView.Framework.Carto
                         if (_bitmap == null)
                         {
                             //DisposeStreams();
-                            _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Format32bppArgb);
+                            _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
                             //if (NewBitmap != null && cancelTracker.Continue) NewBitmap(_image);
                         }
 
@@ -396,7 +397,7 @@ namespace gView.Framework.Carto
                                     DrawingLayerFinished(this, new gView.Framework.system.TimeEvent("Labelling: " + fLayer.Title, startTime, DateTime.Now));
                                 }
                             }
-                            DrawStream(_msGeometry);
+                            DrawStream(_canvas, _msGeometry);
                         }
 
                         if (!printerMap)
@@ -426,7 +427,7 @@ namespace gView.Framework.Carto
                         }
                         if (m_imageMerger.Count > 0)
                         {
-                            var clonedBitmap = _bitmap.Clone(GraphicsEngine.PixelFormat.Format32bppArgb);
+                            var clonedBitmap = _bitmap.Clone(GraphicsEngine.PixelFormat.Rgba32);
                             clonedBitmap.MakeTransparent(_backgroundColor);
                             m_imageMerger.Add(new GeorefBitmap(clonedBitmap), 999);
 
@@ -455,7 +456,7 @@ namespace gView.Framework.Carto
                     {
                         if (phase != DrawPhase.All)
                         {
-                            DrawStream(_msGeometry);
+                            DrawStream(_canvas, _msGeometry);
                         }
 
                         foreach (IDatasetElement layer in this.MapElements)
@@ -513,7 +514,7 @@ namespace gView.Framework.Carto
                     {
                         if (phase != DrawPhase.All)
                         {
-                            DrawStream((_msSelection != null) ? _msSelection : _msGeometry);
+                            DrawStream(_canvas, (_msSelection != null) ? _msSelection : _msGeometry);
                         }
 
                         foreach (IGraphicElement grElement in Display.GraphicsContainer.Elements)
@@ -598,13 +599,88 @@ namespace gView.Framework.Carto
             }
         }
 
+        public override void HighlightGeometry(IGeometry geometry, int milliseconds)
+        {
+            if (geometry == null || _canvas != null)
+            {
+                return;
+            }
+
+            geometryType type = geometryType.Unknown;
+            if (geometry is IPolygon)
+            {
+                type = geometryType.Polygon;
+            }
+            else if (geometry is IPolyline)
+            {
+                type = geometryType.Polyline;
+            }
+            else if (geometry is IPoint)
+            {
+                type = geometryType.Point;
+            }
+            else if (geometry is IMultiPoint)
+            {
+                type = geometryType.Multipoint;
+            }
+            else if (geometry is IEnvelope)
+            {
+                type = geometryType.Envelope;
+            }
+            if (type == geometryType.Unknown)
+            {
+                return;
+            }
+
+            ISymbol symbol = null;
+            PlugInManager compMan = new PlugInManager();
+            IFeatureRenderer renderer = compMan.CreateInstance(gView.Framework.system.KnownObjects.Carto_SimpleRenderer) as IFeatureRenderer;
+            if (renderer is ISymbolCreator)
+            {
+                symbol = ((ISymbolCreator)renderer).CreateStandardHighlightSymbol(type);
+            }
+            if (symbol == null)
+            {
+                return;
+            }
+
+            try
+            {
+                using (var bm = GraphicsEngine.Current.Engine.CreateBitmap(Display.iWidth, Display.iHeight, GraphicsEngine.PixelFormat.Rgba32))
+                using (_canvas = bm.CreateCanvas())
+                {
+                    DrawStream(_canvas, _msGeometry);
+                    DrawStream(_canvas, _msSelection);
+
+                    this.Draw(symbol, geometry);
+                    NewBitmap?.Invoke(bm); //.BeginInvoke(bm, new AsyncCallback(AsyncInvoke.RunAndForget), null);
+
+                    DoRefreshMapView?.Invoke();
+
+                    Thread.Sleep(milliseconds);
+
+                    _canvas.Clear();
+                    DrawStream(_canvas, _msGeometry);
+                    DrawStream(_canvas, _msSelection);
+
+                    //NewBitmap?.Invoke(bm); //.BeginInvoke(_bitmap, new AsyncCallback(AsyncInvoke.RunAndForget), null);
+
+                    DoRefreshMapView?.Invoke();
+                }
+            }
+            finally
+            {
+                _canvas = null;
+            }
+        }
+
         #endregion
 
         #region Private Members
 
-        protected virtual void DrawStream(MemoryStream stream)
+        private void DrawStream(GraphicsEngine.Abstraction.ICanvas canvas, MemoryStream stream)
         {
-            if (stream == null || _canvas == null)
+            if (stream == null || canvas == null)
             {
                 return;
             }
@@ -614,7 +690,7 @@ namespace gView.Framework.Carto
                 using (var ms = new MemoryStream(stream.ToArray())) // Clone Stream => Skia disposes stream automatically
                 using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(ms))
                 {
-                    _canvas.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
+                    canvas.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
                 }
             }
             catch
@@ -622,7 +698,7 @@ namespace gView.Framework.Carto
             }
         }
 
-        protected virtual void StreamImage(ref MemoryStream stream, GraphicsEngine.Abstraction.IBitmap bitmap)
+        private void StreamImage(ref MemoryStream stream, GraphicsEngine.Abstraction.IBitmap bitmap)
         {
             try
             {

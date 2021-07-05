@@ -24,6 +24,11 @@ namespace gView.GraphicsEngine.Skia
         public SmoothingMode SmoothingMode { get; set; }
         public TextRenderingHint TextRenderingHint { get; set; }
 
+        public void Clear(ArgbColor? argbColor = null)
+        {
+            _canvas.Clear(argbColor.HasValue ? argbColor.Value.ToSKColor() : ArgbColor.White.ToSKColor());
+        }
+
         public IDisplayCharacterRanges DisplayCharacterRanges(IFont font, IDrawTextFormat format, string text)
         {
             throw new NotImplementedException();
@@ -69,11 +74,24 @@ namespace gView.GraphicsEngine.Skia
         public void DrawBitmap(IBitmap bitmap, CanvasPointF[] points, CanvasRectangleF source, float opacity = 1)
         {
             // ToDo: Nicht korrekt!!
-            var dest = new CanvasRectangleF(points[0].X, points[0].Y, points[1].X - points[0].X, points[1].Y - points[0].Y);
+            //var dest = new CanvasRectangleF(points[0].X, points[0].Y, points[1].X - points[0].X, points[2].Y - points[0].Y);
 
             // siehe: https://docs.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/transforms/3d-rotation
-            // ganz unten ... 4 Punkte möglich!!!
-            _canvas.DrawBitmap((SKBitmap)bitmap.EngineElement, source.ToSKRect(), dest.ToSKRect());
+            var skMatrix = ComputeMatrix(new SKSize(source.Width, source.Height),
+                                         points[0].ToSKPoint(),
+                                         points[1].ToSKPoint(),
+                                         points[2].ToSKPoint(),
+                                         points.Length > 3 ? (SKPoint?)points[3].ToSKPoint() : null);
+
+
+            _canvas.SetMatrix(skMatrix);
+
+            _canvas.DrawBitmap((SKBitmap)bitmap.EngineElement, 0f, 0f, new SKPaint()
+            {
+                FilterQuality = this.InterpolationMode.ToSKFilterQuality()
+            });
+
+            _canvas.ResetMatrix();
         }
 
         public void DrawEllipse(IPen pen, float x1, float y1, float width, float height)
@@ -366,6 +384,61 @@ namespace gView.GraphicsEngine.Skia
                 _canvas.DrawText(text, x, y, paint);
             }
         }
+
+        #region Matrix
+
+        private SKMatrix ComputeMatrix(SKSize size, SKPoint ptUL, SKPoint ptUR, SKPoint ptLL, SKPoint? ptLR = null)
+        {
+            // Scale transform
+            SKMatrix S = SKMatrix.CreateScale(1 / size.Width, 1 / size.Height);
+
+            // Affine transform
+            SKMatrix A = new SKMatrix
+            {
+                ScaleX = ptUR.X - ptUL.X,
+                SkewY = ptUR.Y - ptUL.Y,
+                SkewX = ptLL.X - ptUL.X,
+                ScaleY = ptLL.Y - ptUL.Y,
+                TransX = ptUL.X,
+                TransY = ptUL.Y,
+                Persp2 = 1
+            };
+
+            // Non-Affine transform
+            SKMatrix N = SKMatrix.CreateIdentity();
+
+            if (ptLR.HasValue)
+            {
+                SKMatrix inverseA;
+                A.TryInvert(out inverseA);
+                SKPoint abPoint = inverseA.MapPoint(ptLR.Value);
+                float a = abPoint.X;
+                float b = abPoint.Y;
+
+                float scaleX = a / (a + b - 1);
+                float scaleY = b / (a + b - 1);
+
+                N = new SKMatrix
+                {
+                    ScaleX = scaleX,
+                    ScaleY = scaleY,
+                    Persp0 = scaleX - 1,
+                    Persp1 = scaleY - 1,
+                    Persp2 = 1
+                };
+            }
+
+            // Multiply S * N * A
+            SKMatrix result = SKMatrix.CreateIdentity();
+
+            SKMatrix.PostConcat(ref result, S);
+            SKMatrix.PostConcat(ref result, N);
+            SKMatrix.PostConcat(ref result, A);
+
+            return result;
+        }
+
+        #endregion
 
         #endregion
     }

@@ -14,7 +14,6 @@ namespace gView.GraphicsEngine.Abstraction
         IBitmap CreateBitmap(int width, int height, int stride, PixelFormat format, IntPtr scan0);
         IBitmap CreateBitmap(Stream stream);
         IBitmap CreateBitmap(string filename);
-        IBitmap CreateBitmapFromHbitmap(IntPtr hBitmap);
 
         IPen CreatePen(ArgbColor color, float width);
         IBrush CreateSolidBrush(ArgbColor color);

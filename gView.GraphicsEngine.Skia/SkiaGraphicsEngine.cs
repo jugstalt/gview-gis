@@ -45,11 +45,6 @@ namespace gView.GraphicsEngine.Skia
             return new SkiaBitmap(filename);
         }
 
-        public IBitmap CreateBitmapFromHbitmap(IntPtr hBitmap)
-        {
-            throw new NotImplementedException();
-        }
-
         #endregion
 
         public IDrawTextFormat CreateDrawTextFormat()

@@ -3,6 +3,7 @@ using gView.GraphicsEngine.Skia.Extensions;
 using SkiaSharp;
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace gView.GraphicsEngine.Skia
@@ -97,28 +98,37 @@ namespace gView.GraphicsEngine.Skia
         {
             if (_bitmap != null)
             {
-                IntPtr scan0 ;
-                if (lockMode == BitmapLockMode.Copy)
-                {
-                    scan0 = Marshal.AllocHGlobal(_bitmap.ByteCount /*+ _bitmap.RowBytes * 100*/);
-                    // Copy the array to unmanaged memory.
-                    Marshal.Copy(_bitmap.Bytes, 0, scan0, _bitmap.ByteCount);
-                }
-                else
-                {
-                    scan0 = _bitmap.GetPixels();
-                }
-
-                return new BitmapPixelData(lockMode)
+                var pixelData = new SkiaBitmapPixelData(lockMode)
                 {
                     Width = _bitmap.Width,
                     Height = _bitmap.Height,
                     Stride = _bitmap.RowBytes,
-                    PixelFormat = _bitmap.ColorType.ToPixelFormat(),
-                    Scan0 = scan0
-                    //Scan0 = System.Runtime.InteropServices.Marshal.UnsafeAddrOfPinnedArrayElement(_bitmap.Bytes, 0)
-                    //Scan0 = _bitmap.GetPixels()
+                    PixelFormat = pixelFormat
                 };
+
+                if (lockMode == BitmapLockMode.Copy)
+                {
+                    pixelData.FreeMemory = true;
+                    pixelData.Scan0 = Marshal.AllocHGlobal(_bitmap.ByteCount);
+                    Marshal.Copy(_bitmap.Bytes, 0, pixelData.Scan0, _bitmap.ByteCount);
+                }
+                else if (pixelFormat == PixelFormat.Rgb24)
+                {
+                    pixelData.FreeMemory = true;
+                    pixelData.Scan0 = Marshal.AllocHGlobal(_bitmap.RowBytes / 4 * _bitmap.Height * 3);
+                    pixelData.Stride = _bitmap.RowBytes / 4 * 3;
+
+                    if(lockMode == BitmapLockMode.ReadOnly || lockMode==BitmapLockMode.ReadWrite)
+                    {
+                        pixelData.ReadFromArgb(_bitmap.GetPixels());
+                    }
+                }
+                else
+                {
+                    pixelData.Scan0 = _bitmap.GetPixels();
+                }
+
+                return pixelData;
             }
 
             return null;
@@ -126,9 +136,26 @@ namespace gView.GraphicsEngine.Skia
 
         public void UnlockBitmapPixelData(BitmapPixelData bitmapPixelData)
         {
-            if (bitmapPixelData.LockMode == BitmapLockMode.Copy && bitmapPixelData.Scan0 != IntPtr.Zero)
+            try
             {
-                Marshal.FreeHGlobal(bitmapPixelData.Scan0);
+                if (bitmapPixelData.PixelFormat != PixelFormat.Rgb32 &&
+                    bitmapPixelData.PixelFormat != PixelFormat.Rgba32)
+                {
+                    if (bitmapPixelData.LockMode == BitmapLockMode.WriteOnly ||
+                        bitmapPixelData.LockMode == BitmapLockMode.ReadWrite)
+                    { 
+                        bitmapPixelData.CopyToArgb(_bitmap.GetPixels());
+                    }
+                }
+            }
+            finally
+            {
+                if (bitmapPixelData is SkiaBitmapPixelData &&
+                    ((SkiaBitmapPixelData)bitmapPixelData).FreeMemory == true &&
+                    bitmapPixelData.Scan0 != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(bitmapPixelData.Scan0);
+                }
             }
         }
 
@@ -190,5 +217,11 @@ namespace gView.GraphicsEngine.Skia
             _dpiX = dpiX;
             _dpyY = dpiY;
         }
+
+        #region Helper
+
+        
+
+        #endregion
     }
 }

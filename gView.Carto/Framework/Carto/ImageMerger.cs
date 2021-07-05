@@ -97,7 +97,7 @@ namespace gView.Framework.Carto
                     time.Day.ToString() + time.Hour.ToString() +
                     time.Second.ToString() + time.Millisecond.ToString() + ".png";
 
-                using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Format32bppArgb))
+                using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32))
                 using (var gr = bitmap.CreateCanvas())
                 using (var brush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.White))
                 {
@@ -305,18 +305,13 @@ namespace gView.Framework.Carto
         {
             if (bm == null || bm.Bitmap == null)
             {
-                return GraphicsEngine.PixelFormat.Format32bppArgb;
+                return GraphicsEngine.PixelFormat.Rgba32;
             }
 
             switch (bm.Bitmap.PixelFormat)
             {
-                case GraphicsEngine.PixelFormat.Format1bppIndexed:
-                case GraphicsEngine.PixelFormat.Format4bppIndexed:
-                case GraphicsEngine.PixelFormat.Format8bppIndexed:
-                case GraphicsEngine.PixelFormat.Indexed:
-                case GraphicsEngine.PixelFormat.Undefined:
-                case GraphicsEngine.PixelFormat.PAlpha:
-                    return GraphicsEngine.PixelFormat.Format32bppArgb;
+                case GraphicsEngine.PixelFormat.Gray8:
+                    return GraphicsEngine.PixelFormat.Rgba32;
             }
 
             return bm.Bitmap.PixelFormat;
@@ -377,8 +372,8 @@ namespace gView.Framework.Carto
                 {
                     transformer.SetSpatialReferences(sourceDisplay.SpatialReference, destDisplay.SpatialReference);
 
-                    destData = dest.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.WriteOnly, GraphicsEngine.PixelFormat.Format32bppArgb);
-                    sourceData = source.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.ReadOnly, GraphicsEngine.PixelFormat.Format32bppArgb);
+                    destData = dest.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.WriteOnly, GraphicsEngine.PixelFormat.Rgba32);
+                    sourceData = source.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.ReadOnly, GraphicsEngine.PixelFormat.Rgba32);
 
                     int sWidth = source.Width, sHeight = source.Height;
                     int dWidth = dest.Width, dHeight = dest.Height;

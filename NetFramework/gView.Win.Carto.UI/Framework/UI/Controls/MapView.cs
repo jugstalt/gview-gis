@@ -165,8 +165,8 @@ namespace gView.Framework.UI.Controls
                     _map.Display.iWidth = this.Width;
                     _map.Display.iHeight = this.Height;
                     this.BackColor = _map.Display.BackgroundColor.ToGdiColor();
-                    //_map.NewBitmap+=new NewBitmapEvent(NewBitmapCreated);
-                    //_map.DoRefreshMapView += MakeMapViewRefresh;
+                    _map.NewBitmap += NewBitmapCreated;
+                    _map.DoRefreshMapView += MakeMapViewRefresh;
                     //_map.DrawingLayer+=new gView.Framework.Carto.DrawingLayerEvent(OnDrawingLayer);
                     
                     _map.OnUserInterface -= _map_OnUserInterface;

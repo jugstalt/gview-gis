@@ -375,9 +375,9 @@ namespace gView.DataSources.GDAL
                 return;
             }
 
-            int pixelSpace = 3;
-            _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Format24bppRgb);
-            var bitmapData = _bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Format24bppRgb);
+            int pixelSpace = 4;
+            _bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
+            var bitmapData = _bitmap.LockBitmapPixelData(BitmapLockMode.WriteOnly, GraphicsEngine.PixelFormat.Rgba32);
 
             try
             {
@@ -479,9 +479,9 @@ namespace gView.DataSources.GDAL
                 return;
             }
 
-            int pixelSpace = 3;
-            _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Format24bppRgb);
-            var bitmapData = _bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Format24bppRgb);
+            int pixelSpace = 4;
+            _bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
+            var bitmapData = _bitmap.LockBitmapPixelData(BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Rgba32);
 
             try
             {
@@ -531,9 +531,9 @@ namespace gView.DataSources.GDAL
             }
 
             int pixelSpace = 4;
-            using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight + 100, GraphicsEngine.PixelFormat.Format32bppArgb))
+            using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight + 100, GraphicsEngine.PixelFormat.Rgba32))
             {
-                var bitmapData = bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Format32bppArgb);
+                var bitmapData = bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Rgba32);
                 OSGeo_v1.GDAL.Band band = null;
 
                 try
@@ -610,7 +610,7 @@ namespace gView.DataSources.GDAL
                         bitmap.UnlockBitmapPixelData(bitmapData);
                     }
 
-                    _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Format32bppArgb);
+                    _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
                     using (var canvas = _bitmap.CreateCanvas())
                     {
                         canvas.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
@@ -635,9 +635,9 @@ namespace gView.DataSources.GDAL
             }
 
             int pixelSpace = 4;
-            using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight + 100, GraphicsEngine.PixelFormat.Format32bppArgb))
+            using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight + 100, GraphicsEngine.PixelFormat.Rgba32))
             {
-                var bitmapData = bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Format32bppArgb);
+                var bitmapData = bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Rgba32);
                 OSGeo_v1.GDAL.Band band = null;
 
                 try
@@ -728,7 +728,7 @@ namespace gView.DataSources.GDAL
                         bitmap.UnlockBitmapPixelData(bitmapData);
                     }
 
-                    _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Format32bppArgb);
+                    _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
                     using (var gr =_bitmap.CreateCanvas())
                     {
                         gr.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));

@@ -283,7 +283,7 @@ namespace gView.Test
 
         static public IBitmap CreateImage(int width, int height)
         {
-            var bitmap = Current.Engine.CreateBitmap(width, height);
+            var bitmap = Current.Engine.CreateBitmap(width, height, PixelFormat.Rgb24);
 
             using (var canvas = bitmap.CreateCanvas())
             using (var brush = Current.Engine.CreateSolidBrush(ArgbColor.Yellow))

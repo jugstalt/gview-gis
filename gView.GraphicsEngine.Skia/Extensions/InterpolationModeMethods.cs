@@ -9,36 +9,21 @@ namespace gView.GraphicsEngine.Skia.Extensions
     {
         static public SKFilterQuality ToSKFilterQuality(this InterpolationMode interpolation)
         {
-            switch(interpolation)
+            switch (interpolation)
             {
+                case InterpolationMode.Low:
+                    return SKFilterQuality.Low;
                 case InterpolationMode.NearestNeighbor:
                     return SKFilterQuality.None;
                 case InterpolationMode.Bilinear:
-                    return SKFilterQuality.Low;
                 case InterpolationMode.HighQualityBilinear:
                     return SKFilterQuality.Medium;
+                case InterpolationMode.Bicubic:
                 case InterpolationMode.HighQualityBicubic:
                     return SKFilterQuality.High;
             }
 
             return SKFilterQuality.None;
-        }
-
-        static public InterpolationMode ToInterpolationMode(this SKFilterQuality interpolation)
-        {
-            switch (interpolation)
-            {
-                case SKFilterQuality.None:
-                    return InterpolationMode.NearestNeighbor;
-                case SKFilterQuality.Low:
-                    return InterpolationMode.Bilinear;
-                case SKFilterQuality.Medium:
-                    return InterpolationMode.HighQualityBilinear;
-                case SKFilterQuality.High:
-                    return InterpolationMode.HighQualityBicubic;
-            }
-
-            return InterpolationMode.Default;
         }
     }
 }

@@ -840,7 +840,7 @@ namespace gView.Interoperability.Server.TileService
             BitmapPixelData bmData = null;
             try
             {
-                bmData = bitmap.LockBitmapPixelData(BitmapLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+                bmData = bitmap.LockBitmapPixelData(BitmapLockMode.ReadOnly, PixelFormat.Rgba32);
 
                 int stride = bmData.Stride;
                 IntPtr Scan0 = bmData.Scan0;

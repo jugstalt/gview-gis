@@ -60,7 +60,7 @@ namespace gView.GraphicsEngine.GdiPlus
             }
         }
 
-        public PixelFormat PixelFormat => _bitmap != null ? _bitmap.PixelFormat.ToPixelFormat() : PixelFormat.DontCare;
+        public PixelFormat PixelFormat => _bitmap != null ? _bitmap.PixelFormat.ToPixelFormat() : PixelFormat.Rgba32;
 
         public object EngineElement => _bitmap;
 
@@ -154,16 +154,7 @@ namespace gView.GraphicsEngine.GdiPlus
                 this.Height = bitmapData.Height;
             }
 
-            internal System.Drawing.Imaging.BitmapData BitmapData;
-        }
-
-        #endregion
-
-        #region Static Members
-
-        static internal IBitmap FromHbitmap(IntPtr hBitmap)
-        {
-            return new GdiBitmap(Bitmap.FromHbitmap(hBitmap));
+            internal System.Drawing.Imaging.BitmapData BitmapData => _bitmapData;
         }
 
         #endregion
