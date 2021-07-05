@@ -215,11 +215,6 @@ namespace gView.Framework.Carto
         }
         */
 
-        protected override void DrawStream(System.IO.Stream stream)
-        {
-            
-        }
-
         /*
         protected override void DrawRasterParentLayer(IParentRasterLayer rLayer, ICancelTracker cancelTracker,IRasterLayer rootLayer)
         {

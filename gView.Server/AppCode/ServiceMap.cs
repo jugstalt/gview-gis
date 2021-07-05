@@ -763,15 +763,6 @@ namespace gView.Server.AppCode
             }
         }
 
-        protected override void DrawStream(System.IO.Stream stream)
-        {
-
-        }
-        protected override void StreamImage(ref System.IO.MemoryStream stream, IBitmap bitmap)
-        {
-
-        }
-
         #region IServiceMap Member
 
         //public event LayerIsVisibleHook OverrideLayerIsVisible;

@@ -112,7 +112,7 @@ namespace gView.Framework.Carto.LayerRenderers
                 // Da sonst bei der Servicemap bei gleichzeitigen Requests
                 // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
                 selectionRenderer = (IFeatureRenderer)_layer.SelectionRenderer.Clone(new CloneOptions(_map, 
-                                                                                                      _layer.UseWithRefScale(_map),
+                                                                                                      false,
                                                                                                       maxLabelRefscaleFactor: _layer.MaxRefScaleFactor));
             }
 
