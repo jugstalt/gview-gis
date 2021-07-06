@@ -31,7 +31,7 @@ namespace gView.GraphicsEngine.Skia
 
         public IDisplayCharacterRanges DisplayCharacterRanges(IFont font, IDrawTextFormat format, string text)
         {
-            throw new NotImplementedException();
+            return new DisplayCharacterRanges(_canvas, GetSKPaint(font), format, text);
         }
 
         public void Dispose()

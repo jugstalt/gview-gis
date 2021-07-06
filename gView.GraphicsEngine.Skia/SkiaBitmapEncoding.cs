@@ -7,6 +7,8 @@ namespace gView.GraphicsEngine.Skia
 {
     public class SkiaBitmapEncoding : IBitmapEncoding
     {
+        public string EngineName => "SkiaSharp";
+
         public void Encode(IBitmap bitmap, string filename, ImageFormat format, int quality = 0)
         {
             if (!(bitmap?.EngineElement is SKBitmap))

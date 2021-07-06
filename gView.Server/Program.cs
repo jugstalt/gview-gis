@@ -16,14 +16,6 @@ namespace gView.Server
     {
         public static void Main(string[] args)
         {
-            //GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96.0f);
-            GraphicsEngine.Current.Engine = new GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
-            
-            // Gdi+ encoding: faster & smaller images!
-            GraphicsEngine.Current.Encoder = new GraphicsEngine.GdiPlus.GdiBitmapEncoding();
-
-            SystemInfo.RegisterGdal1_10_PluginEnvironment();
-
             try
             {
                 #region Init the global PluginManager

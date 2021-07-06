@@ -23,6 +23,35 @@ namespace gView.Server
             Configuration = configuration.BuildConfigParsers();
             Environment = environment;
 
+            Framework.system.SystemInfo.RegisterGdal1_10_PluginEnvironment();
+
+            #region Graphics Engine
+
+            switch (Configuration["graphics:rendering"]?.ToString())
+            {
+                case "gdi":
+                case "gdiplus":
+                    GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96.0f);
+                    break;
+                default:
+                    GraphicsEngine.Current.Engine = new GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
+                    break;
+            }
+
+            switch(Configuration["graphics:encoding"]?.ToString())
+            {
+                case "skia":
+                case "skiasharp":
+                    GraphicsEngine.Current.Encoder = new GraphicsEngine.Skia.SkiaBitmapEncoding();
+                    break;
+                default:
+                    // Gdi+ encoding: faster & smaller images!
+                    GraphicsEngine.Current.Encoder = new GraphicsEngine.GdiPlus.GdiBitmapEncoding();
+                    break;
+            }
+
+            #endregion
+
             #region Create Folders
 
             Configuration.TryCreateDirectoryIfNotExistes("services-folder");

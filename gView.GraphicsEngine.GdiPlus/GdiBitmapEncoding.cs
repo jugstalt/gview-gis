@@ -7,6 +7,8 @@ namespace gView.GraphicsEngine.GdiPlus
 {
     public class GdiBitmapEncoding : IBitmapEncoding
     {
+        public string EngineName => "GdiPlus";
+
         public void Encode(IBitmap bitmap, string filename, ImageFormat format, int quality = 0)
         {
             if (bitmap == null)

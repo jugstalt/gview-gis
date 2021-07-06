@@ -55,6 +55,20 @@
     </div>
 
     <div class="webportal-layout-footer">
+        <div style="float:left">
+            <table>
+                <tr>
+                    <td><strong>Grpahics&nbsp;|&nbsp;</strong></td>
+                    <td>Rendering: @(gView.GraphicsEngine.Current.Engine.EngineName)</td>
+                    @if (gView.GraphicsEngine.Current.Encoder != null)
+                    {
+                    <td>&nbsp;|&nbsp;</td>
+                    <td>Encoding: @(gView.GraphicsEngine.Current.Encoder.EngineName)</td>
+                    }
+                </tr>
+            </table>
+        </div>
+
         <div class="version">
             Version: @gView.Framework.system.SystemInfo.Version.ToString()
         </div>

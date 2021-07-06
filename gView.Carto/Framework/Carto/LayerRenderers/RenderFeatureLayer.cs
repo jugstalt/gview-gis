@@ -342,7 +342,7 @@ namespace gView.Framework.Carto.LayerRenderers
                 {
                     await ((IServiceMap)_map).MapServer.LogAsync(
                         ((IServiceMap)_map).Name,
-                        "RenderFeatureLayerThread: " + ((layer != null) ? layer.Title : String.Empty),
+                        "RenderFeatureLayer: " + ((layer != null) ? layer.Title : String.Empty),
                         loggingMethod.error,
                         ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                 }

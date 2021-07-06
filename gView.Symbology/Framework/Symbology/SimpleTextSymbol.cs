@@ -86,9 +86,9 @@ namespace gView.Framework.Symbology
 
                 try
                 {
-                    display.Canvas.TextRenderingHint = 
-                        ((this.Smoothingmode == SymbolSmoothing.None) ? 
-                            TextRenderingHint.SystemDefault : 
+                    display.Canvas.TextRenderingHint =
+                        ((this.Smoothingmode == SymbolSmoothing.None) ?
+                            TextRenderingHint.SystemDefault :
                             TextRenderingHint.AntiAlias);
 
                     display.Canvas.TranslateTransform(new CanvasPointF((float)point.X, (float)point.Y));
@@ -96,7 +96,7 @@ namespace gView.Framework.Symbology
                     {
                         display.Canvas.RotateTransform(angle + _angle + _rotation);
                     }
-                    DrawString(display.Canvas, text, _font, _brush, (float)_xOffset, (float)_yOffset, format);
+                    DrawString(display.Canvas, text, _font, _brush, _xOffset, _yOffset, format);
                 }
                 finally
                 {
@@ -167,7 +167,7 @@ namespace gView.Framework.Symbology
                 {
                     _measureTextWidth = null;
                     _measureStringSize = null;
-                    _text =  PrepareText(value);
+                    _text = PrepareText(value);
                 }
             }
         }
@@ -206,7 +206,7 @@ namespace gView.Framework.Symbology
             if (geometry is IPoint)
             {
                 #region IPoint
-                
+
                 double x = ((IPoint)geometry).X;
                 double y = ((IPoint)geometry).Y;
                 display.World2Image(ref x, ref y);
@@ -289,7 +289,7 @@ namespace gView.Framework.Symbology
                     {
                         CanvasPointF? p1 = path.PointAt(stat); //SpatialAlgorithms.Algorithm.DisplayPathPoint(path, stat);
                         CanvasPointF? p2 = path.PointAt(stat + cSize.Width);
-                        if (!p1_.HasValue || !p2_.HasValue)
+                        if (!p1.HasValue || !p2.HasValue)
                         {
                             return null;
                         }
@@ -798,7 +798,7 @@ namespace gView.Framework.Symbology
                             angle -= 180;
                         }
 
-                        
+
                         double x, y;
                         if (format.Alignment == StringAlignment.Center)
                         {
@@ -923,7 +923,7 @@ namespace gView.Framework.Symbology
             _align = (TextSymbolAlignment)stream.Load("Alignment", (int)TextSymbolAlignment.Center);
 
             var secAlignments = (string)stream.Load("secAlignments", null);
-            if(!String.IsNullOrWhiteSpace(secAlignments))
+            if (!String.IsNullOrWhiteSpace(secAlignments))
             {
                 try
                 {
@@ -1009,8 +1009,8 @@ namespace gView.Framework.Symbology
             {
                 fac = ReferenceScaleHelper.RefscaleFactor(
                     (float)(display.refScale / display.mapScale),
-                    _font.Size, 
-                    MinFontSize, 
+                    _font.Size,
+                    MinFontSize,
                     MaxFontSize);
                 fac = options.LabelRefScaleFactor(fac);
             }
@@ -1108,11 +1108,11 @@ namespace gView.Framework.Symbology
             float alignXOffset = xOffset,
                   alignYOffset = yOffset;
 
-            if(format.Alignment== StringAlignment.Far)
+            if (format.Alignment == StringAlignment.Far)
             {
                 alignXOffset = -alignXOffset;
             }
-            if(format.LineAlignment== StringAlignment.Near)
+            if (format.LineAlignment == StringAlignment.Near)
             {
                 alignYOffset = -alignYOffset;
             }
@@ -1221,7 +1221,7 @@ namespace gView.Framework.Symbology
                 return text;
             }
 
-            if(_wrapText==true)
+            if (_wrapText == true)
             {
                 text = text
                     .Replace(" ", "\n")
