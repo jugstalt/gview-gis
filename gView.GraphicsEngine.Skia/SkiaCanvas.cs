@@ -126,6 +126,14 @@ namespace gView.GraphicsEngine.Skia
             _canvas.DrawRect(rectangleF.ToSKRect(), GetSKPaint(brush));
         }
 
+        public void FillRectangle(IBrushCollection brushCollection, CanvasRectangleF rectangleF)
+        {
+            foreach (var brush in brushCollection.Brushes)
+            {
+                _canvas.DrawRect(rectangleF.ToSKRect(), GetSKPaint(brush));
+            }
+        }
+
         public void DrawLine(IPen pen, CanvasPoint p1, CanvasPoint p2)
         {
             _canvas.DrawLine(p1.ToSKPoint(), p2.ToSKPoint(), GetSKPaint(pen));
@@ -154,6 +162,14 @@ namespace gView.GraphicsEngine.Skia
         public void FillPath(IBrush brush, IGraphicsPath path)
         {
             _canvas.DrawPath((SKPath)path.EngineElement, GetSKPaint(brush));
+        }
+
+        public void FillPath(IBrushCollection brushCollection, IGraphicsPath path)
+        {
+            foreach (var brush in brushCollection.Brushes)
+            {
+                _canvas.DrawPath((SKPath)path.EngineElement, GetSKPaint(brush));
+            }
         }
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasPoint point)

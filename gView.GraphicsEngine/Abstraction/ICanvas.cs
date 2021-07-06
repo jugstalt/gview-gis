@@ -24,6 +24,7 @@ namespace gView.GraphicsEngine.Abstraction
 
         void FillRectangle(IBrush brush, CanvasRectangle rectangle);
         void FillRectangle(IBrush brush, CanvasRectangleF rectangleF);
+        void FillRectangle(IBrushCollection brushCollection, CanvasRectangleF rectangleF);
 
         void DrawBitmap(IBitmap bitmap, CanvasPoint point);
         void DrawBitmap(IBitmap bitmap, CanvasPointF pointF);
@@ -56,5 +57,6 @@ namespace gView.GraphicsEngine.Abstraction
 
         void DrawPath(IPen pen, IGraphicsPath path);
         void FillPath(IBrush brush, IGraphicsPath path);
+        void FillPath(IBrushCollection brushCollection, IGraphicsPath path);
     }
 }

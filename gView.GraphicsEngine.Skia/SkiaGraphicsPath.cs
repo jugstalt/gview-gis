@@ -89,7 +89,10 @@ namespace gView.GraphicsEngine.Skia
 
         public CanvasRectangleF GetBounds()
         {
-            return _path.GetRoundRect().Rect.ToCanvasRectangleF();
+            SKRect rect;
+            _path.GetBounds(out rect);
+
+            return rect.ToCanvasRectangleF();
         }
 
         public void StartFigure()

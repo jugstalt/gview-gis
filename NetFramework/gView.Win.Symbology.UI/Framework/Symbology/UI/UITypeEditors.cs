@@ -65,7 +65,7 @@ namespace gView.Framework.Symbology.UI
 
             if (wfes != null)
             {
-                Form_UITypeEditor_DashStyle dlg = new Form_UITypeEditor_DashStyle(wfes, (DashStyle)value);
+                Form_UITypeEditor_DashStyle dlg = new Form_UITypeEditor_DashStyle(wfes, (GraphicsEngine.LineDashStyle)value);
                 dlg.TopLevel = false;
                 wfes.DropDownControl(dlg);
                 value = dlg.DashStyle;
@@ -139,7 +139,7 @@ namespace gView.Framework.Symbology.UI
 
             if (wfes != null)
             {
-                Form_UITypeEditor_DashStyle dlg = new Form_UITypeEditor_DashStyle(wfes, (HatchStyle)value);
+                Form_UITypeEditor_DashStyle dlg = new Form_UITypeEditor_DashStyle(wfes, (GraphicsEngine.HatchStyle)value);
                 dlg.TopLevel = false;
                 wfes.DropDownControl(dlg);
                 value = dlg.HatchStyle;

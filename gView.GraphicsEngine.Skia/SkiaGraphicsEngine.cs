@@ -62,14 +62,14 @@ namespace gView.GraphicsEngine.Skia
             return new SkiaGraphicsPath();
         }
 
-        public IBrush CreateHatchBrush(HatchStyle hatchStyle, ArgbColor foreColor, ArgbColor backColor)
+        public IBrushCollection CreateHatchBrush(HatchStyle hatchStyle, ArgbColor foreColor, ArgbColor backColor)
         {
-            return new SkiaSolidBrush(foreColor);
+            return SkiaHatchBrush.CreateCollection(hatchStyle, foreColor, backColor);
         }
 
         public IBrush CreateLinearGradientBrush(CanvasRectangleF rect, ArgbColor col1, ArgbColor col2, float angle)
         {
-            return new SkiaSolidBrush(col1);
+            return new SkiaLinearGradientBrush(rect, col1, col2, angle);
         }
 
         public IPen CreatePen(ArgbColor color, float width)

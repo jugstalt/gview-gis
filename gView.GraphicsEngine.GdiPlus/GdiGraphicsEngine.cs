@@ -71,9 +71,9 @@ namespace gView.GraphicsEngine.GdiPlus
             return new GdiLinearGradientBrush(rect, col1, col2, angle);
         }
 
-        public IBrush CreateHatchBrush(HatchStyle hatchStyle, ArgbColor foreColor, ArgbColor backColor)
+        public IBrushCollection CreateHatchBrush(HatchStyle hatchStyle, ArgbColor foreColor, ArgbColor backColor)
         {
-            return new GdiHatchBrush(hatchStyle, foreColor, backColor);
+            return new BrushCollection(new IBrush[] { new GdiHatchBrush(hatchStyle, foreColor, backColor) });
         }
 
         public void DrawTextOffestPointsToFontUnit(ref CanvasPointF offset)

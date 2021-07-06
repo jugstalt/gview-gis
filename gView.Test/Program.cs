@@ -293,6 +293,20 @@ namespace gView.Test
                 canvas.TextRenderingHint = TextRenderingHint.AntiAlias;
                 canvas.SmoothingMode = SmoothingMode.AntiAlias;
 
+                using(var path = Current.Engine.CreateGraphicsPath())
+                {
+                    path.StartFigure();
+                    path.AddPoint(10, 10);
+                    path.AddPoint(100, 10);
+                    path.AddPoint(100, 100);
+                    path.AddPoint(10, 100);
+                    path.CloseFigure();
+
+                    var rect = path.GetBounds();
+
+                    canvas.FillPath(blackBrush, path);
+                }
+
                 for (int y = 0; y < 8; y++)
                 {
                     for (int x = 0; x < 32; x++)

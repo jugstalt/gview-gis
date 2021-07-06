@@ -117,6 +117,16 @@ namespace gView.GraphicsEngine.GdiPlus
             _graphics.FillRectangle((Brush)brush.EngineElement, left, right, width, height);
         }
 
+        public void FillRectangle(IBrushCollection brushCollection, CanvasRectangleF rectangleF)
+        {
+            CheckUsability();
+
+            foreach (var brush in brushCollection.Brushes)
+            {
+                _graphics.FillRectangle((Brush)brush.EngineElement, rectangleF.ToGdiRectangleF());
+            }
+        }
+
         public void DrawRectangle(IPen pen, CanvasRectangle rectangle)
         {
             CheckUsability();
@@ -349,6 +359,16 @@ namespace gView.GraphicsEngine.GdiPlus
             CheckUsability();
 
             _graphics.FillPath((Brush)brush.EngineElement, (System.Drawing.Drawing2D.GraphicsPath)path.EngineElement);
+        }
+
+        public void FillPath(IBrushCollection brushCollection, IGraphicsPath path)
+        {
+            CheckUsability();
+
+            foreach(var brush in brushCollection.Brushes)
+            {
+                _graphics.FillPath((Brush)brush.EngineElement, (System.Drawing.Drawing2D.GraphicsPath)path.EngineElement);
+            }
         }
 
         #endregion ICanvas

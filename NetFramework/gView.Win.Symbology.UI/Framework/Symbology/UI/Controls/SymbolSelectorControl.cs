@@ -375,7 +375,7 @@ namespace gView.Framework.Symbology.UI.Controls
                                     PenColor = GraphicsEngine.ArgbColor.Red,
                                     PenWidth = 1f
                                 },
-                                HatchStyle = GraphicsEngine.HatchStyle.Cross,
+                                HatchStyle = GraphicsEngine.HatchStyle.LargeGrid,
                                 FillColor = GraphicsEngine.ArgbColor.Red,
                                 SymbolSmothingMode = SymbolSmoothing.AntiAlias
                             },
@@ -386,7 +386,7 @@ namespace gView.Framework.Symbology.UI.Controls
                                     PenColor = GraphicsEngine.ArgbColor.Red,
                                     PenWidth = 1f
                                 },
-                                HatchStyle = GraphicsEngine.HatchStyle.DashedHorizontal,
+                                HatchStyle = GraphicsEngine.HatchStyle.DarkHorizontal,
                                 FillColor = GraphicsEngine.ArgbColor.Red,
                                 SymbolSmothingMode = SymbolSmoothing.AntiAlias
                             },
@@ -397,7 +397,7 @@ namespace gView.Framework.Symbology.UI.Controls
                                     PenColor = GraphicsEngine.ArgbColor.Red,
                                     PenWidth = 1f
                                 },
-                                HatchStyle = GraphicsEngine.HatchStyle.DiagonalBrick,
+                                HatchStyle = GraphicsEngine.HatchStyle.LightUpwardDiagonal,
                                 FillColor = GraphicsEngine.ArgbColor.Red,
                                 SymbolSmothingMode = SymbolSmoothing.AntiAlias
                             },

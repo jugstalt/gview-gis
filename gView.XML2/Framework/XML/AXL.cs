@@ -757,7 +757,7 @@ namespace gView.Framework.XML
                 case HatchStyle.ForwardDiagonal:
                     sb.Append(" filltype=\"fdiagonal\"");
                     break;
-                case HatchStyle.Cross:
+                case HatchStyle.LargeGrid:
                     sb.Append(" filltype=\"cross\"");
                     break;
                 case HatchStyle.DiagonalCross:
@@ -768,24 +768,6 @@ namespace gView.Framework.XML
                     break;
                 case HatchStyle.Vertical:
                     sb.Append(" filltype=\"vertical\"");
-                    break;
-                case HatchStyle.Percent05:
-                case HatchStyle.Percent10:
-                case HatchStyle.Percent20:
-                case HatchStyle.Percent25:
-                    sb.Append(" filltype=\"lightgray\"");
-                    break;
-                case HatchStyle.Percent30:
-                case HatchStyle.Percent40:
-                case HatchStyle.Percent50:
-                case HatchStyle.Percent60:
-                    sb.Append(" filltype=\"gray\"");
-                    break;
-                case HatchStyle.Percent70:
-                case HatchStyle.Percent75:
-                case HatchStyle.Percent80:
-                case HatchStyle.Percent90:
-                    sb.Append(" filltype=\"darkgray\"");
                     break;
                 default:
                     sb.Append(" filltype=\"bdiagonal\"");
@@ -1268,7 +1250,7 @@ namespace gView.Framework.XML
                         ((HatchSymbol)symbol).HatchStyle = HatchStyle.ForwardDiagonal;
                         break;
                     case "cross":
-                        ((HatchSymbol)symbol).HatchStyle = HatchStyle.Cross;
+                        ((HatchSymbol)symbol).HatchStyle = HatchStyle.LargeGrid;
                         break;
                     case "diagcross":
                         ((HatchSymbol)symbol).HatchStyle = HatchStyle.DiagonalCross;
@@ -1278,15 +1260,6 @@ namespace gView.Framework.XML
                         break;
                     case "vertical":
                         ((HatchSymbol)symbol).HatchStyle = HatchStyle.Vertical;
-                        break;
-                    case "gray":
-                        ((HatchSymbol)symbol).HatchStyle = HatchStyle.Percent50;
-                        break;
-                    case "lightgray":
-                        ((HatchSymbol)symbol).HatchStyle = HatchStyle.Percent05;
-                        break;
-                    case "darkgray":
-                        ((HatchSymbol)symbol).HatchStyle = HatchStyle.Percent80;
                         break;
                     default:
                         ((HatchSymbol)symbol).HatchStyle = HatchStyle.BackwardDiagonal;

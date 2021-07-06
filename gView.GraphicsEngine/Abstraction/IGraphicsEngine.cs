@@ -18,7 +18,7 @@ namespace gView.GraphicsEngine.Abstraction
         IPen CreatePen(ArgbColor color, float width);
         IBrush CreateSolidBrush(ArgbColor color);
         IBrush CreateLinearGradientBrush(CanvasRectangleF rect, ArgbColor col1, ArgbColor col2, float angle);
-        IBrush CreateHatchBrush(HatchStyle hatchStyle, ArgbColor foreColor, ArgbColor backColor);
+        IBrushCollection CreateHatchBrush(HatchStyle hatchStyle, ArgbColor foreColor, ArgbColor backColor);
 
         IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit grUnit = GraphicsUnit.Point, char? typefaceCharakter = null);
 

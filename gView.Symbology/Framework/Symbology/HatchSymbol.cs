@@ -14,7 +14,7 @@ namespace gView.Framework.Symbology
     [gView.Framework.system.RegisterPlugIn("E37D7D86-DF11-410f-ADD1-EA89C1E89605")]
     public sealed class HatchSymbol : LegendItem, IFillSymbol, IPersistable, IPropertyPage, IBrushColor, IPenColor, IPenWidth, IPenDashStyle
     {
-        private IBrush _brush;
+        private IBrushCollection _brush;
         private ArgbColor _forecolor;
         private ArgbColor _backcolor;
         private ISymbol _outlineSymbol = null;
@@ -238,7 +238,7 @@ namespace gView.Framework.Symbology
 
             this.ForeColor = ArgbColor.FromArgb((int)stream.Load("forecolor", ArgbColor.Red.ToArgb()));
             this.BackColor = ArgbColor.FromArgb((int)stream.Load("backcolor", ArgbColor.Transparent.ToArgb()));
-            this.HatchStyle = (HatchStyle)stream.Load("hatchstyle", HatchStyle.Cross);
+            this.HatchStyle = (HatchStyle)stream.Load("hatchstyle", HatchStyle.Horizontal);
             _outlineSymbol = (ISymbol)stream.Load("outlinesymbol");
         }
 
