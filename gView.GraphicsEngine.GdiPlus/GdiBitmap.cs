@@ -92,12 +92,12 @@ namespace gView.GraphicsEngine.GdiPlus
 
         public void Save(string filename, ImageFormat format, int quality = 0)
         {
-            _bitmap.Save(filename, format.ToImageFormat());
+            (Current.Encoder ?? new GdiBitmapEncoding()).Encode(this, filename, format, quality);
         }
 
         public void Save(Stream stream, ImageFormat format, int quality = 0)
         {
-            _bitmap.Save(stream, format.ToImageFormat());
+            (Current.Encoder ?? new GdiBitmapEncoding()).Encode(this, stream, format, quality); ;
         }
         public BitmapPixelData LockBitmapPixelData(BitmapLockMode lockMode, PixelFormat pixelFormat)
         {

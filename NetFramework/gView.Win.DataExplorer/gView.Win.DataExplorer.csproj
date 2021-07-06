@@ -274,10 +274,6 @@
       <Project>{fb98412b-8def-4b02-b903-2979a433e75e}</Project>
       <Name>gView.Db</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\gView.Drawing.Pro\gView.Drawing.Pro.csproj">
-      <Project>{9b3a0de1-e73b-400c-9201-c83b434ca587}</Project>
-      <Name>gView.Drawing.Pro</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\gView.Editor.Core\gView.Editor.Core.csproj">
       <Project>{8c804d9d-7cb0-4f53-88b2-f265060ce702}</Project>
       <Name>gView.Editor.Core</Name>

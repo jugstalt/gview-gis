@@ -139,7 +139,8 @@ namespace gView.GraphicsEngine.Skia
             try
             {
                 if (bitmapPixelData.PixelFormat != PixelFormat.Rgb32 &&
-                    bitmapPixelData.PixelFormat != PixelFormat.Rgba32)
+                    bitmapPixelData.PixelFormat != PixelFormat.Rgba32 &&
+                    bitmapPixelData.PixelFormat != PixelFormat.Gray8)
                 {
                     if (bitmapPixelData.LockMode == BitmapLockMode.WriteOnly ||
                         bitmapPixelData.LockMode == BitmapLockMode.ReadWrite)
@@ -173,43 +174,12 @@ namespace gView.GraphicsEngine.Skia
 
         public void Save(string filename, ImageFormat format, int quality = 0)
         {
-            //var image = SKImage.FromBitmap(_bitmap);
-            //using (var data = image.Encode(SKEncodedImageFormat.Png, 50))
-            //{
-            //    using (var stream = File.OpenWrite(filename))
-            //    {
-            //        data.SaveTo(stream);
-            //    }
-            //}
-
-            using (var bm = new System.Drawing.Bitmap(
-                        _bitmap.Width,
-                        _bitmap.Height,
-                        _bitmap.RowBytes,
-                        System.Drawing.Imaging.PixelFormat.Format32bppArgb,
-                        Marshal.UnsafeAddrOfPinnedArrayElement(_bitmap.Bytes, 0)))
-            {
-                bm.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
-            }
+            (Current.Encoder ?? new SkiaBitmapEncoding()).Encode(this, filename, format, quality);
         }
 
         public void Save(Stream stream, ImageFormat format, int quality = 0)
         {
-            //var image = SKImage.FromBitmap(_bitmap);
-            //using (var data = image.Encode(SKEncodedImageFormat.Png, 75))
-            //{
-            //    stream.Write(data.ToArray(), 0, (int)data.Size);
-            //}
-
-            using (var bm = new System.Drawing.Bitmap(
-                        _bitmap.Width,
-                        _bitmap.Height,
-                        _bitmap.RowBytes,
-                        System.Drawing.Imaging.PixelFormat.Format32bppArgb,
-                        Marshal.UnsafeAddrOfPinnedArrayElement(_bitmap.Bytes, 0)))
-            {
-                bm.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-            }
+            (Current.Encoder ?? new SkiaBitmapEncoding()).Encode(this, stream, format, quality);
         }
 
         public void SetResolution(float dpiX, float dpiY)

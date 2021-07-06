@@ -12,6 +12,7 @@ using gView.Framework.Geometry;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using gView.GraphicsEngine.Filters;
 
 namespace gView.Framework.Data
 {
@@ -1259,13 +1260,18 @@ namespace gView.Framework.Data
         private float _transparency = 0.0f;
         private GraphicsEngine.ArgbColor _transColor = GraphicsEngine.ArgbColor.Transparent;
 
-        public RasterLayer() { }
+        public RasterLayer() 
+        {
+            this.FilterImplementation = FilterImplementations.Default;
+        }
         public RasterLayer(IRasterClass rasterClass)
+            : this()
         {
             _class = rasterClass;
             if (rasterClass != null) _title = rasterClass.Name;
         }
         public RasterLayer(IRasterLayer layer)
+            : this()
         {
             CopyFrom(layer);
         }
@@ -1281,6 +1287,7 @@ namespace gView.Framework.Data
                 _interpolMethod = layer.InterpolationMethod;
                 _transparency = layer.Transparency;
                 _transColor = layer.TransparentColor;
+                FilterImplementation = layer.FilterImplementation;
             }
         }
         #region IRasterLayer Member
@@ -1321,6 +1328,8 @@ namespace gView.Framework.Data
             }
         }
 
+        public FilterImplementations FilterImplementation { get; set; }
+
         public IRasterClass RasterClass
         {
             get { return _class as IRasterClass; }
@@ -1350,6 +1359,7 @@ namespace gView.Framework.Data
             _interpolMethod = (InterpolationMethod)stream.Load("interpolation", (int)InterpolationMethod.Fast);
             _transparency = (float)stream.Load("transparency", 0f);
             _transColor = GraphicsEngine.ArgbColor.FromArgb((int)stream.Load("transcolor", GraphicsEngine.ArgbColor.Transparent.ToArgb()));
+            FilterImplementation = (FilterImplementations)stream.Load("filter", (int)FilterImplementations.Default);
         }
 
         override public void Save(IPersistStream stream)
@@ -1359,6 +1369,7 @@ namespace gView.Framework.Data
             stream.Save("interpolation", (int)_interpolMethod);
             stream.Save("transparency", _transparency);
             stream.Save("transcolor", _transColor.ToArgb());
+            stream.Save("filter", (int)FilterImplementation);
         }
 
         #endregion
@@ -1369,6 +1380,7 @@ namespace gView.Framework.Data
         private InterpolationMethod _interpolMethod = InterpolationMethod.Fast;
         private float _transparency = 0.0f;
         private GraphicsEngine.ArgbColor _transColor = GraphicsEngine.ArgbColor.Transparent;
+        private FilterImplementations _filter = FilterImplementations.Default;
 
         public RasterCatalogLayer() { }
         public RasterCatalogLayer(IRasterCatalogClass rasterClass) :
@@ -1435,6 +1447,18 @@ namespace gView.Framework.Data
             }
         }
 
+        public GraphicsEngine.Filters.FilterImplementations FilterImplementation
+        {
+            get
+            {
+                return _filter;
+            }
+            set
+            {
+                _filter = value;
+            }
+        }
+
         public IRasterClass RasterClass
         {
             get { return _class as IRasterClass; }
@@ -1459,6 +1483,7 @@ namespace gView.Framework.Data
             _interpolMethod = (InterpolationMethod)stream.Load("interpolation", (int)InterpolationMethod.Fast);
             _transparency = (float)stream.Load("transparency", 0f);
             _transColor = GraphicsEngine.ArgbColor.FromArgb((int)stream.Load("transcolor", GraphicsEngine.ArgbColor.Transparent.ToArgb()));
+            _filter = (FilterImplementations)stream.Load("filter", (int)FilterImplementations.Default);
         }
 
         override public void Save(IPersistStream stream)
@@ -1468,6 +1493,7 @@ namespace gView.Framework.Data
             stream.Save("interpolation", (int)_interpolMethod);
             stream.Save("transparency", _transparency);
             stream.Save("transcolor", _transColor.ToArgb());
+            stream.Save("filter", (int)_filter);
         }
 
         #endregion

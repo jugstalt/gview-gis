@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.system;
+using gView.GraphicsEngine.Filters;
 using System;
 using System.Threading.Tasks;
 
@@ -12,6 +13,7 @@ namespace gView.Framework.Carto.LayerRenderers
         private IRasterLayer _layer;
         private ICancelTracker _cancelTracker;
         private InterpolationMethod _interpolMethod = InterpolationMethod.Fast;
+        private FilterImplementations _filter = FilterImplementations.Default;
         private float _transparency = 0.0f;
         private GraphicsEngine.ArgbColor _transColor = GraphicsEngine.ArgbColor.Transparent;
 
@@ -25,12 +27,15 @@ namespace gView.Framework.Carto.LayerRenderers
                 _interpolMethod = rLayer.InterpolationMethod;
                 _transparency = rLayer.Transparency;
                 _transColor = rLayer.TransparentColor;
+                _filter = rLayer.FilterImplementation;
             }
         }
 
         // Thread
         async public Task Render()
         {
+            GraphicsEngine.Abstraction.IBitmap _filteredBitmap = null;
+
             try
             {
                 if (_layer == null || _map == null || _cancelTracker == null)
@@ -45,26 +50,23 @@ namespace gView.Framework.Carto.LayerRenderers
 
                 IEnvelope env = _layer.RasterClass.Polygon.Envelope;
                 double minx = env.minx, miny = env.miny, maxx = env.maxx, maxy = env.maxy;
+
                 _map.World2Image(ref minx, ref miny);
                 _map.World2Image(ref maxx, ref maxy);
+
                 int iWidth = 0, iHeight = 0;
                 int min_x = Math.Max(0, (int)Math.Min(minx, maxx) - 1);
                 int min_y = Math.Max(0, (int)Math.Min(miny, maxy) - 1);
                 int max_x = Math.Min(iWidth = _map.iWidth, (int)Math.Max(minx, maxx) + 1);
                 int max_y = Math.Min(iHeight = _map.iHeight, (int)Math.Max(miny, maxy) + 1);
 
-                // _lastRasterLayer bei ImageServer vermeiden,
-                // weil sonst das Bild gelöscht wird bevor es gezeichnet wurde
-                // nicht Threadsicher!!!!!!!
-                /*
-                if (_lastRasterLayer != null && _lastRasterLayer != _layer)
-                {
-                    _lastRasterLayer.EndPaint();
-                }
-                */
-
                 await _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker);
-                if (_layer.RasterClass.Bitmap == null)
+                if (_filter != FilterImplementations.Default)
+                {
+                    _filteredBitmap = BaseFilter.ApplyFilter(_layer.RasterClass.Bitmap, _filter);
+                }
+
+                if (_layer.RasterClass.Bitmap == null && _filteredBitmap == null)
                 {
                     return;
                 }
@@ -142,6 +144,7 @@ namespace gView.Framework.Carto.LayerRenderers
                         IPoint p = (IPoint)_map.Display.GeometricTransformer.Transform2D(new Point(X, Y));
                         X = p.X; Y = p.Y;
                     }
+
                     _map.Display.World2Image(ref X, ref Y);
                     points[0] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
                     X = X1 + (_layer.RasterClass.Bitmap.Width) * _layer.RasterClass.dx1;
@@ -151,6 +154,7 @@ namespace gView.Framework.Carto.LayerRenderers
                         IPoint p = (IPoint)_map.Display.GeometricTransformer.Transform2D(new Point(X, Y));
                         X = p.X; Y = p.Y;
                     }
+
                     _map.Display.World2Image(ref X, ref Y);
                     points[1] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
                     X = X1 + (_layer.RasterClass.Bitmap.Height) * _layer.RasterClass.dy1;
@@ -160,6 +164,7 @@ namespace gView.Framework.Carto.LayerRenderers
                         IPoint p = (IPoint)_map.Display.GeometricTransformer.Transform2D(new Point(X, Y));
                         X = p.X; Y = p.Y;
                     }
+
                     _map.Display.World2Image(ref X, ref Y);
                     points[2] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
                 }
@@ -195,9 +200,9 @@ namespace gView.Framework.Carto.LayerRenderers
                 //gr.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
                 float opaque = 1.0f - _transparency;
 
-                canvas.DrawBitmap(_layer.RasterClass.Bitmap,
+                canvas.DrawBitmap(_filteredBitmap ?? _layer.RasterClass.Bitmap,
                               points,
-                              rect, 
+                              rect,
                               opacity: opaque);
 
                 _map.FireRefreshMapView();
@@ -222,6 +227,10 @@ namespace gView.Framework.Carto.LayerRenderers
             finally
             {
                 _layer.RasterClass.EndPaint(_cancelTracker);
+                if (_filteredBitmap != null)
+                {
+                    _filteredBitmap.Dispose();
+                }
             }
         }
 

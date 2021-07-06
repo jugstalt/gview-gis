@@ -187,6 +187,11 @@ namespace gView.DataSources.TileCache
             }
         }
 
+        public GraphicsEngine.Filters.FilterImplementations FilterImplementation { 
+            get { return GraphicsEngine.Filters.FilterImplementations.Default;  }
+            set { } 
+        }
+
         public IRasterClass RasterClass
         {
             get { return this; }

@@ -51,8 +51,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Interoperability.ArcX
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Interoperability.OGC", "gView.Interoperability.OGC\gView.Interoperability.OGC.csproj", "{FAFEF445-A01C-4770-B993-4E9CA33D95E3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Drawing.Pro", "gView.Drawing.Pro\gView.Drawing.Pro.csproj", "{9B3A0DE1-E73B-400C-9201-C83B434CA587}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Metadata", "gView.Metadata\gView.Metadata.csproj", "{42696D09-69C7-4E21-8351-DC53698D24E8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Proj", "gView.Proj\gView.Proj.csproj", "{F236407A-27B9-42D0-9000-6BC4A04E8F54}"
@@ -197,7 +195,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.GraphicsEngine", "gVi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.GraphicsEngine.GdiPlus", "gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj", "{27A01872-3E18-4C14-A267-F4093F7317B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.GraphicsEngine.Skia", "gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj", "{00332360-3466-4C26-8604-C43DB166DD2B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.GraphicsEngine.Skia", "gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj", "{00332360-3466-4C26-8604-C43DB166DD2B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -399,14 +397,6 @@ Global
 		{FAFEF445-A01C-4770-B993-4E9CA33D95E3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FAFEF445-A01C-4770-B993-4E9CA33D95E3}.Release|x64.ActiveCfg = Release|Any CPU
 		{FAFEF445-A01C-4770-B993-4E9CA33D95E3}.Release|x64.Build.0 = Release|Any CPU
-		{9B3A0DE1-E73B-400C-9201-C83B434CA587}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9B3A0DE1-E73B-400C-9201-C83B434CA587}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9B3A0DE1-E73B-400C-9201-C83B434CA587}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{9B3A0DE1-E73B-400C-9201-C83B434CA587}.Debug|x64.Build.0 = Debug|Any CPU
-		{9B3A0DE1-E73B-400C-9201-C83B434CA587}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9B3A0DE1-E73B-400C-9201-C83B434CA587}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9B3A0DE1-E73B-400C-9201-C83B434CA587}.Release|x64.ActiveCfg = Release|Any CPU
-		{9B3A0DE1-E73B-400C-9201-C83B434CA587}.Release|x64.Build.0 = Release|Any CPU
 		{42696D09-69C7-4E21-8351-DC53698D24E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{42696D09-69C7-4E21-8351-DC53698D24E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42696D09-69C7-4E21-8351-DC53698D24E8}.Debug|x64.ActiveCfg = Debug|Any CPU

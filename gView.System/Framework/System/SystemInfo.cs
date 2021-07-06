@@ -4,6 +4,8 @@ using System.Text;
 using System.Collections;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.IO;
+using System.Reflection;
 
 namespace gView.Framework.system
 {
@@ -93,6 +95,14 @@ namespace gView.Framework.system
                     return OSPlatform.Windows.ToString();
 
                 return "Unknown";
+            }
+        }
+
+        static public void RegisterGdal1_10_PluginEnvironment()
+        {
+            if (SystemInfo.IsWindows)
+            {
+                Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", $"{ Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) }\\gdalplugins");
             }
         }
 

@@ -47,6 +47,8 @@ namespace gView.Win.Carto
                 {
                     //GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(g.DpiX);
                     GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(g.DpiX);
+
+                    GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.GdiPlus.GdiBitmapEncoding();
                 }
 
                 #region Create Application

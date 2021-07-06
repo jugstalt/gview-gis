@@ -1,11 +1,11 @@
-﻿using gView.Drawing.Pro;
-using gView.Framework.Carto;
+﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
 using gView.Framework.IO;
 using gView.Framework.Metadata;
 using gView.Framework.system;
 using gView.GraphicsEngine;
+using gView.GraphicsEngine.Filters;
 using gView.MapServer;
 using System;
 using System.Collections.Generic;
@@ -143,10 +143,10 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     if (style != "default")
                     {
                         //throw new NotImplementedException("Not in .Net Standard...");
-                        ImageProcessingFilters filter;
-                        if (Enum.TryParse<ImageProcessingFilters>(style, true, out filter))
+                        FilterImplementations filter;
+                        if (Enum.TryParse<FilterImplementations>(style, true, out filter))
                         {
-                            imageData = ImageProcessing.ApplyFilter(imageData, filter, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
+                            imageData = BaseFilter.ApplyFilter(imageData, filter, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
                         }
                     }
                 }
@@ -574,9 +574,9 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     //    Title = new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType[] { new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType() { Value = "Default Style" } },
                     //    Identifier = new gView.Framework.OGC.WMTS.Version_1_0_0.CodeType() { Value = "default" }
                     //});
-                    foreach (var styleVal in Enum.GetValues(typeof(ImageProcessingFilters)))
+                    foreach (var styleVal in Enum.GetValues(typeof(FilterImplementations)))
                     {
-                        string name = Enum.GetName(typeof(ImageProcessingFilters), styleVal);
+                        string name = Enum.GetName(typeof(FilterImplementations), styleVal);
                         styles.Add(new Framework.OGC.WMTS.Version_1_0_0.Style()
                         {
                             Title = new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType[] { new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType() { Value = name } },

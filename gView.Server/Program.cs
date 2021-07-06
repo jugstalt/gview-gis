@@ -7,6 +7,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 
 namespace gView.Server
 {
@@ -14,10 +16,13 @@ namespace gView.Server
     {
         public static void Main(string[] args)
         {
-            //var dpi = gView.Framework.system.SystemVariables.PrimaryScreenDPI();
-
             //GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96.0f);
-            GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
+            GraphicsEngine.Current.Engine = new GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
+            
+            // Gdi+ encoding: faster & smaller images!
+            GraphicsEngine.Current.Encoder = new GraphicsEngine.GdiPlus.GdiBitmapEncoding();
+
+            SystemInfo.RegisterGdal1_10_PluginEnvironment();
 
             try
             {

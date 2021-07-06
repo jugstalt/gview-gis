@@ -290,6 +290,12 @@ namespace gView.Framework.XML
             }
         }
 
+        public GraphicsEngine.Filters.FilterImplementations FilterImplementation
+        {
+            get { return GraphicsEngine.Filters.FilterImplementations.Default; }
+            set { }
+        }
+
         public IRasterClass RasterClass { get { return null; } }
 
         #endregion

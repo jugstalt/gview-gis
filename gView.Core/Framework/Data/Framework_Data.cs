@@ -4,6 +4,7 @@ using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
 using gView.GraphicsEngine;
+using gView.GraphicsEngine.Filters;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -535,7 +536,8 @@ namespace gView.Framework.Data
     {
         InterpolationMethod InterpolationMethod { get; set; }
         float Transparency { get; set; }
-        GraphicsEngine.ArgbColor TransparentColor { get; set; }
+        ArgbColor TransparentColor { get; set; }
+        FilterImplementations FilterImplementation { get; set; }
 
         IRasterClass RasterClass { get; }
     }

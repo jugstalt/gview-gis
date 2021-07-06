@@ -8,5 +8,6 @@ namespace gView.GraphicsEngine
     static public class Current
     {
         static public IGraphicsEngine Engine { get; set; }
+        static public IBitmapEncoding Encoder { get; set; }
     }
 }
