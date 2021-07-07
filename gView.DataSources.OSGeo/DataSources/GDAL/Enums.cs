@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.DataSources.GDAL
+﻿namespace gView.DataSources.GDAL
 {
     public enum ColorInterp
     {

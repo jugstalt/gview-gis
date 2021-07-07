@@ -1,12 +1,10 @@
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.IO;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Data;
 using System.IO;
-using gView.Framework.Geometry;
-using gView.Framework.system;
-using gView.Framework.IO;
-using OSGeo_v1;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.GDAL
@@ -16,7 +14,6 @@ namespace gView.DataSources.GDAL
     {
         private string _connectionString = "";
         private string _errMsg = "";
-        //private V122::GDAL.Dataset _gdalDataset = null;
         private List<IDatasetElement> _layers = new List<IDatasetElement>();
         private string _directory = "";
         private DatasetState _state = DatasetState.opened;
@@ -37,7 +34,7 @@ namespace gView.DataSources.GDAL
                     _directory = fi.Directory.FullName;
                 }
 
-                RasterClass rasterClass = (polygon == null) ? new RasterClass(this, filename) : new RasterClass(this, filename, polygon);
+                var rasterClass = (polygon == null) ? new RasterClassV3(this, filename) : new RasterClassV3(this, filename, polygon);
                 RasterLayer layer = new RasterLayer(rasterClass);
                 if (rasterClass.isValid)
                 {
@@ -98,9 +95,13 @@ namespace gView.DataSources.GDAL
                     ((IRasterClass)element.Class).Polygon != null)
                 {
                     if (env == null)
+                    {
                         env = ((IRasterClass)element.Class).Polygon.Envelope;
+                    }
                     else
+                    {
                         env.Union(((IRasterClass)element.Class).Polygon.Envelope);
+                    }
                 }
             }
             return Task.FromResult<IEnvelope>(env);
@@ -123,10 +124,17 @@ namespace gView.DataSources.GDAL
                 _connectionString = String.Empty;
                 foreach (IDatasetElement layer in _layers)
                 {
-                    RasterClass rc = layer.Class as RasterClass;
-                    if (rc == null) continue;
+                    RasterClassV3 rc = layer.Class as RasterClassV3;
+                    if (rc == null)
+                    {
+                        continue;
+                    }
 
-                    if (_connectionString != String.Empty) _connectionString += ";";
+                    if (_connectionString != String.Empty)
+                    {
+                        _connectionString += ";";
+                    }
+
                     _connectionString += rc.Filename;
                 }
 
@@ -139,13 +147,17 @@ namespace gView.DataSources.GDAL
             _connectionString = value;
             foreach (string filename in _connectionString.Split(';'))
             {
-                if (filename.Trim() == String.Empty) continue;
+                if (filename.Trim() == String.Empty)
+                {
+                    continue;
+                }
+
                 AddRasterFile(filename);
             }
 
             return Task.FromResult(true);
         }
-        
+
 
         public string DatasetGroupName
         {
@@ -203,7 +215,9 @@ namespace gView.DataSources.GDAL
             foreach (IDatasetElement element in _layers)
             {
                 if (element.Title == title)
+                {
                     return Task.FromResult(element);
+                }
             }
             return Task.FromResult((IDatasetElement)null);
         }
@@ -217,7 +231,7 @@ namespace gView.DataSources.GDAL
 
         public void Dispose()
         {
-           
+
         }
 
         #endregion

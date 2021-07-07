@@ -6,16 +6,13 @@ using gView.Framework.system;
 using gView.GraphicsEngine;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.GDAL
 {
-    public class RasterClass : IRasterClass2, IRasterFile, IRasterFileBitmap, IPointIdentify, IGridIdentify, IGridClass, IPersistable, IDisposable
+    public class RasterClassV1 : IRasterClass2, IRasterFile, IRasterFileBitmap, IPointIdentify, IGridIdentify, IGridClass, IPersistable, IDisposable
     {
         internal enum RasterType { image = 0, grid = 1, wavelet = 2 }
 
@@ -38,15 +35,15 @@ namespace gView.DataSources.GDAL
         private bool _useHillShade = true;
         private GridColorClass[] _colorClasses = null;
 
-        public RasterClass()
+        public RasterClassV1()
         {
         }
 
-        public RasterClass(IRasterDataset dataset, string filename)
+        public RasterClassV1(IRasterDataset dataset, string filename)
             : this(dataset, filename, null)
         {
         }
-        public RasterClass(IRasterDataset dataset, string filename, IPolygon polygon)
+        public RasterClassV1(IRasterDataset dataset, string filename, IPolygon polygon)
         {
             try
             {
@@ -183,7 +180,7 @@ namespace gView.DataSources.GDAL
                 string errMsg = ex.Message;
 
                 Console.WriteLine($"GDAL Excepiton: { ex.Message }");
-                while(ex.InnerException!=null)
+                while (ex.InnerException != null)
                 {
                     ex = ex.InnerException;
                     Console.WriteLine($"  Inner Exception: { ex.Message }");
@@ -265,7 +262,7 @@ namespace gView.DataSources.GDAL
                 IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display); //display.Envelope;
                 if (display.GeometricTransformer != null)
                 {
-                    dispEnvelope = (IEnvelope)((IGeometry)display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
+                    dispEnvelope = ((IGeometry)display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
                 }
 
                 IGeometry clipped;
@@ -452,7 +449,7 @@ namespace gView.DataSources.GDAL
                             {
                                 // write the logic implementation here
                                 byte c = ptr[0];
-                                ArgbColor col = colors[(int)c];
+                                ArgbColor col = colors[c];
                                 ptr[0] = col.B;
                                 ptr[1] = col.G;
                                 ptr[2] = col.R;
@@ -697,8 +694,8 @@ namespace gView.DataSources.GDAL
                                     col = GridColorClass.FindColor(c, _colorClasses);
                                     if (!_useHillShade)
                                     {
-                                        ptr[0] = (byte)col.B; ptr[1] = (byte)col.G; ptr[2] = (byte)col.R;
-                                        ptr[3] = (byte)col.A; // alpha
+                                        ptr[0] = col.B; ptr[1] = col.G; ptr[2] = col.R;
+                                        ptr[3] = col.A; // alpha
                                     }
                                     else
                                     {
@@ -736,7 +733,7 @@ namespace gView.DataSources.GDAL
                     }
 
                     _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
-                    using (var gr =_bitmap.CreateCanvas())
+                    using (var gr = _bitmap.CreateCanvas())
                     {
                         gr.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
                     }
@@ -909,7 +906,7 @@ namespace gView.DataSources.GDAL
 
             unsafe
             {
-                
+
                 fixed (float* buf = new float[2])
                 {
                     _gridQueryBand.ReadRaster((int)vecs[0].x, (int)vecs[0].y, 1, 1,
