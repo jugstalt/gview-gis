@@ -34,7 +34,7 @@
   "allowFormsLogin": true,
   "force-https": false,
 
-  "graphcis": {
+  "graphics": {
     "rendering": "skia",
     "encoding": "gdiplus"
   }

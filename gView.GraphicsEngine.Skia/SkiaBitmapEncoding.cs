@@ -9,6 +9,11 @@ namespace gView.GraphicsEngine.Skia
     {
         public string EngineName => "SkiaSharp";
 
+        public bool CanEncode(IBitmap bitmap)
+        {
+            return bitmap?.EngineElement is SKBitmap;
+        }
+
         public void Encode(IBitmap bitmap, string filename, ImageFormat format, int quality = 0)
         {
             if (!(bitmap?.EngineElement is SKBitmap))

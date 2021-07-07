@@ -9,6 +9,11 @@ namespace gView.GraphicsEngine.GdiPlus
     {
         public string EngineName => "GdiPlus";
 
+        public bool CanEncode(IBitmap bitmap)
+        {
+            return bitmap != null && (bitmap.EngineElement is System.Drawing.Bitmap || bitmap.PixelFormat == PixelFormat.Rgb32 || bitmap.PixelFormat == PixelFormat.Rgba32);
+        }
+
         public void Encode(IBitmap bitmap, string filename, ImageFormat format, int quality = 0)
         {
             if (bitmap == null)

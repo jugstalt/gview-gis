@@ -120,14 +120,13 @@ namespace gView.GraphicsEngine.Filters
 
             using (var iBitmap = Current.Engine.CreateBitmap(new MemoryStream(imageBytes)))
             {
-                filter.Apply(iBitmap);
+                using (var filteredBitmap = filter.Apply(iBitmap))
                 using(var ms = new MemoryStream())
                 {
-                    iBitmap.Save(ms, format);
+                    filteredBitmap.Save(ms, format);
                     return ms.ToArray();
                 }
             }
-
         }
 
         #endregion

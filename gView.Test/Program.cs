@@ -1,13 +1,14 @@
-﻿using gView.Framework.Geometry;
+﻿using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
+using gView.GraphicsEngine.Filters;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using System.Linq;
-using System.Collections.Generic;
-using gView.Framework.Data;
-using gView.GraphicsEngine.Abstraction;
-using gView.GraphicsEngine;
 
 namespace gView.Test
 {
@@ -27,11 +28,21 @@ namespace gView.Test
 
                 //ParseSQL();
 
-                //gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96);
-                gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96);
-                using (var bitmap = CreateImage(850, 500))
+                //Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96);
+                Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96);
+                Current.Encoder = new GraphicsEngine.GdiPlus.GdiBitmapEncoding();
+                //Current.Encoder = new GraphicsEngine.Skia.SkiaBitmapEncoding();
+
+                using (var bitmap = CreateImage(850, 600))
                 {
-                    SaveBitmap(bitmap, "C:\\temp\\graphic.png");
+                    using (var filteredBitmap = BaseFilter.ApplyFilter(bitmap, FilterImplementations.GrayscaleBT709))
+                    {
+                        var start = DateTime.Now;
+
+                        SaveBitmap(filteredBitmap, "C:\\temp\\graphic.jpeg");
+
+                        Console.WriteLine($"Encoding Time: { (DateTime.Now - start).TotalMilliseconds }ms");
+                    }
                 }
             }
             catch (Exception ex)
@@ -256,7 +267,9 @@ namespace gView.Test
             }
 
             if (!String.IsNullOrEmpty(dataset.LastErrorMessage))
+            {
                 Console.WriteLine($"ERROR: { dataset.LastErrorMessage }");
+            }
         }
 
         #endregion
@@ -292,19 +305,29 @@ namespace gView.Test
             {
                 canvas.TextRenderingHint = TextRenderingHint.AntiAlias;
                 canvas.SmoothingMode = SmoothingMode.AntiAlias;
+                canvas.Clear(ArgbColor.White);
 
                 using(var path = Current.Engine.CreateGraphicsPath())
                 {
                     path.StartFigure();
-                    path.AddPoint(10, 10);
-                    path.AddPoint(100, 10);
-                    path.AddPoint(100, 100);
-                    path.AddPoint(10, 100);
+                    if (path.PathBuildPerferences == GraphicsPathBuildPerferences.AddPointsPreferred)
+                    {
+                        path.AddPoint(10, 10);
+                        path.AddPoint(100, 10);
+                        path.AddPoint(100, 100);
+                        path.AddPoint(10, 100);
+                    } 
+                    else
+                    {
+                        path.AddLine(10, 10, 100, 10);
+                        path.AddLine(100, 10, 100, 100);
+                        path.AddLine(100, 100, 10, 100);
+                    }
                     path.CloseFigure();
 
                     var rect = path.GetBounds();
 
-                    canvas.FillPath(blackBrush, path);
+                    canvas.FillPath(brush, path);
                 }
 
                 for (int y = 0; y < 8; y++)
@@ -313,7 +336,9 @@ namespace gView.Test
                     {
                         char c = (char)(byte)(x + y * 32);
                         using (var font = Current.Engine.CreateFont("Arial", 20, typefaceCharakter: c))
+                        {
                             canvas.DrawText(c.ToString(), font, blackBrush, (x * 20) * 1.3f, ((y + 1) * 20) * 1.5f);
+                        }
                     }
                 }
                 //canvas.SmoothingMode = SmoothingMode.AntiAlias;
@@ -328,7 +353,7 @@ namespace gView.Test
 
         static public void SaveBitmap(IBitmap bitmap, string filename)
         {
-            bitmap.Save(filename, ImageFormat.Png);
+            bitmap.Save(filename, filename.EndsWith(".jpg") ? ImageFormat.Jpeg : ImageFormat.Png);
 
             //BitmapPixelData bmPixelData = null;
             //try

@@ -3,7 +3,6 @@ using gView.GraphicsEngine.Skia.Extensions;
 using SkiaSharp;
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace gView.GraphicsEngine.Skia
@@ -174,12 +173,22 @@ namespace gView.GraphicsEngine.Skia
 
         public void Save(string filename, ImageFormat format, int quality = 0)
         {
-            (Current.Encoder ?? new SkiaBitmapEncoding()).Encode(this, filename, format, quality);
+            if (Current.Encoder != null && Current.Encoder.CanEncode(this))
+            {
+                Current.Encoder.Encode(this, filename, format, quality);
+            }
+
+            new SkiaBitmapEncoding().Encode(this, filename, format, quality);
         }
 
         public void Save(Stream stream, ImageFormat format, int quality = 0)
         {
-            (Current.Encoder ?? new SkiaBitmapEncoding()).Encode(this, stream, format, quality);
+            if (Current.Encoder != null && Current.Encoder.CanEncode(this))
+            {
+                Current.Encoder.Encode(this, stream, format, quality);
+            }
+
+            new SkiaBitmapEncoding().Encode(this, stream, format, quality);
         }
 
         public void SetResolution(float dpiX, float dpiY)

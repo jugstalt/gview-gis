@@ -258,7 +258,7 @@ namespace gView.Interoperability.GeoServices.Request
                     Error = new JsonError.ErrorDef()
                     {
                         Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
-                        Message = ex.Message
+                        Message = ex.Message + (ex is NullReferenceException ? $" Stacktrace: { ex.StackTrace }" : "")
                     }
                 };
             }
@@ -281,7 +281,7 @@ namespace gView.Interoperability.GeoServices.Request
 
                 foreach (var layer in layers)
                 {
-                    var tocElement = sender.TOC.GetTOCElementByLayerId(layer.ID);
+                    var tocElement = sender.TOC?.GetTOCElementByLayerId(layer.ID);
                     bool layerIdContains = tocElement != null ?
                         LayerOrParentIsInArray(sender, tocElement, layerIds) :    // this is how AGS works: if group is shown -> all layers in group are shown...
                         layerIds.Contains(layer.ID);

@@ -189,6 +189,7 @@ namespace gView.DataSources.GDAL
                     Console.WriteLine($"  Inner Exception: { ex.Message }");
                 }
 
+                _dataset.LastErrorMessage = ex.Message;
                 _valid = false;
             }
         }
