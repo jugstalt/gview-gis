@@ -20,7 +20,7 @@ namespace gView.Test
             try
             {
                 //TestProj4();
-                TestPerformance();
+                //TestPerformance();
 
                 //Console.ReadLine();
 
@@ -28,22 +28,22 @@ namespace gView.Test
 
                 //ParseSQL();
 
-                ////Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96);
+                Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96);
                 //Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96);
-                //Current.Encoder = new GraphicsEngine.GdiPlus.GdiBitmapEncoding();
-                ////Current.Encoder = new GraphicsEngine.Skia.SkiaBitmapEncoding();
+                Current.Encoder = new GraphicsEngine.GdiPlus.GdiBitmapEncoding();
+                //Current.Encoder = new GraphicsEngine.Skia.SkiaBitmapEncoding();
 
-                //using (var bitmap = CreateImage(850, 600))
-                //{
-                //    using (var filteredBitmap = BaseFilter.ApplyFilter(bitmap, FilterImplementations.GrayscaleBT709))
-                //    {
-                //        var start = DateTime.Now;
+                using (var bitmap = CreateImage(850, 600))
+                {
+                    using (var filteredBitmap = BaseFilter.ApplyFilter(bitmap, FilterImplementations.GrayscaleBT709))
+                    {
+                        var start = DateTime.Now;
 
-                //        SaveBitmap(filteredBitmap, "C:\\temp\\graphic.jpg");
+                        SaveBitmap(filteredBitmap, "C:\\temp\\graphic.jpg");
 
-                //        Console.WriteLine($"Encoding Time: { (DateTime.Now - start).TotalMilliseconds }ms");
-                //    }
-                //}
+                        Console.WriteLine($"Encoding Time: { (DateTime.Now - start).TotalMilliseconds }ms");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -141,7 +141,7 @@ namespace gView.Test
                 //string service = "geoservices/rest/services/sdep/gv_estag_dkm_sdep";
                 //string service = "arcgis/rest/services/sdep/estag_dkm_sdep";
 
-                string server = "gis2.esn.at/gview5-basis";
+                string server = "server";
                 string service = "geoservices/rest/services/sdep/gv_estag_dkm_sdep";
 
                 string url = String.Empty;
@@ -346,6 +346,20 @@ namespace gView.Test
                 //canvas.DrawEllipse(pen, 10, 10, width - 20, height - 20);
 
                 //canvas.DrawText($"Umlaute: ÄÜÖßöäü{ Environment.NewLine }Und dann noch eine{ Environment.NewLine }Zeile", font, blackBrush, new CanvasPoint(10, 50));
+
+                char cc = (char)40;
+                var fontFamily = System.Drawing.FontFamily.Families.Where(f => f.Name == "BEV_DKM_Symbole_05_2012").FirstOrDefault();
+                var iFont = Current.Engine.CreateFont(fontFamily.Name, 140);
+
+                canvas.DrawText(cc.ToString(), iFont, blackBrush, 400, 400);
+
+                using (var gdiBitmap = new System.Drawing.Bitmap(800, 800))
+                using (var gr = System.Drawing.Graphics.FromImage(gdiBitmap))
+                {
+                    var gdiFont = new System.Drawing.Font(fontFamily, 140);
+                    gr.DrawString(cc.ToString(), gdiFont, System.Drawing.Brushes.Black, 400, 400);
+                    gdiBitmap.Save("C:\\temp\\font_test.png", System.Drawing.Imaging.ImageFormat.Png);
+                }
             }
 
             return bitmap;
