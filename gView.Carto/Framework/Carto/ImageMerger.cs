@@ -98,16 +98,16 @@ namespace gView.Framework.Carto
                     time.Second.ToString() + time.Millisecond.ToString() + ".png";
 
                 using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32))
-                using (var gr = bitmap.CreateCanvas())
+                using (var canvas = bitmap.CreateCanvas())
                 using (var brush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.White))
                 {
-                    gr.FillRectangle(brush, new GraphicsEngine.CanvasRectangle(0, 0, iWidth, iHeight));
+                    canvas.FillRectangle(brush, new GraphicsEngine.CanvasRectangle(0, 0, iWidth, iHeight));
 
                     foreach (string pic in m_picList)
                     {
                         using (var img = GraphicsEngine.Current.Engine.CreateBitmap(pic))
                         {
-                            gr.DrawBitmap(img,
+                            canvas.DrawBitmap(img,
                                 new GraphicsEngine.CanvasRectangle(0, 0, iWidth, iHeight),
                                 new GraphicsEngine.CanvasRectangle(0, 0, img.Width, img.Height));
                         }
@@ -121,6 +121,7 @@ namespace gView.Framework.Carto
                     imageUrl = m_outputUrl + "/" + filename;
                     filename = m_outputPath + @"/" + filename;
 
+                    canvas.Flush();
                     bitmap.Save(filename, GraphicsEngine.ImageFormat.Png);
                     return filename;
                 }

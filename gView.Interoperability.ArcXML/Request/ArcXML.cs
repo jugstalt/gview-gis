@@ -1386,14 +1386,15 @@ namespace gView.Interoperability.ArcXML
                 xw.WriteAttributeString("label", lItem.LegendLabel);
                 xw.WriteAttributeString("description", "");
 
-                using (var bm = Current.Engine.CreateBitmap(25, 14))
+                using (var bitmap = Current.Engine.CreateBitmap(25, 14))
                 {
-                    using (var gr = bm.CreateCanvas())
+                    using (var canvas = bitmap.CreateCanvas())
                     {
-                        new SymbolPreview(null).Draw(gr, new CanvasRectangle(0, 0, 25, 14), lItem as ISymbol);
+                        new SymbolPreview(null).Draw(canvas, new CanvasRectangle(0, 0, 25, 14), lItem as ISymbol);
                     }
+
                     MemoryStream ms = new MemoryStream();
-                    bm.Save(ms, ImageFormat.Bmp);
+                    bitmap.Save(ms, ImageFormat.Bmp);
                     xw.WriteRaw(Convert.ToBase64String(ms.ToArray()));
                 }
 

@@ -546,6 +546,7 @@ namespace gView.Interoperability.Server.TileService
                                 //}
                                 //catch { }
 
+                                canvas.Flush();
                                 MemoryStream ms = new MemoryStream();
                                 bitmap.Save(ms, format == ".jpg" ? ImageFormat.Jpeg : ImageFormat.Png);
 
@@ -639,6 +640,7 @@ namespace gView.Interoperability.Server.TileService
                 using (var redBrush = Current.Engine.CreateSolidBrush(ArgbColor.Red))
                 {
                     canvas.DrawText(ex.Message, font, redBrush, new CanvasRectangleF(0f, 0f, (float)bitmap.Width, (float)bitmap.Height));
+                    canvas.Flush();
 
                     MemoryStream ms = new MemoryStream();
                     bitmap.Save(ms, ImageFormat.Png);

@@ -292,7 +292,7 @@ namespace gView.Framework.Carto.LayerRenderers
 
                                 if (_isServiceMap == false)
                                 {
-                                    if (_counter.Counter % 10000 == 0)
+                                    if (_counter.Counter % 100 == 0)
                                     {
                                         _map.FireRefreshMapView();
                                     }

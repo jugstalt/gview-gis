@@ -390,6 +390,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     using(var redBrush = Current.Engine.CreateSolidBrush(ArgbColor.Red))
                     {
                         canvas.DrawText(ex.Message, font, redBrush, new CanvasRectangleF(0f, 0f, bitmap.Width, bitmap.Height));
+                        canvas.Flush();
 
                         MemoryStream ms = new MemoryStream();
                         bitmap.Save(ms, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);

@@ -34,8 +34,14 @@ namespace gView.GraphicsEngine.Skia
             return new DisplayCharacterRanges(_canvas, GetSKPaint(font), format, text);
         }
 
+        public void Flush()
+        {
+            _canvas.Flush();
+        }
+
         public void Dispose()
         {
+            _canvas.Flush();
             _canvas.Dispose();
         }
 

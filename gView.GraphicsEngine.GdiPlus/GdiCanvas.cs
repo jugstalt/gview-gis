@@ -89,6 +89,10 @@ namespace gView.GraphicsEngine.GdiPlus
             }
         }
 
+        public void Flush()
+        {
+        }
+
         public void TranslateTransform(CanvasPointF point)
         {
             CheckUsability();

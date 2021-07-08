@@ -194,6 +194,7 @@ namespace gView.Interoperability.GeoServices.Request
                         if (_exportMap.OutputFormat?.ToLower() == "image")
                         {
                             context.ServiceRequest.Succeeded = true;
+
                             MemoryStream ms = new MemoryStream();
                             serviceMap.MapImage.Save(ms, iFormat);
 

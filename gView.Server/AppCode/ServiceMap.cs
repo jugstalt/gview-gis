@@ -148,6 +148,10 @@ namespace gView.Server.AppCode
                             ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                     }
                 }
+
+                if (_canvas != null)
+                    _canvas.Flush();
+
                 _bitmap.Save(ms, format);
                 _bitmap.Dispose();
                 _bitmap = null;

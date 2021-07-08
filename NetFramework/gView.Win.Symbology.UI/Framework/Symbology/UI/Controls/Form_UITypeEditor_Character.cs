@@ -69,6 +69,7 @@ namespace gView.Framework.Symbology.UI
 
                                 canvas.DrawText(c.ToString(), font, blackBrusn,
                                      new CanvasPoint(16, 16), drawTextFormat);
+                                canvas.Flush();
 
                                 using (var ms = new MemoryStream())
                                 {

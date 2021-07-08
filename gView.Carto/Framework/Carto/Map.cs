@@ -1009,7 +1009,7 @@ namespace gView.Framework.Carto
         {
             if (this.DoRefreshMapView != null)
             {
-                if ((DateTime.UtcNow - _lastRefresh).TotalMilliseconds > 100)
+                if ((DateTime.UtcNow - _lastRefresh).TotalMilliseconds > 500)
                 {
                     this.DoRefreshMapView();
                     _lastRefresh = DateTime.UtcNow;
