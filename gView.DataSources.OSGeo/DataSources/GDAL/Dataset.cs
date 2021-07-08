@@ -34,7 +34,7 @@ namespace gView.DataSources.GDAL
                     _directory = fi.Directory.FullName;
                 }
 
-                var rasterClass = (polygon == null) ? new RasterClassV3(this, filename) : new RasterClassV3(this, filename, polygon);
+                var rasterClass = (polygon == null) ? new RasterClassV1(this, filename) : new RasterClassV1(this, filename, polygon);
                 RasterLayer layer = new RasterLayer(rasterClass);
                 if (rasterClass.isValid)
                 {
@@ -265,16 +265,7 @@ namespace gView.DataSources.GDAL
         {
             get
             {
-                try
-                {
-                    OSGeo_v1.GDAL.Gdal.AllRegister();
-
-                    return false;
-                }
-                catch (Exception ex)
-                {
-                    return true;
-                }
+                return OSGeo.Initializer.RegisterAll() != true;
             }
         }
     }

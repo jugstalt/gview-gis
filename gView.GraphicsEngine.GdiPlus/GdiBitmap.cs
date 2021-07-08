@@ -25,6 +25,10 @@ namespace gView.GraphicsEngine.GdiPlus
         public GdiBitmap(int width, int height, PixelFormat format)
         {
             _bitmap = new Bitmap(width, height, format.ToGdiPixelFormat());
+            if(format == PixelFormat.Gray8)
+            {
+                _bitmap.SetGrayscalePalette();
+            }
         }
 
         public GdiBitmap(int width, int height, int stride, PixelFormat format, IntPtr scan0)

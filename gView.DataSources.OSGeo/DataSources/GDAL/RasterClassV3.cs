@@ -52,7 +52,11 @@ namespace gView.DataSources.GDAL
                 _filename = filename;
                 _dataset = dataset;
 
-                OSGeo_v3.GDAL.Gdal.AllRegister();
+                if (!OSGeo.Initializer.RegisterAll())
+                {
+                    throw new Exception("Can't register GDAL");
+                }
+
                 _gDS = OSGeo_v3.GDAL.Gdal.Open(fi.FullName, 0);
                 if (_gDS == null && _gDS.RasterCount == 0)
                 {
