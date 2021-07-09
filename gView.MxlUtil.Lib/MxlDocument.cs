@@ -9,9 +9,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace gView.Framework.Document
+namespace gView.MxUtil.Lib
 {
-    public class MapDocumentPersist : IPersistableLoadAsync
+    public class MxlDocument : IPersistableLoadAsync
     {
         List<IMap> _maps;
         private int _focusMapIndex = -1;
@@ -24,7 +24,7 @@ namespace gView.Framework.Document
         public event MapScaleChangedEvent MapScaleChanged;
         public event AfterSetFocusMapEvent AfterSetFocusMap;
 
-        public MapDocumentPersist()
+        public MxlDocument()
         {
             _maps = new List<IMap>();
             _tableRelations = new TableRelations(null);
@@ -172,8 +172,6 @@ namespace gView.Framework.Document
                 }
 
                 _focusMapIndex = _maps.IndexOf(value);
-
-                Carto.UI.SymbolPreview.CurrentMap = value;
 
                 if (AfterSetFocusMap != null)
                 {

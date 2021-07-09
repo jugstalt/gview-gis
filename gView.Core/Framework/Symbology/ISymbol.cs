@@ -8,12 +8,6 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Symbology
 {
-    public enum SymbolSmoothing
-    {
-        None = GraphicsEngine.SmoothingMode.None,
-        AntiAlias = GraphicsEngine.SmoothingMode.AntiAlias
-    }
-
     /// <summary>
     /// Zusammenfassung für ISymbol.
     /// </summary>

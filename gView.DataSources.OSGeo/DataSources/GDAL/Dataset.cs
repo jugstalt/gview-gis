@@ -18,12 +18,16 @@ namespace gView.DataSources.GDAL
         private string _directory = "";
         private DatasetState _state = DatasetState.opened;
 
-        public Dataset() { }
+        public Dataset()
+        {
+            OSGeo.Initializer.RegisterAll();
+        }
 
         public IRasterLayer AddRasterFile(string filename)
         {
             return AddRasterFile(filename, null);
         }
+
         public IRasterLayer AddRasterFile(string filename, IPolygon polygon)
         {
             try
@@ -34,15 +38,41 @@ namespace gView.DataSources.GDAL
                     _directory = fi.Directory.FullName;
                 }
 
-                var rasterClass = (polygon == null) ? new RasterClassV1(this, filename) : new RasterClassV1(this, filename, polygon);
-                RasterLayer layer = new RasterLayer(rasterClass);
-                if (rasterClass.isValid)
+                IRasterClass rasterClass = null;
+                switch (OSGeo.Initializer.InstalledVersion)
                 {
-                    _layers.Add(layer);
+                    case OSGeo.GdalVersion.V3:
+                        rasterClass = (polygon == null) ? new RasterClassV3(this, filename) : new RasterClassV3(this, filename, polygon);
+                        if (((RasterClassV3)rasterClass).isValid == false)
+                        {
+                            rasterClass = null;
+                        }
+                        break;
+
+                    case OSGeo.GdalVersion.V1:
+                        rasterClass = (polygon == null) ? new RasterClassV1(this, filename) : new RasterClassV1(this, filename, polygon);
+                        if (((RasterClassV1)rasterClass).isValid == false)
+                        {
+                            rasterClass = null;
+                        }
+                        break;
+
+                    default:
+                        throw new Exception("No GDAL Version detected/installed");
                 }
-                return layer;
+
+                if (rasterClass != null)
+                {
+                    RasterLayer layer = new RasterLayer(rasterClass);
+                    _layers.Add(layer);
+
+                    return layer;
+                }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                this.LastErrorMessage = ex.Message;
+            }
             return null;
         }
 
@@ -82,7 +112,8 @@ namespace gView.DataSources.GDAL
                 AddRasterFile(value);
             }
         }
-        #endregion
+
+        #endregion IRasterFileDataset Member
 
         #region IRasterDataset Member
 
@@ -111,9 +142,12 @@ namespace gView.DataSources.GDAL
         {
             return Task.FromResult<ISpatialReference>(null);
         }
-        public void SetSpatialReference(ISpatialReference sRef) { }
 
-        #endregion
+        public void SetSpatialReference(ISpatialReference sRef)
+        {
+        }
+
+        #endregion IRasterDataset Member
 
         #region IDataset Member
 
@@ -124,10 +158,27 @@ namespace gView.DataSources.GDAL
                 _connectionString = String.Empty;
                 foreach (IDatasetElement layer in _layers)
                 {
-                    RasterClassV3 rc = layer.Class as RasterClassV3;
-                    if (rc == null)
+                    IRasterFile rc = null;
+                    switch (OSGeo.Initializer.InstalledVersion)
                     {
-                        continue;
+                        case OSGeo.GdalVersion.V3:
+                            rc = layer.Class as RasterClassV3;
+                            if (rc == null)
+                            {
+                                continue;
+                            }
+                            break;
+
+                        case OSGeo.GdalVersion.V1:
+                            rc = layer.Class as RasterClassV1;
+                            if (rc == null)
+                            {
+                                continue;
+                            }
+                            break;
+
+                        default:
+                            continue;
                     }
 
                     if (_connectionString != String.Empty)
@@ -141,6 +192,7 @@ namespace gView.DataSources.GDAL
                 return _connectionString;
             }
         }
+
         public Task<bool> SetConnectionString(string value)
         {
             _layers.Clear();
@@ -157,7 +209,6 @@ namespace gView.DataSources.GDAL
 
             return Task.FromResult(true);
         }
-
 
         public string DatasetGroupName
         {
@@ -225,16 +276,16 @@ namespace gView.DataSources.GDAL
         async public Task RefreshClasses()
         {
         }
-        #endregion
+
+        #endregion IDataset Member
 
         #region IDisposable Member
 
         public void Dispose()
         {
-
         }
 
-        #endregion
+        #endregion IDisposable Member
 
         #region IPersistable Member
 
@@ -250,7 +301,7 @@ namespace gView.DataSources.GDAL
             stream.Save("filename", ConnectionString);
         }
 
-        #endregion
+        #endregion IPersistable Member
 
         #region IPlugInDependencies Member
 
@@ -259,7 +310,7 @@ namespace gView.DataSources.GDAL
             return Dataset.hasUnsolvedDependencies;
         }
 
-        #endregion
+        #endregion IPlugInDependencies Member
 
         static public bool hasUnsolvedDependencies
         {

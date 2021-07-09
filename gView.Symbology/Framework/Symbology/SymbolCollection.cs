@@ -11,7 +11,16 @@ using System.Linq;
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("062AD1EA-A93C-4c3c-8690-830E65DC6D91")]
-    public sealed class SymbolCollection : LegendItem, ISymbolCollection, ISymbol, ILabel, ISymbolRotation, ITextSymbol, IPenColor, IBrushColor, IFontColor
+    public sealed class SymbolCollection : LegendItem, 
+                                           ISymbolCollection, 
+                                           ISymbol, 
+                                           ILabel,
+                                           ISymbolRotation,
+                                           ITextSymbol,
+                                           IPenColor, 
+                                           IBrushColor,
+                                           IFontColor,
+                                           ISymbolCurrentGraphicsEngineDependent
     {
         private List<SymbolCollectionItem> _symbols;
 
@@ -483,6 +492,8 @@ namespace gView.Framework.Symbology
             return _symbols.Where(s => s?.Symbol != null && s.Symbol.RequireClone()).FirstOrDefault() != null;
         }
 
+        
+
         #endregion
 
         #region IPenColor Member
@@ -559,6 +570,25 @@ namespace gView.Framework.Symbology
                     if (item.Symbol is IFontColor)
                     {
                         ((IFontColor)item.Symbol).FontColor = value;
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+
+        #region ISymbolCurrentGraphicsEngineDependent
+
+        public void CurrentGraphicsEngineChanged()
+        {
+            if (_symbols != null)
+            {
+                foreach (SymbolCollectionItem item in _symbols)
+                {
+                    if (item.Symbol is ISymbolCurrentGraphicsEngineDependent)
+                    {
+                        ((ISymbolCurrentGraphicsEngineDependent)item.Symbol).CurrentGraphicsEngineChanged();
                     }
                 }
             }

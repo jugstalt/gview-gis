@@ -45,8 +45,8 @@ namespace gView.Win.Carto
 
                 using (var g = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
                 {
-                    //GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(g.DpiX);
-                    GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(g.DpiX);
+                    Engines.RegisterGraphcisEngine(new GraphicsEngine.GdiPlus.GdiGraphicsEngine(g.DpiX));
+                    Engines.RegisterGraphcisEngine(GraphicsEngine.Current.Engine = new GraphicsEngine.Skia.SkiaGraphicsEngine(g.DpiX));
 
                     GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.GdiPlus.GdiBitmapEncoding();
                 }

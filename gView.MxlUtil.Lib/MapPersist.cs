@@ -2,7 +2,7 @@
 using gView.Framework.Data;
 using System.Linq;
 
-namespace gView.Framework.Document
+namespace gView.MxUtil.Lib
 {
     public class MapPersist : Map
     {

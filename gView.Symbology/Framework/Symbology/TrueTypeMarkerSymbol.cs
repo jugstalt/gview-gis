@@ -10,6 +10,7 @@ using gView.Symbology.Framework.Symbology.IO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml;
@@ -17,13 +18,20 @@ using System.Xml;
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("71E22086-D511-4a41-AAE1-BBC78572F277")]
-    public sealed class TrueTypeMarkerSymbol : LegendItem, IPropertyPage, IPointSymbol, ISymbolRotation, IFontColor, ISymbolPositioningUI, ISymbolSize
+    public sealed class TrueTypeMarkerSymbol : LegendItem, 
+                                               IPropertyPage, 
+                                               IPointSymbol, 
+                                               ISymbolRotation, 
+                                               IFontColor,
+                                               ISymbolPositioningUI, 
+                                               ISymbolSize, 
+                                               ISymbolCurrentGraphicsEngineDependent
     {
         private float _xOffset = 0, _yOffset = 0, _angle = 0, _rotation = 0, _hOffset = 0, _vOffset = 0;
         private IBrush _brush;
         private IFont _font;
         private char _char = 'A';
-        //private Dictionary<string, Offset> _engineOffset = new Dictionary<string, Offset>();
+        private Dictionary<string, Offset> _engineOffset = new Dictionary<string, Offset>();
 
         public TrueTypeMarkerSymbol()
         {
@@ -252,12 +260,43 @@ namespace gView.Framework.Symbology
 
             _char = (char)stream.Load("char", 'A');
             _brush.Color = ArgbColor.FromArgb((int)stream.Load("color", ArgbColor.Black.ToArgb()));
-            HorizontalOffset = (float)stream.Load("x", 0f);
-            VerticalOffset = (float)stream.Load("y", 0f);
+            var defaultHorizontalOffset = (float)stream.Load("x", 0f);
+            var defaultVerticalOffset = (float)stream.Load("y", 0f);
             Angle = (float)stream.Load("a", 0f);
 
             this.MaxSymbolSize = (float)stream.Load("maxsymbolsize", 0f);
             this.MinSymbolSize = (float)stream.Load("minsymbolsize", 0f);
+
+            #region Load Offset
+
+            _engineOffset.Clear();
+            string engineOffsetKeys = (string)stream.Load("engine-offset-keys", String.Empty);
+            if (!String.IsNullOrEmpty(engineOffsetKeys))
+            {
+                foreach (var key in engineOffsetKeys.Split(','))
+                {
+                    _engineOffset[key] = new Offset()
+                    {
+                        HorizontalOffset = (float)stream.Load($"{ key }.x", defaultHorizontalOffset),
+                        VerticalOffset = (float)stream.Load($"{ key }.y", defaultVerticalOffset)
+                    };
+                }
+            }
+            foreach (var engineName in Engines.RegisteredGraphicsEngineNames())
+            {
+                if (!_engineOffset.ContainsKey(engineName))
+                {
+                    _engineOffset[engineName] = new Offset()
+                    {
+                        HorizontalOffset = defaultHorizontalOffset,
+                        VerticalOffset = defaultVerticalOffset
+                    };
+                }
+            }
+
+            #endregion
+
+            SetCurrentEngineOffset();
         }
 
         public void Save(IPersistStream stream)
@@ -286,6 +325,16 @@ namespace gView.Framework.Symbology
 
             stream.Save("maxsymbolsize", this.MaxSymbolSize);
             stream.Save("minsymbolsize", this.MinSymbolSize);
+
+            if (_engineOffset != null && _engineOffset.Count > 0)
+            {
+                stream.Save("engine-offset-keys", String.Join(",", _engineOffset.Select(e => e.Key)));
+                foreach (var key in _engineOffset.Keys)
+                {
+                    stream.Save($"{ key }.x", _engineOffset[key].HorizontalOffset);
+                    stream.Save($"{ key }.y", _engineOffset[key].VerticalOffset);
+                }
+            }
         }
 
         #endregion
@@ -331,6 +380,8 @@ namespace gView.Framework.Symbology
             marker.MaxSymbolSize = this.MaxSymbolSize;
             marker.MinSymbolSize = this.MinSymbolSize;
 
+            CloneEngineOffsets(marker._engineOffset);
+
             return marker;
         }
 
@@ -366,6 +417,8 @@ namespace gView.Framework.Symbology
 
             marker.MaxSymbolSize = this.MaxSymbolSize;
             marker.MinSymbolSize = this.MinSymbolSize;
+
+            CloneEngineOffsets(marker._engineOffset);
 
             return marker;
         }
@@ -494,25 +547,64 @@ namespace gView.Framework.Symbology
 
         private void RefreshEngineOffset()
         {
-            //var offset = _engineOffset.ContainsKey(Current.Engine.EngineName) ?
-            //    _engineOffset[Current.Engine.EngineName] :
-            //    new Offset();
+            var offset = _engineOffset.ContainsKey(Current.Engine.EngineName) ?
+                _engineOffset[Current.Engine.EngineName] :
+                new Offset();
 
-            //offset.VerticalOffset = this.VerticalOffset;
-            //offset.HorizontalOffset = this.HorizontalOffset;
+            offset.VerticalOffset = this.VerticalOffset;
+            offset.HorizontalOffset = this.HorizontalOffset;
 
-            //_engineOffset[Current.Engine.EngineName] = offset;
+            _engineOffset[Current.Engine.EngineName] = offset;
+        }
+
+        private void SetCurrentEngineOffset()
+        {
+            if(_engineOffset.ContainsKey(Current.Engine.EngineName))
+            {
+                _hOffset = _engineOffset[Current.Engine.EngineName].HorizontalOffset;
+                _vOffset = _engineOffset[Current.Engine.EngineName].VerticalOffset;
+            }
+            PerformSymbolTransformation(0);
+        }
+
+        private void CloneEngineOffsets(Dictionary<string, Offset> cloneTo)
+        {
+            foreach (var key in _engineOffset.Keys)
+            {
+                if (cloneTo.ContainsKey(key))
+                {
+                    cloneTo[key] = new Offset(_engineOffset[key]);
+                }
+                else
+                {
+                    cloneTo[key] = new Offset(_engineOffset[key]);
+                }
+            }
+        }
+
+        #endregion
+
+        #region ISymbolCurrentGraphicsEngineDependent
+
+        public void CurrentGraphicsEngineChanged()
+        {
+            SetCurrentEngineOffset();
         }
 
         #endregion
 
         #region Helper Classes
 
-        //private struct Offset
-        //{
-        //    public float HorizontalOffset { get; set; }
-        //    public float VerticalOffset { get;  set; }
-        //}
+        private struct Offset
+        {
+            public Offset(Offset offset)
+            {
+                this.HorizontalOffset = offset.HorizontalOffset;
+                this.VerticalOffset = offset.VerticalOffset;
+            }
+            public float HorizontalOffset { get; set; }
+            public float VerticalOffset { get; set; }
+        }
 
         #endregion
     }

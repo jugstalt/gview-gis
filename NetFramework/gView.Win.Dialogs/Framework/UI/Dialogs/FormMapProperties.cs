@@ -4,9 +4,11 @@ using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.Symbology;
 using gView.Framework.Sys.UI.Extensions;
+using gView.Framework.system;
 using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
@@ -102,15 +104,16 @@ namespace gView.Framework.UI.Dialogs
 
             #region Graphics Engine
 
-            cmbGraphicsEngine.Items.Add(new GraphicsEngine.Skia.SkiaGraphicsEngine(96f).EngineName);
-            cmbGraphicsEngine.Items.Add(new GraphicsEngine.GdiPlus.GdiGraphicsEngine(96f).EngineName);
+            foreach (var engineName in Engines.RegisteredGraphicsEngineNames())
+            {
+                cmbGraphicsEngine.Items.Add(engineName);
+            }
             cmbGraphicsEngine.SelectedItem = GraphicsEngine.Current.Engine.EngineName;
 
-            #endregion
+            #endregion Graphics Engine
 
             BuildResourcesList();
         }
-
 
         private void btnOK_Click(object sender, EventArgs e)
         {
@@ -165,24 +168,21 @@ namespace gView.Framework.UI.Dialogs
 
                 if (cmbGraphicsEngine.SelectedItem.ToString() != GraphicsEngine.Current.Engine.EngineName)
                 {
-                    switch (cmbGraphicsEngine.SelectedItem.ToString().ToLower())
+                    var engine = Engines.RegisteredGraphcisEngines().Where(ge => ge.EngineName == cmbGraphicsEngine.SelectedItem.ToString()).FirstOrDefault();
+                    if (engine != null)
                     {
-                        case "skiasharp":
-                            GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(gView.Framework.system.SystemVariables.PrimaryScreenDPI());
-                            break;
-                        case "gdiplus":
-                            GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(gView.Framework.system.SystemVariables.PrimaryScreenDPI());
-                            break;
-                    }
+                        GraphicsEngine.Current.Engine = engine;
+                        RefreshFeatureRendererSymbolsGraphcisEngine();
 
-                    if (_app != null)
-                    {
-                        _app.RefreshTOC();
-                        _app.RefreshActiveMap(DrawPhase.All);
+                        if (_app != null)
+                        {
+                            _app.RefreshTOC();
+                            _app.RefreshActiveMap(DrawPhase.All);
+                        }
                     }
                 }
 
-                #endregion
+                #endregion Graphics Engine
             }
             catch (Exception ex)
             {
@@ -290,6 +290,32 @@ namespace gView.Framework.UI.Dialogs
             }
         }
 
+        private void RefreshFeatureRendererSymbolsGraphcisEngine()
+        {
+            if (_map == null || _map.MapElements == null)
+            {
+                return;
+            }
+
+            foreach (IDatasetElement dsElement in _map.MapElements)
+            {
+                IFeatureLayer fLayer = dsElement as IFeatureLayer;
+                if (fLayer == null || fLayer.FeatureRenderer == null)
+                {
+                    continue;
+                }
+
+                IFeatureRenderer fRenderer = fLayer.FeatureRenderer;
+                foreach (ISymbol symbol in fRenderer.Symbols)
+                {
+                    if (symbol is ISymbolCurrentGraphicsEngineDependent)
+                    {
+                        ((ISymbolCurrentGraphicsEngineDependent)symbol).CurrentGraphicsEngineChanged();
+                    }
+                }
+            }
+        }
+
         #region MapResources
 
         private void btnAddResources_Click(object sender, EventArgs e)
@@ -343,6 +369,7 @@ namespace gView.Framework.UI.Dialogs
                 }
             }
         }
+
         private void gridResources_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (_map?.ResourceContainer != null)
@@ -362,9 +389,7 @@ namespace gView.Framework.UI.Dialogs
             }
         }
 
-
-
-        #endregion
+        #endregion MapResources
 
         async private void btnMapServiceMetadata_Click(object sender, EventArgs e)
         {
@@ -410,28 +435,40 @@ namespace gView.Framework.UI.Dialogs
             {
                 case GeoUnits.Unknown:
                     return unit.ToString();
+
                 case GeoUnits.Inches:
                     return unit.ToString();
+
                 case GeoUnits.Feet:
                     return unit.ToString();
+
                 case GeoUnits.Yards:
                     return unit.ToString();
+
                 case GeoUnits.Miles:
                     return unit.ToString();
+
                 case GeoUnits.NauticalMiles:
                     return "Nautic Miles";
+
                 case GeoUnits.Millimeters:
                     return unit.ToString();
+
                 case GeoUnits.Centimeters:
                     return unit.ToString();
+
                 case GeoUnits.Decimeters:
                     return unit.ToString();
+
                 case GeoUnits.Meters:
                     return unit.ToString();
+
                 case GeoUnits.Kilometers:
                     return unit.ToString();
+
                 case GeoUnits.DecimalDegrees:
                     return "Decimal Degrees";
+
                 case GeoUnits.DegreesMinutesSeconds:
                     return "Degrees Minutes Seconds";
             }
