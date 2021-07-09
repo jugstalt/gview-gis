@@ -4,9 +4,9 @@ using gView.Framework.IO;
 using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Reflection;
 
 namespace gView.Framework.Symbology
@@ -14,23 +14,24 @@ namespace gView.Framework.Symbology
     [gView.Framework.system.RegisterPlugIn("E37D7D86-DF11-410f-ADD1-EA89C1E89605")]
     public sealed class HatchSymbol : LegendItem, IFillSymbol, IPersistable, IPropertyPage, IBrushColor, IPenColor, IPenWidth, IPenDashStyle
     {
-        private HatchBrush _brush;
-        private Color _forecolor;
-        private Color _backcolor;
+        private IBrushCollection _brush;
+        private ArgbColor _forecolor;
+        private ArgbColor _backcolor;
         private ISymbol _outlineSymbol = null;
+        private HatchStyle _hatchStyle;
 
         public HatchSymbol()
         {
-            _forecolor = Color.Red;
-            _backcolor = Color.Transparent;
-            _brush = new HatchBrush(HatchStyle.BackwardDiagonal, ForeColor, BackColor);
+            _forecolor = ArgbColor.Red;
+            _backcolor = ArgbColor.Transparent;
+            _brush = Current.Engine.CreateHatchBrush(_hatchStyle = HatchStyle.BackwardDiagonal, ForeColor, BackColor);
         }
 
-        private HatchSymbol(Color foreColor, Color backColor, HatchStyle hatchStyle)
+        private HatchSymbol(ArgbColor foreColor, ArgbColor backColor, HatchStyle hatchStyle)
         {
             _forecolor = foreColor;
             _backcolor = backColor;
-            _brush = new HatchBrush(hatchStyle, _forecolor, _backcolor);
+            _brush = Current.Engine.CreateHatchBrush(_hatchStyle = hatchStyle, _forecolor, _backcolor);
         }
 
         ~HatchSymbol()
@@ -41,18 +42,12 @@ namespace gView.Framework.Symbology
 
         [Browsable(true)]
         [Category("Fill Symbol")]
-        //[Editor(typeof(gView.Framework.UI.HatchStyleTypeEditor),typeof(System.Drawing.Design.UITypeEditor))]
         [UseHatchStylePicker()]
         public HatchStyle HatchStyle
         {
             get
             {
-                if (_brush == null)
-                {
-                    return HatchStyle.Cross;
-                }
-
-                return _brush.HatchStyle;
+                return _hatchStyle;
             }
             set
             {
@@ -61,15 +56,14 @@ namespace gView.Framework.Symbology
                     _brush.Dispose();
                 }
 
-                _brush = new HatchBrush(value, ForeColor, BackColor);
+                _brush = Current.Engine.CreateHatchBrush(_hatchStyle = value, ForeColor, BackColor);
             }
         }
 
         [Browsable(true)]
         [Category("Fill Symbol")]
-        //[Editor(typeof(gView.Framework.UI.ColorTypeEditor),typeof(System.Drawing.Design.UITypeEditor))]
         [UseColorPicker()]
-        public Color ForeColor
+        public ArgbColor ForeColor
         {
             get
             {
@@ -85,16 +79,15 @@ namespace gView.Framework.Symbology
                     _brush.Dispose();
                 }
 
-                _brush = new HatchBrush(hs, ForeColor, BackColor);
+                _brush = Current.Engine.CreateHatchBrush(hs, ForeColor, BackColor);
             }
         }
 
 
         [Browsable(true)]
         [Category("Fill Symbol")]
-        //[Editor(typeof(gView.Framework.UI.ColorTypeEditor),typeof(System.Drawing.Design.UITypeEditor))]
         [UseColorPicker()]
-        public Color BackColor
+        public ArgbColor BackColor
         {
             get
             {
@@ -110,14 +103,13 @@ namespace gView.Framework.Symbology
                     _brush.Dispose();
                 }
 
-                _brush = new HatchBrush(hs, ForeColor, BackColor);
+                _brush = Current.Engine.CreateHatchBrush(hs, ForeColor, BackColor);
             }
         }
 
         [Browsable(true)]
         [DisplayName("Symbol")]
         [Category("Outline Symbol")]
-        //[Editor(typeof(gView.Framework.UI.LineSymbolTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
         [UseLineSymbolPicker()]
         public ISymbol OutlineSymbol
         {
@@ -135,9 +127,8 @@ namespace gView.Framework.Symbology
         [Browsable(true)]
         [DisplayName("Color")]
         [Category("Outline Symbol")]
-        //[Editor(typeof(gView.Framework.UI.ColorTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
         [UseColorPicker()]
-        public Color OutlineColor
+        public ArgbColor OutlineColor
         {
             get { return PenColor; }
             set { PenColor = value; }
@@ -146,9 +137,8 @@ namespace gView.Framework.Symbology
         [Browsable(true)]
         [DisplayName("DashStyle")]
         [Category("Outline Symbol")]
-        //[Editor(typeof(gView.Framework.UI.DashStyleTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
         [UseDashStylePicker()]
-        public DashStyle OutlineDashStyle
+        public LineDashStyle OutlineDashStyle
         {
             get { return PenDashStyle; }
             set { PenDashStyle = value; }
@@ -157,7 +147,6 @@ namespace gView.Framework.Symbology
         [Browsable(true)]
         [Category("Outline Symbol")]
         [DisplayName("Width")]
-        //[Editor(typeof(gView.Framework.UI.PenWidthTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
         [UseWidthPicker()]
         public float OutlineWidth
         {
@@ -167,11 +156,11 @@ namespace gView.Framework.Symbology
 
         #region IFillSymbol Member
 
-        public void FillPath(IDisplay display, GraphicsPath path)
+        public void FillPath(IDisplay display, IGraphicsPath path)
         {
             if (_forecolor.A > 0 || _backcolor.A > 0)
             {
-                display.GraphicsContext.FillPath(_brush, path);
+                display.Canvas.FillPath(_brush, path);
             }
             //if(_outlineSymbol!=null) 
             //{
@@ -197,7 +186,7 @@ namespace gView.Framework.Symbology
 
         public void Draw(IDisplay display, IGeometry geometry)
         {
-            GraphicsPath gp = DisplayOperations.Geometry2GraphicsPath(display, geometry);
+            var gp = DisplayOperations.Geometry2GraphicsPath(display, geometry);
             if (gp != null)
             {
                 this.FillPath(display, gp);
@@ -247,9 +236,9 @@ namespace gView.Framework.Symbology
         {
             base.Load(stream);
 
-            this.ForeColor = Color.FromArgb((int)stream.Load("forecolor", Color.Red.ToArgb()));
-            this.BackColor = Color.FromArgb((int)stream.Load("backcolor", Color.Transparent.ToArgb()));
-            this.HatchStyle = (HatchStyle)stream.Load("hatchstyle", HatchStyle.Cross);
+            this.ForeColor = ArgbColor.FromArgb((int)stream.Load("forecolor", ArgbColor.Red.ToArgb()));
+            this.BackColor = ArgbColor.FromArgb((int)stream.Load("backcolor", ArgbColor.Transparent.ToArgb()));
+            this.HatchStyle = (HatchStyle)stream.Load("hatchstyle", HatchStyle.Horizontal);
             _outlineSymbol = (ISymbol)stream.Load("outlinesymbol");
         }
 
@@ -259,7 +248,7 @@ namespace gView.Framework.Symbology
 
             stream.Save("forecolor", _forecolor.ToArgb());
             stream.Save("backcolor", _backcolor.ToArgb());
-            stream.Save("hatchstyle", (int)_brush.HatchStyle);
+            stream.Save("hatchstyle", (int)_hatchStyle);
             if (_outlineSymbol != null)
             {
                 stream.Save("outlinesymbol", _outlineSymbol);
@@ -310,7 +299,7 @@ namespace gView.Framework.Symbology
             }
             fac *= options.DpiFactor;
 
-            HatchSymbol hSym = new HatchSymbol(_forecolor, _backcolor, _brush.HatchStyle);
+            HatchSymbol hSym = new HatchSymbol(_forecolor, _backcolor, _hatchStyle);
             if (_outlineSymbol != null)
             {
                 hSym._outlineSymbol = (ISymbol)_outlineSymbol.Clone(options);
@@ -325,7 +314,7 @@ namespace gView.Framework.Symbology
         #region IBrushColor Member
 
         [Browsable(false)]
-        public Color FillColor
+        public ArgbColor FillColor
         {
             get
             {
@@ -342,7 +331,7 @@ namespace gView.Framework.Symbology
         #region IPenColor Member
 
         [Browsable(false)]
-        public Color PenColor
+        public ArgbColor PenColor
         {
             get
             {
@@ -350,7 +339,7 @@ namespace gView.Framework.Symbology
                 {
                     return ((IPenColor)_outlineSymbol).PenColor;
                 }
-                return Color.Transparent;
+                return ArgbColor.Transparent;
             }
             set
             {
@@ -454,7 +443,7 @@ namespace gView.Framework.Symbology
         #region IPenDashStyle Member
 
         [Browsable(false)]
-        public DashStyle PenDashStyle
+        public LineDashStyle PenDashStyle
         {
             get
             {
@@ -462,7 +451,7 @@ namespace gView.Framework.Symbology
                 {
                     return ((IPenDashStyle)_outlineSymbol).PenDashStyle;
                 }
-                return DashStyle.Solid;
+                return LineDashStyle.Solid;
             }
             set
             {

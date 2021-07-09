@@ -4,9 +4,9 @@ using gView.Framework.IO;
 using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Reflection;
 
 namespace gView.Framework.Symbology
@@ -14,20 +14,20 @@ namespace gView.Framework.Symbology
     [gView.Framework.system.RegisterPlugIn("91CC3F6F-0EC5-42b7-AA34-9C89803118E7")]
     public sealed class SimpleLineSymbol : Symbol, ILineSymbol, IPropertyPage, IPenColor, IPenWidth, IPenDashStyle
     {
-        private Pen _pen;
-        private Color _color;
+        private IPen _pen;
+        private ArgbColor _color;
 
         public SimpleLineSymbol()
         {
-            _color = Color.Black;
-            _pen = new Pen(_color, 1);
+            _color = ArgbColor.Black;
+            _pen = Current.Engine.CreatePen(_color, 1);
             _pen.LineJoin = LineJoin.Round;
         }
 
-        private SimpleLineSymbol(Color color, float width)
+        private SimpleLineSymbol(ArgbColor color, float width)
         {
             _color = color;
-            _pen = new Pen(_color, width);
+            _pen = Current.Engine.CreatePen(_color, width);
             _pen.LineJoin = LineJoin.Round;
         }
 
@@ -42,9 +42,8 @@ namespace gView.Framework.Symbology
         }
 
         [Browsable(true)]
-        //[Editor(typeof(gView.Framework.UI.DashStyleTypeEditor),typeof(System.Drawing.Design.UITypeEditor))]
         [UseDashStylePicker()]
-        public DashStyle DashStyle
+        public LineDashStyle DashStyle
         {
             get
             {
@@ -56,7 +55,7 @@ namespace gView.Framework.Symbology
             }
         }
 
-        public System.Drawing.Drawing2D.LineCap LineStartCap
+        public LineCap LineStartCap
         {
             get
             {
@@ -68,7 +67,7 @@ namespace gView.Framework.Symbology
             }
         }
 
-        public System.Drawing.Drawing2D.LineCap LineEndCap
+        public LineCap LineEndCap
         {
             get
             {
@@ -81,7 +80,6 @@ namespace gView.Framework.Symbology
         }
 
         [Browsable(true)]
-        //[Editor(typeof(gView.Framework.UI.PenWidthTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
         [UseWidthPicker()]
         public float Width
         {
@@ -93,7 +91,7 @@ namespace gView.Framework.Symbology
             {
                 if (_pen == null)
                 {
-                    _pen = new Pen(_color, value);
+                    _pen = Current.Engine.CreatePen(_color, value);
                 }
                 else
                 {
@@ -102,10 +100,8 @@ namespace gView.Framework.Symbology
             }
         }
 
-        [Browsable(true)]
-        //[Editor(typeof(gView.Framework.UI.ColorTypeEditor),typeof(System.Drawing.Design.UITypeEditor))]
         [UseColorPicker()]
-        public System.Drawing.Color Color
+        public ArgbColor Color
         {
             get
             {
@@ -120,13 +116,13 @@ namespace gView.Framework.Symbology
 
         #region ILineSymbol Member
 
-        public void DrawPath(IDisplay display, System.Drawing.Drawing2D.GraphicsPath path)
+        public void DrawPath(IDisplay display, IGraphicsPath path)
         {
             if (path != null)
             {
-                display.GraphicsContext.SmoothingMode = (SmoothingMode)this.Smoothingmode;
-                display.GraphicsContext.DrawPath(_pen, path);
-                display.GraphicsContext.SmoothingMode = SmoothingMode.None;
+                display.Canvas.SmoothingMode = (SmoothingMode)this.Smoothingmode;
+                display.Canvas.DrawPath(_pen, path);
+                display.Canvas.SmoothingMode = SmoothingMode.None;
             }
         }
 
@@ -139,7 +135,7 @@ namespace gView.Framework.Symbology
             // Wenn DashStyle nicht Solid (und Antialiasing) soll Geometry erst geclippt werden,
             // da es sonst zu extrem Zeitaufwendigen Graphikopertation kommt...
 
-            if (this.DashStyle != DashStyle.Solid &&
+            if (this.DashStyle != LineDashStyle.Solid &&
                 this.Smoothingmode != SymbolSmoothing.None)
             {
                 IEnvelope dispEnvelope =
@@ -162,34 +158,34 @@ namespace gView.Framework.Symbology
                 //}
             }
 
-            GraphicsPath gp = DisplayOperations.Geometry2GraphicsPath(display, geometry);
+            var gp = DisplayOperations.Geometry2GraphicsPath(display, geometry);
             if (gp != null)
             {
-                if (this.LineStartCap == System.Drawing.Drawing2D.LineCap.ArrowAnchor ||
-                    this.LineEndCap == System.Drawing.Drawing2D.LineCap.ArrowAnchor)
-                {
-                    //
-                    // bei LineCap Arrow (Pfeil...) kann es bei sehr kurzen Linen
-                    // zu einer Out of Memory Exception kommen...
-                    //
-                    try
-                    {
-                        this.DrawPath(display, gp);
-                    }
-                    catch
-                    {
-                        LineCap sCap = this.LineStartCap;
-                        LineCap eCap = this.LineEndCap;
-                        this.LineStartCap = (sCap == System.Drawing.Drawing2D.LineCap.ArrowAnchor) ? System.Drawing.Drawing2D.LineCap.Triangle : sCap;
-                        this.LineEndCap = (eCap == System.Drawing.Drawing2D.LineCap.ArrowAnchor) ? System.Drawing.Drawing2D.LineCap.Triangle : eCap;
+                //if (this.LineStartCap == LineCap.ArrowAnchor ||
+                //    this.LineEndCap == LineCap.ArrowAnchor)
+                //{
+                //    //
+                //    // bei LineCap Arrow (Pfeil...) kann es bei sehr kurzen Linen
+                //    // zu einer Out of Memory Exception kommen...
+                //    //
+                //    try
+                //    {
+                //        this.DrawPath(display, gp);
+                //    }
+                //    catch
+                //    {
+                //        LineCap sCap = this.LineStartCap;
+                //        LineCap eCap = this.LineEndCap;
+                //        this.LineStartCap = (sCap == LineCap.ArrowAnchor) ? LineCap.Triangle : sCap;
+                //        this.LineEndCap = (eCap == LineCap.ArrowAnchor) ? LineCap.Triangle : eCap;
 
-                        this.DrawPath(display, gp);
+                //        this.DrawPath(display, gp);
 
-                        this.LineStartCap = sCap;
-                        this.LineEndCap = eCap;
-                    }
-                }
-                else
+                //        this.LineStartCap = sCap;
+                //        this.LineEndCap = eCap;
+                //    }
+                //}
+                //else
                 {
                     this.DrawPath(display, gp);
                 }
@@ -256,9 +252,9 @@ namespace gView.Framework.Symbology
         {
             base.Load(stream);
 
-            this.Color = Color.FromArgb((int)stream.Load("color", Color.Black.ToArgb()));
+            this.Color = ArgbColor.FromArgb((int)stream.Load("color", ArgbColor.Black.ToArgb()));
             this.Width = (float)stream.Load("width", (float)1);
-            this.DashStyle = (DashStyle)stream.Load("dashstyle", DashStyle.Solid);
+            this.DashStyle = (LineDashStyle)stream.Load("dashstyle", LineDashStyle.Solid);
 
             this.LineStartCap = (LineCap)stream.Load("linescap", LineCap.Flat);
             this.LineEndCap = (LineCap)stream.Load("lineecap", LineCap.Flat);
@@ -335,7 +331,7 @@ namespace gView.Framework.Symbology
         #region IPenColor Member
 
         [Browsable(false)]
-        public Color PenColor
+        public ArgbColor PenColor
         {
             get
             {
@@ -412,7 +408,7 @@ namespace gView.Framework.Symbology
         #region IPenDashStyle Member
 
         [Browsable(false)]
-        public DashStyle PenDashStyle
+        public LineDashStyle PenDashStyle
         {
             get
             {

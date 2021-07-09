@@ -6,6 +6,7 @@ using gView.Framework.Globalisation;
 using gView.Framework.Symbology;
 using gView.Framework.Symbology.UI;
 using gView.Framework.Sys.UI;
+using gView.Framework.Sys.UI.Extensions;
 using gView.Framework.system;
 using gView.Framework.UI.Dialogs;
 using System;
@@ -1089,190 +1090,200 @@ namespace gView.Framework.UI.Controls
                 return;
             }
 
-            SolidBrush brush = new SolidBrush(Color.Black);
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
 
-            object item = list.Items[e.Index];
-            if (list.SelectedIndices.Contains(e.Index) && !(item is LegendItem))
+            using (SolidBrush brush = new SolidBrush(Color.Black))
             {
-                brush.Color = Color.DarkBlue;
-                e.Graphics.FillRectangle(brush, e.Bounds);
-                brush.Color = Color.White;
-            }
-
-            bool bold = false, italic = false;
-            if (item is MapItem)
-            {
-                if (((MapItem)item).ToString() == _iMapDocument.FocusMap.Name)
+                object item = list.Items[e.Index];
+                if (list.SelectedIndices.Contains(e.Index) && !(item is LegendItem))
                 {
-                    bold = true;
+                    brush.Color = Color.DarkBlue;
+                    e.Graphics.FillRectangle(brush, e.Bounds);
+                    brush.Color = Color.White;
                 }
-            }
-            if (item is LayerItem)
-            {
-                ITOCElement tocElement = ((LayerItem)item).TOCElement;
-                if (tocElement != null && tocElement.Layers != null)
+
+                bool bold = false, italic = false;
+                if (item is MapItem)
                 {
-                    foreach (ILayer layer in tocElement.Layers)
+                    if (((MapItem)item).ToString() == _iMapDocument.FocusMap.Name)
                     {
-                        if (layer is IWebServiceTheme)
+                        bold = true;
+                    }
+                }
+                if (item is LayerItem)
+                {
+                    ITOCElement tocElement = ((LayerItem)item).TOCElement;
+                    if (tocElement != null && tocElement.Layers != null)
+                    {
+                        foreach (ILayer layer in tocElement.Layers)
                         {
-                            italic = true;
-                        }
-                    }
-                }
-            }
-
-            FontStyle style = FontStyle.Regular;
-            if (bold)
-            {
-                style |= FontStyle.Bold;
-            }
-
-            if (italic)
-            {
-                style |= FontStyle.Italic;
-            }
-
-            Font font = new Font("Verdana", ((item is LegendItem) ? 8 : 10), style);
-
-            SizeF stringSize = e.Graphics.MeasureString(item.ToString(), font);
-
-            if (item is MapItem)
-            {
-                e.Graphics.DrawImage(
-                    global::gView.Win.Dialogs.Properties.Resources.layers,
-                    2, e.Bounds.Top + 2, 16, 16);
-                e.Graphics.DrawString(item.ToString(), font, brush, 19, e.Bounds.Top + 2);
-                list.HorizontalExtent = (int)Math.Max(list.HorizontalExtent, 19 + stringSize.Width);
-            }
-            else if (item is DatasetItem)
-            {
-                e.Graphics.DrawImage(iList.Images[(((DatasetItem)item).isEncapsed ? 0 : 1)], 0, e.Bounds.Top, 19, 20);
-                //e.Graphics.DrawImage(iList.Images[2], 19, e.Bounds.Top, 19, 20);
-                e.Graphics.DrawImage(iList.Images[5], 19, e.Bounds.Top, 19, 20);
-                e.Graphics.DrawString(item.ToString(), font, brush, 39, e.Bounds.Top + 2);
-                list.HorizontalExtent = (int)Math.Max(list.HorizontalExtent, 39 + stringSize.Width);
-            }
-            else if (item is LayerItem)
-            {
-                if (((LayerItem)item).TOCElement.Layers.Count > 1)
-                {
-                    brush.Color = Color.Blue;
-                }
-
-                foreach (ILayer layer in ((LayerItem)item).TOCElement.Layers)
-                {
-                    if (layer is NullLayer)
-                    {
-                        brush.Color = Color.FromArgb(255, 100, 100);
-                    }
-                }
-                int l = ((LayerItem)item).level * 19;
-                e.Graphics.DrawImage(iList.Images[
-                    (((LayerItem)item).Visible) ? 3 : 2
-                    ], l, e.Bounds.Top, 19, 20);
-                if (LegendItem.LegendGroup((LayerItem)item) != null)
-                {
-                    l += 19;
-                    e.Graphics.DrawImage(iList.Images[
-                        (((LayerItem)item).TOCElement.LegendVisible) ? 0 : 1
-                        ], l, e.Bounds.Top, 19, 20);
-                    l -= 4;
-                }
-                e.Graphics.DrawString(item.ToString(), font, brush, l + 19, e.Bounds.Top + 2);
-                list.HorizontalExtent = (int)Math.Max(list.HorizontalExtent, l + 19 + stringSize.Width);
-                _lastLayerLevel = ((LayerItem)item).level;
-            }
-            else if (item is LegendItem)
-            {
-                if (((LegendItem)item).legendItem != null)
-                {
-                    ((LegendItem)item).level = _lastLayerLevel;
-                    int l = _lastLayerLevel * 19 + 19;
-                    Rectangle rect = new Rectangle(l, e.Bounds.Top, 30, 20);
-
-                    ILegendItem legendItem = ((LegendItem)item).legendItem;
-                    if (legendItem is ISymbol)
-                    {
-                        new SymbolPreview(null).Draw(e.Graphics, rect, (ISymbol)legendItem);
-                    }
-                    if (legendItem.LegendLabel != "")
-                    {
-                        e.Graphics.DrawString(legendItem.LegendLabel, font, brush, l + 32, e.Bounds.Top + e.Bounds.Height / 2 - font.Height / 2);
-                        stringSize = e.Graphics.MeasureString(legendItem.LegendLabel, font);
-                        list.HorizontalExtent = (int)Math.Max(list.HorizontalExtent, l + 32 + stringSize.Width);
-                    }
-                }
-            }
-            else if (item is GroupItem)
-            {
-                int l = ((GroupItem)item).level * 19;
-
-                int closed = 10, opened = 11;
-                if (isWebServiceLayer(item))
-                {
-                    opened = 0;
-                    closed = 1;
-                }
-
-                e.Graphics.DrawImage(iList.Images[((GroupItem)item).Visible ? 3 : 2],
-                    l, e.Bounds.Top, 19, 20);
-                e.Graphics.DrawImage(iList.Images[
-                    (((GroupItem)item).isEncapsed) ? opened : closed
-                    ], l + 19, e.Bounds.Top, 19, 20);
-
-                e.Graphics.DrawString(item.ToString(), font, brush, l + 38, e.Bounds.Top + 2);
-                list.HorizontalExtent = (int)Math.Max(list.HorizontalExtent, l + 38 + stringSize.Width);
-            }
-            else if (item is DatasetLayerItem)
-            {
-                //if (((DatasetLayerItem)item).Layer is ILayer)
-                //{
-                //    e.Graphics.DrawImage(iList.Images[
-                //        (((ILayer)((DatasetLayerItem)item).Layer).Visible ? 3 : 2)
-                //        ], 20, e.Bounds.Top, 19, 20);
-                //}
-                //else
-                //{
-                //    e.Graphics.DrawImage(iList.Images[0], 20, e.Bounds.Top, 19, 20);
-                //}
-                int imageIndex = -1;
-                if (((DatasetLayerItem)item).Layer is IRasterLayer)
-                {
-                    imageIndex = 9;
-                }
-                else
-                {
-                    if (((DatasetLayerItem)item).Layer is IFeatureLayer)
-                    {
-                        if (((IFeatureLayer)((DatasetLayerItem)item).Layer).FeatureClass != null)
-                        {
-                            switch (((IFeatureLayer)((DatasetLayerItem)item).Layer).FeatureClass.GeometryType)
+                            if (layer is IWebServiceTheme)
                             {
-                                case geometryType.Point:
-                                case geometryType.Multipoint:
-                                    imageIndex = 6;
-                                    break;
-                                case geometryType.Polyline:
-                                    imageIndex = 7;
-                                    break;
-                                case geometryType.Polygon:
-                                case geometryType.Envelope:
-                                    imageIndex = 8;
-                                    break;
+                                italic = true;
                             }
                         }
                     }
                 }
-                if (imageIndex > 0)
+
+                FontStyle style = FontStyle.Regular;
+                if (bold)
                 {
-                    e.Graphics.DrawImage(iList.Images[imageIndex], 38, e.Bounds.Top, 19, 20);
+                    style |= FontStyle.Bold;
                 }
-                e.Graphics.DrawString(item.ToString(), font, brush, 57, e.Bounds.Top + 2);
-                list.HorizontalExtent = (int)Math.Max(list.HorizontalExtent, 57 + stringSize.Width);
+
+                if (italic)
+                {
+                    style |= FontStyle.Italic;
+                }
+
+                using (Font font = new Font("Verdana", ((item is LegendItem) ? 8 : 10), style))
+                {
+                    {
+                        SizeF stringSize = e.Graphics.MeasureString(item.ToString(), font);
+
+                        if (item is MapItem)
+                        {
+                            e.Graphics.DrawImage(
+                                global::gView.Win.Dialogs.Properties.Resources.layers,
+                                2, e.Bounds.Top + 2, 16, 16);
+                            e.Graphics.DrawString(item.ToString(), font, brush, 19, e.Bounds.Top + 2);
+                            list.HorizontalExtent = (int)Math.Max(list.HorizontalExtent, 19 + stringSize.Width);
+                        }
+                        else if (item is DatasetItem)
+                        {
+                            e.Graphics.DrawImage(iList.Images[(((DatasetItem)item).isEncapsed ? 0 : 1)], 0, e.Bounds.Top, 19, 20);
+                            //e.Graphics.DrawImage(iList.Images[2], 19, e.Bounds.Top, 19, 20);
+                            e.Graphics.DrawImage(iList.Images[5], 19, e.Bounds.Top, 19, 20);
+                            e.Graphics.DrawString(item.ToString(), font, brush, 39, e.Bounds.Top + 2);
+                            list.HorizontalExtent = (int)Math.Max(list.HorizontalExtent, 39 + stringSize.Width);
+                        }
+                        else if (item is LayerItem)
+                        {
+                            if (((LayerItem)item).TOCElement.Layers.Count > 1)
+                            {
+                                brush.Color = Color.Blue;
+                            }
+
+                            foreach (ILayer layer in ((LayerItem)item).TOCElement.Layers)
+                            {
+                                if (layer is NullLayer)
+                                {
+                                    brush.Color = Color.FromArgb(255, 100, 100);
+                                }
+                            }
+                            int l = ((LayerItem)item).level * 19;
+                            e.Graphics.DrawImage(iList.Images[
+                                (((LayerItem)item).Visible) ? 3 : 2
+                                ], l, e.Bounds.Top, 19, 20);
+                            if (LegendItem.LegendGroup((LayerItem)item) != null)
+                            {
+                                l += 19;
+                                e.Graphics.DrawImage(iList.Images[
+                                    (((LayerItem)item).TOCElement.LegendVisible) ? 0 : 1
+                                    ], l, e.Bounds.Top, 19, 20);
+                                l -= 4;
+                            }
+                            e.Graphics.DrawString(item.ToString(), font, brush, l + 19, e.Bounds.Top + 2);
+                            list.HorizontalExtent = (int)Math.Max(list.HorizontalExtent, l + 19 + stringSize.Width);
+                            _lastLayerLevel = ((LayerItem)item).level;
+                        }
+                        else if (item is LegendItem)
+                        {
+                            if (((LegendItem)item).legendItem != null)
+                            {
+                                ((LegendItem)item).level = _lastLayerLevel;
+                                int l = _lastLayerLevel * 19 + 19;
+
+                                ILegendItem legendItem = ((LegendItem)item).legendItem;
+                                if (legendItem is ISymbol)
+                                {
+                                    using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(30, 20))
+                                    using (var canvas = bitmap.CreateCanvas())
+                                    {
+                                        new SymbolPreview(null).Draw(canvas, new GraphicsEngine.CanvasRectangle(0, 0, 30, 20), (ISymbol)legendItem);
+
+                                        e.Graphics.DrawImage(bitmap.CloneToGdiBitmap(), new System.Drawing.Point(l, e.Bounds.Top));
+                                    }
+                                }
+                                if (legendItem.LegendLabel != "")
+                                {
+                                    e.Graphics.DrawString(legendItem.LegendLabel, font, brush, l + 32, e.Bounds.Top + e.Bounds.Height / 2 - font.Height / 2);
+                                    stringSize = e.Graphics.MeasureString(legendItem.LegendLabel, font);
+                                    list.HorizontalExtent = (int)Math.Max(list.HorizontalExtent, l + 32 + stringSize.Width);
+                                }
+                            }
+                        }
+                        else if (item is GroupItem)
+                        {
+                            int l = ((GroupItem)item).level * 19;
+
+                            int closed = 10, opened = 11;
+                            if (isWebServiceLayer(item))
+                            {
+                                opened = 0;
+                                closed = 1;
+                            }
+
+                            e.Graphics.DrawImage(iList.Images[((GroupItem)item).Visible ? 3 : 2],
+                                l, e.Bounds.Top, 19, 20);
+                            e.Graphics.DrawImage(iList.Images[
+                                (((GroupItem)item).isEncapsed) ? opened : closed
+                                ], l + 19, e.Bounds.Top, 19, 20);
+
+                            e.Graphics.DrawString(item.ToString(), font, brush, l + 38, e.Bounds.Top + 2);
+                            list.HorizontalExtent = (int)Math.Max(list.HorizontalExtent, l + 38 + stringSize.Width);
+                        }
+                        else if (item is DatasetLayerItem)
+                        {
+                            //if (((DatasetLayerItem)item).Layer is ILayer)
+                            //{
+                            //    e.Graphics.DrawImage(iList.Images[
+                            //        (((ILayer)((DatasetLayerItem)item).Layer).Visible ? 3 : 2)
+                            //        ], 20, e.Bounds.Top, 19, 20);
+                            //}
+                            //else
+                            //{
+                            //    e.Graphics.DrawImage(iList.Images[0], 20, e.Bounds.Top, 19, 20);
+                            //}
+                            int imageIndex = -1;
+                            if (((DatasetLayerItem)item).Layer is IRasterLayer)
+                            {
+                                imageIndex = 9;
+                            }
+                            else
+                            {
+                                if (((DatasetLayerItem)item).Layer is IFeatureLayer)
+                                {
+                                    if (((IFeatureLayer)((DatasetLayerItem)item).Layer).FeatureClass != null)
+                                    {
+                                        switch (((IFeatureLayer)((DatasetLayerItem)item).Layer).FeatureClass.GeometryType)
+                                        {
+                                            case geometryType.Point:
+                                            case geometryType.Multipoint:
+                                                imageIndex = 6;
+                                                break;
+                                            case geometryType.Polyline:
+                                                imageIndex = 7;
+                                                break;
+                                            case geometryType.Polygon:
+                                            case geometryType.Envelope:
+                                                imageIndex = 8;
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (imageIndex > 0)
+                            {
+                                e.Graphics.DrawImage(iList.Images[imageIndex], 38, e.Bounds.Top, 19, 20);
+                            }
+                            e.Graphics.DrawString(item.ToString(), font, brush, 57, e.Bounds.Top + 2);
+                            list.HorizontalExtent = (int)Math.Max(list.HorizontalExtent, 57 + stringSize.Width);
+                        }
+                    }
+                }
             }
-            brush.Dispose(); brush = null;
-            font.Dispose(); font = null;
         }
 
         private void list_SelectedValueChanged(object sender, System.EventArgs e)

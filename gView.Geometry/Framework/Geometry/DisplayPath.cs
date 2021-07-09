@@ -10,7 +10,7 @@ namespace gView.Framework.Geometry
     {
         private float _chainage = 0.0f;
         private Symbology.IAnnotationPolygonCollision _apc = null;
-        private List<System.Drawing.PointF> _points = new List<System.Drawing.PointF>();
+        private List<GraphicsEngine.CanvasPointF> _points = new List<GraphicsEngine.CanvasPointF>();
 
         private Geometry.Point GetBezierPoint(double t, Geometry.Point p0, Geometry.Point p1, Geometry.Point p2, Geometry.Point p3)
         {
@@ -30,7 +30,7 @@ namespace gView.Framework.Geometry
             return new Geometry.Point(x, y);
         }
 
-        public System.Drawing.PointF? this[int i]
+        public GraphicsEngine.CanvasPointF? this[int i]
         {
             get
             {
@@ -42,7 +42,7 @@ namespace gView.Framework.Geometry
             }
         }
 
-        public void AddPoint(System.Drawing.PointF point)
+        public void AddPoint(GraphicsEngine.CanvasPointF point)
         {
             _points.Add(point);
         }
@@ -90,7 +90,7 @@ namespace gView.Framework.Geometry
             }
         }
 
-        public System.Drawing.PointF? PointAt(float stat)
+        public GraphicsEngine.CanvasPointF? PointAt(float stat)
         {
             if (_points.Count == 0)
                 return null;
@@ -111,7 +111,7 @@ namespace gView.Framework.Geometry
                     float t = stat - Station0;
                     float l = (float)Math.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
                     float dx = (x2 - x1) / l, dy = (y2 - y1) / l;
-                    return new System.Drawing.PointF(x1 + dx * t, y1 + dy * t);
+                    return new GraphicsEngine.CanvasPointF(x1 + dx * t, y1 + dy * t);
                 }
 
                 x1 = x2; y1 = y2;
@@ -122,7 +122,7 @@ namespace gView.Framework.Geometry
 
         public void ChangeDirection()
         {
-            _points = ListOperations<System.Drawing.PointF>.Swap(_points);
+            _points = ListOperations<GraphicsEngine.CanvasPointF>.Swap(_points);
         }
 
         #endregion

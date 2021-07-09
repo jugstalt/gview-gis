@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using gView.Framework.Sys.UI.Extensions;
 using gView.Framework.UI;
 
 namespace gView.Plugins.MapTools.Dialogs
@@ -39,7 +40,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
             if (_doc != null && _doc.FocusMap != null && _doc.FocusMap.TOC != null)
             {
-                pictureBox1.Image = await _doc.FocusMap.TOC.Legend();
+                pictureBox1.Image = (await _doc.FocusMap.TOC.Legend()).CloneToGdiBitmap();
                 pictureBox1.Width = pictureBox1.Image.Width;
                 pictureBox1.Height = pictureBox1.Image.Height;
             }

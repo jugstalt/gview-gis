@@ -1,13 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
+using gView.GraphicsEngine;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Windows.Forms;
 using System.IO;
+using System.Windows.Forms;
 
 namespace gView.Plugins.Editor
 {
@@ -27,30 +27,33 @@ namespace gView.Plugins.Editor
                 _symbol = new SimplePointSymbol();
                 ((SimplePointSymbol)_symbol).Size = 14;
                 ((SimplePointSymbol)_symbol).Marker = SimplePointSymbol.MarkerType.Star;
-                ((SimplePointSymbol)_symbol).Color = Color.Yellow;
+                ((SimplePointSymbol)_symbol).Color = ArgbColor.Yellow;
             }
             else if (geometry is IPolyline)
             {
                 _symbol = new SimpleLineSymbol();
-                ((SimpleLineSymbol)_symbol).Color = Color.Yellow;
+                ((SimpleLineSymbol)_symbol).Color = ArgbColor.Yellow;
                 ((SimpleLineSymbol)_symbol).Width = 2.0f;
-                ((SimpleLineSymbol)_symbol).PenDashStyle = DashStyle.Solid;
+                ((SimpleLineSymbol)_symbol).PenDashStyle = LineDashStyle.Solid;
             }
             else if (geometry is IPolygon)
             {
                 SimpleLineSymbol outlineSymbol = new SimpleLineSymbol();
-                outlineSymbol.Color = Color.Orange;
+                outlineSymbol.Color = ArgbColor.Orange;
                 outlineSymbol.Width = 2.0f;
-                outlineSymbol.PenDashStyle = DashStyle.Solid;
+                outlineSymbol.PenDashStyle = LineDashStyle.Solid;
                 _symbol = new SimpleFillSymbol();
-                ((SimpleFillSymbol)_symbol).Color = Color.FromArgb(125, Color.Yellow);
+                ((SimpleFillSymbol)_symbol).Color = ArgbColor.FromArgb(125, ArgbColor.Yellow);
                 ((SimpleFillSymbol)_symbol).OutlineSymbol = outlineSymbol;
             }
         }
 
         public void AddPoint(IPoint point)
         {
-            if (point == null) return;
+            if (point == null)
+            {
+                return;
+            }
 
             if (_geometry is IPoint && _actPartNr==0)
             {
@@ -100,13 +103,21 @@ namespace gView.Plugins.Editor
             get
             {
                 if (_geometry is IPoint)
+                {
                     return geometryType.Point;
+                }
                 else if (_geometry is IMultiPoint)
+                {
                     return geometryType.Multipoint;
+                }
                 else if (_geometry is IPolyline)
+                {
                     return geometryType.Polyline;
+                }
                 else if (_geometry is IPolygon)
+                {
                     return geometryType.Polygon;
+                }
 
                 return geometryType.Unknown;
             }
@@ -139,7 +150,9 @@ namespace gView.Plugins.Editor
         public void ClosePart()
         {
             if (Part != null && Part.PointCount > 2)
+            {
                 Part.AddPoint(Part[0]);
+            }
         }
 
         public int PartCount
@@ -165,7 +178,11 @@ namespace gView.Plugins.Editor
             get { return _actPartNr; }
             set
             {
-                if (value < 0) return;
+                if (value < 0)
+                {
+                    return;
+                }
+
                 if (_geometry is Polyline)
                 {
                     IPolyline pLine = (IPolyline)_geometry;
@@ -211,14 +228,20 @@ namespace gView.Plugins.Editor
 
         public void DrawGrabbers(IDisplay display)
         {
-            if (_geometry == null || display == null) return;
+            if (_geometry == null || display == null)
+            {
+                return;
+            }
 
             IPointCollection pColl=gView.Framework.SpatialAlgorithms.Algorithm.GeometryPoints(_geometry, false);
-            if (pColl == null || pColl.PointCount == 0) return;
+            if (pColl == null || pColl.PointCount == 0)
+            {
+                return;
+            }
 
             SimplePointSymbol pointSymbol = new SimplePointSymbol();
-            pointSymbol.Color = System.Drawing.Color.White;
-            pointSymbol.OutlineColor = System.Drawing.Color.Black;
+            pointSymbol.Color = ArgbColor.White;
+            pointSymbol.OutlineColor = ArgbColor.Black;
             pointSymbol.OutlineWidth = 1;
             pointSymbol.Marker = SimplePointSymbol.MarkerType.Square;
             pointSymbol.Size = 5;
@@ -226,7 +249,10 @@ namespace gView.Plugins.Editor
             for (int i = 0; i < pColl.PointCount; i++)
             {
                 IPoint point = pColl[i];
-                if (point == null) continue;
+                if (point == null)
+                {
+                    continue;
+                }
 
                 display.Draw(pointSymbol, point);
             }
@@ -244,7 +270,9 @@ namespace gView.Plugins.Editor
         public void Draw(IDisplay display)
         {
             if (display != null && _symbol != null && _geometry != null)
+            {
                 display.Draw(_symbol, _geometry);
+            }
         }
 
         #endregion
@@ -301,9 +329,16 @@ namespace gView.Plugins.Editor
 
         public HitPositions HitTest(IDisplay display, gView.Framework.Geometry.IPoint point)
         {
-            if (_geometry == null) return null;
+            if (_geometry == null)
+            {
+                return null;
+            }
+
             IPointCollection pColl = gView.Framework.SpatialAlgorithms.Algorithm.GeometryPoints(_geometry, true);
-            if (pColl == null || pColl.PointCount == 0) return null;
+            if (pColl == null || pColl.PointCount == 0)
+            {
+                return null;
+            }
 
             double tol = 5.0 * display.mapScale / (display.dpi / 0.0254);  // [m]
             if (display.SpatialReference != null &&
@@ -315,7 +350,10 @@ namespace gView.Plugins.Editor
             for (int i = 0; i < pColl.PointCount; i++)
             {
                 IPoint p = pColl[i];
-                if (p == null) continue;
+                if (p == null)
+                {
+                    continue;
+                }
 
                 if (gView.Framework.SpatialAlgorithms.Algorithm.PointDistance(p, point) < tol)
                 {
@@ -325,7 +363,10 @@ namespace gView.Plugins.Editor
 
             List<IPath> paths = gView.Framework.SpatialAlgorithms.Algorithm.GeometryPaths(_geometry);
             if (paths == null || paths.Count == 0)
+            {
                 return null;
+            }
+
             Polyline pLine = new Polyline(paths);
 
             if (gView.Framework.SpatialAlgorithms.Algorithm.IntersectBox(pLine, new Envelope(
@@ -339,9 +380,16 @@ namespace gView.Plugins.Editor
 
         public void Design(IDisplay display, HitPositions hit, double dx, double dy)
         {
-            if (_geometry == null) return;
+            if (_geometry == null)
+            {
+                return;
+            }
+
             IPointCollection pColl = gView.Framework.SpatialAlgorithms.Algorithm.GeometryPoints(_geometry, false);
-            if (pColl == null || pColl.PointCount == 0) return;
+            if (pColl == null || pColl.PointCount == 0)
+            {
+                return;
+            }
 
             if (hit.HitID>=0 && hit.HitID < pColl.PointCount)
             {
@@ -370,7 +418,11 @@ namespace gView.Plugins.Editor
                 IPolyline pLine = (IPolyline)_geometry;
                 for (int i = 0; i < pLine.PathCount; i++)
                 {
-                    if (pLine[i] == null) continue;
+                    if (pLine[i] == null)
+                    {
+                        continue;
+                    }
+
                     if (pLine[i].PointCount == 0)
                     {
                         pLine.RemovePath(i);
@@ -383,7 +435,11 @@ namespace gView.Plugins.Editor
                 IPolygon poly = (IPolygon)_geometry;
                 for (int i = 0; i < poly.RingCount; i++)
                 {
-                    if (poly[i] == null) continue;
+                    if (poly[i] == null)
+                    {
+                        continue;
+                    }
+
                     if (poly[i].PointCount == 0)
                     {
                         poly.RemoveRing(i);
@@ -458,7 +514,10 @@ namespace gView.Plugins.Editor
         }
         private void Vertices(IGeometry geometry, IPointCollection pColl, int removeAt)
         {
-            if (geometry == null || pColl == null) return;
+            if (geometry == null || pColl == null)
+            {
+                return;
+            }
 
             if (geometry is IPoint)
             {
@@ -492,17 +551,27 @@ namespace gView.Plugins.Editor
         }
         private void Vertices(IPoint p, IPointCollection vertices, int removeAt)
         {
-            if (p == null || vertices == null) return;
+            if (p == null || vertices == null)
+            {
+                return;
+            }
+
             vertices.AddPoint(p);
         }
         private void Vertices(IPointCollection pColl, IPointCollection vertices, int removeAt)
         {
-            if (pColl == null || vertices == null) return;
+            if (pColl == null || vertices == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < pColl.PointCount; i++)
             {
                 if (vertices.PointCount == removeAt)
+                {
                     pColl.RemovePoint(i);
+                }
+
                 vertices.AddPoint(pColl[i]);
             }
         }
@@ -511,16 +580,33 @@ namespace gView.Plugins.Editor
 
         public override bool Equals(object obj)
         {
-            if (!(obj is EditSketch)) return false;
-            if (this == obj) return true;
+            if (!(obj is EditSketch))
+            {
+                return false;
+            }
+
+            if (this == obj)
+            {
+                return true;
+            }
 
             EditSketch sketch = (EditSketch)obj;
             
-            if (_geometry!=null && !_geometry.Equals(sketch._geometry)) return false;
-            if (_geometry == null && sketch._geometry != null) return false;
+            if (_geometry!=null && !_geometry.Equals(sketch._geometry))
+            {
+                return false;
+            }
+
+            if (_geometry == null && sketch._geometry != null)
+            {
+                return false;
+            }
 
             if (_symbol != null && sketch._symbol != null &&
-                !_symbol.GetType().Equals(sketch._symbol.GetType())) return false;
+                !_symbol.GetType().Equals(sketch._symbol.GetType()))
+            {
+                return false;
+            }
 
             return true;
         }

@@ -420,6 +420,54 @@
   <data name="&gt;&gt;panel1.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
+  <data name="cmbGraphicsEngine.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 25</value>
+  </data>
+  <data name="cmbGraphicsEngine.Size" type="System.Drawing.Size, System.Drawing">
+    <value>788, 28</value>
+  </data>
+  <data name="cmbGraphicsEngine.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;cmbGraphicsEngine.Name" xml:space="preserve">
+    <value>cmbGraphicsEngine</value>
+  </data>
+  <data name="&gt;&gt;cmbGraphicsEngine.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;cmbGraphicsEngine.Parent" xml:space="preserve">
+    <value>gpGraphicsEngine</value>
+  </data>
+  <data name="&gt;&gt;cmbGraphicsEngine.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="gpGraphicsEngine.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 36</value>
+  </data>
+  <data name="gpGraphicsEngine.Size" type="System.Drawing.Size, System.Drawing">
+    <value>800, 64</value>
+  </data>
+  <data name="gpGraphicsEngine.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="gpGraphicsEngine.Text" xml:space="preserve">
+    <value>Graphics Engine</value>
+  </data>
+  <data name="&gt;&gt;gpGraphicsEngine.Name" xml:space="preserve">
+    <value>gpGraphicsEngine</value>
+  </data>
+  <data name="&gt;&gt;gpGraphicsEngine.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;gpGraphicsEngine.Parent" xml:space="preserve">
+    <value>groupBox3</value>
+  </data>
+  <data name="&gt;&gt;gpGraphicsEngine.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="panel4.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left</value>
+  </data>
   <data name="btnNoAntialiasFeatures.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Right</value>
   </data>
@@ -517,7 +565,7 @@
     <value>2</value>
   </data>
   <data name="panel4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>402, 29</value>
+    <value>402, 142</value>
   </data>
   <data name="panel4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 5, 4, 5</value>
@@ -538,7 +586,10 @@
     <value>groupBox3</value>
   </data>
   <data name="&gt;&gt;panel4.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
+  </data>
+  <data name="panel3.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left</value>
   </data>
   <data name="btnNoAntialiasLabels.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Right</value>
@@ -632,7 +683,7 @@
     <value>2</value>
   </data>
   <data name="panel3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 29</value>
+    <value>9, 142</value>
   </data>
   <data name="panel3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 5, 4, 5</value>
@@ -653,7 +704,7 @@
     <value>groupBox3</value>
   </data>
   <data name="&gt;&gt;panel3.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="groupBox3.Location" type="System.Drawing.Point, System.Drawing">
     <value>9, 400</value>
@@ -665,7 +716,7 @@
     <value>4, 5, 4, 5</value>
   </data>
   <data name="groupBox3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>826, 238</value>
+    <value>826, 322</value>
   </data>
   <data name="groupBox3.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -893,7 +944,7 @@
     <value>4, 5, 4, 5</value>
   </data>
   <data name="tabSR.Size" type="System.Drawing.Size, System.Drawing">
-    <value>765, 950</value>
+    <value>858, 950</value>
   </data>
   <data name="tabSR.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -923,7 +974,7 @@
     <value>4, 5, 4, 5</value>
   </data>
   <data name="panelDefaultLayerSR.Size" type="System.Drawing.Size, System.Drawing">
-    <value>765, 818</value>
+    <value>858, 818</value>
   </data>
   <data name="panelDefaultLayerSR.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -944,7 +995,7 @@
     <value>Bottom, Right</value>
   </data>
   <data name="btnDefaultLayerSRFromSpatialReference.Location" type="System.Drawing.Point, System.Drawing">
-    <value>403, 88</value>
+    <value>496, 88</value>
   </data>
   <data name="btnDefaultLayerSRFromSpatialReference.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 5, 4, 5</value>
@@ -1013,7 +1064,7 @@ to ensure all layers will be projected properly.
     <value>4, 5, 4, 5</value>
   </data>
   <data name="panel5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>765, 132</value>
+    <value>858, 132</value>
   </data>
   <data name="panel5.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1037,7 +1088,7 @@ to ensure all layers will be projected properly.
     <value>4, 5, 4, 5</value>
   </data>
   <data name="tabDefLayerSR.Size" type="System.Drawing.Size, System.Drawing">
-    <value>765, 950</value>
+    <value>858, 950</value>
   </data>
   <data name="tabDefLayerSR.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -1229,7 +1280,7 @@ to ensure all layers will be projected properly.
     <value>4, 29</value>
   </data>
   <data name="tabDescription.Size" type="System.Drawing.Size, System.Drawing">
-    <value>765, 950</value>
+    <value>858, 950</value>
   </data>
   <data name="tabDescription.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -1319,7 +1370,7 @@ to ensure all layers will be projected properly.
     <value>NoControl</value>
   </data>
   <data name="btnAddResources.Location" type="System.Drawing.Point, System.Drawing">
-    <value>403, 91</value>
+    <value>496, 91</value>
   </data>
   <data name="btnAddResources.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 5, 4, 5</value>
@@ -1385,7 +1436,7 @@ to ensure all layers will be projected properly.
     <value>4, 5, 4, 5</value>
   </data>
   <data name="panel6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>765, 135</value>
+    <value>858, 135</value>
   </data>
   <data name="panel6.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -1406,7 +1457,7 @@ to ensure all layers will be projected properly.
     <value>4, 29</value>
   </data>
   <data name="tabResources.Size" type="System.Drawing.Size, System.Drawing">
-    <value>765, 950</value>
+    <value>858, 950</value>
   </data>
   <data name="tabResources.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -1451,10 +1502,10 @@ to ensure all layers will be projected properly.
     <value>0</value>
   </data>
   <data name="tabMapService.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 54</value>
+    <value>4, 29</value>
   </data>
   <data name="tabMapService.Size" type="System.Drawing.Size, System.Drawing">
-    <value>765, 925</value>
+    <value>858, 950</value>
   </data>
   <data name="tabMapService.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>

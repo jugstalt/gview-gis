@@ -163,6 +163,10 @@
       <Project>{b0f8bfa1-0034-4797-ae21-cd4cbd489e4c}</Project>
       <Name>gView.Web</Name>
     </ProjectReference>
+    <ProjectReference Include="..\gView.Win.Carto.Rendering.UI\gView.Win.Carto.Rendering.UI.csproj">
+      <Project>{20c2dcd8-4b3b-4864-99c8-5f9ec045cd8f}</Project>
+      <Name>gView.Win.Carto.Rendering.UI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\gView.Win.Core.UI\gView.Win.Core.UI.csproj">
       <Project>{3c8ffd95-66e8-41e5-b891-4b13d44942c3}</Project>
       <Name>gView.Win.Core.UI</Name>
@@ -275,6 +279,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\wms_wfs.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="SLD\Extensions\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

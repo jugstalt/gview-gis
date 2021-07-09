@@ -1,15 +1,9 @@
 using System;
 using System.Collections;
 using System.ComponentModel;
-using System.Windows.Forms;
-using System.Reflection;
-using System.Collections.Specialized;
-using System.Drawing.Design;
 using System.Drawing;
-using System.Resources;
-using System.Windows.Forms.Design;
-using System.Text;
-using gView.Framework.Symbology;
+using System.Reflection;
+using gView.Framework.Sys.UI.Extensions;
 
 namespace gView.Framework.Symbology.UI
 {
@@ -25,13 +19,16 @@ namespace gView.Framework.Symbology.UI
         public CustomClass(object obj)
         {
             _object = obj;
-            if (obj == null) return;
+            if (obj == null)
+            {
+                return;
+            }
 
             // get all the fields in the class
-            PropertyInfo[] props_of_class = obj.GetType().GetProperties();
+            PropertyInfo[] propertyInfos = obj.GetType().GetProperties();
 
             // copy each property over to 'this'
-            foreach (PropertyInfo pi in props_of_class)
+            foreach (PropertyInfo pi in propertyInfos)
             {
                 bool browsable = true;
                 foreach (System.Attribute attr in System.Attribute.GetCustomAttributes(pi))
@@ -43,7 +40,9 @@ namespace gView.Framework.Symbology.UI
                 }
 
                 if (browsable)
+                {
                     this.Add(new CustomProperty(obj, pi));
+                }
             }
         }
 
@@ -179,47 +178,47 @@ namespace gView.Framework.Symbology.UI
                 {
                     if (propAttributes[p] is UseColorPicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.ColorTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(ColorTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if (propAttributes[p] is UseWidthPicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.PenWidthTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(PenWidthTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if (propAttributes[p] is UseDashStylePicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.DashStyleTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(DashStyleTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if (propAttributes[p] is UseHatchStylePicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.HatchStyleTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(HatchStyleTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if (propAttributes[p] is UseLineSymbolPicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.LineSymbolTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(LineSymbolTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if(propAttributes[p] is UsePointSymbolPicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.PointSymbolTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(PointSymbolTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if (propAttributes[p] is UseCharacterPicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.CharacterTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(CharacterTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if (propAttributes[p] is UseFilePicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.FileTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(FileTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                     if (propAttributes[p] is UseColorGradientPicker)
                     {
-                        propAttributes[p] = new EditorAttribute(typeof(gView.Framework.Symbology.UI.ColorGradientEditor), typeof(System.Drawing.Design.UITypeEditor));
+                        propAttributes[p] = new EditorAttribute(typeof(ColorGradientEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
                 }
@@ -278,11 +277,39 @@ namespace gView.Framework.Symbology.UI
         {
             get
             {
+                if(typeof(GraphicsEngine.Abstraction.IFont).IsAssignableFrom(_pi.PropertyType))
+                {
+                    var iFont = (GraphicsEngine.Abstraction.IFont)_pi.GetValue(_object, null);
+                    if (iFont != null) 
+                    {
+                        return new System.Drawing.Font(iFont.Name, iFont.Size, iFont.Style.ToGdiFontStyle());
+                    }
+                    return null;
+                }
+                if(typeof(GraphicsEngine.ArgbColor).Equals(_pi.PropertyType))
+                {
+                    return ((GraphicsEngine.ArgbColor)_pi.GetValue(_object, null)).ToGdiColor();
+                }
                 return _pi.GetValue(_object, null);
             }
             set
             {
-                _pi.SetValue(_object, value, null);
+                if (typeof(GraphicsEngine.Abstraction.IFont).IsAssignableFrom(_pi.PropertyType))
+                {
+                    var font = (System.Drawing.Font)value;
+                    if (font != null)
+                    {
+                        _pi.SetValue(_object, GraphicsEngine.Current.Engine.CreateFont(font.Name, font.Size, font.Style.ToFontStyle()), null);
+                    }
+                }
+                else if (typeof(GraphicsEngine.ArgbColor).Equals(_pi.PropertyType))
+                {
+                    _pi.SetValue(_object, ((Color)value).ToArgbColor(), null);
+                }
+                else
+                {
+                    _pi.SetValue(_object, value, null);
+                }
             }
         }
 
@@ -305,6 +332,14 @@ namespace gView.Framework.Symbology.UI
         {
             get
             {
+                if(typeof(GraphicsEngine.Abstraction.IFont).IsAssignableFrom(_pi.PropertyType))
+                {
+                    return typeof(System.Drawing.Font);
+                }
+                if(typeof(GraphicsEngine.ArgbColor).Equals(_pi.PropertyType))
+                {
+                    return typeof(System.Drawing.Color);
+                }
                 return _pi.PropertyType;
             }
         }

@@ -12,6 +12,7 @@ using gView.Framework.system;
 using gView.Framework.Symbology;
 using gView.Framework.Carto.UI;
 using gView.Framework.Symbology.UI;
+using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -346,7 +347,7 @@ namespace gView.Framework.Carto.Rendering.UI
                 {
                     if (legendItem is ISymbol)
                     {
-                        new SymbolPreview(null).Draw(e.Graphics, rect, (ISymbol)legendItem);
+                        e.Graphics.DrawSymbol((ISymbol)legendItem, rect);
                     }
                     if (legendItem.LegendLabel != String.Empty)
                     {

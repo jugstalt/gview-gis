@@ -12,6 +12,7 @@ using gView.Framework.UI;
 using gView.Framework.Carto.UI;
 using gView.Framework.Symbology.UI;
 using System.Linq;
+using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -117,7 +118,7 @@ namespace gView.Framework.Carto.Rendering.UI
             if (_renderer.TextSymbol is ISymbol)
             {
                 _renderer.TextSymbol.Text = "Label";
-                new SymbolPreview(null).Draw(gr, rect, (ISymbol)_renderer.TextSymbol, false);
+                gr.DrawSymbol((ISymbol)_renderer.TextSymbol, rect);
             }
             gr.Dispose();
             gr = null;

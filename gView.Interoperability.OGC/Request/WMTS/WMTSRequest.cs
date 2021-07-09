@@ -1,16 +1,15 @@
-﻿using gView.Drawing.Pro;
-using gView.Framework.Carto;
+﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
 using gView.Framework.IO;
 using gView.Framework.Metadata;
 using gView.Framework.system;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Filters;
 using gView.MapServer;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,7 +30,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
             {
                 try
                 {
-                    using (var bm = new Bitmap(1, 1))
+                    using (var bm = Current.Engine.CreateBitmap(1, 1))
                     {
                         bm.MakeTransparent();
 
@@ -144,10 +143,10 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     if (style != "default")
                     {
                         //throw new NotImplementedException("Not in .Net Standard...");
-                        ImageProcessingFilters filter;
-                        if (Enum.TryParse<ImageProcessingFilters>(style, true, out filter))
+                        FilterImplementations filter;
+                        if (Enum.TryParse<FilterImplementations>(style, true, out filter))
                         {
-                            imageData = ImageProcessing.ApplyFilter(imageData, filter, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
+                            imageData = BaseFilter.ApplyFilter(imageData, filter, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
                         }
                     }
                 }
@@ -330,7 +329,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     bool maketrans = map.Display.MakeTransparent;
                     map.Display.MakeTransparent = true;
                     MemoryStream ms = new MemoryStream();
-                    await map.SaveImage(ms, format == ".jpg" ? System.Drawing.Imaging.ImageFormat.Jpeg : System.Drawing.Imaging.ImageFormat.Png);
+                    await map.SaveImage(ms, format == ".jpg" ? ImageFormat.Jpeg : ImageFormat.Png);
                     map.Display.MakeTransparent = maketrans;
 
                     return ms.ToArray();
@@ -385,14 +384,16 @@ namespace gView.Interoperability.OGC.Request.WMTS
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
                     TileServiceMetadata metadata = serviceMap.MetadataProvider(_metaprovider) as TileServiceMetadata;
-                    using (System.Drawing.Bitmap bm = new Bitmap(metadata.TileWidth, metadata.TileHeight))
-                    using (System.Drawing.Graphics gr = Graphics.FromImage(bm))
-                    using (System.Drawing.Font font = new Font("Arial", 9f))
+                    using (var bitmap = Current.Engine.CreateBitmap(metadata.TileWidth, metadata.TileHeight))
+                    using (var canvas = bitmap.CreateCanvas())
+                    using (var font = Current.Engine.CreateFont("Arial", 9f))
+                    using(var redBrush = Current.Engine.CreateSolidBrush(ArgbColor.Red))
                     {
-                        gr.DrawString(ex.Message, font, Brushes.Red, new RectangleF(0f, 0f, bm.Width, bm.Height));
+                        canvas.DrawText(ex.Message, font, redBrush, new CanvasRectangleF(0f, 0f, bitmap.Width, bitmap.Height));
+                        canvas.Flush();
 
                         MemoryStream ms = new MemoryStream();
-                        bm.Save(ms, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
+                        bitmap.Save(ms, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
 
                         return ms.ToArray();
                     }
@@ -402,22 +403,23 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
         private byte[] CreateEmpty(string format)
         {
-            using (Bitmap bm = new Bitmap(1, 1))
+            using (var bitmap = Current.Engine.CreateBitmap(1, 1))
+            using (var whiteBrush = Current.Engine.CreateSolidBrush(ArgbColor.White))
             {
                 if (format == ".jpg" || format == ".jpeg")
                 {
                     // Return an white image
                     try
                     {
-                        using (Graphics gr = Graphics.FromImage(bm))
+                        using (var canvas = bitmap.CreateCanvas())
                         {
-                            gr.FillRectangle(Brushes.White, new Rectangle(0, 0, bm.Width, bm.Height));
+                            canvas.FillRectangle(whiteBrush, new CanvasRectangle(0, 0, bitmap.Width, bitmap.Height));
                         }
                     }
                     catch { }
                 }
                 MemoryStream ms = new MemoryStream();
-                bm.Save(ms, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
+                bitmap.Save(ms, format == ".png" ? ImageFormat.Png : ImageFormat.Jpeg);
 
                 return ms.ToArray();
             }
@@ -573,9 +575,9 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     //    Title = new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType[] { new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType() { Value = "Default Style" } },
                     //    Identifier = new gView.Framework.OGC.WMTS.Version_1_0_0.CodeType() { Value = "default" }
                     //});
-                    foreach (var styleVal in Enum.GetValues(typeof(ImageProcessingFilters)))
+                    foreach (var styleVal in Enum.GetValues(typeof(FilterImplementations)))
                     {
-                        string name = Enum.GetName(typeof(ImageProcessingFilters), styleVal);
+                        string name = Enum.GetName(typeof(FilterImplementations), styleVal);
                         styles.Add(new Framework.OGC.WMTS.Version_1_0_0.Style()
                         {
                             Title = new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType[] { new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType() { Value = name } },

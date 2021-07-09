@@ -1,11 +1,14 @@
-﻿using gView.Framework.Geometry;
+﻿using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
+using gView.GraphicsEngine.Filters;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using System.Linq;
-using System.Collections.Generic;
-using gView.Framework.Data;
 
 namespace gView.Test
 {
@@ -17,13 +20,30 @@ namespace gView.Test
             try
             {
                 //TestProj4();
-                TestPerformance();
+                //TestPerformance();
 
                 //Console.ReadLine();
 
                 //TestVtc().Wait();
 
                 //ParseSQL();
+
+                Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96);
+                //Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96);
+                Current.Encoder = new GraphicsEngine.GdiPlus.GdiBitmapEncoding();
+                //Current.Encoder = new GraphicsEngine.Skia.SkiaBitmapEncoding();
+
+                using (var bitmap = CreateImage(850, 600))
+                {
+                    using (var filteredBitmap = BaseFilter.ApplyFilter(bitmap, FilterImplementations.GrayscaleBT709))
+                    {
+                        var start = DateTime.Now;
+
+                        SaveBitmap(filteredBitmap, "C:\\temp\\graphic.jpg");
+
+                        Console.WriteLine($"Encoding Time: { (DateTime.Now - start).TotalMilliseconds }ms");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -109,10 +129,10 @@ namespace gView.Test
 
             var startTime = DateTime.UtcNow;
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 300; i++)
             {
-                string server = "sever/gview5-basis";
-                string service = "geoservices/rest/services/sdep/gv_xyz_dkm_sdep";
+                //string server = "sever/gview5-basis";
+                //string service = "geoservices/rest/services/sdep/gv_xyz_dkm_sdep";
 
                 //string server = "sever";
                 //string service = "arcgis/rest/services/sdep/xyz_dkm_sdep";
@@ -121,13 +141,16 @@ namespace gView.Test
                 //string service = "geoservices/rest/services/sdep/gv_estag_dkm_sdep";
                 //string service = "arcgis/rest/services/sdep/estag_dkm_sdep";
 
+                string server = "server";
+                string service = "geoservices/rest/services/sdep/gv_estag_dkm_sdep";
+
                 string url = String.Empty;
 
                 #region Image Request
 
-                bbox = bbox.Select(x => x+ (i/1)).ToArray();
+                bbox = bbox.Select(x => x + (i / 1)).ToArray();
 
-                url = "https://"+server+"/" + service + "/MapServer/export?" +
+                url = "https://" + server + "/" + service + "/MapServer/export?" +
                 "size=800,800&dpi=96&imageSR=&bboxSR=&format=png&layerDefs=&layers=&transparent=true&time=&layerTimeOptions=&dynamicLayers=&mapScale=0&rotation=0&datumTransformations=&mapRangeValues=&layerRangeValues=&layerParameterValues=&historicMoment=0&f=pjson&";
                 //"bboxSR=&layers=&layerDefs=&size=800%2C800&imageSR=&format=png&transparent=true&dpi=&time=&layerTimeOptions=&dynamicLayers=&gdbVersion=&mapScale=&rotation=&f=pjson&";
 
@@ -139,11 +162,11 @@ namespace gView.Test
 
                 //url = "https://"+server+"/arcgis/rest/services/GRAZG81_SDET/estag_dkm_sdet_grazg81/MapServer/13/query?where=OBJECTID="+(i)+"&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&resultOffset=&resultRecordCount=&f=json";
                 //url = "https://"+server+"/gview5/geoservices/rest/services/KATASTER_BEV/MapServer/306/query?text=&geometry=&geometryType=&inSR=&relationParam=&where=OBJECTID="+(i)+"&objectIds=&time=0&distance=0&units=&outFields=*&returnGeometry=true&maxAllowableOffset=0&geometryPrecision=0&outSR=&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&orderByFields=&outStatistics=&groupByFieldsForStatistics=&returnZ=false&returnM=false&returnDistinctValues=false&returnTrueCurves=false&resultOffset=0&resultRecordCount=0&datumTransformation=&rangeValues=&quantizationParameters=&parameterValues=&historicMoment=0&layerId=306&f=json";
-                
+
                 #endregion
 
                 var task = ExportMapAsync(url);
-                
+
                 tasks.Add(task);
                 //task.Wait();
 
@@ -244,7 +267,9 @@ namespace gView.Test
             }
 
             if (!String.IsNullOrEmpty(dataset.LastErrorMessage))
+            {
                 Console.WriteLine($"ERROR: { dataset.LastErrorMessage }");
+            }
         }
 
         #endregion
@@ -264,6 +289,108 @@ namespace gView.Test
         {
             "OBJECTID in (1,2)".CheckWhereClauseForSqlInjection();
         }
+
+        #endregion
+
+        #region Test Graphicsengine
+
+        static public IBitmap CreateImage(int width, int height)
+        {
+            var bitmap = Current.Engine.CreateBitmap(width, height, PixelFormat.Rgb24);
+
+            using (var canvas = bitmap.CreateCanvas())
+            using (var brush = Current.Engine.CreateSolidBrush(ArgbColor.Yellow))
+            using (var blackBrush = Current.Engine.CreateSolidBrush(ArgbColor.Black))
+            using (var pen = Current.Engine.CreatePen(ArgbColor.Red, 10))
+            {
+                canvas.TextRenderingHint = TextRenderingHint.AntiAlias;
+                canvas.SmoothingMode = SmoothingMode.AntiAlias;
+                canvas.Clear(ArgbColor.White);
+
+                using(var path = Current.Engine.CreateGraphicsPath())
+                {
+                    path.StartFigure();
+                    if (path.PathBuildPerferences == GraphicsPathBuildPerferences.AddPointsPreferred)
+                    {
+                        path.AddPoint(10, 10);
+                        path.AddPoint(100, 10);
+                        path.AddPoint(100, 100);
+                        path.AddPoint(10, 100);
+                    } 
+                    else
+                    {
+                        path.AddLine(10, 10, 100, 10);
+                        path.AddLine(100, 10, 100, 100);
+                        path.AddLine(100, 100, 10, 100);
+                    }
+                    path.CloseFigure();
+
+                    var rect = path.GetBounds();
+
+                    canvas.FillPath(brush, path);
+                }
+
+                for (int y = 0; y < 8; y++)
+                {
+                    for (int x = 0; x < 32; x++)
+                    {
+                        char c = (char)(byte)(x + y * 32);
+                        using (var font = Current.Engine.CreateFont("Arial", 20, typefaceCharakter: c))
+                        {
+                            canvas.DrawText(c.ToString(), font, blackBrush, (x * 20) * 1.3f, ((y + 1) * 20) * 1.5f);
+                        }
+                    }
+                }
+                //canvas.SmoothingMode = SmoothingMode.AntiAlias;
+                //canvas.FillEllipse(brush, 10, 10, width - 20, height - 20);
+                //canvas.DrawEllipse(pen, 10, 10, width - 20, height - 20);
+
+                //canvas.DrawText($"Umlaute: ÄÜÖßöäü{ Environment.NewLine }Und dann noch eine{ Environment.NewLine }Zeile", font, blackBrush, new CanvasPoint(10, 50));
+
+                char cc = (char)40;
+                var fontFamily = System.Drawing.FontFamily.Families.Where(f => f.Name == "BEV_DKM_Symbole_05_2012").FirstOrDefault();
+                var iFont = Current.Engine.CreateFont(fontFamily.Name, 140);
+
+                canvas.DrawText(cc.ToString(), iFont, blackBrush, 400, 400);
+
+                using (var gdiBitmap = new System.Drawing.Bitmap(800, 800))
+                using (var gr = System.Drawing.Graphics.FromImage(gdiBitmap))
+                {
+                    var gdiFont = new System.Drawing.Font(fontFamily, 140);
+                    gr.DrawString(cc.ToString(), gdiFont, System.Drawing.Brushes.Black, 400, 400);
+                    gdiBitmap.Save("C:\\temp\\font_test.png", System.Drawing.Imaging.ImageFormat.Png);
+                }
+            }
+
+            return bitmap;
+        }
+
+        static public void SaveBitmap(IBitmap bitmap, string filename)
+        {
+            bitmap.Save(filename, filename.EndsWith(".jpg") ? ImageFormat.Jpeg : ImageFormat.Png);
+
+            //BitmapPixelData bmPixelData = null;
+            //try
+            //{
+            //    bmPixelData = bitmap.Clone(PixelFormat.Format32bppArgb).LockBitmapPixelData(BitmapLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+            //    using (var bm = new System.Drawing.Bitmap(bmPixelData.Width,
+            //                      bmPixelData.Height,
+            //                      bmPixelData.Stride,
+            //                      System.Drawing.Imaging.PixelFormat.Format32bppArgb,
+            //                      bmPixelData.Scan0))
+            //    {
+            //        bm.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
+            //    }
+            //}
+            //finally
+            //{
+            //    if (bmPixelData != null)
+            //    {
+            //        bitmap.UnlockBitmapPixelData(bmPixelData);
+            //    }
+            //}
+        }
+
 
         #endregion
     }

@@ -10,6 +10,8 @@ using gView.Framework.Carto;
 using gView.Framework.Carto.UI;
 using gView.Framework.Carto.Rendering;
 using gView.Framework.Symbology.UI;
+using gView.GraphicsEngine;
+using gView.Framework.Sys.UI.Extensions;
 
 namespace gView.Framework.UI.Controls
 {
@@ -56,25 +58,23 @@ namespace gView.Framework.UI.Controls
 
         public void addSymbol(ISymbol symbol, string[] labels)
         {
-            Bitmap bm = new Bitmap(imageList1.ImageSize.Width, imageList1.ImageSize.Height);
-            System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(bm);
-            new SymbolPreview(null).Draw(gr, new Rectangle(0, 0, bm.Width, bm.Height), symbol);
-            gr.Dispose();
-            gr = null;
-            imageList1.Images.Add(bm);
-
+            using (var bitmap = Current.Engine.CreateBitmap(imageList1.ImageSize.Width, imageList1.ImageSize.Height))
+            using (var canvas = bitmap.CreateCanvas())
+            {
+                new SymbolPreview(null).Draw(canvas, new CanvasRectangle(0, 0, bitmap.Width, bitmap.Height), symbol);
+                imageList1.Images.Add(bitmap.CloneToGdiBitmap());
+            }
             list.Items.Add(new SymbolListViewItem(symbol, labels, imageList1.Images.Count - 1));
         }
 
         public void addSymbol(ISymbol symbol, string[] labels, object userObject)
         {
-            Bitmap bm = new Bitmap(imageList1.ImageSize.Width, imageList1.ImageSize.Height);
-            System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(bm);
-            new SymbolPreview(null).Draw(gr, new Rectangle(0, 0, bm.Width, bm.Height), symbol);
-            gr.Dispose();
-            gr = null;
-            imageList1.Images.Add(bm);
-
+            using (var bm = Current.Engine.CreateBitmap(imageList1.ImageSize.Width, imageList1.ImageSize.Height))
+            using (var canvas = bm.CreateCanvas())
+            {
+                new SymbolPreview(null).Draw(canvas, new CanvasRectangle(0, 0, bm.Width, bm.Height), symbol);
+                imageList1.Images.Add(bm.CloneToGdiBitmap());
+            }
             list.Items.Add(new SymbolListViewItem(symbol, labels, imageList1.Images.Count - 1, userObject));
         }
 
@@ -256,10 +256,12 @@ namespace gView.Framework.UI.Controls
                     OnSymbolClicked(symbol);
 
                     Image image = imageList1.Images[item.ImageIndex];
-                    using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(image))
+
+                    using (var bitmap = image.CloneToIBitmap())
+                    using (var canvas = bitmap.CreateCanvas())
                     {
-                        new SymbolPreview(null).Draw(gr, new Rectangle(0, 0, image.Width, image.Height), symbol, true);
-                        imageList1.Images[item.ImageIndex] = image;
+                        new SymbolPreview(null).Draw(canvas, new CanvasRectangle(0, 0, image.Width, image.Height), symbol, true);
+                        imageList1.Images[item.ImageIndex] = bitmap.CloneToGdiBitmap();
                     }
                     list.Refresh();
                 }
@@ -271,10 +273,12 @@ namespace gView.Framework.UI.Controls
                     if (dlg.ShowDialog() == DialogResult.OK)
                     {
                         Image image = imageList1.Images[item.ImageIndex];
-                        using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(image))
+
+                        using (var bitmap = image.CloneToIBitmap())
+                        using (var canvas = bitmap.CreateCanvas())
                         {
-                            new SymbolPreview(null).Draw(gr, new Rectangle(0, 0, image.Width, image.Height), dlg.Symbol, true);
-                            imageList1.Images[item.ImageIndex] = image;
+                            new SymbolPreview(null).Draw(canvas, new CanvasRectangle(0, 0, image.Width, image.Height), dlg.Symbol, true);
+                            imageList1.Images[item.ImageIndex] = bitmap.CloneToGdiBitmap();
 
                             if (OnSymbolChanged != null) OnSymbolChanged(item.Text, dlg.Symbol);
                         }

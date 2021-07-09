@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using gView.Framework.Geometry;
 using gView.Framework.Carto;
 using gView.Framework.IO;
@@ -9,12 +8,6 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Symbology
 {
-    public enum SymbolSmoothing
-    {
-        None = global::System.Drawing.Drawing2D.SmoothingMode.None,
-        AntiAlias = global::System.Drawing.Drawing2D.SmoothingMode.AntiAlias
-    }
-
     /// <summary>
     /// Zusammenfassung für ISymbol.
     /// </summary>
@@ -87,12 +80,12 @@ namespace gView.Framework.Symbology
 
     public interface ILineSymbol : ISymbol
     {
-        void DrawPath(IDisplay display, global::System.Drawing.Drawing2D.GraphicsPath path);
+        void DrawPath(IDisplay display, GraphicsEngine.Abstraction.IGraphicsPath path);
     }
 
     public interface IFillSymbol : ISymbol
     {
-        void FillPath(IDisplay display, global::System.Drawing.Drawing2D.GraphicsPath path);
+        void FillPath(IDisplay display, GraphicsEngine.Abstraction.IGraphicsPath path);
     }
 
     public enum TextSymbolAlignment { rightAlignOver, Over, leftAlignOver, rightAlignCenter, Center, leftAlignCenter, rightAlignUnder, Under, leftAlignUnder }
@@ -149,7 +142,7 @@ namespace gView.Framework.Symbology
         private float _x1, _y1, _width, _height;
         private double _angle = 0.0;
         private double cos_a = 1.0, sin_a = 0.0;
-        private PointF[] _points = null;
+        private GraphicsEngine.CanvasPointF[] _points = null;
 
         public AnnotationPolygon(float x1, float y1, float width, float height)
         {
@@ -219,13 +212,13 @@ namespace gView.Framework.Symbology
             return false;
         }
 
-        public PointF[] ToCoords()
+        public GraphicsEngine.CanvasPointF[] ToCoords()
         {
-            PointF[] points = new PointF[4];
-            points[0] = new PointF((float)_x1, (float)_y1);
-            points[1] = new PointF(points[0].X + (float)(cos_a * _width), points[0].Y + (float)(sin_a * _width));
-            points[2] = new PointF(points[1].X + (float)(-sin_a * _height), points[1].Y + (float)(cos_a * _height));
-            points[3] = new PointF(points[0].X + (float)(-sin_a * _height), points[0].Y + (float)(cos_a * _height));
+            GraphicsEngine.CanvasPointF[] points = new GraphicsEngine.CanvasPointF[4];
+            points[0] = new GraphicsEngine.CanvasPointF((float)_x1, (float)_y1);
+            points[1] = new GraphicsEngine.CanvasPointF(points[0].X + (float)(cos_a * _width), points[0].Y + (float)(sin_a * _width));
+            points[2] = new GraphicsEngine.CanvasPointF(points[1].X + (float)(-sin_a * _height), points[1].Y + (float)(cos_a * _height));
+            points[3] = new GraphicsEngine.CanvasPointF(points[0].X + (float)(-sin_a * _height), points[0].Y + (float)(cos_a * _height));
 
             return points;
         }
@@ -263,7 +256,7 @@ namespace gView.Framework.Symbology
         {
             for (int i = 1; i <= tester._points.Length; i++)
             {
-                PointF p1 = tester[i];
+                GraphicsEngine.CanvasPointF p1 = tester[i];
                 Vector2dF ortho = new Vector2dF(p1, tester._points[i - 1]);
                 ortho.ToOrtho();
                 ortho.Normalize();
@@ -280,7 +273,7 @@ namespace gView.Framework.Symbology
             return false;
         }
 
-        private static void MinMaxAreaForOrhtoSepLine(PointF p1, Vector2dF ortho, AnnotationPolygon lp, ref float min, ref float max)
+        private static void MinMaxAreaForOrhtoSepLine(GraphicsEngine.CanvasPointF p1, Vector2dF ortho, AnnotationPolygon lp, ref float min, ref float max)
         {
             for (int j = 0; j < lp._points.Length; j++)
             {
@@ -298,7 +291,7 @@ namespace gView.Framework.Symbology
             }
         }
 
-        public PointF this[int index]
+        public GraphicsEngine.CanvasPointF this[int index]
         {
             get
             {
@@ -314,17 +307,17 @@ namespace gView.Framework.Symbology
         public float Y1 { get { return _y1; } set { _y1 = value; } }
         public double Angle { get { return _angle; } set { _angle = value; } }
 
-        public PointF CenterPoint
+        public GraphicsEngine.CanvasPointF CenterPoint
         {
             get
             {
                 float cx = 0f, cy = 0f;
-                foreach (PointF point in ToCoords())
+                foreach (GraphicsEngine.CanvasPointF point in ToCoords())
                 {
                     cx += point.X / 4f;
                     cy += point.Y / 4f;
                 }
-                return new PointF(cx, cy);
+                return new GraphicsEngine.CanvasPointF(cx, cy);
             }
         }
 
@@ -333,7 +326,7 @@ namespace gView.Framework.Symbology
         {
             float _x, _y;
 
-            public Vector2dF(PointF p1, PointF p0)
+            public Vector2dF(GraphicsEngine.CanvasPointF p1, GraphicsEngine.CanvasPointF p0)
             {
                 _x = p1.X - p0.X;
                 _y = p1.Y - p0.Y;
@@ -404,12 +397,6 @@ namespace gView.Framework.Symbology
         #endregion
     }
 
-    public interface IDisplayCharacterRanges
-    {
-        float Width { get; }
-        RectangleF this[int i] { get; }
-    }
-
     public interface ILabel
     {
         string Text { get; set; }
@@ -417,14 +404,14 @@ namespace gView.Framework.Symbology
 
         TextSymbolAlignment[] SecondaryTextSymbolAlignments { get; set; }
 
-        IDisplayCharacterRanges MeasureCharacterWidth(IDisplay display);
+        GraphicsEngine.Abstraction.IDisplayCharacterRanges MeasureCharacterWidth(IDisplay display);
 
         List<IAnnotationPolygonCollision> AnnotationPolygon(IDisplay display, IGeometry geometry, TextSymbolAlignment symbolAlignment);
     }
 
     public interface ITextSymbol : ISymbol, ILabel, ISymbolTransformation, ISymbolRotation
     {
-        Font Font { get; set; }
+        GraphicsEngine.Abstraction.IFont Font { get; set; }
 
         float MaxFontSize { get; set; }
         float MinFontSize { get; set; }
@@ -540,11 +527,11 @@ namespace gView.Framework.Symbology
 
     public interface IBrushColor
     {
-        Color FillColor { get; set; }
+        GraphicsEngine.ArgbColor FillColor { get; set; }
     }
     public interface IPenColor
     {
-        Color PenColor { get; set; }
+        GraphicsEngine.ArgbColor PenColor { get; set; }
     }
 
     // Never Change values!!
@@ -574,15 +561,15 @@ namespace gView.Framework.Symbology
     }
     public interface IPenDashStyle
     {
-        global::System.Drawing.Drawing2D.DashStyle PenDashStyle { get; set; }
+        GraphicsEngine.LineDashStyle PenDashStyle { get; set; }
     }
     public interface IFontColor
     {
-        Color FontColor { get; set; }
+        GraphicsEngine.ArgbColor FontColor { get; set; }
     }
-    public interface IFont
+    public interface IFontSymbol
     {
-        Font Font { get; set; }
+        GraphicsEngine.Abstraction.IFont Font { get; set; }
     }
 
     /*

@@ -4,6 +4,7 @@ using System.Text;
 using gView.Framework.Carto;
 using gView.Framework.Symbology;
 using gView.Framework.Geometry;
+using gView.GraphicsEngine;
 
 namespace gView.Plugins.Network.Graphic
 {
@@ -19,12 +20,12 @@ namespace gView.Plugins.Network.Graphic
             _point = point;
             _text = text;
 
-            _lineSymbol.Color = System.Drawing.Color.Red;
+            _lineSymbol.Color = ArgbColor.Red;
             _lineSymbol.Width = 3;
-            _textSymbol.Color = System.Drawing.Color.Black;
-            _textSymbol.GlowingColor = System.Drawing.Color.Yellow;
+            _textSymbol.Color = ArgbColor.Black;
+            _textSymbol.GlowingColor = ArgbColor.Yellow;
             _textSymbol.Smoothingmode = gView.Framework.Symbology.SymbolSmoothing.AntiAlias;
-            _textSymbol.Font = new System.Drawing.Font("Arial", 10);
+            _textSymbol.Font = GraphicsEngine.Current.Engine.CreateFont("Arial", 10);
             _textSymbol.TextSymbolAlignment = gView.Framework.Symbology.TextSymbolAlignment.leftAlignOver;
             _textSymbol.Text = _text;
         }

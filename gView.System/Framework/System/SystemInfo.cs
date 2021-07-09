@@ -4,12 +4,14 @@ using System.Text;
 using System.Collections;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.IO;
+using System.Reflection;
 
 namespace gView.Framework.system
 {
     public class SystemInfo
     {
-        public static Version Version = new Version(5, 21, 2503);
+        public static Version Version = new Version(5, 21, 2701);
 
         #region -> Private Variables
 
@@ -93,6 +95,15 @@ namespace gView.Framework.system
                     return OSPlatform.Windows.ToString();
 
                 return "Unknown";
+            }
+        }
+
+        static public void RegisterGdal1_10_PluginEnvironment()
+        {
+            if (SystemInfo.IsWindows)
+            {
+                Environment.SetEnvironmentVariable("PATH", $"{ Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) }");
+                Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", $"{ Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) }\\gdalplugins");
             }
         }
 

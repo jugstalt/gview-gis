@@ -5,6 +5,7 @@ using gView.Framework.Network;
 using gView.Framework.Network.Algorthm;
 using gView.Framework.system;
 using gView.Framework.XML;
+using gView.GraphicsEngine;
 using gView.Interoperability.ArcXML.Dataset;
 using gView.MapServer;
 using System;
@@ -262,20 +263,20 @@ namespace gView.Interoperability.ArcXML
                 switch (output.Attributes["type"].Value.ToLower())
                 {
                     case "gif":
-                        getImage.ImageFormat = System.Drawing.Imaging.ImageFormat.Gif;
+                        getImage.ImageFormat = ImageFormat.Gif;
                         break;
                     case "jpg":
                     case "jpeg":
-                        getImage.ImageFormat = System.Drawing.Imaging.ImageFormat.Jpeg;
+                        getImage.ImageFormat = ImageFormat.Jpeg;
                         break;
                     case "png":
                     case "png8":
                     case "png24":
                     case "png32":
-                        getImage.ImageFormat = System.Drawing.Imaging.ImageFormat.Png;
+                        getImage.ImageFormat = ImageFormat.Png;
                         break;
                     default:
-                        getImage.ImageFormat = System.Drawing.Imaging.ImageFormat.Png;
+                        getImage.ImageFormat = ImageFormat.Png;
                         break;
                 }
             }
@@ -312,13 +313,13 @@ namespace gView.Interoperability.ArcXML
                 XmlNode background = properties.SelectSingleNode("BACKGROUND");
                 if (background != null)
                 {
-                    System.Drawing.Color col = NodeAttributeColor(background, "color");
-                    if (col != System.Drawing.Color.Empty)
+                    ArgbColor col = NodeAttributeColor(background, "color");
+                    if (!col.Equals(ArgbColor.Empty))
                     {
                         map.Display.BackgroundColor = col;
                     }
                     col = NodeAttributeColor(background, "transcolor");
-                    if (col != System.Drawing.Color.Empty)
+                    if (!col.Equals(ArgbColor.Empty))
                     {
                         map.Display.TransparentColor = col;
                         map.Display.MakeTransparent = true;
@@ -329,12 +330,12 @@ namespace gView.Interoperability.ArcXML
                     }
                 }
 
-                if (map.Display.MakeTransparent && getImage.ImageFormat == System.Drawing.Imaging.ImageFormat.Png)
+                if (map.Display.MakeTransparent && getImage.ImageFormat == ImageFormat.Png)
                 {
                     // Beim Png sollt dann beim zeichnen keine Hintergrund Rectangle gemacht werden
                     // Darum Farbe mit A=0
                     // Sonst schaut das Bild beim PNG32 und Antialiasing immer zerrupft aus...
-                    map.Display.BackgroundColor = System.Drawing.Color.Transparent;
+                    map.Display.BackgroundColor = ArgbColor.Transparent;
                 }
 
                 if (properties.SelectSingleNode("DRAW[@map='false']") != null)
@@ -1531,26 +1532,26 @@ namespace gView.Interoperability.ArcXML
                 return 0.0;
             }
         }
-        private System.Drawing.Color NodeAttributeColor(XmlNode node, string attr)
+        private ArgbColor NodeAttributeColor(XmlNode node, string attr)
         {
             try
             {
                 if (node.Attributes[attr] == null)
                 {
-                    return System.Drawing.Color.Empty;
+                    return ArgbColor.Empty;
                 }
 
                 if (node.Attributes[attr].Value.ToLower() == "transparent")
                 {
-                    return System.Drawing.Color.Transparent;
+                    return ArgbColor.Transparent;
                 }
 
                 string[] rgb = node.Attributes[attr].Value.Split(',');
-                return System.Drawing.Color.FromArgb(int.Parse(rgb[0]), int.Parse(rgb[1]), int.Parse(rgb[2]));
+                return ArgbColor.FromArgb(int.Parse(rgb[0]), int.Parse(rgb[1]), int.Parse(rgb[2]));
             }
             catch
             {
-                return System.Drawing.Color.Empty;
+                return ArgbColor.Empty;
             }
         }
 

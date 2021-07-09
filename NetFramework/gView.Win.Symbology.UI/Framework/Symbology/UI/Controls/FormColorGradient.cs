@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using gView.Framework.Symbology;
 using System.Drawing.Drawing2D;
+using gView.Framework.Sys.UI.Extensions;
 
 namespace gView.Framework.Symbology.UI.Controls
 {
@@ -32,8 +33,8 @@ namespace gView.Framework.Symbology.UI.Controls
             get
             {
                 ColorGradient gradient = new ColorGradient(
-                    btnColor1.BackColor,
-                    btnColor2.BackColor);
+                    btnColor1.BackColor.ToArgbColor(),
+                    btnColor2.BackColor.ToArgbColor());
                 gradient.Angle = -(float)shadeAngleSetter1.Angle2D;
 
                 return gradient;
@@ -42,8 +43,8 @@ namespace gView.Framework.Symbology.UI.Controls
             {
                 if (value == null) return;
 
-                btnColor1.BackColor = value.Color1;
-                btnColor2.BackColor = value.Color2;
+                btnColor1.BackColor = value.Color1.ToGdiColor();
+                btnColor2.BackColor = value.Color2.ToGdiColor();
                 shadeAngleSetter1.Angle2D = -value.Angle;
             }
         }
@@ -60,9 +61,12 @@ namespace gView.Framework.Symbology.UI.Controls
 
             ColorGradient gradient = this.ColorGradient;
 
-            using (LinearGradientBrush brush = gradient.CreateNewLinearGradientBrush(rect))
+            using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(rect.Width, rect.Height))
+            using (var canvas = bitmap.CreateCanvas())
+            using (var brush = gradient.CreateNewLinearGradientBrush(rect.ToCanvasRectangleF()))
             {
-                e.Graphics.FillRectangle(brush, rect);
+                canvas.FillRectangle(brush, new GraphicsEngine.CanvasRectangle(0, 0, bitmap.Width, bitmap.Height));
+                e.Graphics.DrawImage(bitmap.ToGdiBitmap(), new Point(rect.X, rect.Y));
             }
         }
 

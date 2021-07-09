@@ -4,6 +4,7 @@ using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.GraphicsEngine.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -334,6 +335,7 @@ namespace gView.Framework.Carto.Rendering
                 if (_lineLabelling == CartographicLineLabeling.CurvedText)
                 {
                     #region Text On Path
+
                     IDisplayCharacterRanges ranges = _symbol.MeasureCharacterWidth(disp);
                     if (ranges == null)
                     {
@@ -361,7 +363,7 @@ namespace gView.Framework.Carto.Rendering
                         {
                             double x = pathPoints[iPoint].X, y = pathPoints[iPoint].Y;
                             disp.World2Image(ref x, ref y);
-                            displayPath.AddPoint(new System.Drawing.PointF((float)x, (float)y));
+                            displayPath.AddPoint(new GraphicsEngine.CanvasPointF((float)x, (float)y));
                         }
                         float pathLenght = displayPath.Length;
                         if (pathLenght == 0.0 || textWidth > pathLenght)

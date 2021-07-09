@@ -2,6 +2,8 @@
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -155,12 +157,12 @@ namespace gView.DataSources.Fdb.SQLite
 
         }
 
-        public System.Drawing.Color GetPixel(double X, double Y)
+        public ArgbColor GetPixel(double X, double Y)
         {
-            return System.Drawing.Color.Transparent;
+            return ArgbColor.Transparent;
         }
 
-        public System.Drawing.Bitmap Bitmap
+        public IBitmap Bitmap
         {
             get { return null; }
         }
@@ -234,7 +236,7 @@ namespace gView.DataSources.Fdb.SQLite
                 return new SimpleRasterlayerCursor(new List<IRasterLayer>());
             }
 
-            double dpm = Math.Max(display.GraphicsContext.DpiX, display.GraphicsContext.DpiY) / 0.0254;
+            double dpm = Math.Max(display.Canvas.DpiX, display.Canvas.DpiY) / 0.0254;
             double pix = display.mapScale / dpm;/*display.dpm;*/  // [m]
 
             IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display); //display.Envelope;
@@ -793,7 +795,7 @@ namespace gView.DataSources.Fdb.SQLite
             _colorClasses = null;
             List<GridColorClass> classes = new List<GridColorClass>();
             GridColorClass cc;
-            while ((cc = (GridColorClass)stream.Load("GridClass", null, new GridColorClass(0, 0, System.Drawing.Color.White))) != null)
+            while ((cc = (GridColorClass)stream.Load("GridClass", null, new GridColorClass(0, 0, ArgbColor.White))) != null)
             {
                 classes.Add(cc);
             }
@@ -982,7 +984,7 @@ namespace gView.DataSources.Fdb.SQLite
             get { return _polygon; }
         }
 
-        System.Drawing.Bitmap _bm = null;
+        IBitmap _bitmap = null;
         public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
             throw new NotImplementedException();
@@ -1012,21 +1014,21 @@ namespace gView.DataSources.Fdb.SQLite
 
         public void EndPaint(ICancelTracker cancelTracker)
         {
-            if (_bm != null)
+            if (_bitmap != null)
             {
-                _bm.Dispose();
-                _bm = null;
+                _bitmap.Dispose();
+                _bitmap = null;
             }
         }
 
-        public System.Drawing.Color GetPixel(double X, double Y)
+        public ArgbColor GetPixel(double X, double Y)
         {
-            return System.Drawing.Color.Transparent;
+            return ArgbColor.Transparent;
         }
 
-        public System.Drawing.Bitmap Bitmap
+        public IBitmap Bitmap
         {
-            get { return _bm; }
+            get { return _bitmap; }
         }
 
         public double oX { get { return _X; } }
@@ -1086,163 +1088,4 @@ namespace gView.DataSources.Fdb.SQLite
 
         #endregion
     }
-
-    #region GDI
-    //    internal class ImageFast
-    //    {
-    //        [DllImport("gdiplus.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
-    //        private static extern int GdipLoadImageFromFile(string filename, out IntPtr image);
-
-    //        [DllImport("gdiplus.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
-    //        private static extern int GdipLoadImageFromStream(UCOMIStream istream, out IntPtr image);
-
-    //        [DllImport("gdiplus.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
-    //        private static extern int GdiplusStartup(out IntPtr token, ref StartupInput input, out StartupOutput output);
-
-    //        [DllImport("gdiplus.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
-    //        private static extern int GdiplusShutdown(IntPtr token);
-
-    //        [DllImport("gdiplus.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
-    //        private static extern int GdipGetImageType(IntPtr image, out GdipImageTypeEnum type);
-
-    //        [DllImport("ole32.dll")]
-    //        static extern int CreateStreamOnHGlobal(IntPtr hGlobal, bool fDeleteOnRelease, out UCOMIStream ppstm);
-
-    //        private static IntPtr gdipToken = IntPtr.Zero;
-
-    //        static ImageFast()
-    //        {
-    //#if DEBUG
-    //            //Console.WriteLine("Initializing GDI+");
-    //#endif
-    //            if (gdipToken == IntPtr.Zero)
-    //            {
-    //                StartupInput input = StartupInput.GetDefaultStartupInput();
-    //                StartupOutput output;
-
-    //                int status = GdiplusStartup(out gdipToken, ref input, out output);
-    //#if DEBUG
-    //                //if (status == 0)
-    //                //    Console.WriteLine("Initializing GDI+ completed successfully");
-    //#endif
-    //                if (status == 0)
-    //                    AppDomain.CurrentDomain.ProcessExit += new EventHandler(Cleanup_Gdiplus);
-    //            }
-    //        }
-
-    //        private static void Cleanup_Gdiplus(object sender, EventArgs e)
-    //        {
-    //#if DEBUG
-    //            //Console.WriteLine("GDI+ shutdown entered through ProcessExit event");
-    //#endif
-    //            if (gdipToken != IntPtr.Zero)
-    //                GdiplusShutdown(gdipToken);
-
-    //#if DEBUG
-    //            //Console.WriteLine("GDI+ shutdown completed");
-    //#endif
-    //        }
-
-    //        private static Type bmpType = typeof(System.Drawing.Bitmap);
-    //        private static Type emfType = typeof(System.Drawing.Imaging.Metafile);
-
-    //        public static System.Drawing.Image FromFile(string filename)
-    //        {
-    //            filename = System.IO.Path.GetFullPath(filename);
-    //            IntPtr loadingImage = IntPtr.Zero;
-
-    //            // We are not using ICM at all, fudge that, this should be FAAAAAST!
-    //            if (GdipLoadImageFromFile(filename, out loadingImage) != 0)
-    //            {
-    //                throw new Exception("GDI+ threw a status error code.");
-    //            }
-
-    //            GdipImageTypeEnum imageType;
-    //            if (GdipGetImageType(loadingImage, out imageType) != 0)
-    //            {
-    //                throw new Exception("GDI+ couldn't get the image type");
-    //            }
-
-    //            switch (imageType)
-    //            {
-    //                case GdipImageTypeEnum.Bitmap:
-    //                    return (System.Drawing.Bitmap)bmpType.InvokeMember("FromGDIplus", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.InvokeMethod, null, null, new object[] { loadingImage });
-    //                case GdipImageTypeEnum.Metafile:
-    //                    return (System.Drawing.Imaging.Metafile)emfType.InvokeMember("FromGDIplus", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.InvokeMethod, null, null, new object[] { loadingImage });
-    //            }
-
-    //            throw new Exception("Couldn't convert underlying GDI+ object to managed object");
-    //        }
-
-    //        public static System.Drawing.Image FromStream(byte[] b)
-    //        {
-    //            IntPtr loadingImage = IntPtr.Zero;
-
-    //            IntPtr nativePtr = Marshal.AllocHGlobal(b.Length);
-    //            // copy byte array to native heap
-    //            Marshal.Copy(b, 0, nativePtr, b.Length);
-    //            // Create a UCOMIStream from the allocated memory
-    //            UCOMIStream comStream;
-    //            CreateStreamOnHGlobal(nativePtr, true, out comStream);
-
-    //            // We are not using ICM at all, fudge that, this should be FAAAAAST!
-    //            if (GdipLoadImageFromStream(comStream, out loadingImage) != 0)
-    //            {
-    //                //Marshal.FreeHGlobal(nativePtr);
-    //                throw new Exception("GDI+ threw a status error code.");
-    //            }
-    //            //Marshal.FreeHGlobal(nativePtr);
-
-    //            GdipImageTypeEnum imageType;
-    //            if (GdipGetImageType(loadingImage, out imageType) != 0)
-    //            {
-    //                throw new Exception("GDI+ couldn't get the image type");
-    //            }
-
-    //            switch (imageType)
-    //            {
-    //                case GdipImageTypeEnum.Bitmap:
-    //                    return (System.Drawing.Bitmap)bmpType.InvokeMember("FromGDIplus", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.InvokeMethod, null, null, new object[] { loadingImage });
-    //                case GdipImageTypeEnum.Metafile:
-    //                    return (System.Drawing.Imaging.Metafile)emfType.InvokeMember("FromGDIplus", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.InvokeMethod, null, null, new object[] { loadingImage });
-    //            }
-
-    //            throw new Exception("Couldn't convert underlying GDI+ object to managed object");
-    //        }
-
-    //        private ImageFast() { }
-    //    }
-
-    //    [StructLayout(LayoutKind.Sequential)]
-    //    internal struct StartupInput
-    //    {
-    //        public int GdiplusVersion;
-    //        public IntPtr DebugEventCallback;
-    //        public bool SuppressBackgroundThread;
-    //        public bool SuppressExternalCodecs;
-
-    //        public static StartupInput GetDefaultStartupInput()
-    //        {
-    //            StartupInput result = new StartupInput();
-    //            result.GdiplusVersion = 1;
-    //            result.SuppressBackgroundThread = false;
-    //            result.SuppressExternalCodecs = false;
-    //            return result;
-    //        }
-    //    }
-
-    //    [StructLayout(LayoutKind.Sequential)]
-    //    internal struct StartupOutput
-    //    {
-    //        public IntPtr Hook;
-    //        public IntPtr Unhook;
-    //    }
-
-    //    internal enum GdipImageTypeEnum
-    //    {
-    //        Unknown = 0,
-    //        Bitmap = 1,
-    //        Metafile = 2
-    //    }
-    #endregion
 }

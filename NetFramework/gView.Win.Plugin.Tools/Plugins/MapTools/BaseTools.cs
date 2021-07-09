@@ -1924,13 +1924,13 @@ namespace gView.Plugins.MapTools
             _points = new List<IPoint>();
 
             _lineSymbol = new SimpleLineSymbol();
-            _lineSymbol.Color = System.Drawing.Color.Blue;
+            _lineSymbol.Color = GraphicsEngine.ArgbColor.Blue;
             _lineSymbol.Width = 2;
             _pointSymbol = new SimplePointSymbol();
-            _pointSymbol.Color = System.Drawing.Color.Blue;
+            _pointSymbol.Color = GraphicsEngine.ArgbColor.Blue;
             _pointSymbol.Size = 4;
             _fillSymbol = new SimpleFillSymbol();
-            _fillSymbol.Color = System.Drawing.Color.FromArgb(100, 255, 255, 100);
+            _fillSymbol.Color = GraphicsEngine.ArgbColor.FromArgb(100, 255, 255, 100);
             _fillSymbol.OutlineSymbol = _lineSymbol;
         }
 
@@ -4397,10 +4397,10 @@ namespace gView.Plugins.MapTools
             BeginNew();
 
             _lineSymbol = new SimpleLineSymbol();
-            _lineSymbol.Color = System.Drawing.Color.Blue;
+            _lineSymbol.Color = GraphicsEngine.ArgbColor.Blue;
             _lineSymbol.Width = 2;
             _pointSymbol = new SimplePointSymbol();
-            _pointSymbol.Color = System.Drawing.Color.Blue;
+            _pointSymbol.Color = GraphicsEngine.ArgbColor.Blue;
             _pointSymbol.Size = 4;
             _fillSymbol = new HatchSymbol();
         }

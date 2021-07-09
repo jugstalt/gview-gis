@@ -1,8 +1,6 @@
 ﻿using gView.Drawing.Pro.Filters;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 
 namespace gView.Drawing.Pro
@@ -30,18 +28,18 @@ namespace gView.Drawing.Pro
 
     public class ImageProcessing
     {
-        #region Filters
+        #region Filters (System.Drawing)
 
-        private static byte[] ApplyFilter(byte[] imageBytes, IFilter filter, ImageFormat format = null)
+        private static byte[] ApplyFilter(byte[] imageBytes, IFilter filter, System.Drawing.Imaging.ImageFormat format = null)
         {
             if (imageBytes == null)
                 return null;
 
             try
             {
-                using (Bitmap from = (Bitmap)Bitmap.FromStream(new MemoryStream(imageBytes)))
+                using (var from = (System.Drawing.Bitmap)System.Drawing.Bitmap.FromStream(new MemoryStream(imageBytes)))
                 {
-                    using (Bitmap bm = filter.Apply(from))
+                    using (System.Drawing.Bitmap bm = filter.Apply(from))
                     {
                         return ImageOperations.Image2Bytes(bm, format ?? from.RawFormat);
                     }
@@ -55,7 +53,7 @@ namespace gView.Drawing.Pro
             return null;
         }
 
-        public static byte[] ApplyFilter(System.Drawing.Image image, ImageProcessingFilters filter, ImageFormat format = null)
+        public static byte[] ApplyFilter(System.Drawing.Image image, ImageProcessingFilters filter, System.Drawing.Imaging.ImageFormat format = null)
         {
             try
             {
@@ -64,7 +62,7 @@ namespace gView.Drawing.Pro
             catch { return null; }
         }
 
-        public static byte[] ApplyFilter(byte[] imageBytes, ImageProcessingFilters filter, ImageFormat format = null)
+        public static byte[] ApplyFilter(byte[] imageBytes, ImageProcessingFilters filter, System.Drawing.Imaging.ImageFormat format = null)
         {
             IFilter baseFilter = null;
 
@@ -99,6 +97,50 @@ namespace gView.Drawing.Pro
                 return null;
 
             return ApplyFilter(imageBytes, baseFilter, format);
+        }
+
+        #endregion
+
+        #region Filters (GraphicsEngine) 
+
+        public static byte[] ApplyFilter(byte[] imageBytes, ImageProcessingFilters filter, GraphicsEngine.ImageFormat format)
+        {
+            IFilter baseFilter = null;
+
+            switch (filter)
+            {
+                case ImageProcessingFilters.Default:
+                    return imageBytes;
+                case ImageProcessingFilters.GrayscaleBT709:
+                    baseFilter = Grayscale.BT709;
+                    break;
+                case ImageProcessingFilters.GrayscaleRMY:
+                    baseFilter = Grayscale.RMY;
+                    break;
+                case ImageProcessingFilters.GrayscaleY:
+                    baseFilter = Grayscale.Y;
+                    break;
+                case ImageProcessingFilters.Channel_Red:
+                    baseFilter = ExtractChannel.R;
+                    break;
+                case ImageProcessingFilters.Channel_Green:
+                    baseFilter = ExtractChannel.G;
+                    break;
+                case ImageProcessingFilters.Channel_Blue:
+                    baseFilter = ExtractChannel.B;
+                    break;
+                case ImageProcessingFilters.Channel_Alpha:
+                    baseFilter = ExtractChannel.A;
+                    break;
+            }
+
+            // DoTo
+            using(var iBitmap = GraphicsEngine.Current.Engine.CreateBitmap(new MemoryStream(imageBytes)))
+            {
+
+            }
+
+            return imageBytes;
         }
 
         #endregion

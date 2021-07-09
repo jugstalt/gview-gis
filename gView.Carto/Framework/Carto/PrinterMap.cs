@@ -1,15 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Runtime.CompilerServices;
+using gView.Framework.Carto.UI;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Framework.Symbology;
-using gView.Framework.IO;
 using gView.Framework.system;
-using gView.Framework.UI;
-using gView.Framework.Carto.UI;
+using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 [assembly: InternalsVisibleTo("gView.UI, PublicKey=002400000480000094000000060200000024000052534131000400000100010027d158e4f3030aadf57ddda2411853dec8352ea7e7c0149397393c35543c045619e02342cf7d9dff459c3a830ec2507659a8a058ef166ed1d06e679a7ded94a5b8454475e6330728784ffa18eb70beb35d92b736e0adca8124f61b6c232c222cd9efdb65e3bb407be4b568a1b1539e93cb73111dd95b9edc19227cb81fe63fd3")]
@@ -221,15 +215,6 @@ namespace gView.Framework.Carto
         }
         */
 
-        protected override void DrawStream(System.IO.Stream stream)
-        {
-            
-        }
-        protected override void StreamImage(ref System.IO.MemoryStream stream, System.Drawing.Image image)
-        {
-           
-        }
-
         /*
         protected override void DrawRasterParentLayer(IParentRasterLayer rLayer, ICancelTracker cancelTracker,IRasterLayer rootLayer)
         {
@@ -289,6 +274,11 @@ namespace gView.Framework.Carto
                 get { return 1f; }
             }
 
+            public void RefreshSettings(bool forceReloadAll = true)
+            {
+                
+            }
+
             #endregion
         }
     }
@@ -300,7 +290,7 @@ namespace gView.Framework.Carto
         private ICancelTracker _cancelTracker;
         private InterpolationMethod _interpolMethod=InterpolationMethod.Fast;
         private float _transparency = 0.0f;
-        private System.Drawing.Color _transColor = System.Drawing.Color.Transparent;
+        private GraphicsEngine.ArgbColor _transColor = GraphicsEngine.ArgbColor.Transparent;
         static private IRasterLayer _lastRasterLayer = null;
 
         public RenderRasterLayerThreadPrint(Map map, IRasterLayer layer, IRasterLayer rootLayer, ICancelTracker cancelTracker)
@@ -319,8 +309,15 @@ namespace gView.Framework.Carto
         {
             try
             {
-                if (_layer == null || _map == null || _cancelTracker == null) return;
-                if (_layer.RasterClass.Polygon == null) return;
+                if (_layer == null || _map == null || _cancelTracker == null)
+                {
+                    return;
+                }
+
+                if (_layer.RasterClass.Polygon == null)
+                {
+                    return;
+                }
 
                 IEnvelope env = _layer.RasterClass.Polygon.Envelope;
                 double minx = env.minx, miny = env.miny, maxx = env.maxx, maxy = env.maxy;
@@ -343,7 +340,10 @@ namespace gView.Framework.Carto
                 */
 
                 await _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker);
-                if (_layer.RasterClass.Bitmap == null) return;
+                if (_layer.RasterClass.Bitmap == null)
+                {
+                    return;
+                }
 
                 //System.Windows.Forms.MessageBox.Show("begin");
 
@@ -354,26 +354,31 @@ namespace gView.Framework.Carto
 
                 //_lastRasterLayer = _layer;
 
-                System.Drawing.Graphics gr = _map.Display.GraphicsContext;
-                if (gr == null) return;
-                gr.InterpolationMode = (System.Drawing.Drawing2D.InterpolationMode)_interpolMethod;
+                var canvas = _map.Display.Canvas;
+                if (canvas == null)
+                {
+                    return;
+                }
+
+                canvas.InterpolationMode = (GraphicsEngine.InterpolationMode)_interpolMethod;
 
                 // Transformation berechnen
-                System.Drawing.RectangleF rect;
-                switch (gr.InterpolationMode)
+                GraphicsEngine.CanvasRectangleF rect;
+                switch (canvas.InterpolationMode)
                 {
-                    case System.Drawing.Drawing2D.InterpolationMode.Bilinear:
-                    case System.Drawing.Drawing2D.InterpolationMode.Bicubic:
-                        rect = new System.Drawing.RectangleF(0, 0, _layer.RasterClass.Bitmap.Width - 1f, _layer.RasterClass.Bitmap.Height - 1f);
+                    case GraphicsEngine.InterpolationMode.Bilinear:
+                    case GraphicsEngine.InterpolationMode.Bicubic:
+                        rect = new GraphicsEngine.CanvasRectangleF(0, 0, _layer.RasterClass.Bitmap.Width - 1f, _layer.RasterClass.Bitmap.Height - 1f);
                         break;
-                    case System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor:
-                        rect = new System.Drawing.RectangleF(-0.5f, -0.5f, _layer.RasterClass.Bitmap.Width, _layer.RasterClass.Bitmap.Height);
+                    case GraphicsEngine.InterpolationMode.NearestNeighbor:
+                        rect = new GraphicsEngine.CanvasRectangleF(-0.5f, -0.5f, _layer.RasterClass.Bitmap.Width, _layer.RasterClass.Bitmap.Height);
                         break;
                     default:
-                        rect = new System.Drawing.RectangleF(0, 0, _layer.RasterClass.Bitmap.Width, _layer.RasterClass.Bitmap.Height);
+                        rect = new GraphicsEngine.CanvasRectangleF(0, 0, _layer.RasterClass.Bitmap.Width, _layer.RasterClass.Bitmap.Height);
                         break;
                 }
-                System.Drawing.PointF[] points = new System.Drawing.PointF[3];
+
+                var points = new GraphicsEngine.CanvasPointF[3];
 
                 if (_layer.RasterClass is IRasterClass2)
                 {
@@ -389,15 +394,15 @@ namespace gView.Framework.Carto
 
                     double X = p1.X, Y = p1.Y;
                     _map.Display.World2Image(ref X, ref Y);
-                    points[0] = new System.Drawing.PointF((float)X, (float)Y);
+                    points[0] = new GraphicsEngine.CanvasPointF((float)X, (float)Y);
 
                     X = p2.X; Y = p2.Y;
                     _map.Display.World2Image(ref X, ref Y);
-                    points[1] = new System.Drawing.PointF((float)X, (float)Y);
+                    points[1] = new GraphicsEngine.CanvasPointF((float)X, (float)Y);
 
                     X = p3.X; Y = p3.Y;
                     _map.Display.World2Image(ref X, ref Y);
-                    points[2] = new System.Drawing.PointF((float)X, (float)Y);
+                    points[2] = new GraphicsEngine.CanvasPointF((float)X, (float)Y);
                 }
                 else
                 {
@@ -411,7 +416,7 @@ namespace gView.Framework.Carto
                         X = p.X; Y = p.Y;
                     }
                     _map.Display.World2Image(ref X, ref Y);
-                    points[0] = new System.Drawing.PointF((float)X, (float)Y);
+                    points[0] = new GraphicsEngine.CanvasPointF((float)X, (float)Y);
                     X = X1 + (_layer.RasterClass.Bitmap.Width) * _layer.RasterClass.dx1;
                     Y = Y1 + (_layer.RasterClass.Bitmap.Width) * _layer.RasterClass.dx2;
                     if (_map.Display.GeometricTransformer != null)
@@ -420,7 +425,7 @@ namespace gView.Framework.Carto
                         X = p.X; Y = p.Y;
                     }
                     _map.Display.World2Image(ref X, ref Y);
-                    points[1] = new System.Drawing.PointF((float)X, (float)Y);
+                    points[1] = new GraphicsEngine.CanvasPointF((float)X, (float)Y);
                     X = X1 + (_layer.RasterClass.Bitmap.Height) * _layer.RasterClass.dy1;
                     Y = Y1 + (_layer.RasterClass.Bitmap.Height) * _layer.RasterClass.dy2;
                     if (_map.Display.GeometricTransformer != null)
@@ -429,10 +434,10 @@ namespace gView.Framework.Carto
                         X = p.X; Y = p.Y;
                     }
                     _map.Display.World2Image(ref X, ref Y);
-                    points[2] = new System.Drawing.PointF((float)X, (float)Y);
+                    points[2] = new GraphicsEngine.CanvasPointF((float)X, (float)Y);
                 }
 
-                if (_transColor != System.Drawing.Color.Transparent)
+                if (!GraphicsEngine.ArgbColor.Transparent.Equals(_transColor))
                 {
                     try
                     {
@@ -443,188 +448,13 @@ namespace gView.Framework.Carto
                 }
 
                 float opaque = 1.0f - _transparency;
-                if (opaque > 0f && opaque < 1f)
-                {
-                    float[][] ptsArray ={ 
-                            new float[] {1, 0, 0, 0, 0},
-                            new float[] {0, 1, 0, 0, 0},
-                            new float[] {0, 0, 1, 0, 0},
-                            new float[] {0, 0, 0, opaque, 0}, 
-                            new float[] {0, 0, 0, 0, 1}};
+                canvas.DrawBitmap(_layer.RasterClass.Bitmap, points, rect, opacity: opaque);
 
-                    System.Drawing.Imaging.ColorMatrix clrMatrix = new System.Drawing.Imaging.ColorMatrix(ptsArray);
-                    System.Drawing.Imaging.ImageAttributes imgAttributes = new System.Drawing.Imaging.ImageAttributes();
-                    imgAttributes.SetColorMatrix(clrMatrix,
-                                                 System.Drawing.Imaging.ColorMatrixFlag.Default,
-                                                 System.Drawing.Imaging.ColorAdjustType.Bitmap);
-
-                    gr.DrawImage(_layer.RasterClass.Bitmap, points, rect, System.Drawing.GraphicsUnit.Pixel, imgAttributes);
-                }
-                else
-                {
-                    gr.DrawImage(_layer.RasterClass.Bitmap, points, rect, System.Drawing.GraphicsUnit.Pixel);
-                }
                 _layer.RasterClass.EndPaint(_cancelTracker);
             }
             catch (Exception ex)
             {
             }
-        }
-        async public Task Render3()
-        {
-            if (_layer == null || _layer.RasterClass==null || _map == null || _cancelTracker == null)  return;
-            if (_layer.RasterClass.Polygon == null) return;
-
-            IEnvelope env = _layer.RasterClass.Polygon.Envelope;
-            double minx = env.minx, miny = env.miny, maxx = env.maxx, maxy = env.maxy;
-            _map.World2Image(ref minx, ref miny);
-            _map.World2Image(ref maxx, ref maxy);
-            int iWidth = 0, iHeight = 0;
-            int min_x = Math.Max(0, (int)Math.Min(minx, maxx) - 1);
-            int min_y = Math.Max(0, (int)Math.Min(miny, maxy) - 1);
-            int max_x = Math.Min(iWidth = _map.iWidth, (int)Math.Max(minx, maxx) + 1);
-            int max_y = Math.Min(iHeight = _map.iHeight, (int)Math.Max(miny, maxy) + 1);
-
-            
-            await _layer.RasterClass.BeginPaint(_map.Display,_cancelTracker);
-            //System.Windows.Forms.MessageBox.Show("begin");
-
-            double W = (_map.Envelope.maxx - _map.Envelope.minx);
-            double H = (_map.Envelope.maxy - _map.Envelope.miny);
-            double MinX = _map.Envelope.minx;
-            double MinY = _map.Envelope.miny;
-
-            System.Drawing.Graphics gr = _map.Display.GraphicsContext;
-            gr.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-            
-            System.Drawing.RectangleF rect;
-            switch (gr.InterpolationMode)
-            {
-                case System.Drawing.Drawing2D.InterpolationMode.Bilinear:
-                case System.Drawing.Drawing2D.InterpolationMode.Bicubic:
-                    rect = new System.Drawing.RectangleF(0, 0, _layer.RasterClass.Bitmap.Width - 1f, _layer.RasterClass.Bitmap.Height - 1f);
-                    break;
-                case System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor:
-                    rect = new System.Drawing.RectangleF(-0.5f, -0.5f, _layer.RasterClass.Bitmap.Width, _layer.RasterClass.Bitmap.Height);
-                    break;
-                default:
-                    rect = new System.Drawing.RectangleF(0, 0, _layer.RasterClass.Bitmap.Width, _layer.RasterClass.Bitmap.Height);
-                    break;
-            }
-
-            System.Drawing.PointF[] points = new System.Drawing.PointF[3];
-
-            double X1 = _layer.RasterClass.oX - _layer.RasterClass.dx1 / 2.0 - _layer.RasterClass.dy1 / 2.0;
-            double Y1 = _layer.RasterClass.oY - _layer.RasterClass.dx2 / 2.0 - _layer.RasterClass.dy2 / 2.0;
-            double X = X1;
-            double Y = Y1;
-            _map.Display.World2Image(ref X, ref Y);
-            points[0] = new System.Drawing.PointF((float)X, (float)Y);
-            X = X1 + (rect.Width) * _layer.RasterClass.dx1;
-            Y = Y1 + (rect.Width) * _layer.RasterClass.dx2;
-            _map.Display.World2Image(ref X, ref Y);
-            points[1] = new System.Drawing.PointF((float)X, (float)Y);
-            X = X1 + (rect.Height) * _layer.RasterClass.dy1;
-            Y = Y1 + (rect.Height) * _layer.RasterClass.dy2;
-            _map.Display.World2Image(ref X, ref Y);
-            points[2] = new System.Drawing.PointF((float)X, (float)Y);
-
-            //gr.ResetTransform();
-            //gr.Transform = new System.Drawing.Drawing2D.Matrix(rect, points);
-            _map.Display.GraphicsContext.DrawImage(
-                _layer.RasterClass.Bitmap, points, rect, System.Drawing.GraphicsUnit.Pixel);
-
-            /*
-            using (System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Black))
-            {
-                gr.DrawRectangle(pen,rect.X,rect.Y,rect.Width,rect.Height);
-            }
-             * */
-            //gr.ResetTransform();
-
-            _layer.RasterClass.EndPaint(_cancelTracker);
-        }
-
-        public void Render2()
-        {
-            /*
-            if (_layer == null || _layer.RasterClass == null || _map == null || _cancelTracker == null) return;
-            if (_layer.RasterClass.Polygon == null) return;
-
-            IEnvelope env = _layer.RasterClass.Polygon.Envelope;
-            double minx = env.minx, miny = env.miny, maxx = env.maxx, maxy = env.maxy;
-            _map.World2Image(ref minx, ref miny);
-            _map.World2Image(ref maxx, ref maxy);
-            int iWidth = 0, iHeight = 0;
-            int min_x = Math.Max(0, (int)Math.Min(minx, maxx) - 1);
-            int min_y = Math.Max(0, (int)Math.Min(miny, maxy) - 1);
-            int max_x = Math.Min(iWidth = _map.iWidth, (int)Math.Max(minx, maxx) + 1);
-            int max_y = Math.Min(iHeight = _map.iHeight, (int)Math.Max(miny, maxy) + 1);
-
-            if (_lastRasterLayer != null && _lastRasterLayer != _layer)
-            {
-                _lastRasterLayer.RasterClass.EndPaint();
-            }
-            _layer.RasterClass.BeginPaint();
-            //System.Windows.Forms.MessageBox.Show("begin");
-
-            double W = (_map.Envelope.maxx - _map.Envelope.minx);
-            double H = (_map.Envelope.maxy - _map.Envelope.miny);
-            double MinX = _map.Envelope.minx;
-            double MinY = _map.Envelope.miny;
-
-            float dpiX = (float)96.0 / (float)Math.Min(_map.GraphicsContext.DpiX, 300);
-            float dpiY = (float)96.0 / (float)Math.Min(_map.GraphicsContext.DpiY, 300);
-            System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(System.Drawing.Color.Black);
-            System.Drawing.RectangleF pixel = new System.Drawing.RectangleF(0, 0, dpiX, dpiY);
-            System.Drawing.RectangleF bounds = _map.GraphicsContext.ClipBounds;
-
-            //dpiX = dpiY = 1;
-            IntPtr hdc = (IntPtr)0;
-
-            if (dpiX == 1 || dpiY == 1)
-            {
-                hdc = _map.GraphicsContext.GetHdc();
-            }
-
-
-            float aX = 0, aY = 0;
-            if (bounds.X > 0) aX = bounds.X;
-            if (bounds.Y > 0) aY = bounds.Y;
-
-            int Y = min_y + (int)aX;
-            for (float y = min_y; y <= max_y; y += dpiY, Y++)
-            {
-                int X = min_x + (int)aY;
-                for (float x = min_x; x <= max_x; x += dpiX, X++)
-                {
-                    double xx = x * W / iWidth + MinX;
-                    double yy = (iHeight - y) * H / iHeight + MinY;
-
-                    System.Drawing.Color pixCol = _layer.RasterClass.GetPixel(xx, yy);
-                    if (pixCol.A == 0) continue;
-                    long col = pixCol.R + (pixCol.G << 8) + (pixCol.B << 16);
-
-                    if (hdc == (IntPtr)0)
-                    {
-                        brush.Color = pixCol;
-                        pixel.X = x + aX;
-                        pixel.Y = y + aY;
-                        _map.GraphicsContext.FillRectangle(brush, pixel);
-                    }
-                    else
-                    {
-                        gView.GDI.SetPixel(hdc, X, Y, col);
-                    }
-                }
-                if (!_cancelTracker.Continue) break;
-            }
-            if (hdc != (IntPtr)0) _map.GraphicsContext.ReleaseHdc();
-            brush.Dispose();
-
-            _lastRasterLayer = _layer;
-            //_layer.EndPaint();
-             * */
         }
     }
 }

@@ -1,15 +1,17 @@
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.IO;
+using gView.Framework.system;
+using gView.Framework.Web;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
+using gView.MapServer;
+using gView.Server.Connector;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Xml;
-using gView.Framework.IO;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
-using gView.Framework.Web;
-using gView.Framework.system;
-using gView.Server.Connector;
 using System.Threading.Tasks;
-using gView.MapServer;
+using System.Xml;
 
 namespace gView.Interoperability.Server
 {
@@ -18,8 +20,10 @@ namespace gView.Interoperability.Server
     {
         internal string _connection = "";
         internal string _name = "";
+
         //internal List<string> _layerIDs = new List<string>();
         internal List<IWebServiceTheme> _themes = new List<IWebServiceTheme>();
+
         internal bool _opened = false;
         private IWebServiceClass _class = null;
         private IEnvelope _envelope;
@@ -46,18 +50,19 @@ namespace gView.Interoperability.Server
 
         public Task<ISpatialReference> GetSpatialReference()
         {
-
             return Task.FromResult<ISpatialReference>(_class?.SpatialReference);
         }
-        public void SetSpatialReference(ISpatialReference sRef) { }
 
-        #endregion
+        public void SetSpatialReference(ISpatialReference sRef)
+        {
+        }
+
+        #endregion IFeatureDataset Member
 
         #region IDataset Member
 
         public void Dispose()
         {
-            
         }
 
         public string ConnectionString
@@ -117,7 +122,7 @@ namespace gView.Interoperability.Server
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(axl);
 
-                if(_class==null)
+                if (_class == null)
                     _class = new MapServerClass(this);
 
                 double dpi = 96.0;
@@ -157,10 +162,9 @@ namespace gView.Interoperability.Server
                             _class.SpatialReference = gView.Framework.Geometry.SpatialReference.FromWKT(FeatureCoordSysNode.Attributes["string"].Value);
                         }
 
-                        // TODO: Geogr. Datum aus "datumtransformid" und "datumtransformstring" 
+                        // TODO: Geogr. Datum aus "datumtransformid" und "datumtransformstring"
                         //if (_sRef != null && FeatureCoordSysNode.Attributes["datumtransformstring"] != null)
                         //{
-
                         //}
                     }
                 }
@@ -208,10 +212,9 @@ namespace gView.Interoperability.Server
                                 sRef = gView.Framework.Geometry.SpatialReference.FromWKT(FeatureCoordSysNode.Attributes["string"].Value);
                             }
 
-                            // TODO: Geogr. Datum aus "datumtransformid" und "datumtransformstring" 
+                            // TODO: Geogr. Datum aus "datumtransformid" und "datumtransformstring"
                             //if (_sRef != null && FeatureCoordSysNode.Attributes["datumtransformstring"] != null)
                             //{
-
                             //}
                         }
                     }
@@ -227,7 +230,7 @@ namespace gView.Interoperability.Server
                         ((MapThemeFeatureClass)themeClass).Name = layerNode.Attributes["name"] != null ? layerNode.Attributes["name"].Value : layerNode.Attributes["id"].Value;
                         ((MapThemeFeatureClass)themeClass).fieldsFromAXL = layerNode.InnerXml;
                         ((MapThemeFeatureClass)themeClass).SpatialReference = sRef;
-                        
+
                         XmlNode FCLASS = layerNode.SelectSingleNode("FCLASS[@type]");
                         if (FCLASS != null)
                         {
@@ -274,7 +277,7 @@ namespace gView.Interoperability.Server
                 _state = DatasetState.opened;
                 return Task.FromResult(true);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _state = DatasetState.unknown;
                 _class = null;
@@ -296,7 +299,6 @@ namespace gView.Interoperability.Server
             }
             set
             {
-                
             }
         }
 
@@ -340,9 +342,9 @@ namespace gView.Interoperability.Server
 
         async public Task RefreshClasses()
         {
-
         }
-        #endregion
+
+        #endregion IDataset Member
 
         #region IPersistable Member
 
@@ -369,14 +371,14 @@ namespace gView.Interoperability.Server
             stream.Save("ConnectionString", this.ConnectionString);
         }
 
-        #endregion
+        #endregion IPersistable Member
     }
 
     public class MapServerClass : IWebServiceClass
     {
         private string _name;
         private MapServerDataset _dataset;
-        private System.Drawing.Bitmap _legend = null;
+        private IBitmap _legend = null;
         private GeorefBitmap _image = null;
         private IEnvelope _envelope = null;
         private ISpatialReference _sRef = null;
@@ -405,11 +407,12 @@ namespace gView.Interoperability.Server
             get { return _dataset; }
         }
 
-        #endregion
+        #endregion IClass Member
 
         #region IWebServiceClass Member
 
         public event BeforeMapRequestEventHandler BeforeMapRequest = null;
+
         public event AfterMapRequestEventHandler AfterMapRequest = null;
 
         async public Task<bool> MapRequest(gView.Framework.Carto.IDisplay display)
@@ -479,7 +482,7 @@ namespace gView.Interoperability.Server
                 sb.Append("</ARCXML>");
 
                 string user = ConfigTextStream.ExtractValue(_dataset._connection, "user");
-                string pwd=Identity.HashPassword(ConfigTextStream.ExtractValue(_dataset._connection, "pwd"));
+                string pwd = Identity.HashPassword(ConfigTextStream.ExtractValue(_dataset._connection, "pwd"));
 
                 if ((user == "#" || user == "$") &&
                     context != null && context.ServiceRequest != null && context.ServiceRequest.Identity != null)
@@ -502,7 +505,7 @@ namespace gView.Interoperability.Server
                 //Logger.LogDebug("Start gView Mapserver Request");
 #endif
                 ServerConnection service = new ServerConnection(ConfigTextStream.ExtractValue(_dataset._connection, "server"));
-                string resp = service.Send( _name, sb.ToString(), "BB294D9C-A184-4129-9555-398AA70284BC", user, pwd);
+                string resp = service.Send(_name, sb.ToString(), "BB294D9C-A184-4129-9555-398AA70284BC", user, pwd);
 
 #if(DEBUG)
                 //Logger.LogDebug("gView Mapserver Request Finished");
@@ -511,27 +514,27 @@ namespace gView.Interoperability.Server
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(resp);
 
-                System.Drawing.Bitmap bm = null;
+                IBitmap bitmap = null;
                 XmlNode output = doc.SelectSingleNode("//OUTPUT[@file]");
                 if (_image != null)
                 {
                     _image.Dispose();
-                    _image=null;
+                    _image = null;
                 }
 
                 try
                 {
                     System.IO.FileInfo fi = new System.IO.FileInfo(output.Attributes["file"].Value);
-                    if (fi.Exists) bm = System.Drawing.Bitmap.FromFile(fi.FullName) as System.Drawing.Bitmap;
+                    if (fi.Exists) bitmap = Current.Engine.CreateBitmap(fi.FullName);
                 }
                 catch { }
 
-                if(bm==null) 
-                    bm = WebFunctions.DownloadImage(output);
+                if (bitmap == null)
+                    bitmap = WebFunctions.DownloadImage(output);
 
-                if (bm != null)
+                if (bitmap != null)
                 {
-                    _image = new GeorefBitmap(bm);
+                    _image = new GeorefBitmap(bitmap);
                     _image.SpatialReference = display.SpatialReference;
                     _image.Envelope = display.Envelope;
 
@@ -541,7 +544,7 @@ namespace gView.Interoperability.Server
 
                 return _image != null;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MapServerClass.ErrorLog(context, "MapRequest", ConfigTextStream.ExtractValue(_dataset._connection, "server"), _name, ex);
                 return false;
@@ -558,7 +561,7 @@ namespace gView.Interoperability.Server
             get { return _image; }
         }
 
-        System.Drawing.Bitmap IWebServiceClass.Legend
+        IBitmap IWebServiceClass.Legend
         {
             get { return _legend; }
         }
@@ -599,7 +602,7 @@ namespace gView.Interoperability.Server
             }
         }
 
-        #endregion
+        #endregion IWebServiceClass Member
 
         #region IClone Member
 
@@ -617,7 +620,7 @@ namespace gView.Interoperability.Server
             return clone;
         }
 
-        #endregion
+        #endregion IClone Member
 
         public static void Log(IServiceRequestContext context, string header, string server, string service, StringBuilder axl)
         {
@@ -625,6 +628,7 @@ namespace gView.Interoperability.Server
                 context.MapServer == null ||
                 context.MapServer.LoggingEnabled(loggingMethod.request_detail_pro) == false) return;
         }
+
         public static void ErrorLog(IServiceRequestContext context, string header, string server, string service, Exception ex)
         {
             if (context == null ||
@@ -641,7 +645,6 @@ namespace gView.Interoperability.Server
                     msg.Append(inner.Message + "\n");
                 }
             }
-
         }
     }
 
@@ -659,7 +662,7 @@ namespace gView.Interoperability.Server
         async protected override Task<string> SendRequest(IUserData userData, string axlRequest)
         {
             if (_dataset == null) return "";
-            string server=ConfigTextStream.ExtractValue(_dataset.ConnectionString, "server");
+            string server = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "server");
             string service = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "service");
 
             IServiceRequestContext context = (userData != null) ? userData.GetUserData("IServiceRequestContext") as IServiceRequestContext : null;
@@ -726,7 +729,7 @@ namespace gView.Interoperability.Server
             get { return _dataset; }
         }
 
-        #endregion
+        #endregion IClass Member
     }
 
     internal class MapThemeRasterClass : gView.Framework.XML.AXLRasterClass

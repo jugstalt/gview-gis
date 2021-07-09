@@ -1,18 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Carto;
-using gView.Framework.Geometry;
 using gView.Framework.Data;
-using gView.Framework.Symbology;
-using System.IO;
+using gView.Framework.Geometry;
 using gView.Framework.IO;
+using gView.Framework.Symbology;
+using gView.Framework.Sys.UI.Extensions;
 using gView.Framework.system;
+using System;
+using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -34,10 +31,13 @@ namespace gView.Framework.UI.Dialogs
 
         private void FormMapProperties_Load(object sender, EventArgs e)
         {
-            if (_map == null || _display == null) return;
+            if (_map == null || _display == null)
+            {
+                return;
+            }
 
             txtName.Text = _map.Name;
-            numRefScale.Value = (decimal)((int)_display.refScale);
+            numRefScale.Value = (int)_display.refScale;
 
             int index = 0;
             foreach (GeoUnits unit in Enum.GetValues(typeof(GeoUnits)))
@@ -56,7 +56,7 @@ namespace gView.Framework.UI.Dialogs
                         {
                             append = true;
                         }
-                        else if ((int)unit == 0)
+                        else if (unit == 0)
                         {
                             append = true;
                         }
@@ -69,12 +69,18 @@ namespace gView.Framework.UI.Dialogs
                     if (append)
                     {
                         cmbMapUnits.Items.Add(new GeoUnitsItem(unit));
-                        if (_display.MapUnits == unit) cmbMapUnits.SelectedIndex = cmbMapUnits.Items.Count - 1;
+                        if (_display.MapUnits == unit)
+                        {
+                            cmbMapUnits.SelectedIndex = cmbMapUnits.Items.Count - 1;
+                        }
                     }
                 }
 
                 cmbDisplayUnits.Items.Add(new GeoUnitsItem(unit));
-                if (_display.DisplayUnits == unit) cmbDisplayUnits.SelectedIndex = index;
+                if (_display.DisplayUnits == unit)
+                {
+                    cmbDisplayUnits.SelectedIndex = index;
+                }
 
                 index++;
             }
@@ -90,19 +96,31 @@ namespace gView.Framework.UI.Dialogs
             _sr2.canModify = true;
             panelDefaultLayerSR.Controls.Add(_sr2.panelReferenceSystem);
 
-            btnBackgroundColor.BackColor = _display.BackgroundColor;
+            btnBackgroundColor.BackColor = _display.BackgroundColor.ToGdiColor();
 
             txtTitle.Text = _map.Title;
             txtDescription.Text = _map.GetLayerDescription(Map.MapDescriptionId);
             txtCopyright.Text = _map.GetLayerCopyrightText(Map.MapCopyrightTextId);
 
+            #region Graphics Engine
+
+            foreach (var engineName in Engines.RegisteredGraphicsEngineNames())
+            {
+                cmbGraphicsEngine.Items.Add(engineName);
+            }
+            cmbGraphicsEngine.SelectedItem = GraphicsEngine.Current.Engine.EngineName;
+
+            #endregion Graphics Engine
+
             BuildResourcesList();
         }
 
-
         private void btnOK_Click(object sender, EventArgs e)
         {
-            if (_map == null || _display == null) return;
+            if (_map == null || _display == null)
+            {
+                return;
+            }
 
             try
             {
@@ -110,10 +128,13 @@ namespace gView.Framework.UI.Dialogs
                 _display.refScale = Convert.ToDouble(numRefScale.Value);
 
                 if (cmbMapUnits.Enabled)
+                {
                     _display.MapUnits = ((GeoUnitsItem)cmbMapUnits.SelectedItem).Unit;
+                }
+
                 _display.DisplayUnits = ((GeoUnitsItem)cmbDisplayUnits.SelectedItem).Unit;
 
-                _display.BackgroundColor = btnBackgroundColor.BackColor;
+                _display.BackgroundColor = btnBackgroundColor.BackColor.ToArgbColor();
 
                 ISpatialReference oldSRef = _display.SpatialReference;
                 _display.SpatialReference = _sr.SpatialReference;
@@ -142,6 +163,26 @@ namespace gView.Framework.UI.Dialogs
                 _map.Title = txtTitle.Text;
                 _map.SetLayerDescription(Map.MapDescriptionId, txtDescription.Text);
                 _map.SetLayerCopyrightText(Map.MapCopyrightTextId, txtCopyright.Text);
+
+                #region Graphics Engine
+
+                if (cmbGraphicsEngine.SelectedItem.ToString() != GraphicsEngine.Current.Engine.EngineName)
+                {
+                    var engine = Engines.RegisteredGraphcisEngines().Where(ge => ge.EngineName == cmbGraphicsEngine.SelectedItem.ToString()).FirstOrDefault();
+                    if (engine != null)
+                    {
+                        GraphicsEngine.Current.Engine = engine;
+                        RefreshFeatureRendererSymbolsGraphcisEngine();
+
+                        if (_app != null)
+                        {
+                            _app.RefreshTOC();
+                            _app.RefreshActiveMap(DrawPhase.All);
+                        }
+                    }
+                }
+
+                #endregion Graphics Engine
             }
             catch (Exception ex)
             {
@@ -187,46 +228,92 @@ namespace gView.Framework.UI.Dialogs
 
         private void SetLabelSmoothing(SymbolSmoothing smooting)
         {
-            if (_map == null || _map.MapElements == null) return;
+            if (_map == null || _map.MapElements == null)
+            {
+                return;
+            }
 
             foreach (IDatasetElement dsElement in _map.MapElements)
             {
                 IFeatureLayer fLayer = dsElement as IFeatureLayer;
                 if (fLayer == null || fLayer.LabelRenderer == null)
+                {
                     continue;
+                }
 
                 ILabelRenderer lRenderer = fLayer.LabelRenderer;
                 foreach (ISymbol symbol in lRenderer.Symbols)
                 {
                     if (symbol == null)
+                    {
                         continue;
+                    }
+
                     symbol.SymbolSmothingMode = smooting;
                 }
             }
             if (_app != null)
+            {
                 _app.RefreshActiveMap(DrawPhase.All);
+            }
         }
 
         private void SetFeatureSmooting(SymbolSmoothing smooting)
         {
-            if (_map == null || _map.MapElements == null) return;
+            if (_map == null || _map.MapElements == null)
+            {
+                return;
+            }
 
             foreach (IDatasetElement dsElement in _map.MapElements)
             {
                 IFeatureLayer fLayer = dsElement as IFeatureLayer;
                 if (fLayer == null || fLayer.FeatureRenderer == null)
+                {
                     continue;
+                }
 
                 IFeatureRenderer fRenderer = fLayer.FeatureRenderer;
                 foreach (ISymbol symbol in fRenderer.Symbols)
                 {
                     if (symbol == null)
+                    {
                         continue;
+                    }
+
                     symbol.SymbolSmothingMode = smooting;
                 }
             }
             if (_app != null)
+            {
                 _app.RefreshActiveMap(DrawPhase.All);
+            }
+        }
+
+        private void RefreshFeatureRendererSymbolsGraphcisEngine()
+        {
+            if (_map == null || _map.MapElements == null)
+            {
+                return;
+            }
+
+            foreach (IDatasetElement dsElement in _map.MapElements)
+            {
+                IFeatureLayer fLayer = dsElement as IFeatureLayer;
+                if (fLayer == null || fLayer.FeatureRenderer == null)
+                {
+                    continue;
+                }
+
+                IFeatureRenderer fRenderer = fLayer.FeatureRenderer;
+                foreach (ISymbol symbol in fRenderer.Symbols)
+                {
+                    if (symbol is ISymbolCurrentGraphicsEngineDependent)
+                    {
+                        ((ISymbolCurrentGraphicsEngineDependent)symbol).CurrentGraphicsEngineChanged();
+                    }
+                }
+            }
         }
 
         #region MapResources
@@ -238,9 +325,9 @@ namespace gView.Framework.UI.Dialogs
                 Multiselect = true
             };
 
-            if(dlg.ShowDialog() == DialogResult.OK)
+            if (dlg.ShowDialog() == DialogResult.OK)
             {
-                foreach(var filename in dlg.FileNames)
+                foreach (var filename in dlg.FileNames)
                 {
                     FileInfo fi = new FileInfo(filename);
 
@@ -255,13 +342,15 @@ namespace gView.Framework.UI.Dialogs
         {
             gridResources.Rows.Clear();
 
-            if(_map?.ResourceContainer?.Names!=null)
+            if (_map?.ResourceContainer?.Names != null)
             {
-                foreach(string name in _map.ResourceContainer.Names)
+                foreach (string name in _map.ResourceContainer.Names)
                 {
                     var data = _map.ResourceContainer[name];
                     if (data == null || data.Length == 0)
+                    {
                         continue;
+                    }
 
                     var gridRow = new DataGridViewRow();
                     gridRow.Cells.Add(new DataGridViewTextBoxCell()
@@ -270,16 +359,17 @@ namespace gView.Framework.UI.Dialogs
                     });
                     gridRow.Cells.Add(new DataGridViewTextBoxCell()
                     {
-                        Value = $"{ Math.Round(data.Length/1024.0, 2).ToString() }kb"
+                        Value = $"{ Math.Round(data.Length / 1024.0, 2).ToString() }kb"
                     });
                     gridRow.Cells.Add(new DataGridViewButtonCell()
                     {
-                        Value="Remove"
+                        Value = "Remove"
                     });
                     gridResources.Rows.Add(gridRow);
                 }
-            } 
+            }
         }
+
         private void gridResources_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (_map?.ResourceContainer != null)
@@ -299,15 +389,13 @@ namespace gView.Framework.UI.Dialogs
             }
         }
 
-
-
-        #endregion
+        #endregion MapResources
 
         async private void btnMapServiceMetadata_Click(object sender, EventArgs e)
         {
             XmlStream xmlStream = new XmlStream(String.Empty);
             this._map.ReadMetadata(xmlStream);
-            
+
             FormMetadata dlg = new FormMetadata(xmlStream, this._map);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
@@ -347,28 +435,40 @@ namespace gView.Framework.UI.Dialogs
             {
                 case GeoUnits.Unknown:
                     return unit.ToString();
+
                 case GeoUnits.Inches:
                     return unit.ToString();
+
                 case GeoUnits.Feet:
                     return unit.ToString();
+
                 case GeoUnits.Yards:
                     return unit.ToString();
+
                 case GeoUnits.Miles:
                     return unit.ToString();
+
                 case GeoUnits.NauticalMiles:
                     return "Nautic Miles";
+
                 case GeoUnits.Millimeters:
                     return unit.ToString();
+
                 case GeoUnits.Centimeters:
                     return unit.ToString();
+
                 case GeoUnits.Decimeters:
                     return unit.ToString();
+
                 case GeoUnits.Meters:
                     return unit.ToString();
+
                 case GeoUnits.Kilometers:
                     return unit.ToString();
+
                 case GeoUnits.DecimalDegrees:
                     return "Decimal Degrees";
+
                 case GeoUnits.DegreesMinutesSeconds:
                     return "Degrees Minutes Seconds";
             }

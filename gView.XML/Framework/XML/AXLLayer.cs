@@ -1,12 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml;
-using System.IO;
+using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Framework.Carto;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
+using System;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Framework.XML
 {
@@ -18,7 +19,11 @@ namespace gView.Framework.XML
         {
             get
             {
-                if (m_id == "") return Title;
+                if (m_id == "")
+                {
+                    return Title;
+                }
+
                 return m_id;
             }
             set
@@ -52,6 +57,7 @@ namespace gView.Framework.XML
                 m_featureclass = new AXLFeatureClass(m_parent, m_id);
             }
         }
+
         #region IFeatureSelection
 
         public event FeatureSelectionChangedEvent FeatureSelectionChanged;
@@ -65,17 +71,29 @@ namespace gView.Framework.XML
             }
             set
             {
-                if (m_selectionset != null) m_selectionset.Dispose();
+                if (m_selectionset != null)
+                {
+                    m_selectionset.Dispose();
+                }
+
                 if (value is IDSelectionSet)
+                {
                     m_selectionset = (IDSelectionSet)value;
+                }
                 else
+                {
                     m_selectionset = null;
+                }
             }
         }
 
         async public Task<bool> Select(IQueryFilter filter, CombinationMethod methode)
         {
-            if (this.FeatureClass == null) return false;
+            if (this.FeatureClass == null)
+            {
+                return false;
+            }
+
             ISelectionSet selSet = await this.FeatureClass.Select(filter);
 
             SelectionSet = selSet;
@@ -95,7 +113,9 @@ namespace gView.Framework.XML
         public void FireSelectionChangedEvent()
         {
             if (FeatureSelectionChanged != null)
+            {
                 FeatureSelectionChanged(this);
+            }
         }
         #endregion
 
@@ -104,16 +124,29 @@ namespace gView.Framework.XML
         public void extractRendererFromLayerinfo(XmlNode layerinfo)
         {
             if (layerinfo.SelectNodes("SIMPLERENDERER").Count > 0)
+            {
                 m_axlrenderer = new AXLRenderer(layerinfo.SelectNodes("SIMPLERENDERER")[0].OuterXml);
+            }
             else if (layerinfo.SelectNodes("GROUPRENDERER").Count > 0)
+            {
                 m_axlrenderer = new AXLRenderer(layerinfo.SelectNodes("GROUPRENDERER")[0].OuterXml);
+            }
             else if (layerinfo.SelectNodes("VALUEMAPRENDERER").Count > 0)
+            {
                 m_axlrenderer = new AXLRenderer(layerinfo.SelectNodes("VALUEMAPRENDERER")[0].OuterXml);
+            }
             else if (layerinfo.SelectNodes("VALUEMAPLABELRENDERER").Count > 0)
+            {
                 m_axlrenderer = new AXLRenderer(layerinfo.SelectNodes("VALUEMAPLABELRENDERER")[0].OuterXml);
+            }
             else if (layerinfo.SelectNodes("SCALEDEPENDENTRENDERER").Count > 0)
+            {
                 m_axlrenderer = new AXLRenderer(layerinfo.SelectNodes("SCALEDEPENDENTRENDERER")[0].OuterXml);
-            else m_axlrenderer = null;
+            }
+            else
+            {
+                m_axlrenderer = null;
+            }
         }
 
         internal AXLRenderer Renderer
@@ -203,8 +236,8 @@ namespace gView.Framework.XML
 
         public void BeginPaint() { }
         public void EndPaint() { }
-        public System.Drawing.Color GetPixel(double X, double Y) { return System.Drawing.Color.Transparent; }
-        public System.Drawing.Bitmap Bitmap { get { return null; } }
+        public ArgbColor GetPixel(double X, double Y) { return ArgbColor.Transparent; }
+        public IBitmap Bitmap { get { return null; } }
 
         public double oX { get { return 0; } }
         public double oY { get { return 0; } }
@@ -245,16 +278,22 @@ namespace gView.Framework.XML
             }
         }
 
-        public System.Drawing.Color TransparentColor
+        public ArgbColor TransparentColor
         {
             get
             {
-                return System.Drawing.Color.Transparent;
+                return ArgbColor.Transparent;
             }
             set
             {
 
             }
+        }
+
+        public GraphicsEngine.Filters.FilterImplementations FilterImplementation
+        {
+            get { return GraphicsEngine.Filters.FilterImplementations.Default; }
+            set { }
         }
 
         public IRasterClass RasterClass { get { return null; } }
@@ -362,7 +401,11 @@ namespace gView.Framework.XML
         {
             m_xWriter.WriteStartElement("BACKGROUND");
             m_xWriter.WriteAttributeString("color", col);
-            if (trans) m_xWriter.WriteAttributeString("transcolor", col);
+            if (trans)
+            {
+                m_xWriter.WriteAttributeString("transcolor", col);
+            }
+
             m_xWriter.WriteEndElement();
         }
         public void WriteLayerdefInvisible(AXLLayer layer)
@@ -378,13 +421,23 @@ namespace gView.Framework.XML
             bool vis = layer.Visible;
             if (vis)
             {
-                if (layer.MinimumScale > 0.0 && layer.MinimumScale > mapscale) vis = false;
-                if (layer.MaximumScale > 0.0 && layer.MaximumScale < mapscale) vis = false;
+                if (layer.MinimumScale > 0.0 && layer.MinimumScale > mapscale)
+                {
+                    vis = false;
+                }
+
+                if (layer.MaximumScale > 0.0 && layer.MaximumScale < mapscale)
+                {
+                    vis = false;
+                }
             }
 
             if (layer is AXLFeatureLayer)
             {
-                if (((AXLFeatureLayer)layer).FeatureRenderer != null) vis = false;
+                if (((AXLFeatureLayer)layer).FeatureRenderer != null)
+                {
+                    vis = false;
+                }
             }
             m_xWriter.WriteAttributeString("id", layer.id);
             m_xWriter.WriteAttributeString("visible", vis.ToString());
@@ -488,10 +541,16 @@ namespace gView.Framework.XML
         // gibt zurück ob Karte Selektion hat...
         public bool AXLaddSelection(FeatureQueryResponse fqr, string selectionColor)
         {
-            if (!(fqr.layer is AXLFeatureLayer)) return false;
+            if (!(fqr.layer is AXLFeatureLayer))
+            {
+                return false;
+            }
 
             if (fqr.selectionMethode == featureQueryMethode.None ||
-                fqr.selectionMethode == featureQueryMethode.ID) return false;
+                fqr.selectionMethode == featureQueryMethode.ID)
+            {
+                return false;
+            }
 
             if (fqr.selectionMethode == featureQueryMethode.Geometry && !fqr.selGeometry.isValid)
             {
@@ -512,7 +571,9 @@ namespace gView.Framework.XML
             {
                 m_xWriter.WriteStartElement("SPATIALQUERY");
                 if (fqr.appendWhereFilter != "")
+                {
                     m_xWriter.WriteAttributeString("where", fqr.appendWhereFilter);
+                }
 
                 m_xWriter.WriteStartElement("SPATIALFILTER");
                 m_xWriter.WriteAttributeString("relation", "area_intersection");
@@ -550,7 +611,9 @@ namespace gView.Framework.XML
         {
             bool selected = false;
             if (!onlyHighlight)
+            {
                 selected = fqr.selectFeatures;
+            }
 
             if ((selected && insertBuffer == false && fqr.selectionMethode == featureQueryMethode.Geometry) ||
                 (!selected && insertBuffer == false && fqr.highlightMethode == featureQueryMethode.Geometry) ||
@@ -565,7 +628,10 @@ namespace gView.Framework.XML
                     //
                     m_xWriter.WriteStartElement("QUERY");
                     if (fqr.appendWhereFilter != "")
+                    {
                         m_xWriter.WriteAttributeString("where",/*activeLayerIDField*/fqr.layer.id + " = " + fqr.bufferID.ToString());
+                    }
+
                     m_xWriter.WriteEndElement(); // QUERY
                 }
                 else
@@ -578,7 +644,9 @@ namespace gView.Framework.XML
                         AXLaddBuffer(fqr, insertBufferTarget);
                     }
                     if (fqr.appendWhereFilter != "")
+                    {
                         m_xWriter.WriteAttributeString("where", fqr.appendWhereFilter);
+                    }
 
                     m_xWriter.WriteStartElement("SPATIALFILTER");
                     m_xWriter.WriteAttributeString("relation", "area_intersection");
@@ -649,7 +717,11 @@ namespace gView.Framework.XML
         }
         public void AXLaddHighlightSymbol(geometryType type, string color, double trans)
         {
-            if (type == geometryType.Unknown) return;
+            if (type == geometryType.Unknown)
+            {
+                return;
+            }
+
             m_xWriter.WriteStartElement("SIMPLERENDERER");
             switch (type)
             {
@@ -678,23 +750,39 @@ namespace gView.Framework.XML
         }
         public void AXLaddFeatureCoordsys(string attr)
         {
-            if (attr == null || attr == "") return;
+            if (attr == null || attr == "")
+            {
+                return;
+            }
+
             m_xWriter.WriteRaw("<FEATURECOORDSYS " + attr + " />");
         }
         public void AXLaddFilterCoordsys(string attr)
         {
-            if (attr == null || attr == "") return;
+            if (attr == null || attr == "")
+            {
+                return;
+            }
+
             m_xWriter.WriteRaw("<FILTERCOORDSYS " + attr + " />");
         }
 
         public void AXLaddFeatureCoordsys(IMSSpatialReference sRef)
         {
-            if (sRef == null) return;
+            if (sRef == null)
+            {
+                return;
+            }
+
             AXLaddFeatureCoordsys(CoordSysParams(sRef));
         }
         public void AXLaddFilterCoordsys(IMSSpatialReference sRef)
         {
-            if (sRef == null) return;
+            if (sRef == null)
+            {
+                return;
+            }
+
             AXLaddFilterCoordsys(CoordSysParams(sRef));
         }
 
@@ -703,14 +791,22 @@ namespace gView.Framework.XML
             string attr = "";
 
             if (sRef.ID != "")
+            {
                 attr += "id=\"" + sRef.ID + "\" ";
+            }
             else if (sRef.String != "")
+            {
                 attr += "string=\"" + sRef.String.Replace("\"", "&quot;") + "\" ";
+            }
 
             if (sRef.datumID != "")
+            {
                 attr += "datumtransformid=\"" + sRef.datumID + "\" ";
+            }
             else if (sRef.datumString != "")
+            {
                 attr += "datumtransformstring=\"" + sRef.datumString.Replace("\"", "&quot;") + "\" ";
+            }
 
             return attr;
         }
@@ -785,7 +881,11 @@ namespace gView.Framework.XML
         }
         static public void Text(ref XmlTextWriter xWriter, xyPoint p, string text, double size, double angle, string col, double offset)
         {
-            if (angle < 0) angle += 360.0;
+            if (angle < 0)
+            {
+                angle += 360.0;
+            }
+
             double o = (angle) / 180.0 * Math.PI;
             p.x -= Math.Sin(o) * offset;
             p.y += Math.Cos(o) * offset;
@@ -818,7 +918,10 @@ namespace gView.Framework.XML
             closeObject(ref xWriter);
 
             double al = Math.Atan2(p2.y - p1.y, p2.x - p1.x);
-            if (al < 0.0) al += 2.0 * Math.PI;
+            if (al < 0.0)
+            {
+                al += 2.0 * Math.PI;
+            }
 
             xyPoint pp1 = new xyPoint(p1.x + Math.Cos(al + 0.5) * 2 * sf, p1.y + Math.Sin(al + 0.5) * 2 * sf);
             xyPoint pp2 = new xyPoint(p1.x + Math.Cos(al - 0.5) * 2 * sf, p1.y + Math.Sin(al - 0.5) * 2 * sf);

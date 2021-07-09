@@ -1,9 +1,9 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.system;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 
 namespace gView.Framework.Symbology
 {
@@ -12,11 +12,11 @@ namespace gView.Framework.Symbology
     {
         #region IFillSymbol Member
 
-        public void FillPath(IDisplay display, GraphicsPath path)
+        public void FillPath(IDisplay display, IGraphicsPath path)
         {
-            using (SolidBrush brush = new SolidBrush(display.BackgroundColor))
+            using (IBrush brush = Current.Engine.CreateSolidBrush(display.BackgroundColor))
             {
-                display.GraphicsContext.FillPath(brush, path);
+                display.Canvas.FillPath(brush, path);
             }
         }
 
@@ -57,7 +57,7 @@ namespace gView.Framework.Symbology
             {
                 return;
             }
-            GraphicsPath gp = DisplayOperations.Geometry2GraphicsPath(display, p);
+            var gp = DisplayOperations.Geometry2GraphicsPath(display, p);
             if (gp != null)
             {
                 this.FillPath(display, gp);

@@ -142,7 +142,7 @@ namespace gView.Framework.Carto.UI
             }
         }
 
-        public Task<System.Drawing.Bitmap> Legend()
+        public Task<GraphicsEngine.Abstraction.IBitmap> Legend()
         {
             List<ITOCElement> list = new List<ITOCElement>();
             foreach (ITOCElement element in _elements)
@@ -181,16 +181,16 @@ namespace gView.Framework.Carto.UI
 
             return Legend(list);
         }
-        async public Task<System.Drawing.Bitmap> Legend(List<ITOCElement> elements)
+        async public Task<GraphicsEngine.Abstraction.IBitmap> Legend(List<ITOCElement> elements)
         {
-            List<System.Drawing.Bitmap> bitmaps = new List<System.Drawing.Bitmap>();
-            System.Drawing.Bitmap bitmap = null;
-            System.Drawing.Graphics gr = null;
+            var bitmaps = new List<GraphicsEngine.Abstraction.IBitmap>();
+            GraphicsEngine.Abstraction.IBitmap legendBitmap = null;
+
             try
             {
                 foreach (ITOCElement element in elements)
                 {
-                    System.Drawing.Bitmap bm = await Legend(element);
+                    var bm = await Legend(element);
                     if (bm != null)
                     {
                         bitmaps.Add(bm);
@@ -199,179 +199,176 @@ namespace gView.Framework.Carto.UI
 
                 if (bitmaps.Count == 0)
                 {
-                    return new System.Drawing.Bitmap(1, 1);
+                    return GraphicsEngine.Current.Engine.CreateBitmap(1, 1);
                 }
 
                 int width = 0, height = 0;
-                foreach (System.Drawing.Bitmap bm in bitmaps)
+                foreach (var bm in bitmaps)
                 {
                     width = (int)Math.Max(width, bm.Width);
                     height += bm.Height;
                 }
 
-                bitmap = new System.Drawing.Bitmap(width, height);
-                gr = System.Drawing.Graphics.FromImage(bitmap);
-                gr.FillRectangle(System.Drawing.Brushes.White, 0, 0, bitmap.Width, bitmap.Height);
-
-
-                int y = 0;
-                foreach (System.Drawing.Bitmap bm in bitmaps)
+                legendBitmap = GraphicsEngine.Current.Engine.CreateBitmap(width, height);
+                using (var gr = legendBitmap.CreateCanvas())
+                using (var whiteBrush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.White))
                 {
-                    gr.DrawImage(bm, new System.Drawing.Point(0, y));
-                    y += bm.Height;
+                    gr.FillRectangle(whiteBrush, new GraphicsEngine.CanvasRectangle(0, 0, legendBitmap.Width, legendBitmap.Height));
+
+                    int y = 0;
+                    foreach (var bm in bitmaps)
+                    {
+                        gr.DrawBitmap(bm, new GraphicsEngine.CanvasPoint(0, y));
+                        y += bm.Height;
+                    }
+
+                    return legendBitmap;
                 }
-                return bitmap;
             }
             catch
             {
-                if (bitmap != null)
+                if (legendBitmap != null)
                 {
-                    bitmap.Dispose();
+                    legendBitmap.Dispose();
                 }
 
                 return null;
             }
             finally
             {
-                if (gr != null)
-                {
-                    gr.Dispose();
-                }
-
-                foreach (System.Drawing.Bitmap bm in bitmaps)
+                foreach (var bm in bitmaps)
                 {
                     bm.Dispose();
                 }
                 bitmaps.Clear();
             }
         }
-        async public Task<System.Drawing.Bitmap> Legend(ITOCElement element)
+        async public Task<GraphicsEngine.Abstraction.IBitmap> Legend(ITOCElement element)
         {
             if (element==null || element.Layers==null || !_elements.Contains(element))
             {
                 return null;
             }
 
-            System.Drawing.Bitmap bm = new System.Drawing.Bitmap(1,1);
-            System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(bm);
-            System.Drawing.Font font1 = new System.Drawing.Font("Arial", 8, System.Drawing.FontStyle.Bold);
-            System.Drawing.Font font2 = new System.Drawing.Font("Arial", 8);
-            try
+            GraphicsEngine.Abstraction.IBitmap previewBitmap = null;
+
+            using (var bm = GraphicsEngine.Current.Engine.CreateBitmap(1, 1))
+            using (var gr = bm.CreateCanvas())
+            using (var font1 = GraphicsEngine.Current.Engine.CreateFont("Arial", 8, GraphicsEngine.FontStyle.Bold))
+            using (var font2 = GraphicsEngine.Current.Engine.CreateFont("Arial", 8, GraphicsEngine.FontStyle.Bold))
             {
-
-                int height = 0, width = 130;
-                List<object> items = new List<object>();
-                foreach (ILayer layer in element.Layers)
+                try
                 {
-                    if (layer is IWebServiceLayer && layer.Class is IWebServiceClass)
-                    {
-                        IWebServiceClass wClass = layer.Class as IWebServiceClass;
-                        if (await wClass.LegendRequest(_map.Display))
-                        {
-                            System.Drawing.Bitmap lBm = wClass.Legend;
-                            if (lBm == null)
-                            {
-                                continue;
-                            }
 
-                            height += lBm.Height;
-                            items.Add(lBm);
-                        }
-                    }
-                    else if (layer is IFeatureLayer && ((IFeatureLayer)layer).FeatureRenderer is ILegendGroup)
+                    int height = 0, width = 130;
+                    List<object> items = new List<object>();
+                    foreach (ILayer layer in element.Layers)
                     {
-                        IFeatureLayer fLayer = layer as IFeatureLayer;
-                        ILegendGroup lGroup = fLayer.FeatureRenderer as ILegendGroup;
-
-                        width = (int)Math.Max(40 + gr.MeasureString(element.Name, font1).Width, width);
-                        for (int i = 0; i < lGroup.LegendItemCount; i++)
+                        if (layer is IWebServiceLayer && layer.Class is IWebServiceClass)
                         {
-                            ILegendItem lItem = lGroup.LegendItem(i);
-                            if (lItem is ISymbol)
+                            IWebServiceClass wClass = layer.Class as IWebServiceClass;
+                            if (await wClass.LegendRequest(_map.Display))
                             {
-                                height += 22;
-                                width = (int)Math.Max(40 + gr.MeasureString(lItem.LegendLabel, font1).Width, width);
-                                items.Add(lItem);
+                                var lBm = wClass.Legend;
+                                if (lBm == null)
+                                {
+                                    continue;
+                                }
+
+                                height += lBm.Height;
+                                items.Add(lBm);
                             }
                         }
-                        break;
-                    }
-                }
-                bm.Dispose();
-                gr.Dispose();
-                bm = null;
-                gr = null;
-                if (items.Count == 1)
-                {
-                    bm = new System.Drawing.Bitmap(width, height);
-                    gr = System.Drawing.Graphics.FromImage(bm);
-                    gr.FillRectangle(System.Drawing.Brushes.White, 0, 0, bm.Width, bm.Height);
-
-                    if (items[0] is System.Drawing.Bitmap)
-                    {
-                        System.Drawing.Bitmap lBm = (System.Drawing.Bitmap)items[0];
-                        gr.DrawImage(lBm, new System.Drawing.Point(0, 0));
-                        lBm.Dispose();
-                    }
-                    else if (items[0] is ILegendItem)
-                    {
-                        ISymbol symbol = items[0] as ISymbol;
-                        new SymbolPreview(_map).Draw(
-                            gr,
-                            new System.Drawing.Rectangle(2, 1, 30, 20),
-                            symbol);
-                        gr.DrawString(element.Name, font1, System.Drawing.Brushes.Black, 32, 3);
-                    }
-                }
-                else if (items.Count > 1)
-                {
-                    bm = new System.Drawing.Bitmap(width, height + 15);
-                    gr = System.Drawing.Graphics.FromImage(bm);
-                    gr.FillRectangle(System.Drawing.Brushes.White, 0, 0, bm.Width, bm.Height);
-
-                    int y = 12;
-                    foreach (object item in items)
-                    {
-                        if (item is System.Drawing.Image)
+                        else if (layer is IFeatureLayer && ((IFeatureLayer)layer).FeatureRenderer is ILegendGroup)
                         {
-                            System.Drawing.Bitmap lBm = (System.Drawing.Bitmap)item;
-                            gr.DrawImage(lBm, new System.Drawing.Point(0, y));
-                            y += lBm.Height;
-                            lBm.Dispose();
+                            IFeatureLayer fLayer = layer as IFeatureLayer;
+                            ILegendGroup lGroup = fLayer.FeatureRenderer as ILegendGroup;
+
+                            width = (int)Math.Max(40 + gr.MeasureText(element.Name, font1).Width, width);
+                            for (int i = 0; i < lGroup.LegendItemCount; i++)
+                            {
+                                ILegendItem lItem = lGroup.LegendItem(i);
+                                if (lItem is ISymbol)
+                                {
+                                    height += 22;
+                                    width = (int)Math.Max(40 + gr.MeasureText(lItem.LegendLabel, font1).Width, width);
+                                    items.Add(lItem);
+                                }
+                            }
+                            break;
                         }
-                        else if(item is ILegendItem)
+                    }
+
+                    if (items.Count == 1)
+                    {
+                        previewBitmap = GraphicsEngine.Current.Engine.CreateBitmap(width, height);
+                        using (var previewCanvas = previewBitmap.CreateCanvas())
+                        using (var whiteBrush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.White))
+                        using (var blackBrush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.Black))
                         {
-                            ISymbol symbol = item as ISymbol;
-                            new SymbolPreview(_map).Draw(
-                                gr,
-                                new System.Drawing.Rectangle(4, 1 + y, 30, 20),
-                                symbol);
-                            gr.DrawString(((ILegendItem)item).LegendLabel, font2, System.Drawing.Brushes.Black, 34, y + 3);
-                            y += 22;
+                            previewCanvas.FillRectangle(whiteBrush, new GraphicsEngine.CanvasRectangle(0, 0, bm.Width, bm.Height));
+
+                            if (items[0] is GraphicsEngine.Abstraction.IBitmap)
+                            {
+                                var lBm = (GraphicsEngine.Abstraction.IBitmap)items[0];
+                                previewCanvas.DrawBitmap(lBm, new GraphicsEngine.CanvasPoint(0, 0));
+                                lBm.Dispose();
+                            }
+                            else if (items[0] is ILegendItem)
+                            {
+                                ISymbol symbol = items[0] as ISymbol;
+                                new SymbolPreview(_map).Draw(
+                                    previewCanvas,
+                                    new GraphicsEngine.CanvasRectangle(2, 1, 30, 20),
+                                    symbol);
+                                previewCanvas.DrawText(element.Name, font1, blackBrush, 32, 3);
+                            }
                         }
-                    } 
-                    gr.DrawString(element.Name, font1, System.Drawing.Brushes.Black, 2, 2);
+                    }
+                    else if (items.Count > 1)
+                    {
+                        previewBitmap = GraphicsEngine.Current.Engine.CreateBitmap(width, height + 15);
+                        using (var previewCanvas = previewBitmap.CreateCanvas())
+                        using (var whiteBrush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.White))
+                        using (var blackBrush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.Black))
+                        {
+                            previewCanvas.FillRectangle(whiteBrush, new GraphicsEngine.CanvasRectangle(0, 0, bm.Width, bm.Height));
+
+                            int y = 12;
+                            foreach (object item in items)
+                            {
+                                if (item is GraphicsEngine.Abstraction.IBitmap)
+                                {
+                                    var lBm = (GraphicsEngine.Abstraction.IBitmap)item;
+                                    previewCanvas.DrawBitmap(lBm, new GraphicsEngine.CanvasPoint(0, y));
+                                    y += lBm.Height;
+                                    lBm.Dispose();
+                                }
+                                else if (item is ILegendItem)
+                                {
+                                    ISymbol symbol = item as ISymbol;
+                                    new SymbolPreview(_map).Draw(
+                                        previewCanvas,
+                                        new  GraphicsEngine.CanvasRectangle(4, 1 + y, 30, 20),
+                                        symbol);
+                                    previewCanvas.DrawText(((ILegendItem)item).LegendLabel, font2, blackBrush, 34, y + 3);
+                                    y += 22;
+                                }
+                            }
+                            previewCanvas.DrawText(element.Name, font1, blackBrush, 2, 2);
+                        }
+                    }
                 }
-            }
-            catch
-            {
-                if (bm != null)
+                catch
                 {
-                    bm.Dispose();
-                    bm = null;
-                }
-            }
-            finally
-            {
-                font1.Dispose();
-                font2.Dispose();
-                if (gr != null)
-                {
-                    gr.Dispose();
+                    if (previewBitmap != null)
+                    {
+                        previewBitmap.Dispose();
+                    }
                 }
             }
 
-            return bm;
+            return previewBitmap;
         }
         async public Task<TocLegendItems> LegendSymbol(ITOCElement element)
         {
@@ -390,7 +387,7 @@ namespace gView.Framework.Carto.UI
                         IWebServiceClass wClass = layer.Class as IWebServiceClass;
                         if (await wClass.LegendRequest(_map.Display))
                         {
-                            System.Drawing.Bitmap lBm = wClass.Legend;
+                            var lBm = wClass.Legend;
 
                             if (lBm == null)
                             {
@@ -413,13 +410,13 @@ namespace gView.Framework.Carto.UI
                             ILegendItem lItem = lGroup.LegendItem(i);
                             if (lItem is ISymbol)
                             {
-                                var bm = new System.Drawing.Bitmap(20, 20);
-                                using (var gr = System.Drawing.Graphics.FromImage(bm))
+                                var bm =GraphicsEngine.Current.Engine.CreateBitmap(20, 20);
+                                using (var canvas = bm.CreateCanvas())
                                 {
                                     ISymbol symbol = lItem as ISymbol;
                                     new SymbolPreview(_map).Draw(
-                                        gr,
-                                        new System.Drawing.Rectangle().ToLegendItemSymbolRect(),
+                                        canvas,
+                                        new GraphicsEngine.CanvasRectangle().ToLegendItemSymbolRect(),
                                         symbol);
                                 }
                                 items.Add(new TocLegendItem()
@@ -443,82 +440,6 @@ namespace gView.Framework.Carto.UI
                 Items = items
             };
         }
-
-        /*
-        public List<ITOCElement> VisibleElements
-        {
-            get
-            {
-                List<ITOCElement> visElements = new List<ITOCElement>();
-
-                for (int i = 0; i < _elements.Count; i++)
-                {
-                    ITOCElement element = (ITOCElement)_elements[i];
-                    if (element.ElementType == TOCElementType.ClosedGroup)
-                    {
-                        for (int j = i + 1; j < _elements.Count; j++)
-                        {
-                            ITOCElement elemParent = ((ITOCElement)_elements[j]).ParentGroup;
-                            ITOCElement parent = element.ParentGroup;
-                            bool found = false;
-                            while (true)
-                            {
-                                if (parent == elemParent || elemParent == null)
-                                {
-                                    i = j;
-                                    found = true;
-                                    break;
-                                    //return element;
-                                }
-                                if (parent == null) break;
-                                parent = parent.ParentGroup;
-                            }
-                            if (found) break;
-                        }
-                    }
-                    visElements.Add(element);
-                }
-                return visElements;
-            }
-        }
-        */
-
-        /*
-        public void AddGroup(string GroupName, ITOCElement parent)
-        {
-            string name = GroupName;
-            bool found = true;
-            int c = 2;
-
-            while (found)
-            {
-                found = false;
-                foreach (ITOCElement elem in _elements)
-                {
-                    if (elem.ParentGroup == parent && elem.name == name)
-                    {
-                        found = true;
-                        name = GroupName + " " + c.ToString();
-                        c++;
-                        break;
-                    }
-                }
-            }
-            GroupLayer gLayer = new GroupLayer();
-            gLayer.Title = name;
-            if(_map!=null) _map.AddLayer(gLayer);
-
-            if (parent == null)
-            {
-                _elements.Add(new TOCElement(gLayer, name, parent, this, TOCElementType.OpenedGroup));
-            }
-            else
-            {
-                _elements.Insert(this.lastGroupItemIndex(parent) + 1,
-                    new TOCElement(gLayer,name , parent, this, TOCElementType.OpenedGroup));
-            }
-        }
-        */
 
         public void Add2Group(ITOCElement element, ITOCElement Group)
 		{

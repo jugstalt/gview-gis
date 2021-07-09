@@ -1,17 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Geometry;
-using gView.Framework.LinAlg;
-using System.Windows.Forms;
 using gView.Framework.Carto;
 using gView.Framework.Data;
-using gView.Framework.UI;
-using System.Threading;
+using gView.Framework.Editor.Core;
+using gView.Framework.Geometry;
+using gView.Framework.LinAlg;
 using gView.Framework.Symbology;
 using gView.Framework.system;
-using gView.Framework.Editor.Core;
+using gView.Framework.UI;
+using gView.GraphicsEngine;
 using gView.Plugins.Editor.Dialogs;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace gView.Plugins.Editor
 {
@@ -65,18 +65,24 @@ namespace gView.Plugins.Editor
             foreach (ToolStripItem item in _toolsItem.DropDownItems)
             {
                 if (item is PenToolMenuItem)
+                {
                     ((PenToolMenuItem)item).Click += new EventHandler(PenTool_Click);
+                }
             }
             foreach (ToolStripItem item in _items)
             {
                 if (item is CalcToolMenuItem)
+                {
                     ((CalcToolMenuItem)item).Click += new EventHandler(Tool_Click);
+                }
                 else if(item is ToolStripMenuItem)
                 {
                     foreach (ToolStripItem item2 in ((ToolStripMenuItem)item).DropDownItems)
                     {
                         if (item2 is CalcToolMenuItem)
+                        {
                             ((CalcToolMenuItem)item2).Click += new EventHandler(Tool_Click);
+                        }
                     }
                 }
             }
@@ -86,7 +92,10 @@ namespace gView.Plugins.Editor
 
         void PenTool_Click(object sender, EventArgs e)
         {
-            if (!(sender is PenToolMenuItem)) return;
+            if (!(sender is PenToolMenuItem))
+            {
+                return;
+            }
 
             int index = -1;
             if (_selected != null)
@@ -111,9 +120,13 @@ namespace gView.Plugins.Editor
                 if (!_selected.PenTool.Activated(_contextPoint, _mouseWorldPoint, _contextVertex))
                 {
                     if (index != 1)
+                    {
                         SetPenTool(index);
+                    }
                     else
+                    {
                         SetStandardPenTool();
+                    }
                 }
                 else
                 {
@@ -123,7 +136,9 @@ namespace gView.Plugins.Editor
                         _toolsItem.Text = "Active Tool: " + _selected.Text;
 
                         if (SelectedPenToolChanged != null)
+                        {
                             SelectedPenToolChanged(this, _selected.PenTool);
+                        }
                     }
                     else
                     {
@@ -136,16 +151,23 @@ namespace gView.Plugins.Editor
                     _module.Sketch != null &&
                     _module.Sketch.Part != null &&
                     _module.Sketch.Part.PointCount == pointCount + 1)
+                {
                     this.PerformClick();
-
-
+                }
             }
         }
         void Tool_Click(object sender, EventArgs e)
         {
-            if (_selected == null || _selected.PenTool == null) return;
+            if (_selected == null || _selected.PenTool == null)
+            {
+                return;
+            }
+
             if (!(sender is CalcToolMenuItem) ||
-                ((CalcToolMenuItem)sender).CalcTool==null) return;
+                ((CalcToolMenuItem)sender).CalcTool==null)
+            {
+                return;
+            }
 
             object result = ((CalcToolMenuItem)sender).CalcTool.Calc(_contextPoint, _mouseWorldPoint, _contextVertex);
             if (result != null)
@@ -167,26 +189,36 @@ namespace gView.Plugins.Editor
             {
                 if (item is PenToolMenuItem &&
                     ((PenToolMenuItem)item).PenTool != null)
+                {
                     ((PenToolMenuItem)item).PenTool.OnCreate(module);
+                }
             }
             foreach (ToolStripItem item in _items)
             {
                 if (item is PenToolMenuItem &&
                     ((PenToolMenuItem)item).PenTool != null)
+                {
                     ((PenToolMenuItem)item).PenTool.OnCreate(module);
+                }
                 else if(item is CalcToolMenuItem &&
                     ((CalcToolMenuItem)item).CalcTool != null)
+                {
                     ((CalcToolMenuItem)item).CalcTool.OnCreate(module);
+                }
                 else if (item is ToolStripMenuItem)
                 {
                     foreach (ToolStripItem item2 in ((ToolStripMenuItem)item).DropDownItems)
                     {
                         if (item2 is PenToolMenuItem &&
                             ((PenToolMenuItem)item2).PenTool != null)
+                        {
                             ((PenToolMenuItem)item2).PenTool.OnCreate(module);
+                        }
                         else if (item2 is CalcToolMenuItem &&
                             ((CalcToolMenuItem)item2).CalcTool != null)
+                        {
                             ((CalcToolMenuItem)item2).CalcTool.OnCreate(module);
+                        }
                     }
                 }
             }
@@ -265,16 +297,29 @@ namespace gView.Plugins.Editor
         }
         private void SetPenTool(int index)
         {
-            if (index < 0 || index >= _toolsItem.DropDownItems.Count) return;
+            if (index < 0 || index >= _toolsItem.DropDownItems.Count)
+            {
+                return;
+            }
 
             if (_selected != _toolsItem.DropDownItems[index])
             {
-                if (_selected != null) _selected.Checked = false;
+                if (_selected != null)
+                {
+                    _selected.Checked = false;
+                }
+
                 if (_selected != null && _selected.PenTool != null)
+                {
                     _selected.Image = _selected.PenTool.Image as System.Drawing.Image;
+                }
 
                 _selected = _toolsItem.DropDownItems[index] as PenToolMenuItem;
-                if (_selected == null) return;
+                if (_selected == null)
+                {
+                    return;
+                }
+
                 _selected.Image = null;
                 _selected.Checked = true;
 
@@ -283,7 +328,9 @@ namespace gView.Plugins.Editor
                     _toolsItem.Image = _selected.PenTool.Image as System.Drawing.Image;
                     _toolsItem.Text = "Active Tool: " + _selected.Text;
                     if (SelectedPenToolChanged != null)
+                    {
                         SelectedPenToolChanged(this, _selected.PenTool);
+                    }
                 }
                 else
                 {
@@ -311,7 +358,10 @@ namespace gView.Plugins.Editor
             public PenToolMenuItem(IPenTool penTool)
             {
                 _penTool = penTool;
-                if (_penTool == null) return;
+                if (_penTool == null)
+                {
+                    return;
+                }
 
                 this.Text = _penTool.Name;
                 this.Image = _penTool.Image as System.Drawing.Image;
@@ -336,7 +386,10 @@ namespace gView.Plugins.Editor
             public CalcToolMenuItem(ICalcTool penTool)
             {
                 _tool = penTool;
-                if (_tool == null) return;
+                if (_tool == null)
+                {
+                    return;
+                }
 
                 this.Text = _tool.Name;
                 this.Image = _tool.Image as System.Drawing.Image;
@@ -376,7 +429,10 @@ namespace gView.Plugins.Editor
 
         internal static IPath QueryPathSegment(IMap map, IPoint point, bool blink)
         {
-            if (map == null || map.TOC == null || map.Display == null || point == null) return null;
+            if (map == null || map.TOC == null || map.Display == null || point == null)
+            {
+                return null;
+            }
 
             List<ILayer> layers = map.TOC.VisibleLayers;
             double tol = 6 * map.Display.mapScale / (96 / 0.0254);  // [m]
@@ -396,15 +452,28 @@ namespace gView.Plugins.Editor
             foreach (ILayer layer in layers)
             {
                 if (!(layer is IFeatureLayer) ||
-                    ((IFeatureLayer)layer).FeatureClass == null) continue;
+                    ((IFeatureLayer)layer).FeatureClass == null)
+                {
+                    continue;
+                }
 
-                if (layer.MinimumScale > 1 && layer.MinimumScale > map.Display.mapScale) continue;
-                if (layer.MaximumScale > 1 && layer.MaximumScale < map.Display.mapScale) continue;
+                if (layer.MinimumScale > 1 && layer.MinimumScale > map.Display.mapScale)
+                {
+                    continue;
+                }
+
+                if (layer.MaximumScale > 1 && layer.MaximumScale < map.Display.mapScale)
+                {
+                    continue;
+                }
 
                 IFeatureClass fc = ((IFeatureLayer)layer).FeatureClass;
 
                 if (fc.GeometryType != geometryType.Polyline &&
-                    fc.GeometryType != geometryType.Polygon) continue;
+                    fc.GeometryType != geometryType.Polygon)
+                {
+                    continue;
+                }
 
                 filter.SubFields = fc.ShapeFieldName;
                 double distance=0.0;
@@ -413,7 +482,10 @@ namespace gView.Plugins.Editor
                     IFeature feature;
                     while ((feature = cursor.NextFeature().Result) != null)
                     {
-                        if (feature.Shape == null) continue;
+                        if (feature.Shape == null)
+                        {
+                            continue;
+                        }
 
                         int partNr, pointNr;
                         IPoint p = gView.Framework.SpatialAlgorithms.Algorithm.NearestPointToPath(feature.Shape, point, out distance, false, false, out partNr, out pointNr);
@@ -421,9 +493,16 @@ namespace gView.Plugins.Editor
                             partNr >= 0 && pointNr >= 0)
                         {
                             List<IPath> paths = gView.Framework.SpatialAlgorithms.Algorithm.GeometryPaths(feature.Shape);
-                            if (paths == null || paths.Count <= partNr) continue;
+                            if (paths == null || paths.Count <= partNr)
+                            {
+                                continue;
+                            }
+
                             IPath path = paths[partNr];
-                            if (path == null || path.PointCount <= pointNr - 1) continue;
+                            if (path == null || path.PointCount <= pointNr - 1)
+                            {
+                                continue;
+                            }
 
                             coll = new Path();
                             coll.AddPoint(path[pointNr]);
@@ -544,7 +623,11 @@ namespace gView.Plugins.Editor
                     p1 = module.Sketch.Part[module.Sketch.Part.PointCount - 1];
                 }
 
-                if (p1 == null) return null;
+                if (p1 == null)
+                {
+                    return null;
+                }
+
                 Point r = new Point(Math.Cos(direction), Math.Sin(direction));
                 Point r_ = new Point(-r.Y, r.X);
 
@@ -579,7 +662,11 @@ namespace gView.Plugins.Editor
                     p1 = module.Sketch.Part[module.Sketch.Part.PointCount - 1];
                 }
 
-                if (p1 == null) return null;
+                if (p1 == null)
+                {
+                    return null;
+                }
+
                 double dx = world.X - p1.X;
                 double dy = world.Y - p1.Y;
                 double len = Math.Sqrt(dx * dx + dy * dy);
@@ -645,7 +732,10 @@ namespace gView.Plugins.Editor
         public override void EvaluateCalcToolResult(CalcToolResultType type, object result)
         {
             if (_module == null ||
-                _module.Sketch == null) return;
+                _module.Sketch == null)
+            {
+                return;
+            }
 
             _distance = _direction = double.NaN;
             switch (type)
@@ -706,7 +796,9 @@ namespace gView.Plugins.Editor
         public override gView.Framework.Geometry.IPoint CalcPoint(int mouseX, int mouseY, gView.Framework.Geometry.IPoint world)
         {
             if (_module == null)
+            {
                 return base.CalcPoint(mouseX, mouseY, world);
+            }
 
             EditSketch sketch = _module.Sketch;
             IPointCollection part = (sketch != null) ? sketch.Part : null;
@@ -809,17 +901,28 @@ namespace gView.Plugins.Editor
 
         public override bool UseCalcToolResultType(CalcToolResultType type)
         {
-            if (_module == null) return false;
+            if (_module == null)
+            {
+                return false;
+            }
 
             switch (type)
             {
                 case CalcToolResultType.Distance:
                     return !double.IsNaN(_alpha);
                 case CalcToolResultType.AbsolutPos:
-                    if (_module.Sketch == null || _module.Sketch.Part == null) return true;
+                    if (_module.Sketch == null || _module.Sketch.Part == null)
+                    {
+                        return true;
+                    }
+
                     return _module.Sketch.Part.PointCount < 2;
                 case CalcToolResultType.Direction:
-                    if (_module.Sketch==null || _module.Sketch.Part == null) return false;
+                    if (_module.Sketch==null || _module.Sketch.Part == null)
+                    {
+                        return false;
+                    }
+
                     return _module.Sketch.Part.PointCount == 1;
                 case CalcToolResultType.SnapTo:
                     return true;
@@ -829,7 +932,10 @@ namespace gView.Plugins.Editor
 
         public override void EvaluateCalcToolResult(CalcToolResultType type, object result)
         {
-            if (result == null || _module == null || _module.Sketch == null) return;
+            if (result == null || _module == null || _module.Sketch == null)
+            {
+                return;
+            }
 
             if (type == CalcToolResultType.Distance &&
                 result.GetType() == typeof(double) &&
@@ -882,16 +988,16 @@ namespace gView.Plugins.Editor
             if (_lineSymbol == null)
             {
                 _lineSymbol = new SimpleLineSymbol();
-                _lineSymbol.Color = System.Drawing.Color.Gray;
+                _lineSymbol.Color = ArgbColor.Gray;
             }
 
             if (_pointSymbol == null)
             {
                 _pointSymbol = new SimplePointSymbol();
                 _pointSymbol.Marker = SimplePointSymbol.MarkerType.Square;
-                _pointSymbol.Color = System.Drawing.Color.Red;
+                _pointSymbol.Color = ArgbColor.Red;
                 _pointSymbol.Size = 8;
-                _pointSymbol.PenColor = System.Drawing.Color.Yellow;
+                _pointSymbol.PenColor = ArgbColor.Yellow;
                 _pointSymbol.SymbolWidth = 2;
             }
         }
@@ -900,7 +1006,10 @@ namespace gView.Plugins.Editor
         {
             if (_module == null || _module.MapDocument == null ||
                 _module.MapDocument.FocusMap == null ||
-                _module.MapDocument.FocusMap.Display == null) return;
+                _module.MapDocument.FocusMap.Display == null)
+            {
+                return;
+            }
 
             _constContainer.Elements.Clear();
             if (geometry is IPoint ||
@@ -938,9 +1047,11 @@ namespace gView.Plugins.Editor
         #region Helper
         internal static void BuildCircle(Path path, IPoint middle, double raduis, double maxVertexDistance)
         {
-            if (path == null || middle == null) return;
+            if (path == null || middle == null)
+            {
+                return;
+            }
 
-            
             double to=2.0*Math.PI;
 
             //double circum = 2.0 * raduis * Math.PI;
@@ -958,12 +1069,17 @@ namespace gView.Plugins.Editor
                                         middle.Y + raduis * Math.Sin(w)));
             }
             if (path.PointCount > 0)
+            {
                 path.AddPoint(path[0]);
+            }
         }
         internal static void BuildRay(Path path, IPoint p1, IPoint p2, IEnvelope env)
         {
             if (path == null || p1 == null || p2 == null ||
-                env == null) return;
+                env == null)
+            {
+                return;
+            }
 
             double minLength = Math.Max(env.Width, env.Height);
             double length = gView.Framework.SpatialAlgorithms.Algorithm.PointDistance(p1, p2);
@@ -992,7 +1108,9 @@ namespace gView.Plugins.Editor
             public void Draw(IDisplay display)
             {
                 if (display != null && _geometry!=null)
+                {
                     display.Draw(ConstructPenTool._lineSymbol, _geometry);
+                }
             }
 
             #endregion
@@ -1011,7 +1129,9 @@ namespace gView.Plugins.Editor
             public void Draw(IDisplay display)
             {
                 if (display != null && _geometry != null)
+                {
                     display.Draw(ConstructPenTool._pointSymbol, _geometry);
+                }
             }
 
             #endregion
@@ -1024,11 +1144,16 @@ namespace gView.Plugins.Editor
         }
         static protected Path ReducePath(Path path, int reduce)
         {
-            if (path == null) return null;
+            if (path == null)
+            {
+                return null;
+            }
 
             Path p = new Path();
             for (int i = 0; i < path.PointCount - reduce; i++)
+            {
                 p.AddPoint(path[i]);
+            }
 
             return p;
         }
@@ -1099,7 +1224,11 @@ namespace gView.Plugins.Editor
 
         public override IPoint CalcPoint(int mouseX, int mouseY, IPoint world)
         {
-            if (world == null) return null;
+            if (world == null)
+            {
+                return null;
+            }
+
             if (_point1 == null || _polyLine == null || _geometry == null)
             {
                 _world = world;
@@ -1147,7 +1276,10 @@ namespace gView.Plugins.Editor
         public override void EvaluateCalcToolResult(CalcToolResultType type, object result)
         {
             if (_module == null ||
-                _module.Sketch == null) return;
+                _module.Sketch == null)
+            {
+                return;
+            }
 
             _distance = _direction = double.NaN;
             switch (type)
@@ -1183,7 +1315,9 @@ namespace gView.Plugins.Editor
             get
             {
                 if (_polyLine != null && _polyLine.PathCount == 1)
+                {
                     return ConstructPenTool.ReducePath(_polyLine[0] as Path, 1);
+                }
 
                 return null;
             }
@@ -1230,7 +1364,10 @@ namespace gView.Plugins.Editor
                 _module.MapDocument == null ||
                 _module.MapDocument.FocusMap == null ||
                 _module.MapDocument.FocusMap.Display == null ||
-                _module.MapDocument.FocusMap.Display.Envelope == null) return true;
+                _module.MapDocument.FocusMap.Display.Envelope == null)
+            {
+                return true;
+            }
 
             _clickPos++;
             if (_geometry == null)
@@ -1281,7 +1418,10 @@ namespace gView.Plugins.Editor
                 _module.MapDocument == null ||
                 _module.MapDocument.FocusMap == null ||
                 _module.MapDocument.FocusMap.Display == null ||
-                _module.MapDocument.FocusMap.Display.Envelope == null) return null;
+                _module.MapDocument.FocusMap.Display.Envelope == null)
+            {
+                return null;
+            }
 
             if (_clickPos == 1 && _p11 != null && _polyLine1 != null && _polyLine1.PathCount == 1)
             {
@@ -1320,7 +1460,11 @@ namespace gView.Plugins.Editor
 
         public override void EvaluateCalcToolResult(CalcToolResultType type, object result)
         {
-            if (result == null) return;
+            if (result == null)
+            {
+                return;
+            }
+
             switch (type)
             {
                 case CalcToolResultType.AbsolutPos:
@@ -1336,11 +1480,18 @@ namespace gView.Plugins.Editor
                     {
                         double direction = (double)result;
                         if (_clickPos == 1 && _p11 != null)
+                        {
                             _world = new Point(_p11.X + Math.Cos(direction), _p11.Y + Math.Sin(direction));
+                        }
                         else if (_clickPos == 3 && _p21 != null)
+                        {
                             _world = new Point(_p21.X + Math.Cos(direction), _p21.Y + Math.Sin(direction));
+                        }
                         else
+                        {
                             break;
+                        }
+
                         MouseClick();
                         base.DrawConstructionSketch(_geometry);
                     }
@@ -1353,9 +1504,14 @@ namespace gView.Plugins.Editor
             get
             {
                 if (_clickPos > 2 && _polyLine2 != null && _polyLine2.PathCount == 1)
+                {
                     return ConstructPenTool.ReducePath((Path)_polyLine2[0], 1);
+                }
+
                 if (_clickPos < 2 && _polyLine1 != null && _polyLine1.PathCount == 1)
+                {
                     return ConstructPenTool.ReducePath((Path)_polyLine1[0], 1);
+                }
 
                 return null;
             }
@@ -1488,7 +1644,10 @@ namespace gView.Plugins.Editor
         public override IPoint CalcPoint(int mouseX, int mouseY, IPoint world)
         {
             _world = world;
-            if (_world == null) return null;
+            if (_world == null)
+            {
+                return null;
+            }
 
             if (_clickPos == 1 && _middle1 != null && _polyLine1 != null && _polyLine1.PathCount == 1)
             {
@@ -1545,7 +1704,11 @@ namespace gView.Plugins.Editor
 
         public override void EvaluateCalcToolResult(CalcToolResultType type, object result)
         {
-            if (result == null) return;
+            if (result == null)
+            {
+                return;
+            }
+
             switch (type)
             {
                 case CalcToolResultType.AbsolutPos:
@@ -1561,11 +1724,18 @@ namespace gView.Plugins.Editor
                     {
                         double distance = (double)result;
                         if (_clickPos == 1 && _middle1 != null)
+                        {
                             _world = new Point(_middle1.X + distance, _middle1.Y);
+                        }
                         else if (_clickPos == 3 && _middle2 != null)
+                        {
                             _world = new Point(_middle2.X + distance, _middle2.Y);
+                        }
                         else
+                        {
                             break;
+                        }
+
                         MouseClick();
                         base.DrawConstructionSketch(_geometry);
                     }
@@ -1636,7 +1806,10 @@ namespace gView.Plugins.Editor
                 _module.MapDocument == null ||
                 _module.MapDocument.FocusMap == null ||
                 _module.MapDocument.FocusMap.Display == null ||
-                _module.MapDocument.FocusMap.Display.Envelope == null) return true;
+                _module.MapDocument.FocusMap.Display.Envelope == null)
+            {
+                return true;
+            }
 
             _clickPos++;
             if (_geometry == null)
@@ -1696,10 +1869,15 @@ namespace gView.Plugins.Editor
                 _module.MapDocument == null ||
                 _module.MapDocument.FocusMap == null ||
                 _module.MapDocument.FocusMap.Display == null ||
-                _module.MapDocument.FocusMap.Display.Envelope == null) return null;
+                _module.MapDocument.FocusMap.Display.Envelope == null)
+            {
+                return null;
+            }
 
-            
-            if (_world == null) return null;
+            if (_world == null)
+            {
+                return null;
+            }
 
             if (_clickPos == 1 && _middle1 != null && _polyLine1 != null && _polyLine1.PathCount == 1)
             {
@@ -1713,7 +1891,10 @@ namespace gView.Plugins.Editor
             }
             else if (_clickPos == 4)
             {
-                if (_p1 == null || _p2 == null) return null;
+                if (_p1 == null || _p2 == null)
+                {
+                    return null;
+                }
 
                 double dist1 = gView.Framework.SpatialAlgorithms.Algorithm.PointDistance(_world, _p1);
                 double dist2 = gView.Framework.SpatialAlgorithms.Algorithm.PointDistance(_world, _p2);
@@ -1758,7 +1939,11 @@ namespace gView.Plugins.Editor
         }
         public override void EvaluateCalcToolResult(CalcToolResultType type, object result)
         {
-            if (result == null) return;
+            if (result == null)
+            {
+                return;
+            }
+
             switch (type)
             {
                 case CalcToolResultType.AbsolutPos:
@@ -1774,9 +1959,14 @@ namespace gView.Plugins.Editor
                     {
                         double distance = (double)result;
                         if (_clickPos == 1 && _middle1 != null)
+                        {
                             _world = new Point(_middle1.X + distance, _middle1.Y);
+                        }
                         else
+                        {
                             break;
+                        }
+
                         MouseClick();
                         base.DrawConstructionSketch(_geometry);
                     }
@@ -1786,9 +1976,14 @@ namespace gView.Plugins.Editor
                     {
                         double direction = (double)result;
                         if (_clickPos == 3 && _p11 != null)
+                        {
                             _world = new Point(_p11.X + Math.Cos(direction), _p11.Y + Math.Sin(direction));
+                        }
                         else
+                        {
                             break;
+                        }
+
                         MouseClick();
                         base.DrawConstructionSketch(_geometry);
                     }
@@ -1815,7 +2010,10 @@ namespace gView.Plugins.Editor
 
         private bool Solve()
         {
-            if (_middle1 == null || _p11 == null || _p12 == null || _radius1 < 0) return false;
+            if (_middle1 == null || _p11 == null || _p12 == null || _radius1 < 0)
+            {
+                return false;
+            }
 
             _p1 = _p2 = null;
 
@@ -1824,11 +2022,17 @@ namespace gView.Plugins.Editor
 
             IPoint ps = gView.Framework.SpatialAlgorithms.Algorithm.SegmentIntersection(
                 _p11, _p12, _middle1, new Point(_middle1.X - dy, _middle1.Y + dx), false);
-            if (ps == null) return false;
+            if (ps == null)
+            {
+                return false;
+            }
 
             double dist = gView.Framework.SpatialAlgorithms.Algorithm.PointDistance(ps, _middle1);
-            if (dist > _radius1) return false;
-            
+            if (dist > _radius1)
+            {
+                return false;
+            }
+
             dx /= len; dy /= len;
             double s_2 = Math.Sqrt(_radius1 * _radius1 - dist * dist);
 
@@ -1908,7 +2112,10 @@ namespace gView.Plugins.Editor
                 _module.MapDocument == null ||
                 _module.MapDocument.FocusMap == null ||
                 _module.MapDocument.FocusMap.Display == null ||
-                _module.MapDocument.FocusMap.Display.Envelope == null) return true;
+                _module.MapDocument.FocusMap.Display.Envelope == null)
+            {
+                return true;
+            }
 
             _clickPos++;
             if (_geometry == null)
@@ -1962,10 +2169,15 @@ namespace gView.Plugins.Editor
                 _module.MapDocument == null ||
                 _module.MapDocument.FocusMap == null ||
                 _module.MapDocument.FocusMap.Display == null ||
-                _module.MapDocument.FocusMap.Display.Envelope == null) return null;
+                _module.MapDocument.FocusMap.Display.Envelope == null)
+            {
+                return null;
+            }
 
-
-            if (_world == null) return null;
+            if (_world == null)
+            {
+                return null;
+            }
 
             if (_clickPos == 1 && _middle1 != null && _polyLine1 != null && _polyLine1.PathCount == 1)
             {
@@ -1974,7 +2186,10 @@ namespace gView.Plugins.Editor
             }
             else if (_clickPos == 3)
             {
-                if (_p1 == null) return null;
+                if (_p1 == null)
+                {
+                    return null;
+                }
 
                 double dist1 = gView.Framework.SpatialAlgorithms.Algorithm.PointDistance(_world, _p1);
                 double dist2 = gView.Framework.SpatialAlgorithms.Algorithm.PointDistance(_world, _p2);
@@ -2019,7 +2234,11 @@ namespace gView.Plugins.Editor
         }
         public override void EvaluateCalcToolResult(CalcToolResultType type, object result)
         {
-            if (result == null) return;
+            if (result == null)
+            {
+                return;
+            }
+
             switch (type)
             {
                 case CalcToolResultType.AbsolutPos:
@@ -2035,9 +2254,14 @@ namespace gView.Plugins.Editor
                     {
                         double distance = (double)result;
                         if (_clickPos == 1 && _middle1 != null)
+                        {
                             _world = new Point(_middle1.X + distance, _middle1.Y);
+                        }
                         else
+                        {
                             break;
+                        }
+
                         MouseClick();
                         base.DrawConstructionSketch(_geometry);
                     }
@@ -2060,12 +2284,18 @@ namespace gView.Plugins.Editor
 
         private bool Solve()
         {
-            if (_middle1 == null || _p11 == null || _radius1 < 0) return false;
+            if (_middle1 == null || _p11 == null || _radius1 < 0)
+            {
+                return false;
+            }
 
             _p1 = _p2 = null;
 
             double d = gView.Framework.SpatialAlgorithms.Algorithm.PointDistance(_p11, _middle1);
-            if (d < _radius1) return false;
+            if (d < _radius1)
+            {
+                return false;
+            }
 
             double s = Math.Sqrt(d * d - _radius1 * _radius1);
             double h = _radius1 * s / d;
@@ -2132,12 +2362,16 @@ namespace gView.Plugins.Editor
             get
             {
                 if (_parent.ActivePenTool is ConstructPenTool)
+                {
                     return ((ConstructPenTool)_parent.ActivePenTool).ConstructionPath;
+                }
 
                 if (_module != null &&
                     _module.Sketch != null &&
                     _module.Sketch.Part is Path)
+                {
                     return _module.Sketch.Part as Path;
+                }
 
                 return null;
             }
@@ -2218,7 +2452,10 @@ namespace gView.Plugins.Editor
             get
             {
                 if (base.CurrentPath != null &&
-                    base.CurrentPath.PointCount > 0) return true;
+                    base.CurrentPath.PointCount > 0)
+                {
+                    return true;
+                }
 
                 return false;
             }
@@ -2330,7 +2567,10 @@ namespace gView.Plugins.Editor
         {
             if (base.CurrentPath == null ||
                 base.CurrentPath.PointCount == 0 ||
-                vertex == null) return null;
+                vertex == null)
+            {
+                return null;
+            }
 
             IPath segment = ParentPenToolMenuItem.QueryPathSegment(_module.MapDocument.FocusMap, mouseWorld);
             if (segment != null && segment.PointCount == 2)
@@ -2373,7 +2613,10 @@ namespace gView.Plugins.Editor
             get
             {
                 if (base.CurrentPath != null &&
-                    base.CurrentPath.PointCount > 0) return true;
+                    base.CurrentPath.PointCount > 0)
+                {
+                    return true;
+                }
 
                 return false;
             }
@@ -2402,14 +2645,23 @@ namespace gView.Plugins.Editor
         }
         public override object Calc(IPoint world, IPoint mouseWorld, IPoint vertex)
         {
-            if (vertex == null) vertex = world;
+            if (vertex == null)
+            {
+                vertex = world;
+            }
 
             if (base.CurrentPath == null ||
                 base.CurrentPath.PointCount == 0 ||
-                vertex == null) return null;
+                vertex == null)
+            {
+                return null;
+            }
 
             IPoint p1 = base.CurrentPath[base.CurrentPath.PointCount - 1];
-            if (p1 == null) return null;
+            if (p1 == null)
+            {
+                return null;
+            }
 
             double dx = vertex.X - p1.X;
             double dy = vertex.Y - p1.Y;
@@ -2438,7 +2690,10 @@ namespace gView.Plugins.Editor
             get
             {
                 if (base.CurrentPath != null &&
-                    base.CurrentPath.PointCount > 0) return true;
+                    base.CurrentPath.PointCount > 0)
+                {
+                    return true;
+                }
 
                 return false;
             }
@@ -2494,12 +2749,18 @@ namespace gView.Plugins.Editor
         public override object Calc(IPoint world, IPoint mouseWorld, IPoint vertex)
         {
             if (base.CurrentPath == null ||
-                base.CurrentPath.PointCount < 2) return null;
+                base.CurrentPath.PointCount < 2)
+            {
+                return null;
+            }
 
             IPoint p1 = base.CurrentPath[base.CurrentPath.PointCount - 2];
             IPoint p2 = base.CurrentPath[base.CurrentPath.PointCount - 1];
 
-            if (p1 == null) return null;
+            if (p1 == null)
+            {
+                return null;
+            }
 
             double dx = p2.X - p1.X;
             double dy = p2.Y - p1.Y;
@@ -2529,7 +2790,10 @@ namespace gView.Plugins.Editor
             get
             {
                 if (base.CurrentPath != null &&
-                    base.CurrentPath.PointCount > 1) return true;
+                    base.CurrentPath.PointCount > 1)
+                {
+                    return true;
+                }
 
                 return false;
             }
@@ -2560,14 +2824,23 @@ namespace gView.Plugins.Editor
 
         public override object Calc(IPoint world, IPoint mouseWorld, IPoint vertex)
         {
-            if (vertex == null) vertex = world;
+            if (vertex == null)
+            {
+                vertex = world;
+            }
 
             if (base.CurrentPath == null ||
                 base.CurrentPath.PointCount == 0 ||
-                vertex == null) return null;
+                vertex == null)
+            {
+                return null;
+            }
 
             IPoint p1 = base.CurrentPath[base.CurrentPath.PointCount - 1];
-            if (p1 == null) return null;
+            if (p1 == null)
+            {
+                return null;
+            }
 
             double dx = vertex.X - p1.X;
             double dy = vertex.Y - p1.Y;
@@ -2596,7 +2869,10 @@ namespace gView.Plugins.Editor
             get
             {
                 if (base.CurrentPath != null &&
-                    base.CurrentPath.PointCount > 0) return true;
+                    base.CurrentPath.PointCount > 0)
+                {
+                    return true;
+                }
 
                 return false;
             }
@@ -2651,10 +2927,16 @@ namespace gView.Plugins.Editor
         {
             if (base.CurrentPath == null ||
                 base.CurrentPath.PointCount == 0 ||
-                vertex == null) return null;
+                vertex == null)
+            {
+                return null;
+            }
 
             IPoint p1 = base.CurrentPath[base.CurrentPath.PointCount - 1];
-            if (p1 == null) return null;
+            if (p1 == null)
+            {
+                return null;
+            }
 
             double dx = vertex.X - p1.X;
             double dy = vertex.Y - p1.Y;
@@ -2688,7 +2970,10 @@ namespace gView.Plugins.Editor
             get
             {
                 if (base.CurrentPath != null &&
-                    base.CurrentPath.PointCount > 0) return true;
+                    base.CurrentPath.PointCount > 0)
+                {
+                    return true;
+                }
 
                 return false;
             }
@@ -2738,7 +3023,10 @@ namespace gView.Plugins.Editor
             {
                 p = world;
             }
-            if (p == null) return null;
+            if (p == null)
+            {
+                return null;
+            }
 
             FormXY dlg = new FormXY();
             dlg.Text = "Absolut X,Y";
@@ -2795,10 +3083,16 @@ namespace gView.Plugins.Editor
         {
             if (base.CurrentPath == null ||
                 base.CurrentPath.PointCount == 0 ||
-                vertex == null) return null;
+                vertex == null)
+            {
+                return null;
+            }
 
             IPoint p1 = _module.Sketch.Part[_module.Sketch.Part.PointCount - 1];
-            if (p1 == null) return null;
+            if (p1 == null)
+            {
+                return null;
+            }
 
             double dx = vertex.X - p1.X;
             double dy = vertex.Y - p1.Y;
@@ -2831,7 +3125,10 @@ namespace gView.Plugins.Editor
             get
             {
                 if (base.CurrentPath != null &&
-                    base.CurrentPath.PointCount > 0) return true;
+                    base.CurrentPath.PointCount > 0)
+                {
+                    return true;
+                }
 
                 return false;
             }
@@ -2862,8 +3159,15 @@ namespace gView.Plugins.Editor
 
         public override object Calc(IPoint world, IPoint mouseWorld, IPoint vertex)
         {
-            if (vertex == null) vertex = world;
-            if (vertex == null) return null;
+            if (vertex == null)
+            {
+                vertex = world;
+            }
+
+            if (vertex == null)
+            {
+                return null;
+            }
 
             IPath segment = ParentPenToolMenuItem.QueryPathSegment(_module.MapDocument.FocusMap, mouseWorld);
             if (segment != null && segment.PointCount == 2)
@@ -2872,7 +3176,9 @@ namespace gView.Plugins.Editor
                 IPoint p2 = segment[1];
 
                 if (_module != null && _module.Sketch == null)
+                {
                     _module.CreateStandardFeature();
+                }
 
                 return new Point(p1.X / 2.0 + p2.X / 2.0, 
                                  p1.Y / 2.0 + p2.Y / 2.0);
@@ -2920,10 +3226,17 @@ namespace gView.Plugins.Editor
 
         public override object Calc(IPoint world, IPoint mouseWorld, IPoint vertex)
         {
-            if (vertex == null) vertex = world;
+            if (vertex == null)
+            {
+                vertex = world;
+            }
+
             if (base.CurrentPath == null ||
                 base.CurrentPath.PointCount == 0 ||
-                vertex == null) return null;
+                vertex == null)
+            {
+                return null;
+            }
 
             IPath segment = ParentPenToolMenuItem.QueryPathSegment(_module.MapDocument.FocusMap, mouseWorld);
             if (segment != null && segment.PointCount == 2)
@@ -2954,7 +3267,10 @@ namespace gView.Plugins.Editor
             get
             {
                 if (base.CurrentPath != null &&
-                    base.CurrentPath.PointCount > 0) return true;
+                    base.CurrentPath.PointCount > 0)
+                {
+                    return true;
+                }
 
                 return false;
             }
@@ -2985,10 +3301,17 @@ namespace gView.Plugins.Editor
 
         public override object Calc(IPoint world, IPoint mouseWorld, IPoint vertex)
         {
-            if (vertex == null) vertex = world;
+            if (vertex == null)
+            {
+                vertex = world;
+            }
+
             if (base.CurrentPath == null ||
                 base.CurrentPath.PointCount == 0 ||
-                vertex == null) return null;
+                vertex == null)
+            {
+                return null;
+            }
 
             IPath segment = ParentPenToolMenuItem.QueryPathSegment(_module.MapDocument.FocusMap, mouseWorld);
             if (segment != null && segment.PointCount == 2)
@@ -3016,7 +3339,10 @@ namespace gView.Plugins.Editor
             get
             {
                 if (base.CurrentPath != null &&
-                    base.CurrentPath.PointCount > 0) return true;
+                    base.CurrentPath.PointCount > 0)
+                {
+                    return true;
+                }
 
                 return false;
             }

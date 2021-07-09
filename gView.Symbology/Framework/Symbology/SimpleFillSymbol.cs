@@ -4,9 +4,9 @@ using gView.Framework.IO;
 using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Reflection;
 
 namespace gView.Framework.Symbology
@@ -14,20 +14,20 @@ namespace gView.Framework.Symbology
     [gView.Framework.system.RegisterPlugIn("1496A1A8-8087-4eba-86A0-23FB91197B22")]
     public sealed class SimpleFillSymbol : LegendItem, IFillSymbol, IPropertyPage, IPenColor, IBrushColor, IPenWidth, IPenDashStyle
     {
-        private SolidBrush _brush;
-        private Color _color;
+        private IBrush _brush;
+        private ArgbColor _color;
         private ISymbol _outlineSymbol = null;
 
         public SimpleFillSymbol()
         {
-            _color = Color.Red;
-            _brush = new SolidBrush(_color);
+            _color = ArgbColor.Red;
+            _brush = Current.Engine.CreateSolidBrush(_color);
         }
 
-        private SimpleFillSymbol(Color color)
+        private SimpleFillSymbol(ArgbColor color)
         {
             _color = color;
-            _brush = new SolidBrush(_color);
+            _brush = Current.Engine.CreateSolidBrush(_color);
         }
 
         ~SimpleFillSymbol()
@@ -38,9 +38,8 @@ namespace gView.Framework.Symbology
 
         [Browsable(true)]
         [Category("Fill Symbol")]
-        //[Editor(typeof(gView.Framework.UI.ColorTypeEditor),typeof(System.Drawing.Design.UITypeEditor))]
         [UseColorPicker()]
-        public System.Drawing.Color Color
+        public ArgbColor Color
         {
             get
             {
@@ -56,7 +55,6 @@ namespace gView.Framework.Symbology
         [Browsable(true)]
         [DisplayName("Symbol")]
         [Category("Outline Symbol")]
-        //[Editor(typeof(gView.Framework.UI.LineSymbolTypeEditor),typeof(System.Drawing.Design.UITypeEditor))]
         [UseLineSymbolPicker()]
         public ISymbol OutlineSymbol
         {
@@ -98,7 +96,7 @@ namespace gView.Framework.Symbology
         [Category("Outline Symbol")]
         //[Editor(typeof(gView.Framework.UI.ColorTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
         [UseColorPicker()]
-        public Color OutlineColor
+        public ArgbColor OutlineColor
         {
             get { return PenColor; }
             set { PenColor = value; }
@@ -109,7 +107,7 @@ namespace gView.Framework.Symbology
         [Category("Outline Symbol")]
         //[Editor(typeof(gView.Framework.UI.DashStyleTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
         [UseDashStylePicker()]
-        public DashStyle OutlineDashStyle
+        public LineDashStyle OutlineDashStyle
         {
             get { return PenDashStyle; }
             set { PenDashStyle = value; }
@@ -128,19 +126,19 @@ namespace gView.Framework.Symbology
 
         #region IFillSymbol Member
 
-        public void FillPath(IDisplay display, System.Drawing.Drawing2D.GraphicsPath path)
+        public void FillPath(IDisplay display, IGraphicsPath path)
         {
-            if (_outlineSymbol == null || this.OutlineColor == null || this.OutlineColor.A == 0)
+            if (_outlineSymbol == null || this.OutlineColor.IsTransparent)
             {
-                display.GraphicsContext.SmoothingMode = (SmoothingMode)this.SmoothingMode;
+                display.Canvas.SmoothingMode = (SmoothingMode)this.SmoothingMode;
             }
 
-            if (_color.A > 0)
+            if (!_color.IsTransparent)
             {
-                display.GraphicsContext.FillPath(_brush, path);
+                display.Canvas.FillPath(_brush, path);
             }
 
-            display.GraphicsContext.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+            display.Canvas.SmoothingMode = GraphicsEngine.SmoothingMode.None;
 
             //if (_outlineSymbol != null)
             //{
@@ -168,12 +166,12 @@ namespace gView.Framework.Symbology
 
         public void Draw(IDisplay display, IGeometry geometry)
         {
-            GraphicsPath gp = DisplayOperations.Geometry2GraphicsPath(display, geometry);
+            var gp = DisplayOperations.Geometry2GraphicsPath(display, geometry);
             if (gp != null)
             {
                 this.FillPath(display, gp);
 
-                if (this.OutlineColor != null && this.OutlineColor.A > 0)
+                if (!this.OutlineColor.IsTransparent)
                 {
                     SimpleFillSymbol.DrawOutlineSymbol(display, _outlineSymbol, geometry, gp);
                 }
@@ -236,7 +234,7 @@ namespace gView.Framework.Symbology
         {
             base.Load(stream);
 
-            this.Color = Color.FromArgb((int)stream.Load("color", Color.Red.ToArgb()));
+            this.Color = ArgbColor.FromArgb((int)stream.Load("color", ArgbColor.Red.ToArgb()));
             _outlineSymbol = (ISymbol)stream.Load("outlinesymbol");
         }
 
@@ -279,7 +277,7 @@ namespace gView.Framework.Symbology
         #region IPenColor Member
 
         [Browsable(false)]
-        public Color PenColor
+        public ArgbColor PenColor
         {
             get
             {
@@ -287,7 +285,7 @@ namespace gView.Framework.Symbology
                 {
                     return ((IPenColor)_outlineSymbol).PenColor;
                 }
-                return Color.Transparent;
+                return ArgbColor.Transparent;
             }
             set
             {
@@ -303,7 +301,7 @@ namespace gView.Framework.Symbology
         #region IBrushColor Member
 
         [Browsable(false)]
-        public Color FillColor
+        public ArgbColor FillColor
         {
             get
             {
@@ -412,7 +410,7 @@ namespace gView.Framework.Symbology
         #region IPenDashStyle Member
 
         [Browsable(false)]
-        public DashStyle PenDashStyle
+        public LineDashStyle PenDashStyle
         {
             get
             {
@@ -420,7 +418,7 @@ namespace gView.Framework.Symbology
                 {
                     return ((IPenDashStyle)_outlineSymbol).PenDashStyle;
                 }
-                return DashStyle.Solid;
+                return LineDashStyle.Solid;
             }
             set
             {
@@ -433,14 +431,15 @@ namespace gView.Framework.Symbology
 
         #endregion
 
-        public static void DrawOutlineSymbol(IDisplay display, ISymbol outlineSymbol, IGeometry geometry, GraphicsPath gp)
+        public static void DrawOutlineSymbol(IDisplay display, ISymbol outlineSymbol, IGeometry geometry, IGraphicsPath gp)
         {
             #region Überprüfen auf dash!!!
+
             if (outlineSymbol != null)
             {
                 bool isDash = false;
                 if (outlineSymbol is IPenDashStyle &&
-                    ((IPenDashStyle)outlineSymbol).PenDashStyle != DashStyle.Solid)
+                    ((IPenDashStyle)outlineSymbol).PenDashStyle != LineDashStyle.Solid)
                 {
                     isDash = true;
                 }
@@ -448,7 +447,7 @@ namespace gView.Framework.Symbology
                 {
                     foreach (SymbolCollectionItem item in ((SymbolCollection)outlineSymbol).Symbols)
                     {
-                        if (item.Symbol is IPenDashStyle && ((IPenDashStyle)item.Symbol).PenDashStyle != DashStyle.Solid)
+                        if (item.Symbol is IPenDashStyle && ((IPenDashStyle)item.Symbol).PenDashStyle != LineDashStyle.Solid)
                         {
                             isDash = true;
                         }
@@ -489,6 +488,7 @@ namespace gView.Framework.Symbology
                     }
                 }
             }
+
             #endregion
         }
 

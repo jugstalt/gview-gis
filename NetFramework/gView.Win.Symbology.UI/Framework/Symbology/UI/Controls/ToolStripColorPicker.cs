@@ -1,11 +1,7 @@
 using System;
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using System.Windows.Forms;
 using System.Drawing;
-using System.Drawing.Imaging;
+using System.Windows.Forms;
 
 namespace gView.Framework.Symbology.UI.Controls
 {
@@ -219,7 +215,9 @@ namespace gView.Framework.Symbology.UI.Controls
             {
                 components.Dispose();
                 if (!_colorPicker.IsDisposed)
+                {
                     _colorPicker.Dispose();
+                }
             }
             base.Dispose(disposing);
         }
@@ -341,9 +339,13 @@ namespace gView.Framework.Symbology.UI.Controls
                 }
 
                 if (_parentControl != null)
+                {
                     _colorPicker.Show(_parentControl, startPoint);
+                }
                 else
+                {
                     _colorPicker.Show(new Point(startPoint.X,startPoint.Y));
+                }
             }
 
             base.OnMouseDown(e);
@@ -354,11 +356,19 @@ namespace gView.Framework.Symbology.UI.Controls
         /// <returns></returns>
         private Point GetOpenPoint()
         {
-            if (this.Owner == null) return new Point(5, 5);
+            if (this.Owner == null)
+            {
+                return new Point(5, 5);
+            }
+
             int x = 0;
             foreach (ToolStripItem item in this.Parent.Items)
             {
-                if (item == this) break;
+                if (item == this)
+                {
+                    break;
+                }
+
                 x += item.Width;
             }
             return this.Owner.PointToScreen(new Point(x, 0));
@@ -371,7 +381,9 @@ namespace gView.Framework.Symbology.UI.Controls
         public void OnSelectedColorChanged(EventArgs e)
         {
             if (SelectedColorChanged != null)
+            {
                 SelectedColorChanged(this, e);
+            }
         }
         /// <summary>
         /// Repaint the button with the new color 
@@ -392,7 +404,9 @@ namespace gView.Framework.Symbology.UI.Controls
             ToolTipText = _originalToolTipText;
             // Refresh the toolstrip that holds this button.
             if (this.Owner != null)
+            {
                 this.Owner.Refresh();
+            }
         }
         #endregion
 

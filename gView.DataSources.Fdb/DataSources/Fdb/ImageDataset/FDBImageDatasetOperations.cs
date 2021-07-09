@@ -635,7 +635,7 @@ namespace gView.DataSources.Fdb.ImageDataset
                 feature.Fields.Add(new FieldValue("PATH2", ""));
             }
             feature.Fields.Add(new FieldValue("RF_PROVIDER", PlugInManager.PlugInID(rFileDataset).ToString()));
-            feature.Fields.Add(new FieldValue("MANAGED", _managed && (rasterLayer is IBitmap)));
+            feature.Fields.Add(new FieldValue("MANAGED", _managed && (rasterLayer is IRasterFileBitmap)));
             feature.Fields.Add(new FieldValue("FORMAT", fi.Extension.Replace(".", "")));
             feature.Fields.Add(new FieldValue("CELLX", cellX));
             feature.Fields.Add(new FieldValue("CELLY", cellY));

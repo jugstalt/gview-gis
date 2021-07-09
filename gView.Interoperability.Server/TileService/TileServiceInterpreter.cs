@@ -1,19 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.MapServer;
-using gView.Framework.Metadata;
-using gView.Framework.IO;
-using System.IO;
+﻿using gView.Data.Framework.Data.TileCache;
 using gView.Framework.Carto;
-using gView.Framework.system;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Collections.Specialized;
-using gView.Data.Framework.Data.TileCache;
+using gView.Framework.IO;
+using gView.Framework.Metadata;
+using gView.Framework.system;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
+using gView.MapServer;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.Server.TileService
@@ -37,12 +37,16 @@ namespace gView.Interoperability.Server.TileService
             try
             {
                 if (context == null || context.ServiceRequest == null)
+                {
                     return;
+                }
 
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
                     if (serviceMap == null)
+                    {
                         return;
+                    }
 
                     if (_mapServer == null)
                     {
@@ -59,7 +63,9 @@ namespace gView.Interoperability.Server.TileService
                     string service = context.ServiceRequest.Service;
                     string request = context.ServiceRequest.Request;
                     if (request.ToLower().StartsWith("path="))
+                    {
                         request = request.Substring(5);
+                    }
 
                     string[] args = request.Split('/');
 
@@ -93,7 +99,9 @@ namespace gView.Interoperability.Server.TileService
                             {
                                 int epsg = int.Parse(args[1]);
                                 if (metadata.EPSGCodes.Contains(epsg))
+                                {
                                     context.ServiceRequest.Response = TmsCapabilities(context, serviceMap, metadata, epsg);
+                                }
                             }
                             else if (args.Length == 7) // tms/srs/1.0.0/service/0/0/0.png
                             {
@@ -102,7 +110,10 @@ namespace gView.Interoperability.Server.TileService
                                 int row = (args[0] == "tms" ? int.Parse(args[5]) : int.Parse(args[6].Split('.')[0]));
                                 int col = (args[0] == "tms" ? int.Parse(args[6].Split('.')[0]) : int.Parse(args[5]));
                                 string format = ".png";
-                                if (args[6].ToLower().EndsWith(".jpg")) format = ".jpg";
+                                if (args[6].ToLower().EndsWith(".jpg"))
+                                {
+                                    format = ".jpg";
+                                }
 
                                 await GetTile(context, serviceMap, metadata, epsg, scale, row, col, format, (args[0] == "tms" ? GridOrientation.LowerLeft : GridOrientation.UpperLeft), renderOnTheFly);
                             }
@@ -113,7 +124,10 @@ namespace gView.Interoperability.Server.TileService
                                 int col = int.Parse(args[4]) * 1000000 + int.Parse(args[5]) * 1000 + int.Parse(args[6]);
                                 int row = int.Parse(args[7]) * 1000000 + int.Parse(args[8]) * 1000 + int.Parse(args[9].Split('.')[0]);
                                 string format = ".png";
-                                if (args[9].ToLower().EndsWith(".jpg")) format = ".jpg";
+                                if (args[9].ToLower().EndsWith(".jpg"))
+                                {
+                                    format = ".jpg";
+                                }
 
                                 await GetTile(context, serviceMap, metadata, epsg, scale, row, col, format, (args[0] == "tms" ? GridOrientation.LowerLeft : GridOrientation.UpperLeft), renderOnTheFly);
                             }
@@ -124,11 +138,16 @@ namespace gView.Interoperability.Server.TileService
                                 string cacheFormat = args[1].ToLower() == "compact" ? "compact" : "";
                                 if (args[2].ToLower() != "ul" &&
                                     args[2].ToLower() != "ll")
+                                {
                                     throw new ArgumentException();
+                                }
 
                                 int epsg = int.Parse(args[3]);
                                 string format = "image/" + args[4].ToLower();
-                                if (args[4].ToLower().EndsWith(".jpg")) format = ".jpg";
+                                if (args[4].ToLower().EndsWith(".jpg"))
+                                {
+                                    format = ".jpg";
+                                }
 
                                 WriteConfFile(context, serviceMap, metadata, cacheFormat, epsg, format,
                                     (args[2].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft));
@@ -142,7 +161,10 @@ namespace gView.Interoperability.Server.TileService
                                 int row = int.Parse(args[3]);
                                 int col = int.Parse(args[4].Split('.')[0]);
                                 string format = ".png";
-                                if (args[4].ToLower().EndsWith(".jpg")) format = ".jpg";
+                                if (args[4].ToLower().EndsWith(".jpg"))
+                                {
+                                    format = ".jpg";
+                                }
 
                                 await GetTile(context, serviceMap, metadata, epsg, scale, row, col, format, GridOrientation.UpperLeft, renderOnTheFly);
                             }
@@ -150,14 +172,19 @@ namespace gView.Interoperability.Server.TileService
                             {
                                 if (args[1].ToLower() != "ul" &&
                                     args[1].ToLower() != "ll")
+                                {
                                     throw new ArgumentException();
+                                }
 
                                 int epsg = int.Parse(args[2]);
                                 double scale = GetScale(metadata, args[3]); // double.Parse(args[3].Replace(",", "."), _nhi);
                                 int row = int.Parse(args[4]);
                                 int col = int.Parse(args[5].Split('.')[0]);
                                 string format = ".png";
-                                if (args[5].ToLower().EndsWith(".jpg")) format = ".jpg";
+                                if (args[5].ToLower().EndsWith(".jpg"))
+                                {
+                                    format = ".jpg";
+                                }
 
                                 await GetTile(context, serviceMap, metadata, epsg, scale, row, col, format,
                                     (args[1].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft), renderOnTheFly);
@@ -167,14 +194,19 @@ namespace gView.Interoperability.Server.TileService
                                 string cacheFormat = args[1].ToLower();
                                 if (args[2].ToLower() != "ul" &&
                                     args[2].ToLower() != "ll")
+                                {
                                     throw new ArgumentException();
+                                }
 
                                 int epsg = int.Parse(args[3]);
                                 double scale = GetScale(metadata, args[4]); // double.Parse(args[4].Replace(",", "."), _nhi);
                                 int row = int.Parse(args[5]);
                                 int col = int.Parse(args[6].Split('.')[0]);
                                 string format = ".png";
-                                if (args[6].ToLower().EndsWith(".jpg")) format = ".jpg";
+                                if (args[6].ToLower().EndsWith(".jpg"))
+                                {
+                                    format = ".jpg";
+                                }
 
                                 if (cacheFormat == "compact")
                                 {
@@ -189,7 +221,10 @@ namespace gView.Interoperability.Server.TileService
                                 }
                             }
                             else
+                            {
                                 throw new ArgumentException();
+                            }
+
                             break;
                     }
 
@@ -198,7 +233,9 @@ namespace gView.Interoperability.Server.TileService
             catch (Exception ex)
             {
                 if (context != null && context.ServiceRequest != null)
+                {
                     context.ServiceRequest.Response = "<Exception>" + ex.Message + "</Exception>";
+                }
             }
         }
 
@@ -219,13 +256,17 @@ namespace gView.Interoperability.Server.TileService
         async private Task GetTile(IServiceRequestContext context, IServiceMap serviceMap, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation, bool renderOnTheFly)
         {
             if (!metadata.EPSGCodes.Contains(epsg))
+            {
                 throw new ArgumentException("Wrong epsg argument");
+            }
 
             //if (!metadata.Scales.Contains(scale))
             //    throw new ArgumentException("Wrong scale argument");
             scale = metadata.Scales.GetScale(scale);
             if (scale <= 0.0)
+            {
                 throw new ArgumentException("Wrong scale argument");
+            }
 
             //IEnvelope bounds = metadata.GetEPSGEnvelope(epsg);
             //if (bounds == null || bounds.Width == 0.0 || bounds.Height == 0.0)
@@ -233,11 +274,19 @@ namespace gView.Interoperability.Server.TileService
 
             format = format.ToLower();
             if (format != ".png" && format != ".jpg")
+            {
                 throw new Exception("Unsupported image format");
+            }
+
             if (format == ".png" && metadata.FormatPng == false)
+            {
                 throw new Exception("Format image/png not supported");
+            }
+
             if (format == ".jpg" && metadata.FormatJpg == false)
+            {
                 throw new Exception("Format image/jpeg no supported");
+            }
 
             string path = _mapServer.TileCachePath + @"\" + serviceMap.Name + @"\_alllayers\" +
                 TileServiceMetadata.TilePath(orientation, epsg, scale, row, col) + format;
@@ -255,7 +304,9 @@ namespace gView.Interoperability.Server.TileService
                     return;  // Empty
                 }
                 if (!fi.Directory.Exists)
+                {
                     fi.Directory.Create();
+                }
             }
             else
             {
@@ -297,7 +348,7 @@ namespace gView.Interoperability.Server.TileService
 
             bool maketrans = serviceMap.Display.MakeTransparent;
             serviceMap.Display.MakeTransparent = true;
-            await serviceMap.SaveImage(path, format == ".jpg" ? System.Drawing.Imaging.ImageFormat.Jpeg : System.Drawing.Imaging.ImageFormat.Png);
+            await serviceMap.SaveImage(path, format == ".jpg" ? ImageFormat.Jpeg : ImageFormat.Png);
             serviceMap.Display.MakeTransparent = maketrans;
 
             context.ServiceRequest.Response = path;
@@ -306,29 +357,45 @@ namespace gView.Interoperability.Server.TileService
         async private Task GetCompactTile(IServiceRequestContext context, IServiceMap serviceMap, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation, BoundingTiles boundingTiles, bool renderOnTheFly)
         {
             if (!metadata.EPSGCodes.Contains(epsg))
+            {
                 throw new ArgumentException("Wrong epsg argument");
+            }
 
             if (orientation != GridOrientation.UpperLeft)
+            {
                 throw new ArgumentException("Compact Tiles Orientation must bei Upper Left!");
+            }
 
             scale = metadata.Scales.GetScale(scale);
             if (scale <= 0.0)
+            {
                 throw new ArgumentException("Wrong scale argument");
+            }
 
             //IEnvelope bounds = metadata.GetEGPSEnvelope(epsg);
             //if (bounds == null || bounds.Width == 0.0 || bounds.Height == 0.0)
             //    throw new Exception("No bounds defined for EPSG:" + epsg);
             IPoint origin = metadata.GetOriginUpperLeft(epsg);
             if (origin == null)
+            {
                 throw new Exception("No origin defined for EPSG:" + epsg);
+            }
 
             format = format.ToLower();
             if (format != ".png" && format != ".jpg")
+            {
                 throw new Exception("Unsupported image format");
+            }
+
             if (format == ".png" && metadata.FormatPng == false)
+            {
                 throw new Exception("Format image/png not supported");
+            }
+
             if (format == ".jpg" && metadata.FormatJpg == false)
+            {
                 throw new Exception("Format image/jpeg no supported");
+            }
 
             string path = _mapServer.TileCachePath + @"\" + serviceMap.Name + @"\_alllayers\compact\" +
                 TileServiceMetadata.ScalePath(orientation, epsg, scale);
@@ -353,7 +420,9 @@ namespace gView.Interoperability.Server.TileService
 
             DirectoryInfo di = new DirectoryInfo(path);
             if (!di.Exists)
+            {
                 di.Create();
+            }
 
             try { File.Delete(bundleFilename); }
             catch { }
@@ -401,8 +470,12 @@ namespace gView.Interoperability.Server.TileService
                     int currentRow = r + startRow, currentCol = c + startCol;
 
                     if (boundingTiles != null)
+                    {
                         if (!boundingTiles.Check(currentRow, currentCol, 8, 8))
+                        {
                             continue;
+                        }
+                    }
 
                     double H = metadata.TileHeight * res;
                     double y = origin.Y - H * (currentRow + tileMatrixHeight);
@@ -412,13 +485,17 @@ namespace gView.Interoperability.Server.TileService
 
                     serviceMap.Display.ZoomTo(new Envelope(x, y, x + W * tileMatrixWidth, y + H * tileMatrixHeight));
                     if (format != ".jpg") // Make PNG Transparent
-                        serviceMap.Display.BackgroundColor = System.Drawing.Color.Transparent;
+                    {
+                        serviceMap.Display.BackgroundColor = ArgbColor.Transparent;
+                    }
 
                     serviceMap.ReleaseImage();  // Delete old Image !!! Because there is no map.SaveImage()!!!!
                     await serviceMap.Render();
 
                     if (IsEmptyBitmap(serviceMap.MapImage, serviceMap.Display.BackgroundColor))
+                    {
                         continue;
+                    }
 
                     // Temp
                     //map.MapImage.Save(pathTemp + @"\matrix_" + (startRow + r) + "_" + (startCol + c) + ".png", ImageFormat.Png);
@@ -430,16 +507,20 @@ namespace gView.Interoperability.Server.TileService
                             int tileRow = currentRow + j, tileCol = currentCol + i;
 
                             if (boundingTiles != null)
-                                if (!boundingTiles.Check(tileRow, tileCol, 8, 8))
-                                    continue;
-
-                            using (Bitmap bm = new Bitmap(metadata.TileWidth, metadata.TileHeight, serviceMap.MapImage.PixelFormat))
-                            using (Graphics gr = Graphics.FromImage(bm))
                             {
-                                gr.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-                                gr.DrawImage(serviceMap.MapImage,
-                                    new RectangleF(0f, 0f, (float)bm.Width, (float)bm.Height),
-                                    new RectangleF(-0.5f + (float)(i * metadata.TileWidth), -0.5f + (float)(j * metadata.TileHeight), (float)metadata.TileWidth, (float)metadata.TileHeight), GraphicsUnit.Pixel);
+                                if (!boundingTiles.Check(tileRow, tileCol, 8, 8))
+                                {
+                                    continue;
+                                }
+                            }
+
+                            using (var bitmap = Current.Engine.CreateBitmap(metadata.TileWidth, metadata.TileHeight, serviceMap.MapImage.PixelFormat))
+                            using (var canvas = bitmap.CreateCanvas())
+                            {
+                                canvas.InterpolationMode = InterpolationMode.NearestNeighbor;
+                                canvas.DrawBitmap(serviceMap.MapImage,
+                                    new CanvasRectangleF(0f, 0f, (float)bitmap.Width, (float)bitmap.Height),
+                                    new CanvasRectangleF(-0.5f + (float)(i * metadata.TileWidth), -0.5f + (float)(j * metadata.TileHeight), (float)metadata.TileWidth, (float)metadata.TileHeight));
 
                                 //for (int py = 0, to_py = bm.Height; py < to_py; py++)
                                 //{
@@ -450,8 +531,10 @@ namespace gView.Interoperability.Server.TileService
                                 //    }
                                 //}
 
-                                if (IsEmptyBitmap(bm, serviceMap.Display.BackgroundColor))
+                                if (IsEmptyBitmap(bitmap, serviceMap.Display.BackgroundColor))
+                                {
                                     continue;
+                                }
 
                                 // Temp
                                 //bm.Save(pathTemp + @"\tile_" + tileRow + "_" + tileCol + ".png", ImageFormat.Png);
@@ -463,8 +546,9 @@ namespace gView.Interoperability.Server.TileService
                                 //}
                                 //catch { }
 
+                                canvas.Flush();
                                 MemoryStream ms = new MemoryStream();
-                                bm.Save(ms, format == ".jpg" ? System.Drawing.Imaging.ImageFormat.Jpeg : System.Drawing.Imaging.ImageFormat.Png);
+                                bitmap.Save(ms, format == ".jpg" ? ImageFormat.Jpeg : ImageFormat.Png);
 
 
                                 byte[] imageBytes = ms.ToArray();
@@ -528,7 +612,9 @@ namespace gView.Interoperability.Server.TileService
                 int tileLength, tilePosition = bundleIndex.TilePosition(row - bundleStartRow, col - bundleStartCol, out tileLength);
 
                 if (tilePosition < 0)
+                {
                     return;
+                }
 
                 using (FileStream fs = File.Open(bundleFilename, FileMode.Open, FileAccess.Read, FileShare.Read)) //new FileStream(bundleFilename, FileMode.Open, FileAccess.Read))
                 {
@@ -548,14 +634,16 @@ namespace gView.Interoperability.Server.TileService
             catch (Exception ex)
             {
                 TileServiceMetadata metadata = serviceMap.MetadataProvider(_metaprovider) as TileServiceMetadata;
-                using (System.Drawing.Bitmap bm = new Bitmap(metadata.TileWidth, metadata.TileHeight))
-                using (System.Drawing.Graphics gr = Graphics.FromImage(bm))
-                using (System.Drawing.Font font = new Font("Arial", 9f))
+                using (var bitmap = Current.Engine.CreateBitmap(metadata.TileWidth, metadata.TileHeight))
+                using (var canvas = bitmap.CreateCanvas())
+                using (var font = Current.Engine.CreateFont("Arial", 9f))
+                using (var redBrush = Current.Engine.CreateSolidBrush(ArgbColor.Red))
                 {
-                    gr.DrawString(ex.Message, font, Brushes.Red, new RectangleF(0f, 0f, (float)bm.Width, (float)bm.Height));
+                    canvas.DrawText(ex.Message, font, redBrush, new CanvasRectangleF(0f, 0f, (float)bitmap.Width, (float)bitmap.Height));
+                    canvas.Flush();
 
                     MemoryStream ms = new MemoryStream();
-                    bm.Save(ms, ImageFormat.Png);
+                    bitmap.Save(ms, ImageFormat.Png);
 
                     context.ServiceRequest.Response = new MapServerResponse()
                     {
@@ -590,7 +678,9 @@ namespace gView.Interoperability.Server.TileService
                 int tileLength, tilePosition = bundleIndex.TilePosition(row - bundleStartRow, col - bundleStartCol, out tileLength);
 
                 if (tilePosition < 0)
+                {
                     return null;
+                }
 
                 using (FileStream fs = File.Open(bundleFilename, FileMode.Open, FileAccess.Read, FileShare.Read)) //new FileStream(bundleFilename, FileMode.Open, FileAccess.Read))
                 {
@@ -615,7 +705,9 @@ namespace gView.Interoperability.Server.TileService
             IPoint origin = orientation == GridOrientation.UpperLeft ? metadata.GetOriginUpperLeft(epsg) : metadata.GetOriginLowerLeft(epsg);
             IEnvelope bounds = metadata.GetEPSGEnvelope(epsg);
             if (origin == null || bounds == null)
+            {
                 return;
+            }
 
             List<CompactTileConfig.LevelConfig> levels = new List<CompactTileConfig.LevelConfig>();
             for (int i = 0; i < metadata.Scales.Count; i++)
@@ -640,10 +732,15 @@ namespace gView.Interoperability.Server.TileService
             };
 
             if (configFileInfo.Exists)
+            {
                 configFileInfo.Delete();
+            }
 
             if (!configFileInfo.Directory.Exists)
+            {
                 configFileInfo.Directory.Create();
+            }
+
             File.WriteAllText(configFileInfo.FullName, JsonConvert.SerializeObject(config, Formatting.Indented));
         }
 
@@ -678,70 +775,79 @@ namespace gView.Interoperability.Server.TileService
             return "R" + CompactTileStart(row).ToString("X8") + "C" + CompactTileStart(col).ToString("X8");
         }
 
-        public double GetStdDev(Bitmap bitmap)
+        public double GetStdDev(IBitmap bitmap)
         {
             double total = 0, totalVariance = 0;
             int count = 0;
             double stdDev = 0;
 
             // First get all the bytes
-
-            BitmapData bmData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, bitmap.PixelFormat);
-
-            int stride = bmData.Stride;
-            IntPtr Scan0 = bmData.Scan0;
-
-            unsafe
-            {
-                byte* p = (byte*)(void*)Scan0;
-                int nOffset = stride - bitmap.Width * 3;
-
-                for (int y = 0; y < bitmap.Height; ++y)
-                {
-
-                    for (int x = 0; x < bitmap.Width; ++x)
-                    {
-
-                        count++;
-
-                        byte blue = p[0];
-                        byte green = p[1];
-                        byte red = p[2];
-
-                        int pixelValue = Color.FromArgb(0, red, green, blue).ToArgb();
-
-                        total += pixelValue;
-                        double avg = total / count;
-
-                        totalVariance += Math.Pow(pixelValue - avg, 2);
-                        stdDev = Math.Sqrt(totalVariance / count);
-
-                        p += 3;
-
-                    }
-
-                    p += nOffset;
-
-                }
-
-            }
-
-            bitmap.UnlockBits(bmData);
-
-            return stdDev;
-        }
-
-        public bool IsEmptyBitmap(Bitmap bitmap, Color backgroundColor)
-        {
-            BitmapData bmData = null;
+            BitmapPixelData bmData = null;
             try
             {
-                bmData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb /* bitmap.PixelFormat*/);
+                bmData = bitmap.LockBitmapPixelData(BitmapLockMode.ReadOnly, bitmap.PixelFormat);
 
                 int stride = bmData.Stride;
                 IntPtr Scan0 = bmData.Scan0;
 
-                int backgroundColorValue = Color.FromArgb(
+                unsafe
+                {
+                    byte* p = (byte*)(void*)Scan0;
+                    int nOffset = stride - bitmap.Width * 3;
+
+                    for (int y = 0; y < bitmap.Height; ++y)
+                    {
+
+                        for (int x = 0; x < bitmap.Width; ++x)
+                        {
+
+                            count++;
+
+                            byte blue = p[0];
+                            byte green = p[1];
+                            byte red = p[2];
+
+                            int pixelValue = ArgbColor.FromArgb(0, red, green, blue).ToArgb();
+
+                            total += pixelValue;
+                            double avg = total / count;
+
+                            totalVariance += Math.Pow(pixelValue - avg, 2);
+                            stdDev = Math.Sqrt(totalVariance / count);
+
+                            p += 3;
+
+                        }
+
+                        p += nOffset;
+
+                    }
+
+                }
+
+            }
+            finally
+            {
+                if (bmData != null)
+                {
+                    bitmap.UnlockBitmapPixelData(bmData);
+                }
+            }
+
+            return stdDev;
+        }
+
+        public bool IsEmptyBitmap(IBitmap bitmap, ArgbColor backgroundColor)
+        {
+            BitmapPixelData bmData = null;
+            try
+            {
+                bmData = bitmap.LockBitmapPixelData(BitmapLockMode.ReadOnly, PixelFormat.Rgba32);
+
+                int stride = bmData.Stride;
+                IntPtr Scan0 = bmData.Scan0;
+
+                int backgroundColorValue = ArgbColor.FromArgb(
                     backgroundColor.A,
                     backgroundColor.R,
                     backgroundColor.G,
@@ -764,10 +870,12 @@ namespace gView.Interoperability.Server.TileService
 
                             if (alpha != 0)  // Not transparent
                             {
-                                int pixelValue = Color.FromArgb(alpha, red, green, blue).ToArgb();
+                                int pixelValue = ArgbColor.FromArgb(alpha, red, green, blue).ToArgb();
 
-                                if (pixelValue != backgroundColorValue)
+                                if (pixelValue.Equals(backgroundColorValue))
+                                {
                                     return false;
+                                }
                             }
                             p += 4;
                         }
@@ -783,7 +891,9 @@ namespace gView.Interoperability.Server.TileService
             finally
             {
                 if (bitmap != null && bmData != null)
-                    bitmap.UnlockBits(bmData);
+                {
+                    bitmap.UnlockBitmapPixelData(bmData);
+                }
             }
             return true;
         }
@@ -804,17 +914,23 @@ namespace gView.Interoperability.Server.TileService
             private void InitIndex()
             {
                 for (int i = 0; i < _index.Length; i++)
+                {
                     _index[i] = -1;
+                }
             }
 
             public void SetValue(int row, int col, int position, int length)
             {
                 if (row < 0 || row > 128 || col < 0 || col > 128)
+                {
                     throw new ArgumentException("Compact Tile Index out of range");
+                }
 
                 int indexPosition = ((row * 128) + col) * 2;
                 if (indexPosition > _index.Length - 2)
+                {
                     throw new AggregateException("Index!!!");
+                }
 
                 _index[indexPosition] = position;
                 _index[indexPosition + 1] = length;
@@ -848,7 +964,9 @@ namespace gView.Interoperability.Server.TileService
             public int TilePosition(int row, int col, out int tileLength)
             {
                 if (row < 0 || row > 128 || col < 0 || col > 128)
+                {
                     throw new ArgumentException("Compact Tile Index out of range");
+                }
 
                 int indexPosition = ((row * 128) + col) * 8;
 
@@ -896,7 +1014,9 @@ namespace gView.Interoperability.Server.TileService
                     for (int r = row; r < row + matrixWidth; r++)
                     {
                         if (Check(r, c))
+                        {
                             return true;
+                        }
                     }
                 }
                 return false;
@@ -919,9 +1039,13 @@ namespace gView.Interoperability.Server.TileService
                 {
                     int pos = argument.IndexOf("=");
                     if (pos > 0)
+                    {
                         nvc.Add(argument.Substring(0, pos), argument.Substring(pos + 1));
+                    }
                     else
+                    {
                         nvc.Add(argument, String.Empty);
+                    }
                 }
             }
 
@@ -942,7 +1066,9 @@ namespace gView.Interoperability.Server.TileService
         {
             IEnvelope box = metadata.GetEPSGEnvelope(srs);
             if (box == null)
+            {
                 return String.Empty;
+            }
 
             ISpatialReference sRef = SpatialReference.FromID("epsg:" + srs);
 

@@ -2,6 +2,8 @@ using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -156,12 +158,12 @@ namespace gView.DataSources.Fdb.MSSql
 
         }
 
-        public System.Drawing.Color GetPixel(double X, double Y)
+        public ArgbColor GetPixel(double X, double Y)
         {
-            return System.Drawing.Color.Transparent;
+            return ArgbColor.Transparent;
         }
 
-        public System.Drawing.Bitmap Bitmap
+        public IBitmap Bitmap
         {
             get { return null; }
         }
@@ -235,7 +237,7 @@ namespace gView.DataSources.Fdb.MSSql
                 return new SimpleRasterlayerCursor(new List<IRasterLayer>());
             }
 
-            double dpm = Math.Max(display.GraphicsContext.DpiX, display.GraphicsContext.DpiY) / 0.0254;
+            double dpm = Math.Max(display.Canvas.DpiX, display.Canvas.DpiY) / 0.0254;
             double pix = display.mapScale / dpm;/*display.dpm;*/  // [m]
 
             IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display); //display.Envelope;
@@ -794,7 +796,7 @@ namespace gView.DataSources.Fdb.MSSql
             _colorClasses = null;
             List<GridColorClass> classes = new List<GridColorClass>();
             GridColorClass cc;
-            while ((cc = (GridColorClass)stream.Load("GridClass", null, new GridColorClass(0, 0, System.Drawing.Color.White))) != null)
+            while ((cc = (GridColorClass)stream.Load("GridClass", null, new GridColorClass(0, 0, ArgbColor.White))) != null)
             {
                 classes.Add(cc);
             }
@@ -1018,7 +1020,7 @@ namespace gView.DataSources.Fdb.MSSql
             get { return _polygon; }
         }
 
-        System.Drawing.Bitmap _bm = null;
+        IBitmap _bitmap = null;
         async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
             if (_fdb == null)
@@ -1041,15 +1043,15 @@ namespace gView.DataSources.Fdb.MSSql
 
                 DataRow row = tab.Rows[0];
 
-                _bm = (System.Drawing.Bitmap)System.Drawing.Bitmap.FromStream(new MemoryStream((byte[])row["IMG"]));
+                _bitmap = Current.Engine.CreateBitmap(new MemoryStream((byte[])row["IMG"]));
                 _X = (double)tab.Rows[0]["X"];
                 _Y = (double)tab.Rows[0]["Y"];
                 _dx_X = (double)tab.Rows[0]["dx1"];
                 _dx_Y = (double)tab.Rows[0]["dx2"];
                 _dy_X = (double)tab.Rows[0]["dy1"];
                 _dy_Y = (double)tab.Rows[0]["dy2"];
-                _iWidth = _bm.Width;
-                _iHeight = _bm.Height;
+                _iWidth = _bitmap.Width;
+                _iHeight = _bitmap.Height;
             }
             catch
             {
@@ -1059,21 +1061,21 @@ namespace gView.DataSources.Fdb.MSSql
 
         public void EndPaint(ICancelTracker cancelTracker)
         {
-            if (_bm != null)
+            if (_bitmap != null)
             {
-                _bm.Dispose();
-                _bm = null;
+                _bitmap.Dispose();
+                _bitmap = null;
             }
         }
 
-        public System.Drawing.Color GetPixel(double X, double Y)
+        public ArgbColor GetPixel(double X, double Y)
         {
-            return System.Drawing.Color.Transparent;
+            return ArgbColor.Transparent;
         }
 
-        public System.Drawing.Bitmap Bitmap
+        public IBitmap Bitmap
         {
-            get { return _bm; }
+            get { return _bitmap; }
         }
 
         public double oX { get { return _X; } }

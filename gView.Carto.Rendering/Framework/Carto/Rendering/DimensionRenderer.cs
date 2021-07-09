@@ -28,7 +28,7 @@ namespace gView.Framework.Carto.Rendering
         {
             _textSymbol = new SimpleTextSymbol();
             _lineSymbol = new SimpleLineSymbol();
-            ((SimpleLineSymbol)_lineSymbol).Color = System.Drawing.Color.Black;
+            ((SimpleLineSymbol)_lineSymbol).Color = GraphicsEngine.ArgbColor.Black;
         }
 
         internal DimensionRenderer(IDisplay display, DimensionRenderer renderer)

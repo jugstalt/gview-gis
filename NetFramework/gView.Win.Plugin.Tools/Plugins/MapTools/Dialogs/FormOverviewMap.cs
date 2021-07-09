@@ -13,6 +13,7 @@ using gView.Framework.Symbology;
 using gView.Framework.UI.Events;
 using System.Threading;
 using System.Threading.Tasks;
+using gView.GraphicsEngine;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -111,6 +112,7 @@ namespace gView.Plugins.MapTools.Dialogs
         }
 
         #region HelperClasses
+
         private class EnvelopeGraphics : IGraphicElement
         {
             private ISymbol _symbol, _symbol2;
@@ -123,11 +125,11 @@ namespace gView.Plugins.MapTools.Dialogs
                 _symbol = PlugInManager.Create(KnownObjects.Symbology_SimpleFillSymbol) as ISymbol;
 
                 if (_symbol is IBrushColor)
-                    ((IBrushColor)_symbol).FillColor = Color.FromArgb(155, Color.White);
+                    ((IBrushColor)_symbol).FillColor = ArgbColor.FromArgb(155, ArgbColor.White);
 
                 _symbol2 = PlugInManager.Create(KnownObjects.Symbology_SimpleLineSymbol) as ISymbol;
                 if (_symbol2 is IPenColor)
-                    ((IPenColor)_symbol2).PenColor = Color.Blue;
+                    ((IPenColor)_symbol2).PenColor = ArgbColor.Blue;
             }
 
             public IGeometry Geometry

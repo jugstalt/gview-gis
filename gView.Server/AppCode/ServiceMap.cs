@@ -6,7 +6,6 @@ using gView.Framework.UI;
 using gView.MapServer;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,6 +14,8 @@ using gView.Framework.IO;
 using gView.Framework.Carto.LayerRenderers;
 using gView.Data.Framework.Data;
 using gView.Data.Framework.Data.Abstraction;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 
 namespace gView.Server.AppCode
 {
@@ -65,9 +66,9 @@ namespace gView.Server.AppCode
             return serviceMap;
         }
 
-        async public Task<int> SaveImage(string path, System.Drawing.Imaging.ImageFormat format)
+        async public Task<int> SaveImage(string path, ImageFormat format)
         {
-            if (_image == null)
+            if (_bitmap == null)
             {
                 return -1;
             }
@@ -79,9 +80,9 @@ namespace gView.Server.AppCode
                     if (Display.MakeTransparent &&
                         format != ImageFormat.Jpeg &&
                         format != ImageFormat.Gif &&
-                        _image.PixelFormat != PixelFormat.Format32bppArgb)  // dont make this transparent, this should be transparent from beginning !!!
+                        _bitmap.PixelFormat != PixelFormat.Rgba32)  // dont make this transparent, this should be transparent from beginning !!!
                     {
-                        _image.MakeTransparent(Display.TransparentColor);
+                        _bitmap.MakeTransparent(Display.TransparentColor);
                     }
                 }
                 catch (Exception ex)
@@ -96,9 +97,9 @@ namespace gView.Server.AppCode
                     }
                 }
                 //_image.Save(path, format);
-                int size = await _image.SaveOrUpload(path, format);
-                _image.Dispose();
-                _image = null;
+                int size = await _bitmap.SaveOrUpload(path, format);
+                _bitmap.Dispose();
+                _bitmap = null;
                 return size;
             }
             catch (Exception ex)
@@ -117,9 +118,9 @@ namespace gView.Server.AppCode
             }
         }
 
-        async public Task<int> SaveImage(Stream ms, System.Drawing.Imaging.ImageFormat format)
+        async public Task<int> SaveImage(Stream ms, ImageFormat format)
         {
-            if (_image == null)
+            if (_bitmap == null)
             {
                 return -1;
             }
@@ -131,9 +132,9 @@ namespace gView.Server.AppCode
                     if (Display.MakeTransparent &&
                         format != ImageFormat.Jpeg &&
                         format != ImageFormat.Gif &&
-                        _image.PixelFormat != PixelFormat.Format32bppArgb)   // dont make this transparent, this should be transparent from beginning !!!
+                        _bitmap.PixelFormat != PixelFormat.Rgba32)   // dont make this transparent, this should be transparent from beginning !!!
                     {
-                        _image.MakeTransparent(Display.TransparentColor);
+                        _bitmap.MakeTransparent(Display.TransparentColor);
                     }
                 }
                 catch (Exception ex)
@@ -147,9 +148,13 @@ namespace gView.Server.AppCode
                             ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
                     }
                 }
-                _image.Save(ms, format);
-                _image.Dispose();
-                _image = null;
+
+                if (_canvas != null)
+                    _canvas.Flush();
+
+                _bitmap.Save(ms, format);
+                _bitmap.Dispose();
+                _bitmap = null;
                 return (int)ms.Length;
             }
             catch (Exception ex)
@@ -168,24 +173,24 @@ namespace gView.Server.AppCode
 
         public void ReleaseImage()
         {
-            if (_image == null)
+            if (_bitmap == null)
             {
                 return;
             }
 
             try
             {
-                _image.Dispose();
-                _image = null;
+                _bitmap.Dispose();
+                _bitmap = null;
             }
             catch { }
         }
 
-        public System.Drawing.Bitmap MapImage
+        public IBitmap MapImage
         {
-            get { return _image; }
+            get { return _bitmap; }
         }
-        async public Task<System.Drawing.Bitmap> Legend()
+        async public Task<IBitmap> Legend()
         {
             ITOC toc = _toc.Clone(this) as ITOC;
 
@@ -333,7 +338,7 @@ namespace gView.Server.AppCode
         {
             base._requestExceptions = null;
 
-            if (_graphics != null && phase == DrawPhase.Graphics)
+            if (_canvas != null && phase == DrawPhase.Graphics)
             {
                 return true;
             }
@@ -350,20 +355,20 @@ namespace gView.Server.AppCode
             {
                 //geoTransformer.ToSpatialReference = this.SpatialReference;
 
-                if (_image == null)
+                if (_bitmap == null)
                 {
-                    _image = new System.Drawing.Bitmap(iWidth, iHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    _bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, PixelFormat.Rgba32);
                 }
 
-                _graphics = System.Drawing.Graphics.FromImage(_image);
-                //_graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
-                //this.dpi = _graphics.DpiX * this.ScaleSymbolFactor;
+                _canvas = _bitmap.CreateCanvas();
+                //_canvas.CompositingMode = CompositingMode.SourceCopy;
+                //this.dpi = _canvas.DpiX * this.ScaleSymbolFactor;
 
                 if (BackgroundColor.A != 0 && !Display.MakeTransparent)
                 {
-                    using (System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(BackgroundColor))
+                    using (var brush = Current.Engine.CreateSolidBrush(BackgroundColor))
                     {
-                        _graphics.FillRectangle(brush, 0, 0, _image.Width, _image.Height);
+                        _canvas.FillRectangle(brush, new CanvasRectangle(0, 0, _bitmap.Width, _bitmap.Height));
                     }
                 }
 
@@ -673,7 +678,7 @@ namespace gView.Server.AppCode
 #if (DEBUG)
                     //Logger.LogDebug("Merge Images");
 #endif
-                    m_imageMerger.Merge(_image, this.Display);
+                    m_imageMerger.Merge(_bitmap, this.Display);
                     m_imageMerger.Clear();
 #if (DEBUG)
                     //Logger.LogDebug("Merge Images Finished");
@@ -690,12 +695,12 @@ namespace gView.Server.AppCode
 
                 base.AppendExceptionsToImage();
 
-                if (_graphics != null)
+                if (_canvas != null)
                 {
-                    _graphics.Dispose();
+                    _canvas.Dispose();
                 }
 
-                _graphics = null;
+                _canvas = null;
 
                 this.GeometricTransformer = null;
             }
@@ -760,15 +765,6 @@ namespace gView.Server.AppCode
             {
                 ((IRasterClass)rLayer).EndPaint(cancelTracker);
             }
-        }
-
-        protected override void DrawStream(System.IO.Stream stream)
-        {
-
-        }
-        protected override void StreamImage(ref System.IO.MemoryStream stream, System.Drawing.Image image)
-        {
-
         }
 
         #region IServiceMap Member

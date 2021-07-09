@@ -4,11 +4,10 @@ using System.Text;
 using gView.Framework.Carto;
 using System.IO;
 using gView.Framework.Symbology;
-using System.Drawing;
 using gView.Framework.Data;
 using System.Xml;
-using System.Drawing.Drawing2D;
 using gView.Framework.Carto.Rendering;
+using gView.GraphicsEngine;
 
 namespace gView.Interoperability.OGC.SLD
 {
@@ -265,9 +264,9 @@ namespace gView.Interoperability.OGC.SLD
             if (symbol == null) return;
             WriteFillColor(symbol.FillColor);
         }
-        private void WriteFillColor(Color col)
+        private void WriteFillColor(ArgbColor col)
         {
-            _sw.WriteLine(@"<CssParameter name=""fill"">" + ColorTranslator.ToHtml(col) + "</CssParameter>");
+            _sw.WriteLine(@"<CssParameter name=""fill"">" + System.Drawing.ColorTranslator.ToHtml(System.Drawing.Color.FromArgb(col.ToArgb())) + "</CssParameter>");
             if (col.A != 255)
             {
                 _sw.WriteLine(@"<CssParameter name=""fill-opacity"">" + ((float)(col.A / 255f)).ToString(_nhi) + "</CssParameter>");
@@ -276,7 +275,7 @@ namespace gView.Interoperability.OGC.SLD
         private void WritePenColor(IPenColor symbol)
         {
             if (symbol == null) return;
-            _sw.WriteLine(@"<CssParameter name=""stroke"">" + ColorTranslator.ToHtml(symbol.PenColor) + "</CssParameter>");
+            _sw.WriteLine(@"<CssParameter name=""stroke"">" + System.Drawing.ColorTranslator.ToHtml(System.Drawing.Color.FromArgb(symbol.PenColor.ToArgb())) + "</CssParameter>");
             if (symbol.PenColor.A != 255)
             {
                 _sw.WriteLine(@"<CssParameter name=""stroke-opacity"">" + ((float)(symbol.PenColor.A / 255f)).ToString(_nhi) + "</CssParameter>");
@@ -309,16 +308,16 @@ namespace gView.Interoperability.OGC.SLD
             string sequence = String.Empty;
             switch (symbol.PenDashStyle)
             {
-                case DashStyle.Dot:
+                case LineDashStyle.Dot:
                     sequence = "2,2,2";
                     break;
-                case DashStyle.Dash:
+                case LineDashStyle.Dash:
                     sequence = "5,5,5";
                     break;
-                case DashStyle.DashDot:
+                case LineDashStyle.DashDot:
                     sequence = "4,3,1,3,5";
                     break;
-                case DashStyle.DashDotDot:
+                case LineDashStyle.DashDotDot:
                     sequence = "4,3,1,2,1,3,4";
                     break;
                 default:
@@ -463,7 +462,7 @@ namespace gView.Interoperability.OGC.SLD
             }
             else
             {
-                symbol.Color = Color.Transparent;
+                symbol.Color = ArgbColor.Transparent;
             }
 
             XmlNode strokeNode = node.SelectSingleNode("Stroke");
@@ -541,24 +540,24 @@ namespace gView.Interoperability.OGC.SLD
 
             return symbol;
         }
-        private Color ReadColor(XmlNode cssParameter)
+        private ArgbColor ReadColor(XmlNode cssParameter)
         {
             return ReadColor(cssParameter, null);
         }
-        private Color ReadColor(XmlNode cssParameter, XmlNode cssParameter2)
+        private ArgbColor ReadColor(XmlNode cssParameter, XmlNode cssParameter2)
         {
-            if (cssParameter == null) return Color.Transparent;
+            if (cssParameter == null) return ArgbColor.Transparent;
             try
             {
-                Color col = ColorTranslator.FromHtml(cssParameter.InnerText);
+                var col = System.Drawing.ColorTranslator.FromHtml(cssParameter.InnerText);
                 if (cssParameter2 != null)
                 {
                     int alpha = (int)(ReadFloat(cssParameter2) * 255f);
-                    col = Color.FromArgb(alpha, col);
+                    col = System.Drawing.Color.FromArgb(alpha, col);
                 }
-                return col;
+                return ArgbColor.FromArgb( col.ToArgb());
             }
-            catch { return Color.Transparent; }
+            catch { return ArgbColor.Transparent; }
         }
         private float ReadFloat(XmlNode cssParameter)
         {
@@ -576,11 +575,11 @@ namespace gView.Interoperability.OGC.SLD
             if (cssParameter == null) return String.Empty;
             return cssParameter.InnerText;
         }
-        private DashStyle ReadDashStyle(XmlNode cssParameter)
+        private LineDashStyle ReadDashStyle(XmlNode cssParameter)
         {
-            if (cssParameter == null) return DashStyle.Solid;
+            if (cssParameter == null) return LineDashStyle.Solid;
 
-            return DashStyle.Solid;
+            return LineDashStyle.Solid;
         }
         #endregion
     }

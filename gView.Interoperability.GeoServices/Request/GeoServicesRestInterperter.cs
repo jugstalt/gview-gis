@@ -160,28 +160,28 @@ namespace gView.Interoperability.GeoServices.Request
                     {
                         throw new MapServerException("Unsuported image format: " + _exportMap.ImageFormat);
                     }
-                    var iFormat = System.Drawing.Imaging.ImageFormat.Png;
+                    var iFormat = GraphicsEngine.ImageFormat.Png;
                     if (imageFormat == ImageFormat.jpg)
                     {
-                        iFormat = System.Drawing.Imaging.ImageFormat.Jpeg;
+                        iFormat = GraphicsEngine.ImageFormat.Jpeg;
                     }
 
                     if (_exportMap.Transparent)
                     {
                         serviceMap.Display.MakeTransparent = true;
-                        serviceMap.Display.TransparentColor = System.Drawing.Color.White;
+                        serviceMap.Display.TransparentColor = GraphicsEngine.ArgbColor.White;
                     }
                     else
                     {
                         serviceMap.Display.MakeTransparent = false;
                     }
 
-                    if (serviceMap.Display.MakeTransparent && iFormat == System.Drawing.Imaging.ImageFormat.Png)
+                    if (serviceMap.Display.MakeTransparent && iFormat == GraphicsEngine.ImageFormat.Png)
                     {
                         // Beim Png sollt dann beim zeichnen keine Hintergrund Rectangle gemacht werden
                         // Darum Farbe mit A=0
                         // Sonst schaut das Bild beim PNG32 und Antialiasing immer zerrupft aus...
-                        serviceMap.Display.BackgroundColor = System.Drawing.Color.Transparent;
+                        serviceMap.Display.BackgroundColor = GraphicsEngine.ArgbColor.Transparent;
                     }
 
                     #endregion
@@ -194,6 +194,7 @@ namespace gView.Interoperability.GeoServices.Request
                         if (_exportMap.OutputFormat?.ToLower() == "image")
                         {
                             context.ServiceRequest.Succeeded = true;
+
                             MemoryStream ms = new MemoryStream();
                             serviceMap.MapImage.Save(ms, iFormat);
 
@@ -258,7 +259,7 @@ namespace gView.Interoperability.GeoServices.Request
                     Error = new JsonError.ErrorDef()
                     {
                         Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
-                        Message = ex.Message
+                        Message = ex.Message + (ex is NullReferenceException ? $" Stacktrace: { ex.StackTrace }" : "")
                     }
                 };
             }
@@ -281,7 +282,7 @@ namespace gView.Interoperability.GeoServices.Request
 
                 foreach (var layer in layers)
                 {
-                    var tocElement = sender.TOC.GetTOCElementByLayerId(layer.ID);
+                    var tocElement = sender.TOC?.GetTOCElementByLayerId(layer.ID);
                     bool layerIdContains = tocElement != null ?
                         LayerOrParentIsInArray(sender, tocElement, layerIds) :    // this is how AGS works: if group is shown -> all layers in group are shown...
                         layerIds.Contains(layer.ID);
@@ -296,11 +297,17 @@ namespace gView.Interoperability.GeoServices.Request
                             break;
                         case "include":
                             if (layerIdContains)
+                            {
                                 layer.Visible = true;
+                            }
+
                             break;
                         case "exclude":
                             if (layerIdContains)
+                            {
                                 layer.Visible = false;
+                            }
+
                             break;
                     }
                 }
@@ -352,7 +359,9 @@ namespace gView.Interoperability.GeoServices.Request
                         foreach (var featureLayer in featureLayers)
                         {
                             if (!(featureLayer.Class is IFeatureClass))
+                            {
                                 continue;
+                            }
 
                             IFeatureClass fc = (IFeatureClass)featureLayer.Class;
                             var dynLayer = LayerFactory.Create(featureLayer.Class, featureLayer) as IFeatureLayer;
@@ -406,7 +415,9 @@ namespace gView.Interoperability.GeoServices.Request
                     foreach (var layer in tocElement.Layers)
                     {
                         if (!layerIds.Contains(layer.ID))
+                        {
                             return false;
+                        }
                     }
                 }
                 tocElement = tocElement.ParentGroup;
@@ -424,7 +435,9 @@ namespace gView.Interoperability.GeoServices.Request
                     foreach (var layer in tocElement.Layers)
                     {
                         if (layerIds.Contains(layer.ID))
+                        {
                             return true;
+                        }
                     }
                 }
                 tocElement = tocElement.ParentGroup;
@@ -491,7 +504,9 @@ namespace gView.Interoperability.GeoServices.Request
                             {
                                 var featureLayer = serviceMap.MapElements.Where(l => l.ID == query.LayerId).FirstOrDefault() as IFeatureLayer;
                                 if (featureLayer != null)
+                                {
                                     geometryType = featureLayer.LayerGeometryType;
+                                }
                             }
 
                             esriGeometryType = JsonLayer.ToGeometryType(geometryType);
@@ -552,7 +567,9 @@ namespace gView.Interoperability.GeoServices.Request
                         else if (query.ReturnIdsOnly)
                         {
                             if (String.IsNullOrEmpty(tableClass.IDFieldName))
+                            {
                                 throw new Exception("Can't query IdsOnly. Table has no ID-Field.");
+                            }
 
                             filter.SubFields = tableClass.IDFieldName;
                         }
@@ -848,11 +865,17 @@ namespace gView.Interoperability.GeoServices.Request
                                     break;
                                 case "include":
                                     if (layerIdContains)
+                                    {
                                         layer.Visible = true;
+                                    }
+
                                     break;
                                 case "exclude":
                                     if (layerIdContains)
+                                    {
                                         layer.Visible = false;
+                                    }
+
                                     break;
                             }
                         }
@@ -989,18 +1012,24 @@ namespace gView.Interoperability.GeoServices.Request
                     foreach (var layer in serviceMap.MapElements)
                     {
                         if (!(layer is IFeatureLayer) || ((IFeatureLayer)layer).FeatureRenderer == null)
+                        {
                             continue;
+                        }
 
                         var featureLayer = (IFeatureLayer)layer;
 
                         var tocElement = serviceMap.TOC.GetTOCElement(featureLayer);
                         if (tocElement == null)
+                        {
                             continue;
+                        }
 
                         using (var tocLegendItems = await serviceMap.TOC.LegendSymbol(tocElement))
                         {
                             if (tocLegendItems.Items == null || tocLegendItems.Items.Count() == 0)
+                            {
                                 continue;
+                            }
 
                             var legendLayer = new Rest.Json.Legend.Layer()
                             {
@@ -1015,10 +1044,12 @@ namespace gView.Interoperability.GeoServices.Request
                             foreach (var tocLegendItem in tocLegendItems.Items)
                             {
                                 if (tocLegendItem.Image == null)
+                                {
                                     continue;
+                                }
 
                                 MemoryStream ms = new MemoryStream();
-                                tocLegendItem.Image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                                tocLegendItem.Image.Save(ms, GraphicsEngine.ImageFormat.Png);
 
                                 legends.Add(new Rest.Json.Legend.Legend()
                                 {
@@ -1080,13 +1111,19 @@ namespace gView.Interoperability.GeoServices.Request
 
                     List<IFeature> features = GetFeatures(featureClass, editRequest, true);
                     if (features.Count == 0)
+                    {
                         throw new Exception("No features to add");
+                    }
 
                     if (features.Where(f => f.OID > 0).Count() > 0)
+                    {
                         throw new Exception("Can't insert features with existing ObjectId");
+                    }
 
                     if (!await database.Insert(featureClass, features))
+                    {
                         throw new Exception(database.LastErrorMessage);
+                    }
 
                     context.ServiceRequest.Succeeded = true;
                     context.ServiceRequest.Response = JsonConvert.SerializeObject(
@@ -1143,13 +1180,19 @@ namespace gView.Interoperability.GeoServices.Request
 
                     List<IFeature> features = GetFeatures(featureClass, editRequest, true);
                     if (features.Count == 0)
+                    {
                         throw new Exception("No features to add");
+                    }
 
                     if (features.Where(f => f.OID <= 0).Count() > 0)
+                    {
                         throw new Exception("Can't update features without existing ObjectId");
+                    }
 
                     if (!await database.Update(featureClass, features))
+                    {
                         throw new Exception(database.LastErrorMessage);
+                    }
 
                     context.ServiceRequest.Succeeded = true;
                     context.ServiceRequest.Response = JsonConvert.SerializeObject(
@@ -1202,7 +1245,9 @@ namespace gView.Interoperability.GeoServices.Request
                     foreach (int objectId in objectIds)
                     {
                         if (!await database.Delete(featureClass, objectId))
+                        {
                             throw new Exception(database.LastErrorMessage);
+                        }
                     }
 
                     context.ServiceRequest.Succeeded = true;
@@ -1298,14 +1343,20 @@ namespace gView.Interoperability.GeoServices.Request
         {
             var editModule = serviceMap.GetModule<gView.Plugins.Modules.EditorModule>();
             if (editModule == null)
+            {
                 throw new Exception("No editor module available for service");
+            }
 
             var editLayer = editModule.GetEditLayer(editRequest.LayerId);
             if (editLayer == null)
+            {
                 throw new Exception("No editable layer found with id=" + editRequest.LayerId);
+            }
 
             if (!editLayer.Statements.HasFlag(statement))
+            {
                 throw new Exception("Editoperation " + statement + " not allowed for layer with id=" + editRequest.LayerId);
+            }
         }
 
         #endregion
@@ -1323,7 +1374,9 @@ namespace gView.Interoperability.GeoServices.Request
             feature.Shape = jsonFeature.Geometry.ToGeometry();
             var attributes = (IDictionary<string, object>)jsonFeature.Attributes;
             if (attributes == null)
+            {
                 throw new ArgumentException("No features attributes!");
+            }
 
             for (int f = 0, fieldCount = fc.Fields.Count; f < fieldCount; f++)
             {
@@ -1387,13 +1440,18 @@ namespace gView.Interoperability.GeoServices.Request
         private List<ITableClass> FindTableClass(IServiceMap map, string id, out string filterQuery)
         {
             filterQuery = String.Empty;
-            if (map == null) return null;
+            if (map == null)
+            {
+                return null;
+            }
 
             List<ITableClass> classes = new List<ITableClass>();
             foreach (ILayer element in MapServerHelper.FindMapLayers(map, _useTOC, id))
             {
                 if (element.Class is ITableClass)
+                {
                     classes.Add(element.Class as ITableClass);
+                }
 
                 if (element is IFeatureLayer)
                 {
@@ -1417,7 +1475,9 @@ namespace gView.Interoperability.GeoServices.Request
         private ISpatialReference SRef(string sref)
         {
             if (String.IsNullOrWhiteSpace(sref))
+            {
                 return null;
+            }
 
             sref = sref.Trim();
             if (sref.StartsWith("{") && sref.EndsWith("}"))
@@ -1431,14 +1491,22 @@ namespace gView.Interoperability.GeoServices.Request
             return SpatialReference.FromID("epsg:" + sref);
         }
 
-        private System.Drawing.Color ToColor(int[] col)
+        private GraphicsEngine.ArgbColor ToColor(int[] col)
         {
             if (col == null)
-                return System.Drawing.Color.Transparent;
+            {
+                return GraphicsEngine.ArgbColor.Transparent;
+            }
+
             if (col.Length == 3)
-                return System.Drawing.Color.FromArgb(col[0], col[1], col[2]);
+            {
+                return GraphicsEngine.ArgbColor.FromArgb(col[0], col[1], col[2]);
+            }
+
             if (col.Length == 4)
-                return System.Drawing.Color.FromArgb(col[3], col[0], col[1], col[2]);
+            {
+                return GraphicsEngine.ArgbColor.FromArgb(col[3], col[0], col[1], col[2]);
+            }
 
             throw new Exception("Invalid symbol color: [" + String.Join(",", col) + "]");
         }

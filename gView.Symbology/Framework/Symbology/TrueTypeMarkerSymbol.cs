@@ -4,10 +4,13 @@ using gView.Framework.IO;
 using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using gView.Symbology.Framework.Symbology.IO;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml;
@@ -15,28 +18,35 @@ using System.Xml;
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("71E22086-D511-4a41-AAE1-BBC78572F277")]
-    public sealed class TrueTypeMarkerSymbol : LegendItem, IPropertyPage, IPointSymbol, ISymbolRotation, IFontColor, ISymbolPositioningUI, ISymbolSize
+    public sealed class TrueTypeMarkerSymbol : LegendItem, 
+                                               IPropertyPage, 
+                                               IPointSymbol, 
+                                               ISymbolRotation, 
+                                               IFontColor,
+                                               ISymbolPositioningUI, 
+                                               ISymbolSize, 
+                                               ISymbolCurrentGraphicsEngineDependent
     {
         private float _xOffset = 0, _yOffset = 0, _angle = 0, _rotation = 0, _hOffset = 0, _vOffset = 0;
-        private SolidBrush _brush;
-        private Font _font;
+        private IBrush _brush;
+        private IFont _font;
         private char _char = 'A';
+        private Dictionary<string, Offset> _engineOffset = new Dictionary<string, Offset>();
 
         public TrueTypeMarkerSymbol()
         {
-            _brush = new SolidBrush(Color.Black);
-            _font = new Font("Arial", 10);
+            _brush = Current.Engine.CreateSolidBrush(ArgbColor.Black);
+            _font = Current.Engine.CreateFont("Arial", 10f);
         }
-        private TrueTypeMarkerSymbol(Font font, Color color)
+        private TrueTypeMarkerSymbol(IFont font, ArgbColor color)
         {
-            _brush = new SolidBrush(color);
+            _brush = Current.Engine.CreateSolidBrush(color);
             _font = font;
         }
 
         [Browsable(true)]
-        //[Editor(typeof(gView.Framework.UI.ColorTypeEditor),typeof(System.Drawing.Design.UITypeEditor))]
         [UseColorPicker()]
-        public System.Drawing.Color Color
+        public ArgbColor Color
         {
             get
             {
@@ -48,7 +58,7 @@ namespace gView.Framework.Symbology
             }
         }
 
-        public Font Font
+        public IFont Font
         {
             get { return _font; }
             set
@@ -63,7 +73,6 @@ namespace gView.Framework.Symbology
         }
 
         [Browsable(true)]
-        //[Editor(typeof(gView.Framework.UI.CharacterTypeEditor),typeof(System.Drawing.Design.UITypeEditor))]
         [UseCharacterPicker()]
         public byte Charakter
         {
@@ -80,23 +89,24 @@ namespace gView.Framework.Symbology
                 //point.X+=_xOffset;
                 //point.Y+=_yOffset;
 
-                display.GraphicsContext.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
-                StringFormat format = new StringFormat();
+                display.Canvas.TextRenderingHint = GraphicsEngine.TextRenderingHint.AntiAlias;
+                var format = Current.Engine.CreateDrawTextFormat();
                 format.Alignment = StringAlignment.Center;
                 format.LineAlignment = StringAlignment.Center;
-                format.FormatFlags = StringFormatFlags.DirectionRightToLeft;
+                //format.FormatFlags = System.Drawing.StringFormatFlags.DirectionRightToLeft;
 
                 try
                 {
-                    display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
-                    display.GraphicsContext.RotateTransform(_angle + _rotation);
+                    display.Canvas.TranslateTransform(new CanvasPointF((float)point.X, (float)point.Y));
+                    display.Canvas.RotateTransform(_angle + _rotation);
 
                     double xo = _xOffset, yo = _yOffset;
+                    
                     if (_angle != 0 || _rotation != 0)
                     {
                         if (_rotation != 0)
                         {
-                            SymbolTransformation.Transform(_angle + _rotation, _hOffset, _vOffset, out _xOffset, out _yOffset);
+                            PerformSymbolTransformation(_rotation);
                         }
 
                         double cos_a = Math.Cos((-_angle - _rotation) / 180.0 * Math.PI);
@@ -106,11 +116,11 @@ namespace gView.Framework.Symbology
                         yo = -_xOffset * sin_a + _yOffset * cos_a;
                     }
 
-                    display.GraphicsContext.DrawString(_char.ToString(), _font, _brush, (float)xo, (float)yo, format);
+                    display.Canvas.DrawText(_char.ToString(), _font, _brush, (float)xo, (float)yo, format);
                 }
                 finally
                 {
-                    display.GraphicsContext.ResetTransform();
+                    display.Canvas.ResetTransform();
                 }
 
                 // Rotationspunkt muss gegen den Uhrzeiger mitbewegen,
@@ -133,7 +143,8 @@ namespace gView.Framework.Symbology
             set
             {
                 _hOffset = value;
-                SymbolTransformation.Transform(_angle, _hOffset, _vOffset, out _xOffset, out _yOffset);
+                RefreshEngineOffset();
+                PerformSymbolTransformation(0);
             }
         }
 
@@ -144,7 +155,8 @@ namespace gView.Framework.Symbology
             set
             {
                 _vOffset = value;
-                SymbolTransformation.Transform(_angle, _hOffset, _vOffset, out _xOffset, out _yOffset);
+                RefreshEngineOffset();
+                PerformSymbolTransformation(0);
             }
         }
 
@@ -155,7 +167,7 @@ namespace gView.Framework.Symbology
             set
             {
                 _angle = value;
-                SymbolTransformation.Transform(_angle, _hOffset, _vOffset, out _xOffset, out _yOffset);
+                PerformSymbolTransformation(0);
             }
         }
 
@@ -242,18 +254,49 @@ namespace gView.Framework.Symbology
                 ms.Write(encoder.GetBytes(soap), 0, soap.Length);
                 ms.Position = 0;
                 SoapFormatter formatter = new SoapFormatter();
-                _font = (Font)formatter.Deserialize<Font>(ms, stream, this, true);
+                _font = (IFont)formatter.Deserialize<IFont>(ms, stream, this, true);
             }
             catch { }
 
             _char = (char)stream.Load("char", 'A');
-            _brush.Color = Color.FromArgb((int)stream.Load("color", Color.Black.ToArgb()));
-            HorizontalOffset = (float)stream.Load("x", 0f);
-            VerticalOffset = (float)stream.Load("y", 0f);
+            _brush.Color = ArgbColor.FromArgb((int)stream.Load("color", ArgbColor.Black.ToArgb()));
+            var defaultHorizontalOffset = (float)stream.Load("x", 0f);
+            var defaultVerticalOffset = (float)stream.Load("y", 0f);
             Angle = (float)stream.Load("a", 0f);
 
             this.MaxSymbolSize = (float)stream.Load("maxsymbolsize", 0f);
             this.MinSymbolSize = (float)stream.Load("minsymbolsize", 0f);
+
+            #region Load Offset
+
+            _engineOffset.Clear();
+            string engineOffsetKeys = (string)stream.Load("engine-offset-keys", String.Empty);
+            if (!String.IsNullOrEmpty(engineOffsetKeys))
+            {
+                foreach (var key in engineOffsetKeys.Split(','))
+                {
+                    _engineOffset[key] = new Offset()
+                    {
+                        HorizontalOffset = (float)stream.Load($"{ key }.x", defaultHorizontalOffset),
+                        VerticalOffset = (float)stream.Load($"{ key }.y", defaultVerticalOffset)
+                    };
+                }
+            }
+            foreach (var engineName in Engines.RegisteredGraphicsEngineNames())
+            {
+                if (!_engineOffset.ContainsKey(engineName))
+                {
+                    _engineOffset[engineName] = new Offset()
+                    {
+                        HorizontalOffset = defaultHorizontalOffset,
+                        VerticalOffset = defaultVerticalOffset
+                    };
+                }
+            }
+
+            #endregion
+
+            SetCurrentEngineOffset();
         }
 
         public void Save(IPersistStream stream)
@@ -282,6 +325,16 @@ namespace gView.Framework.Symbology
 
             stream.Save("maxsymbolsize", this.MaxSymbolSize);
             stream.Save("minsymbolsize", this.MinSymbolSize);
+
+            if (_engineOffset != null && _engineOffset.Count > 0)
+            {
+                stream.Save("engine-offset-keys", String.Join(",", _engineOffset.Select(e => e.Key)));
+                foreach (var key in _engineOffset.Keys)
+                {
+                    stream.Save($"{ key }.x", _engineOffset[key].HorizontalOffset);
+                    stream.Save($"{ key }.y", _engineOffset[key].VerticalOffset);
+                }
+            }
         }
 
         #endregion
@@ -314,7 +367,7 @@ namespace gView.Framework.Symbology
         public override object Clone()
         {
             TrueTypeMarkerSymbol marker = Font != null && _brush != null ?
-                new TrueTypeMarkerSymbol(new Font(Font.Name, Font.Size, Font.Style), _brush.Color) :
+                new TrueTypeMarkerSymbol(Current.Engine.CreateFont(Font.Name, Font.Size, Font.Style), _brush.Color) :
                 new TrueTypeMarkerSymbol();
 
             marker.Angle = Angle;
@@ -326,6 +379,8 @@ namespace gView.Framework.Symbology
 
             marker.MaxSymbolSize = this.MaxSymbolSize;
             marker.MinSymbolSize = this.MinSymbolSize;
+
+            CloneEngineOffsets(marker._engineOffset);
 
             return marker;
         }
@@ -344,15 +399,15 @@ namespace gView.Framework.Symbology
             {
                 fac = ReferenceScaleHelper.RefscaleFactor(
                     (float)(display.refScale / display.mapScale),
-                    this.SymbolSize, 
-                    this.MinSymbolSize, 
+                    this.SymbolSize,
+                    this.MinSymbolSize,
                     this.MaxSymbolSize);
 
                 fac = options.RefScaleFactor(fac);
             }
             fac *= options.DpiFactor;
 
-            TrueTypeMarkerSymbol marker = new TrueTypeMarkerSymbol(new Font(Font.Name, Math.Max(Font.Size * fac / display.Screen.LargeFontsFactor, 2f), _font.Style), _brush.Color);
+            TrueTypeMarkerSymbol marker = new TrueTypeMarkerSymbol(Current.Engine.CreateFont(Font.Name, Math.Max(Font.Size * fac / display.Screen.LargeFontsFactor , 2f), _font.Style), _brush.Color);
             marker.Angle = Angle;
             marker.HorizontalOffset = HorizontalOffset * fac;
             marker.VerticalOffset = VerticalOffset * fac;
@@ -362,6 +417,8 @@ namespace gView.Framework.Symbology
 
             marker.MaxSymbolSize = this.MaxSymbolSize;
             marker.MinSymbolSize = this.MinSymbolSize;
+
+            CloneEngineOffsets(marker._engineOffset);
 
             return marker;
         }
@@ -388,7 +445,7 @@ namespace gView.Framework.Symbology
         #region IFontColor Member
 
         [Browsable(false)]
-        public Color FontColor
+        public ArgbColor FontColor
         {
             get
             {
@@ -397,7 +454,7 @@ namespace gView.Framework.Symbology
                     return _brush.Color;
                 }
 
-                return Color.Transparent;
+                return ArgbColor.Transparent;
             }
             set
             {
@@ -448,8 +505,8 @@ namespace gView.Framework.Symbology
             }
             set
             {
-                this.Font = new Font(
-                    (_font != null ? _font.FontFamily.Name : "Arial"), value);
+                this.Font = Current.Engine.CreateFont(
+                    (_font != null ? _font.Name : "Arial"), value);
             }
         }
 
@@ -474,6 +531,79 @@ namespace gView.Framework.Symbology
         public bool RequireClone()
         {
             return false;
+        }
+
+        #endregion
+
+        #region Helper
+
+        private void PerformSymbolTransformation(float rotation)
+        {
+            var offset = new CanvasPointF(_hOffset, _vOffset);
+            //Current.Engine.DrawTextOffestPointsToFontUnit(ref offset);
+
+            SymbolTransformation.Transform(_angle + rotation, offset.X, offset.Y, out _xOffset, out _yOffset);
+        }
+
+        private void RefreshEngineOffset()
+        {
+            var offset = _engineOffset.ContainsKey(Current.Engine.EngineName) ?
+                _engineOffset[Current.Engine.EngineName] :
+                new Offset();
+
+            offset.VerticalOffset = this.VerticalOffset;
+            offset.HorizontalOffset = this.HorizontalOffset;
+
+            _engineOffset[Current.Engine.EngineName] = offset;
+        }
+
+        private void SetCurrentEngineOffset()
+        {
+            if(_engineOffset.ContainsKey(Current.Engine.EngineName))
+            {
+                _hOffset = _engineOffset[Current.Engine.EngineName].HorizontalOffset;
+                _vOffset = _engineOffset[Current.Engine.EngineName].VerticalOffset;
+            }
+            PerformSymbolTransformation(0);
+        }
+
+        private void CloneEngineOffsets(Dictionary<string, Offset> cloneTo)
+        {
+            foreach (var key in _engineOffset.Keys)
+            {
+                if (cloneTo.ContainsKey(key))
+                {
+                    cloneTo[key] = new Offset(_engineOffset[key]);
+                }
+                else
+                {
+                    cloneTo[key] = new Offset(_engineOffset[key]);
+                }
+            }
+        }
+
+        #endregion
+
+        #region ISymbolCurrentGraphicsEngineDependent
+
+        public void CurrentGraphicsEngineChanged()
+        {
+            SetCurrentEngineOffset();
+        }
+
+        #endregion
+
+        #region Helper Classes
+
+        private struct Offset
+        {
+            public Offset(Offset offset)
+            {
+                this.HorizontalOffset = offset.HorizontalOffset;
+                this.VerticalOffset = offset.VerticalOffset;
+            }
+            public float HorizontalOffset { get; set; }
+            public float VerticalOffset { get; set; }
         }
 
         #endregion

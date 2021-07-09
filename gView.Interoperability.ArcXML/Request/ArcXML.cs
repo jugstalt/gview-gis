@@ -8,6 +8,7 @@ using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Framework.XML;
+using gView.GraphicsEngine;
 using gView.Interoperability.ArcXML.Dataset;
 using gView.MapServer;
 using System;
@@ -295,13 +296,13 @@ namespace gView.Interoperability.ArcXML
         public XmlNodeList LAYERS = null;
         public float Dpi = 96f;
         //public float symbolScaleFactor = 1f;
-        private System.Drawing.Imaging.ImageFormat _imageFormat;
+        private ImageFormat _imageFormat;
         private string _imageExtension;
         private bool _useTOC = true;
 
         public GET_IMAGE_REQUEST()
         {
-            this.ImageFormat = System.Drawing.Imaging.ImageFormat.Png;
+            this.ImageFormat = ImageFormat.Png;
         }
 
         async public Task<string> ImageRequest(IServiceMap map, IServiceRequestContext context, bool useTOC)
@@ -332,17 +333,17 @@ namespace gView.Interoperability.ArcXML
             return ret;
         }
 
-        public System.Drawing.Imaging.ImageFormat ImageFormat
+        public ImageFormat ImageFormat
         {
             get { return _imageFormat; }
             set
             {
                 _imageFormat = value;
-                if (_imageFormat == System.Drawing.Imaging.ImageFormat.Jpeg)
+                if (_imageFormat == ImageFormat.Jpeg)
                 {
                     _imageExtension = ".jpg";
                 }
-                else if (_imageFormat == System.Drawing.Imaging.ImageFormat.Gif)
+                else if (_imageFormat == ImageFormat.Gif)
                 {
                     _imageExtension = ".gif";
                 }
@@ -366,11 +367,11 @@ namespace gView.Interoperability.ArcXML
                 map.Display.Limit = Envelope;
                 map.Display.ZoomTo(Envelope);
                 map.BeforeRenderLayers += new BeforeRenderLayersEvent(map_BeforeRenderLayers);
-                System.Drawing.Bitmap legend = await map.Legend();
+                var legend = await map.Legend();
                 if (legend != null)
                 {
                     string title = map.Name.Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + ".png";
-                    legend.Save(context.MapServer.OutputPath + @"/" + title, System.Drawing.Imaging.ImageFormat.Png);
+                    legend.Save(context.MapServer.OutputPath + @"/" + title, ImageFormat.Png);
                     ret = response.LEGEND(context.MapServer.OutputPath, context.ServiceRequest.OutputUrl, title, map.Display.Envelope);
                 }
             }
@@ -900,11 +901,11 @@ namespace gView.Interoperability.ArcXML
                                !(fromlayer[0] is IWebServiceTheme))
                             {
                                 IQueryFilter filter = ObjectFromAXLFactory.Query(queryNode, target[0].Class as ITableClass, fromlayer[0].Class as IFeatureClass);
-                                filter.SetUserData("IServiceRequestContext", map as IServiceRequestContext);
+                                filter.SetUserData("IServiceRequestContext", map);
 
                                 if (filter is IBufferQueryFilter)
                                 {
-                                    ((IBufferQueryFilter)filter).RootFilter.SetUserData("IServiceRequestContext", map as IServiceRequestContext);
+                                    ((IBufferQueryFilter)filter).RootFilter.SetUserData("IServiceRequestContext", map);
                                     filter = await BufferQueryFilter.ConvertToSpatialFilter((IBufferQueryFilter)filter);
                                 }
 
@@ -922,7 +923,7 @@ namespace gView.Interoperability.ArcXML
                                 datasetNode.Attributes["fromlayer"].Value = targetNode.Attributes["id"].Value;
 
                                 HatchSymbol symbol = new HatchSymbol();
-                                symbol.PenColor = System.Drawing.Color.FromArgb(150, System.Drawing.Color.Red);
+                                symbol.PenColor = ArgbColor.FromArgb(150, ArgbColor.Red);
 
                                 IGraphicElement grElement = new AcetateGraphicElement(symbol, ((ISpatialFilter)filter).Geometry);
                                 map.Display.GraphicsContainer.Elements.Add(grElement);
@@ -1385,14 +1386,15 @@ namespace gView.Interoperability.ArcXML
                 xw.WriteAttributeString("label", lItem.LegendLabel);
                 xw.WriteAttributeString("description", "");
 
-                using (System.Drawing.Bitmap bm = new System.Drawing.Bitmap(25, 14))
+                using (var bitmap = Current.Engine.CreateBitmap(25, 14))
                 {
-                    using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(bm))
+                    using (var canvas = bitmap.CreateCanvas())
                     {
-                        new SymbolPreview(null).Draw(gr, new System.Drawing.Rectangle(0, 0, 25, 14), lItem as ISymbol);
+                        new SymbolPreview(null).Draw(canvas, new CanvasRectangle(0, 0, 25, 14), lItem as ISymbol);
                     }
+
                     MemoryStream ms = new MemoryStream();
-                    bm.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
+                    bitmap.Save(ms, ImageFormat.Bmp);
                     xw.WriteRaw(Convert.ToBase64String(ms.ToArray()));
                 }
 

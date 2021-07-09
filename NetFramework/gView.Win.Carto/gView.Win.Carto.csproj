@@ -248,10 +248,6 @@
       <Project>{fb98412b-8def-4b02-b903-2979a433e75e}</Project>
       <Name>gView.Db</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\gView.Drawing.Pro\gView.Drawing.Pro.csproj">
-      <Project>{9b3a0de1-e73b-400c-9201-c83b434ca587}</Project>
-      <Name>gView.Drawing.Pro</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\gView.Editor.Core\gView.Editor.Core.csproj">
       <Project>{8c804d9d-7cb0-4f53-88b2-f265060ce702}</Project>
       <Name>gView.Editor.Core</Name>
@@ -259,6 +255,18 @@
     <ProjectReference Include="..\..\gView.Geometry\gView.Geometry.csproj">
       <Project>{82012e45-2efc-498e-9bb1-f3deba4b87c5}</Project>
       <Name>gView.Geometry</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj">
+      <Project>{27a01872-3e18-4c14-a267-f4093f7317b0}</Project>
+      <Name>gView.GraphicsEngine.GdiPlus</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj">
+      <Project>{00332360-3466-4c26-8604-c43db166dd2b}</Project>
+      <Name>gView.GraphicsEngine.Skia</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\gView.GraphicsEngine\gView.GraphicsEngine.csproj">
+      <Project>{ed711bda-7fd3-42ae-a6a0-ddf07c20014d}</Project>
+      <Name>gView.GraphicsEngine</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\gView.Interoperability.ArcXML\gView.Interoperability.ArcXML.csproj">
       <Project>{5e48a0a0-cf45-458d-ad3c-4fc235ad203f}</Project>

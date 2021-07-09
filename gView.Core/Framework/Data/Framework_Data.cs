@@ -1,13 +1,13 @@
-using System;
-using System.Data;
-using System.Collections;
-using System.Collections.Generic;
-using gView.Framework.Geometry;
 using gView.Framework.Carto;
-using gView.Framework.system;
 using gView.Framework.FDB;
-using System.Drawing;
+using gView.Framework.Geometry;
 using gView.Framework.IO;
+using gView.Framework.system;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Filters;
+using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data
@@ -72,25 +72,29 @@ namespace gView.Framework.Data
 
     public class GeorefBitmap : IDisposable
     {
-        public global::System.Drawing.Bitmap Bitmap = null;
+        public GraphicsEngine.Abstraction.IBitmap Bitmap = null;
         public IEnvelope Envelope = null;
         public ISpatialReference SpatialReference = null;
         public float Opacity = 1.0f;
 
-        public GeorefBitmap(global::System.Drawing.Bitmap bitmap)
+        public GeorefBitmap(GraphicsEngine.Abstraction.IBitmap bitmap)
         {
             Bitmap = bitmap;
         }
 
-        public void MakeTransparent(Color transColor)
+        public void MakeTransparent(GraphicsEngine.ArgbColor transColor)
         {
-            if (Bitmap == null) return;
+            if (Bitmap == null)
+            {
+                return;
+            }
+
             try
             {
-                Bitmap b = new global::System.Drawing.Bitmap(Bitmap.Width, Bitmap.Height, global::System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                using (global::System.Drawing.Graphics g = global::System.Drawing.Graphics.FromImage(b))
+                var b = GraphicsEngine.Current.Engine.CreateBitmap(Bitmap.Width, Bitmap.Height, GraphicsEngine.PixelFormat.Rgba32);
+                using (var g = b.CreateCanvas())
                 {
-                    g.DrawImage(Bitmap, 0, 0);
+                    g.DrawBitmap(Bitmap, new GraphicsEngine.CanvasPoint(0, 0));
                 }
                 b.MakeTransparent(transColor);
                 Bitmap.Dispose();
@@ -126,7 +130,7 @@ namespace gView.Framework.Data
         Task<bool> MapRequest(IDisplay display);
         Task<bool> LegendRequest(IDisplay display);
         GeorefBitmap Image { get; }
-        global::System.Drawing.Bitmap Legend { get; }
+        GraphicsEngine.Abstraction.IBitmap Legend { get; }
 
         IEnvelope Envelope { get; }
         ISpatialReference SpatialReference { get; set; }
@@ -404,10 +408,10 @@ namespace gView.Framework.Data
 
     public enum InterpolationMethod
     {
-        Fast = global::System.Drawing.Drawing2D.InterpolationMode.Low,
-        NearestNeighbor = global::System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor,
-        Bilinear = global::System.Drawing.Drawing2D.InterpolationMode.Bilinear,
-        Bicubic = global::System.Drawing.Drawing2D.InterpolationMode.Bicubic /*,
+        Fast = GraphicsEngine.InterpolationMode.Low,
+        NearestNeighbor = GraphicsEngine.InterpolationMode.NearestNeighbor,
+        Bilinear = GraphicsEngine.InterpolationMode.Bilinear,
+        Bicubic = GraphicsEngine.InterpolationMode.Bicubic /*,
         HighQuality = System.Drawing.Drawing2D.InterpolationMode.High */
     }
 
@@ -426,7 +430,7 @@ namespace gView.Framework.Data
     public interface IRasterClass : IClass
     {
         IPolygon Polygon { get; }
-        global::System.Drawing.Bitmap Bitmap { get; }
+        GraphicsEngine.Abstraction.IBitmap Bitmap { get; }
 
         double oX { get; }
         double oY { get; }
@@ -458,27 +462,33 @@ namespace gView.Framework.Data
     {
         public double MinValue;
         public double MaxValue;
-        public Color Color;
+        public ArgbColor Color;
         public string Legend;
 
-        public GridColorClass(double minValue, double maxValue, Color color)
+        public GridColorClass(double minValue, double maxValue, ArgbColor color)
         {
             MinValue = minValue;
             MaxValue = maxValue;
             Color = color;
         }
 
-        static public Color FindColor(double Value, GridColorClass[] classes)
+        static public ArgbColor FindColor(double Value, GridColorClass[] classes)
         {
-            if (classes == null) return Color.White;
+            if (classes == null)
+            {
+                return ArgbColor.White;
+            }
 
             foreach (GridColorClass cc in classes)
             {
                 if (Value >= cc.MinValue &&
-                    Value <= cc.MaxValue) return cc.Color;
+                    Value <= cc.MaxValue)
+                {
+                    return cc.Color;
+                }
             }
 
-            return Color.Transparent;
+            return ArgbColor.Transparent;
         }
 
         #region IPersistable Member
@@ -487,7 +497,7 @@ namespace gView.Framework.Data
         {
             MinValue = (double)stream.Load("MinValue", 0.0);
             MaxValue = (double)stream.Load("MaxValue", 0.0);
-            Color = Color.FromArgb((int)stream.Load("Color", Color.White.ToArgb()));
+            Color = ArgbColor.FromArgb((int)stream.Load("Color", ArgbColor.White.ToArgb()));
             Legend = (string)stream.Load("Legend", String.Empty);
         }
 
@@ -526,7 +536,8 @@ namespace gView.Framework.Data
     {
         InterpolationMethod InterpolationMethod { get; set; }
         float Transparency { get; set; }
-        global::System.Drawing.Color TransparentColor { get; set; }
+        ArgbColor TransparentColor { get; set; }
+        FilterImplementations FilterImplementation { get; set; }
 
         IRasterClass RasterClass { get; }
     }
@@ -561,9 +572,9 @@ namespace gView.Framework.Data
         double Y { get; }
     }
 
-    public interface IBitmap
+    public interface IRasterFileBitmap
     {
-        global::System.Drawing.Bitmap LoadBitmap();
+        GraphicsEngine.Abstraction.IBitmap LoadBitmap();
     }
 
     public interface IRasterLayerCursor : ICursor
@@ -613,7 +624,9 @@ namespace gView.Framework.Data
                 foreach (IFeatureLayerJoin join in this)
                 {
                     if (join.JoinName == joinName)
+                    {
                         return join;
+                    }
                 }
                 return null;
             }
@@ -661,7 +674,9 @@ namespace gView.Framework.Data
             FeatureLayerJoins joins = new FeatureLayerJoins();
 
             foreach (IFeatureLayerJoin join in this)
+            {
                 joins.Add((IFeatureLayerJoin)join.Clone());
+            }
 
             return joins;
         }
@@ -725,7 +740,7 @@ namespace gView.Framework.Data
 
     public interface IPointIdentify
     {
-       Task<ICursor> PointQuery(IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata);
+        Task<ICursor> PointQuery(IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata);
     }
 
     public interface IMulitPointIdentify

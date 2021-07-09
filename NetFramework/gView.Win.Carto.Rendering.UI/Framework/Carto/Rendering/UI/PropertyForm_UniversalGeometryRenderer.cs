@@ -10,6 +10,7 @@ using gView.Framework.Geometry;
 using gView.Framework.UI;
 using gView.Framework.Carto.UI;
 using gView.Framework.Symbology.UI;
+using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -26,30 +27,21 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_renderer == null) return;
 
-            new SymbolPreview(null).Draw(
-                e.Graphics,
-                new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10),
-                _renderer[geometryType.Point], false);
+            e.Graphics.DrawSymbol(_renderer[geometryType.Point], new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10));
         }
 
         private void btnChoosePolygonSymbol_Paint(object sender, PaintEventArgs e)
         {
             if (_renderer == null) return;
 
-            new SymbolPreview(null).Draw(
-                e.Graphics,
-                new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10),
-                _renderer[geometryType.Polygon], false);
+            e.Graphics.DrawSymbol(_renderer[geometryType.Polygon], new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10));
         }
 
         private void btnChooseLineSymbol_Paint(object sender, PaintEventArgs e)
         {
             if (_renderer == null) return;
 
-            new SymbolPreview(null).Draw(
-                e.Graphics,
-                new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10),
-                _renderer[geometryType.Polyline], false);
+            e.Graphics.DrawSymbol(_renderer[geometryType.Polyline], new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10));
         }
 
         private void btnChooseSymbol_Click(object sender, EventArgs e)

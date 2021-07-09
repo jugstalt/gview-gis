@@ -220,7 +220,7 @@ namespace gView.Framework.UI
     public class TocLegendItem : IDisposable
     {
         public string Label { get; set; }
-        public System.Drawing.Bitmap Image { get; set; }
+        public GraphicsEngine.Abstraction.IBitmap Image { get; set; }
 
         public void Dispose()
         {
@@ -280,9 +280,9 @@ namespace gView.Framework.UI
         List<ITOCElement> Elements { get; }
         List<IWebServiceLayer> VisibleWebServiceLayers { get; }
 
-        Task<global::System.Drawing.Bitmap> Legend();
-        Task<global::System.Drawing.Bitmap> Legend(ITOCElement element);
-        Task<global::System.Drawing.Bitmap> Legend(List<ITOCElement> elements);
+        Task<GraphicsEngine.Abstraction.IBitmap> Legend();
+        Task<GraphicsEngine.Abstraction.IBitmap> Legend(ITOCElement element);
+        Task<GraphicsEngine.Abstraction.IBitmap> Legend(List<ITOCElement> elements);
         Task<TocLegendItems> LegendSymbol(ITOCElement element);
     }
 

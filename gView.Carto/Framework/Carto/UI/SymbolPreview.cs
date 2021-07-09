@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.system;
+using System;
 
 namespace gView.Framework.Carto.UI
 {
@@ -63,35 +61,46 @@ namespace gView.Framework.Carto.UI
             return geometry;
         }
 
-        public void Draw(System.Drawing.Graphics graphics, System.Drawing.Rectangle rectangle, ISymbol symbol)
+        public void Draw(GraphicsEngine.Abstraction.ICanvas canvas, GraphicsEngine.CanvasRectangle rectangle, ISymbol symbol)
         {
-            Draw(graphics, rectangle, symbol, true);
+            Draw(canvas, rectangle, symbol, true);
         }
-        public void Draw(System.Drawing.Graphics graphics, System.Drawing.Rectangle rectangle, ISymbol symbol, bool cls)
+        public void Draw(GraphicsEngine.Abstraction.ICanvas canvas, GraphicsEngine.CanvasRectangle rectangle, ISymbol symbol, bool cls)
         {
-            if (symbol == null) return;
+            if (symbol == null)
+            {
+                return;
+            }
 
             Display display = new gView.Framework.Carto.Display(_map);
-            display.dpi = graphics.DpiX;
+            display.dpi = 96f; // canvas.DpiX;
 
             IEnvelope env = display.Limit = new Envelope(0, rectangle.Top + rectangle.Height, rectangle.Left + rectangle.Width, 0);
             display.iWidth = (int)env.maxx;
             display.iHeight = (int)env.maxy;
             display.ZoomTo(env.minx, env.miny, env.maxx, env.maxy);
 
-            IGeometry geometry = GeometryFromSymbol(symbol, new Envelope(rectangle.Left, rectangle.Bottom, rectangle.Right, rectangle.Top));
-            if (geometry == null) return;
+            IGeometry geometry = GeometryFromSymbol(symbol, new Envelope(rectangle.Left,
+                                                                         rectangle.Height + rectangle.Top,
+                                                                         rectangle.Width + rectangle.Left,
+                                                                         rectangle.Top));
+            if (geometry == null)
+            {
+                return;
+            }
 
             if (PlugInManager.PlugInID(symbol).Equals(KnownObjects.Symbology_PolygonMask))
+            {
                 return;
+            }
 
-            display.GraphicsContext = graphics;
+            display.Canvas = canvas;
 
             if (cls)
             {
-                using (System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(System.Drawing.Color.White))
+                using (var brush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.White))
                 {
-                    graphics.FillRectangle(brush, rectangle);
+                    canvas.FillRectangle(brush, rectangle);
                 }
             }
 
@@ -99,7 +108,10 @@ namespace gView.Framework.Carto.UI
             if (sym != null)
             {
                 if (sym is ITextSymbol)
+                {
                     ((ITextSymbol)sym).Text = "Text";
+                }
+
                 sym.Draw(display, geometry);
                 sym.Release();
             }

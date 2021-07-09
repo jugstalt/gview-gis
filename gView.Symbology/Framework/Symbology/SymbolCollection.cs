@@ -2,15 +2,25 @@
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.Linq;
 
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("062AD1EA-A93C-4c3c-8690-830E65DC6D91")]
-    public sealed class SymbolCollection : LegendItem, ISymbolCollection, ISymbol, ILabel, ISymbolRotation, ITextSymbol, IPenColor, IBrushColor, IFontColor
+    public sealed class SymbolCollection : LegendItem, 
+                                           ISymbolCollection, 
+                                           ISymbol, 
+                                           ILabel,
+                                           ISymbolRotation,
+                                           ITextSymbol,
+                                           IPenColor, 
+                                           IBrushColor,
+                                           IFontColor,
+                                           ISymbolCurrentGraphicsEngineDependent
     {
         private List<SymbolCollectionItem> _symbols;
 
@@ -28,9 +38,9 @@ namespace gView.Framework.Symbology
         public SymbolCollection(IEnumerable<ISymbol> symbols)
             : this()
         {
-            if(symbols!=null)
+            if (symbols != null)
             {
-                foreach(var symbol in symbols)
+                foreach (var symbol in symbols)
                 {
                     AddSymbol(symbol);
                 }
@@ -395,7 +405,7 @@ namespace gView.Framework.Symbology
 
         #region ITextSymbol Member
 
-        public Font Font
+        public GraphicsEngine.Abstraction.IFont Font
         {
             get
             {
@@ -482,15 +492,17 @@ namespace gView.Framework.Symbology
             return _symbols.Where(s => s?.Symbol != null && s.Symbol.RequireClone()).FirstOrDefault() != null;
         }
 
+        
+
         #endregion
 
         #region IPenColor Member
 
-        public Color PenColor
+        public ArgbColor PenColor
         {
             get
             {
-                return Color.Black;
+                return ArgbColor.Black;
             }
             set
             {
@@ -513,11 +525,11 @@ namespace gView.Framework.Symbology
 
         #region IBrushColor Member
 
-        public Color FillColor
+        public ArgbColor FillColor
         {
             get
             {
-                return Color.Black;
+                return ArgbColor.Black;
             }
             set
             {
@@ -540,11 +552,11 @@ namespace gView.Framework.Symbology
 
         #region IFontColor Member
 
-        public Color FontColor
+        public ArgbColor FontColor
         {
             get
             {
-                return Color.Black;
+                return ArgbColor.Black;
             }
             set
             {
@@ -558,6 +570,25 @@ namespace gView.Framework.Symbology
                     if (item.Symbol is IFontColor)
                     {
                         ((IFontColor)item.Symbol).FontColor = value;
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+
+        #region ISymbolCurrentGraphicsEngineDependent
+
+        public void CurrentGraphicsEngineChanged()
+        {
+            if (_symbols != null)
+            {
+                foreach (SymbolCollectionItem item in _symbols)
+                {
+                    if (item.Symbol is ISymbolCurrentGraphicsEngineDependent)
+                    {
+                        ((ISymbolCurrentGraphicsEngineDependent)item.Symbol).CurrentGraphicsEngineChanged();
                     }
                 }
             }

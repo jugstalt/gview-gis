@@ -4,11 +4,11 @@ using gView.Framework.IO;
 using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.GraphicsEngine.Abstraction;
 using gView.Symbology.Framework.Symbology.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing.Drawing2D;
 using System.Reflection;
 
 namespace gView.Framework.Symbology
@@ -257,7 +257,7 @@ namespace gView.Framework.Symbology
             }
         }
 
-        public void DrawPath(IDisplay display, GraphicsPath path)
+        public void DrawPath(IDisplay display, IGraphicsPath path)
         {
 
         }

@@ -4,11 +4,11 @@ using gView.Framework.IO;
 using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using gView.Symbology.Framework.Symbology.Extensions;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.IO;
 using System.Reflection;
 
@@ -20,7 +20,7 @@ namespace gView.Framework.Symbology
         private float _xOffset = 0, _yOffset = 0, _angle = 0, _rotation = 0, _hOffset = 0, _vOffset = 0;
         private float _sizeX = 10f, _sizeY = 10f;
         private string _filename = String.Empty;
-        private Image _image = null;
+        private IBitmap _image = null;
 
         [UseFilePicker()]
         public string Filename
@@ -40,6 +40,7 @@ namespace gView.Framework.Symbology
             get { return _sizeX; }
             set { _sizeX = value; }
         }
+
         public float SizeY
         {
             get { return _sizeY; }
@@ -67,7 +68,7 @@ namespace gView.Framework.Symbology
             return null;
         }
 
-        #endregion
+        #endregion IPropertyPage Member
 
         #region IPointSymbol Member
 
@@ -77,7 +78,7 @@ namespace gView.Framework.Symbology
             {
                 float sizeX = _sizeX, sizeY = _sizeY;
 
-                if(display.IsLegendItemSymbol())
+                if (display.IsLegendItemSymbol())
                 {
                     sizeX = Math.Min(_sizeY, display.iWidth);
                     sizeY = Math.Min(_sizeY, display.iHeight);
@@ -87,10 +88,10 @@ namespace gView.Framework.Symbology
 
                 try
                 {
-                    display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
-                    display.GraphicsContext.RotateTransform(_angle + _rotation);
+                    display.Canvas.TranslateTransform(new CanvasPointF((float)point.X, (float)point.Y));
+                    display.Canvas.RotateTransform(_angle + _rotation);
 
-                    var rect = new Rectangle((int)x, (int)y, (int)sizeX, (int)sizeY);
+                    var rect = new CanvasRectangle((int)x, (int)y, (int)sizeX, (int)sizeY);
 
                     try
                     {
@@ -98,21 +99,20 @@ namespace gView.Framework.Symbology
                         {
                             if (_filename.StartsWith("resource:"))
                             {
-                                _image = Image.FromStream(new MemoryStream(display.Map.ResourceContainer[_filename.Substring(9)]));
+                                _image = Current.Engine.CreateBitmap(new MemoryStream(display.Map.ResourceContainer[_filename.Substring(9)]));
                             }
                             else
                             {
-                                _image = Image.FromFile(_filename);
+                                _image = Current.Engine.CreateBitmap(_filename);
                             }
                         }
 
                         if (_image != null)
                         {
-                            display.GraphicsContext.DrawImage(
+                            display.Canvas.DrawBitmap(
                                     _image,
                                     rect,
-                                    new Rectangle(0, 0, _image.Width, _image.Height),
-                                    GraphicsUnit.Pixel);
+                                    new CanvasRectangle(0, 0, _image.Width, _image.Height));
                         }
                     }
                     catch
@@ -121,12 +121,12 @@ namespace gView.Framework.Symbology
                 }
                 finally
                 {
-                    display.GraphicsContext.ResetTransform();
+                    display.Canvas.ResetTransform();
                 }
             }
         }
 
-        #endregion
+        #endregion IPointSymbol Member
 
         #region ISymbol Member
 
@@ -142,7 +142,6 @@ namespace gView.Framework.Symbology
             }
             else if (geometry is IMultiPoint)
             {
-
                 for (int i = 0, to = ((IMultiPoint)geometry).PointCount; i < to; i++)
                 {
                     IPoint p = ((IMultiPoint)geometry)[i];
@@ -166,7 +165,7 @@ namespace gView.Framework.Symbology
             get { return "Raster Marker Symbol"; }
         }
 
-        #endregion
+        #endregion ISymbol Member
 
         #region IClone2 Member
 
@@ -179,7 +178,7 @@ namespace gView.Framework.Symbology
                 return Clone();
             }
 
-            float fac =  ReferenceScaleHelper.CalcPixelUnitFactor(options);
+            float fac = ReferenceScaleHelper.CalcPixelUnitFactor(options);
 
             RasterMarkerSymbol marker = new RasterMarkerSymbol();
             marker.Angle = Angle;
@@ -193,7 +192,7 @@ namespace gView.Framework.Symbology
             return marker;
         }
 
-        #endregion
+        #endregion IClone2 Member
 
         #region ISymbolTransformation Member
 
@@ -230,7 +229,7 @@ namespace gView.Framework.Symbology
             }
         }
 
-        #endregion
+        #endregion ISymbolTransformation Member
 
         #region IPersistable Member
 
@@ -258,7 +257,7 @@ namespace gView.Framework.Symbology
             stream.Save("sy", _sizeY);
         }
 
-        #endregion
+        #endregion IPersistable Member
 
         #region ISymbolRotation Member
 
@@ -275,7 +274,7 @@ namespace gView.Framework.Symbology
             }
         }
 
-        #endregion
+        #endregion ISymbolRotation Member
 
         #region ISymbol Member
 
@@ -290,6 +289,6 @@ namespace gView.Framework.Symbology
             return false;
         }
 
-        #endregion
+        #endregion ISymbol Member
     }
 }

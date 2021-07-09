@@ -2,7 +2,6 @@ using gView.Framework.IO;
 using gView.Framework.system;
 using Newtonsoft.Json;
 using System;
-using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -10,6 +9,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Net.Http;
+using gView.GraphicsEngine.Abstraction;
+using gView.GraphicsEngine;
 
 namespace gView.Framework.Web
 {
@@ -39,7 +40,7 @@ namespace gView.Framework.Web
             return proxy;
         }
 
-        public static Bitmap DownloadImage(XmlNode output)
+        public static IBitmap DownloadImage(XmlNode output)
         {
             if (output.Attributes["file"] != null)
             {
@@ -48,7 +49,7 @@ namespace gView.Framework.Web
                     FileInfo fi = new FileInfo(output.Attributes["file"].Value);
                     if (fi.Exists)
                     {
-                        return (Bitmap)Image.FromFile(fi.FullName);
+                        return Current.Engine.CreateBitmap(fi.FullName);
                     }
                 }
                 catch (Exception ex) { LastErrorMessage = ex.Message; throw ex; }
@@ -63,7 +64,7 @@ namespace gView.Framework.Web
             return null;
         }
 
-        public static Bitmap DownloadImage(XmlNode output, IWebProxy proxy)
+        public static IBitmap DownloadImage(XmlNode output, IWebProxy proxy)
         {
             if (output.Attributes["file"] != null)
             {
@@ -72,7 +73,7 @@ namespace gView.Framework.Web
                     FileInfo fi = new FileInfo(output.Attributes["file"].Value);
                     if (fi.Exists)
                     {
-                        return (Bitmap)Image.FromFile(fi.FullName);
+                        return Current.Engine.CreateBitmap(fi.FullName);
                     }
                 }
                 catch (Exception ex) { LastErrorMessage = ex.Message; throw ex; }
@@ -86,32 +87,31 @@ namespace gView.Framework.Web
             }
             return null;
         }
-        public static Bitmap DownloadImage(string imageUrl)
+        public static IBitmap DownloadImage(string imageUrl)
         {
             return DownloadImage(imageUrl, ProxySettings.Proxy(imageUrl));
         }
-        public static Bitmap DownloadImage(string imageUrl, string usr, string pwd)
+        public static IBitmap DownloadImage(string imageUrl, string usr, string pwd)
         {
             return DownloadImage(imageUrl, ProxySettings.Proxy(imageUrl), null, usr, pwd);
         }
-        public static Bitmap DownloadImage(string imageUrl, IWebProxy proxy)
+        public static IBitmap DownloadImage(string imageUrl, IWebProxy proxy)
         {
             return DownloadImage(imageUrl, proxy, null);
         }
-        public static Bitmap DownloadImage(string imageUrl, IWebProxy proxy, ICredentials credentials)
+        public static IBitmap DownloadImage(string imageUrl, IWebProxy proxy, ICredentials credentials)
         {
             return DownloadImage(imageUrl, proxy, credentials, String.Empty, String.Empty);
         }
-        public static Bitmap DownloadImage(string imageUrl, IWebProxy proxy, ICredentials credentials, string usr,string pwd)
+        public static IBitmap DownloadImage(string imageUrl, IWebProxy proxy, ICredentials credentials, string usr,string pwd)
         {
             try
             {
-                MemoryStream memStream = DownloadStream(imageUrl, proxy, credentials, usr, pwd);
-                Bitmap bm = (Bitmap)Image.FromStream(memStream);
-                memStream.Close();
-                memStream.Dispose();
+                using (MemoryStream memStream = DownloadStream(imageUrl, proxy, credentials, usr, pwd))
+                {
+                    return Current.Engine.CreateBitmap(memStream);
+                }
 
-                return bm;
             }
             catch (Exception ex)
             {
@@ -243,11 +243,11 @@ namespace gView.Framework.Web
                 return "<Exception>" + ex.Message + "</Exception>";
             }
         }
-        public static Bitmap DownloadImage(string imageUrl, byte[] postBytes)
+        public static IBitmap DownloadImage(string imageUrl, byte[] postBytes)
         {
             return DownloadImage(imageUrl, postBytes, null);
         }
-        public static Bitmap DownloadImage(string imageUrl, byte[] postBytes, IWebProxy proxy)
+        public static IBitmap DownloadImage(string imageUrl, byte[] postBytes, IWebProxy proxy)
         {
             try
             {
@@ -286,24 +286,22 @@ namespace gView.Framework.Web
                 DateTime t1 = DateTime.Now;
                 Stream stream = wresp.GetResponseStream();
 
-                MemoryStream memStream = new MemoryStream();
-
-                while (Bytes2Read > 0)
+                using (MemoryStream memStream = new MemoryStream())
                 {
-                    int len = stream.Read(b, 0, Bytes2Read);
-                    if (len == 0)
+
+                    while (Bytes2Read > 0)
                     {
-                        break;
+                        int len = stream.Read(b, 0, Bytes2Read);
+                        if (len == 0)
+                        {
+                            break;
+                        }
+
+                        memStream.Write(b, 0, len);
                     }
-
-                    memStream.Write(b, 0, len);
+                    memStream.Position = 0;
+                    return Current.Engine.CreateBitmap(memStream);
                 }
-                memStream.Position = 0;
-                Bitmap bm = (Bitmap)Image.FromStream(memStream);
-                memStream.Close();
-                memStream.Dispose();
-
-                return bm;
             }
             catch (Exception ex)
             {

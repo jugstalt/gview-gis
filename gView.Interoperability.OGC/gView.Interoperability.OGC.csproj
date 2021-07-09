@@ -9,7 +9,6 @@
     <ProjectReference Include="..\gView.Carto\gView.Carto.csproj" />
     <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
     <ProjectReference Include="..\gView.Data\gView.Data.csproj" />
-    <ProjectReference Include="..\gView.Drawing.Pro\gView.Drawing.Pro.csproj" />
     <ProjectReference Include="..\gView.Geometry\gView.Geometry.csproj" />
     <ProjectReference Include="..\gView.Metadata\gView.Metadata.csproj" />
     <ProjectReference Include="..\gView.OGC\gView.OGC.csproj" />

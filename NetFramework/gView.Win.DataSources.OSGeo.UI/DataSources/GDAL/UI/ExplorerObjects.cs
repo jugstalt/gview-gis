@@ -18,9 +18,9 @@ namespace gView.DataSources.GDAL.UI
         private string _filename = "";
         private IRasterClass _class = null;
 
-        public GDALRasterFileExplorerObject() : base(null, typeof(RasterClass), 2) { }
+        public GDALRasterFileExplorerObject() : base(null, typeof(RasterClassV1), 2) { }
         private GDALRasterFileExplorerObject(IExplorerObject parent, string filename)
-            : base(parent, typeof(RasterClass), 2)
+            : base(parent, typeof(RasterClassV1), 2)
         {
             _filename = filename;
         }
@@ -88,9 +88,9 @@ namespace gView.DataSources.GDAL.UI
                     if (layer != null && layer.Class is IRasterClass)
                     {
                         _class = layer.Class as IRasterClass;
-                        if (_class is RasterClass)
+                        if (_class is RasterClassV1)
                         {
-                            if (!((RasterClass)_class).isValid)
+                            if (!((RasterClassV1)_class).isValid)
                             {
                                 _class.EndPaint(null);
                                 _class = null;

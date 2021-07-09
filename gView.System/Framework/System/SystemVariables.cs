@@ -41,7 +41,7 @@ namespace gView.Framework.system
                 return PortableRootDirectory;
             }
         }
-        
+
         static public string StartupDirectory
         {
             get { return ApplicationDirectory; }
@@ -136,30 +136,27 @@ namespace gView.Framework.system
             }
         }
 
-     
+
         static private float _primaryScreenDPI = -1;
-        static public float PrimaryScreenDPI
+        static public float PrimaryScreenDPI(bool forceRefresh = false)
         {
-            get
-            {
-                if (_primaryScreenDPI != -1) return _primaryScreenDPI;
-
-                try
-                {
-                    using (global::System.Drawing.Graphics gr = global::System.Drawing.Graphics.FromHwndInternal((IntPtr)0))
-                    {
-                        _primaryScreenDPI = gr.DpiX;
-                    }
-                }
-                catch
-                {
-                    _primaryScreenDPI = 96f;
-                }
-
+            if (_primaryScreenDPI != -1 && forceRefresh == false) 
                 return _primaryScreenDPI;
-            }
-        }
 
+            try
+            {
+                using (global::System.Drawing.Graphics gr = global::System.Drawing.Graphics.FromHwndInternal(IntPtr.Zero))
+                {
+                    _primaryScreenDPI = gr.DpiX;
+                }
+            }
+            catch
+            {
+                _primaryScreenDPI = 96f;
+            }
+
+            return _primaryScreenDPI;
+        }
     }
 
     public interface IProperties

@@ -109,6 +109,10 @@
       <Project>{82012e45-2efc-498e-9bb1-f3deba4b87c5}</Project>
       <Name>gView.Geometry</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\gView.GraphicsEngine\gView.GraphicsEngine.csproj">
+      <Project>{ed711bda-7fd3-42ae-a6a0-ddf07c20014d}</Project>
+      <Name>gView.GraphicsEngine</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\gView.System\gView.System.csproj">
       <Project>{e50d8014-0fb8-4b67-8291-0abee04a1403}</Project>
       <Name>gView.System</Name>

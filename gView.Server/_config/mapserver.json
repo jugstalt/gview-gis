@@ -32,5 +32,10 @@
   },
 
   "allowFormsLogin": true,
-  "force-https": false
+  "force-https": false,
+
+  "graphics": {
+    "rendering": "skia",
+    "encoding": "gdiplus"
+  }
 }

@@ -17,9 +17,9 @@ namespace gView.Symbology.Framework.Symbology.Extensions
                    display.iHeight == LegendItemSymbolHeight;
         }
 
-        static public Rectangle ToLegendItemSymbolRect(this Rectangle rect)
+        static public GraphicsEngine.CanvasRectangle ToLegendItemSymbolRect(this GraphicsEngine.CanvasRectangle rect)
         {
-            rect.X = rect.Y = 0;
+            rect.Left = rect.Top = 0;
             rect.Width = LegendItemSymbolWidth;
             rect.Height = LegendItemSymbolHeight;
 

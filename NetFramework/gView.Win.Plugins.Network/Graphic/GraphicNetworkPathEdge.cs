@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Carto;
+﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
+using gView.GraphicsEngine;
 
 namespace gView.Plugins.Network.Graphic
 {
@@ -15,7 +13,7 @@ namespace gView.Plugins.Network.Graphic
         public GraphicNetworkPathEdge(IPolyline polyline)
         {
             _polyline = polyline;
-            _symbol.Color = System.Drawing.Color.Blue;
+            _symbol.Color = ArgbColor.Blue;
             _symbol.Width = 5;
         }
 
@@ -24,7 +22,9 @@ namespace gView.Plugins.Network.Graphic
         public void Draw(IDisplay display)
         {
             if (_polyline != null)
+            {
                 display.Draw(_symbol, _polyline);
+            }
         }
 
         #endregion

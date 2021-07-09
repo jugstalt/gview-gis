@@ -4,6 +4,8 @@ using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
 using gView.Framework.IO;
 using gView.Framework.system;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,7 +21,7 @@ namespace gView.DataSources.TileCache
         private double _resolution;
         private IPolygon _poly;
         private double _oX, _oY, _dx1, _dy2;
-        private System.Drawing.Bitmap _bm;
+        private IBitmap _bitmap;
         private static int index = 0;
 
         public RasterTile(Dataset dataset, Grid grid, int level, int row, int col, double resolution)
@@ -57,11 +59,11 @@ namespace gView.DataSources.TileCache
             get { return _poly; }
         }
 
-        public System.Drawing.Bitmap Bitmap
+        public IBitmap Bitmap
         {
             get
             {
-                return _bm;
+                return _bitmap;
             }
         }
 
@@ -119,10 +121,10 @@ namespace gView.DataSources.TileCache
 
         public void EndPaint(Framework.system.ICancelTracker cancelTracker)
         {
-            if (_bm != null)
+            if (_bitmap != null)
             {
-                _bm.Dispose();
-                _bm = null;
+                _bitmap.Dispose();
+                _bitmap = null;
             }
         }
 
@@ -173,16 +175,21 @@ namespace gView.DataSources.TileCache
             }
         }
 
-        public System.Drawing.Color TransparentColor
+        public ArgbColor TransparentColor
         {
             get
             {
-                return System.Drawing.Color.White;
+                return ArgbColor.White;
             }
             set
             {
                 
             }
+        }
+
+        public GraphicsEngine.Filters.FilterImplementations FilterImplementation { 
+            get { return GraphicsEngine.Filters.FilterImplementations.Default;  }
+            set { } 
         }
 
         public IRasterClass RasterClass
@@ -390,6 +397,8 @@ namespace gView.DataSources.TileCache
             }
         }
 
+        public object ArgbDrawing { get; private set; }
+
         #endregion
 
         async private Task GetImage()
@@ -397,7 +406,7 @@ namespace gView.DataSources.TileCache
             FileInfo fi = null;
             if (LocalCachingSettings.UseLocalCaching)
             {
-                string fn = LocalCachingSettings.LocalCachingFolder + @"\" + _dataset.DatasetName + @"\" + _level + @"\" + _row + @"\" + _col + ".jpg";
+                string fn = LocalCachingSettings.LocalCachingFolder + @"/" + _dataset.DatasetName + @"/" + _level + @"/" + _row + @"/" + _col + ".jpg";
                 fi = new FileInfo(fn);
                 try
                 {
@@ -405,7 +414,7 @@ namespace gView.DataSources.TileCache
                     if (fi.Exists)
                     {
                         // ToDo: Read Async
-                        _bm = (System.Drawing.Bitmap)System.Drawing.Image.FromFile(fn);
+                        _bitmap = Current.Engine.CreateBitmap(fn);
                         return;
                     }
                 }
@@ -438,7 +447,7 @@ namespace gView.DataSources.TileCache
                     var bytes = await responseMessage.Content.ReadAsByteArrayAsync();
                     using (var ms = new MemoryStream(bytes))
                     {
-                        _bm = (System.Drawing.Bitmap)System.Drawing.Image.FromStream(ms);
+                        _bitmap = Current.Engine.CreateBitmap(ms);
 
                         if (fi != null)
                         {

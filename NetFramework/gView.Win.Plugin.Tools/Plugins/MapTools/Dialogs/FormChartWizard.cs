@@ -16,6 +16,7 @@ using gView.Framework.Geometry;
 using gView.Framework.Carto.Rendering;
 using gView.Framework.UI.Controls;
 using System.Threading.Tasks;
+using gView.Framework.Sys.UI.Extensions;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -147,6 +148,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
             if (cmbFeatures.SelectedIndex == -1)
                 cmbFeatures.SelectedIndex = 0;
+
             #endregion
 
             #endregion
@@ -303,7 +305,7 @@ namespace gView.Plugins.MapTools.Dialogs
                 filter.AddField(item.Text);
 
                 IBrushColor brushColor = item.Symbol as IBrushColor;
-                Color col = brushColor != null ? brushColor.FillColor : Color.Red;
+                Color col = brushColor != null ? brushColor.FillColor.ToGdiColor() : Color.Red;
 
                 tab.Columns.Add(new SeriesDataColumn(item.Text) { Color = col, SeriesName = item.SubItems[1].Text });
             }

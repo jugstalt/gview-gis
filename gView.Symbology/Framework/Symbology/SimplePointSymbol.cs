@@ -6,9 +6,9 @@ using gView.Framework.system;
 using gView.Framework.UI;
 using System;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Reflection;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 
 namespace gView.Framework.Symbology
 {
@@ -20,21 +20,20 @@ namespace gView.Framework.Symbology
         private float _size = 5, _symbolWidth = 0, _angle = 0, _rotation = 0;
         //private IPoint _point=new gView.Framework.Geometry.Point();
         private float _xOffset = 0, _yOffset = 0, _hOffset = 0, _vOffset = 0;
-        private SolidBrush _brush;
-        private Pen _pen;
+        private IBrush _brush;
+        private IPen _pen;
         private MarkerType _type = MarkerType.Circle;
 
         public SimplePointSymbol()
         {
-            _brush = new SolidBrush(Color.Blue);
-            _pen = new Pen(Color.Black);
-            var brush = new SolidBrush(Color.White);
+            _brush = Current.Engine.CreateSolidBrush(ArgbColor.Blue);
+            _pen = Current.Engine.CreatePen(ArgbColor.Black, 1f);
         }
 
-        private SimplePointSymbol(Color penColor, float penWidth, Color brushColor)
+        private SimplePointSymbol(ArgbColor penColor, float penWidth, ArgbColor brushColor)
         {
-            _brush = new SolidBrush(brushColor);
-            _pen = new Pen(penColor, penWidth);
+            _brush = Current.Engine.CreateSolidBrush(brushColor);
+            _pen = Current.Engine.CreatePen(penColor, penWidth);
         }
 
         [Browsable(true)]
@@ -58,9 +57,8 @@ namespace gView.Framework.Symbology
         }
 
         [Browsable(true)]
-        //[Editor(typeof(gView.Framework.UI.ColorTypeEditor) ,typeof(System.Drawing.Design.UITypeEditor))]
         [UseColorPicker()]
-        public System.Drawing.Color Color
+        public ArgbColor Color
         {
             get
             {
@@ -73,7 +71,6 @@ namespace gView.Framework.Symbology
         }
 
         [Browsable(true)]
-        //[Editor(typeof(gView.Framework.UI.PenWidthTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
         [UseWidthPicker()]
         public float OutlineWidth
         {
@@ -82,9 +79,8 @@ namespace gView.Framework.Symbology
         }
 
         [Browsable(true)]
-        //[Editor(typeof(gView.Framework.UI.ColorTypeEditor),typeof(System.Drawing.Design.UITypeEditor))]
         [UseColorPicker()]
-        public Color OutlineColor
+        public ArgbColor OutlineColor
         {
             get { return _pen.Color; }
             set { _pen.Color = value; }
@@ -141,60 +137,60 @@ namespace gView.Framework.Symbology
                 float x = _xOffset - _size / 2;
                 float y = _yOffset - _size / 2;
 
-                display.GraphicsContext.SmoothingMode = (SmoothingMode)this.Smoothingmode;
+                display.Canvas.SmoothingMode = (GraphicsEngine.SmoothingMode)this.Smoothingmode;
 
-                display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
-                display.GraphicsContext.RotateTransform(_angle + _rotation);
+                display.Canvas.TranslateTransform(new CanvasPointF((float)point.X, (float)point.Y));
+                display.Canvas.RotateTransform(_angle + _rotation);
 
                 switch (_type)
                 {
                     case MarkerType.Circle:
-                        if (_brush.Color != Color.Transparent)
+                        if (!_brush.Color.IsTransparent)
                         {
-                            display.GraphicsContext.FillEllipse(_brush, x, y, _size, _size);
+                            display.Canvas.FillEllipse(_brush, x, y, _size, _size);
                         }
 
-                        if (_pen.Color != Color.Transparent)
+                        if (!_pen.Color.IsTransparent)
                         {
-                            display.GraphicsContext.DrawEllipse(_pen, x, y, _size, _size);
+                            display.Canvas.DrawEllipse(_pen, x, y, _size, _size);
                         }
 
                         break;
                     case MarkerType.Triangle:
-                        using (GraphicsPath gp = new GraphicsPath())
+                        using (var gp = Current.Engine.CreateGraphicsPath())
                         {
                             gp.StartFigure();
                             gp.AddLine(x, .866f * _size + y, _size + x, .866f * _size + y);
                             gp.AddLine(_size + x, .866f * _size + y, _size / 2 + x, y);
                             gp.CloseFigure();
 
-                            if (_brush.Color != Color.Transparent)
+                            if (!_brush.Color.IsTransparent)
                             {
-                                display.GraphicsContext.FillPath(_brush, gp);
+                                display.Canvas.FillPath(_brush, gp);
                             }
 
-                            if (_pen.Color != Color.Transparent)
+                            if (!_pen.Color.IsTransparent)
                             {
-                                display.GraphicsContext.DrawPath(_pen, gp);
+                                display.Canvas.DrawPath(_pen, gp);
                             }
                         }
                         break;
                     case MarkerType.Square:
-                        if (_brush.Color != Color.Transparent)
+                        if (!_brush.Color.IsTransparent)
                         {
-                            display.GraphicsContext.FillRectangle(_brush, x, y, _size, _size);
+                            display.Canvas.FillRectangle(_brush, new CanvasRectangleF(x, y, _size, _size));
                         }
 
-                        if (_pen.Color != Color.Transparent)
+                        if (!_pen.Color.IsTransparent)
                         {
-                            display.GraphicsContext.DrawRectangle(_pen, x, y, _size, _size);
+                            display.Canvas.DrawRectangle(_pen, new CanvasRectangleF(x, y, _size, _size));
                         }
 
                         break;
                     case MarkerType.Cross:
                         float sw = _symbolWidth;
 
-                        using (GraphicsPath gp2 = new GraphicsPath())
+                        using (var gp2 = Current.Engine.CreateGraphicsPath())
                         {
                             gp2.StartFigure();
                             gp2.AddLine(x, y + _size / 2 - sw, x, y + _size / 2 + sw);
@@ -205,22 +201,24 @@ namespace gView.Framework.Symbology
                             gp2.AddLine(x + _size / 2 - sw, y, x + _size / 2 - sw, y + _size / 2 - sw);
                             gp2.CloseFigure();
 
-                            if (_brush.Color != Color.Transparent && sw > 0.0)
+                            if (!_brush.Color.IsTransparent && sw > 0.0)
                             {
-                                display.GraphicsContext.FillPath(_brush, gp2);
+                                display.Canvas.FillPath(_brush, gp2);
                             }
 
-                            if (_pen.Color != Color.Transparent)
+                            if (!_pen.Color.IsTransparent)
                             {
-                                display.GraphicsContext.DrawPath(_pen, gp2);
+                                display.Canvas.DrawPath(_pen, gp2);
                             }
                         }
                         break;
                     case MarkerType.Star:
-                        using (GraphicsPath gp3 = new GraphicsPath())
+                        using (var gp3 = Current.Engine.CreateGraphicsPath())
                         {
                             double w1 = 2.0 * Math.PI / 5.0;
                             double w2 = w1 / 2.0;
+
+                            gp3.StartFigure();
                             for (int i = 0; i < 5; i++)
                             {
                                 float x1 = _size / 2 + _size / 2 * (float)Math.Sin(w1 * i);
@@ -231,14 +229,14 @@ namespace gView.Framework.Symbology
                             }
                             gp3.CloseFigure();
 
-                            if (_brush.Color != Color.Transparent)
+                            if (!_brush.Color.IsTransparent)
                             {
-                                display.GraphicsContext.FillPath(_brush, gp3);
+                                display.Canvas.FillPath(_brush, gp3);
                             }
 
-                            if (_pen.Color != Color.Transparent)
+                            if (!_pen.Color.IsTransparent)
                             {
-                                display.GraphicsContext.DrawPath(_pen, gp3);
+                                display.Canvas.DrawPath(_pen, gp3);
                             }
                         }
                         break;
@@ -246,8 +244,8 @@ namespace gView.Framework.Symbology
             }
             finally
             {
-                display.GraphicsContext.ResetTransform();
-                display.GraphicsContext.SmoothingMode = SmoothingMode.None;
+                display.Canvas.ResetTransform();
+                display.Canvas.SmoothingMode = SmoothingMode.None;
             }
         }
 
@@ -322,8 +320,8 @@ namespace gView.Framework.Symbology
             Size = (float)stream.Load("size", (float)5);
             SymbolWidth = (float)stream.Load("symbolWidth", (float)0);
             OutlineWidth = (float)stream.Load("outlinewidth", (float)1);
-            Color = Color.FromArgb((int)stream.Load("color", Color.Red.ToArgb()));
-            OutlineColor = Color.FromArgb((int)stream.Load("outlinecolor", Color.Black.ToArgb()));
+            Color = ArgbColor.FromArgb((int)stream.Load("color", ArgbColor.Red.ToArgb()));
+            OutlineColor = ArgbColor.FromArgb((int)stream.Load("outlinecolor", ArgbColor.Black.ToArgb()));
             Marker = (MarkerType)stream.Load("marker", (int)MarkerType.Circle);
 
             this.MaxPenWidth = (float)stream.Load("maxpenwidth", 0f);
@@ -437,7 +435,7 @@ namespace gView.Framework.Symbology
         #region IBrushColor Member
 
         [Browsable(false)]
-        public Color FillColor
+        public ArgbColor FillColor
         {
             get
             {
@@ -446,7 +444,7 @@ namespace gView.Framework.Symbology
                     return _brush.Color;
                 }
 
-                return Color.Transparent;
+                return ArgbColor.Transparent;
             }
             set
             {
@@ -462,7 +460,7 @@ namespace gView.Framework.Symbology
         #region IPenColor Member
 
         [Browsable(false)]
-        public Color PenColor
+        public ArgbColor PenColor
         {
             get
             {
@@ -471,7 +469,7 @@ namespace gView.Framework.Symbology
                     return _pen.Color;
                 }
 
-                return Color.Transparent;
+                return ArgbColor.Transparent;
             }
             set
             {

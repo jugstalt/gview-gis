@@ -1,17 +1,14 @@
+using gView.Framework.Sys.UI.Extensions;
+using gView.GraphicsEngine;
 using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
 namespace gView.Framework.Symbology.UI
 {
-	/// <summary>
-	/// Zusammenfassung für Form_UITypeEditor_DashStyle.
-	/// </summary>
-	internal class Form_UITypeEditor_DashStyle : System.Windows.Forms.Form
+    /// <summary>
+    /// Zusammenfassung für Form_UITypeEditor_DashStyle.
+    /// </summary>
+    internal class Form_UITypeEditor_DashStyle : System.Windows.Forms.Form
 	{
 		private enum EditStyle { dash,hatch }
 
@@ -24,12 +21,12 @@ namespace gView.Framework.Symbology.UI
 		private	object _style;
 		private EditStyle editStyle=EditStyle.dash;
 
-		public Form_UITypeEditor_DashStyle(IWindowsFormsEditorService wfes,DashStyle style)
+		public Form_UITypeEditor_DashStyle(IWindowsFormsEditorService wfes, LineDashStyle style)
 		{
 			editStyle=EditStyle.dash;
 			InitializeComponent();
 
-			foreach(DashStyle s in DashStyle.GetValues(typeof(DashStyle))) 
+			foreach(LineDashStyle s in Enum.GetValues(typeof(LineDashStyle))) 
 			{
 				listBox1.Items.Add(s);
 			}
@@ -50,11 +47,11 @@ namespace gView.Framework.Symbology.UI
 			_style=style;
 		}
 
-		public DashStyle DashStyle 
+		public LineDashStyle DashStyle 
 		{
 			get 
 			{
-				return (DashStyle)_style; 
+				return (LineDashStyle)_style; 
 			}
 		}
 		public HatchStyle HatchStyle 
@@ -118,57 +115,70 @@ namespace gView.Framework.Symbology.UI
 
 		private void listBox1_DrawItem(object sender, System.Windows.Forms.DrawItemEventArgs e)
 		{
-			try 
+			try
 			{
-				if(editStyle==EditStyle.dash) 
+				if (editStyle == EditStyle.dash)
 				{
-					DashStyle style=(DashStyle)listBox1.Items[e.Index];
-					using(Pen pen=new Pen(Color.Black,2)) 
+					LineDashStyle style = (LineDashStyle)listBox1.Items[e.Index];
+
+					using (var bitmap = Current.Engine.CreateBitmap(e.Bounds.Width, e.Bounds.Height))
+					using (var canvas = bitmap.CreateCanvas())
+					using (var pen = Current.Engine.CreatePen(ArgbColor.Black, 2))
 					{
-						if(style==(DashStyle)_style) 
+						if (style == (LineDashStyle)_style)
 						{
-							using(SolidBrush brush=new SolidBrush(Color.Aqua)) 
+							using (var brush = Current.Engine.CreateSolidBrush(ArgbColor.Yellow))
 							{
-								e.Graphics.FillRectangle(brush,e.Bounds);
+								canvas.FillRectangle(brush, new CanvasRectangle(0, 0, e.Bounds.Width, e.Bounds.Height));
 							}
 						}
-						pen.DashStyle=style;
-						e.Graphics.DrawLine(pen,5,e.Bounds.Top+listBox1.ItemHeight/2,e.Bounds.Width-10,e.Bounds.Top+listBox1.ItemHeight/2);
-					}
-				} 
-				else if(editStyle==EditStyle.hatch) 
-				{
-					HatchStyle style=(HatchStyle)listBox1.Items[e.Index];
-					using(HatchBrush hbrush=new HatchBrush(style,Color.Black,Color.Transparent)) 
-					{
-						if(style==(HatchStyle)_style) 
-						{
-							using(SolidBrush brush=new SolidBrush(Color.Aqua)) 
-							{
-								e.Graphics.FillRectangle(brush,e.Bounds);
-							}
-						}
-						Rectangle rect=new Rectangle(e.Bounds.X+5,e.Bounds.Y+5,e.Bounds.Width-10,e.Bounds.Height-10);
-						using(Pen pen=new Pen(Color.Black)) 
-						{
-							e.Graphics.DrawRectangle(pen,rect);
-						}
-						e.Graphics.FillRectangle(hbrush,rect);
+						pen.DashStyle = style;
+						canvas.DrawLine(pen, 5, bitmap.Height / 2, bitmap.Width - 10, bitmap.Height / 2);
+
+						e.Graphics.DrawImage(bitmap.ToGdiBitmap(), e.Bounds.Left, e.Bounds.Top);
 					}
 				}
-			} 
-			catch 
+				else if (editStyle == EditStyle.hatch)
+				{
+					HatchStyle style = (HatchStyle)listBox1.Items[e.Index];
+
+					using (var bitmap = Current.Engine.CreateBitmap(e.Bounds.Width, e.Bounds.Height))
+					using (var canvas = bitmap.CreateCanvas())
+					using (var hbrush = Current.Engine.CreateHatchBrush(style, ArgbColor.Black, ArgbColor.Transparent))
+					{
+						if (style == (HatchStyle)_style)
+						{
+							using (var brush = Current.Engine.CreateSolidBrush(ArgbColor.Yellow))
+							{
+								canvas.FillRectangle(brush, new CanvasRectangle(0, 0, e.Bounds.Width, e.Bounds.Height));
+							}
+						}
+						CanvasRectangleF rect = new CanvasRectangleF(5, 5, bitmap.Width - 10, bitmap.Height - 10);
+						using (var pen = Current.Engine.CreatePen(ArgbColor.Black, 1))
+						{
+							canvas.DrawRectangle(pen, rect);
+						}
+						canvas.FillRectangle(hbrush, rect);
+
+						e.Graphics.DrawImage(bitmap.ToGdiBitmap(), e.Bounds.Left, e.Bounds.Top);
+					}
+				}
+			}
+			catch
 			{
 			}
 		}
 
 		private void listBox1_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
-			if(listBox1.SelectedItem==null) return;
+			if(listBox1.SelectedItem==null)
+            {
+                return;
+            }
 
-			if(_wfes!=null) 
+            if (_wfes!=null) 
 			{
-				_style=(DashStyle)listBox1.SelectedItem;
+				_style=(LineDashStyle)listBox1.SelectedItem;
 				_wfes.CloseDropDown();
 			}
 		}

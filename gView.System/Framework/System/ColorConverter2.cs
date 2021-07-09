@@ -1,13 +1,13 @@
+using gView.GraphicsEngine;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Drawing;
 
 namespace gView.Framework.system
 {
     public class ColorConverter2
     {
-        static public Color ConvertFrom(string colString)
+        static public ArgbColor ConvertFrom(string colString)
         {
             colString = colString.Trim().ToLower();
 
@@ -30,7 +30,7 @@ namespace gView.Framework.system
                         b = colString[4].ToString() + colString[5].ToString();
                     }
 
-                    return Color.FromArgb(
+                    return ArgbColor.FromArgb(
                         int.Parse(r, global::System.Globalization.NumberStyles.HexNumber),
                         int.Parse(g, global::System.Globalization.NumberStyles.HexNumber),
                         int.Parse(b, global::System.Globalization.NumberStyles.HexNumber));
@@ -40,7 +40,7 @@ namespace gView.Framework.system
                     string[] rgb = colString.Replace("rgb(", "").Replace(")", "").Trim().Split(',');
                     if (rgb.Length == 3)
                     {
-                        return Color.FromArgb(
+                        return ArgbColor.FromArgb(
                             int.Parse(rgb[0]),
                             int.Parse(rgb[1]),
                             int.Parse(rgb[2]));
@@ -52,14 +52,14 @@ namespace gView.Framework.system
                     string[] rgb = colString.Trim().Split(',');
                     if (rgb.Length == 3)
                     {
-                        return Color.FromArgb(
+                        return ArgbColor.FromArgb(
                             int.Parse(rgb[0]),
                             int.Parse(rgb[1]),
                             int.Parse(rgb[2]));
                     }
                     else if (rgb.Length == 4)
                     {
-                        return Color.FromArgb(
+                        return ArgbColor.FromArgb(
                             int.Parse(rgb[0]),
                             int.Parse(rgb[1]),
                             int.Parse(rgb[2]),
@@ -69,7 +69,7 @@ namespace gView.Framework.system
             }
             catch { }
 
-            return Color.Red;
+            return ArgbColor.Red;
         }
     }
 }

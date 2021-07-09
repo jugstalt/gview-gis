@@ -1,8 +1,6 @@
+using gView.GraphicsEngine;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace gView.Framework.Symbology.UI.Controls
@@ -24,17 +22,22 @@ namespace gView.Framework.Symbology.UI.Controls
 
         void DashStylePicker_DashStyleSelected(object sender, EventArgs e)
         {
-            if (PenDashStyleSelected != null) PenDashStyleSelected(this, EventArgs.Empty);
+            if (PenDashStyleSelected != null)
+            {
+                PenDashStyleSelected(this, EventArgs.Empty);
+            }
         }
 
-        public DashStyle PenDashStyle
+        public LineDashStyle PenDashStyle
         {
             get
             {
                 return _dashStylePicker.PenDashStyle;
             }
         }
+
         #region Overrides
+
         protected override void OnClick(EventArgs e)
         {
             Point startPoint = GetOpenPoint();
@@ -56,15 +59,24 @@ namespace gView.Framework.Symbology.UI.Controls
 
         private Point GetOpenPoint()
         {
-            if (this.Owner == null) return new Point(5, 5);
+            if (this.Owner == null)
+            {
+                return new Point(5, 5);
+            }
+
             int x = 0;
             foreach (ToolStripItem item in this.Parent.Items)
             {
-                if (item == this) break;
+                if (item == this)
+                {
+                    break;
+                }
+
                 x += item.Width;
             }
             return this.Owner.PointToScreen(new Point(x, 0));
         }
+
         #endregion
     }
 }

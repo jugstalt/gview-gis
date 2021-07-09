@@ -11,6 +11,7 @@ using gView.Framework.Symbology;
 using gView.Framework.UI.Controls;
 using gView.Framework.Carto.UI;
 using gView.Framework.Symbology.UI;
+using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -87,9 +88,7 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnMinSymbol_Paint(object sender, PaintEventArgs e)
         {
-            new SymbolPreview(null).Draw(e.Graphics,
-                    new Rectangle(0, 0, btnMinSymbol.Width, btnMinSymbol.Height),
-                    _minSymbol);
+            e.Graphics.DrawSymbol(_minSymbol, new Rectangle(0, 0, btnMinSymbol.Width, btnMinSymbol.Height));
         }
 
         //private void btnMidSymbol_Paint(object sender, PaintEventArgs e)
@@ -101,9 +100,7 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnMaxSymbol_Paint(object sender, PaintEventArgs e)
         {
-            new SymbolPreview(null).Draw(e.Graphics,
-                    new Rectangle(0, 0, btnMaxSymbol.Width, btnMaxSymbol.Height),
-                    _maxSymbol);
+            e.Graphics.DrawSymbol(_maxSymbol, new Rectangle(0, 0, btnMaxSymbol.Width, btnMaxSymbol.Height));
         }
 
         private void btnMinSymbol_Click(object sender, EventArgs e)

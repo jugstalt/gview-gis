@@ -43,6 +43,14 @@ namespace gView.Win.Carto
             {
                 InitializeComponent();
 
+                using (var g = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
+                {
+                    Engines.RegisterGraphcisEngine(new GraphicsEngine.GdiPlus.GdiGraphicsEngine(g.DpiX));
+                    Engines.RegisterGraphcisEngine(GraphicsEngine.Current.Engine = new GraphicsEngine.Skia.SkiaGraphicsEngine(g.DpiX));
+
+                    GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.GdiPlus.GdiBitmapEncoding();
+                }
+
                 #region Create Application
 
                 _mapApplication = new MapApplication(this, cartoDocPane);
@@ -59,7 +67,6 @@ namespace gView.Win.Carto
                 _mapDocument.MapScaleChanged += new MapScaleChangedEvent(_mapDocument_MapScaleChanged);
 
                 #endregion
-
 
                 _mapApplication.mapDocument = _mapDocument;
                 _mapApplication.DocumentFilename = String.Empty;
@@ -85,6 +92,7 @@ namespace gView.Win.Carto
                 _mapDocument.FocusMap = _mapDocument.Maps.First();
 
                 #region Create Modules
+
                 PlugInManager compMan = new PlugInManager();
                 foreach (var moduleType in compMan.GetPlugins(Framework.system.Plugins.Type.IMapApplicationModule))
                 {
@@ -95,6 +103,7 @@ namespace gView.Win.Carto
                         module.OnCreate(_mapDocument);
                     }
                 }
+
                 #endregion
 
                 _mapApplication.SendOnCreate2Tools(_mapDocument);
@@ -146,6 +155,7 @@ namespace gView.Win.Carto
         }
 
         #region DockWindow Events
+
         private Dictionary<IDockableWindow, LayoutAnchorable> _anchorables = new Dictionary<IDockableWindow, LayoutAnchorable>();
         void mapApplication_OnShowDockableWindow(IDockableWindow window)
         {
@@ -1640,6 +1650,7 @@ namespace gView.Win.Carto
         #endregion
 
         #region IDocumentWindow
+
         private void dockManager_Loaded(object sender, RoutedEventArgs e)
         {
             anchorPaneRight.Children[0].Hide();
@@ -1671,6 +1682,7 @@ namespace gView.Win.Carto
         {
             throw new NotImplementedException();
         }
+
         #endregion
 
         #region Statusbar

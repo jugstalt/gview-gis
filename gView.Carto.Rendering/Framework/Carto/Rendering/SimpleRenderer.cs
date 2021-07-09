@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Drawing.Drawing2D;
 using gView.Framework;
 using gView.Framework.Carto.Rendering;
@@ -14,17 +13,18 @@ using System.Reflection;
 using gView.Framework.Carto.Rendering.UI;
 using System.Threading.Tasks;
 using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
+using gView.GraphicsEngine;
 
 namespace gView.Framework.Carto.Rendering
 {
     public class RendererFunctions
     {
         static internal Random r = new Random(DateTime.Now.Millisecond);
-        static internal Color RandomColor
+        static internal ArgbColor RandomColor
         {
             get
             {
-                return Color.FromArgb(r.Next(255), r.Next(255), r.Next(255));
+                return ArgbColor.FromArgb(r.Next(255), r.Next(255), r.Next(255));
             }
         }
         static public ISymbol CreateStandardSymbol(geometryType type)
@@ -60,19 +60,19 @@ namespace gView.Framework.Carto.Rendering
                 case geometryType.Envelope:
                 case geometryType.Polygon:
                     symbol = new SimpleFillSymbol();
-                    ((SimpleFillSymbol)symbol).Color = Color.Transparent;
+                    ((SimpleFillSymbol)symbol).Color = ArgbColor.Transparent;
                     ((SimpleFillSymbol)symbol).OutlineSymbol = new SimpleLineSymbol();
-                    ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Color = Color.Cyan;
+                    ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Color = ArgbColor.Cyan;
                     ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Width = 3;
                     break;
                 case geometryType.Polyline:
                     symbol = new SimpleLineSymbol();
-                    ((SimpleLineSymbol)symbol).Color = Color.Cyan;
+                    ((SimpleLineSymbol)symbol).Color = ArgbColor.Cyan;
                     ((SimpleLineSymbol)symbol).Width = 3;
                     break;
                 case geometryType.Point:
                     symbol = new SimplePointSymbol();
-                    ((SimplePointSymbol)symbol).Color = Color.Cyan;
+                    ((SimplePointSymbol)symbol).Color = ArgbColor.Cyan;
                     ((SimplePointSymbol)symbol).Size = 5;
                     break;
             }
@@ -87,19 +87,19 @@ namespace gView.Framework.Carto.Rendering
                 case geometryType.Envelope:
                 case geometryType.Polygon:
                     symbol = new SimpleFillSymbol();
-                    ((SimpleFillSymbol)symbol).Color = Color.FromArgb(100, 255, 255, 0);
+                    ((SimpleFillSymbol)symbol).Color = ArgbColor.FromArgb(100, 255, 255, 0);
                     ((SimpleFillSymbol)symbol).OutlineSymbol = new SimpleLineSymbol();
-                    ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Color = Color.Yellow;
+                    ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Color = ArgbColor.Yellow;
                     ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Width = 5;
                     break;
                 case geometryType.Polyline:
                     symbol = new SimpleLineSymbol();
-                    ((SimpleLineSymbol)symbol).Color = Color.Yellow;
+                    ((SimpleLineSymbol)symbol).Color = ArgbColor.Yellow;
                     ((SimpleLineSymbol)symbol).Width = 5;
                     break;
                 case geometryType.Point:
                     symbol = new SimplePointSymbol();
-                    ((SimplePointSymbol)symbol).Color = Color.Yellow;
+                    ((SimplePointSymbol)symbol).Color = ArgbColor.Yellow;
                     ((SimplePointSymbol)symbol).Size = 10;
                     break;
             }
