@@ -14,8 +14,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace gView.MxlUtil.Lib.Tools
+namespace gView.MxlUtil.Lib.Utilities
 {
+    //
+    //  -mxl E:\gview5\mxl\sdep\gv_strom_ld_sdep.mxl -target-connectionstring "Data Source=E:\gview5\data\strom_ld.fdb;dsname=M34" -target-guid sqlite -out-mxl e:\gview5\mxl\sqlite\gv_strom_ld_sqlite.mxl
+    //
     public class MxlToFdb : IMxlUtility
     {
         #region IMxlUtility
