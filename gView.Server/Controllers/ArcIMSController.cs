@@ -10,6 +10,7 @@ using gView.Interoperability.ArcXML;
 using gView.Interoperability.GeoServices.Rest.Json;
 using gView.MapServer;
 using gView.Server.AppCode;
+using gView.Server.AppCode.Extensions;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
