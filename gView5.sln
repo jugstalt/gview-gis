@@ -197,6 +197,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.MxlUtil", "gView.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.MxlUtil.Lib", "gView.MxlUtil.Lib\gView.MxlUtil.Lib.csproj", "{96DC810B-40E9-4519-988C-9B0A584DAB8C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Server.Models", "gView.Server.Models\gView.Server.Models.csproj", "{72A5E829-24DD-4BCB-B559-AF7D7BFB13A6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -981,6 +983,14 @@ Global
 		{96DC810B-40E9-4519-988C-9B0A584DAB8C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{96DC810B-40E9-4519-988C-9B0A584DAB8C}.Release|x64.ActiveCfg = Release|Any CPU
 		{96DC810B-40E9-4519-988C-9B0A584DAB8C}.Release|x64.Build.0 = Release|Any CPU
+		{72A5E829-24DD-4BCB-B559-AF7D7BFB13A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72A5E829-24DD-4BCB-B559-AF7D7BFB13A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72A5E829-24DD-4BCB-B559-AF7D7BFB13A6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{72A5E829-24DD-4BCB-B559-AF7D7BFB13A6}.Debug|x64.Build.0 = Debug|Any CPU
+		{72A5E829-24DD-4BCB-B559-AF7D7BFB13A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72A5E829-24DD-4BCB-B559-AF7D7BFB13A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72A5E829-24DD-4BCB-B559-AF7D7BFB13A6}.Release|x64.ActiveCfg = Release|Any CPU
+		{72A5E829-24DD-4BCB-B559-AF7D7BFB13A6}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -285,7 +285,6 @@ namespace gView.Framework.Carto
                             }
                         }
                     }
-                    canvas.Dispose();
                 }
 
                 if (_scale > 0)

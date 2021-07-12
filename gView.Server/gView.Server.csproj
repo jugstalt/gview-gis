@@ -74,6 +74,7 @@
     <ProjectReference Include="..\gView.Plugins.Modules\gView.Plugins.Modules.csproj" />
     <ProjectReference Include="..\gView.Proj\gView.Proj.csproj" />
     <ProjectReference Include="..\gView.Security\gView.Security.csproj" />
+    <ProjectReference Include="..\gView.Server.Models\gView.Server.Models.csproj" />
     <ProjectReference Include="..\gView.Symbology\gView.Symbology.csproj" />
     <ProjectReference Include="..\gView.System\gView.System.csproj" />
     <ProjectReference Include="..\gView.Web\gView.Web.csproj" />

@@ -3,20 +3,22 @@ using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.UI;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
-namespace gView.Server.AppCode
+namespace gView.Server.AppCode.Extensions
 {
-    static public class Extensions
+    static public class GerneralExtensions
     {
         static public string ServiceName(this string id)
         {
             if (id.Contains("@"))
+            {
                 return id.Split('@')[1].Trim();
+            }
             else if (id.Contains("/"))
+            {
                 return id.Split('/')[1].Trim();
+            }
 
             return id;
         }
@@ -24,9 +26,13 @@ namespace gView.Server.AppCode
         static public string FolderName(this string id)
         {
             if (id.Contains("@"))
+            {
                 return id.Split('@')[0].Trim();
+            }
             else if (id.Contains("/"))
+            {
                 return id.Split('/')[0].Trim();
+            }
 
             return String.Empty;
         }
@@ -34,9 +40,14 @@ namespace gView.Server.AppCode
         static public string CombineUri(this string baseUrl, string urlPath)
         {
             while (baseUrl.EndsWith("/"))
+            {
                 baseUrl = baseUrl.Substring(0, baseUrl.Length - 1);
+            }
+
             while (urlPath.StartsWith("/"))
+            {
                 urlPath = urlPath.Substring(1);
+            }
 
             return baseUrl + "/" + urlPath;
             //return new Uri(new Uri(baseUrl), urlPath).ToString();

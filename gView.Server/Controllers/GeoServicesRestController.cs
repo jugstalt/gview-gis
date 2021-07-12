@@ -13,6 +13,7 @@ using gView.Interoperability.GeoServices.Rest.Json.Response;
 using gView.Interoperability.GeoServices.Rest.Reflection;
 using gView.MapServer;
 using gView.Server.AppCode;
+using gView.Server.AppCode.Extensions;
 using gView.Server.Extensions;
 using gView.Server.Services.Hosting;
 using gView.Server.Services.Logging;

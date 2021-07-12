@@ -2,6 +2,7 @@
 using gView.Framework.system;
 using gView.MapServer;
 using gView.Server.AppCode;
+using gView.Server.AppCode.Extensions;
 using gView.Server.Models;
 using gView.Server.Services.Hosting;
 using gView.Server.Services.MapServer;
@@ -174,26 +175,15 @@ namespace gView.Server.Controllers
 
                     bool ret = await _mapServerDeployService.RemoveMap(service, identity);
 
-                    return Json(new
-                    {
-                        succeeded = true
-                    });
+                    return Json(new AdminMapServerResponse());
                 }
                 catch (MapServerException mse)
                 {
-                    return Json(new
-                    {
-                        succeeded = false,
-                        message = mse.Message
-                    }); ;
+                    return Json(new AdminMapServerResponse(false, mse.Message));
                 }
                 catch (Exception)
                 {
-                    return Json(new
-                    {
-                        succeeded = false,
-                        message = "Unknown error"
-                    });
+                    return Json(new AdminMapServerResponse(false, "Unknown error"));
                 }
             });
         }
@@ -201,12 +191,18 @@ namespace gView.Server.Controllers
         [HttpPost]
         async public Task<IActionResult> AddService(string service, string folder)
         {
-            folder = folder ?? String.Empty;
+            folder = (folder ?? String.Empty).ToLower();
 
             return await SecureMethodHandler(async (identity) =>
             {
                 try
                 {
+                    if(!service.IsValidServiceName())
+                    {
+                        throw new MapServerException("service name is invalid");
+                    }
+                    service = service.ToLower();
+
                     if (!String.IsNullOrEmpty(folder))
                     {
                         service = folder + "/" + service;
@@ -263,22 +259,39 @@ namespace gView.Server.Controllers
                     }
 
                     bool ret = await _mapServerDeployService.AddMap(service, mapXml, identity);
+                    if(ret==false)
+                    {
+                        throw new Exception("unable to add service");
+                    }
+                    
+                    if(UseJsonResponse())
+                    {
+                        return Json(new AdminMapServerResponse());
+                    }
 
-                    //return Json(new
-                    //{
-                    //    succeeded = true
-                    //});
-
-                    //return await Index(folder, String.Empty, $"Success: Successfully published services { service.ServiceName() }");
                     return await Index(folder);
                 }
                 catch (MapServerException mse)
                 {
-                    return await Index(folder, /*service.ServiceName()*/String.Empty, mse.Message);
+                    if (UseJsonResponse())
+                    {
+                        return Json(new AdminMapServerResponse(false, mse.Message));
+                    }
+                    else
+                    {
+                        return await Index(folder, String.Empty, mse.Message);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    return await Index(folder, /*service.ServiceName()*/String.Empty, "Unknown error: " + ex.Message);
+                    if (UseJsonResponse())
+                    {
+                        return Json(new AdminMapServerResponse(false, ex.Message));
+                    }
+                    else
+                    {
+                        return await Index(folder, String.Empty, "Unknown error: " + ex.Message);
+                    }
                 }
             });
         }
@@ -296,8 +309,12 @@ namespace gView.Server.Controllers
                     {
                         throw new MapServerException("Not allowed");
                     }
+                    if(!newFolder.IsValidFolderName())
+                    {
+                        throw new MapServerException($"Foldername { newFolder } is invalid");
+                    }
 
-                    var di = new DirectoryInfo($"{ _mapServerService.Options.ServicesPath }/{ newFolder }");
+                    var di = new DirectoryInfo($"{ _mapServerService.Options.ServicesPath }/{ newFolder.ToLower() }");
                     if(di.Exists)
                     {
                         throw new MapServerException($"Folder { newFolder } already exists");
@@ -337,6 +354,11 @@ namespace gView.Server.Controllers
             var accessType = await service.GetAccessTypes(identity);
 
             return (accessType.HasFlag(AccessTypes.Map) || accessType.HasFlag(AccessTypes.Query) || accessType.HasFlag(AccessTypes.Edit));
+        }
+
+        private bool UseJsonResponse()
+        {
+            return this.Request.Query["f"] == "json";
         }
 
         #endregion

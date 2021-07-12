@@ -364,7 +364,7 @@ namespace gView.MxlUtil.Lib.Tools
 MxlToFdb
 --------
 
-Copies all vector data in an MXL file to an FeatureDatabase (fdb) [SqlServer, PostGres or Sqlite).
+Copies all vector data in an MXL file to an FeatureDatabase (fdb) [SqlServer, PostGres or Sqlite].
 The result is a new MXL file with the same symbology in changed connections to the new FeatureDatabase.
 
 Example: Use this utitiity to make an existing database driven MXL to an 'offline' file driven (Sqlite)

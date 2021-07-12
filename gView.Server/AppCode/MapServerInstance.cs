@@ -6,6 +6,7 @@ using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.MapServer;
+using gView.Server.AppCode.Extensions;
 using gView.Server.Services.Logging;
 using gView.Server.Services.MapServer;
 using System;

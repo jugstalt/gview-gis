@@ -26,7 +26,7 @@ namespace gView.GraphicsEngine.Skia
 
         public void Clear(ArgbColor? argbColor = null)
         {
-            _canvas.Clear(argbColor.HasValue ? argbColor.Value.ToSKColor() : ArgbColor.White.ToSKColor());
+            _canvas?.Clear(argbColor.HasValue ? argbColor.Value.ToSKColor() : ArgbColor.White.ToSKColor());
         }
 
         public IDisplayCharacterRanges DisplayCharacterRanges(IFont font, IDrawTextFormat format, string text)
@@ -36,18 +36,22 @@ namespace gView.GraphicsEngine.Skia
 
         public void Flush()
         {
-            _canvas.Flush();
+            _canvas?.Flush();
         }
 
         public void Dispose()
         {
-            _canvas.Flush();
-            _canvas.Dispose();
+            if (_canvas != null)
+            {
+                _canvas?.Flush();
+                _canvas?.Dispose();
+                _canvas = null;
+            }
         }
 
         public void DrawBitmap(IBitmap bitmap, CanvasPoint point)
         {
-            _canvas.DrawBitmap((SKBitmap)bitmap.EngineElement, point.ToSKPoint(), new SKPaint()
+            _canvas?.DrawBitmap((SKBitmap)bitmap.EngineElement, point.ToSKPoint(), new SKPaint()
             {
                 FilterQuality = this.InterpolationMode.ToSKFilterQuality(),
             });
@@ -55,7 +59,7 @@ namespace gView.GraphicsEngine.Skia
 
         public void DrawBitmap(IBitmap bitmap, CanvasPointF pointF)
         {
-            _canvas.DrawBitmap((SKBitmap)bitmap.EngineElement, pointF.ToSKPoint(), new SKPaint()
+            _canvas?.DrawBitmap((SKBitmap)bitmap.EngineElement, pointF.ToSKPoint(), new SKPaint()
             {
                 FilterQuality = this.InterpolationMode.ToSKFilterQuality()
             });
@@ -63,7 +67,7 @@ namespace gView.GraphicsEngine.Skia
 
         public void DrawBitmap(IBitmap bitmap, CanvasRectangle dest, CanvasRectangle source, float opacity = 1)
         {
-            _canvas.DrawBitmap((SKBitmap)bitmap.EngineElement, source.ToSKRect(), dest.ToSKRect(), new SKPaint()
+            _canvas?.DrawBitmap((SKBitmap)bitmap.EngineElement, source.ToSKRect(), dest.ToSKRect(), new SKPaint()
             {
                 FilterQuality = this.InterpolationMode.ToSKFilterQuality(),
                 Color = SKColors.Black.WithAlpha((byte)(255 * opacity))
@@ -72,7 +76,7 @@ namespace gView.GraphicsEngine.Skia
 
         public void DrawBitmap(IBitmap bitmap, CanvasRectangleF dest, CanvasRectangleF source)
         {
-            _canvas.DrawBitmap((SKBitmap)bitmap.EngineElement, source.ToSKRect(), dest.ToSKRect(), new SKPaint()
+            _canvas?.DrawBitmap((SKBitmap)bitmap.EngineElement, source.ToSKRect(), dest.ToSKRect(), new SKPaint()
             {
                 FilterQuality = this.InterpolationMode.ToSKFilterQuality()
             });
@@ -91,90 +95,90 @@ namespace gView.GraphicsEngine.Skia
                                          points.Length > 3 ? (SKPoint?)points[3].ToSKPoint() : null);
 
 
-            _canvas.SetMatrix(skMatrix);
+            _canvas?.SetMatrix(skMatrix);
 
-            _canvas.DrawBitmap((SKBitmap)bitmap.EngineElement, 0f, 0f, new SKPaint()
+            _canvas?.DrawBitmap((SKBitmap)bitmap.EngineElement, 0f, 0f, new SKPaint()
             {
                 FilterQuality = this.InterpolationMode.ToSKFilterQuality(),
                 Color = SKColors.Black.WithAlpha((byte)(255 * opacity))
             });
 
-            _canvas.ResetMatrix();
+            _canvas?.ResetMatrix();
         }
 
         public void DrawEllipse(IPen pen, float x1, float y1, float width, float height)
         {
-            _canvas.DrawOval(new SKRect(x1, y1, x1 + width, y1 + width), GetSKPaint(pen));
+            _canvas?.DrawOval(new SKRect(x1, y1, x1 + width, y1 + width), GetSKPaint(pen));
         }
 
         public void FillEllipse(IBrush brush, float x1, float y1, float width, float height)
         {
-            _canvas.DrawOval(new SKRect(x1, y1, x1 + width, y1 + width), GetSKPaint(brush));
+            _canvas?.DrawOval(new SKRect(x1, y1, x1 + width, y1 + width), GetSKPaint(brush));
         }
 
         public void DrawRectangle(IPen pen, CanvasRectangle rectangle)
         {
-            _canvas.DrawRect(rectangle.ToSKRect(), GetSKPaint(pen));
+            _canvas?.DrawRect(rectangle.ToSKRect(), GetSKPaint(pen));
         }
 
         public void DrawRectangle(IPen pen, CanvasRectangleF rectangleF)
         {
-            _canvas.DrawRect(rectangleF.ToSKRect(), GetSKPaint(pen));
+            _canvas?.DrawRect(rectangleF.ToSKRect(), GetSKPaint(pen));
         }
 
         public void FillRectangle(IBrush brush, CanvasRectangle rectangle)
         {
-            _canvas.DrawRect(rectangle.ToSKRect(), GetSKPaint(brush));
+            _canvas?.DrawRect(rectangle.ToSKRect(), GetSKPaint(brush));
         }
 
         public void FillRectangle(IBrush brush, CanvasRectangleF rectangleF)
         {
-            _canvas.DrawRect(rectangleF.ToSKRect(), GetSKPaint(brush));
+            _canvas?.DrawRect(rectangleF.ToSKRect(), GetSKPaint(brush));
         }
 
         public void FillRectangle(IBrushCollection brushCollection, CanvasRectangleF rectangleF)
         {
             foreach (var brush in brushCollection.Brushes)
             {
-                _canvas.DrawRect(rectangleF.ToSKRect(), GetSKPaint(brush));
+                _canvas?.DrawRect(rectangleF.ToSKRect(), GetSKPaint(brush));
             }
         }
 
         public void DrawLine(IPen pen, CanvasPoint p1, CanvasPoint p2)
         {
-            _canvas.DrawLine(p1.ToSKPoint(), p2.ToSKPoint(), GetSKPaint(pen));
+            _canvas?.DrawLine(p1.ToSKPoint(), p2.ToSKPoint(), GetSKPaint(pen));
         }
 
         public void DrawLine(IPen pen, CanvasPointF p1, CanvasPointF p2)
         {
-            _canvas.DrawLine(p1.ToSKPoint(), p2.ToSKPoint(), GetSKPaint(pen));
+            _canvas?.DrawLine(p1.ToSKPoint(), p2.ToSKPoint(), GetSKPaint(pen));
         }
 
         public void DrawLine(IPen pen, int x1, int y1, int x2, int y2)
         {
-            _canvas.DrawLine(x1, y1, x2, y2, GetSKPaint(pen));
+            _canvas?.DrawLine(x1, y1, x2, y2, GetSKPaint(pen));
         }
 
         public void DrawLine(IPen pen, float x1, float y1, float x2, float y2)
         {
-            _canvas.DrawLine(x1, y1, x2, y2, GetSKPaint(pen));
+            _canvas?.DrawLine(x1, y1, x2, y2, GetSKPaint(pen));
         }
 
         public void DrawPath(IPen pen, IGraphicsPath path)
         {
-            _canvas.DrawPath((SKPath)path.EngineElement, GetSKPaint(pen));
+            _canvas?.DrawPath((SKPath)path.EngineElement, GetSKPaint(pen));
         }
 
         public void FillPath(IBrush brush, IGraphicsPath path)
         {
-            _canvas.DrawPath((SKPath)path.EngineElement, GetSKPaint(brush));
+            _canvas?.DrawPath((SKPath)path.EngineElement, GetSKPaint(brush));
         }
 
         public void FillPath(IBrushCollection brushCollection, IGraphicsPath path)
         {
             foreach (var brush in brushCollection.Brushes)
             {
-                _canvas.DrawPath((SKPath)path.EngineElement, GetSKPaint(brush));
+                _canvas?.DrawPath((SKPath)path.EngineElement, GetSKPaint(brush));
             }
         }
 
@@ -264,17 +268,17 @@ namespace gView.GraphicsEngine.Skia
 
         public void ResetTransform()
         {
-            _canvas.ResetMatrix();
+            _canvas?.ResetMatrix();
         }
 
         public void RotateTransform(float angle)
         {
-            _canvas.RotateDegrees(angle);
+            _canvas?.RotateDegrees(angle);
         }
 
         public void TranslateTransform(CanvasPointF point)
         {
-            _canvas.Translate(point.ToSKPoint());
+            _canvas?.Translate(point.ToSKPoint());
         }
 
         #region Helper
@@ -378,14 +382,14 @@ namespace gView.GraphicsEngine.Skia
 
                 foreach(var line in lines)
                 {
-                    _canvas.DrawText(line, point, paint);
+                    _canvas?.DrawText(line, point, paint);
 
                     point.Y += paint.TextSize;
                 }
             }
             else
             {
-                _canvas.DrawText(text, point, paint);
+                _canvas?.DrawText(text, point, paint);
             }
         }
 
@@ -398,14 +402,14 @@ namespace gView.GraphicsEngine.Skia
 
                 foreach (var line in lines)
                 {
-                    _canvas.DrawText(line, x, y, paint);
+                    _canvas?.DrawText(line, x, y, paint);
 
                     y += paint.TextSize;
                 }
             }
             else
             {
-                _canvas.DrawText(text, x, y, paint);
+                _canvas?.DrawText(text, x, y, paint);
             }
         }
 
