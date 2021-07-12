@@ -20,6 +20,11 @@ namespace gView.Framework.Sys.UI.Extensions
 
         static public Bitmap ToGdiBitmap(this IBitmap iBitmap)
         {
+            if (iBitmap.EngineElement == null)
+            {
+                return new Bitmap(1, 1);
+            }
+
             if (iBitmap?.EngineElement is Bitmap)
             {
                 return (Bitmap)iBitmap.EngineElement;

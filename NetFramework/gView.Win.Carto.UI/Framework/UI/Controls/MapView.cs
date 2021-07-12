@@ -185,7 +185,7 @@ namespace gView.Framework.UI.Controls
             }
             else
             {
-                _uiLocked = lockUI;
+                //_uiLocked = lockUI;
                 try
                 {
                     if (lockUI)

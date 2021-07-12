@@ -16,6 +16,9 @@ using System.Threading.Tasks;
 
 namespace gView.MxlUtil.Lib.Utilities
 {
+    //
+    //  -mxl E:\gview5\mxl\sdep\gv_strom_ld_sdep.mxl -target-connectionstring "Data Source=E:\gview5\data\strom_ld.fdb;dsname=M34" -target-guid sqlite -out-mxl e:\gview5\mxl\sqlite\gv_strom_ld_sqlite.mxl
+    //
     public class MxlToFdb : IMxlUtility
     {
         #region IMxlUtility
@@ -364,7 +367,7 @@ namespace gView.MxlUtil.Lib.Utilities
 MxlToFdb
 --------
 
-Copies all vector data in an MXL file to an FeatureDatabase (fdb) [SqlServer, PostGres or Sqlite].
+Copies all vector data in an MXL file to an FeatureDatabase (fdb) [SqlServer, PostGres or Sqlite).
 The result is a new MXL file with the same symbology in changed connections to the new FeatureDatabase.
 
 Example: Use this utitiity to make an existing database driven MXL to an 'offline' file driven (Sqlite)

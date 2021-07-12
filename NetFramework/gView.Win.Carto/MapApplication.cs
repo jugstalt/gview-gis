@@ -783,45 +783,40 @@ namespace gView.Win.Carto
         }
 
         DateTime _lastRefresh = DateTime.Now;
-        bool _refreshing = false;
-        async public Task RefreshActiveMap(DrawPhase drawPhase)
+        static private object refreshLock = new object();
+        public Task RefreshActiveMap(DrawPhase drawPhase)
         {
             if (_activeDataView == null)
             {
-                return;
+                return Task.CompletedTask;
             }
 
-            if (_activeDataView.MapView == null ||
-                _refreshing)
+            if (_activeDataView.MapView == null)
             {
-                return;
+                return Task.CompletedTask;
             }
 
-            _refreshing = true;
-            //_activeDataView.MapView.RefreshMap(drawPhase);
-
-            TimeSpan ts = DateTime.Now - _lastRefresh;
-            if (ts.TotalMilliseconds < 300)
+            lock (refreshLock)
             {
-                _appWindow.Cursor = System.Windows.Input.Cursors.Wait;
-                //MessageBox.Show("Slower... !!!");
-                Thread.Sleep((int)(300 - ts.TotalMilliseconds));
-                _appWindow.Cursor = System.Windows.Input.Cursors.Arrow;
+                TimeSpan ts = DateTime.Now - _lastRefresh;
+                if (ts.TotalMilliseconds < 300)
+                {
+                    _appWindow.Cursor = System.Windows.Input.Cursors.Wait;
+                    //MessageBox.Show("Slower... !!!");
+                    Thread.Sleep((int)(300 - ts.TotalMilliseconds));
+                    _appWindow.Cursor = System.Windows.Input.Cursors.Arrow;
+                }
+
+                _activeDataView.MapView.RefreshCopyrightVisibility();
+                _lastRefresh = DateTime.Now;
+
+                Task.Run(async () =>
+                {
+                    await this.RefreshActiveMapThread(drawPhase);
+                });
             }
 
-            _activeDataView.MapView.RefreshCopyrightVisibility();
-            _lastRefresh = DateTime.Now;
-
-            // Start this in new Thread to avoid deadlocking (happens with await Task :(( )
-            //Thread thread = new Thread(new ParameterizedThreadStart(this.RefreshActiveMapThread));
-            //thread.Start(drawPhase);
-
-            Task.Run(async () =>
-            {
-                await this.RefreshActiveMapThread(drawPhase);
-            });
-
-            _refreshing = false;
+            return Task.CompletedTask;
         }
 
         async public Task RefreshTOC()
