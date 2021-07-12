@@ -11,7 +11,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
+// Example
 // PublishService -mxl C:\gview5\mxl\sqlite\basis_sqlite.mxl -server https://localhost:44331 -service test-publish/basis1 -client publish-123 -secret publish-123
+//
 
 namespace gView.MxlUtil.Lib.Tools
 {
