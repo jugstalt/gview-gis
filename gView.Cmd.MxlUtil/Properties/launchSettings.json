@@ -2,7 +2,7 @@
   "profiles": {
     "gView.Cmd.MxlToFdb": {
       "commandName": "Project",
-      "commandLineArgs": "PublishService -mxl E:\\gview5\\mxl\\sqlite\\gv_estag_basis_sqlite.mxl -server https://localhost:44331 -service test-publish/basis1 -client publish-eni -secret publish-eni"
+      "commandLineArgs": "MxlDatasets -mxl c:\\\\temp\\\\geodaten\\\\gv_allg_nb2_sqlite.mxl"
     }
   }
 }

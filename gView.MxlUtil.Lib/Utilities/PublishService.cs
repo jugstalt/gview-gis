@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 // PublishService -mxl C:\gview5\mxl\sqlite\basis_sqlite.mxl -server https://localhost:44331 -service test-publish/basis1 -client publish-123 -secret publish-123
 //
 
-namespace gView.MxlUtil.Lib.Tools
+namespace gView.MxlUtil.Lib.Utilities
 {
     public class PublishService : IMxlUtility
     {
