@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using gView.Core.Framework.Exceptions;
+﻿using gView.Core.Framework.Exceptions;
 using gView.Framework.system;
 using gView.Interoperability.ArcXML;
-using gView.Interoperability.GeoServices.Rest.Json;
 using gView.MapServer;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.Server.Controllers
 {
