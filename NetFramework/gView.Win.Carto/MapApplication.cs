@@ -708,6 +708,15 @@ namespace gView.Win.Carto
                 }
             }
 
+            foreach(var map in _doc.Maps)
+            {
+                if(map is Map && ((Map)map).HasErrorMessages)
+                {
+                    MessageBox.Show("A map with errors can't be saved. Solve errors in MXL File (e.g. with a Texteditor) and reopen?", "gView.Carto", MessageBoxButtons.OK);
+                    return;
+                }
+            }
+
             XmlStream stream = new XmlStream("MapApplication", performEncryption);
             stream.Save("MapDocument", _doc);
 

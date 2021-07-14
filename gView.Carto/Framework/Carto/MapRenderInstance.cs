@@ -8,7 +8,6 @@ using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -267,7 +266,6 @@ namespace gView.Framework.Carto
 
                             DateTime startTime = DateTime.Now;
 
-                            Thread thread = null;
                             FeatureCounter fCounter = new FeatureCounter();
                             if (layer is IFeatureLayer)
                             {
@@ -335,7 +333,6 @@ namespace gView.Framework.Carto
                                         }
 
                                         await DrawRasterParentLayer((IParentRasterLayer)rLayer.Class, cancelTracker, rLayer);
-                                        thread = null;
                                     }
                                     else
                                     {
@@ -352,26 +349,12 @@ namespace gView.Framework.Carto
                             }
                             // Andere Layer (zB IRasterLayer)
 
-                            if (thread == null)
-                            {
-                                continue;
-                            }
-
-                            thread.Join();
-
                             if (DrawingLayerFinished != null)
                             {
                                 DrawingLayerFinished(this, new gView.Framework.system.TimeEvent("Drawing: " + layer.Title, startTime, DateTime.Now, fCounter.Counter));
                             }
-                            //int count = 0;
 
-                            //while (thread.IsAlive)
-                            //{
-                            //    Thread.Sleep(10);
-                            //    if (DoRefreshMapView != null && (count % 100) == 0 && cancelTracker.Continue) DoRefreshMapView();
-                            //    count++;
-                            //}
-                            //if (DoRefreshMapView != null && cancelTracker.Continue) DoRefreshMapView();
+                            FireRefreshMapView(1000);
                         }
                         #endregion
 
@@ -416,7 +399,10 @@ namespace gView.Framework.Carto
 
                         if (cancelTracker.Continue)
                         {
-                            DrawingLayer?.BeginInvoke("...Waiting for WebServices...", new AsyncCallback(AsyncInvoke.RunAndForget), null);
+                            if(webServices!=null && webServices.Count!=0)
+                            {
+                                DrawingLayer?.BeginInvoke("...Waiting for WebServices...", new AsyncCallback(AsyncInvoke.RunAndForget), null);
+                            }
 
                             while (m_imageMerger.Count < m_imageMerger.max)
                             {
@@ -678,11 +664,11 @@ namespace gView.Framework.Carto
         }
 
         private DateTime _lastRefresh = DateTime.UtcNow;
-        internal override void FireRefreshMapView()
+        internal override void FireRefreshMapView(double suppressPeriode = 500)
         {
             if (this.DoRefreshMapView != null)
             {
-                if ((DateTime.UtcNow - _lastRefresh).TotalMilliseconds > 100)
+                if ((DateTime.UtcNow - _lastRefresh).TotalMilliseconds > suppressPeriode)
                 {
                     this.DoRefreshMapView();
                     _lastRefresh = DateTime.UtcNow;

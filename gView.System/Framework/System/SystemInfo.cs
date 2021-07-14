@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Collections;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using gView.GraphicsEngine.Skia;
+using gView.GraphicsEngine.GdiPlus;
 
 namespace gView.Framework.system
 {
@@ -65,7 +64,11 @@ namespace gView.Framework.system
 
         private static string TrimString(string str)
         {
-            if (str == null) return "";
+            if (str == null)
+            {
+                return "";
+            }
+
             str = str.Trim();
             while (str.IndexOf("0") == 0)
             {
@@ -86,13 +89,19 @@ namespace gView.Framework.system
             get
             {
                 if (IsLinux)
+                {
                     return OSPlatform.Linux.ToString();
+                }
 
                 if (IsOSX)
+                {
                     return OSPlatform.OSX.ToString();
+                }
 
                 if (IsWindows)
+                {
                     return OSPlatform.Windows.ToString();
+                }
 
                 return "Unknown";
             }
@@ -105,6 +114,12 @@ namespace gView.Framework.system
                 Environment.SetEnvironmentVariable("PATH", $"{ Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) }");
                 Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", $"{ Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) }\\gdalplugins");
             }
+        }
+
+        static public void RegisterDefaultGraphicEnginges(float dpi = 96)
+        {
+            Engines.RegisterGraphcisEngine(new GdiGraphicsEngine(dpi));
+            Engines.RegisterGraphcisEngine(GraphicsEngine.Current.Engine = new SkiaGraphicsEngine(dpi));
         }
 
         #region HelperClasses

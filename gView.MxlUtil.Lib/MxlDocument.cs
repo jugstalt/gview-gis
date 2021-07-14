@@ -4,9 +4,8 @@ using gView.Framework.Data.Relations;
 using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.UI;
-using System;
+using gView.GraphicsEngine;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.MxUtil.Lib
@@ -28,6 +27,11 @@ namespace gView.MxUtil.Lib
         {
             _maps = new List<IMap>();
             _tableRelations = new TableRelations(null);
+
+            if (Current.Engine == null)
+            {
+                SystemInfo.RegisterDefaultGraphicEnginges();
+            }
         }
 
         public bool LoadMapDocument(string path)

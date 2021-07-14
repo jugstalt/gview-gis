@@ -1005,11 +1005,11 @@ namespace gView.Framework.Carto
         #endregion
 
         private DateTime _lastRefresh = DateTime.UtcNow;
-        internal virtual void FireRefreshMapView()
+        internal virtual void FireRefreshMapView(double suppressPeriode = 500/* ms */)  
         {
             if (this.DoRefreshMapView != null)
             {
-                if ((DateTime.UtcNow - _lastRefresh).TotalMilliseconds > 500)
+                if ((DateTime.UtcNow - _lastRefresh).TotalMilliseconds > suppressPeriode)
                 {
                     this.DoRefreshMapView();
                     _lastRefresh = DateTime.UtcNow;
@@ -1226,13 +1226,20 @@ namespace gView.Framework.Carto
             IDataset dataset;
             while ((dataset = await stream.LoadPluginAsync<IDataset>("IDataset", new gView.Carto.Framework.Carto.UnknownDataset())) != null)
             {
-                if (dataset.State != DatasetState.opened)
+                try
                 {
-                    await dataset.Open();
+                    if (dataset.State != DatasetState.opened)
+                    {
+                        await dataset.Open();
+                    }
+                    if (!String.IsNullOrWhiteSpace(dataset.LastErrorMessage))
+                    {
+                        _errorMessages.Add(dataset.LastErrorMessage);
+                    }
                 }
-                if (!String.IsNullOrWhiteSpace(dataset.LastErrorMessage))
+                catch (Exception ex)
                 {
-                    _errorMessages.Add(dataset.LastErrorMessage);
+                    _errorMessages.Add(ex.Message);
                 }
 
                 _datasets.Add(dataset);
@@ -1255,6 +1262,9 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (fLayer.DatasetID < _datasets.Count)
                 {
+                    if (!String.IsNullOrEmpty(_datasets[fLayer.DatasetID]?.LastErrorMessage))
+                        continue;
+
                     IDatasetElement element = await _datasets[fLayer.DatasetID].Element(fLayer.Title);
                     if (element != null && element.Class is IFeatureClass)
                     {
@@ -1297,6 +1307,9 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (rcLayer.DatasetID < _datasets.Count)
                 {
+                    if (!String.IsNullOrEmpty(_datasets[rcLayer.DatasetID]?.LastErrorMessage))
+                        continue;
+
                     IDatasetElement element = await _datasets[rcLayer.DatasetID].Element(rcLayer.Title);
                     if (element != null && element.Class is IRasterCatalogClass)
                     {
@@ -1327,6 +1340,9 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (rLayer.DatasetID < _datasets.Count)
                 {
+                    if (!String.IsNullOrEmpty(_datasets[rLayer.DatasetID]?.LastErrorMessage))
+                        continue;
+
                     IDatasetElement element = await _datasets[rLayer.DatasetID].Element(rLayer.Title);
                     if (element != null && element.Class is IRasterClass)
                     {
@@ -1361,6 +1377,9 @@ namespace gView.Framework.Carto
                 string errorMessage = String.Empty;
                 if (wLayer.DatasetID <= _datasets.Count)
                 {
+                    if (!String.IsNullOrEmpty(_datasets[wLayer.DatasetID]?.LastErrorMessage))
+                        continue;
+
                     IDatasetElement element = await _datasets[wLayer.DatasetID].Element(wLayer.Title);
                     if (element != null && element.Class is IWebServiceClass)
                     {

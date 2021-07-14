@@ -56,16 +56,16 @@ MxlDatasts
                     case "-out-mxl":
                         outFile = args[++i];
                         break;
-                    case "dsindex":
-                    case "dataset-index":
+                    case "-dsindex":
+                    case "-dataset-index":
                         datasetIndex = int.Parse(args[++i]);
                         break;
-                    case "parameter-name":
-                    case "parameter":
+                    case "-parameter-name":
+                    case "-parameter":
                         parameterName = args[++i];
                         break;
-                    case "new-value":
-                    case "new-parameter-value":
+                    case "-new-value":
+                    case "-new-parameter-value":
                         newParameterValue = args[++i];
                         break;
                 }
@@ -84,6 +84,11 @@ MxlDatasts
 
             var map = doc.Maps.FirstOrDefault() as Map;
 
+            if(map.HasErrorMessages)
+            {
+                throw new Exception($"Can't load source mxl { inFile }:{ Environment.NewLine }{ String.Join('\n', map.ErrorMessages) }");
+            }
+
             bool saveOutput = false;
             switch (command)
             {
@@ -92,7 +97,7 @@ MxlDatasts
                     break;
                 case "modify-connectionstring":
                 case "modify-cs":
-                    ModifyConnectionString(map, datasetIndex, parameterName, newParameterValue);
+                    await ModifyConnectionString(map, datasetIndex, parameterName, newParameterValue);
                     saveOutput = true;
                     break;
                 default:
@@ -123,13 +128,22 @@ MxlDatasts
                 Console.WriteLine("==============================================================================");
                 Console.WriteLine($"Type: { dataset.GetType() }");
 
+                Console.WriteLine(Environment.NewLine);
                 Console.WriteLine($"ConnectionString:");
                 Console.WriteLine("------------------------------------------------------------------------------");
 
                 var connectionParameters = ConfigTextStream.Extract(dataset.ConnectionString);
                 foreach (string key in connectionParameters.Keys)
                 {
-                    Console.WriteLine($"{ key }={ connectionParameters[key] }");
+                    Console.WriteLine($"{ key }={ ConfigTextStream.SecureConfigValue(key, connectionParameters[key]) }");
+                }
+
+                if(!String.IsNullOrEmpty(dataset.LastErrorMessage))
+                {
+                    Console.WriteLine(Environment.NewLine);
+                    Console.WriteLine("Errors:");
+                    Console.WriteLine("------------------------------------------------------------------------------");
+                    Console.WriteLine(dataset.LastErrorMessage);
                 }
 
                 Console.WriteLine(Environment.NewLine);
@@ -138,14 +152,14 @@ MxlDatasts
             }
         }
 
-        private void ModifyConnectionString(Map map, int dsIndex, string parameterName, string newParameterValue)
+        async private Task ModifyConnectionString(Map map, int dsIndex, string parameterName, string newParameterValue)
         {
             foreach(var dataset in GetDatasets(map, dsIndex))
             {
                 var connectionParameters = ConfigTextStream.Extract(dataset.ConnectionString);
                 bool modifyConnectionString = false;
 
-                foreach (string key in connectionParameters.Keys)
+                foreach (string key in connectionParameters.Keys.ToArray())
                 {
                     if(key.Equals(parameterName, StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -156,7 +170,12 @@ MxlDatasts
 
                 if(modifyConnectionString)
                 {
-                    dataset.SetConnectionString(ConfigTextStream.Build(connectionParameters));
+                    Console.WriteLine($"Set ConnectionString: { ConfigTextStream.SecureConfig(ConfigTextStream.Build(connectionParameters)) }");
+                    if (!(await dataset.SetConnectionString(ConfigTextStream.Build(connectionParameters))) ||
+                        !(await dataset.Open()))
+                    {
+                        throw new Exception($"Can't change connectionstring:\n{ dataset.LastErrorMessage }");
+                    }
                 }
             }
         }

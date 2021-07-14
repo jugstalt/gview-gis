@@ -62,8 +62,9 @@ namespace gView.MapServer
 
     public enum MapServiceStatus
     {
-        Running=0,
-        Stopped=1
+        Running = 0,
+        Stopped = 1,
+        Idle = 2
     }
     public interface IMapServiceSettings
     {
@@ -308,7 +309,13 @@ namespace gView.MapServer
 
         async public Task<IServiceMap> CreateServiceMapInstance()
         {
-            return await _mapServer?.GetServiceMapAsync(this);
+            var serviceMap = await _mapServer?.GetServiceMapAsync(this);
+            if(serviceMap == null)
+            {
+                throw new MapServerException($"Unable to load service { _request.Folder }/{ _request.Service }: Check error log for details");
+            }
+
+            return serviceMap;
         }
 
         async public Task<IMetadataProvider> GetMetadtaProviderAsync(Guid metadataProviderId)

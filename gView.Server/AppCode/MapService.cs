@@ -486,7 +486,7 @@ namespace gView.Server.AppCode
     {
         public MapServiceSettings()
         {
-            this.Status = MapServiceStatus.Running;
+            this.Status = MapServiceStatus.Idle;
             this.RefreshServiceTicks = 0;
         }
 

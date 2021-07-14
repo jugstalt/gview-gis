@@ -2,7 +2,7 @@
   "profiles": {
     "gView.Cmd.MxlToFdb": {
       "commandName": "Project",
-      "commandLineArgs": "MxlDatasets -mxl c:\\temp\\geodaten\\gv_allg_nb2_sqlite.mxl"
+      "commandLineArgs": "mxldatasets -mxl E:\\gview5\\mxl\\sdet\\gv_gas_ld_sdet.mxl -cmd modify-cs -parameter server -new-value gisdbsde2\\sdep -out-mxl E:\\gview5\\mxl\\gas_sdep.mxl"
     }
   }
 }

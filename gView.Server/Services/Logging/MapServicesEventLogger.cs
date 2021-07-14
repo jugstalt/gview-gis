@@ -64,9 +64,7 @@ namespace gView.Server.Services.Logging
 
                 var mapService = String.IsNullOrWhiteSpace(mapName) ? null : _mapServerService.MapServices.Where(s => s.Fullname?.ToLower() == mapName).FirstOrDefault();
 
-                string fileName = loggingMethod.ToString() +
-                    ((mapService != null && mapService.RunningSinceUtc.HasValue) ? "-" + mapService.RunningSinceUtc.Value.Ticks.ToString().PadLeft(21, '0') : "") +
-                    ".log";
+                string fileName = $"{ loggingMethod.ToString() }-{ ((mapService != null && mapService.RunningSinceUtc.HasValue) ? mapService.RunningSinceUtc.Value.Ticks : DateTime.UtcNow.Ticks).ToString().PadLeft(21, '0') }.log";
 
                 return dir + "/" + fileName;
             }

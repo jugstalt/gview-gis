@@ -82,7 +82,7 @@ namespace gView.Cmd.MxlUtil
                 Console.WriteLine();
                 Console.WriteLine("Exception:");
                 Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.StackTrace);
+                //Console.WriteLine(ex.StackTrace);
 
                 return 1;
             }

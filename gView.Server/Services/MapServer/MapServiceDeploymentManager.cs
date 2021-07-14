@@ -30,8 +30,8 @@ namespace gView.Server.Services.MapServer
         public readonly ServerMapDocument MapDocument;
 
         public MapServiceDeploymentManager(MapServiceManager mapServicerService,
-                                      AccessControlService accessControlService,
-                                      ILogger<MapServiceDeploymentManager> logger=null)
+                                           AccessControlService accessControlService,
+                                           ILogger<MapServiceDeploymentManager> logger=null)
         {
             _mapServerService = mapServicerService;
             _accessControlService = accessControlService;
@@ -111,6 +111,7 @@ namespace gView.Server.Services.MapServer
 
         async public Task<IMap> LoadMap(string name)
         {
+            IMap map = null;
             try
             {
                 DirectoryInfo di = new DirectoryInfo(_mapServerService.Options.ServicesPath);
@@ -127,7 +128,7 @@ namespace gView.Server.Services.MapServer
 
                     if (doc.Maps.Count() == 1)
                     {
-                        var map = doc.Maps.First();
+                        map = doc.Maps.First();
                         if (map.Name != name &&
                             name.Contains("/") &&
                             !map.Name.StartsWith(name.FolderName() + "/")) // Folder?
@@ -137,7 +138,7 @@ namespace gView.Server.Services.MapServer
 
                         await ApplyMetadata(map as Map);
 
-                        if (!MapDocument.AddMap(map))
+                        if (map.HasErrorMessages || !MapDocument.AddMap(map))
                         {
                             return null;
                         }
@@ -149,13 +150,7 @@ namespace gView.Server.Services.MapServer
                         {
                             mapService.ServiceRefreshed();
                         }
-                        if (map.HasErrorMessages)
-                        {
-                            foreach (var errorMessage in map.ErrorMessages)
-                            {
-                                _logger.LogWarning($"{ map.Name }: LoadMap - { errorMessage} ");
-                            }
-                        }
+
 
                         return map;
                     }
@@ -165,6 +160,18 @@ namespace gView.Server.Services.MapServer
             catch (Exception ex)
             {
                 _logger.LogError($"Map {name}: LoadConfig - { ex.Message }");
+                _mapServerService?.Instance?.LogAsync(name, "LoadMap.Exception", loggingMethod.error, ex.Message);
+            }
+            finally
+            {
+                if (map != null && map.HasErrorMessages)
+                {
+                    foreach (var errorMessage in map.ErrorMessages)
+                    {
+                        _logger.LogWarning($"{ map.Name }: LoadMap - { errorMessage} ");
+                        _mapServerService?.Instance?.LogAsync(map.Name, "LoadMap.MapErrors", loggingMethod.error, errorMessage);
+                    }
+                }
             }
 
             return null;

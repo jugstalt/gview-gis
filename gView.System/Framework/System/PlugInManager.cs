@@ -1,4 +1,5 @@
 using gView.Framework.UI;
+using gView.GraphicsEngine.Skia;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -62,6 +63,12 @@ namespace gView.Framework.system
 
         public static void Init()
         {
+            var currentEngine = GraphicsEngine.Current.Engine;
+            if (GraphicsEngine.Current.Engine == null)
+            {
+                SystemInfo.RegisterDefaultGraphicEnginges();
+            }
+
             if (_pluginTypes != null)
             {
                 return;
@@ -144,6 +151,8 @@ namespace gView.Framework.system
             }
 
             OnParseAssembly?.Invoke(null);
+
+            GraphicsEngine.Current.Engine = currentEngine;
         }
 
         public IEnumerable<Type> GetPlugins(Type interfaceType)

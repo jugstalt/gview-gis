@@ -394,7 +394,7 @@ namespace gView.Framework.IO
                 return Params;
             }
 
-            List<string> secure1 = new List<string>() { "user", "username", "userid", "usr", "usrid", "uid" };
+            List<string> secure1 = new List<string>()/* { "user", "username", "userid", "usr", "usrid", "uid" }*/;
             List<string> secure2 = new List<string>() { "password", "pwd", "passwd", "passwrd", "pw" };
             Dictionary<string, string> parameters = Extract(Params);
 
@@ -439,6 +439,18 @@ namespace gView.Framework.IO
             }
 
             return sb.ToString();
+        }
+
+        public static string SecureConfigValue(string paraneterName, string parameterValue)
+        {
+            List<string> secure = new List<string>() { "password", "pwd", "passwd", "passwrd", "pw" };
+
+            if (secure.Contains(paraneterName?.ToLower()))
+            {
+                return "*************";
+            }
+
+            return parameterValue;
         }
 
         #endregion

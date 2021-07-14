@@ -325,8 +325,16 @@ namespace gView.Framework.OGC.DB
                 _layers.Clear();
             }
 
-            await this.SetConnectionString((string)stream.Load("connectionstring", ""));
-            return await this.Open();
+            try
+            {
+                await this.SetConnectionString((string)stream.Load("connectionstring", ""));
+                return await this.Open();
+            }
+            catch (Exception ex)
+            {
+                this.LastErrorMessage = $"Can't open dataset: { ex.Message }";
+                return false;
+            }
         }
 
         public void Save(IPersistStream stream)

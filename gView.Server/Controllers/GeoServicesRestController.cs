@@ -141,7 +141,7 @@ namespace gView.Server.Controllers
                 var mapService = _mapServerService.Instance.GetMapService(id, folder);
                 if (mapService == null)
                 {
-                    throw new Exception("Unknown service: " + id);
+                    throw new Exception($"Unknown service: { id }");
                 }
 
                 await mapService.CheckAccess(identity, _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter)));
@@ -150,7 +150,7 @@ namespace gView.Server.Controllers
                 {
                     if (map == null)
                     {
-                        throw new Exception("unable to create map: " + id);
+                        throw new MapServerException($"unable to create map: { id }. Check log file for details");
                     }
 
                     gView.Framework.Geometry.IEnvelope fullExtent = map.FullExtent();
@@ -230,7 +230,7 @@ namespace gView.Server.Controllers
                 {
                     if (map == null)
                     {
-                        throw new Exception("unable to create map: " + id);
+                        throw new MapServerException($"unable to create map: { id }. Check log file for details");
                     }
 
                     var jsonLayers = new JsonLayers();
@@ -263,7 +263,7 @@ namespace gView.Server.Controllers
                 var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder);
                 if (map == null)
                 {
-                    throw new Exception("unable to create map: " + id);
+                    throw new MapServerException($"unable to create map: { id }. Check log file for details");
                 }
 
                 var jsonLayers = new JsonLayers();
@@ -497,7 +497,7 @@ namespace gView.Server.Controllers
                 var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder);
                 if (map == null)
                 {
-                    throw new Exception("unable to create map: " + id);
+                    throw new MapServerException($"unable to create map: { id }. Check log file for details");
                 }
 
                 gView.Framework.Geometry.Envelope fullExtent = null;
@@ -849,7 +849,7 @@ namespace gView.Server.Controllers
                 var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder);
                 if (map == null)
                 {
-                    throw new Exception("unable to create map: " + id);
+                    throw new MapServerException($"unable to create map: { id }. Check log file for details");
                 }
 
                 var jsonLayers = new JsonLayers();
