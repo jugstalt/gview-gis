@@ -101,7 +101,9 @@ namespace gView.DataSources.OGR
                 OSGeo_v3.OGR.Geometry geom = ogrfeature.GetGeometryRef();
                 if (geom != null)
                 {
-                    feature.Shape = gView.Framework.OGC.GML.GeometryTranslator.GML2Geometry(geom.ExportToGML(), GmlVersion.v1);
+                    byte[] buffer = new byte[geom.WkbSize()];
+                    geom.ExportToWkb(buffer);
+                    feature.Shape = gView.Framework.OGC.OGC.WKBToGeometry(buffer);
                 }
             }
 
