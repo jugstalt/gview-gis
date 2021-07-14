@@ -1,10 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Data;
-using gView.Framework.system;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
+using gView.Framework.system;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.OGR
@@ -13,9 +12,15 @@ namespace gView.DataSources.OGR
     public class Dataset : DatasetMetadata, IFeatureDataset, IDisposable, IDataset2, IPlugInDependencies
     {
         private string _connectionString, _lastErrMsg = "";
-        private OSGeo_v1.OGR.DataSource _dataSource = null;
+        private OSGeo_v1.OGR.DataSource _dataSourceV1 = null;
+        private OSGeo_v3.OGR.DataSource _dataSourceV3 = null;
         private DatasetState _state = DatasetState.unknown;
         private List<IDatasetElement> _elements = null;
+
+        public Dataset()
+        {
+            OSGeo.Initializer.RegisterAll();
+        }
 
         #region IFeatureDataset Member
 
@@ -72,14 +77,27 @@ namespace gView.DataSources.OGR
         {
             try
             {
-                OSGeo_v1.OGR.Ogr.RegisterAll();
-
-                _dataSource = OSGeo_v1.OGR.Ogr.Open(_connectionString, 0);
-                if (_dataSource != null)
+                switch (OSGeo.Initializer.InstalledVersion)
                 {
-                    _state = DatasetState.opened;
-                    return Task.FromResult(true);
+                    case OSGeo.GdalVersion.V1:
+                        _dataSourceV1 = OSGeo_v1.OGR.Ogr.Open(_connectionString, 0);
+                        if (_dataSourceV1 != null)
+                        {
+                            _state = DatasetState.opened;
+                            return Task.FromResult(true);
+                        }
+                        break;
+                    case OSGeo.GdalVersion.V3:
+                        _dataSourceV3 = OSGeo_v3.OGR.Ogr.Open(_connectionString, 0);
+                        if (_dataSourceV3 != null)
+                        {
+                            _state = DatasetState.opened;
+                            return Task.FromResult(true);
+                        }
+                        break;
                 }
+
+
                 return Task.FromResult(false);
             }
             catch (Exception ex)
@@ -115,18 +133,50 @@ namespace gView.DataSources.OGR
         public Task<List<IDatasetElement>> Elements()
         {
             if (_elements != null && _elements.Count > 0)
+            {
                 return Task.FromResult(_elements);
+            }
 
             _elements = new List<IDatasetElement>();
 
-            if (_dataSource == null) return Task.FromResult(_elements);
-            for (int i = 0; i < _dataSource.GetLayerCount(); i++)
+            if (_dataSourceV1 == null && _dataSourceV3 == null)
             {
-                OSGeo_v1.OGR.Layer ogrLayer = _dataSource.GetLayerByIndex(i);
-                if (ogrLayer == null) continue;
+                return Task.FromResult(_elements);
+            }
 
-                _elements.Add(new DatasetElement(
-                    new FeatureClass(this, ogrLayer)));
+            var layerCount = _dataSourceV1?.GetLayerCount() ??
+                             _dataSourceV3?.GetLayerCount();
+
+            for (int i = 0; i < layerCount.Value; i++)
+            {
+                IFeatureClass fc = null;
+                switch (OSGeo.Initializer.InstalledVersion)
+                {
+                    case OSGeo.GdalVersion.V1:
+                        OSGeo_v1.OGR.Layer ogrLayerV1 = _dataSourceV1?.GetLayerByIndex(i);
+
+                        if (ogrLayerV1 == null)
+                        {
+                            continue;
+                        }
+
+                        fc = new FeatureClassV1(this, ogrLayerV1);
+                        break;
+                    case OSGeo.GdalVersion.V3:
+                        OSGeo_v3.OGR.Layer ogrLayerV3 = _dataSourceV3?.GetLayerByIndex(i);
+
+                        if (ogrLayerV3 == null)
+                        {
+                            continue;
+                        }
+
+                        fc = new FeatureClassV3(this, ogrLayerV3);
+                        break;
+                    default:
+                        throw new Exception("No OGR Version detected/installed");
+                }
+
+                _elements.Add(new DatasetElement(fc));
             }
 
             return Task.FromResult(_elements);
@@ -156,7 +206,9 @@ namespace gView.DataSources.OGR
             {
                 if (element.Class != null &&
                     element.Class.Name == title)
+                {
                     return element;
+                }
             }
 
             return null;
@@ -184,16 +236,7 @@ namespace gView.DataSources.OGR
         {
             get
             {
-                try
-                {
-                    OSGeo_v1.OGR.Ogr.RegisterAll();
-
-                    return false;
-                }
-                catch (Exception ex)
-                {
-                    return true;
-                }
+                return OSGeo.Initializer.RegisterAll() != true;
             }
         }
 
@@ -210,24 +253,58 @@ namespace gView.DataSources.OGR
 
         async public Task AppendElement(string elementName)
         {
-            if (_elements == null) _elements = new List<IDatasetElement>();
+            if (_elements == null)
+            {
+                _elements = new List<IDatasetElement>();
+            }
 
             foreach (IDatasetElement e in _elements)
             {
                 if (e.Title == elementName)
+                {
                     return;
+                }
             }
 
-            if (_dataSource != null)
+            if (_dataSourceV1 != null || _dataSourceV3 != null)
             {
-                for (int i = 0; i < _dataSource.GetLayerCount(); i++)
-                {
-                    OSGeo_v1.OGR.Layer ogrLayer = _dataSource.GetLayerByIndex(i);
-                    if (ogrLayer == null) continue;
+                var layerCount = _dataSourceV1?.GetLayerCount() ??
+                                 _dataSourceV3?.GetLayerCount();
 
-                    if (ogrLayer.GetName() == elementName)
+                for (int i = 0; i < layerCount.Value; i++)
+                {
+
+                    string ogrLayerName = _dataSourceV1?.GetLayerByIndex(i)?.GetName() ??
+                                          _dataSourceV3?.GetLayerByIndex(i)?.GetName();
+
+                    if (ogrLayerName == elementName)
                     {
-                        _elements.Add(new DatasetElement(new FeatureClass(this, ogrLayer)));
+                        IFeatureClass fc = null;
+                        switch (OSGeo.Initializer.InstalledVersion)
+                        {
+                            case OSGeo.GdalVersion.V1:
+                                OSGeo_v1.OGR.Layer ogrLayerV1 = _dataSourceV1.GetLayerByIndex(i);
+                                if (ogrLayerV1 == null)
+                                {
+                                    continue;
+                                }
+
+                                fc = new FeatureClassV1(this, ogrLayerV1);
+                                break;
+                            case OSGeo.GdalVersion.V3:
+                                OSGeo_v3.OGR.Layer ogrLayerV3 = _dataSourceV3.GetLayerByIndex(i);
+                                if (ogrLayerV3 == null)
+                                {
+                                    continue;
+                                }
+
+                                fc = new FeatureClassV3(this, ogrLayerV3);
+                                break;
+                            default:
+                                throw new Exception("No OGR Version detected/installed");
+                        }
+
+                        _elements.Add(new DatasetElement(fc));
                         break;
                     }
                 }

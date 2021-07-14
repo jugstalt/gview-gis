@@ -1,16 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
-using gView.Framework.system.UI;
 using gView.Framework.Data;
-using System.IO;
-using System.Windows.Forms;
 using gView.Framework.Geometry;
-using gView.Framework.system;
 using gView.Framework.Globalisation;
 using gView.Framework.IO;
+using gView.Framework.system;
+using gView.Framework.system.UI;
+using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.OGR.UI
 {
@@ -76,13 +75,18 @@ namespace gView.DataSources.OGR.UI
         {
             try
             {
-                if (!(new FileInfo(filename).Exists)) return null;
+                if (!(new FileInfo(filename).Exists))
+                {
+                    return null;
+                }
 
                 using (Dataset dataset = new Dataset())
                 {
                     await dataset.SetConnectionString(filename);
                     if (await dataset.Open() == false)
+                    {
                         return null;
+                    }
                 }
             }
             catch { return null; }
@@ -117,7 +121,7 @@ namespace gView.DataSources.OGR.UI
 
         #region IExplorerParentObject Members
 
-        async public override Task<bool>  Refresh()
+        async public override Task<bool> Refresh()
         {
             await base.Refresh();
             List<IDatasetElement> elements = await DatasetElements();
@@ -159,7 +163,11 @@ namespace gView.DataSources.OGR.UI
             {
                 FileInfo fi = new FileInfo(_filename);
                 fi.Delete();
-                if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+                if (ExplorerObjectDeleted != null)
+                {
+                    ExplorerObjectDeleted(this);
+                }
+
                 return Task.FromResult(true);
             }
             catch (Exception ex)
@@ -186,11 +194,14 @@ namespace gView.DataSources.OGR.UI
         private IFeatureClass _fc = null;
         private PersonalGDBExplorerObject _parent = null;
 
-        public PersonalGDBFeatureClassExplorerObject() : base(null, typeof(FeatureClass),1) { }
+        public PersonalGDBFeatureClassExplorerObject() : base(null, typeof(FeatureClass), 1) { }
         public PersonalGDBFeatureClassExplorerObject(PersonalGDBExplorerObject parent, string filename, IDatasetElement element)
-            : base(parent, typeof(FeatureClass),1)
+            : base(parent, typeof(FeatureClass), 1)
         {
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
 
             _parent = parent;
             _filename = filename;
@@ -314,7 +325,10 @@ namespace gView.DataSources.OGR.UI
         {
             try
             {
-                if (!(new FileInfo(filename).Exists)) return Task.FromResult<IExplorerFileObject>(null);
+                if (!(new FileInfo(filename).Exists))
+                {
+                    return Task.FromResult<IExplorerFileObject>(null);
+                }
             }
             catch
             {
@@ -359,7 +373,9 @@ namespace gView.DataSources.OGR.UI
         {
             List<IDatasetElement> elements = await DatasetElements();
             if (elements.Count == 1)
+            {
                 return elements[0].Class;
+            }
 
             return null;
         }
@@ -379,7 +395,10 @@ namespace gView.DataSources.OGR.UI
         async private Task<List<IDatasetElement>> DatasetElements()
         {
             if (_elements != null)
+            {
                 return _elements;
+            }
+
             try
             {
                 Dataset dataset = new Dataset();
@@ -429,7 +448,11 @@ namespace gView.DataSources.OGR.UI
             {
                 FileInfo fi = new FileInfo(_filename);
                 fi.Delete();
-                if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+                if (ExplorerObjectDeleted != null)
+                {
+                    ExplorerObjectDeleted(this);
+                }
+
                 return Task.FromResult(true);
             }
             catch (Exception ex)
@@ -462,7 +485,10 @@ namespace gView.DataSources.OGR.UI
         public DxfFeatureClassExplorerObject(DxfExplorerObject parent, string filename, IDatasetElement element)
             : base(parent, typeof(FeatureClass), 1)
         {
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
 
             _parent = parent;
             _filename = filename;
@@ -523,7 +549,7 @@ namespace gView.DataSources.OGR.UI
         }
         public Task<object> GetInstanceAsync()
         {
-                return Task.FromResult<object>(_fc);
+            return Task.FromResult<object>(_fc);
         }
         #endregion
 
@@ -582,7 +608,10 @@ namespace gView.DataSources.OGR.UI
         {
             try
             {
-                if (!(new FileInfo(filename).Exists)) return Task.FromResult<IExplorerFileObject>(null);
+                if (!(new FileInfo(filename).Exists))
+                {
+                    return Task.FromResult<IExplorerFileObject>(null);
+                }
             }
             catch { return null; }
 
@@ -692,7 +721,11 @@ namespace gView.DataSources.OGR.UI
             {
                 FileInfo fi = new FileInfo(_filename);
                 fi.Delete();
-                if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+                if (ExplorerObjectDeleted != null)
+                {
+                    ExplorerObjectDeleted(this);
+                }
+
                 return Task.FromResult<bool>(true);
             }
             catch (Exception ex)
@@ -728,7 +761,10 @@ namespace gView.DataSources.OGR.UI
         public KmlFeatureClassExplorerObject(KmlExplorerObject parent, string filename, IDatasetElement element)
             : base(parent, typeof(FeatureClass), 1)
         {
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
 
             _parent = parent;
             _filename = filename;
@@ -839,7 +875,7 @@ namespace gView.DataSources.OGR.UI
 
         }
         async static public Task<OGRFeatureClassExplorerObject> Create(IExplorerObject parent, string filename)
-            
+
         {
             var exObject = new OGRFeatureClassExplorerObject(parent, filename);
 
@@ -850,7 +886,9 @@ namespace gView.DataSources.OGR.UI
             if (!await ds.Open())
             {
                 if (ds.LastErrorMessage != String.Empty)
+                {
                     MessageBox.Show("ERROR:" + ds.LastErrorMessage);
+                }
 
                 return exObject;
             }
@@ -858,10 +896,14 @@ namespace gView.DataSources.OGR.UI
             var elements = await ds.Elements();
 
             if (elements.Count == 1)
+            {
                 exObject._fc = elements[0].Class as IFeatureClass;
+            }
 
             if (exObject._fc == null)
+            {
                 return exObject;
+            }
 
             switch (exObject._fc.GeometryType)
             {
@@ -1081,7 +1123,9 @@ namespace gView.DataSources.OGR.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             if (this.FullName == FullName)
             {
@@ -1195,7 +1239,9 @@ namespace gView.DataSources.OGR.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }
@@ -1310,7 +1356,9 @@ namespace gView.DataSources.OGR.UI
                 _dataset = new Dataset();
                 await _dataset.SetConnectionString(_connectionString);
                 if (await _dataset.Open())
+                {
                     return _dataset;
+                }
             }
             return null;
         }
@@ -1323,19 +1371,45 @@ namespace gView.DataSources.OGR.UI
             {
                 try
                 {
-                    OSGeo_v1.OGR.Ogr.RegisterAll();
+                    OSGeo.Initializer.RegisterAll();
 
-                    OSGeo_v1.OGR.DataSource dataSource = OSGeo_v1.OGR.Ogr.Open(this.ConnectionString, 0);
-                    if (dataSource != null)
+                    if (OSGeo.Initializer.InstalledVersion == OSGeo.GdalVersion.V1)
                     {
-                        List<string> layers = new List<string>();
-                        for (int i = 0; i < Math.Min(dataSource.GetLayerCount(), 20); i++)
+                        OSGeo_v1.OGR.DataSource dataSource = OSGeo_v1.OGR.Ogr.Open(this.ConnectionString, 0);
+                        if (dataSource != null)
                         {
-                            OSGeo_v1.OGR.Layer ogrLayer = dataSource.GetLayerByIndex(i);
-                            if (ogrLayer == null) continue;
-                            layers.Add(ogrLayer.GetName());
+                            List<string> layers = new List<string>();
+                            for (int i = 0; i < Math.Min(dataSource.GetLayerCount(), 20); i++)
+                            {
+                                OSGeo_v1.OGR.Layer ogrLayer = dataSource.GetLayerByIndex(i);
+                                if (ogrLayer == null)
+                                {
+                                    continue;
+                                }
+
+                                layers.Add(ogrLayer.GetName());
+                            }
+                            return layers.ToArray();
                         }
-                        return layers.ToArray();
+                    }
+                    else if (OSGeo.Initializer.InstalledVersion == OSGeo.GdalVersion.V3)
+                    {
+                        OSGeo_v3.OGR.DataSource dataSource = OSGeo_v3.OGR.Ogr.Open(this.ConnectionString, 0);
+                        if (dataSource != null)
+                        {
+                            List<string> layers = new List<string>();
+                            for (int i = 0; i < Math.Min(dataSource.GetLayerCount(), 20); i++)
+                            {
+                                OSGeo_v3.OGR.Layer ogrLayer = dataSource.GetLayerByIndex(i);
+                                if (ogrLayer == null)
+                                {
+                                    continue;
+                                }
+
+                                layers.Add(ogrLayer.GetName());
+                            }
+                            return layers.ToArray();
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -1361,7 +1435,9 @@ namespace gView.DataSources.OGR.UI
                 foreach (IDatasetElement element in await dataset.Elements())
                 {
                     if (element.Class is IFeatureClass)
+                    {
                         base.AddChildObject(new OgrLayerExplorerObject(this, element));
+                    }
                 }
             }
             catch (Exception ex)
@@ -1378,10 +1454,15 @@ namespace gView.DataSources.OGR.UI
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return cache[FullName];
+            }
 
             OgrDatasetGroupObject group = new OgrDatasetGroupObject();
-            if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2) return null;
+            if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2)
+            {
+                return null;
+            }
 
             group = (OgrDatasetGroupObject)((cache.Contains(group.FullName)) ? cache[group.FullName] : group);
 
@@ -1407,7 +1488,11 @@ namespace gView.DataSources.OGR.UI
             ConfigConnections stream = new ConfigConnections("OGR", "ca7011b3-0812-47b6-a999-98a900c4087d");
             stream.Remove(_name);
 
-            if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+            if (ExplorerObjectDeleted != null)
+            {
+                ExplorerObjectDeleted(this);
+            }
+
             return Task.FromResult(true);
         }
 
@@ -1426,7 +1511,10 @@ namespace gView.DataSources.OGR.UI
             if (ret == true)
             {
                 _name = newName;
-                if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
+                if (ExplorerObjectRenamed != null)
+                {
+                    ExplorerObjectRenamed(this);
+                }
             }
             return Task.FromResult(ret);
         }
@@ -1455,7 +1543,10 @@ namespace gView.DataSources.OGR.UI
         public OgrLayerExplorerObject(OgrDatasetExplorerObject parent, IDatasetElement element)
             : base(parent, typeof(FeatureClass), 1)
         {
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
 
             _parent = parent;
             _fcname = element.Title;
@@ -1528,18 +1619,29 @@ namespace gView.DataSources.OGR.UI
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return cache[FullName];
+            }
 
             FullName = FullName.Replace("/", @"\");
             int lastIndex = FullName.LastIndexOf(@"\");
-            if (lastIndex == -1) return null;
+            if (lastIndex == -1)
+            {
+                return null;
+            }
 
-            string [] parts = FullName.Split('\\');
-            if(parts.Length!=3) return null;
+            string[] parts = FullName.Split('\\');
+            if (parts.Length != 3)
+            {
+                return null;
+            }
+
             OgrDatasetExplorerObject parent = new OgrDatasetExplorerObject();
             parent = await parent.CreateInstanceByFullName(parts[0] + @"\" + parts[1], cache) as OgrDatasetExplorerObject;
             if (parent == null)
+            {
                 return null;
+            }
 
             foreach (IExplorerObject exObject in await parent.ChildObjects())
             {

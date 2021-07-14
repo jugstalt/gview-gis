@@ -1,20 +1,20 @@
 using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.Snapping.Core;
+using gView.Framework.Sys.UI.Extensions;
 using gView.Framework.system;
 using gView.Framework.system.UI;
 using gView.Framework.UI.Dialogs;
 using gView.Framework.UI.Events;
+using gView.GraphicsEngine.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Threading;
-using gView.Framework.Sys.UI.Extensions;
-using gView.GraphicsEngine.Abstraction;
 
 namespace gView.Framework.UI.Controls
 {
@@ -85,7 +85,7 @@ namespace gView.Framework.UI.Controls
         //        //    TaskCreationOptions.None,
         //        //    _uiTaskSchedular);
 
-                
+
         //    }
 
         //    return Task.CompletedTask;
@@ -168,7 +168,7 @@ namespace gView.Framework.UI.Controls
                     _map.NewBitmap += NewBitmapCreated;
                     _map.DoRefreshMapView += MakeMapViewRefresh;
                     //_map.DrawingLayer+=new gView.Framework.Carto.DrawingLayerEvent(OnDrawingLayer);
-                    
+
                     _map.OnUserInterface -= _map_OnUserInterface;
                     _map.OnUserInterface += _map_OnUserInterface;
                 }
@@ -278,6 +278,7 @@ namespace gView.Framework.UI.Controls
         public void NewBitmapCreated(IBitmap bitmap)
         {
             _iBitmap = bitmap;
+            CreateBitmapSnapshot();
         }
 
         public void MakeMapViewRefresh()
@@ -291,7 +292,7 @@ namespace gView.Framework.UI.Controls
                 }
                 else
                 {
-                    if (_iBitmap != null && _handle!=IntPtr.Zero)
+                    if (_iBitmap != null && _handle != IntPtr.Zero)
                     {
                         try
                         {
@@ -377,7 +378,7 @@ namespace gView.Framework.UI.Controls
                         catch
                         {
                         }
-                        
+
                     }
                 }
             }
@@ -411,9 +412,7 @@ namespace gView.Framework.UI.Controls
 
         private DrawPhase _phase;
 
-
         private bool _cancelling = false;
-        
 
         public void CancelDrawing(DrawPhase phase = DrawPhase.All)
         {
@@ -437,7 +436,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private Thread _refreshMapThread=null;
+        private Thread _refreshMapThread = null;
         public void RefreshMap(DrawPhase phase)
         {
             if (!HasMap)
@@ -456,7 +455,7 @@ namespace gView.Framework.UI.Controls
                 {
                     CancelDrawing(phase);
                 }
-                
+
                 BeforeRefreshMap?.Invoke();
 
                 _map.Display.iWidth = this.Width;
@@ -473,7 +472,7 @@ namespace gView.Framework.UI.Controls
                   {
                       BeforeRefreshMap?.Invoke();
 
-                      try 
+                      try
                       {
                           var myCancelTracker = _cancelTracker;
                           var myMapRendererInstance = _mapRendererInstance = CreateMapRendererInstance();
@@ -489,10 +488,10 @@ namespace gView.Framework.UI.Controls
                               _iBitmap = null;
                           }
                           myMapRendererInstance.Dispose();
-                      } 
-                      catch(Exception ex)
+                      }
+                      catch (Exception ex)
                       {
-                          MessageBox.Show("Exception: " + ex.Message+"\n"+ex.StackTrace);
+                          MessageBox.Show("Exception: " + ex.Message + "\n" + ex.StackTrace);
                       }
                       finally
                       {
@@ -568,7 +567,7 @@ namespace gView.Framework.UI.Controls
             // 
             // panelCopyright
             // 
-            this.panelCopyright.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelCopyright.Anchor = (System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right);
             this.panelCopyright.BackColor = System.Drawing.Color.White;
             this.panelCopyright.Controls.Add(this.lnkCopyright);
             this.panelCopyright.Location = new System.Drawing.Point(185, 270);
@@ -578,7 +577,7 @@ namespace gView.Framework.UI.Controls
             // 
             // lnkCopyright
             // 
-            this.lnkCopyright.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.lnkCopyright.Anchor = (System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right);
             this.lnkCopyright.AutoSize = true;
             this.lnkCopyright.Location = new System.Drawing.Point(3, 3);
             this.lnkCopyright.Name = "lnkCopyright";
@@ -689,110 +688,9 @@ namespace gView.Framework.UI.Controls
 
         #region MouseEvents
 
-        private void this_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
-        {
-            if (_cancelling || _uiLocked)
-            {
-                return;
-            }
-
-            if (e.Button == MouseButtons.Right &&
-                (_actTool != null && _actTool.toolType != ToolType.smartnavigation))
-            {
-                if (_actTool is IToolContextMenu)
-                {
-                    ContextMenuStrip strip = ((IToolContextMenu)_actTool).ContextMenu;
-                    if (strip != null && strip.Items.Count > 0)
-                    {
-                        if (_actTool is IToolMouseActions2)
-                        {
-                            ((IToolMouseActions2)_actTool).BeforeShowContext(_map.Display, e, new gView.Framework.Geometry.Point(_X, _Y));
-                        }
-
-                        strip.Show(this, new System.Drawing.Point(e.X, e.Y));
-                    }
-                    else if (_contextMenu != null)
-                    {
-                        if (_actTool is IToolMouseActions2)
-                        {
-                            ((IToolMouseActions2)_actTool).BeforeShowContext(_map.Display, e, new gView.Framework.Geometry.Point(_X, _Y));
-                        }
-
-                        _contextMenu.Show(this, new System.Drawing.Point(e.X, e.Y));
-                    }
-                    return;
-                }
-                else if (_contextMenu != null)
-                {
-                    if (_actTool is IToolMouseActions2)
-                    {
-                        ((IToolMouseActions2)_actTool).BeforeShowContext(_map.Display, e, new gView.Framework.Geometry.Point(_X, _Y));
-                    }
-
-                    _contextMenu.Show(this, new System.Drawing.Point(e.X, e.Y));
-
-                    return;
-                }
-            }
-
-            if (_actTool == null)
-            {
-                return;
-            }
-
-            if (!_cancelTracker.Continue)
-            {
-                return;
-            }
-
-            switch (_actTool.toolType)
-            {
-                case ToolType.rubberband:
-                    m_rubberband = new Rectangle(Control.MousePosition.X, Control.MousePosition.Y, 0, 0);
-                    break;
-                case ToolType.smartnavigation:
-                    //CancelDrawing(DrawPhase.All);
-                    CancelDrawing();
-                    break;
-                case ToolType.pan:
-                    if (_navType == NavigationType.Standard)
-                    {
-                        CancelDrawing();
-                    }
-
-                    break;
-            }
-
-            _mouseDown = true;
-            _button = e.Button;
-            _actMouseDownTool = _actTool;
-
-            if (_navType == NavigationType.Standard)
-            {
-                _sx = _ox = _minMx = _maxMx = _mx = Control.MousePosition.X;
-                _sy = _oy = _minMy = _maxMy = _my = Control.MousePosition.Y;
-            }
-            else if (_navType == NavigationType.Tablet)
-            {
-                _sx = _ox = _minMx = _maxMx = _mx = e.X;
-                _sx = _oy = _minMy = _maxMy = _my = e.Y;
-            }
-
-            _sX = _sx = e.X;
-            _sY = _sy = e.Y;
-            Image2World(ref _sX, ref _sY);
-            //this.CancelDrawing();
-            _cancelTracker.Cancel();
-
-            if (!_cancelling && _actTool is IToolMouseActions)
-            {
-                ((IToolMouseActions)_actTool).MouseDown(_map != null ? _map.Display : null, e, new gView.Framework.Geometry.Point(_X, _Y));
-            }
-        }
-
         void MapView_MouseWheel(object sender, MouseEventArgs e)
         {
-            if(_uiLocked)
+            if (_uiLocked)
             {
                 return;
             }
@@ -884,7 +782,7 @@ namespace gView.Framework.UI.Controls
 
         public void Wheel(double X, double Y, double diff_w)
         {
-            if(_uiLocked) { return; }
+            if (_uiLocked) { return; }
             timerWheel.Stop();
 
             bool first = (_wheelImageStartEnv == null);
@@ -945,9 +843,105 @@ namespace gView.Framework.UI.Controls
 
         private double _X = 0.0, _Y = 0.0;
         int _iSnapX = int.MinValue, _iSnapY = int.MinValue;
+        private void this_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            if (_uiLocked)
+            {
+                return;
+            }
+
+            if (e.Button == MouseButtons.Right &&
+                (_actTool != null && _actTool.toolType != ToolType.smartnavigation))
+            {
+                if (_actTool is IToolContextMenu)
+                {
+                    ContextMenuStrip strip = ((IToolContextMenu)_actTool).ContextMenu;
+                    if (strip != null && strip.Items.Count > 0)
+                    {
+                        if (_actTool is IToolMouseActions2)
+                        {
+                            ((IToolMouseActions2)_actTool).BeforeShowContext(_map.Display, e, new gView.Framework.Geometry.Point(_X, _Y));
+                        }
+
+                        strip.Show(this, new System.Drawing.Point(e.X, e.Y));
+                    }
+                    else if (_contextMenu != null)
+                    {
+                        if (_actTool is IToolMouseActions2)
+                        {
+                            ((IToolMouseActions2)_actTool).BeforeShowContext(_map.Display, e, new gView.Framework.Geometry.Point(_X, _Y));
+                        }
+
+                        _contextMenu.Show(this, new System.Drawing.Point(e.X, e.Y));
+                    }
+                    return;
+                }
+                else if (_contextMenu != null)
+                {
+                    if (_actTool is IToolMouseActions2)
+                    {
+                        ((IToolMouseActions2)_actTool).BeforeShowContext(_map.Display, e, new gView.Framework.Geometry.Point(_X, _Y));
+                    }
+
+                    _contextMenu.Show(this, new System.Drawing.Point(e.X, e.Y));
+
+                    return;
+                }
+            }
+
+            if (_actTool == null)
+            {
+                return;
+            }
+
+            switch (_actTool.toolType)
+            {
+                case ToolType.rubberband:
+                    m_rubberband = new Rectangle(Control.MousePosition.X, Control.MousePosition.Y, 0, 0);
+                    break;
+                case ToolType.smartnavigation:
+                    //CancelDrawing(DrawPhase.All);
+                    CancelDrawing();
+                    break;
+                case ToolType.pan:
+                    if (_navType == NavigationType.Standard)
+                    {
+                        CancelDrawing();
+                    }
+
+                    break;
+            }
+
+            _mouseDown = true;
+            _button = e.Button;
+            _actMouseDownTool = _actTool;
+
+            if (_navType == NavigationType.Standard)
+            {
+                _sx = _ox = _minMx = _maxMx = _mx = Control.MousePosition.X;
+                _sy = _oy = _minMy = _maxMy = _my = Control.MousePosition.Y;
+            }
+            else if (_navType == NavigationType.Tablet)
+            {
+                _sx = _ox = _minMx = _maxMx = _mx = e.X;
+                _sx = _oy = _minMy = _maxMy = _my = e.Y;
+            }
+
+            _sX = _sx = e.X;
+            _sY = _sy = e.Y;
+            Image2World(ref _sX, ref _sY);
+            //this.CancelDrawing();
+            _cancelTracker.Cancel();
+
+            if (!_cancelling && _actTool is IToolMouseActions)
+            {
+                ((IToolMouseActions)_actTool).MouseDown(_map != null ? _map.Display : null, e, new gView.Framework.Geometry.Point(_X, _Y));
+            }
+        }
+
         private void this_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (_cancelling || _uiLocked)
+            if (_uiLocked)
             {
                 return;
             }
@@ -1191,18 +1185,10 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        private void MapView_Resize(object sender, EventArgs e)
-        {
-            
-        }
+
 
         async private void this_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (_cancelling)
-            {
-                return;
-            }
-
             if (!_mouseDown)
             {
                 return;
@@ -1379,6 +1365,10 @@ namespace gView.Framework.UI.Controls
             {
                 ((IToolMouseActions)_actTool).MouseDoubleClick(_map != null ? _map.Display : null, e, new gView.Framework.Geometry.Point(_X, _Y));
             }
+        }
+        private void MapView_Resize(object sender, EventArgs e)
+        {
+
         }
 
         #endregion
@@ -1642,7 +1632,7 @@ namespace gView.Framework.UI.Controls
         private static object lockReleaseSnapshot = new object();
         private void ReleaseBitmapSnapshot(Bitmap snapShot)
         {
-            lock(lockReleaseSnapshot)
+            lock (lockReleaseSnapshot)
             {
                 if (snapShot != null)
                 {

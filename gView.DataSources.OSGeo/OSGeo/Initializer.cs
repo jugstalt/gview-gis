@@ -3,13 +3,13 @@ using System.Text;
 
 namespace gView.DataSources.OSGeo
 {
-    enum GdalVersion
+    public enum GdalVersion
     {
         Unknown = 0,
         V1 = 1,
         V3 = 2
     }
-    static class Initializer
+    static public class Initializer
     {
         static private bool _isRegistered = false;
 

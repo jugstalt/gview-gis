@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.OGR
 {
-    class FeatureClass : IFeatureClass
+    class FeatureClassV1 : IFeatureClass
     {
         private IEnvelope _envelope;
         private string _shapeFieldName = "SHAPE", _idFieldName, _name;
@@ -18,7 +18,7 @@ namespace gView.DataSources.OGR
         private Fields _fields;
         private OSGeo_v1.OGR.Layer _ogrLayer = null;
 
-        public FeatureClass(Dataset dataset, OSGeo_v1.OGR.Layer layer)
+        public FeatureClassV1(Dataset dataset, OSGeo_v1.OGR.Layer layer)
         {
             _dataset = dataset;
             _ogrLayer = layer;
@@ -98,7 +98,7 @@ namespace gView.DataSources.OGR
 
         public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
-            return Task.FromResult<IFeatureCursor>(new FeatureCursor(_ogrLayer, filter));
+            return Task.FromResult<IFeatureCursor>(new FeatureCursorV1(_ogrLayer, filter));
         }
 
         #endregion

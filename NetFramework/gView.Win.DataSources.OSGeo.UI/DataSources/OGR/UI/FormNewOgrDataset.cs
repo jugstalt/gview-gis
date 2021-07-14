@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -35,23 +30,53 @@ namespace gView.DataSources.OGR.UI
 
         private void btnTestConnecton_Click(object sender, EventArgs e)
         {
-            OSGeo_v1.OGR.Ogr.RegisterAll();
+            OSGeo.Initializer.RegisterAll();
 
-            OSGeo_v1.OGR.DataSource dataSource = OSGeo_v1.OGR.Ogr.Open(this.ConnectionString, 0);
-            if (dataSource != null)
+            if (OSGeo.Initializer.InstalledVersion == OSGeo.GdalVersion.V1)
             {
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < Math.Min(dataSource.GetLayerCount(),20); i++)
+                OSGeo_v1.OGR.DataSource dataSource = OSGeo_v1.OGR.Ogr.Open(this.ConnectionString, 0);
+                if (dataSource != null)
                 {
-                    OSGeo_v1.OGR.Layer ogrLayer = dataSource.GetLayerByIndex(i);
-                    if (ogrLayer == null) continue;
-                    sb.Append("\n"+ogrLayer.GetName());
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < Math.Min(dataSource.GetLayerCount(), 20); i++)
+                    {
+                        OSGeo_v1.OGR.Layer ogrLayer = dataSource.GetLayerByIndex(i);
+                        if (ogrLayer == null)
+                        {
+                            continue;
+                        }
+
+                        sb.Append("\n" + ogrLayer.GetName());
+                    }
+                    MessageBox.Show("Connection succeeded...\n" + sb.ToString(), "Test Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-                MessageBox.Show("Connection succeeded...\n"+sb.ToString(), "Test Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                else
+                {
+                    MessageBox.Show("Connection failed...", "Test Connection", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
-            else
+            else if (OSGeo.Initializer.InstalledVersion == OSGeo.GdalVersion.V3)
             {
-                MessageBox.Show("Connection failed...", "Test Connection", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                OSGeo_v3.OGR.DataSource dataSource = OSGeo_v3.OGR.Ogr.Open(this.ConnectionString, 0);
+                if (dataSource != null)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < Math.Min(dataSource.GetLayerCount(), 20); i++)
+                    {
+                        OSGeo_v3.OGR.Layer ogrLayer = dataSource.GetLayerByIndex(i);
+                        if (ogrLayer == null)
+                        {
+                            continue;
+                        }
+
+                        sb.Append("\n" + ogrLayer.GetName());
+                    }
+                    MessageBox.Show("Connection succeeded...\n" + sb.ToString(), "Test Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Connection failed...", "Test Connection", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
