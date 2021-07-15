@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.OGR
 {
-    internal class FeatureCursor : IFeatureCursor
+    internal class FeatureCursorV3 : IFeatureCursor
     {
-        OSGeo_v1.OGR.Layer _layer;
-        public FeatureCursor(OSGeo_v1.OGR.Layer layer, IQueryFilter filter)
+        OSGeo_v3.OGR.Layer _layer;
+        public FeatureCursorV3(OSGeo_v3.OGR.Layer layer, IQueryFilter filter)
         {
             if (layer == null)
             {
@@ -53,7 +53,7 @@ namespace gView.DataSources.OGR
                 return Task.FromResult<IFeature>(null);
             }
 
-            OSGeo_v1.OGR.Feature ogrfeature = _layer.GetNextFeature();
+            OSGeo_v3.OGR.Feature ogrfeature = _layer.GetNextFeature();
             if (ogrfeature == null)
             {
                 return Task.FromResult<IFeature>(null);
@@ -62,11 +62,11 @@ namespace gView.DataSources.OGR
             Feature feature = new Feature();
             feature.OID = (int)ogrfeature.GetFID();
 
-            OSGeo_v1.OGR.FeatureDefn defn = ogrfeature.GetDefnRef();
+            OSGeo_v3.OGR.FeatureDefn defn = ogrfeature.GetDefnRef();
             int fieldCount = defn.GetFieldCount();
             for (int i = 0; i < fieldCount; i++)
             {
-                OSGeo_v1.OGR.FieldDefn fdefn = defn.GetFieldDefn(i);
+                OSGeo_v3.OGR.FieldDefn fdefn = defn.GetFieldDefn(i);
                 FieldValue fv = new FieldValue(fdefn.GetName());
 
                 string fieldType = fdefn.GetFieldTypeName(fdefn.GetFieldType()).ToLower();
@@ -98,10 +98,12 @@ namespace gView.DataSources.OGR
 
             if (feature.Shape == null)
             {
-                OSGeo_v1.OGR.Geometry geom = ogrfeature.GetGeometryRef();
+                OSGeo_v3.OGR.Geometry geom = ogrfeature.GetGeometryRef();
                 if (geom != null)
                 {
-                    feature.Shape = gView.Framework.OGC.GML.GeometryTranslator.GML2Geometry(geom.ExportToGML(), GmlVersion.v1);
+                    byte[] buffer = new byte[geom.WkbSize()];
+                    geom.ExportToWkb(buffer);
+                    feature.Shape = gView.Framework.OGC.OGC.WKBToGeometry(buffer);
                 }
             }
 
