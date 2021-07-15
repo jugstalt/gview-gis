@@ -25,6 +25,11 @@ namespace gView.Framework.Data
 
         static public bool LabelInScale(this ILayer layer, IDisplay display)
         {
+            if (layer.MinimumLabelScale <= 1 && layer.MaximumLabelScale <= 1)
+            {
+                return layer.RenderInScale(display);
+            }
+
             if (layer.MinimumLabelScale > 1 && layer.MinimumLabelScale > display.mapScale)
             {
                 return false;

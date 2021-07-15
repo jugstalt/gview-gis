@@ -23,6 +23,8 @@ namespace gView.MxlUtil.Lib.Untilities
 @"
 MxlDatasts
 ----------
+
+Manage dataset connection in a mxl file.
 ";
         }
 
@@ -30,6 +32,32 @@ MxlDatasts
         {
             return
 @"
+Required arguments:
+-mxl <mxl-file>
+-cmd <info|modify-cs|modify-connectionstring>
+
+Optional arguments:
+-out-xml <name/path of the out xml>
+
+Commands:
+info
+----
+Shows all dataset connections and connection string parameters in the mxl file.
+
+modify-cs|modify-connectionstring
+---------------------------------
+Changes the value of an parameter in a connection  in the mxl file.
+
+Required arguments:
+-parameter|-parameter-name <name of the parameter>
+-new-value|-new-parameter-value <set this value for the parameter>
+-parameter|-parameter-name <next name of the parameter>
+-new-value|-new-parameter-value <next set this value for the parameter>
+...
+
+Optional arguments:
+-dsindex|-dataset-index <the index of the dataset you want change the parameter> default = -1 => all datasets
+
 ";
         }
 
@@ -40,8 +68,8 @@ MxlDatasts
             string command = "info";
 
             int datasetIndex = -1;
-            string parameterName = String.Empty;
-            string newParameterValue = String.Empty;
+            List<string> parameterNames = new List<string>();
+            List<string> newParameterValues = new List<string>();
 
             for (int i = 1; i < args.Length - 1; i++)
             {
@@ -62,11 +90,11 @@ MxlDatasts
                         break;
                     case "-parameter-name":
                     case "-parameter":
-                        parameterName = args[++i];
+                        parameterNames.Add(args[++i]);
                         break;
                     case "-new-value":
                     case "-new-parameter-value":
-                        newParameterValue = args[++i];
+                        newParameterValues.Add(args[++i]);
                         break;
                 }
             }
@@ -97,7 +125,7 @@ MxlDatasts
                     break;
                 case "modify-connectionstring":
                 case "modify-cs":
-                    await ModifyConnectionString(map, datasetIndex, parameterName, newParameterValue);
+                    await ModifyConnectionString(map, datasetIndex, parameterNames, newParameterValues);
                     saveOutput = true;
                     break;
                 default:
@@ -152,29 +180,37 @@ MxlDatasts
             }
         }
 
-        async private Task ModifyConnectionString(Map map, int dsIndex, string parameterName, string newParameterValue)
+        async private Task ModifyConnectionString(Map map, int dsIndex, List<string> parameterNames, List<string> newParameterValues)
         {
-            foreach(var dataset in GetDatasets(map, dsIndex))
+            if (parameterNames.Count == 0 || newParameterValues.Count == 0 || parameterNames.Count != newParameterValues.Count)
             {
-                var connectionParameters = ConfigTextStream.Extract(dataset.ConnectionString);
-                bool modifyConnectionString = false;
+                throw new IncompleteArgumentsException();
+            }
 
-                foreach (string key in connectionParameters.Keys.ToArray())
+            foreach (var dataset in GetDatasets(map, dsIndex))
+            {
+                for (int p = 0; p < parameterNames.Count; p++)
                 {
-                    if(key.Equals(parameterName, StringComparison.InvariantCultureIgnoreCase))
+                    var connectionParameters = ConfigTextStream.Extract(dataset.ConnectionString);
+                    bool modifyConnectionString = false;
+
+                    foreach (string key in connectionParameters.Keys.ToArray())
                     {
-                        connectionParameters[key] = newParameterValue;
-                        modifyConnectionString = true;
+                        if (key.Equals(parameterNames[p], StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            connectionParameters[key] = newParameterValues[p];
+                            modifyConnectionString = true;
+                        }
                     }
-                }
 
-                if(modifyConnectionString)
-                {
-                    Console.WriteLine($"Set ConnectionString: { ConfigTextStream.SecureConfig(ConfigTextStream.Build(connectionParameters)) }");
-                    if (!(await dataset.SetConnectionString(ConfigTextStream.Build(connectionParameters))) ||
-                        !(await dataset.Open()))
+                    if (modifyConnectionString)
                     {
-                        throw new Exception($"Can't change connectionstring:\n{ dataset.LastErrorMessage }");
+                        Console.WriteLine($"Set ConnectionString: { ConfigTextStream.SecureConfig(ConfigTextStream.Build(connectionParameters)) }");
+                        if (!(await dataset.SetConnectionString(ConfigTextStream.Build(connectionParameters))) ||
+                            !(await dataset.Open()))
+                        {
+                            throw new Exception($"Can't change connectionstring:\n{ dataset.LastErrorMessage }");
+                        }
                     }
                 }
             }

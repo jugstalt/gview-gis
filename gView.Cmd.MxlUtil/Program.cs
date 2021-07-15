@@ -55,7 +55,7 @@ namespace gView.Cmd.MxlUtil
                         })
                         .Select(t => Activator.CreateInstance(t) as IMxlUtility);
 
-                    Console.WriteLine("Usage: gView.Cmd.MxlUtil.exe <utiltiy-name> [paranters]");
+                    Console.WriteLine("Usage: gView.Cmd.MxlUtil.exe <utiltiy-name> [parameters]\n");
                     Console.WriteLine("Registered Utitlites:");
 
                     foreach (var utitilty in utilityInstances)
