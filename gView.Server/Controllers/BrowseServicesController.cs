@@ -92,7 +92,7 @@ namespace gView.Server.Controllers
                     {
                         if (s.Type != MapServiceType.Folder &&
                             s.Folder == folder &&
-                            (await s.GetSettingsAsync()).Status == MapServiceStatus.Running &&
+                            (await s.GetSettingsAsync()).IsRunningOrIdle() &&
                              await s.HasAnyAccess(identity) &&
                              await IsAccessAllowed(identity, s))
                         {

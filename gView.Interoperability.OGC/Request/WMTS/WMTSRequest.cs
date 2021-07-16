@@ -30,9 +30,13 @@ namespace gView.Interoperability.OGC.Request.WMTS
             {
                 try
                 {
-                    using (var bm = Current.Engine.CreateBitmap(1, 1))
+                    using (var bm = Current.Engine.CreateBitmap(512, 512))
+                    using(var canvas = bm.CreateCanvas())
+                    using (var brush = Current.Engine.CreateSolidBrush(ArgbColor.Red))
                     {
                         bm.MakeTransparent();
+
+                        canvas.FillRectangle(brush, new CanvasRectangle(20, 20, 200, 200));
 
                         MemoryStream ms = new MemoryStream();
                         bm.Save(ms, ImageFormat.Png);
@@ -140,7 +144,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                         imageData = await GetTile(context, metadata, epsg, scale, row, col, format, (args[1].ToLower() == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft));
                     }
 
-                    if (style != "default")
+                    if (style != "default" && imageData != null)
                     {
                         //throw new NotImplementedException("Not in .Net Standard...");
                         FilterImplementations filter;
@@ -153,13 +157,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
                 context.ServiceRequest.ResponseContentType = $"image/{ format.Substring(1) }";
                 context.ServiceRequest.ResponseExpries = DateTime.UtcNow.AddDays(7);
-                context.ServiceRequest.Response = imageData;
-                //new MapServerResponse()
-                //{
-                //    Data = imageData ?? _emptyPic,
-                //    ContentType = "image/jpg",
-                //    Expires = DateTime.UtcNow.AddDays(7)
-                //}.ToString();
+                context.ServiceRequest.Response = imageData ?? _emptyPic;
             }
             return;
         }
@@ -575,11 +573,12 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     //    Title = new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType[] { new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType() { Value = "Default Style" } },
                     //    Identifier = new gView.Framework.OGC.WMTS.Version_1_0_0.CodeType() { Value = "default" }
                     //});
-                    foreach (var styleVal in Enum.GetValues(typeof(FilterImplementations)))
+                    foreach (FilterImplementations styleVal in Enum.GetValues(typeof(FilterImplementations)))
                     {
                         string name = Enum.GetName(typeof(FilterImplementations), styleVal);
                         styles.Add(new Framework.OGC.WMTS.Version_1_0_0.Style()
                         {
+                            isDefault = styleVal == FilterImplementations.Default,
                             Title = new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType[] { new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType() { Value = name } },
                             Identifier = new gView.Framework.OGC.WMTS.Version_1_0_0.CodeType() { Value = name.ToLower() }
                         });
@@ -603,8 +602,8 @@ namespace gView.Interoperability.OGC.Request.WMTS
                         new gView.Framework.OGC.WMTS.Version_1_0_0.WGS84BoundingBoxType()
                         {
                             crs="urn:ogc:def:crs:OGC:2:84",  // urn:ogc:def:crs:OGC:2:84
-                            LowerCorner=PointToString(extent4326.LowerLeft, sRef4326),
-                            UpperCorner=PointToString(extent4326.UpperRight, sRef4326)
+                            LowerCorner=PointToString(extent4326.LowerLeft, /*sRef4326*/null),
+                            UpperCorner=PointToString(extent4326.UpperRight, /*sRef4326*/null)
                         }
                     };
 

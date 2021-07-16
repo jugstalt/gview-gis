@@ -1,6 +1,7 @@
 ﻿using gView.Core.Framework.Exceptions;
 using gView.Framework.system;
 using gView.MapServer;
+using gView.Server.AppCode.Extensions;
 using gView.Server.Services.MapServer;
 using Newtonsoft.Json;
 using System;
@@ -89,7 +90,7 @@ namespace gView.Server.AppCode
         async public Task<bool> RefreshRequired()
         {
             await ReloadServiceSettings();
-            if (_settings.Status == MapServiceStatus.Running)
+            if (_settings.IsRunningOrIdle())
             {
                 return _lastServiceRefresh.HasValue == false || _settings.RefreshService > _lastServiceRefresh;
             }
@@ -217,7 +218,7 @@ namespace gView.Server.AppCode
 
             await ReloadServiceSettings();
 
-            if (_settings.Status != MapServiceStatus.Running)
+            if (!_settings.IsRunningOrIdle())
             {
                 throw new Exception("Service not running: " + this.Fullname);
             }
@@ -303,7 +304,7 @@ namespace gView.Server.AppCode
 
             await ReloadServiceSettings();
 
-            if (_settings.Status != MapServiceStatus.Running)
+            if (!_settings.IsRunningOrIdle())
             {
                 throw new Exception("Service not running: " + this.Fullname);
             }

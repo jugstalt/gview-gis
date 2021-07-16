@@ -14,6 +14,6 @@ namespace gView.GraphicsEngine.Filters
         Channel_Red = 4,
         Channel_Green = 5,
         Channel_Blue = 6,
-        Channel_Alpha = 7 
+        //Channel_Alpha = 7 
     }
 }

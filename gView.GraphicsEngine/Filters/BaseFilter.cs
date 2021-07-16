@@ -90,9 +90,9 @@ namespace gView.GraphicsEngine.Filters
                 case FilterImplementations.Channel_Blue:
                     filter = ExtractChannel.B;
                     break;
-                case FilterImplementations.Channel_Alpha:
-                    filter = ExtractChannel.A;
-                    break;
+                //case FilterImplementations.Channel_Alpha:
+                //    filter = ExtractChannel.A;
+                //    break;
             }
 
             return filter;

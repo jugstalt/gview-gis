@@ -186,10 +186,10 @@ namespace gView.Server.Controllers
                 switch (status.ToLower())
                 {
                     case "running":
-                        if (settings.Status != MapServiceStatus.Running)
+                        if (settings.IsRunningOrIdle())
                         {
                             // start
-                            settings.Status = MapServiceStatus.Running;
+                            settings.Status = settings.Status;
                             await mapService.SaveSettingsAsync();
                             // reload
                             await _mapServiceMananger.Instance.GetServiceMapAsync(service.ServiceName(), service.FolderName());
@@ -597,7 +597,7 @@ namespace gView.Server.Controllers
             {
                 name = mapService.Name,
                 folder = mapService.Folder,
-                status = (settings?.Status ?? MapServer.MapServiceStatus.Running).ToString().ToLower(),
+                status = (settings?.Status ?? MapServiceStatus.Running).ToString().ToLower(),
                 hasSecurity = settings?.AccessRules != null && settings.AccessRules.Length > 0,
                 runningSince = settings?.Status == MapServiceStatus.Running && mapService.RunningSinceUtc.HasValue ?
                     mapService.RunningSinceUtc.Value.ToShortDateString() + " " + mapService.RunningSinceUtc.Value.ToLongTimeString() + " (UTC)" :

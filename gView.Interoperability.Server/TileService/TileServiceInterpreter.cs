@@ -872,7 +872,7 @@ namespace gView.Interoperability.Server.TileService
                             {
                                 int pixelValue = ArgbColor.FromArgb(alpha, red, green, blue).ToArgb();
 
-                                if (pixelValue.Equals(backgroundColorValue))
+                                if (!pixelValue.Equals(backgroundColorValue))
                                 {
                                     return false;
                                 }

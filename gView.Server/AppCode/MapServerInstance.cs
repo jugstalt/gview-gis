@@ -70,7 +70,7 @@ namespace gView.Server.AppCode
                 }
 
                 IMapService mapService = GetMapService(name, folder);
-                if (mapService == null || (await mapService.GetSettingsAsync()).Status != MapServiceStatus.Running)
+                if (mapService == null || !(await mapService.GetSettingsAsync()).IsRunningOrIdle())
                 {
                     throw new MapServerException("unknown service: " + name);
                 }

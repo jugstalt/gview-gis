@@ -118,7 +118,7 @@ namespace gView.Server.Controllers
                 {
                     if (s.Type != MapServiceType.Folder &&
                        s.Folder == id &&
-                       (await s.GetSettingsAsync()).Status == MapServiceStatus.Running &&
+                       (await s.GetSettingsAsync()).IsRunningOrIdle() &&
                         await s.HasAnyAccess(identity))
                     {
                         services.AddRange(await AgsServices(identity, s));
