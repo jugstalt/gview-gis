@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "gView.SetupHelper": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Development_OpenSource\\_releases\\core\\web\\gview5\\_publish\\_release-win\\_setup\" cmd desktop server"
+    }
+  }
+}
