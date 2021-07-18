@@ -1,21 +1,16 @@
-using gView.Data.Framework.Data;
-using gView.Data.Framework.Data.Abstraction;
 using gView.Framework.Carto.LayerRenderers;
 using gView.Framework.Carto.UI;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.Framework.UI;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Carto
@@ -43,7 +38,7 @@ namespace gView.Framework.Carto
         public ImageMerger2 m_imageMerger;
         public TOC _toc;
         private TOC _dataViewTOC;
-        
+
         private SelectionEnvironment _selectionEnv;
         //protected MapDB.mapDB m_mapDB=null;
         protected string m_mapName = "", m_name/*,m_imageName="",m_origImageName=""*/;
@@ -58,8 +53,6 @@ namespace gView.Framework.Carto
 
         private IntegerSequence _layerIDSequece = new IntegerSequence();
         private IResourceContainer _resourceContainer = new ResourceContainer();
-
-        protected List<Exception> _requestExceptions = null;
 
         public Map()
             : base(null)
@@ -324,7 +317,7 @@ namespace gView.Framework.Carto
             }
         }
 
-        
+
 
         #region getLayer
 
@@ -377,7 +370,7 @@ namespace gView.Framework.Carto
                     continue;
                 }
 
-                if(!layer.LabelInScale(this))
+                if (!layer.LabelInScale(this))
                 {
                     continue;
                 }
@@ -1005,7 +998,7 @@ namespace gView.Framework.Carto
         #endregion
 
         private DateTime _lastRefresh = DateTime.UtcNow;
-        internal virtual void FireRefreshMapView(double suppressPeriode = 500/* ms */)  
+        internal virtual void FireRefreshMapView(double suppressPeriode = 500/* ms */)
         {
             if (this.DoRefreshMapView != null)
             {
@@ -1263,7 +1256,9 @@ namespace gView.Framework.Carto
                 if (fLayer.DatasetID < _datasets.Count)
                 {
                     if (!String.IsNullOrEmpty(_datasets[fLayer.DatasetID]?.LastErrorMessage))
+                    {
                         continue;
+                    }
 
                     IDatasetElement element = await _datasets[fLayer.DatasetID].Element(fLayer.Title);
                     if (element != null && element.Class is IFeatureClass)
@@ -1295,7 +1290,7 @@ namespace gView.Framework.Carto
                 }
 
                 var resources = (IResourceContainer)stream.Load("MapResources", null, new ResourceContainer());
-                if(resources!=null)
+                if (resources != null)
                 {
                     _resourceContainer = resources;
                 }
@@ -1308,7 +1303,9 @@ namespace gView.Framework.Carto
                 if (rcLayer.DatasetID < _datasets.Count)
                 {
                     if (!String.IsNullOrEmpty(_datasets[rcLayer.DatasetID]?.LastErrorMessage))
+                    {
                         continue;
+                    }
 
                     IDatasetElement element = await _datasets[rcLayer.DatasetID].Element(rcLayer.Title);
                     if (element != null && element.Class is IRasterCatalogClass)
@@ -1341,7 +1338,9 @@ namespace gView.Framework.Carto
                 if (rLayer.DatasetID < _datasets.Count)
                 {
                     if (!String.IsNullOrEmpty(_datasets[rLayer.DatasetID]?.LastErrorMessage))
+                    {
                         continue;
+                    }
 
                     IDatasetElement element = await _datasets[rLayer.DatasetID].Element(rLayer.Title);
                     if (element != null && element.Class is IRasterClass)
@@ -1378,7 +1377,9 @@ namespace gView.Framework.Carto
                 if (wLayer.DatasetID <= _datasets.Count)
                 {
                     if (!String.IsNullOrEmpty(_datasets[wLayer.DatasetID]?.LastErrorMessage))
+                    {
                         continue;
+                    }
 
                     IDatasetElement element = await _datasets[wLayer.DatasetID].Element(wLayer.Title);
                     if (element != null && element.Class is IWebServiceClass)
@@ -1438,7 +1439,7 @@ namespace gView.Framework.Carto
             }
 
             string layerDescriptionKeys = (string)stream.Load("LayerDescriptionKeys", String.Empty);
-            if(!String.IsNullOrWhiteSpace(layerDescriptionKeys))
+            if (!String.IsNullOrWhiteSpace(layerDescriptionKeys))
             {
                 foreach (int key in layerDescriptionKeys
                     .Split(',')
@@ -1468,16 +1469,16 @@ namespace gView.Framework.Carto
             #region Metadata
 
             var persistMetadataProviders = new PersistMetadataProviders();
-            stream.Load("MetadataProviders", null, persistMetadataProviders); 
+            stream.Load("MetadataProviders", null, persistMetadataProviders);
             await this.SetMetadataProviders(persistMetadataProviders.Providers);
 
             #endregion
 
             #endregion
 
-            if (stream.Warnings!=null)
+            if (stream.Warnings != null)
             {
-                foreach(var warning in stream.Warnings)
+                foreach (var warning in stream.Warnings)
                 {
                     _errorMessages.Add(warning);
                 }
@@ -1565,7 +1566,7 @@ namespace gView.Framework.Carto
             stream.Save("ITOC", _toc);
             stream.Save("IGraphicsContainer", Display.GraphicsContainer);
 
-            if(_layerDescriptions!=null)
+            if (_layerDescriptions != null)
             {
                 var descriptionsKeys = _layerDescriptions.Keys
                     .Where(i => !String.IsNullOrWhiteSpace(_layerDescriptions[i]))
@@ -1573,13 +1574,13 @@ namespace gView.Framework.Carto
 
                 stream.Save("LayerDescriptionKeys", String.Join(",", descriptionsKeys));
 
-                foreach(var key in _layerDescriptions.Keys)
+                foreach (var key in _layerDescriptions.Keys)
                 {
                     stream.Save($"LayerDescription_{ key }", Convert.ToBase64String(
                         System.Text.Encoding.Unicode.GetBytes(_layerDescriptions[key])));
                 }
             }
-            if(_layerCopyrightTexts!=null)
+            if (_layerCopyrightTexts != null)
             {
                 var copyrightTextKeys = _layerCopyrightTexts.Keys
                     .Where(i => !String.IsNullOrWhiteSpace(_layerCopyrightTexts[i]))
@@ -1594,7 +1595,7 @@ namespace gView.Framework.Carto
                 }
             }
 
-            if(_resourceContainer.HasResources)
+            if (_resourceContainer.HasResources)
             {
                 stream.Save("MapResources", _resourceContainer);
             }
@@ -1744,7 +1745,7 @@ namespace gView.Framework.Carto
             set { _drawScaleBar = value; }
         }
 
-        
+
 
         #region IClone Member
 
@@ -1817,21 +1818,22 @@ namespace gView.Framework.Carto
 
         #region Exeption Reporting
 
+        private ConcurrentBag<Exception> _requestExceptions = null;
         private object exceptionLocker = new object();
-        public void AddException(Exception ex)
+        public void AddRequestException(Exception ex)
         {
             lock (exceptionLocker)
             {
                 if (_requestExceptions == null)
                 {
-                    _requestExceptions = new List<Exception>();
+                    _requestExceptions = new ConcurrentBag<Exception>();
                 }
 
                 _requestExceptions.Add(ex);
             }
         }
 
-        public void AppendExceptionsToImage()
+        public void AppendRequestExceptionsToImage()
         {
             if (_requestExceptions == null || this.Display.Canvas == null)
             {
@@ -1860,6 +1862,24 @@ namespace gView.Framework.Carto
                 }
             }
         }
+
+        public void ResetRequestExceptions()
+        {
+            lock (exceptionLocker)
+            {
+                _requestExceptions = null;
+            }
+        }
+
+        public bool HasRequestExceptions
+        {
+            get
+            {
+                return _requestExceptions != null && _requestExceptions.Count > 0;
+            }
+        }
+
+        public IEnumerable<Exception> RequestExceptions { get { return _requestExceptions?.ToArray(); } }
 
         public IEnumerable<string> ErrorMessages
         {
@@ -1891,7 +1911,7 @@ namespace gView.Framework.Carto
         protected ConcurrentDictionary<int, string> _layerDescriptions = null;
         public string GetLayerDescription(int layerId)
         {
-            if (_layerDescriptions!=null && _layerDescriptions.ContainsKey(layerId))
+            if (_layerDescriptions != null && _layerDescriptions.ContainsKey(layerId))
             {
                 return _layerDescriptions[layerId];
             }
@@ -1922,7 +1942,7 @@ namespace gView.Framework.Carto
         {
             if (_layerCopyrightTexts == null)
             {
-                _layerCopyrightTexts = new ConcurrentDictionary<int, string>();   
+                _layerCopyrightTexts = new ConcurrentDictionary<int, string>();
             }
             _layerCopyrightTexts[layerId] = copyrightText;
         }
@@ -1936,7 +1956,7 @@ namespace gView.Framework.Carto
 
         public void RefreshSequences()
         {
-            var maxLayerId=this.MapElements.Select(e => e.ID).Max();
+            var maxLayerId = this.MapElements.Select(e => e.ID).Max();
 
             _layerIDSequece.SetToIfLower(maxLayerId + 1);
         }

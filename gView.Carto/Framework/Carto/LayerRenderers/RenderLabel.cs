@@ -131,7 +131,7 @@ namespace gView.Framework.Carto.LayerRenderers
                 {
                     if (_map != null)
                     {
-                        _map.AddException(new Exception("RenderLabelThread: " + ((_layer != null) ? _layer.Title : String.Empty) + "\n" + ex.Message, ex));
+                        _map.AddRequestException(new Exception("RenderLabelThread: " + ((_layer != null) ? _layer.Title : String.Empty) + "\n" + ex.Message, ex));
                     }
                 }
             }

@@ -92,7 +92,7 @@ namespace gView.Framework.Carto
 
         async override public Task<bool> RefreshMap(DrawPhase phase, ICancelTracker cancelTracker)
         {
-            _requestExceptions = null;
+            base.ResetRequestExceptions();
             bool printerMap = (this.GetType() == typeof(PrinterMap));
 
             try
@@ -566,13 +566,13 @@ namespace gView.Framework.Carto
             catch (Exception ex)
             {
                 _lastException = ex;
-                AddException(ex);
+                AddRequestException(ex);
                 //System.Windows.Forms.MessageBox.Show(ex.Message+"\n"+ex.InnerException+"\n"+ex.Source);
                 return false;
             }
             finally
             {
-                AppendExceptionsToImage();
+                AppendRequestExceptionsToImage();
 
                 if (!printerMap)
                 {

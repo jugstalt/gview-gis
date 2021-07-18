@@ -52,6 +52,15 @@ namespace gView.Server
 
             #endregion
 
+            #region Globals
+
+            if (Configuration["globals:CustomCursorTimeoutSeconds"] != null)
+            {
+                Framework.Db.Globals.CustomCursorTimeoutSeconds = int.Parse(Configuration["globals:CustomCursorTimeoutSeconds"]);
+            }
+
+            #endregion
+
             #region Create Folders
 
             Configuration.TryCreateDirectoryIfNotExistes("services-folder");

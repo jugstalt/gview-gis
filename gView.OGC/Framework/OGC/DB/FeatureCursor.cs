@@ -1,4 +1,5 @@
 using gView.Framework.Data;
+using gView.Framework.Db.Extensions;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using System;
@@ -88,7 +89,7 @@ namespace gView.Framework.OGC.DB
                 }
                 await featureCursor._conn.OpenAsync();
 
-                command.CommandTimeout = 60 * 2;
+                command.SetCustomCursorTimeout();
                 featureCursor._reader = await command.ExecuteReaderAsync();
 
                 return featureCursor;

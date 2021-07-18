@@ -337,7 +337,7 @@ namespace gView.Server.AppCode
 
         async override public Task<bool> RefreshMap(DrawPhase phase, ICancelTracker cancelTracker)
         {
-            base._requestExceptions = null;
+            base.ResetRequestExceptions();
 
             if (_canvas != null && phase == DrawPhase.Graphics)
             {
@@ -694,7 +694,7 @@ namespace gView.Server.AppCode
                     }
                 }
 
-                base.AppendExceptionsToImage();
+                base.AppendRequestExceptionsToImage();
 
                 if (_canvas != null)
                 {
@@ -705,7 +705,8 @@ namespace gView.Server.AppCode
 
                 this.GeometricTransformer = null;
             }
-            return true;
+
+            return this.HasRequestExceptions == false;
         }
 
         async override protected Task DrawRasterParentLayer(IParentRasterLayer rLayer, ICancelTracker cancelTracker, IRasterLayer rootLayer)
@@ -770,26 +771,12 @@ namespace gView.Server.AppCode
 
         #region IServiceMap Member
 
-        //public event LayerIsVisibleHook OverrideLayerIsVisible;
         public event BeforeRenderLayersEvent BeforeRenderLayers;
 
         async public Task<bool> Render()
         {
             return await RefreshMap(DrawPhase.All, null);
         }
-
-        //private float _scaleSymbolFactor = 1f;
-        //public float ScaleSymbolFactor
-        //{
-        //    get
-        //    {
-        //        return _scaleSymbolFactor;
-        //    }
-        //    set
-        //    {
-        //        _scaleSymbolFactor = value;
-        //    }
-        //}
 
         public void SetRequestContext(IServiceRequestContext context)
         {

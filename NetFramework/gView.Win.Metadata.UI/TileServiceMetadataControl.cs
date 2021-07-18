@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.system;
+﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Framework.UI;
-using gView.Framework.Data;
 using gView.Framework.IO;
+using gView.Framework.Proj;
+using gView.Framework.system;
+using gView.Framework.UI;
+using gView.Framework.UI.Controls.Filter;
 using gView.Framework.UI.Dialogs;
 using gView.Interoperability.Server;
-using gView.Framework.Proj;
-using gView.Framework.UI.Controls.Filter;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace gView.Framework.Metadata.UI
 {
@@ -64,7 +60,7 @@ namespace gView.Framework.Metadata.UI
             set
             {
                 num_ReleaseEventHandler();
-                if(value==null)
+                if (value == null)
                 {
                     numUL_x.Value = numUL_y.Value = (decimal)0.0;
                 }
@@ -104,7 +100,7 @@ namespace gView.Framework.Metadata.UI
         }
 
         #region UI
-        
+
         public bool ShowUseTileCacheCheckbox
         {
             get { return chkUseTiling.Visible; }
@@ -169,6 +165,7 @@ namespace gView.Framework.Metadata.UI
 
                     chkPng.Checked = _metadata.FormatPng;
                     chkJpg.Checked = _metadata.FormatJpg;
+                    chkTransparentPng.Checked = _metadata.MakeTransparentPng;
 
                     FillEpsgList();
 
@@ -196,8 +193,10 @@ namespace gView.Framework.Metadata.UI
                 foreach (IExplorerObject exObject in dlg.ExplorerObjects)
                 {
                     var objectInstance = await exObject?.GetInstanceAsync();
-                    if (objectInstance == null) 
+                    if (objectInstance == null)
+                    {
                         continue;
+                    }
 
                     IEnvelope objEnvelope = null;
 
@@ -205,7 +204,11 @@ namespace gView.Framework.Metadata.UI
                     {
                         foreach (IDatasetElement element in await ((IDataset)objectInstance).Elements())
                         {
-                            if (element == null) continue;
+                            if (element == null)
+                            {
+                                continue;
+                            }
+
                             objEnvelope = ClassEnvelope(element.Class, sRef);
                         }
                     }
@@ -217,9 +220,13 @@ namespace gView.Framework.Metadata.UI
                     if (objEnvelope != null)
                     {
                         if (bounds == null)
+                        {
                             bounds = new Envelope(objEnvelope);
+                        }
                         else
+                        {
                             bounds.Union(objEnvelope);
+                        }
                     }
                 }
 
@@ -230,25 +237,33 @@ namespace gView.Framework.Metadata.UI
             }
 
             if (_metadata != null && cmbEpsgs.SelectedIndex >= 0)
+            {
                 _metadata.SetEPSGEnvelope(_currentEpsg, this.CurrentEpsgExtent);
+            }
         }
 
         private void numTileWidth_ValueChanged(object sender, EventArgs e)
         {
             if (_metadata != null)
+            {
                 _metadata.TileWidth = (int)numTileWidth.Value;
+            }
         }
 
         private void numTileHeight_ValueChanged(object sender, EventArgs e)
         {
             if (_metadata != null)
+            {
                 _metadata.TileHeight = (int)numTileHeight.Value;
+            }
         }
 
         private void chkUseTiling_CheckedChanged(object sender, EventArgs e)
         {
             if (_metadata != null)
+            {
                 _metadata.Use = chkUseTiling.Checked;
+            }
         }
 
         private void num_ReleaseEventHandler()
@@ -280,17 +295,23 @@ namespace gView.Framework.Metadata.UI
         private void num_ValueChanged(object sender, EventArgs e)
         {
             if (_metadata != null && cmbEpsgs.SelectedIndex >= 0)
+            {
                 _metadata.SetEPSGEnvelope(_currentEpsg, this.CurrentEpsgExtent);
+            }
         }
         private void num_ULValueChanged(object sender, EventArgs e)
         {
             if (_metadata != null && cmbEpsgs.SelectedIndex >= 0)
+            {
                 _metadata.SetOriginUpperLeft(_currentEpsg, this.CurrentEpsgOriginUpperLeft);
+            }
         }
         private void num_LLValueChanged(object sender, EventArgs e)
         {
             if (_metadata != null && cmbEpsgs.SelectedIndex >= 0)
+            {
                 _metadata.SetOriginLowerLeft(_currentEpsg, this.CurrentEpsgOriginLowerLeft);
+            }
         }
 
         private void cmbEpsgs_SelectedIndexChanged(object sender, EventArgs e)
@@ -330,12 +351,17 @@ namespace gView.Framework.Metadata.UI
                     scales.Add(s);
                 }
                 if (scales.Contains((double)numScale.Value))
+                {
                     return;
+                }
+
                 scales.Add((double)numScale.Value);
 
                 scales.Order();
                 if (_metadata != null)
+                {
                     _metadata.Scales = scales;
+                }
 
                 FillScaleList();
             }
@@ -344,7 +370,9 @@ namespace gView.Framework.Metadata.UI
         private void btnRemove_Click(object sender, EventArgs e)
         {
             if (_metadata != null)
+            {
                 _metadata.Scales.Remove(Convert.ToInt32(lstScales.SelectedItem));
+            }
 
             FillScaleList();
         }
@@ -352,43 +380,65 @@ namespace gView.Framework.Metadata.UI
         private void chkUpperLeftCacheTiles_CheckedChanged(object sender, EventArgs e)
         {
             if (_metadata != null)
+            {
                 _metadata.UpperLeftCacheTiles = chkUpperLeftCacheTiles.Checked;
+            }
         }
 
         private void chkLowerLeftCacheTiles_CheckedChanged(object sender, EventArgs e)
         {
             if (_metadata != null)
+            {
                 _metadata.LowerLeftCacheTiles = chkLowerLeftCacheTiles.Checked;
+            }
         }
 
         private void chkUpperLeft_CheckedChanged(object sender, EventArgs e)
         {
             if (_metadata != null)
+            {
                 _metadata.UpperLeft = chkUpperLeft.Checked;
+            }
         }
 
         private void chkLowerLeft_CheckedChanged(object sender, EventArgs e)
         {
             if (_metadata != null)
+            {
                 _metadata.LowerLeft = chkLowerLeft.Checked;
+            }
         }
 
         private void chkPng_CheckedChanged(object sender, EventArgs e)
         {
             if (_metadata != null)
+            {
                 _metadata.FormatPng = chkPng.Checked;
+            }
+        }
+
+        private void chkTransparentPng_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_metadata != null)
+            {
+                _metadata.MakeTransparentPng = chkTransparentPng.Checked;
+            }
         }
 
         private void chkRenderOnTheFly_CheckedChanged(object sender, EventArgs e)
         {
             if (_metadata != null)
+            {
                 _metadata.RenderTilesOnTheFly = chkRenderOnTheFly.Checked;
+            }
         }
 
         private void chkJpg_CheckedChanged(object sender, EventArgs e)
         {
             if (_metadata != null)
+            {
                 _metadata.FormatJpg = chkJpg.Checked;
+            }
         }
 
         private void btnAddEpsg_Click(object sender, EventArgs e)
@@ -410,7 +460,10 @@ namespace gView.Framework.Metadata.UI
                         }
                         int epsg = int.Parse(sRef.Name.Split(':')[1]);
                         if (!_metadata.EPSGCodes.Contains(epsg))
+                        {
                             _metadata.EPSGCodes.Add(epsg);
+                        }
+
                         FillEpsgList();
                         cmbEpsgs.SelectedItem = epsg;
                     }
@@ -434,7 +487,10 @@ namespace gView.Framework.Metadata.UI
                     _startupEpsg.Remove((int)cmbEpsgs.SelectedItem);
                     cmbEpsgs.Items.Remove(cmbEpsgs.SelectedItem);
 
-                    if (cmbEpsgs.Items.Count > 0) cmbEpsgs.SelectedIndex = 0;
+                    if (cmbEpsgs.Items.Count > 0)
+                    {
+                        cmbEpsgs.SelectedIndex = 0;
+                    }
                 }
             }
         }
@@ -464,7 +520,9 @@ namespace gView.Framework.Metadata.UI
                     geometricTransformer.SetSpatialReferences(classSRef, sRef);
                     IGeometry geom = geometricTransformer.Transform2D(envelope) as IGeometry;
                     if (geom == null)
+                    {
                         return null;
+                    }
 
                     envelope = geom.Envelope;
                 }
@@ -495,7 +553,9 @@ namespace gView.Framework.Metadata.UI
                 }
             }
             if (cmbEpsgs.Items.Count > 0)
+            {
                 cmbEpsgs.SelectedIndex = 0;
+            }
         }
         #endregion
 

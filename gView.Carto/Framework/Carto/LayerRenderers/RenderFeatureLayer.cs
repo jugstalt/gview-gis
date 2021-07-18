@@ -356,7 +356,7 @@ namespace gView.Framework.Carto.LayerRenderers
                 }
                 if (_map != null)
                 {
-                    _map.AddException(new Exception("RenderFeatureLayerThread: " + ((layer != null) ? layer.Title : String.Empty) + "\n" + ex.Message, ex));
+                    _map.AddRequestException(new Exception("RenderFeatureLayerThread: " + ((layer != null) ? layer.Title : String.Empty) + "\n" + ex.Message, ex));
                 }
             }
             finally

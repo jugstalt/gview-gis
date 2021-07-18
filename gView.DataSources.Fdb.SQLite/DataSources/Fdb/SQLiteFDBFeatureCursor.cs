@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Db.Extensions;
 using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
@@ -185,6 +186,7 @@ namespace gView.DataSources.Fdb.SQLite
                 parameter2.Value = p2Val;
             }
 
+            _readerCommand.SetCustomCursorTimeout();
             _reader = (SQLiteDataReader)await _readerCommand.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
             return true;

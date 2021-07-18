@@ -103,6 +103,12 @@ namespace gView.Framework.Carto
         IEnumerable<string> ErrorMessages { get; }
         bool HasErrorMessages { get; }
 
+        void ResetRequestExceptions();
+
+        bool HasRequestExceptions { get; }
+
+        IEnumerable<Exception> RequestExceptions { get; }
+
         void Compress();
 
         string GetLayerDescription(int layerId);

@@ -29,6 +29,11 @@ namespace gView.Framework.Metadata
         private bool _formatJpg = true;
         private double _dpi = Const.TilesDpi;
 
+        public TileServiceMetadata()
+        {
+            this.MakeTransparentPng = false;
+        }
+
         #region Properties
         public bool Use
         {
@@ -169,6 +174,8 @@ namespace gView.Framework.Metadata
             set { _formatJpg = value; }
         }
 
+        public bool MakeTransparentPng { get; set; }
+
         public bool RenderTilesOnTheFly { get; set; }
 
         #endregion
@@ -207,6 +214,7 @@ namespace gView.Framework.Metadata
 
             _formatPng = (bool)stream.Load("formatpng", true);
             _formatJpg = (bool)stream.Load("formatjpg", true);
+            this.MakeTransparentPng = (bool)stream.Load("maketransparentpng", false);
 
             _dpi = (double)stream.Load("dpi", Const.TilesDpi);
 
@@ -266,6 +274,7 @@ namespace gView.Framework.Metadata
 
             stream.Save("formatpng", _formatPng);
             stream.Save("formatjpg", _formatJpg);
+            stream.Save("maketransparentpng", this.MakeTransparentPng);
 
             stream.Save("rendertilesonthefly", this.RenderTilesOnTheFly);
 

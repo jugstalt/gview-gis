@@ -14,7 +14,7 @@ namespace gView.GraphicsEngine.Skia.Extensions
                 case PixelFormat.Rgb24:
                 case PixelFormat.Rgb32:
                 case PixelFormat.Rgba32:
-                    return OsPlatform.IsWindows ? SKColorType.Bgra8888 : SKColorType.Rgba8888;
+                    return /*OsPlatform.IsWindows ?*/ SKColorType.Bgra8888 /*: SKColorType.Rgba8888*/;
                 case PixelFormat.Gray8:
                     return SKColorType.Gray8;
                 default:

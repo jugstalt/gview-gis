@@ -12,6 +12,7 @@ using gView.Framework.FDB;
 using gView.Framework.Offline;
 using System.Threading.Tasks;
 using System.Linq;
+using gView.Framework.Db.Extensions;
 
 namespace gView.DataSources.Fdb.PostgreSql
 {
@@ -2011,6 +2012,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     _command.CommandText += " offset " + Math.Max(0, _beginrecord - 1);
                 }
 
+                _command.SetCustomCursorTimeout();
                 _reader = await _command.ExecuteReaderAsync(CommandBehavior.Default);
 
                 return true;

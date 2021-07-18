@@ -20,6 +20,7 @@ using gView.Framework.Symbology;
 using System.Data.Common;
 using gView.Framework.Offline;
 using System.Threading.Tasks;
+using gView.Framework.Db.Extensions;
 
 namespace gView.DataSources.Fdb.MSSql
 {
@@ -2714,6 +2715,8 @@ namespace gView.DataSources.Fdb.MSSql
             string where = " WHERE [FDB_OID] IN (" + sb.ToString() + ")";
 
             _command = new SqlCommand(_sql + where, _connection);
+            _command.SetCustomCursorTimeout();
+
             _reader = await _command.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
 
             return true;
@@ -2921,6 +2924,7 @@ namespace gView.DataSources.Fdb.MSSql
             if (parameter != null) parameter.Value = pVal;
             if (parameter2 != null) parameter2.Value = p2Val;
 
+            _command.SetCustomCursorTimeout();
             _reader = await _command.ExecuteReaderAsync(CommandBehavior.Default);
 
             return true;

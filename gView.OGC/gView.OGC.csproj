@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
     <ProjectReference Include="..\gView.Data\gView.Data.csproj" />
+    <ProjectReference Include="..\gView.Db\gView.Db.csproj" />
     <ProjectReference Include="..\gView.Editor.Core\gView.Editor.Core.csproj" />
     <ProjectReference Include="..\gView.Geometry\gView.Geometry.csproj" />
     <ProjectReference Include="..\gView.System\gView.System.csproj" />

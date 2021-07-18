@@ -7,6 +7,7 @@ using gView.Framework.Metadata;
 using gView.Framework.system;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
+using gView.Interoperability.Server.TileService.Extensions;
 using gView.MapServer;
 using Newtonsoft.Json;
 using System;
@@ -344,12 +345,14 @@ namespace gView.Interoperability.Server.TileService
             double x = origin.X + W * col;
 
             serviceMap.Display.ZoomTo(new Envelope(x, y, x + W, y + H));
-            await serviceMap.Render();
 
-            bool maketrans = serviceMap.Display.MakeTransparent;
-            serviceMap.Display.MakeTransparent = true;
+            if (format != ".jpg" && metadata.MakeTransparentPng == true)
+            {
+                serviceMap.Display.BackgroundColor = ArgbColor.Transparent;
+            }
+
+            await serviceMap.TryRender(3);
             await serviceMap.SaveImage(path, format == ".jpg" ? ImageFormat.Jpeg : ImageFormat.Png);
-            serviceMap.Display.MakeTransparent = maketrans;
 
             context.ServiceRequest.Response = path;
         }
@@ -484,13 +487,13 @@ namespace gView.Interoperability.Server.TileService
                     double x = origin.X + W * currentCol;
 
                     serviceMap.Display.ZoomTo(new Envelope(x, y, x + W * tileMatrixWidth, y + H * tileMatrixHeight));
-                    if (format != ".jpg") // Make PNG Transparent (Sure?)
+                    if (format != ".jpg" && metadata.MakeTransparentPng == true)
                     {
-                        //serviceMap.Display.BackgroundColor = ArgbColor.Transparent;
+                        serviceMap.Display.BackgroundColor = ArgbColor.Transparent;
                     }
 
                     serviceMap.ReleaseImage();  // Delete old Image !!! Because there is no map.SaveImage()!!!!
-                    await serviceMap.Render();
+                    await serviceMap.TryRender(3);
 
                     if (IsEmptyBitmap(serviceMap.MapImage, serviceMap.Display.BackgroundColor))
                     {
