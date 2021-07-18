@@ -484,9 +484,9 @@ namespace gView.Interoperability.Server.TileService
                     double x = origin.X + W * currentCol;
 
                     serviceMap.Display.ZoomTo(new Envelope(x, y, x + W * tileMatrixWidth, y + H * tileMatrixHeight));
-                    if (format != ".jpg") // Make PNG Transparent
+                    if (format != ".jpg") // Make PNG Transparent (Sure?)
                     {
-                        serviceMap.Display.BackgroundColor = ArgbColor.Transparent;
+                        //serviceMap.Display.BackgroundColor = ArgbColor.Transparent;
                     }
 
                     serviceMap.ReleaseImage();  // Delete old Image !!! Because there is no map.SaveImage()!!!!

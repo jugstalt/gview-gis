@@ -30,13 +30,13 @@ namespace gView.Interoperability.OGC.Request.WMTS
             {
                 try
                 {
-                    using (var bm = Current.Engine.CreateBitmap(512, 512))
-                    using(var canvas = bm.CreateCanvas())
-                    using (var brush = Current.Engine.CreateSolidBrush(ArgbColor.Red))
+                    using (var bm = Current.Engine.CreateBitmap(1, 1))
+                    //using(var canvas = bm.CreateCanvas())
+                    //using (var brush = Current.Engine.CreateSolidBrush(ArgbColor.Red))
                     {
                         bm.MakeTransparent();
 
-                        canvas.FillRectangle(brush, new CanvasRectangle(20, 20, 200, 200));
+                        //canvas.FillRectangle(brush, new CanvasRectangle(20, 20, 200, 200));
 
                         MemoryStream ms = new MemoryStream();
                         bm.Save(ms, ImageFormat.Png);
@@ -173,6 +173,16 @@ namespace gView.Interoperability.OGC.Request.WMTS
             {
                 return $"{ context.ServiceRequest.Folder }/{ context.ServiceRequest.Service }";
             }
+
+            return context.ServiceRequest.Service;
+        }
+
+        private string CapabilitiesMapName(IServiceRequestContext context)
+        {
+            //if (!String.IsNullOrWhiteSpace(context.ServiceRequest.Folder))
+            //{
+            //    return $"{ context.ServiceRequest.Folder }/{ context.ServiceRequest.Service }";
+            //}
 
             return context.ServiceRequest.Service;
         }
@@ -441,7 +451,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
             capabilities.ServiceIdentification = new gView.Framework.OGC.WMTS.Version_1_0_0.ServiceIdentification();
             capabilities.ServiceIdentification.Title = new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType[] { new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType() {
-                Value= MapName( context)
+                Value= CapabilitiesMapName(context)  // do not add folder to the name => tilecache will not work with arcgis
             } };
             capabilities.ServiceIdentification.ServiceType = new gView.Framework.OGC.WMTS.Version_1_0_0.CodeType() { Value = "OGC WMTS" };
             capabilities.ServiceIdentification.ServiceTypeVersion = new string[] { "1.0.0" };
@@ -559,8 +569,8 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
                     #region Layer
 
-                    string layerName = MapName(context) + " EPSG:" + epsg + " " + cacheType;
-                    string layerId = MapName(context).ToLower().Replace(" ", "_") + "_" + epsg + "_" + cacheType;
+                    string layerName = /*Capabilities*/MapName(context) + " EPSG:" + epsg + " " + cacheType;
+                    string layerId = /*Capabilities*/MapName(context).ToLower().Replace(" ", "_") + "_" + epsg + "_" + cacheType;
 
                     var layer = new gView.Framework.OGC.WMTS.Version_1_0_0.LayerType();
 
@@ -657,8 +667,8 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
                     #region Matrix Set
 
-                    double matrixSetWidth = extent.Width;
-                    double matrixSetHeight = extent.Height;
+                    double matrixSetWidth = Math.Abs(extent.maxx - origin.X); // extent.Width;
+                    double matrixSetHeight = Math.Abs(origin.Y - extent.miny); // extent.Height;
 
                     var matrixSet = new gView.Framework.OGC.WMTS.Version_1_0_0.TileMatrixSet();
 

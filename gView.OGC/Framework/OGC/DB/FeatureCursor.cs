@@ -88,6 +88,7 @@ namespace gView.Framework.OGC.DB
                 }
                 await featureCursor._conn.OpenAsync();
 
+                command.CommandTimeout = 60 * 2;
                 featureCursor._reader = await command.ExecuteReaderAsync();
 
                 return featureCursor;

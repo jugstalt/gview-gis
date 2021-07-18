@@ -1,5 +1,4 @@
-﻿using gView.Data.Framework.Data;
-using gView.Framework.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.system;
@@ -200,7 +199,7 @@ namespace gView.Framework.Carto.LayerRenderers
                         if (layer.RequiresFeatureRendererClone(display))
                         {
                             renderer = clonedFeatureRenderer = (IFeatureRenderer)layer.FeatureRenderer.Clone(
-                                new CloneOptions(display, 
+                                new CloneOptions(display,
                                                  layer.UseWithRefScale(display),
                                                  maxRefScaleFactor: layer.MaxRefScaleFactor));
                         }
@@ -211,13 +210,13 @@ namespace gView.Framework.Carto.LayerRenderers
                     }
                     if (layer.LabelRenderer != null && _useLabelRenderer)
                     {
-                        if(layer.RequiresLabelRendererClone(display))
+                        if (layer.RequiresLabelRendererClone(display))
                         {
-                            labelRenderer = clonedLabelRenderer = 
+                            labelRenderer = clonedLabelRenderer =
                                 (ILabelRenderer)layer.LabelRenderer.Clone(new CloneOptions(display,
                                                                                            layer.UseLabelsWithRefScale(display),
                                                                                            maxLabelRefscaleFactor: layer.MaxLabelRefScaleFactor));
-                        } 
+                        }
                         else  // Clone with null => simple clone
                         {
                             //display.refScale = 0;
@@ -334,6 +333,15 @@ namespace gView.Framework.Carto.LayerRenderers
                                 opacity: (float)Math.Min(1, (100f - ((IFeatureLayerComposition)layer).CompositionModeCopyTransparency) / 100));
                         }
                     }
+                    else
+                    {
+                        if (fClass is IDebugging && ((IDebugging)fClass).LastException != null)
+                        {
+                            throw ((IDebugging)fClass).LastException;
+                        }
+
+                        throw new Exception("Can't query feature class. Unknown error");
+                    }
                 }
             }
             catch (Exception ex)
@@ -358,7 +366,7 @@ namespace gView.Framework.Carto.LayerRenderers
                     clonedFeatureRenderer.Release();
                 }
 
-                if(clonedLabelRenderer!=null)
+                if (clonedLabelRenderer != null)
                 {
                     clonedLabelRenderer.Release();
                 }

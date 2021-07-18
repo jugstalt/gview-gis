@@ -6,9 +6,9 @@
   "output-url": "https://localhost:44331/output",
   "output-path__": "https://user1:passw0rd@localhost:44377/http/output",
   "output-url_": "https://localhost:44377/http/output",
-  "onlineresource-url": "https://localhost:44331",
-  "onlineresource-url_": "http://localhost:8889",
-  "tilecache-root": "C:\\temp\\tilecache",
+  "onlineresource-url_": "https://localhost:44331",
+  "onlineresource-url": "http://localhost:8889",
+  "tilecache-root": "E:\\gview5\\tilecache",
 
   "task-queue": {
     "max-parallel-tasks": 5,

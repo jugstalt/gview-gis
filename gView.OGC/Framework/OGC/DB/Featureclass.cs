@@ -437,11 +437,13 @@ namespace gView.Framework.OGC.DB
         #endregion
 
         #region IDebugging
+
         public Exception LastException
         {
             get { return _lastException; }
             set { _lastException = value; }
         }
+
         #endregion
 
         async public static Task<ISpatialReference> TrySelectSpatialReference(OgcSpatialDataset dataset, OgcSpatialFeatureclass fc)

@@ -47,6 +47,7 @@ namespace gView.Server.AppCode
             //serviceMap._ceckLayerVisibilityBeforeDrawing = true;
             serviceMap._mapUnits = original.MapUnits;
             serviceMap._displayUnits = original.DisplayUnits;
+            serviceMap._backgroundColor = original.BackgroundColor;
             serviceMap.refScale = original.refScale;
 
             serviceMap.SpatialReference = original.Display.SpatialReference;

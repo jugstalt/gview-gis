@@ -4,6 +4,7 @@ using gView.Framework.Geometry.Tiling;
 using gView.Framework.Metadata;
 using gView.Framework.system;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace gView.Cmd.RenderTileCache
@@ -28,6 +29,7 @@ namespace gView.Cmd.RenderTileCache
                 int epsg = 0, maxParallelRequests = 1;
                 GridOrientation orientation = GridOrientation.UpperLeft;
                 IEnvelope bbox = null;
+                List<int> scales = new List<int>();
 
                 for (int i = 0; i < args.Length; i++)
                 {
@@ -73,6 +75,10 @@ namespace gView.Cmd.RenderTileCache
                     {
                         bbox = Envelope.FromBBox(args[++i]);
                     }
+                    if(args[i]=="-scales")
+                    {
+                        scales.AddRange(args[++i].Split(',').Select(v => int.Parse(v)));
+                    }
                     if(args[i] == "-threads")
                     {
                         maxParallelRequests = int.Parse(args[++i]);
@@ -89,6 +95,7 @@ namespace gView.Cmd.RenderTileCache
                     Console.WriteLine("                           -compact ... create a compact tile cache");
                     Console.WriteLine("                           -orientation <ul|ll|upperleft|upperright>    [default: upperleft]");
                     Console.WriteLine("                           -bbox <minx,miny,maxx,maxy>                  [default: fullextent]");
+                    Console.WriteLine("                           -scales <scale1,scale2,...>                  [default: empty => all scales");
                     Console.WriteLine("                           -threads <max-parallel-requests>             [default: 1]");
 
                     return 1;
@@ -181,11 +188,18 @@ namespace gView.Cmd.RenderTileCache
                 {
                     var startTime = DateTime.Now;
 
+                    List<double> preRenderScales = new List<double>();
+                    if (scales.Count > 0)
+                    {
+                        preRenderScales.AddRange(scales.Where(s => metadata.Scales.Contains(s)).Select(s=>(double)s));
+                    }
+
                     var tileRender = new TileRenderer(metadata,
                                                       epsg > 0 ? epsg : metadata.EPSGCodes.First(),
                                                       cacheFormat: cacheFormat,
                                                       orientation: orientation,
                                                       bbox: bbox,
+                                                      preRenderScales: preRenderScales.Count>0 ? preRenderScales : null,
                                                       maxParallelRequests: maxParallelRequests);
 
                     tileRender.Renderer(server, service);
