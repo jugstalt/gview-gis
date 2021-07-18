@@ -247,20 +247,20 @@ namespace gView.DataSources.GDAL
             }
         }
 
-        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
             EndPaint(cancelTracker);
             try
             {
                 if (!(_polygon is ITopologicalOperation))
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 TFWFile tfw = this.WorldFile as TFWFile;
                 if (tfw == null)
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display); //display.Envelope;
@@ -273,7 +273,7 @@ namespace gView.DataSources.GDAL
                 ((ITopologicalOperation)_polygon).Clip(dispEnvelope, out clipped);
                 if (!(clipped is IPolygon))
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 IPolygon cPolygon = (IPolygon)clipped;
@@ -286,7 +286,7 @@ namespace gView.DataSources.GDAL
                 }
                 if (!tfw.ProjectInv(vecs))
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 IEnvelope picEnv = vector2.IntegerEnvelope(vecs);
@@ -350,13 +350,15 @@ namespace gView.DataSources.GDAL
             }
             catch (Exception ex)
             {
-                string errMsg = ex.Message;
                 EndPaint(cancelTracker);
+                throw ex;
             }
             finally
             {
-
+               
             }
+
+            return Task.CompletedTask;
         }
 
         public void EndPaint(ICancelTracker cancelTracker)
@@ -463,10 +465,6 @@ namespace gView.DataSources.GDAL
                         }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                string msg = ex.Message;
             }
             finally
             {
@@ -622,11 +620,6 @@ namespace gView.DataSources.GDAL
                         canvas.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
                     }
                 }
-
-                catch (Exception ex)
-                {
-                    string errMessage = ex.Message;
-                }
                 finally
                 {
                 }
@@ -741,10 +734,6 @@ namespace gView.DataSources.GDAL
                     {
                         gr.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
                     }
-                }
-                catch (Exception ex)
-                {
-                    string errMessage = ex.Message;
                 }
                 finally
                 {
