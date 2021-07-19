@@ -20,7 +20,7 @@ namespace gView.Test
             try
             {
                 //TestProj4();
-                //TestPerformance();
+                TestPerformance();
 
                 //Console.ReadLine();
 
@@ -28,22 +28,22 @@ namespace gView.Test
 
                 //ParseSQL();
 
-                Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96);
-                //Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96);
-                Current.Encoder = new GraphicsEngine.GdiPlus.GdiBitmapEncoding();
-                //Current.Encoder = new GraphicsEngine.Skia.SkiaBitmapEncoding();
+                //Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96);
+                ////Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96);
+                //Current.Encoder = new GraphicsEngine.GdiPlus.GdiBitmapEncoding();
+                ////Current.Encoder = new GraphicsEngine.Skia.SkiaBitmapEncoding();
 
-                using (var bitmap = CreateImage(850, 600))
-                {
-                    using (var filteredBitmap = BaseFilter.ApplyFilter(bitmap, FilterImplementations.GrayscaleBT709))
-                    {
-                        var start = DateTime.Now;
+                //using (var bitmap = CreateImage(850, 600))
+                //{
+                //    using (var filteredBitmap = BaseFilter.ApplyFilter(bitmap, FilterImplementations.GrayscaleBT709))
+                //    {
+                //        var start = DateTime.Now;
 
-                        SaveBitmap(filteredBitmap, "C:\\temp\\graphic.jpg");
+                //        SaveBitmap(filteredBitmap, "C:\\temp\\graphic.jpg");
 
-                        Console.WriteLine($"Encoding Time: { (DateTime.Now - start).TotalMilliseconds }ms");
-                    }
-                }
+                //        Console.WriteLine($"Encoding Time: { (DateTime.Now - start).TotalMilliseconds }ms");
+                //    }
+                //}
             }
             catch (Exception ex)
             {
@@ -122,8 +122,9 @@ namespace gView.Test
 
         static void TestPerformance()
         {
-            int[] bbox = new int[] { -115309, 231374, -114905, 231530 };
+            //int[] bbox = new int[] { -115309, 231374, -114905, 231530 };
             //int[] bbox = new int[] { -219217, 23153, -10996, 231374 };
+            int[] bbox = new int[] { -218012, 159987, -9987, 301012 };
 
             List<Task<double>> tasks = new List<Task<double>>();
 
@@ -134,15 +135,15 @@ namespace gView.Test
                 //string server = "sever/gview5-basis";
                 //string service = "geoservices/rest/services/sdep/gv_xyz_dkm_sdep";
 
-                //string server = "sever";
-                //string service = "arcgis/rest/services/sdep/xyz_dkm_sdep";
+                string server = "localhost:44331";
+                string service = "geoservices/rest/services/test-publish/dgm_10m";
 
                 //string service = "geoservices/rest/services/default/UEBERSICHTSKARTE";
                 //string service = "geoservices/rest/services/sdep/gv_estag_dkm_sdep";
                 //string service = "arcgis/rest/services/sdep/estag_dkm_sdep";
 
-                string server = "server";
-                string service = "geoservices/rest/services/sdep/gv_estag_dkm_sdep";
+                //string server = "server";
+                //string service = "geoservices/rest/services/sdep/gv_estag_dkm_sdep";
 
                 string url = String.Empty;
 

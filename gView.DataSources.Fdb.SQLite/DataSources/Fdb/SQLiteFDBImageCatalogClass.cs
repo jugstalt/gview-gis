@@ -147,24 +147,19 @@ namespace gView.DataSources.Fdb.SQLite
             }
         }
 
-        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        public Task<IRasterPaintContext> BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
-
+            return Task.FromResult<IRasterPaintContext>(new RasterPaintContext(null));
         }
 
-        public void EndPaint(ICancelTracker cancelTracker)
+        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
         {
-
+            context?.Dispose();
         }
 
         public ArgbColor GetPixel(double X, double Y)
         {
             return ArgbColor.Transparent;
-        }
-
-        public IBitmap Bitmap
-        {
-            get { return null; }
         }
 
         public double oX
@@ -984,8 +979,7 @@ namespace gView.DataSources.Fdb.SQLite
             get { return _polygon; }
         }
 
-        IBitmap _bitmap = null;
-        public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        public Task<IRasterPaintContext> BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
             throw new NotImplementedException();
             //if (_fdb == null) return;
@@ -1012,23 +1006,14 @@ namespace gView.DataSources.Fdb.SQLite
             //}
         }
 
-        public void EndPaint(ICancelTracker cancelTracker)
+        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
         {
-            if (_bitmap != null)
-            {
-                _bitmap.Dispose();
-                _bitmap = null;
-            }
+            context?.Dispose();
         }
 
         public ArgbColor GetPixel(double X, double Y)
         {
             return ArgbColor.Transparent;
-        }
-
-        public IBitmap Bitmap
-        {
-            get { return _bitmap; }
         }
 
         public double oX { get { return _X; } }

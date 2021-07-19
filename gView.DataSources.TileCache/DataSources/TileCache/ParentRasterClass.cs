@@ -78,14 +78,14 @@ namespace gView.DataSources.TileCache
             }
         }
 
-        public Task BeginPaint(Framework.Carto.IDisplay display, Framework.system.ICancelTracker cancelTracker)
+        public Task<IRasterPaintContext> BeginPaint(Framework.Carto.IDisplay display, Framework.system.ICancelTracker cancelTracker)
         {
-            return Task.CompletedTask;
+            return Task.FromResult<IRasterPaintContext>(new RasterPaintContext(null));
         }
 
-        public void EndPaint(Framework.system.ICancelTracker cancelTracker)
+        public void EndPaint(IRasterPaintContext context, Framework.system.ICancelTracker cancelTracker)
         {
-
+            context?.Dispose();
         }
 
         #endregion

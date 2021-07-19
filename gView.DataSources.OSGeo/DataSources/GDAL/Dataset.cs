@@ -43,7 +43,7 @@ namespace gView.DataSources.GDAL
                 {
                     case OSGeo.GdalVersion.V3:
                         rasterClass = (polygon == null) ? new RasterClassV3(this, filename) : new RasterClassV3(this, filename, polygon);
-                        if (((RasterClassV3)rasterClass).isValid == false)
+                        if (((RasterClassV3)rasterClass).IsValid == false)
                         {
                             rasterClass = null;
                         }

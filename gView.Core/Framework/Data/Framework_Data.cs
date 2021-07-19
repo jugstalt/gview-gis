@@ -430,7 +430,6 @@ namespace gView.Framework.Data
     public interface IRasterClass : IClass
     {
         IPolygon Polygon { get; }
-        GraphicsEngine.Abstraction.IBitmap Bitmap { get; }
 
         double oX { get; }
         double oY { get; }
@@ -441,8 +440,8 @@ namespace gView.Framework.Data
 
         ISpatialReference SpatialReference { get; set; }
 
-        Task BeginPaint(IDisplay display, ICancelTracker cancelTracker);
-        void EndPaint(ICancelTracker cancelTracker);
+        Task<IRasterPaintContext> BeginPaint(IDisplay display, ICancelTracker cancelTracker);
+        void EndPaint(IRasterPaintContext paintContext, ICancelTracker cancelTracker);
     }
 
     public interface IRasterCatalogClass : IFeatureClass, IRasterClass

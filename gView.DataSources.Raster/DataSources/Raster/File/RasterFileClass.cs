@@ -133,49 +133,21 @@ namespace gView.DataSources.Raster.File
             get { return _polygon; }
         }
 
-        GraphicsEngine.Abstraction.IBitmap _bitmap;
-        GraphicsEngine.BitmapPixelData _bmData;
-
-        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        public Task<IRasterPaintContext> BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
-            if (_bitmap != null)
-            {
-                _bitmap.Dispose();
-                _bitmap = null;
-            }
+            var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(_filename);
 
-            _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(_filename);
-
-            /*
-            _bmData = _bm.LockBits(new Rectangle(0, 0, _bm.Width, _bm.Height),
-                 ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-            */
+            return Task.FromResult<IRasterPaintContext>(new RasterPaintContext(bitmap));
         }
-        public void EndPaint(ICancelTracker cancelTracker)
+        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
         {
-            //return;
-            if (_bitmap != null)
-            {
-                if (_bmData != null)
-                {
-                    /*
-                    _bm.UnlockBits(_bmData);
-                    _bmData = null;
-                     */
-                }
-                _bitmap.Dispose();
-                _bitmap = null;
-            }
-        }
-        public GraphicsEngine.Abstraction.IBitmap Bitmap
-        {
-            get { return _bitmap; }
+            context?.Dispose();
         }
 
-        public GraphicsEngine.ArgbColor GetPixel(double X, double Y)
+        public GraphicsEngine.ArgbColor GetPixel(IRasterPaintContext context, double X, double Y)
         {
             //return Color.Beige;
-            if (_bitmap == null)
+            if (context?.Bitmap == null)
             {
                 return GraphicsEngine.ArgbColor.Transparent;
             }
@@ -187,19 +159,7 @@ namespace gView.DataSources.Raster.File
                 return GraphicsEngine.ArgbColor.Transparent;
             }
 
-            if (_bmData != null)
-            {
-                unsafe
-                {
-                    int* p = (int*)(void*)_bmData.Scan0;
-                    p += y * _iWidth + x;
-                    return GraphicsEngine.ArgbColor.FromArgb(*p);
-                }
-            }
-            else
-            {
-                return _bitmap.GetPixel(x, y);
-            }
+            return context.Bitmap.GetPixel(x, y);
         }
 
         public double oX { get { return _tfw.X; } }

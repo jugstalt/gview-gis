@@ -21,7 +21,6 @@ namespace gView.DataSources.Raster.File
         private IntPtr _reader = (IntPtr)0;
         private MrSidGeoCoord _geoCoord = new MrSidGeoCoord();
         private ISpatialReference _sRef = null;
-        private GraphicsEngine.Abstraction.IBitmap _bitmap = null;
         private RasterType _type;
         private bool _isValid = false;
 
@@ -147,7 +146,7 @@ namespace gView.DataSources.Raster.File
         private void CleanUp()
         {
             ReleaseReader();
-            EndPaint(null);
+            EndPaint(null, null);
         }
 
         internal bool isValid
@@ -193,11 +192,6 @@ namespace gView.DataSources.Raster.File
             get { return _polygon; }
         }
 
-        public GraphicsEngine.Abstraction.IBitmap Bitmap
-        {
-            get { return _bitmap; }
-        }
-
         public double oX
         {
             get { return _geoCoord.X; }
@@ -240,7 +234,7 @@ namespace gView.DataSources.Raster.File
             }
         }
 
-        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        async public Task<IRasterPaintContext> BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
             IntPtr bufferData = (IntPtr)0;
             GraphicsEngine.BitmapPixelData bitmapData = null;
@@ -251,25 +245,27 @@ namespace gView.DataSources.Raster.File
             int iWidth = 0;
             int iHeight = 0;
 
+            GraphicsEngine.Abstraction.IBitmap bitmap = null;
+
             try
             {
                 if (_reader == (IntPtr)0)
                 {
                     if (!InitReader())
                     {
-                        return;
+                        return null;
                     }
                 }
 
                 if (!(_polygon is ITopologicalOperation) || _reader == (IntPtr)0)
                 {
-                    return;
+                    return null;
                 }
 
                 TFWFile tfw = this.GeoCoord as TFWFile;
                 if (tfw == null)
                 {
-                    return;
+                    return null;
                 }
 
                 IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display); //display.Envelope;
@@ -282,14 +278,14 @@ namespace gView.DataSources.Raster.File
                 ((ITopologicalOperation)_polygon).Clip(dispEnvelope, out clipped);
                 if (!(clipped is IPolygon))
                 {
-                    return;
+                    return null;
                 }
 
                 IPolygon cPolygon = (IPolygon)clipped;
 
                 if (cPolygon.RingCount == 0 || cPolygon[0].Area == 0D)
                 {
-                    return;
+                    return null;
                 }
 
                 // geclipptes Polygon transformieren -> Bild
@@ -300,7 +296,7 @@ namespace gView.DataSources.Raster.File
                 }
                 if (!tfw.ProjectInv(vecs))
                 {
-                    return;
+                    return null;
                 }
 
                 IEnvelope picEnv = vector2.IntegerEnvelope(vecs);
@@ -344,26 +340,23 @@ namespace gView.DataSources.Raster.File
                 bufferData = MrSidWrapper.Read(_reader, x, y, iWidth, iHeight, mag);
                 if (bufferData == (IntPtr)0)
                 {
-                    return;
+                    return null;
                 }
 
                 int totalWidth = MrSidWrapper.GetTotalCols(bufferData);
                 int totalHeight = MrSidWrapper.GetTotalRows(bufferData);
 
-                if (_bitmap != null)
-                {
-                    _bitmap.Dispose();
-                }
-
-                _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(totalWidth, totalHeight, GraphicsEngine.PixelFormat.Rgb24);
-                bitmapData = _bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.WriteOnly, GraphicsEngine.PixelFormat.Rgb24);
+                bitmap = GraphicsEngine.Current.Engine.CreateBitmap(totalWidth, totalHeight, GraphicsEngine.PixelFormat.Rgb24);
+                bitmapData = bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.WriteOnly, GraphicsEngine.PixelFormat.Rgb24);
                 
                 MrSidWrapper.ReadBandData(bufferData, bitmapData.Scan0, 3, (uint)bitmapData.Stride);
+
+                return new RasterPaintContext(bitmap);
             }
             catch (Exception ex)
             {
                 //string errMsg = ex.Message;
-                EndPaint(cancelTracker);
+                EndPaint(null, cancelTracker);
 
                 if (display is IServiceMap && ((IServiceMap)display).MapServer != null)
                 {
@@ -383,12 +376,14 @@ namespace gView.DataSources.Raster.File
                 {
                     throw ex;
                 }
+
+                return null;
             }
             finally
             {
                 if (bitmapData != null)
                 {
-                    _bitmap.UnlockBitmapPixelData(bitmapData);
+                    bitmap.UnlockBitmapPixelData(bitmapData);
                 }
 
                 MrSidWrapper.ReleaseBandData(bufferData);
@@ -396,13 +391,9 @@ namespace gView.DataSources.Raster.File
             }
         }
 
-        public void EndPaint(ICancelTracker cancelTracker)
+        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
         {
-            if (_bitmap != null)
-            {
-                _bitmap.Dispose();
-                _bitmap = null;
-            }
+            context?.Dispose();
         }
 
         #endregion

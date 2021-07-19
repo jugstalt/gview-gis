@@ -24,7 +24,6 @@ namespace gView.DataSources.GDAL
         private ISpatialReference _sRef = null;
         private IRasterDataset _dataset;
         private OSGeo_v1.GDAL.Dataset _gDS = null;
-        private GraphicsEngine.Abstraction.IBitmap _bitmap = null;
         private RasterType _type = RasterType.image;
         private double _min = 0, _max = 0;
         private double _nodata = 0;
@@ -223,11 +222,6 @@ namespace gView.DataSources.GDAL
             get { return _polygon; }
         }
 
-        public GraphicsEngine.Abstraction.IBitmap Bitmap
-        {
-            get { return _bitmap; }
-        }
-
         public double oX { get { return _tfw.X; } }
         public double oY { get { return _tfw.Y; } }
         public double dx1 { get { return _tfw.dx_X; } }
@@ -247,20 +241,20 @@ namespace gView.DataSources.GDAL
             }
         }
 
-        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        public Task<IRasterPaintContext> BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
-            EndPaint(cancelTracker);
+            EndPaint(null, cancelTracker);
             try
             {
                 if (!(_polygon is ITopologicalOperation))
                 {
-                    return;
+                    return Task.FromResult<IRasterPaintContext>(null);
                 }
 
                 TFWFile tfw = this.WorldFile as TFWFile;
                 if (tfw == null)
                 {
-                    return;
+                    return Task.FromResult<IRasterPaintContext>(null);
                 }
 
                 IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display); //display.Envelope;
@@ -273,7 +267,7 @@ namespace gView.DataSources.GDAL
                 ((ITopologicalOperation)_polygon).Clip(dispEnvelope, out clipped);
                 if (!(clipped is IPolygon))
                 {
-                    return;
+                    return Task.FromResult<IRasterPaintContext>(null);
                 }
 
                 IPolygon cPolygon = (IPolygon)clipped;
@@ -286,7 +280,7 @@ namespace gView.DataSources.GDAL
                 }
                 if (!tfw.ProjectInv(vecs))
                 {
-                    return;
+                    return Task.FromResult<IRasterPaintContext>(null);
                 }
 
                 IEnvelope picEnv = vector2.IntegerEnvelope(vecs);
@@ -329,29 +323,21 @@ namespace gView.DataSources.GDAL
                 switch (_type)
                 {
                     case RasterType.image:
-                        PaintImage(x, y, wWidth, wHeight, iWidth, iHeight, cancelTracker);
-                        break;
+                        return Task.FromResult<IRasterPaintContext>(PaintImage(x, y, wWidth, wHeight, iWidth, iHeight, cancelTracker));
                     case RasterType.wavelet:
-                        PaintWavelet(x, y, wWidth, wHeight, iWidth, iHeight, cancelTracker);
-                        break;
+                        return Task.FromResult<IRasterPaintContext>(PaintWavelet(x, y, wWidth, wHeight, iWidth, iHeight, cancelTracker));
                     case RasterType.grid:
                         if (_renderRawGridValues)
                         {
-                            PaintGrid(x, y, wWidth, wHeight, iWidth, iHeight);
+                            return Task.FromResult<IRasterPaintContext>(PaintGrid(x, y, wWidth, wHeight, iWidth, iHeight));
                         }
                         else
                         {
-                            PaintHillShade(x, y, wWidth, wHeight, iWidth, iHeight, mag, cancelTracker);
+                            return Task.FromResult<IRasterPaintContext>(PaintHillShade(x, y, wWidth, wHeight, iWidth, iHeight, mag, cancelTracker));
                         }
-
-                        break;
-
                 }
-            }
-            catch (Exception ex)
-            {
-                string errMsg = ex.Message;
-                EndPaint(cancelTracker);
+
+                return null;
             }
             finally
             {
@@ -359,30 +345,23 @@ namespace gView.DataSources.GDAL
             }
         }
 
-        public void EndPaint(ICancelTracker cancelTracker)
+        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
         {
-            if (_bitmap != null)
-            {
-                _bitmap.Dispose();
-                _bitmap = null;
-            }
+            context?.Dispose();
         }
 
         #endregion
 
-        private void PaintImage(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
+        private IRasterPaintContext PaintImage(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
         {
             if (CancelTracker.Canceled(cancelTracker) || _gDS == null)
             {
-                return;
+                return null;
             }
 
             int pixelSpace = 3;
-            _bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgb24);
-            //using (var c = _bitmap.CreateCanvas())
-            //    c.Clear(ArgbColor.White);
-
-            var bitmapData = _bitmap.LockBitmapPixelData(BitmapLockMode.WriteOnly, GraphicsEngine.PixelFormat.Rgb24);
+            var bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgb24);
+            var bitmapData = bitmap.LockBitmapPixelData(BitmapLockMode.WriteOnly, GraphicsEngine.PixelFormat.Rgb24);
 
             try
             {
@@ -433,8 +412,6 @@ namespace gView.DataSources.GDAL
                         band.ReadRaster(x, y, wWidth, wHeight,
                             new IntPtr(buf.ToInt64() + ch),
                             iWidth, iHeight, OSGeo_v1.GDAL.DataType.GDT_Byte, pixelSpace, stride);
-
-                        band.Dispose();
                     }
                 }
                 if (colors.Count > 0)
@@ -446,7 +423,7 @@ namespace gView.DataSources.GDAL
                         {
                             if (CancelTracker.Canceled(cancelTracker))
                             {
-                                return;
+                                return null;
                             }
 
                             for (int j = 0; j < bitmapData.Width; j++)
@@ -463,30 +440,40 @@ namespace gView.DataSources.GDAL
                         }
                     }
                 }
+
+                return new RasterPaintContext(bitmap);
             }
             catch (Exception ex)
             {
-                string msg = ex.Message;
+                if (bitmap != null && bitmapData != null)
+                {
+                    bitmap.UnlockBitmapPixelData(bitmapData);
+                    bitmapData = null;
+                    bitmap.Dispose();
+                    bitmap = null;
+                }
+
+                throw ex;
             }
             finally
             {
-                if (_bitmap != null)
+                if (bitmap != null && bitmapData != null)
                 {
-                    _bitmap.UnlockBitmapPixelData(bitmapData);
+                    bitmap.UnlockBitmapPixelData(bitmapData);
                 }
             }
         }
 
-        private void PaintWavelet(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
+        private IRasterPaintContext PaintWavelet(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
         {
             if (CancelTracker.Canceled(cancelTracker) || _gDS == null)
             {
-                return;
+                return null;
             }
 
             int pixelSpace = 4;
-            _bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
-            var bitmapData = _bitmap.LockBitmapPixelData(BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Rgba32);
+            var bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
+            var bitmapData = bitmap.LockBitmapPixelData(BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Rgba32);
 
             try
             {
@@ -514,25 +501,37 @@ namespace gView.DataSources.GDAL
                         band.ReadRaster(x, y, wWidth, wHeight,
                                 new IntPtr(buf.ToInt64() + ch),
                                 iWidth, iHeight, OSGeo_v1.GDAL.DataType.GDT_Byte, pixelSpace, stride);
-
-                        band.Dispose();
                     }
                 }
+
+                return new RasterPaintContext(bitmap);
+            }
+            catch(Exception ex)
+            {
+                if (bitmap != null && bitmapData != null)
+                {
+                    bitmap.UnlockBitmapPixelData(bitmapData);
+                    bitmapData = null;
+                    bitmap.Dispose();
+                    bitmap = null;
+                }
+
+                throw ex;
             }
             finally
             {
-                if (_bitmap != null)
+                if (bitmap != null && bitmapData != null)
                 {
-                    _bitmap.UnlockBitmapPixelData(bitmapData);
+                    bitmap.UnlockBitmapPixelData(bitmapData);
                 }
             }
         }
 
-        private void PaintGrid(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight)
+        private IRasterPaintContext PaintGrid(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight)
         {
             if (_gDS == null)
             {
-                return;
+                return null;
             }
 
             int pixelSpace = 4;
@@ -614,30 +613,36 @@ namespace gView.DataSources.GDAL
                     if (bitmap != null)
                     {
                         bitmap.UnlockBitmapPixelData(bitmapData);
+                        bitmapData = null;
                     }
 
-                    _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
-                    using (var canvas = _bitmap.CreateCanvas())
+                    var contextBitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
+                    using (var canvas = contextBitmap.CreateCanvas())
                     {
                         canvas.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
                     }
-                }
 
+                    return new RasterPaintContext(contextBitmap);
+                }
                 catch (Exception ex)
                 {
-                    string errMessage = ex.Message;
+                    throw ex;
                 }
                 finally
                 {
+                    if (bitmap != null && bitmapData != null)
+                    {
+                        bitmap.UnlockBitmapPixelData(bitmapData);
+                    }
                 }
             }
         }
 
-        private void PaintHillShade(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, double mag, ICancelTracker cancelTracker)
+        private IRasterPaintContext PaintHillShade(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, double mag, ICancelTracker cancelTracker)
         {
             if (CancelTracker.Canceled(cancelTracker) || _gDS == null)
             {
-                return;
+                return null;
             }
 
             int pixelSpace = 4;
@@ -681,7 +686,7 @@ namespace gView.DataSources.GDAL
                         {
                             if (CancelTracker.Canceled(cancelTracker))
                             {
-                                return;
+                                return null;
                             }
 
                             for (int j = 0; j < iWidth; j++)
@@ -734,20 +739,27 @@ namespace gView.DataSources.GDAL
                     if (bitmap != null)
                     {
                         bitmap.UnlockBitmapPixelData(bitmapData);
+                        bitmapData = null;
                     }
 
-                    _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
-                    using (var gr = _bitmap.CreateCanvas())
+                    var contextBitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
+                    using (var gr = contextBitmap.CreateCanvas())
                     {
                         gr.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
                     }
+
+                    return new RasterPaintContext(contextBitmap);
                 }
                 catch (Exception ex)
                 {
-                    string errMessage = ex.Message;
+                    throw ex;
                 }
                 finally
                 {
+                    if (bitmap != null && bitmapData != null)
+                    {
+                        bitmap.UnlockBitmapPixelData(bitmapData);
+                    }
                 }
             }
         }

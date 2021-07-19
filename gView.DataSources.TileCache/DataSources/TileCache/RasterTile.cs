@@ -21,7 +21,6 @@ namespace gView.DataSources.TileCache
         private double _resolution;
         private IPolygon _poly;
         private double _oX, _oY, _dx1, _dy2;
-        private IBitmap _bitmap;
         private static int index = 0;
 
         public RasterTile(Dataset dataset, Grid grid, int level, int row, int col, double resolution)
@@ -57,14 +56,6 @@ namespace gView.DataSources.TileCache
         public Framework.Geometry.IPolygon Polygon
         {
             get { return _poly; }
-        }
-
-        public IBitmap Bitmap
-        {
-            get
-            {
-                return _bitmap;
-            }
         }
 
         public double oX
@@ -109,23 +100,19 @@ namespace gView.DataSources.TileCache
             }
         }
 
-        async public Task BeginPaint(IDisplay display, ICancelTracker cancelTracker)
+        async public Task<IRasterPaintContext> BeginPaint(IDisplay display, ICancelTracker cancelTracker)
         {
             if (!cancelTracker.Continue)
             {
-                return;
+                return null;
             }
 
-            await GetImage();
+            return await GetImage();
         }
 
-        public void EndPaint(Framework.system.ICancelTracker cancelTracker)
+        public void EndPaint(IRasterPaintContext context, Framework.system.ICancelTracker cancelTracker)
         {
-            if (_bitmap != null)
-            {
-                _bitmap.Dispose();
-                _bitmap = null;
-            }
+            context?.Dispose();
         }
 
         #endregion
@@ -401,7 +388,7 @@ namespace gView.DataSources.TileCache
 
         #endregion
 
-        async private Task GetImage()
+        async private Task<IRasterPaintContext> GetImage()
         {
             FileInfo fi = null;
             if (LocalCachingSettings.UseLocalCaching)
@@ -414,8 +401,7 @@ namespace gView.DataSources.TileCache
                     if (fi.Exists)
                     {
                         // ToDo: Read Async
-                        _bitmap = Current.Engine.CreateBitmap(fn);
-                        return;
+                        new RasterPaintContext(Current.Engine.CreateBitmap(fn));
                     }
                 }
                 catch { }
@@ -447,29 +433,38 @@ namespace gView.DataSources.TileCache
                     var bytes = await responseMessage.Content.ReadAsByteArrayAsync();
                     using (var ms = new MemoryStream(bytes))
                     {
-                        _bitmap = Current.Engine.CreateBitmap(ms);
-
-                        if (fi != null)
+                        var bitmap = Current.Engine.CreateBitmap(ms);
+                        try
                         {
-                            fi.Refresh();
-                            if (!fi.Exists)
+                            if (fi != null)
                             {
-                                if (!fi.Directory.Exists)
+                                fi.Refresh();
+                                if (!fi.Exists)
                                 {
-                                    fi.Directory.Create();
-                                }
+                                    if (!fi.Directory.Exists)
+                                    {
+                                        fi.Directory.Create();
+                                    }
 
-                                ms.Position = 0;
-                                StreamWriter sw = new StreamWriter(fi.FullName);
-                                ms.WriteTo(sw.BaseStream);
-                                sw.Flush();
-                                sw.Close();
+                                    ms.Position = 0;
+                                    StreamWriter sw = new StreamWriter(fi.FullName);
+                                    ms.WriteTo(sw.BaseStream);
+                                    sw.Flush();
+                                    sw.Close();
+                                }
                             }
+
+                            return new RasterPaintContext(bitmap);
+                        }
+                        catch(Exception ex)
+                        {
+                            bitmap?.Dispose();
+                            throw ex;
                         }
                     }
                 }
             }
-            catch { }
+            catch { return null; }
         }
     }
 }

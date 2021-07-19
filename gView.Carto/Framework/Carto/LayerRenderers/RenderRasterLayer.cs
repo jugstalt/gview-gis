@@ -35,6 +35,7 @@ namespace gView.Framework.Carto.LayerRenderers
         async public Task Render()
         {
             GraphicsEngine.Abstraction.IBitmap _filteredBitmap = null;
+            IRasterPaintContext paintContext = null;
 
             try
             {
@@ -60,152 +61,155 @@ namespace gView.Framework.Carto.LayerRenderers
                 int max_x = Math.Min(iWidth = _map.iWidth, (int)Math.Max(minx, maxx) + 1);
                 int max_y = Math.Min(iHeight = _map.iHeight, (int)Math.Max(miny, maxy) + 1);
 
-                await _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker);
-                if (_filter != FilterImplementations.Default)
+                
+                using (paintContext = await _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker))
                 {
-                    _filteredBitmap = BaseFilter.ApplyFilter(_layer.RasterClass.Bitmap, _filter);
-                }
-
-                if (_layer.RasterClass.Bitmap == null && _filteredBitmap == null)
-                {
-                    return;
-                }
-
-                //System.Windows.Forms.MessageBox.Show("begin");
-
-                double W = (_map.Envelope.maxx - _map.Envelope.minx);
-                double H = (_map.Envelope.maxy - _map.Envelope.miny);
-                double MinX = _map.Envelope.minx;
-                double MinY = _map.Envelope.miny;
-
-                //_lastRasterLayer = _layer;
-
-                var canvas = _map.Display.Canvas;
-                if (canvas == null)
-                {
-                    return;
-                }
-
-                canvas.InterpolationMode = (GraphicsEngine.InterpolationMode)_interpolMethod;
-
-                // Transformation berechnen
-                GraphicsEngine.CanvasRectangleF rect;
-                switch (canvas.InterpolationMode)
-                {
-                    case GraphicsEngine.InterpolationMode.Bilinear:
-                    case GraphicsEngine.InterpolationMode.Bicubic:
-                        rect = new GraphicsEngine.CanvasRectangleF(0, 0, _layer.RasterClass.Bitmap.Width - 1f, _layer.RasterClass.Bitmap.Height - 1f);
-                        break;
-                    case GraphicsEngine.InterpolationMode.NearestNeighbor:
-                        rect = new GraphicsEngine.CanvasRectangleF(-0.5f, -0.5f, _layer.RasterClass.Bitmap.Width, _layer.RasterClass.Bitmap.Height);
-                        //rect = new GraphicsEngine.CanvasRectangleF(0f, 0f, _layer.RasterClass.Bitmap.Width, _layer.RasterClass.Bitmap.Height);
-                        break;
-                    default:
-                        rect = new GraphicsEngine.CanvasRectangleF(0, 0, _layer.RasterClass.Bitmap.Width, _layer.RasterClass.Bitmap.Height);
-                        break;
-                }
-
-                var points = new GraphicsEngine.CanvasPointF[3];
-
-                if (_layer.RasterClass is IRasterClass2)
-                {
-                    IPoint p1 = ((IRasterClass2)_layer.RasterClass).PicPoint1;
-                    IPoint p2 = ((IRasterClass2)_layer.RasterClass).PicPoint2;
-                    IPoint p3 = ((IRasterClass2)_layer.RasterClass).PicPoint3;
-                    if (_map.Display.GeometricTransformer != null)
+                    if (_filter != FilterImplementations.Default)
                     {
-                        p1 = (IPoint)_map.Display.GeometricTransformer.Transform2D(p1);
-                        p2 = (IPoint)_map.Display.GeometricTransformer.Transform2D(p2);
-                        p3 = (IPoint)_map.Display.GeometricTransformer.Transform2D(p3);
+                        _filteredBitmap = BaseFilter.ApplyFilter(paintContext.Bitmap, _filter);
                     }
 
-                    double X = p1.X, Y = p1.Y;
-                    _map.Display.World2Image(ref X, ref Y);
-                    points[0] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
-
-                    X = p2.X; Y = p2.Y;
-                    _map.Display.World2Image(ref X, ref Y);
-                    points[1] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
-
-                    X = p3.X; Y = p3.Y;
-                    _map.Display.World2Image(ref X, ref Y);
-                    points[2] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
-
-                    RoundGraphicPixelPoints(points);
-                }
-                else
-                {
-                    double X1 = _layer.RasterClass.oX - _layer.RasterClass.dx1 / 2.0 - _layer.RasterClass.dy1 / 2.0;
-                    double Y1 = _layer.RasterClass.oY - _layer.RasterClass.dx2 / 2.0 - _layer.RasterClass.dy2 / 2.0;
-                    double X = X1;
-                    double Y = Y1;
-                    if (_map.Display.GeometricTransformer != null)
+                    if (paintContext.Bitmap == null && _filteredBitmap == null)
                     {
-                        IPoint p = (IPoint)_map.Display.GeometricTransformer.Transform2D(new Point(X, Y));
-                        X = p.X; Y = p.Y;
+                        return;
                     }
 
-                    _map.Display.World2Image(ref X, ref Y);
-                    points[0] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
-                    X = X1 + (_layer.RasterClass.Bitmap.Width) * _layer.RasterClass.dx1;
-                    Y = Y1 + (_layer.RasterClass.Bitmap.Width) * _layer.RasterClass.dx2;
-                    if (_map.Display.GeometricTransformer != null)
+                    //System.Windows.Forms.MessageBox.Show("begin");
+
+                    double W = (_map.Envelope.maxx - _map.Envelope.minx);
+                    double H = (_map.Envelope.maxy - _map.Envelope.miny);
+                    double MinX = _map.Envelope.minx;
+                    double MinY = _map.Envelope.miny;
+
+                    //_lastRasterLayer = _layer;
+
+                    var canvas = _map.Display.Canvas;
+                    if (canvas == null)
                     {
-                        IPoint p = (IPoint)_map.Display.GeometricTransformer.Transform2D(new Point(X, Y));
-                        X = p.X; Y = p.Y;
+                        return;
                     }
 
-                    _map.Display.World2Image(ref X, ref Y);
-                    points[1] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
-                    X = X1 + (_layer.RasterClass.Bitmap.Height) * _layer.RasterClass.dy1;
-                    Y = Y1 + (_layer.RasterClass.Bitmap.Height) * _layer.RasterClass.dy2;
-                    if (_map.Display.GeometricTransformer != null)
+                    canvas.InterpolationMode = (GraphicsEngine.InterpolationMode)_interpolMethod;
+
+                    // Transformation berechnen
+                    GraphicsEngine.CanvasRectangleF rect;
+                    switch (canvas.InterpolationMode)
                     {
-                        IPoint p = (IPoint)_map.Display.GeometricTransformer.Transform2D(new Point(X, Y));
-                        X = p.X; Y = p.Y;
+                        case GraphicsEngine.InterpolationMode.Bilinear:
+                        case GraphicsEngine.InterpolationMode.Bicubic:
+                            rect = new GraphicsEngine.CanvasRectangleF(0, 0, paintContext.Bitmap.Width - 1f, paintContext.Bitmap.Height - 1f);
+                            break;
+                        case GraphicsEngine.InterpolationMode.NearestNeighbor:
+                            rect = new GraphicsEngine.CanvasRectangleF(-0.5f, -0.5f, paintContext.Bitmap.Width, paintContext.Bitmap.Height);
+                            //rect = new GraphicsEngine.CanvasRectangleF(0f, 0f, _layer.RasterClass.Bitmap.Width, _layer.RasterClass.Bitmap.Height);
+                            break;
+                        default:
+                            rect = new GraphicsEngine.CanvasRectangleF(0, 0, paintContext.Bitmap.Width, paintContext.Bitmap.Height);
+                            break;
                     }
 
-                    _map.Display.World2Image(ref X, ref Y);
-                    points[2] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
-                }
+                    var points = new GraphicsEngine.CanvasPointF[3];
 
-                if (_transColor.ToArgb() != System.Drawing.Color.Transparent.ToArgb())
-                {
-                    try
+                    if (_layer.RasterClass is IRasterClass2)
                     {
-                        // kann OutOfMemoryException auslösen...
-                        _layer.RasterClass.Bitmap.MakeTransparent(_transColor);
-                    }
-                    catch (Exception ex)
-                    {
-                        if (_map is IServiceMap && ((IServiceMap)_map).MapServer != null)
+                        IPoint p1 = ((IRasterClass2)_layer.RasterClass).PicPoint1;
+                        IPoint p2 = ((IRasterClass2)_layer.RasterClass).PicPoint2;
+                        IPoint p3 = ((IRasterClass2)_layer.RasterClass).PicPoint3;
+                        if (_map.Display.GeometricTransformer != null)
                         {
-                            await ((IServiceMap)_map).MapServer.LogAsync(
-                                ((IServiceMap)_map).Name,
-                                "RenderRasterLayerThread: " + ((_layer != null) ? _layer.Title : String.Empty),
-                                loggingMethod.error,
-                                ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
+                            p1 = (IPoint)_map.Display.GeometricTransformer.Transform2D(p1);
+                            p2 = (IPoint)_map.Display.GeometricTransformer.Transform2D(p2);
+                            p3 = (IPoint)_map.Display.GeometricTransformer.Transform2D(p3);
                         }
-                        if (_map != null)
+
+                        double X = p1.X, Y = p1.Y;
+                        _map.Display.World2Image(ref X, ref Y);
+                        points[0] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
+
+                        X = p2.X; Y = p2.Y;
+                        _map.Display.World2Image(ref X, ref Y);
+                        points[1] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
+
+                        X = p3.X; Y = p3.Y;
+                        _map.Display.World2Image(ref X, ref Y);
+                        points[2] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
+
+                        RoundGraphicPixelPoints(points);
+                    }
+                    else
+                    {
+                        double X1 = _layer.RasterClass.oX - _layer.RasterClass.dx1 / 2.0 - _layer.RasterClass.dy1 / 2.0;
+                        double Y1 = _layer.RasterClass.oY - _layer.RasterClass.dx2 / 2.0 - _layer.RasterClass.dy2 / 2.0;
+                        double X = X1;
+                        double Y = Y1;
+                        if (_map.Display.GeometricTransformer != null)
                         {
+                            IPoint p = (IPoint)_map.Display.GeometricTransformer.Transform2D(new Point(X, Y));
+                            X = p.X; Y = p.Y;
+                        }
+
+                        _map.Display.World2Image(ref X, ref Y);
+                        points[0] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
+                        X = X1 + (paintContext.Bitmap.Width) * _layer.RasterClass.dx1;
+                        Y = Y1 + (paintContext.Bitmap.Width) * _layer.RasterClass.dx2;
+                        if (_map.Display.GeometricTransformer != null)
+                        {
+                            IPoint p = (IPoint)_map.Display.GeometricTransformer.Transform2D(new Point(X, Y));
+                            X = p.X; Y = p.Y;
+                        }
+
+                        _map.Display.World2Image(ref X, ref Y);
+                        points[1] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
+                        X = X1 + (paintContext.Bitmap.Height) * _layer.RasterClass.dy1;
+                        Y = Y1 + (paintContext.Bitmap.Height) * _layer.RasterClass.dy2;
+                        if (_map.Display.GeometricTransformer != null)
+                        {
+                            IPoint p = (IPoint)_map.Display.GeometricTransformer.Transform2D(new Point(X, Y));
+                            X = p.X; Y = p.Y;
+                        }
+
+                        _map.Display.World2Image(ref X, ref Y);
+                        points[2] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
+                    }
+
+                    if (_transColor.ToArgb() != System.Drawing.Color.Transparent.ToArgb())
+                    {
+                        try
+                        {
+                            // kann OutOfMemoryException auslösen...
+                            paintContext.Bitmap.MakeTransparent(_transColor);
+                        }
+                        catch (Exception ex)
+                        {
+                            if (_map is IServiceMap && ((IServiceMap)_map).MapServer != null)
+                            {
+                                await ((IServiceMap)_map).MapServer.LogAsync(
+                                    ((IServiceMap)_map).Name,
+                                    "RenderRasterLayerThread: " + ((_layer != null) ? _layer.Title : String.Empty),
+                                    loggingMethod.error,
+                                    ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
+                            }
                             if (_map != null)
                             {
-                                _map.AddRequestException(new Exception("RenderRasterLayerThread: " + ((_layer != null) ? _layer.Title : String.Empty) + "\n" + ex.Message, ex));
+                                if (_map != null)
+                                {
+                                    _map.AddRequestException(new Exception("RenderRasterLayerThread: " + ((_layer != null) ? _layer.Title : String.Empty) + "\n" + ex.Message, ex));
+                                }
                             }
                         }
                     }
+
+                    //var comQual = gr.CompositingQuality;
+                    //gr.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+                    float opaque = 1.0f - _transparency;
+
+                    canvas.DrawBitmap(_filteredBitmap ?? paintContext.Bitmap,
+                                  points,
+                                  rect,
+                                  opacity: opaque);
+
+                    _map.FireRefreshMapView();
                 }
-
-                //var comQual = gr.CompositingQuality;
-                //gr.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
-                float opaque = 1.0f - _transparency;
-
-                canvas.DrawBitmap(_filteredBitmap ?? _layer.RasterClass.Bitmap,
-                              points,
-                              rect,
-                              opacity: opaque);
-
-                _map.FireRefreshMapView();
             }
             catch (Exception ex)
             {
@@ -226,7 +230,7 @@ namespace gView.Framework.Carto.LayerRenderers
             }
             finally
             {
-                _layer.RasterClass.EndPaint(_cancelTracker);
+                _layer.RasterClass.EndPaint(paintContext, _cancelTracker);
                 if (_filteredBitmap != null)
                 {
                     _filteredBitmap.Dispose();

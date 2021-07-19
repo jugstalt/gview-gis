@@ -1085,13 +1085,15 @@ namespace gView.Framework.Carto
 
         async virtual protected Task DrawRasterParentLayer(IParentRasterLayer rLayer, ICancelTracker cancelTracker, IRasterLayer rootLayer)
         {
+            IRasterPaintContext paintContext = null;
+
             if (rLayer is ILayer && ((ILayer)rLayer).Class is IRasterClass)
             {
-                await ((IRasterClass)((ILayer)rLayer).Class).BeginPaint(this.Display, cancelTracker);
+                paintContext = await ((IRasterClass)((ILayer)rLayer).Class).BeginPaint(this.Display, cancelTracker);
             }
             else if (rLayer is IRasterClass)
             {
-                await ((IRasterClass)rLayer).BeginPaint(this.Display, cancelTracker);
+                paintContext = await ((IRasterClass)rLayer).BeginPaint(this.Display, cancelTracker);
             }
             string filterClause = String.Empty;
             if (rootLayer is IRasterCatalogLayer)
@@ -1164,11 +1166,11 @@ namespace gView.Framework.Carto
             }
             if (rLayer is ILayer && ((ILayer)rLayer).Class is IRasterClass)
             {
-                ((IRasterClass)((ILayer)rLayer).Class).EndPaint(cancelTracker);
+                ((IRasterClass)((ILayer)rLayer).Class).EndPaint(paintContext, cancelTracker);
             }
             else if (rLayer is IRasterClass)
             {
-                ((IRasterClass)rLayer).EndPaint(cancelTracker);
+                ((IRasterClass)rLayer).EndPaint(paintContext, cancelTracker);
             }
         }
 

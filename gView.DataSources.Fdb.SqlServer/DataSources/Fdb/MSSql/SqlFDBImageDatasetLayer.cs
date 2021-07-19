@@ -148,24 +148,19 @@ namespace gView.DataSources.Fdb.MSSql
             }
         }
 
-        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        public Task<IRasterPaintContext> BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
-
+            return Task.FromResult<IRasterPaintContext>(new RasterPaintContext(null));
         }
 
-        public void EndPaint(ICancelTracker cancelTracker)
+        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
         {
-
+            context?.Dispose();
         }
 
         public ArgbColor GetPixel(double X, double Y)
         {
             return ArgbColor.Transparent;
-        }
-
-        public IBitmap Bitmap
-        {
-            get { return null; }
         }
 
         public double oX
@@ -1020,12 +1015,11 @@ namespace gView.DataSources.Fdb.MSSql
             get { return _polygon; }
         }
 
-        IBitmap _bitmap = null;
-        async public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        async public Task<IRasterPaintContext> BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
             if (_fdb == null)
             {
-                return;
+                return null;
             }
 
             try
@@ -1033,49 +1027,43 @@ namespace gView.DataSources.Fdb.MSSql
                 DataTable tab = await _fdb._conn.Select("IMAGE,X,Y,dx1,dx2,dy1,dy2", _dsname + "_IMAGE_DATA", "ID=" + _ID);
                 if (tab == null)
                 {
-                    return;
+                    return null;
                 }
 
                 if (tab.Rows.Count != 1)
                 {
-                    return;
+                    return null;
                 }
 
                 DataRow row = tab.Rows[0];
 
-                _bitmap = Current.Engine.CreateBitmap(new MemoryStream((byte[])row["IMG"]));
+                var bitmap = Current.Engine.CreateBitmap(new MemoryStream((byte[])row["IMG"]));
                 _X = (double)tab.Rows[0]["X"];
                 _Y = (double)tab.Rows[0]["Y"];
                 _dx_X = (double)tab.Rows[0]["dx1"];
                 _dx_Y = (double)tab.Rows[0]["dx2"];
                 _dy_X = (double)tab.Rows[0]["dy1"];
                 _dy_Y = (double)tab.Rows[0]["dy2"];
-                _iWidth = _bitmap.Width;
-                _iHeight = _bitmap.Height;
+                _iWidth = bitmap.Width;
+                _iHeight = bitmap.Height;
+
+                return new RasterPaintContext(bitmap);
             }
-            catch
+            catch(Exception ex)
             {
-                EndPaint(cancelTracker);
+                EndPaint(null, cancelTracker);
+                throw ex;
             }
         }
 
-        public void EndPaint(ICancelTracker cancelTracker)
+        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
         {
-            if (_bitmap != null)
-            {
-                _bitmap.Dispose();
-                _bitmap = null;
-            }
+            context?.Dispose();
         }
 
         public ArgbColor GetPixel(double X, double Y)
         {
             return ArgbColor.Transparent;
-        }
-
-        public IBitmap Bitmap
-        {
-            get { return _bitmap; }
         }
 
         public double oX { get { return _X; } }

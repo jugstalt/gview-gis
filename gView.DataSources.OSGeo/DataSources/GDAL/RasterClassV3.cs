@@ -23,8 +23,6 @@ namespace gView.DataSources.GDAL
         private IPolygon _polygon;
         private ISpatialReference _sRef = null;
         private IRasterDataset _dataset;
-        private OSGeo_v3.GDAL.Dataset _gDS = null;
-        private GraphicsEngine.Abstraction.IBitmap _bitmap = null;
         private RasterType _type = RasterType.image;
         private double _min = 0, _max = 0;
         private double _nodata = 0;
@@ -49,7 +47,7 @@ namespace gView.DataSources.GDAL
             {
                 FileInfo fi = new FileInfo(filename);
                 _title = fi.Name;
-                _filename = filename;
+                _filename = fi.FullName;
                 _dataset = dataset;
 
                 if (!OSGeo.Initializer.RegisterAll())
@@ -57,110 +55,102 @@ namespace gView.DataSources.GDAL
                     throw new Exception("Can't register GDAL");
                 }
 
-                _gDS = OSGeo_v3.GDAL.Gdal.Open(fi.FullName, 0);
-                if (_gDS == null && _gDS.RasterCount == 0)
+                using (var gdalDataset = OpenGdalDataset())
                 {
-                    _valid = false;
-                    return;
-                }
-
-                _iWidth = _gDS.RasterXSize;
-                _iHeight = _gDS.RasterYSize;
-
-                switch (fi.Extension.ToLower())
-                {
-                    case ".adf":
-                    case ".gsd":
-                        _type = RasterType.grid;
-                        break;
-                        //case ".jp2":
-                        //    _type = RasterType.wavelet;
-                        //    break;
-                }
-
-                using (OSGeo_v3.GDAL.Band band = _gDS.GetRasterBand(1))
-                {
-                    if (_gDS.RasterCount == 1)
+                    if (gdalDataset == null && gdalDataset.RasterCount == 0)
                     {
-                        if (band.DataType != OSGeo_v3.GDAL.DataType.GDT_Byte)
-                        {
+                        _valid = false;
+                        return;
+                    }
+
+                    _iWidth = gdalDataset.RasterXSize;
+                    _iHeight = gdalDataset.RasterYSize;
+
+                    switch (fi.Extension.ToLower())
+                    {
+                        case ".adf":
+                        case ".gsd":
                             _type = RasterType.grid;
+                            break;
+                            //case ".jp2":
+                            //    _type = RasterType.wavelet;
+                            //    break;
+                    }
+
+                    using (OSGeo_v3.GDAL.Band band = gdalDataset.GetRasterBand(1))
+                    {
+                        if (gdalDataset.RasterCount == 1)
+                        {
+                            if (band.DataType != OSGeo_v3.GDAL.DataType.GDT_Byte)
+                            {
+                                _type = RasterType.grid;
+                            }
                         }
+                        band.GetMinimum(out _min, out _hasNoDataVal);
+                        band.GetMaximum(out _max, out _hasNoDataVal);
+                        band.GetNoDataValue(out _nodata, out _hasNoDataVal);
                     }
-                    band.GetMinimum(out _min, out _hasNoDataVal);
-                    band.GetMaximum(out _max, out _hasNoDataVal);
-                    band.GetNoDataValue(out _nodata, out _hasNoDataVal);
-                }
-                OSGeo_v3.GDAL.Driver driver = _gDS.GetDriver();
 
-                double[] tfw = new double[6];
-                _gDS.GetGeoTransform(tfw);
-
-                string tfwFilename = fi.FullName.Substring(0, fi.FullName.Length - fi.Extension.Length);
-                switch (fi.Extension.ToLower())
-                {
-                    case ".jpg":
-                    case ".jpeg":
-                        tfwFilename += ".jgw";
-                        break;
-                    case ".jp2":
-                        tfwFilename += ".j2w";
-                        break;
-                    case ".tif":
-                    case ".tiff":
-                        tfwFilename += ".tfw";
-                        break;
-                    case ".ecw":
-                        tfwFilename += ".eww";
-                        break;
-                    default:
-                        break;
-                }
-
-                FileInfo tfwInfo = new FileInfo(tfwFilename);
-
-                _tfw = new TFWFile(tfw[0], tfw[3], tfw[1], tfw[2], tfw[4], tfw[5]);
-                if (tfwInfo.Exists)
-                {
-                    _tfw.Filename = tfwFilename;
-                }
-
-                if (_tfw.X == 0.0 && _tfw.Y == 0.0 &&
-                    Math.Abs(_tfw.dx_X) == 1.0 && _tfw.dx_Y == 0.0 &&
-                    Math.Abs(_tfw.dy_Y) == 1.0 && _tfw.dy_X == 0.0 && driver != null)
-                {
-                    if (tfwInfo.Exists)
+                    using (OSGeo_v3.GDAL.Driver driver = gdalDataset.GetDriver())
                     {
-                        _tfw = new TFWFile(tfwFilename);
-                    }
-                    else
-                    {
-                        _tfw.isValid = false;
-                    }
-                }
-                else
-                {
-                    // Bei dem Driver schein es nicht Pixelmitte sein, oder ist das bei GDAL generell
-                    //if (driver.ShortName.ToLower() == "jp2openjpeg")  
-                    {
-                        _tfw.X += (_tfw.dx_X / 2.0D + _tfw.dx_Y / 2.0D);
-                        _tfw.Y += (_tfw.dy_X / 2.0D + _tfw.dy_Y / 2.0D);
-                    }
-                }
 
+                        double[] tfw = new double[6];
+                        gdalDataset.GetGeoTransform(tfw);
 
-                FileInfo fiPrj = new FileInfo(fi.FullName.Substring(0, fi.FullName.Length - fi.Extension.Length) + ".prj");
-                if (fiPrj.Exists)
-                {
-                    StreamReader sr = new StreamReader(fiPrj.FullName);
-                    string wkt = sr.ReadToEnd();
-                    sr.Close();
+                        string tfwFilename = fi.FullName.Substring(0, fi.FullName.Length - fi.Extension.Length);
+                        switch (fi.Extension.ToLower())
+                        {
+                            case ".jpg":
+                            case ".jpeg":
+                                tfwFilename += ".jgw";
+                                break;
+                            case ".jp2":
+                                tfwFilename += ".j2w";
+                                break;
+                            case ".tif":
+                            case ".tiff":
+                                tfwFilename += ".tfw";
+                                break;
+                            case ".ecw":
+                                tfwFilename += ".eww";
+                                break;
+                            default:
+                                break;
+                        }
 
-                    _sRef = gView.Framework.Geometry.SpatialReference.FromWKT(wkt);
-                }
-                else
-                {
-                    fiPrj = new FileInfo(fi.FullName.Substring(0, fi.FullName.Length - fi.Extension.Length) + ".wkt");
+                        FileInfo tfwInfo = new FileInfo(tfwFilename);
+
+                        _tfw = new TFWFile(tfw[0], tfw[3], tfw[1], tfw[2], tfw[4], tfw[5]);
+                        if (tfwInfo.Exists)
+                        {
+                            _tfw.Filename = tfwFilename;
+                        }
+
+                        if (_tfw.X == 0.0 && _tfw.Y == 0.0 &&
+                            Math.Abs(_tfw.dx_X) == 1.0 && _tfw.dx_Y == 0.0 &&
+                            Math.Abs(_tfw.dy_Y) == 1.0 && _tfw.dy_X == 0.0 && driver != null)
+                        {
+                            if (tfwInfo.Exists)
+                            {
+                                _tfw = new TFWFile(tfwFilename);
+                            }
+                            else
+                            {
+                                _tfw.isValid = false;
+                            }
+                        }
+                        else
+                        {
+                            // Bei dem Driver schein es nicht Pixelmitte sein, oder ist das bei GDAL generell
+                            //if (driver.ShortName.ToLower() == "jp2openjpeg")  
+                            {
+                                _tfw.X += (_tfw.dx_X / 2.0D + _tfw.dx_Y / 2.0D);
+                                _tfw.Y += (_tfw.dy_X / 2.0D + _tfw.dy_Y / 2.0D);
+                            }
+                        }
+
+                    }
+                    FileInfo fiPrj = new FileInfo(fi.FullName.Substring(0, fi.FullName.Length - fi.Extension.Length) + ".prj");
                     if (fiPrj.Exists)
                     {
                         StreamReader sr = new StreamReader(fiPrj.FullName);
@@ -169,14 +159,26 @@ namespace gView.DataSources.GDAL
 
                         _sRef = gView.Framework.Geometry.SpatialReference.FromWKT(wkt);
                     }
-                }
-                if (polygon != null)
-                {
-                    _polygon = polygon;
-                }
-                else
-                {
-                    CalcPolygon();
+                    else
+                    {
+                        fiPrj = new FileInfo(fi.FullName.Substring(0, fi.FullName.Length - fi.Extension.Length) + ".wkt");
+                        if (fiPrj.Exists)
+                        {
+                            StreamReader sr = new StreamReader(fiPrj.FullName);
+                            string wkt = sr.ReadToEnd();
+                            sr.Close();
+
+                            _sRef = gView.Framework.Geometry.SpatialReference.FromWKT(wkt);
+                        }
+                    }
+                    if (polygon != null)
+                    {
+                        _polygon = polygon;
+                    }
+                    else
+                    {
+                        CalcPolygon();
+                    }
                 }
             }
             catch (Exception ex)
@@ -195,7 +197,7 @@ namespace gView.DataSources.GDAL
             }
         }
 
-        public bool isValid { get { return _valid; } }
+        public bool IsValid { get { return _valid; } }
         internal RasterType Type
         {
             get { return _type; }
@@ -223,11 +225,6 @@ namespace gView.DataSources.GDAL
             get { return _polygon; }
         }
 
-        public GraphicsEngine.Abstraction.IBitmap Bitmap
-        {
-            get { return _bitmap; }
-        }
-
         public double oX { get { return _tfw.X; } }
         public double oY { get { return _tfw.Y; } }
         public double dx1 { get { return _tfw.dx_X; } }
@@ -247,20 +244,19 @@ namespace gView.DataSources.GDAL
             }
         }
 
-        public Task BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        public Task<IRasterPaintContext> BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
-            EndPaint(cancelTracker);
             try
             {
                 if (!(_polygon is ITopologicalOperation))
                 {
-                    return Task.CompletedTask;
+                    return Task.FromResult<IRasterPaintContext>(null);
                 }
 
                 TFWFile tfw = this.WorldFile as TFWFile;
                 if (tfw == null)
                 {
-                    return Task.CompletedTask;
+                    return Task.FromResult<IRasterPaintContext>(null);
                 }
 
                 IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display); //display.Envelope;
@@ -273,7 +269,7 @@ namespace gView.DataSources.GDAL
                 ((ITopologicalOperation)_polygon).Clip(dispEnvelope, out clipped);
                 if (!(clipped is IPolygon))
                 {
-                    return Task.CompletedTask;
+                    return Task.FromResult<IRasterPaintContext>(null);
                 }
 
                 IPolygon cPolygon = (IPolygon)clipped;
@@ -286,7 +282,7 @@ namespace gView.DataSources.GDAL
                 }
                 if (!tfw.ProjectInv(vecs))
                 {
-                    return Task.CompletedTask;
+                    return Task.FromResult<IRasterPaintContext>(null);
                 }
 
                 IEnvelope picEnv = vector2.IntegerEnvelope(vecs);
@@ -329,210 +325,227 @@ namespace gView.DataSources.GDAL
                 switch (_type)
                 {
                     case RasterType.image:
-                        PaintImage(x, y, wWidth, wHeight, iWidth, iHeight, cancelTracker);
-                        break;
+                        return Task.FromResult<IRasterPaintContext>(PaintImage(x, y, wWidth, wHeight, iWidth, iHeight, cancelTracker));
                     case RasterType.wavelet:
-                        PaintWavelet(x, y, wWidth, wHeight, iWidth, iHeight, cancelTracker);
-                        break;
+                        return Task.FromResult<IRasterPaintContext>(PaintWavelet(x, y, wWidth, wHeight, iWidth, iHeight, cancelTracker));
                     case RasterType.grid:
                         if (_renderRawGridValues)
                         {
-                            PaintGrid(x, y, wWidth, wHeight, iWidth, iHeight);
+                            return Task.FromResult<IRasterPaintContext>(PaintGrid(x, y, wWidth, wHeight, iWidth, iHeight));
                         }
                         else
                         {
-                            PaintHillShade(x, y, wWidth, wHeight, iWidth, iHeight, mag, cancelTracker);
+                            return Task.FromResult<IRasterPaintContext>(PaintHillShade(x, y, wWidth, wHeight, iWidth, iHeight, mag, cancelTracker));
                         }
 
-                        break;
-
                 }
+
+                return null;
             }
             catch (Exception ex)
             {
-                EndPaint(cancelTracker);
+                EndPaint(null, cancelTracker);
                 throw ex;
             }
             finally
             {
                
             }
-
-            return Task.CompletedTask;
         }
 
-        public void EndPaint(ICancelTracker cancelTracker)
+        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
         {
-            if (_bitmap != null)
-            {
-                _bitmap.Dispose();
-                _bitmap = null;
-            }
+            context?.Dispose();
         }
 
         #endregion
 
-        private void PaintImage(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
+        private IRasterPaintContext PaintImage(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
         {
-            if (CancelTracker.Canceled(cancelTracker) || _gDS == null)
+            if (CancelTracker.Canceled(cancelTracker))
             {
-                return;
+                return null;
             }
 
             int pixelSpace = 3;
-            _bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgb24);
-            //using (var c = _bitmap.CreateCanvas())
-            //    c.Clear(ArgbColor.White);
-
-            var bitmapData = _bitmap.LockBitmapPixelData(BitmapLockMode.WriteOnly, GraphicsEngine.PixelFormat.Rgb24);
+            var bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgb24);
+            var bitmapData = bitmap.LockBitmapPixelData(BitmapLockMode.WriteOnly, GraphicsEngine.PixelFormat.Rgb24);
 
             try
             {
                 int stride = bitmapData.Stride;
                 IntPtr buf = bitmapData.Scan0;
 
-                List<ArgbColor> colors = new List<ArgbColor>();
-                for (int i = 1; i <= (_gDS.RasterCount > 3 ? 3 : _gDS.RasterCount); ++i)
+                using (var gdalDataset = OpenGdalDataset())
                 {
-                    using (OSGeo_v3.GDAL.Band band = _gDS.GetRasterBand(i))
-                    {
 
-                        int ch = 0;
-                        switch ((ColorInterp)band.GetRasterColorInterpretation())
+                    List<ArgbColor> colors = new List<ArgbColor>();
+                    for (int i = 1; i <= (gdalDataset.RasterCount > 3 ? 3 : gdalDataset.RasterCount); ++i)
+                    {
+                        using (OSGeo_v3.GDAL.Band band = gdalDataset.GetRasterBand(i))
                         {
-                            case ColorInterp.BlueBand:
-                                ch = 0;
-                                break;
-                            case ColorInterp.GreenBand:
-                                ch = 1;
-                                break;
-                            case ColorInterp.RedBand:
-                                ch = 2;
-                                break;
-                            case ColorInterp.GrayIndex:
-                                for (int iColor = 0; iColor < 256; iColor++)
-                                {
-                                    colors.Add(ArgbColor.FromArgb(255, iColor, iColor, iColor));
-                                }
-                                break;
-                            case ColorInterp.PaletteIndex:
-                                OSGeo_v3.GDAL.ColorTable colTable = band.GetRasterColorTable();
-                                if (colTable == null)
-                                {
+
+                            int ch = 0;
+                            switch ((ColorInterp)band.GetRasterColorInterpretation())
+                            {
+                                case ColorInterp.BlueBand:
+                                    ch = 0;
                                     break;
-                                }
+                                case ColorInterp.GreenBand:
+                                    ch = 1;
+                                    break;
+                                case ColorInterp.RedBand:
+                                    ch = 2;
+                                    break;
+                                case ColorInterp.GrayIndex:
+                                    for (int iColor = 0; iColor < 256; iColor++)
+                                    {
+                                        colors.Add(ArgbColor.FromArgb(255, iColor, iColor, iColor));
+                                    }
+                                    break;
+                                case ColorInterp.PaletteIndex:
+                                    OSGeo_v3.GDAL.ColorTable colTable = band.GetRasterColorTable();
+                                    if (colTable == null)
+                                    {
+                                        break;
+                                    }
 
-                                int colCount = colTable.GetCount();
-                                for (int iColor = 0; iColor < colCount; iColor++)
-                                {
-                                    OSGeo_v3.GDAL.ColorEntry colEntry = colTable.GetColorEntry(iColor);
-                                    colors.Add(ArgbColor.FromArgb(
-                                        colEntry.c4, colEntry.c1, colEntry.c2, colEntry.c3));
-                                }
+                                    int colCount = colTable.GetCount();
+                                    for (int iColor = 0; iColor < colCount; iColor++)
+                                    {
+                                        OSGeo_v3.GDAL.ColorEntry colEntry = colTable.GetColorEntry(iColor);
+                                        colors.Add(ArgbColor.FromArgb(
+                                            colEntry.c4, colEntry.c1, colEntry.c2, colEntry.c3));
+                                    }
 
-                                break;
-                        }
-                        band.ReadRaster(x, y, wWidth, wHeight,
-                            new IntPtr(buf.ToInt64() + ch),
-                            iWidth, iHeight, OSGeo_v3.GDAL.DataType.GDT_Byte, pixelSpace, stride);
-
-                        band.Dispose();
-                    }
-                }
-                if (colors.Count > 0)
-                {
-                    unsafe
-                    {
-                        byte* ptr = (byte*)(bitmapData.Scan0);
-                        for (int i = 0; i < bitmapData.Height; i++)
-                        {
-                            if (CancelTracker.Canceled(cancelTracker))
-                            {
-                                return;
+                                    break;
                             }
-
-                            for (int j = 0; j < bitmapData.Width; j++)
-                            {
-                                // write the logic implementation here
-                                byte c = ptr[0];
-                                ArgbColor col = colors[c];
-                                ptr[0] = col.B;
-                                ptr[1] = col.G;
-                                ptr[2] = col.R;
-                                ptr += pixelSpace;
-                            }
-                            ptr += bitmapData.Stride - bitmapData.Width * pixelSpace;
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                if (_bitmap != null)
-                {
-                    _bitmap.UnlockBitmapPixelData(bitmapData);
-                }
-            }
-        }
-
-        private void PaintWavelet(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
-        {
-            if (CancelTracker.Canceled(cancelTracker) || _gDS == null)
-            {
-                return;
-            }
-
-            int pixelSpace = 4;
-            _bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
-            var bitmapData = _bitmap.LockBitmapPixelData(BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Rgba32);
-
-            try
-            {
-                int stride = bitmapData.Stride;
-                IntPtr buf = bitmapData.Scan0;
-
-                for (int i = 1; i <= (_gDS.RasterCount > 3 ? 3 : _gDS.RasterCount); ++i)
-                {
-                    using (OSGeo_v3.GDAL.Band band = _gDS.GetRasterBand(i))
-                    {
-
-                        int ch = 0;
-                        switch ((ColorInterp)band.GetRasterColorInterpretation())
-                        {
-                            case ColorInterp.BlueBand:
-                                ch = 0;
-                                break;
-                            case ColorInterp.GreenBand:
-                                ch = 1;
-                                break;
-                            case ColorInterp.RedBand:
-                                ch = 2;
-                                break;
-                        }
-                        band.ReadRaster(x, y, wWidth, wHeight,
+                            band.ReadRaster(x, y, wWidth, wHeight,
                                 new IntPtr(buf.ToInt64() + ch),
                                 iWidth, iHeight, OSGeo_v3.GDAL.DataType.GDT_Byte, pixelSpace, stride);
 
-                        band.Dispose();
+                            band.Dispose();
+                        }
                     }
+                    if (colors.Count > 0)
+                    {
+                        unsafe
+                        {
+                            byte* ptr = (byte*)(bitmapData.Scan0);
+                            for (int i = 0; i < bitmapData.Height; i++)
+                            {
+                                if (CancelTracker.Canceled(cancelTracker))
+                                {
+                                    return null;
+                                }
+
+                                for (int j = 0; j < bitmapData.Width; j++)
+                                {
+                                    // write the logic implementation here
+                                    byte c = ptr[0];
+                                    ArgbColor col = colors[c];
+                                    ptr[0] = col.B;
+                                    ptr[1] = col.G;
+                                    ptr[2] = col.R;
+                                    ptr += pixelSpace;
+                                }
+                                ptr += bitmapData.Stride - bitmapData.Width * pixelSpace;
+                            }
+                        }
+                    }
+
+                    return new RasterPaintContext(bitmap);
                 }
+            }
+            catch (Exception ex)
+            {
+                if (bitmap != null && bitmapData != null)
+                {
+                    bitmap.UnlockBitmapPixelData(bitmapData);
+                    bitmapData = null;
+                    bitmap.Dispose();
+                    bitmap = null;
+                }
+
+                throw ex;
             }
             finally
             {
-                if (_bitmap != null)
+                if (bitmap != null && bitmapData != null)
                 {
-                    _bitmap.UnlockBitmapPixelData(bitmapData);
+                    bitmap.UnlockBitmapPixelData(bitmapData);
                 }
             }
         }
 
-        private void PaintGrid(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight)
+        private IRasterPaintContext PaintWavelet(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
         {
-            if (_gDS == null)
+            if (CancelTracker.Canceled(cancelTracker))
             {
-                return;
+                return null;
             }
 
+            int pixelSpace = 4;
+            var bitmap = Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
+            var bitmapData = bitmap.LockBitmapPixelData(BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Rgba32);
+
+            try
+            {
+                int stride = bitmapData.Stride;
+                IntPtr buf = bitmapData.Scan0;
+
+                using (var gdalDataset = OpenGdalDataset())
+                {
+                    for (int i = 1; i <= (gdalDataset.RasterCount > 3 ? 3 : gdalDataset.RasterCount); ++i)
+                    {
+                        using (OSGeo_v3.GDAL.Band band = gdalDataset.GetRasterBand(i))
+                        {
+
+                            int ch = 0;
+                            switch ((ColorInterp)band.GetRasterColorInterpretation())
+                            {
+                                case ColorInterp.BlueBand:
+                                    ch = 0;
+                                    break;
+                                case ColorInterp.GreenBand:
+                                    ch = 1;
+                                    break;
+                                case ColorInterp.RedBand:
+                                    ch = 2;
+                                    break;
+                            }
+                            band.ReadRaster(x, y, wWidth, wHeight,
+                                    new IntPtr(buf.ToInt64() + ch),
+                                    iWidth, iHeight, OSGeo_v3.GDAL.DataType.GDT_Byte, pixelSpace, stride);
+                        }
+                    }
+
+                    return new RasterPaintContext(bitmap);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (bitmap != null && bitmapData != null)
+                {
+                    bitmap.UnlockBitmapPixelData(bitmapData);
+                    bitmapData = null;
+                    bitmap.Dispose();
+                    bitmap = null;
+                }
+
+                throw ex;
+            }
+            finally
+            {
+                if (bitmap != null && bitmapData != null)
+                {
+                    bitmap.UnlockBitmapPixelData(bitmapData);
+                }
+            }
+        }
+
+        private IRasterPaintContext PaintGrid(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight)
+        {
             int pixelSpace = 4;
             using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight + 100, GraphicsEngine.PixelFormat.Rgba32))
             {
@@ -544,199 +557,224 @@ namespace gView.DataSources.GDAL
                     int stride = bitmapData.Stride;
                     IntPtr buf = bitmapData.Scan0;
 
-                    List<ArgbColor> colors = new List<ArgbColor>();
-                    using (band = _gDS.GetRasterBand(1))
+                    using (var gdalDataset = OpenGdalDataset())
                     {
-                        band.ReadRaster(x, y, wWidth, wHeight,
-                            buf,
-                            iWidth, iHeight, OSGeo_v3.GDAL.DataType.GDT_CFloat32, pixelSpace, stride);
-
-                        band.Dispose();
-                    }
-
-                    unsafe
-                    {
-                        byte* ptr = (byte*)(bitmapData.Scan0);
-                        float* v = (float*)(bitmapData.Scan0);
-
-                        var floatNodata = (float)_nodata;
-                        for (int i = 0; i < iHeight; i++)
+                        List<ArgbColor> colors = new List<ArgbColor>();
+                        using (band = gdalDataset.GetRasterBand(1))
                         {
-                            for (int j = 0; j < iWidth; j++)
-                            {
-                                if (_renderRawGridValues)
-                                {
-                                    if (_hasNoDataVal == 1 && *v == floatNodata)
-                                    {
-                                        ptr[0] = ptr[1] = ptr[2] = ptr[3] = 0;
-                                    }
-                                    else
-                                    {
-                                        var int24Bytes = new Int24(*v * 100f).GetBytes();
-                                        ptr[0] = int24Bytes[0];
-                                        ptr[1] = int24Bytes[1];
-                                        ptr[2] = int24Bytes[2];
-                                        ptr[3] = 255;
-                                    }
-                                    //byte* vb = (byte*)v;
-                                    //ptr[0] = *vb; vb++;
-                                    //ptr[1] = *vb; vb++;
-                                    //ptr[2] = *vb; vb++;
-                                    //ptr[3] = *vb;  
-                                }
-                                else
-                                {
-                                    if (_hasNoDataVal == 1 && *v == floatNodata)
-                                    {
-                                        ptr[0] = ptr[1] = ptr[2] = ptr[3] = 0;
-                                    }
-                                    else
-                                    {
-                                        double c = (*v - _min) / (_max - _min);
-                                        double a = _minColor.A + c * (_maxColor.A - _minColor.A);
-                                        double r = _minColor.R + c * (_maxColor.R - _minColor.R);
-                                        double g = _minColor.G + c * (_maxColor.G - _minColor.G);
-                                        double b = _minColor.B + c * (_maxColor.B - _minColor.B);
-                                        ptr[0] = (byte)b; ptr[1] = (byte)g; ptr[2] = (byte)r;
-                                        ptr[3] = (byte)a; // alpha
-                                    }
-                                }
-                                ptr += pixelSpace;
-                                v++;
-                            }
-                            ptr += bitmapData.Stride - bitmapData.Width * pixelSpace;
-                            v = (float*)ptr;
+                            band.ReadRaster(x, y, wWidth, wHeight,
+                                buf,
+                                iWidth, iHeight, OSGeo_v3.GDAL.DataType.GDT_CFloat32, pixelSpace, stride);
+
+                            band.Dispose();
                         }
-                    }
 
-                    if (bitmap != null)
-                    {
-                        bitmap.UnlockBitmapPixelData(bitmapData);
-                    }
+                        unsafe
+                        {
+                            byte* ptr = (byte*)(bitmapData.Scan0);
+                            float* v = (float*)(bitmapData.Scan0);
 
-                    _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
-                    using (var canvas = _bitmap.CreateCanvas())
-                    {
-                        canvas.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
+                            var floatNodata = (float)_nodata;
+                            for (int i = 0; i < iHeight; i++)
+                            {
+                                for (int j = 0; j < iWidth; j++)
+                                {
+                                    if (_renderRawGridValues)
+                                    {
+                                        if (_hasNoDataVal == 1 && *v == floatNodata)
+                                        {
+                                            ptr[0] = ptr[1] = ptr[2] = ptr[3] = 0;
+                                        }
+                                        else
+                                        {
+                                            var int24Bytes = new Int24(*v * 100f).GetBytes();
+                                            ptr[0] = int24Bytes[0];
+                                            ptr[1] = int24Bytes[1];
+                                            ptr[2] = int24Bytes[2];
+                                            ptr[3] = 255;
+                                        }
+                                        //byte* vb = (byte*)v;
+                                        //ptr[0] = *vb; vb++;
+                                        //ptr[1] = *vb; vb++;
+                                        //ptr[2] = *vb; vb++;
+                                        //ptr[3] = *vb;  
+                                    }
+                                    else
+                                    {
+                                        if (_hasNoDataVal == 1 && *v == floatNodata)
+                                        {
+                                            ptr[0] = ptr[1] = ptr[2] = ptr[3] = 0;
+                                        }
+                                        else
+                                        {
+                                            double c = (*v - _min) / (_max - _min);
+                                            double a = _minColor.A + c * (_maxColor.A - _minColor.A);
+                                            double r = _minColor.R + c * (_maxColor.R - _minColor.R);
+                                            double g = _minColor.G + c * (_maxColor.G - _minColor.G);
+                                            double b = _minColor.B + c * (_maxColor.B - _minColor.B);
+                                            ptr[0] = (byte)b; ptr[1] = (byte)g; ptr[2] = (byte)r;
+                                            ptr[3] = (byte)a; // alpha
+                                        }
+                                    }
+                                    ptr += pixelSpace;
+                                    v++;
+                                }
+                                ptr += bitmapData.Stride - bitmapData.Width * pixelSpace;
+                                v = (float*)ptr;
+                            }
+                        }
+
+                        if (bitmap != null)
+                        {
+                            bitmap.UnlockBitmapPixelData(bitmapData);
+                            bitmapData = null;
+                        }
+
+                        var contextBitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
+                        using (var canvas = contextBitmap.CreateCanvas())
+                        {
+                            canvas.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
+                        }
+
+                        return new RasterPaintContext(contextBitmap);
                     }
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
                 }
                 finally
                 {
+                    if (bitmap != null && bitmapData != null)
+                    {
+                        bitmap.UnlockBitmapPixelData(bitmapData);
+                    }
                 }
             }
         }
 
-        private void PaintHillShade(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, double mag, ICancelTracker cancelTracker)
+        private IRasterPaintContext PaintHillShade(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, double mag, ICancelTracker cancelTracker)
         {
-            if (CancelTracker.Canceled(cancelTracker) || _gDS == null)
+            if (CancelTracker.Canceled(cancelTracker))
             {
-                return;
+                return null;
             }
 
             int pixelSpace = 4;
             using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight + 100, GraphicsEngine.PixelFormat.Rgba32))
             {
                 var bitmapData = bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.ReadWrite, GraphicsEngine.PixelFormat.Rgba32);
-                OSGeo_v3.GDAL.Band band = null;
 
                 try
                 {
                     int stride = bitmapData.Stride;
                     IntPtr buf = bitmapData.Scan0;
 
-                    List<ArgbColor> colors = new List<ArgbColor>();
-                    using (band = _gDS.GetRasterBand(1))
+                    using (var gdalDataset = OpenGdalDataset())
                     {
-
-                        band.ReadRaster(x, y, wWidth, wHeight,
-                            buf,
-                            iWidth, iHeight, OSGeo_v3.GDAL.DataType.GDT_CFloat32, pixelSpace, stride);
-
-                        band.Dispose();
-                    }
-
-                    double cx = _tfw.cellX / mag;
-                    double cy = _tfw.cellY / mag;
-
-                    Vector3d sun = new Vector3d(_hillShade);
-                    sun.Normalize();
-                    int rowStride = stride / pixelSpace;
-
-                    ArgbColor col = ArgbColor.White;
-                    unsafe
-                    {
-                        byte* ptr = (byte*)(bitmapData.Scan0);
-                        float* v = (float*)(bitmapData.Scan0);
-
-                        float floatNodata = (float)_nodata;
-
-                        for (int i = 0; i < iHeight; i++)
+                        List<ArgbColor> colors = new List<ArgbColor>();
+                        using (var band = gdalDataset.GetRasterBand(1))
                         {
-                            if (CancelTracker.Canceled(cancelTracker))
-                            {
-                                return;
-                            }
+                            band.ReadRaster(x, y, wWidth, wHeight,
+                                buf,
+                                iWidth, iHeight, OSGeo_v3.GDAL.DataType.GDT_CFloat32, pixelSpace, stride);
 
-                            for (int j = 0; j < iWidth; j++)
+                        }
+
+                        double cx = _tfw.cellX / mag;
+                        double cy = _tfw.cellY / mag;
+
+                        Vector3d sun = new Vector3d(_hillShade);
+                        sun.Normalize();
+                        int rowStride = stride / pixelSpace;
+
+                        ArgbColor col = ArgbColor.White;
+                        unsafe
+                        {
+                            byte* ptr = (byte*)(bitmapData.Scan0);
+                            float* v = (float*)(bitmapData.Scan0);
+
+                            float floatNodata = (float)_nodata;
+
+                            for (int i = 0; i < iHeight; i++)
                             {
-                                if ((_hasNoDataVal == 1 && *v == floatNodata) ||
-                                    (_useIgnoreValue && *v == _ignoreValue))
+                                if (CancelTracker.Canceled(cancelTracker))
                                 {
-                                    ptr[0] = ptr[1] = ptr[2] = ptr[3] = 0;
+                                    return null;
                                 }
-                                else
-                                {
-                                    double c = *v;
 
-                                    col = GridColorClass.FindColor(c, _colorClasses);
-                                    if (!_useHillShade)
+                                for (int j = 0; j < iWidth; j++)
+                                {
+                                    if ((_hasNoDataVal == 1 && *v == floatNodata) ||
+                                        (_useIgnoreValue && *v == _ignoreValue))
                                     {
-                                        ptr[0] = col.B; ptr[1] = col.G; ptr[2] = col.R;
-                                        ptr[3] = col.A; // alpha
+                                        ptr[0] = ptr[1] = ptr[2] = ptr[3] = 0;
                                     }
                                     else
                                     {
-                                        double c1 = (j < iWidth - 1) ? (*(v + 1)) : c;
-                                        double c2 = (i < iHeight - 1) ? (*(v + rowStride)) : c;
-                                        c1 = ((_hasNoDataVal != 0 && c1 == floatNodata) ||
-                                              (_useIgnoreValue && c1 == _ignoreValue)) ? c : c1;
-                                        c2 = ((_hasNoDataVal != 0 && c2 == floatNodata) ||
-                                              (_useIgnoreValue && c2 == _ignoreValue)) ? c : c2;
+                                        double c = *v;
 
-                                        Vector3d v1 = new Vector3d(cx, 0.0, c1 - c); v1.Normalize();
-                                        Vector3d v2 = new Vector3d(0.0, -cy, c2 - c); v2.Normalize();
-                                        Vector3d vs = v2 % v1; vs.Normalize();
-                                        double h = Math.Min(Math.Max(0.0, sun * vs), 1.0);
-                                        //double h = Math.Abs(sun * vs);
+                                        col = GridColorClass.FindColor(c, _colorClasses);
+                                        if (!_useHillShade)
+                                        {
+                                            ptr[0] = col.B; ptr[1] = col.G; ptr[2] = col.R;
+                                            ptr[3] = col.A; // alpha
+                                        }
+                                        else
+                                        {
+                                            double c1 = (j < iWidth - 1) ? (*(v + 1)) : c;
+                                            double c2 = (i < iHeight - 1) ? (*(v + rowStride)) : c;
+                                            c1 = ((_hasNoDataVal != 0 && c1 == floatNodata) ||
+                                                  (_useIgnoreValue && c1 == _ignoreValue)) ? c : c1;
+                                            c2 = ((_hasNoDataVal != 0 && c2 == floatNodata) ||
+                                                  (_useIgnoreValue && c2 == _ignoreValue)) ? c : c2;
 
-                                        double a = col.A;
-                                        double r = col.R * h;
-                                        double g = col.G * h;
-                                        double b = col.B * h;
-                                        ptr[0] = (byte)b; ptr[1] = (byte)g; ptr[2] = (byte)r;
-                                        ptr[3] = (byte)a; // alpha
+                                            Vector3d v1 = new Vector3d(cx, 0.0, c1 - c); v1.Normalize();
+                                            Vector3d v2 = new Vector3d(0.0, -cy, c2 - c); v2.Normalize();
+                                            Vector3d vs = v2 % v1; vs.Normalize();
+                                            double h = Math.Min(Math.Max(0.0, sun * vs), 1.0);
+                                            //double h = Math.Abs(sun * vs);
+
+                                            double a = col.A;
+                                            double r = col.R * h;
+                                            double g = col.G * h;
+                                            double b = col.B * h;
+                                            ptr[0] = (byte)b; ptr[1] = (byte)g; ptr[2] = (byte)r;
+                                            ptr[3] = (byte)a; // alpha
+                                        }
                                     }
+                                    ptr += pixelSpace;
+                                    v++;
                                 }
-                                ptr += pixelSpace;
-                                v++;
+                                ptr += bitmapData.Stride - (bitmapData.Width) * pixelSpace;
+                                v = (float*)ptr;
                             }
-                            ptr += bitmapData.Stride - (bitmapData.Width) * pixelSpace;
-                            v = (float*)ptr;
                         }
-                    }
-                    if (bitmap != null)
-                    {
-                        bitmap.UnlockBitmapPixelData(bitmapData);
-                    }
+                        if (bitmap != null)
+                        {
+                            bitmap.UnlockBitmapPixelData(bitmapData);
+                            bitmapData = null;
+                        }
 
-                    _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
-                    using (var gr = _bitmap.CreateCanvas())
-                    {
-                        gr.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
+                        var contextBitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
+                        using (var gr = contextBitmap.CreateCanvas())
+                        {
+                            gr.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
+                        }
+
+                        return new RasterPaintContext(contextBitmap);
                     }
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
                 }
                 finally
                 {
+                    if (bitmap != null && bitmapData != null)
+                    {
+                        bitmap.UnlockBitmapPixelData(bitmapData);
+                    }
                 }
             }
         }
@@ -858,7 +896,10 @@ namespace gView.DataSources.GDAL
         {
             if (_gridQueryBand == null)
             {
-                _gridQueryBand = _gDS.GetRasterBand(1);
+                using (var gdalDataset = OpenGdalDataset())
+                {
+                    _gridQueryBand = gdalDataset.GetRasterBand(1);
+                }
             }
         }
 
@@ -930,87 +971,90 @@ namespace gView.DataSources.GDAL
 
         private ICursor QueryImage(int x, int y)
         {
-            unsafe
+            using (var gdalDataset = OpenGdalDataset())
             {
-                int bandCount = _gDS.RasterCount;
-                string[] tags = new string[bandCount + 2];
-                object[] values = new object[bandCount + 2];
-                List<ArgbColor> colors = new List<ArgbColor>();
-
-                for (int i = 1; i <= bandCount; ++i)
+                unsafe
                 {
-                    OSGeo_v3.GDAL.Band band = _gDS.GetRasterBand(i);
+                    int bandCount = gdalDataset.RasterCount;
+                    string[] tags = new string[bandCount + 2];
+                    object[] values = new object[bandCount + 2];
+                    List<ArgbColor> colors = new List<ArgbColor>();
 
-                    string bandName = "";
-                    switch ((ColorInterp)band.GetRasterColorInterpretation())
+                    for (int i = 1; i <= bandCount; ++i)
                     {
-                        case ColorInterp.BlueBand:
-                            bandName = "(blue)";
-                            break;
-                        case ColorInterp.GreenBand:
-                            bandName = "(green)";
-                            break;
-                        case ColorInterp.RedBand:
-                            bandName = "(red)";
-                            break;
-                        case ColorInterp.GrayIndex:
-                            for (int iColor = 0; iColor < 256; iColor++)
-                            {
-                                colors.Add(ArgbColor.FromArgb(255, iColor, iColor, iColor));
-                            }
-                            break;
-                        case ColorInterp.PaletteIndex:
-                            tags = new string[tags.Length + 4];
-                            values = new object[values.Length + 4];
+                        OSGeo_v3.GDAL.Band band = gdalDataset.GetRasterBand(i);
 
-                            OSGeo_v3.GDAL.ColorTable colTable = band.GetRasterColorTable();
-                            if (colTable == null)
-                            {
+                        string bandName = "";
+                        switch ((ColorInterp)band.GetRasterColorInterpretation())
+                        {
+                            case ColorInterp.BlueBand:
+                                bandName = "(blue)";
                                 break;
-                            }
+                            case ColorInterp.GreenBand:
+                                bandName = "(green)";
+                                break;
+                            case ColorInterp.RedBand:
+                                bandName = "(red)";
+                                break;
+                            case ColorInterp.GrayIndex:
+                                for (int iColor = 0; iColor < 256; iColor++)
+                                {
+                                    colors.Add(ArgbColor.FromArgb(255, iColor, iColor, iColor));
+                                }
+                                break;
+                            case ColorInterp.PaletteIndex:
+                                tags = new string[tags.Length + 4];
+                                values = new object[values.Length + 4];
 
-                            int colCount = colTable.GetCount();
-                            for (int iColor = 0; iColor < colCount; iColor++)
-                            {
-                                OSGeo_v3.GDAL.ColorEntry colEntry = colTable.GetColorEntry(iColor);
-                                colors.Add(ArgbColor.FromArgb(
-                                    colEntry.c4, colEntry.c1, colEntry.c2, colEntry.c3));
-                            }
+                                OSGeo_v3.GDAL.ColorTable colTable = band.GetRasterColorTable();
+                                if (colTable == null)
+                                {
+                                    break;
+                                }
 
-                            break;
+                                int colCount = colTable.GetCount();
+                                for (int iColor = 0; iColor < colCount; iColor++)
+                                {
+                                    OSGeo_v3.GDAL.ColorEntry colEntry = colTable.GetColorEntry(iColor);
+                                    colors.Add(ArgbColor.FromArgb(
+                                        colEntry.c4, colEntry.c1, colEntry.c2, colEntry.c3));
+                                }
+
+                                break;
+                        }
+
+                        int c = 0;
+
+                        int* buf = &c;
+
+                        band.ReadRaster(x, y, 1, 1,
+                            (IntPtr)buf,
+                            1, 1, OSGeo_v3.GDAL.DataType.GDT_Int32, 4, 0);
+
+                        band.Dispose();
+
+                        tags[i + 1] = "Band " + i.ToString() + " " + bandName;
+                        values[i + 1] = c;
+
+                        if (colors.Count > 0 && c >= 0 && c < colors.Count)
+                        {
+                            ArgbColor col = colors[c];
+                            tags[i + 2] = "Alpha";
+                            values[i + 2] = col.A;
+                            tags[i + 3] = "Red";
+                            values[i + 3] = col.R;
+                            tags[i + 4] = "Green";
+                            values[i + 4] = col.G;
+                            tags[i + 5] = "Blue";
+                            values[i + 5] = col.B;
+                        }
                     }
 
-                    int c = 0;
+                    tags[0] = "ImageX"; values[0] = x;
+                    tags[1] = "ImageY"; values[1] = y;
 
-                    int* buf = &c;
-
-                    band.ReadRaster(x, y, 1, 1,
-                        (IntPtr)buf,
-                        1, 1, OSGeo_v3.GDAL.DataType.GDT_Int32, 4, 0);
-
-                    band.Dispose();
-
-                    tags[i + 1] = "Band " + i.ToString() + " " + bandName;
-                    values[i + 1] = c;
-
-                    if (colors.Count > 0 && c >= 0 && c < colors.Count)
-                    {
-                        ArgbColor col = colors[c];
-                        tags[i + 2] = "Alpha";
-                        values[i + 2] = col.A;
-                        tags[i + 3] = "Red";
-                        values[i + 3] = col.R;
-                        tags[i + 4] = "Green";
-                        values[i + 4] = col.G;
-                        tags[i + 5] = "Blue";
-                        values[i + 5] = col.B;
-                    }
+                    return new QueryCursor(tags, values);
                 }
-
-                tags[0] = "ImageX"; values[0] = x;
-                tags[1] = "ImageY"; values[1] = y;
-
-                return new QueryCursor(tags, values);
             }
         }
 
@@ -1018,30 +1062,33 @@ namespace gView.DataSources.GDAL
         {
             try
             {
-                unsafe
+                using (var gdalDataset = OpenGdalDataset())
                 {
-                    var floatNodata = (float)_nodata;
-
-                    fixed (float* buf = new float[2])
+                    unsafe
                     {
-                        OSGeo_v3.GDAL.Band band = _gDS.GetRasterBand(1);
+                        var floatNodata = (float)_nodata;
 
-                        band.ReadRaster(x, y, 1, 1,
-                            (IntPtr)buf,
-                            1, 1, OSGeo_v3.GDAL.DataType.GDT_CFloat32, 4, 0);
-
-                        if ((_hasNoDataVal != 0 && buf[0] == floatNodata) ||
-                            (_useIgnoreValue && buf[0] == _ignoreValue))
+                        fixed (float* buf = new float[2])
                         {
-                            return null;
+                            OSGeo_v3.GDAL.Band band = gdalDataset.GetRasterBand(1);
+
+                            band.ReadRaster(x, y, 1, 1,
+                                (IntPtr)buf,
+                                1, 1, OSGeo_v3.GDAL.DataType.GDT_CFloat32, 4, 0);
+
+                            if ((_hasNoDataVal != 0 && buf[0] == floatNodata) ||
+                                (_useIgnoreValue && buf[0] == _ignoreValue))
+                            {
+                                return null;
+                            }
+
+                            string[] tags = { "ImageX", "ImageY", "band1" };
+                            object[] values = { x, y, buf[0] };
+
+                            band.Dispose();
+
+                            return new QueryCursor(tags, values);
                         }
-
-                        string[] tags = { "ImageX", "ImageY", "band1" };
-                        object[] values = { x, y, buf[0] };
-
-                        band.Dispose();
-
-                        return new QueryCursor(tags, values);
                     }
                 }
             }
@@ -1291,11 +1338,15 @@ namespace gView.DataSources.GDAL
         public void Dispose()
         {
             GC.SuppressFinalize(this);
-            if (_gDS != null)
-            {
-                _gDS.Dispose();
-                _gDS = null;
-            }
+        }
+
+        #endregion
+
+        #region Helper
+
+        private OSGeo_v3.GDAL.Dataset OpenGdalDataset()
+        {
+            return OSGeo_v3.GDAL.Gdal.Open(_filename, 0);
         }
 
         #endregion
