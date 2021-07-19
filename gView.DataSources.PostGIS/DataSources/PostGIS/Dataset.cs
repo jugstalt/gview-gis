@@ -351,7 +351,7 @@ namespace gView.DataSources.PostGIS
             return @"SELECT a.attname
 FROM pg_index i
 JOIN pg_attribute a ON a.attrelid=i.indrelid AND a.attnum=ANY(i.indkey)
-WHERE i.indrelid='" + schema + "." + tableName + @"'::regclass AND i.indisprimary AND format_type(a.atttypid, a.atttypmod)='integer'";
+WHERE i.indrelid='" + schema + "." + tableName + @"'::regclass AND i.indisprimary AND (format_type(a.atttypid, a.atttypmod)='integer' OR format_type(a.atttypid, a.atttypmod)='bigint')";
         }
     }
 }

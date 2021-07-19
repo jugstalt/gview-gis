@@ -71,7 +71,7 @@ namespace gView.DataSources.GDAL.UI
         {
             if (_class != null)
             {
-                _class.EndPaint(null);
+                _class.EndPaint(null, null);
                 _class = null;
             }
         }
@@ -92,7 +92,7 @@ namespace gView.DataSources.GDAL.UI
                         {
                             if (!((RasterClassV1)_class).isValid)
                             {
-                                _class.EndPaint(null);
+                                _class.EndPaint(null, null);
                                 _class = null;
                             }
                         }
