@@ -149,7 +149,7 @@ namespace gView.Framework.Carto
                         }
 
                         _canvas = _bitmap.CreateCanvas();
-                        this.dpi = 96f; // _canvas.DpiX;
+                        //this.dpi = /*96f*/ /* _canvas.DpiX*/ GraphicsEngine.Current.Engine.ScreenDpi;
 
                         // NewBitmap immer aufrufen, da sonst neuer DataView nix mitbekommt
                         if (NewBitmap != null && cancelTracker.Continue)

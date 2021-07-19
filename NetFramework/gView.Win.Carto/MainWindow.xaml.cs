@@ -45,10 +45,23 @@ namespace gView.Win.Carto
 
                 using (var g = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
                 {
-                    Engines.RegisterGraphcisEngine(new GraphicsEngine.GdiPlus.GdiGraphicsEngine(g.DpiX));
-                    Engines.RegisterGraphcisEngine(GraphicsEngine.Current.Engine = new GraphicsEngine.Skia.SkiaGraphicsEngine(g.DpiX));
+                    float displayDpi = g.DpiX;
+
+                    Engines.RegisterGraphcisEngine(new GraphicsEngine.GdiPlus.GdiGraphicsEngine(displayDpi));
+                    Engines.RegisterGraphcisEngine(GraphicsEngine.Current.Engine = new GraphicsEngine.Skia.SkiaGraphicsEngine(displayDpi));
 
                     GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.GdiPlus.GdiBitmapEncoding();
+
+                    if (System.Windows.Forms.SystemInformation.TerminalServerSession)
+                    {
+                        // Method don't work on RemoteSessions
+                        SystemVariables.SystemFontsScaleFactor = 1f;
+                    }
+                    else
+                    {
+                        var systemFontScaleFactor = (float)System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width / (float)SystemParameters.PrimaryScreenWidth;
+                        SystemVariables.SystemFontsScaleFactor = systemFontScaleFactor;
+                    }
                 }
 
                 #region Create Application

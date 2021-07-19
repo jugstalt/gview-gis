@@ -102,6 +102,8 @@ namespace gView.Framework.UI.Dialogs
             txtDescription.Text = _map.GetLayerDescription(Map.MapDescriptionId);
             txtCopyright.Text = _map.GetLayerCopyrightText(Map.MapCopyrightTextId);
 
+            numFontScaleFactor.Value = (int)SystemVariables.SystemFontsScaleFactor * 100;
+
             #region Graphics Engine
 
             foreach (var engineName in Engines.RegisteredGraphicsEngineNames())
@@ -111,6 +113,16 @@ namespace gView.Framework.UI.Dialogs
             cmbGraphicsEngine.SelectedItem = GraphicsEngine.Current.Engine.EngineName;
 
             #endregion Graphics Engine
+
+            #region Current Display Values
+
+            txtCurrentBBox.Text = _display.Envelope.ToBBoxString();
+
+            int iWidth = (int)((float)_display.iWidth * 96f / (float)_display.dpi);
+            int iHeight = (int)((float)_display.iHeight * 96f / (float)_display.dpi);
+            txtCurrentSize.Text = $"{ iWidth },{ iHeight }";
+
+            #endregion
 
             BuildResourcesList();
         }
@@ -124,6 +136,8 @@ namespace gView.Framework.UI.Dialogs
 
             try
             {
+                bool refresh = false;
+
                 _map.Name = txtName.Text;
                 _display.refScale = Convert.ToDouble(numRefScale.Value);
 
@@ -164,6 +178,14 @@ namespace gView.Framework.UI.Dialogs
                 _map.SetLayerDescription(Map.MapDescriptionId, txtDescription.Text);
                 _map.SetLayerCopyrightText(Map.MapCopyrightTextId, txtCopyright.Text);
 
+                if (SystemVariables.SystemFontsScaleFactor != (float)numFontScaleFactor.Value / 100f)
+                {
+                    SystemVariables.SystemFontsScaleFactor = (float)numFontScaleFactor.Value / 100f;
+                    _display.Screen?.RefreshSettings();
+
+                    refresh = true;
+                }
+
                 #region Graphics Engine
 
                 if (cmbGraphicsEngine.SelectedItem.ToString() != GraphicsEngine.Current.Engine.EngineName)
@@ -174,15 +196,20 @@ namespace gView.Framework.UI.Dialogs
                         GraphicsEngine.Current.Engine = engine;
                         RefreshFeatureRendererSymbolsGraphcisEngine();
 
-                        if (_app != null)
-                        {
-                            _app.RefreshTOC();
-                            _app.RefreshActiveMap(DrawPhase.All);
-                        }
+                        refresh = true;
                     }
                 }
 
                 #endregion Graphics Engine
+
+                if(refresh)
+                {
+                    if (_app != null)
+                    {
+                        _app.RefreshTOC();
+                        _app.RefreshActiveMap(DrawPhase.All);
+                    }
+                }
             }
             catch (Exception ex)
             {

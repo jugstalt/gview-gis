@@ -49,6 +49,8 @@ namespace gView.Framework.Carto
 
             _screen = new DisplayScreen();
             _screen.RefreshSettings();
+
+            this.dpi= GraphicsEngine.Current.Engine.ScreenDpi;
         }
 
         internal Display(IMap map, bool createLabelEngine)
@@ -712,7 +714,7 @@ namespace gView.Framework.Carto
 
             public void RefreshSettings(bool forceReloadAll = true)
             {
-                _fac = SystemVariables.PrimaryScreenDPI(forceReloadAll) / 96f;
+                _fac = SystemVariables.SystemFontsScaleFactor; //SystemVariables.PrimaryScreenDPI(forceReloadAll) / 96f;
             }
 
             #endregion

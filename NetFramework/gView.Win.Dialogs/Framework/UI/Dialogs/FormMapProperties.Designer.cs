@@ -42,7 +42,16 @@ namespace gView.Framework.UI.Dialogs
             this.panel2 = new System.Windows.Forms.Panel();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabMap = new System.Windows.Forms.TabPage();
+            this.gbCurrent = new System.Windows.Forms.GroupBox();
+            this.txtCurrentSize = new System.Windows.Forms.TextBox();
+            this.label14 = new System.Windows.Forms.Label();
+            this.label13 = new System.Windows.Forms.Label();
+            this.txtCurrentBBox = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.label16 = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
+            this.numFontScaleFactor = new System.Windows.Forms.NumericUpDown();
             this.gpGraphicsEngine = new System.Windows.Forms.GroupBox();
             this.cmbGraphicsEngine = new System.Windows.Forms.ComboBox();
             this.panel4 = new System.Windows.Forms.Panel();
@@ -86,7 +95,10 @@ namespace gView.Framework.UI.Dialogs
             this.panel2.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabMap.SuspendLayout();
+            this.gbCurrent.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            this.groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numFontScaleFactor)).BeginInit();
             this.gpGraphicsEngine.SuspendLayout();
             this.panel4.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -184,6 +196,7 @@ namespace gView.Framework.UI.Dialogs
             // 
             // tabMap
             // 
+            this.tabMap.Controls.Add(this.gbCurrent);
             this.tabMap.Controls.Add(this.groupBox3);
             this.tabMap.Controls.Add(this.groupBox2);
             this.tabMap.Controls.Add(this.groupBox1);
@@ -191,14 +204,69 @@ namespace gView.Framework.UI.Dialogs
             this.tabMap.Name = "tabMap";
             this.tabMap.UseVisualStyleBackColor = true;
             // 
+            // gbCurrent
+            // 
+            this.gbCurrent.Controls.Add(this.txtCurrentSize);
+            this.gbCurrent.Controls.Add(this.label14);
+            this.gbCurrent.Controls.Add(this.label13);
+            this.gbCurrent.Controls.Add(this.txtCurrentBBox);
+            resources.ApplyResources(this.gbCurrent, "gbCurrent");
+            this.gbCurrent.Name = "gbCurrent";
+            this.gbCurrent.TabStop = false;
+            // 
+            // txtCurrentSize
+            // 
+            resources.ApplyResources(this.txtCurrentSize, "txtCurrentSize");
+            this.txtCurrentSize.Name = "txtCurrentSize";
+            // 
+            // label14
+            // 
+            resources.ApplyResources(this.label14, "label14");
+            this.label14.Name = "label14";
+            // 
+            // label13
+            // 
+            resources.ApplyResources(this.label13, "label13");
+            this.label13.Name = "label13";
+            // 
+            // txtCurrentBBox
+            // 
+            resources.ApplyResources(this.txtCurrentBBox, "txtCurrentBBox");
+            this.txtCurrentBBox.Name = "txtCurrentBBox";
+            // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.groupBox4);
             this.groupBox3.Controls.Add(this.gpGraphicsEngine);
             this.groupBox3.Controls.Add(this.panel4);
             this.groupBox3.Controls.Add(this.panel3);
             resources.ApplyResources(this.groupBox3, "groupBox3");
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.TabStop = false;
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.label16);
+            this.groupBox4.Controls.Add(this.label15);
+            this.groupBox4.Controls.Add(this.numFontScaleFactor);
+            resources.ApplyResources(this.groupBox4, "groupBox4");
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.TabStop = false;
+            // 
+            // label16
+            // 
+            resources.ApplyResources(this.label16, "label16");
+            this.label16.Name = "label16";
+            // 
+            // label15
+            // 
+            resources.ApplyResources(this.label15, "label15");
+            this.label15.Name = "label15";
+            // 
+            // numFontScaleFactor
+            // 
+            resources.ApplyResources(this.numFontScaleFactor, "numFontScaleFactor");
+            this.numFontScaleFactor.Name = "numFontScaleFactor";
             // 
             // gpGraphicsEngine
             // 
@@ -490,7 +558,12 @@ namespace gView.Framework.UI.Dialogs
             this.panel2.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);
             this.tabMap.ResumeLayout(false);
+            this.gbCurrent.ResumeLayout(false);
+            this.gbCurrent.PerformLayout();
             this.groupBox3.ResumeLayout(false);
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numFontScaleFactor)).EndInit();
             this.gpGraphicsEngine.ResumeLayout(false);
             this.panel4.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
@@ -567,5 +640,14 @@ namespace gView.Framework.UI.Dialogs
         private System.Windows.Forms.Button btnMapServiceMetadata;
         private System.Windows.Forms.GroupBox gpGraphicsEngine;
         private System.Windows.Forms.ComboBox cmbGraphicsEngine;
+        private System.Windows.Forms.GroupBox gbCurrent;
+        private System.Windows.Forms.TextBox txtCurrentSize;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.TextBox txtCurrentBBox;
+        private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.NumericUpDown numFontScaleFactor;
     }
 }

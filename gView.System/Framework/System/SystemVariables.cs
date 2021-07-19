@@ -157,6 +157,19 @@ namespace gView.Framework.system
 
             return _primaryScreenDPI;
         }
+
+        static private float _sytemFontScaleFactor = 1f;
+        static public float SystemFontsScaleFactor
+        {
+            get
+            {
+                return _sytemFontScaleFactor;
+            }
+            set
+            {
+                _sytemFontScaleFactor = value;
+            }
+        }
     }
 
     public interface IProperties

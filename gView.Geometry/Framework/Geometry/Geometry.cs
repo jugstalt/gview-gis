@@ -486,13 +486,13 @@ namespace gView.Framework.Geometry
         public string ToBBoxString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(m_minx);
+            sb.Append(m_minx.ToDoubleString());
             sb.Append(",");
-            sb.Append(m_miny);
+            sb.Append(m_miny.ToDoubleString());
             sb.Append(",");
-            sb.Append(m_maxx);
+            sb.Append(m_maxx.ToDoubleString());
             sb.Append(",");
-            sb.Append(m_maxy);
+            sb.Append(m_maxy.ToDoubleString());
 
             return sb.ToString();
         }
