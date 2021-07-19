@@ -441,7 +441,6 @@ namespace gView.Framework.Data
         ISpatialReference SpatialReference { get; set; }
 
         Task<IRasterPaintContext> BeginPaint(IDisplay display, ICancelTracker cancelTracker);
-        void EndPaint(IRasterPaintContext paintContext, ICancelTracker cancelTracker);
     }
 
     public interface IRasterCatalogClass : IFeatureClass, IRasterClass

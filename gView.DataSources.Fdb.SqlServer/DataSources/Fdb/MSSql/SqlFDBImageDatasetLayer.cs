@@ -153,11 +153,6 @@ namespace gView.DataSources.Fdb.MSSql
             return Task.FromResult<IRasterPaintContext>(new RasterPaintContext(null));
         }
 
-        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
-        {
-            context?.Dispose();
-        }
-
         public ArgbColor GetPixel(double X, double Y)
         {
             return ArgbColor.Transparent;
@@ -1022,43 +1017,30 @@ namespace gView.DataSources.Fdb.MSSql
                 return null;
             }
 
-            try
+            DataTable tab = await _fdb._conn.Select("IMAGE,X,Y,dx1,dx2,dy1,dy2", _dsname + "_IMAGE_DATA", "ID=" + _ID);
+            if (tab == null)
             {
-                DataTable tab = await _fdb._conn.Select("IMAGE,X,Y,dx1,dx2,dy1,dy2", _dsname + "_IMAGE_DATA", "ID=" + _ID);
-                if (tab == null)
-                {
-                    return null;
-                }
-
-                if (tab.Rows.Count != 1)
-                {
-                    return null;
-                }
-
-                DataRow row = tab.Rows[0];
-
-                var bitmap = Current.Engine.CreateBitmap(new MemoryStream((byte[])row["IMG"]));
-                _X = (double)tab.Rows[0]["X"];
-                _Y = (double)tab.Rows[0]["Y"];
-                _dx_X = (double)tab.Rows[0]["dx1"];
-                _dx_Y = (double)tab.Rows[0]["dx2"];
-                _dy_X = (double)tab.Rows[0]["dy1"];
-                _dy_Y = (double)tab.Rows[0]["dy2"];
-                _iWidth = bitmap.Width;
-                _iHeight = bitmap.Height;
-
-                return new RasterPaintContext(bitmap);
+                return null;
             }
-            catch(Exception ex)
+
+            if (tab.Rows.Count != 1)
             {
-                EndPaint(null, cancelTracker);
-                throw ex;
+                return null;
             }
-        }
 
-        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
-        {
-            context?.Dispose();
+            DataRow row = tab.Rows[0];
+
+            var bitmap = Current.Engine.CreateBitmap(new MemoryStream((byte[])row["IMG"]));
+            _X = (double)tab.Rows[0]["X"];
+            _Y = (double)tab.Rows[0]["Y"];
+            _dx_X = (double)tab.Rows[0]["dx1"];
+            _dx_Y = (double)tab.Rows[0]["dx2"];
+            _dy_X = (double)tab.Rows[0]["dy1"];
+            _dy_Y = (double)tab.Rows[0]["dy2"];
+            _iWidth = bitmap.Width;
+            _iHeight = bitmap.Height;
+
+            return new RasterPaintContext(bitmap);
         }
 
         public ArgbColor GetPixel(double X, double Y)

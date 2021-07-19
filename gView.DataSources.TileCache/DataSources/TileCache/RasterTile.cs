@@ -110,11 +110,6 @@ namespace gView.DataSources.TileCache
             return await GetImage();
         }
 
-        public void EndPaint(IRasterPaintContext context, Framework.system.ICancelTracker cancelTracker)
-        {
-            context?.Dispose();
-        }
-
         #endregion
 
         #region IClass Member

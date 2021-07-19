@@ -152,11 +152,6 @@ namespace gView.DataSources.Fdb.SQLite
             return Task.FromResult<IRasterPaintContext>(new RasterPaintContext(null));
         }
 
-        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
-        {
-            context?.Dispose();
-        }
-
         public ArgbColor GetPixel(double X, double Y)
         {
             return ArgbColor.Transparent;
@@ -982,33 +977,6 @@ namespace gView.DataSources.Fdb.SQLite
         public Task<IRasterPaintContext> BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
             throw new NotImplementedException();
-            //if (_fdb == null) return;
-            //try
-            //{
-            //    DataTable tab = _fdb._conn.Select("IMAGE,X,Y,dx1,dx2,dy1,dy2", _dsname + "_IMAGE_DATA", "ID=" + _ID);
-            //    if (tab == null) return;
-            //    if (tab.Rows.Count != 1) return;
-            //    DataRow row = tab.Rows[0];
-
-            //    _bm = (System.Drawing.Bitmap)ImageFast.FromStream((byte[])row["IMG"]);
-            //    _X = (double)tab.Rows[0]["X"];
-            //    _Y = (double)tab.Rows[0]["Y"];
-            //    _dx_X = (double)tab.Rows[0]["dx1"];
-            //    _dx_Y = (double)tab.Rows[0]["dx2"];
-            //    _dy_X = (double)tab.Rows[0]["dy1"];
-            //    _dy_Y = (double)tab.Rows[0]["dy2"];
-            //    _iWidth = _bm.Width;
-            //    _iHeight = _bm.Height;
-            //}
-            //catch
-            //{
-            //    EndPaint(cancelTracker);
-            //}
-        }
-
-        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
-        {
-            context?.Dispose();
         }
 
         public ArgbColor GetPixel(double X, double Y)

@@ -106,10 +106,6 @@ namespace gView.DataSources.Raster.File
             
         }
 
-        public void EndPaint()
-        {
-            
-        }
 
         public System.Drawing.Color GetPixel(double X, double Y)
         {

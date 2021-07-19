@@ -35,7 +35,6 @@ namespace gView.Framework.Carto.LayerRenderers
         async public Task Render()
         {
             GraphicsEngine.Abstraction.IBitmap _filteredBitmap = null;
-            IRasterPaintContext paintContext = null;
 
             try
             {
@@ -62,7 +61,7 @@ namespace gView.Framework.Carto.LayerRenderers
                 int max_y = Math.Min(iHeight = _map.iHeight, (int)Math.Max(miny, maxy) + 1);
 
                 
-                using (paintContext = await _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker))
+                using (var paintContext = await _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker))
                 {
                     if (_filter != FilterImplementations.Default)
                     {
@@ -230,74 +229,12 @@ namespace gView.Framework.Carto.LayerRenderers
             }
             finally
             {
-                _layer.RasterClass.EndPaint(paintContext, _cancelTracker);
                 if (_filteredBitmap != null)
                 {
                     _filteredBitmap.Dispose();
                 }
             }
         }
-
-        /*
-        public void Render2()
-        {
-            if (_layer == null || _map == null || _cancelTracker == null) return;
-            if (_layer.Polygon == null) return;
-
-            IEnvelope env = _layer.Polygon.Envelope;
-            double minx = env.minx, miny = env.miny, maxx = env.maxx, maxy = env.maxy;
-            _map.World2Image(ref minx, ref miny);
-            _map.World2Image(ref maxx, ref maxy);
-            int iWidth = 0, iHeight = 0;
-            int min_x = Math.Max(0, (int)Math.Min(minx, maxx) - 1);
-            int min_y = Math.Max(0, (int)Math.Min(miny, maxy) - 1);
-            int max_x = Math.Min(iWidth = _map.iWidth, (int)Math.Max(minx, maxx) + 1);
-            int max_y = Math.Min(iHeight = _map.iHeight, (int)Math.Max(miny, maxy) + 1);
-
-            if (_lastRasterLayer != null && _lastRasterLayer != _layer)
-            {
-                _lastRasterLayer.EndPaint();
-            }
-            _layer.BeginPaint();
-            //System.Windows.Forms.MessageBox.Show("begin");
-
-            double W = (_map.Envelope.maxx - _map.Envelope.minx);
-            double H = (_map.Envelope.maxy - _map.Envelope.miny);
-            double MinX = _map.Envelope.minx;
-            double MinY = _map.Envelope.miny;
-
-            
-            _lastRasterLayer = _layer;
-
-            System.Drawing.Graphics gr = _map.Display.GraphicsContext;
-            // Transformation berechnen
-            System.Drawing.RectangleF rect = new System.Drawing.Rectangle(
-                0, 0, _layer.Bitmap.Width, _layer.Bitmap.Height);
-            System.Drawing.PointF[] points = new System.Drawing.PointF[3];
-
-            double X = _layer.oX;
-            double Y = _layer.oY;
-            _map.Display.World2Image(ref X, ref Y);
-            points[0] = new System.Drawing.PointF((float)X, (float)Y);
-            X = _layer.oX + rect.Width * _layer.dx1;
-            Y = _layer.oY + rect.Width * _layer.dx2;
-            _map.Display.World2Image(ref X, ref Y);
-            points[1] = new System.Drawing.PointF((float)X, (float)Y);
-            X = _layer.oX + rect.Height * _layer.dy1;
-            Y = _layer.oY + rect.Height * _layer.dy2;
-            _map.Display.World2Image(ref X, ref Y);
-            points[2] = new System.Drawing.PointF((float)X, (float)Y);
-
-            gr.ResetTransform();
-            gr.Transform = new System.Drawing.Drawing2D.Matrix(rect, points);
-            gr.DrawImage(
-                _layer.Bitmap, rect, rect, System.Drawing.GraphicsUnit.Pixel);
-
-            gr.ResetTransform();
-
-            //_layer.EndPaint();
-        }
-    */
 
         private float ToPixelFloat(double d)
         {

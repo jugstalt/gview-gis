@@ -243,7 +243,6 @@ namespace gView.DataSources.GDAL
 
         public Task<IRasterPaintContext> BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
-            EndPaint(null, cancelTracker);
             try
             {
                 if (!(_polygon is ITopologicalOperation))
@@ -343,11 +342,6 @@ namespace gView.DataSources.GDAL
             {
 
             }
-        }
-
-        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
-        {
-            context?.Dispose();
         }
 
         #endregion

@@ -1,21 +1,20 @@
-﻿using gView.Framework.Carto;
+﻿using gView.Data.Framework.Data;
+using gView.Data.Framework.Data.Abstraction;
+using gView.Framework.Carto;
+using gView.Framework.Carto.LayerRenderers;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using gView.MapServer;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml;
-using gView.Framework.IO;
-using gView.Framework.Carto.LayerRenderers;
-using gView.Data.Framework.Data;
-using gView.Data.Framework.Data.Abstraction;
-using gView.GraphicsEngine;
-using gView.GraphicsEngine.Abstraction;
 
 namespace gView.Server.AppCode
 {
@@ -151,7 +150,9 @@ namespace gView.Server.AppCode
                 }
 
                 if (_canvas != null)
+                {
                     _canvas.Flush();
+                }
 
                 _bitmap.Save(ms, format);
                 _bitmap.Dispose();
@@ -229,7 +230,7 @@ namespace gView.Server.AppCode
                     continue;
                 }
 
-                IWebServiceLayer wsLayer = LayerFactory.Create(element.WebServiceClass.Clone() as IClass, element as ILayer) as IWebServiceLayer;
+                IWebServiceLayer wsLayer = LayerFactory.Create(element.WebServiceClass.Clone() as IClass, element) as IWebServiceLayer;
                 if (wsLayer == null || wsLayer.WebServiceClass == null)
                 {
                     continue;
@@ -242,7 +243,7 @@ namespace gView.Server.AppCode
                     // verwendet werden kann zB bei gesplitteten Layern...
                     //ITOCElement tocElement = toc.GetTOCElement(element.Class);
                     ITOCElement tocElement = toc.GetTOCElement(element);
-                    tocElement.RemoveLayer(element as ILayer);
+                    tocElement.RemoveLayer(element);
                     tocElement.AddLayer(wsLayer);
 
                     List<ILayer> modLayers = new List<ILayer>();
@@ -250,7 +251,7 @@ namespace gView.Server.AppCode
                     {
                         if (theme is ILayer)
                         {
-                            modLayers.Add(theme as ILayer);
+                            modLayers.Add(theme);
                         }
                     }
                     BeforeRenderLayers(this, modLayers);
@@ -409,7 +410,7 @@ namespace gView.Server.AppCode
                             continue;
                         }
 
-                        IWebServiceLayer wsLayer = LayerFactory.Create(element.WebServiceClass.Clone() as IClass, element as ILayer) as IWebServiceLayer;
+                        IWebServiceLayer wsLayer = LayerFactory.Create(element.WebServiceClass.Clone() as IClass, element) as IWebServiceLayer;
 
                         if (wsLayer == null || wsLayer.WebServiceClass == null)
                         {
@@ -426,7 +427,7 @@ namespace gView.Server.AppCode
                             {
                                 if (theme is ILayer)
                                 {
-                                    modLayers.Add(theme as ILayer);
+                                    modLayers.Add(theme);
                                 }
                             }
                             BeforeRenderLayers(this, modLayers);
@@ -454,7 +455,7 @@ namespace gView.Server.AppCode
 
                         foreach (IWebServiceClass additionalWebService in additionalWebServices)
                         {
-                            wsLayer = LayerFactory.Create(additionalWebService, element as ILayer) as IWebServiceLayer;
+                            wsLayer = LayerFactory.Create(additionalWebService, element) as IWebServiceLayer;
                             if (wsLayer == null || wsLayer.WebServiceClass == null)
                             {
                                 continue;
@@ -713,61 +714,63 @@ namespace gView.Server.AppCode
         {
             IRasterPaintContext paintContext = null;
 
-            if (rLayer is ILayer && ((ILayer)rLayer).Class is IRasterClass)
+            try
             {
-                paintContext = await((IRasterClass)((ILayer)rLayer).Class).BeginPaint(this.Display, cancelTracker);
-            }
-            else if (rLayer is IRasterClass)
-            {
-                paintContext = await((IRasterClass)rLayer).BeginPaint(this.Display, cancelTracker);
-            }
-            string filterClause = String.Empty;
-            if (rootLayer is IRasterCatalogLayer)
-            {
-                filterClause = ((((IRasterCatalogLayer)rootLayer).FilterQuery != null) ?
-                    ((IRasterCatalogLayer)rootLayer).FilterQuery.WhereClause : String.Empty);
-            }
-
-            using (IRasterLayerCursor cursor = await rLayer.ChildLayers(this, filterClause))
-            {
-                ILayer child;
-
-                while ((child = await cursor.NextRasterLayer()) != null)
-                //foreach (ILayer child in ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
+                if (rLayer is ILayer && ((ILayer)rLayer).Class is IRasterClass)
                 {
-                    if (!cancelTracker.Continue)
-                    {
-                        break;
-                    }
+                    paintContext = await ((IRasterClass)((ILayer)rLayer).Class).BeginPaint(this.Display, cancelTracker);
+                }
+                else if (rLayer is IRasterClass)
+                {
+                    paintContext = await ((IRasterClass)rLayer).BeginPaint(this.Display, cancelTracker);
+                }
+                string filterClause = String.Empty;
+                if (rootLayer is IRasterCatalogLayer)
+                {
+                    filterClause = ((((IRasterCatalogLayer)rootLayer).FilterQuery != null) ?
+                        ((IRasterCatalogLayer)rootLayer).FilterQuery.WhereClause : String.Empty);
+                }
 
-                    if (child.Class is IParentRasterLayer)
-                    {
-                        await DrawRasterParentLayer((IParentRasterLayer)child.Class, cancelTracker, rootLayer);
-                        continue;
-                    }
-                    if (!(child is IRasterLayer))
-                    {
-                        continue;
-                    }
+                using (IRasterLayerCursor cursor = await rLayer.ChildLayers(this, filterClause))
+                {
+                    ILayer child;
 
-                    IRasterLayer cLayer = (IRasterLayer)child;
-
-                    RenderRasterLayer rlt = new RenderRasterLayer(this, cLayer, rootLayer, cancelTracker);
-                    await rlt.Render();
-
-                    if (child.Class is IDisposable)
+                    while ((child = await cursor.NextRasterLayer()) != null)
+                    //foreach (ILayer child in ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
                     {
-                        ((IDisposable)child.Class).Dispose();
+                        if (!cancelTracker.Continue)
+                        {
+                            break;
+                        }
+
+                        if (child.Class is IParentRasterLayer)
+                        {
+                            await DrawRasterParentLayer((IParentRasterLayer)child.Class, cancelTracker, rootLayer);
+                            continue;
+                        }
+                        if (!(child is IRasterLayer))
+                        {
+                            continue;
+                        }
+
+                        IRasterLayer cLayer = (IRasterLayer)child;
+
+                        RenderRasterLayer rlt = new RenderRasterLayer(this, cLayer, rootLayer, cancelTracker);
+                        await rlt.Render();
+
+                        if (child.Class is IDisposable)
+                        {
+                            ((IDisposable)child.Class).Dispose();
+                        }
                     }
                 }
             }
-            if (rLayer is ILayer && ((ILayer)rLayer).Class is IRasterClass)
+            finally
             {
-                ((IRasterClass)((ILayer)rLayer).Class).EndPaint(paintContext, cancelTracker);
-            }
-            else if (rLayer is IRasterClass)
-            {
-                ((IRasterClass)rLayer).EndPaint(paintContext, cancelTracker);
+                if (paintContext != null)
+                {
+                    paintContext.Dispose();
+                }
             }
         }
 

@@ -1087,90 +1087,92 @@ namespace gView.Framework.Carto
         {
             IRasterPaintContext paintContext = null;
 
-            if (rLayer is ILayer && ((ILayer)rLayer).Class is IRasterClass)
+            try
             {
-                paintContext = await ((IRasterClass)((ILayer)rLayer).Class).BeginPaint(this.Display, cancelTracker);
-            }
-            else if (rLayer is IRasterClass)
-            {
-                paintContext = await ((IRasterClass)rLayer).BeginPaint(this.Display, cancelTracker);
-            }
-            string filterClause = String.Empty;
-            if (rootLayer is IRasterCatalogLayer)
-            {
-                filterClause = ((((IRasterCatalogLayer)rootLayer).FilterQuery != null) ?
-                    ((IRasterCatalogLayer)rootLayer).FilterQuery.WhereClause : String.Empty);
-            }
-
-            using (IRasterLayerCursor cursor = await rLayer.ChildLayers(this, filterClause))
-            {
-                ILayer child;
-
-                int rasterCounter = 0;
-                DateTime rasterCounterTime = DateTime.Now;
-
-                if (cursor != null)
+                if (rLayer is ILayer && ((ILayer)rLayer).Class is IRasterClass)
                 {
-                    while ((child = await cursor.NextRasterLayer()) != null)
-                    //foreach (ILayer child in ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
+                    paintContext = await ((IRasterClass)((ILayer)rLayer).Class).BeginPaint(this.Display, cancelTracker);
+                }
+                else if (rLayer is IRasterClass)
+                {
+                    paintContext = await ((IRasterClass)rLayer).BeginPaint(this.Display, cancelTracker);
+                }
+                string filterClause = String.Empty;
+                if (rootLayer is IRasterCatalogLayer)
+                {
+                    filterClause = ((((IRasterCatalogLayer)rootLayer).FilterQuery != null) ?
+                        ((IRasterCatalogLayer)rootLayer).FilterQuery.WhereClause : String.Empty);
+                }
+
+                using (IRasterLayerCursor cursor = await rLayer.ChildLayers(this, filterClause))
+                {
+                    ILayer child;
+
+                    int rasterCounter = 0;
+                    DateTime rasterCounterTime = DateTime.Now;
+
+                    if (cursor != null)
                     {
-                        if (!cancelTracker.Continue)
+                        while ((child = await cursor.NextRasterLayer()) != null)
+                        //foreach (ILayer child in ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
                         {
-                            break;
-                        }
-
-                        if (child.Class is IParentRasterLayer)
-                        {
-                            await DrawRasterParentLayer((IParentRasterLayer)child.Class, cancelTracker, rootLayer);
-                            continue;
-                        }
-                        if (!(child is IRasterLayer))
-                        {
-                            continue;
-                        }
-
-                        IRasterLayer cLayer = (IRasterLayer)child;
-
-                        RenderRasterLayer rlt = new RenderRasterLayer(this, cLayer, rootLayer, cancelTracker);
-
-                        if (DrawingLayer != null && cancelTracker.Continue)
-                        {
-                            if (rLayer is ILayer)
+                            if (!cancelTracker.Continue)
                             {
-                                DrawingLayer?.BeginInvoke(((ILayer)rLayer).Title, new AsyncCallback(AsyncInvoke.RunAndForget), null);
+                                break;
+                            }
+
+                            if (child.Class is IParentRasterLayer)
+                            {
+                                await DrawRasterParentLayer((IParentRasterLayer)child.Class, cancelTracker, rootLayer);
+                                continue;
+                            }
+                            if (!(child is IRasterLayer))
+                            {
+                                continue;
+                            }
+
+                            IRasterLayer cLayer = (IRasterLayer)child;
+
+                            RenderRasterLayer rlt = new RenderRasterLayer(this, cLayer, rootLayer, cancelTracker);
+
+                            if (DrawingLayer != null && cancelTracker.Continue)
+                            {
+                                if (rLayer is ILayer)
+                                {
+                                    DrawingLayer?.BeginInvoke(((ILayer)rLayer).Title, new AsyncCallback(AsyncInvoke.RunAndForget), null);
+                                }
+                            }
+
+                            await rlt.Render();
+
+                            if (rasterCounter++ % 10 == 0 && (DateTime.Now - rasterCounterTime).TotalMilliseconds > 500D)
+                            {
+                                if (DoRefreshMapView != null && cancelTracker.Continue)
+                                {
+                                    DoRefreshMapView();
+                                }
+                                rasterCounterTime = DateTime.Now;
+                            }
+
+                            if (child.Class is IDisposable)
+                            {
+                                ((IDisposable)child.Class).Dispose();
                             }
                         }
 
-                        await rlt.Render();
-
-                        if (rasterCounter++ % 10 == 0 && (DateTime.Now - rasterCounterTime).TotalMilliseconds > 500D)
+                        if (DoRefreshMapView != null && cancelTracker.Continue)
                         {
-                            if (DoRefreshMapView != null && cancelTracker.Continue)
-                            {
-                                DoRefreshMapView();
-                            }
-                            rasterCounterTime = DateTime.Now;
+                            DoRefreshMapView();
                         }
-
-                        if (child.Class is IDisposable)
-                        {
-                            ((IDisposable)child.Class).Dispose();
-                        }
-                    }
-
-                    if (DoRefreshMapView != null && cancelTracker.Continue)
-                    {
-                        DoRefreshMapView();
                     }
                 }
             }
-            if (rLayer is ILayer && ((ILayer)rLayer).Class is IRasterClass)
+            finally
             {
-                ((IRasterClass)((ILayer)rLayer).Class).EndPaint(paintContext, cancelTracker);
-            }
-            else if (rLayer is IRasterClass)
-            {
-                ((IRasterClass)rLayer).EndPaint(paintContext, cancelTracker);
+                if (paintContext != null)
+                {
+                    paintContext.Dispose();
+                }
             }
         }
 

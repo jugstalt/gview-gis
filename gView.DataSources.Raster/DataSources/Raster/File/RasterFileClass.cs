@@ -139,10 +139,6 @@ namespace gView.DataSources.Raster.File
 
             return Task.FromResult<IRasterPaintContext>(new RasterPaintContext(bitmap));
         }
-        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
-        {
-            context?.Dispose();
-        }
 
         public GraphicsEngine.ArgbColor GetPixel(IRasterPaintContext context, double X, double Y)
         {

@@ -329,16 +329,6 @@ namespace gView.Framework.Carto
                 int max_x = Math.Min(iWidth = _map.iWidth, (int)Math.Max(minx, maxx) + 1);
                 int max_y = Math.Min(iHeight = _map.iHeight, (int)Math.Max(miny, maxy) + 1);
 
-                // _lastRasterLayer bei ImageServer vermeiden,
-                // weil sonst das Bild gelöscht wird bevor es gezeichnet wurde
-                // nicht Threadsicher!!!!!!!
-                /*
-                if (_lastRasterLayer != null && _lastRasterLayer != _layer)
-                {
-                    _lastRasterLayer.EndPaint();
-                }
-                */
-
                 using (var paintContext = await _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker))
                 {
                     if (paintContext.Bitmap == null)
@@ -450,8 +440,6 @@ namespace gView.Framework.Carto
 
                     float opaque = 1.0f - _transparency;
                     canvas.DrawBitmap(paintContext.Bitmap, points, rect, opacity: opaque);
-
-                    _layer.RasterClass.EndPaint(paintContext, _cancelTracker);
                 }
             }
             catch (Exception ex)

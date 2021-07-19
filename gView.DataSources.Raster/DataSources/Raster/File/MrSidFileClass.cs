@@ -146,7 +146,6 @@ namespace gView.DataSources.Raster.File
         private void CleanUp()
         {
             ReleaseReader();
-            EndPaint(null, null);
         }
 
         internal bool isValid
@@ -356,7 +355,6 @@ namespace gView.DataSources.Raster.File
             catch (Exception ex)
             {
                 //string errMsg = ex.Message;
-                EndPaint(null, cancelTracker);
 
                 if (display is IServiceMap && ((IServiceMap)display).MapServer != null)
                 {
@@ -389,11 +387,6 @@ namespace gView.DataSources.Raster.File
                 MrSidWrapper.ReleaseBandData(bufferData);
                 ReleaseReader();
             }
-        }
-
-        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
-        {
-            context?.Dispose();
         }
 
         #endregion

@@ -73,7 +73,6 @@ namespace gView.DataSources.Raster.UI
         {
             if (_class != null)
             {
-                _class.EndPaint(null, null);
                 _class = null;
             }
         }
@@ -94,7 +93,6 @@ namespace gView.DataSources.Raster.UI
                         {
                             if (!((RasterFileClass)_class).isValid)
                             {
-                                _class.EndPaint(null, null);
                                 _class = null;
                             }
                         }

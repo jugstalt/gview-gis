@@ -143,8 +143,9 @@ namespace gView.DataSources.Raster.File
             return Task.FromResult<IDatasetElement>(null);
         }
 
-        async public Task RefreshClasses()
+        public Task RefreshClasses()
         {
+            return Task.CompletedTask;
         }
         #endregion
 

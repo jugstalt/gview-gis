@@ -83,11 +83,6 @@ namespace gView.DataSources.TileCache
             return Task.FromResult<IRasterPaintContext>(new RasterPaintContext(null));
         }
 
-        public void EndPaint(IRasterPaintContext context, Framework.system.ICancelTracker cancelTracker)
-        {
-            context?.Dispose();
-        }
-
         #endregion
 
         #region IClass Member

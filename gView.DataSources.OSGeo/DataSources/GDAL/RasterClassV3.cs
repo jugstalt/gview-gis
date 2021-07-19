@@ -342,20 +342,10 @@ namespace gView.DataSources.GDAL
 
                 return null;
             }
-            catch (Exception ex)
-            {
-                EndPaint(null, cancelTracker);
-                throw ex;
-            }
             finally
             {
                
             }
-        }
-
-        public void EndPaint(IRasterPaintContext context, ICancelTracker cancelTracker)
-        {
-            context?.Dispose();
         }
 
         #endregion
