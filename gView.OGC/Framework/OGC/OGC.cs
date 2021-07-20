@@ -1,8 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using gView.Framework.Geometry;
+using System;
+using System.IO;
+using System.Text;
 
 namespace gView.Framework.OGC
 {
@@ -39,14 +38,35 @@ namespace gView.Framework.OGC
             wkbMultiPoint = 4,
             wkbMultiLineString = 5,
             wkbMultiPolygon = 6,
-            wkbGeometryCollection = 7
+            wkbGeometryCollection = 7,
+            wkbCircularString = 8,
+            wkbCompoundCurve = 9,
+            wkbCurvePolygon = 10,
+            wkbMultiCurve = 11,
+            wkbMultiSurface = 12,
+            wkbCurve = 13,
+            wkbSurface = 14,
+            wkbPolyhedralSurface = 15,
+            wkbTIN = 16,
+            wkbTriangle = 17,
+            wkbCircle = 18,
+            wkbGeodesicString = 19,
+            wkbEllipticalCurve = 20,
+            wkbNurbsCurve = 21,
+            wkbClothoid = 22,
+            wkbSpiralCurve = 23,
+            wkbCompoundSurface = 24
         }
 
         public readonly static System.Globalization.NumberFormatInfo numberFormat_EnUS = new System.Globalization.CultureInfo("en-US", false).NumberFormat;
 
         public static string Envelope2box2(IEnvelope envelope, ISpatialReference sRef)
         {
-            if (envelope == null) return "";
+            if (envelope == null)
+            {
+                return "";
+            }
+
             if (sRef == null)
             {
                 string box2 = "box2d('BOX3D(" +
@@ -114,7 +134,9 @@ namespace gView.Framework.OGC
             }
 
             if (!Enum.IsDefined(typeof(WKBGeometryType), type))
+            {
                 throw new ArgumentException("Geometry type not recognized");
+            }
 
             switch ((WKBGeometryType)type)
             {
@@ -139,8 +161,11 @@ namespace gView.Framework.OGC
                 case WKBGeometryType.wkbGeometryCollection:
                     return CreateGeometryCollection(reader, byteOrder, hasZ, hasM);
 
+                //case WKBGeometryType.wkbMultiCurve:
+                //    return CreateMultiCurve(reader, byteOrder, hasZ, hasM);
+
                 default:
-                    throw new NotSupportedException("Geometry type '" + type.ToString() + "' not supported");
+                    throw new NotSupportedException("Geometry type '" + ((WKBGeometryType)type).ToString() + "' not supported");
             }
         }
 
@@ -347,7 +372,10 @@ namespace gView.Framework.OGC
 
         private static void ReadPointCollection(BinaryReader reader, WkbByteOrder byteOrder, IPointCollection pColl, bool hasZ, bool hasM)
         {
-            if (pColl == null) return;
+            if (pColl == null)
+            {
+                return;
+            }
 
             // Get the number of points in this linestring.
             int numPoints = (int)ReadUInt32(reader, byteOrder);
@@ -377,7 +405,10 @@ namespace gView.Framework.OGC
 
         private static void WritePointCollection(IPointCollection pColl, BinaryWriter writer, WkbByteOrder byteOrder)
         {
-            if (pColl == null) return;
+            if (pColl == null)
+            {
+                return;
+            }
 
             WriteUInt32((uint)pColl.PointCount, writer, byteOrder);
             for (int i = 0; i < pColl.PointCount; i++)
@@ -444,7 +475,9 @@ namespace gView.Framework.OGC
 
                 Polyline p = CreateLineString(reader, byteOrder, hasZ, hasM);
                 for (int r = 0; r < p.PathCount; r++)
+                {
                     pline.AddPath(p[r]);
+                }
             }
 
             // Create and return the MultiLineString.
@@ -499,7 +532,10 @@ namespace gView.Framework.OGC
             for (int i = 0; i < aGeometry.GeometryCount; i++)
             {
                 IGeometry geometry = aGeometry[i];
-                if (geometry == null) continue;
+                if (geometry == null)
+                {
+                    continue;
+                }
 
                 if (geometry is IPoint)
                 {
@@ -550,7 +586,9 @@ namespace gView.Framework.OGC
                 // TODO: Validate type
                 Polygon p = CreatePolygon(reader, byteOrder, hasZ, hasM);
                 for (int r = 0; r < p.RingCount; r++)
+                {
                     polygon.AddRing(p[r]);
+                }
             }
             return polygon;
         }
@@ -585,21 +623,42 @@ namespace gView.Framework.OGC
 
         private static IAggregateGeometry CreateGeometryCollection(BinaryReader reader, WkbByteOrder byteOrder, bool hasZ, bool hasM)
         {
-            // Get the Number of Geometries in this Polygon.
+            // Get the Number of Geometries in this Collection.
             int numGeometries = (int)ReadUInt32(reader, byteOrder);
 
             AggregateGeometry aGeometry = new AggregateGeometry();
-            try
+            for (int g = 0; g < numGeometries; g++)
             {
-                for (int g = 0; g < numGeometries; g++)
+                IGeometry geometry = WKBToGeometry(reader, byteOrder);
+                if (geometry != null)
                 {
-                    IGeometry geometry = WKBToGeometry(reader);
-                    if (geometry != null)
-                        aGeometry.AddGeometry(geometry);
+                    aGeometry.AddGeometry(geometry);
                 }
             }
-            catch { }
+
             return aGeometry;
+        }
+
+        private static IPolyline CreateMultiCurve(BinaryReader reader, WkbByteOrder byteOrder, bool hasZ, bool hasM)
+        {
+            // Get the Number of Geometries in this MultiCurve.
+            int numGeometries = (int)ReadUInt32(reader, byteOrder);
+
+            Polyline polyline = new Polyline();
+
+            for (int g = 0; g < numGeometries; g++)
+            {
+                IGeometry geometry = WKBToGeometry(reader, byteOrder);
+                if (geometry is IPolyline)
+                {
+                    for (var p = 0; p < ((IPolyline)geometry).PathCount; p++)
+                    {
+                        polyline.AddPath(((IPolyline)geometry)[p]);
+                    }
+                }
+            }
+
+            return polyline;
         }
 
         private static uint ReadUInt32(BinaryReader reader, WkbByteOrder byteOrder)
@@ -611,7 +670,9 @@ namespace gView.Framework.OGC
                 return BitConverter.ToUInt32(bytes, 0);
             }
             else
+            {
                 return reader.ReadUInt32();
+            }
         }
 
         private static void WriteUInt32(uint val, BinaryWriter writer, WkbByteOrder byteOrder)
@@ -623,7 +684,9 @@ namespace gView.Framework.OGC
                 writer.Write(bytes);
             }
             else
+            {
                 writer.Write(val);
+            }
         }
 
         private static double ReadDouble(BinaryReader reader, WkbByteOrder byteOrder)
@@ -635,7 +698,9 @@ namespace gView.Framework.OGC
                 return BitConverter.ToDouble(bytes, 0);
             }
             else
+            {
                 return reader.ReadDouble();
+            }
         }
 
         private static void WriteDouble(double val, BinaryWriter writer, WkbByteOrder byteOrder)
@@ -647,7 +712,9 @@ namespace gView.Framework.OGC
                 writer.Write(bytes);
             }
             else
+            {
                 writer.Write(val);
+            }
         }
 
         public static double ToDouble(string number)
@@ -660,7 +727,10 @@ namespace gView.Framework.OGC
             catch(OverflowException)
             {
                 if (number.Trim().StartsWith("-"))
+                {
                     return double.MinValue;
+                }
+
                 return double.MaxValue;
             }
             catch

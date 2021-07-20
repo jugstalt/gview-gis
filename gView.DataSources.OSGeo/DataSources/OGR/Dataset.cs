@@ -163,14 +163,15 @@ namespace gView.DataSources.OGR
                         fc = new FeatureClassV1(this, ogrLayerV1);
                         break;
                     case OSGeo.GdalVersion.V3:
-                        OSGeo_v3.OGR.Layer ogrLayerV3 = _dataSourceV3?.GetLayerByIndex(i);
-
-                        if (ogrLayerV3 == null)
+                        using (OSGeo_v3.OGR.Layer ogrLayerV3 = _dataSourceV3?.GetLayerByIndex(i))
                         {
-                            continue;
+                            if (ogrLayerV3 == null)
+                            {
+                                continue;
+                            }
                         }
 
-                        fc = new FeatureClassV3(this, ogrLayerV3);
+                        fc = new FeatureClassV3(this, _dataSourceV3, i);
                         break;
                     default:
                         throw new Exception("No OGR Version detected/installed");
@@ -292,13 +293,14 @@ namespace gView.DataSources.OGR
                                 fc = new FeatureClassV1(this, ogrLayerV1);
                                 break;
                             case OSGeo.GdalVersion.V3:
-                                OSGeo_v3.OGR.Layer ogrLayerV3 = _dataSourceV3.GetLayerByIndex(i);
-                                if (ogrLayerV3 == null)
+                                using (OSGeo_v3.OGR.Layer ogrLayerV3 = _dataSourceV3.GetLayerByIndex(i))
                                 {
-                                    continue;
+                                    if (ogrLayerV3 == null)
+                                    {
+                                        continue;
+                                    }
                                 }
-
-                                fc = new FeatureClassV3(this, ogrLayerV3);
+                                fc = new FeatureClassV3(this, _dataSourceV3, i);
                                 break;
                             default:
                                 throw new Exception("No OGR Version detected/installed");

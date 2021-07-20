@@ -49,6 +49,8 @@ namespace gView.Framework.UI.Dialogs
             this.txtCurrentBBox = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.numEngineDpi = new System.Windows.Forms.NumericUpDown();
             this.label16 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.numFontScaleFactor = new System.Windows.Forms.NumericUpDown();
@@ -98,6 +100,7 @@ namespace gView.Framework.UI.Dialogs
             this.gbCurrent.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numEngineDpi)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numFontScaleFactor)).BeginInit();
             this.gpGraphicsEngine.SuspendLayout();
             this.panel4.SuspendLayout();
@@ -246,12 +249,30 @@ namespace gView.Framework.UI.Dialogs
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.label17);
+            this.groupBox4.Controls.Add(this.numEngineDpi);
             this.groupBox4.Controls.Add(this.label16);
             this.groupBox4.Controls.Add(this.label15);
             this.groupBox4.Controls.Add(this.numFontScaleFactor);
             resources.ApplyResources(this.groupBox4, "groupBox4");
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.TabStop = false;
+            // 
+            // label17
+            // 
+            resources.ApplyResources(this.label17, "label17");
+            this.label17.Name = "label17";
+            // 
+            // numEngineDpi
+            // 
+            resources.ApplyResources(this.numEngineDpi, "numEngineDpi");
+            this.numEngineDpi.Maximum = new decimal(new int[] {
+            1410065407,
+            2,
+            0,
+            0});
+            this.numEngineDpi.Name = "numEngineDpi";
+            this.numEngineDpi.ReadOnly = true;
             // 
             // label16
             // 
@@ -266,6 +287,11 @@ namespace gView.Framework.UI.Dialogs
             // numFontScaleFactor
             // 
             resources.ApplyResources(this.numFontScaleFactor, "numFontScaleFactor");
+            this.numFontScaleFactor.Maximum = new decimal(new int[] {
+            1410065407,
+            2,
+            0,
+            0});
             this.numFontScaleFactor.Name = "numFontScaleFactor";
             // 
             // gpGraphicsEngine
@@ -563,6 +589,7 @@ namespace gView.Framework.UI.Dialogs
             this.groupBox3.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numEngineDpi)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numFontScaleFactor)).EndInit();
             this.gpGraphicsEngine.ResumeLayout(false);
             this.panel4.ResumeLayout(false);
@@ -649,5 +676,7 @@ namespace gView.Framework.UI.Dialogs
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.NumericUpDown numFontScaleFactor;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.NumericUpDown numEngineDpi;
     }
 }

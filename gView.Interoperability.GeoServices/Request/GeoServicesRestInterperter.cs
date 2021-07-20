@@ -233,7 +233,14 @@ namespace gView.Interoperability.GeoServices.Request
                                     Xmax = serviceMap.Display.Envelope.maxx,
                                     Ymax = serviceMap.Display.Envelope.maxy
                                     // ToDo: SpatialReference
-                                }
+                                },
+                                Error = serviceMap is IMap && ((IMap)serviceMap).HasRequestExceptions ?
+                                    new JsonError.ErrorDef()
+                                    {
+                                        Code = 999,
+                                        Message= "MapExport exeption occured",
+                                        Details = ((IMap)serviceMap).RequestExceptions.Select(ex => ex.Message)
+                                    } : null
                             };
                         }
                     }

@@ -8,6 +8,7 @@ namespace gView.DataSources.OGR
     internal class FeatureCursorV3 : IFeatureCursor
     {
         OSGeo_v3.OGR.Layer _layer;
+
         public FeatureCursorV3(OSGeo_v3.OGR.Layer layer, IQueryFilter filter)
         {
             if (layer == null)
@@ -103,6 +104,7 @@ namespace gView.DataSources.OGR
                 {
                     byte[] buffer = new byte[geom.WkbSize()];
                     geom.ExportToWkb(buffer);
+
                     feature.Shape = gView.Framework.OGC.OGC.WKBToGeometry(buffer);
                 }
             }
@@ -118,13 +120,12 @@ namespace gView.DataSources.OGR
         {
             try
             {
-                if (_layer == null)
+                if (_layer != null)
                 {
-                    return;
+                    _layer.ResetReading();
+                    _layer.Dispose();
+                    _layer = null;
                 }
-
-                _layer.ResetReading();
-                _layer = null;
             }
             catch { }
         }

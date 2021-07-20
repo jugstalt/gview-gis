@@ -8,7 +8,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonError
     {
-        [JsonProperty("error")]
+        [JsonProperty("error", NullValueHandling = NullValueHandling.Ignore)]
         public ErrorDef Error { get; set; }
 
         public class ErrorDef

@@ -11,73 +11,79 @@ namespace gView.DataSources.OGR
         private string _shapeFieldName = "SHAPE", _idFieldName, _name;
         private long _countFeatures;
         private Dataset _dataset;
+        private OSGeo_v3.OGR.DataSource _dataSource;
         private bool _hasZ = false, _hasM = false;
         private geometryType _geomType = geometryType.Unknown;
+        private int _layerIndex;
         private Fields _fields;
-        private OSGeo_v3.OGR.Layer _ogrLayer = null;
 
-        public FeatureClassV3(Dataset dataset, OSGeo_v3.OGR.Layer layer)
+        public FeatureClassV3(Dataset dataset, OSGeo_v3.OGR.DataSource dataSource, int layerIndex)
         {
             _dataset = dataset;
-            _ogrLayer = layer;
+            _dataSource = dataSource;
+            _layerIndex = layerIndex;
 
-            OSGeo_v3.OGR.FeatureDefn defn = layer.GetLayerDefn();
-            _name = defn.GetName();
-            if (dataset.ConnectionString.ToLower().EndsWith(".dxf"))
+            using (var ogrLayer = _dataSource.GetLayerByIndex(layerIndex))
             {
-                try
+
+                OSGeo_v3.OGR.FeatureDefn defn = ogrLayer.GetLayerDefn();
+                _name = defn.GetName();
+                if (dataset.ConnectionString.ToLower().EndsWith(".dxf"))
                 {
-                    System.IO.FileInfo fi = new System.IO.FileInfo(dataset.ConnectionString);
-                    _name = fi.Name;
+                    try
+                    {
+                        System.IO.FileInfo fi = new System.IO.FileInfo(dataset.ConnectionString);
+                        _name = fi.Name;
+                    }
+                    catch { }
                 }
-                catch { }
-            }
-            _fields = new Fields();
-            for (int i = 0; i < defn.GetFieldCount(); i++)
-            {
-                OSGeo_v3.OGR.FieldDefn fdefn = defn.GetFieldDefn(i);
-                Field field = new Field(fdefn.GetName());
-
-                switch (fdefn.GetFieldTypeName(fdefn.GetFieldType()).ToLower())
+                _fields = new Fields();
+                for (int i = 0; i < defn.GetFieldCount(); i++)
                 {
-                    case "integer":
-                        if (_idFieldName == String.Empty)
-                        {
-                            _idFieldName = field.name;
-                        }
+                    OSGeo_v3.OGR.FieldDefn fdefn = defn.GetFieldDefn(i);
+                    Field field = new Field(fdefn.GetName());
 
-                        field.type = FieldType.integer;
-                        break;
-                    case "real":
-                        field.type = FieldType.Double;
-                        break;
-                    case "string":
-                        field.type = FieldType.String;
-                        field.size = fdefn.GetWidth();
-                        break;
+                    switch (fdefn.GetFieldTypeName(fdefn.GetFieldType()).ToLower())
+                    {
+                        case "integer":
+                            if (_idFieldName == String.Empty)
+                            {
+                                _idFieldName = field.name;
+                            }
 
+                            field.type = FieldType.integer;
+                            break;
+                        case "real":
+                            field.type = FieldType.Double;
+                            break;
+                        case "string":
+                            field.type = FieldType.String;
+                            field.size = fdefn.GetWidth();
+                            break;
+
+                    }
+                    _fields.Add(field);
                 }
-                _fields.Add(field);
-            }
 
-            _countFeatures = layer.GetFeatureCount(1);
-            OSGeo_v3.OGR.Envelope env = new OSGeo_v3.OGR.Envelope();
-            layer.GetExtent(env, 1);
-            _envelope = new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY);
+                _countFeatures = ogrLayer.GetFeatureCount(1);
+                OSGeo_v3.OGR.Envelope env = new OSGeo_v3.OGR.Envelope();
+                ogrLayer.GetExtent(env, 1);
+                _envelope = new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY);
 
-            switch (defn.GetGeomType())
-            {
-                case OSGeo_v3.OGR.wkbGeometryType.wkbPoint:
-                    _geomType = geometryType.Point;
-                    break;
-                case OSGeo_v3.OGR.wkbGeometryType.wkbLineString:
-                case OSGeo_v3.OGR.wkbGeometryType.wkbMultiLineString:
-                    _geomType = geometryType.Polyline;
-                    break;
-                case OSGeo_v3.OGR.wkbGeometryType.wkbPolygon:
-                case OSGeo_v3.OGR.wkbGeometryType.wkbMultiPolygon:
-                    _geomType = geometryType.Polygon;
-                    break;
+                switch (defn.GetGeomType())
+                {
+                    case OSGeo_v3.OGR.wkbGeometryType.wkbPoint:
+                        _geomType = geometryType.Point;
+                        break;
+                    case OSGeo_v3.OGR.wkbGeometryType.wkbLineString:
+                    case OSGeo_v3.OGR.wkbGeometryType.wkbMultiLineString:
+                        _geomType = geometryType.Polyline;
+                        break;
+                    case OSGeo_v3.OGR.wkbGeometryType.wkbPolygon:
+                    case OSGeo_v3.OGR.wkbGeometryType.wkbMultiPolygon:
+                        _geomType = geometryType.Polygon;
+                        break;
+                }
             }
         }
 
@@ -100,7 +106,7 @@ namespace gView.DataSources.OGR
 
         public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
-            return Task.FromResult<IFeatureCursor>(new FeatureCursorV3(_ogrLayer, filter));
+            return Task.FromResult<IFeatureCursor>(new FeatureCursorV3(_dataSource.GetLayerByIndex(_layerIndex), filter));
         }
 
         #endregion

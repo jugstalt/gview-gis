@@ -265,6 +265,7 @@ namespace gView.Framework.Carto.Rendering
                 if (_rotate)
                 {
                     object rot = feature[_symbolRotation.RotationFieldName];
+
                     if (rot != null && rot != DBNull.Value)
                     {
                         ((ISymbolRotation)_symbol).Rotation = (float)_symbolRotation.Convert2DEGAritmetic(Convert.ToDouble(rot));
@@ -274,6 +275,7 @@ namespace gView.Framework.Carto.Rendering
                         ((ISymbolRotation)_symbol).Rotation = 0;
                     }
                 }
+
                 disp.Draw(_symbol, feature.Shape);
             }
             else if (_actualCartoMethod == CartographicMethod.SymbolOrder)

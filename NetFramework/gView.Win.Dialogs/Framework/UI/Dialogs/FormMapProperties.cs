@@ -102,9 +102,11 @@ namespace gView.Framework.UI.Dialogs
             txtDescription.Text = _map.GetLayerDescription(Map.MapDescriptionId);
             txtCopyright.Text = _map.GetLayerCopyrightText(Map.MapCopyrightTextId);
 
-            numFontScaleFactor.Value = (int)SystemVariables.SystemFontsScaleFactor * 100;
+            numFontScaleFactor.Value = (decimal)(SystemVariables.SystemFontsScaleFactor * 100f);
 
             #region Graphics Engine
+
+            numEngineDpi.Value = (decimal)GraphicsEngine.Current.Engine.ScreenDpi;
 
             foreach (var engineName in Engines.RegisteredGraphicsEngineNames())
             {

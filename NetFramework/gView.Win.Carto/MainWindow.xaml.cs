@@ -55,7 +55,10 @@ namespace gView.Win.Carto
                     if (System.Windows.Forms.SystemInformation.TerminalServerSession)
                     {
                         // Method don't work on RemoteSessions
-                        SystemVariables.SystemFontsScaleFactor = 1f;
+                        //SystemVariables.SystemFontsScaleFactor = 1f;
+
+                        var systemFontScaleFactor = (float)System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width / (float)SystemParameters.PrimaryScreenWidth;
+                        SystemVariables.SystemFontsScaleFactor = systemFontScaleFactor;
                     }
                     else
                     {

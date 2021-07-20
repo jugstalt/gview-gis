@@ -82,6 +82,8 @@ namespace gView.Framework.Symbology
 
         #region IPointSymbol Member
 
+        private double _lastRotation = 0;
+
         public void DrawPoint(IDisplay display, IPoint point)
         {
             if (_font != null)
@@ -102,11 +104,12 @@ namespace gView.Framework.Symbology
 
                     double xo = _xOffset, yo = _yOffset;
                     
-                    if (_angle != 0 || _rotation != 0)
+                    if (_angle != 0 || _rotation != 0 || _lastRotation != 0)
                     {
-                        if (_rotation != 0)
+                        if (_rotation != _lastRotation)
                         {
                             PerformSymbolTransformation(_rotation);
+                            _lastRotation = _rotation;
                         }
 
                         double cos_a = Math.Cos((-_angle - _rotation) / 180.0 * Math.PI);
@@ -122,17 +125,6 @@ namespace gView.Framework.Symbology
                 {
                     display.Canvas.ResetTransform();
                 }
-
-                // Rotationspunkt muss gegen den Uhrzeiger mitbewegen,
-                // damit sich Font im Uhrzeigersinn um das Zentrum des Fadenkreuzes
-                // bewegt...
-                //display.GraphicsContext.TranslateTransform((float)point.X, (float)point.Y);
-                //display.GraphicsContext.RotateTransform(_angle + _rotation);
-
-                //display.GraphicsContext.FillEllipse(Brushes.Red, (float)xo - 3, (float)yo - 3, 6, 6);
-                //display.GraphicsContext.DrawEllipse(Pens.Black, (float)xo - 3, (float)yo - 3, 6, 6);
-
-                //display.GraphicsContext.ResetTransform();
             }
         }
 

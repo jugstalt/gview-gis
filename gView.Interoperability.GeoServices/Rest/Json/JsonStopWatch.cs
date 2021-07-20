@@ -5,7 +5,7 @@ using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
-    public class JsonStopWatch
+    public class JsonStopWatch : JsonError
     {
         [JsonProperty("_duration_ms")]
         public double DurationMilliseconds { get; set; }
