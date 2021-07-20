@@ -6,7 +6,7 @@ using gView.Framework.UI;
 
 namespace gView.Plugins.Tools.RibbonTabs
 {
-    [gView.Framework.system.RegisterPlugIn("3e9ebc6d-4f71-4ecc-aa4f-cbec2f5b507d")]
+    [gView.Framework.system.RegisterPlugIn("3e9ebc6d-4f71-4ecc-aa4f-cbec2f5b507d", Obsolete = true)]
     public class GraphicsRibbonTab : ICartoRibbonTab
     {
         private List<RibbonGroupBox> _groups;

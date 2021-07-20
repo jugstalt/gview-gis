@@ -66,8 +66,6 @@ namespace gView.Framework.UI.Controls
             // Dieser Aufruf ist für den Windows Form-Designer erforderlich.
             InitializeComponent();
 
-
-
             _menuItemInsertGroup = new ToolStripMenuItem(LocalizedResources.GetResString("Menu.InsertGroup", "Insert Group"), iLMenuItem.Images[1]);
             _menuItemInsertGroup.Click += new EventHandler(this.clickInsertGroup);
             _menuItemMoveToGroup = new ToolStripMenuItem(LocalizedResources.GetResString("Menu.MoveToGroup", "Move to Group"), iLMenuItem.Images[2]);
@@ -1192,8 +1190,9 @@ namespace gView.Framework.UI.Controls
                         {
                             if (((LegendItem)item).legendItem != null)
                             {
-                                ((LegendItem)item).level = _lastLayerLevel;
-                                int l = _lastLayerLevel * 19 + 19;
+                                //((LegendItem)item).level = _lastLayerLevel;
+                                //int l = _lastLayerLevel * 19 + 19;
+                                int l = ((LegendItem)item).level * 19 + 19;
 
                                 ILegendItem legendItem = ((LegendItem)item).legendItem;
                                 if (legendItem is ISymbol)

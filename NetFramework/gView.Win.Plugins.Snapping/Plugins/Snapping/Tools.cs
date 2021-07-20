@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace gView.Plugins.Snapping
 {
-    [gView.Framework.system.RegisterPlugIn("8C5AD6C8-8991-447c-9313-5E0FAC6EA2BB", Obsolote = true)]
+    [gView.Framework.system.RegisterPlugIn("8C5AD6C8-8991-447c-9313-5E0FAC6EA2BB", Obsolete = true)]
     public class SchemaText : ITool, IToolItem
     {
         #region ITool Members
@@ -66,7 +66,7 @@ namespace gView.Plugins.Snapping
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("9CDE6BD1-317E-478b-8828-B169A6688CC5", Obsolote = true)]
+    [gView.Framework.system.RegisterPlugIn("9CDE6BD1-317E-478b-8828-B169A6688CC5", Obsolete = true)]
     public class SchemaCombo : ITool, IToolItem, IPersistable, IToolItemLabel
     {
         private IMapDocument _doc = null;
@@ -282,7 +282,7 @@ namespace gView.Plugins.Snapping
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("35BCECD1-393F-443f-B15D-DC1DC6AD9564", Obsolote = true)]
+    [gView.Framework.system.RegisterPlugIn("35BCECD1-393F-443f-B15D-DC1DC6AD9564", Obsolete = true)]
     public class ToleranceText : ITool, IToolItem
     {
         #region ITool Members
@@ -338,7 +338,7 @@ namespace gView.Plugins.Snapping
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("D678C377-79A0-49e5-88A3-6635FD7B522C", Obsolote = true)]
+    [gView.Framework.system.RegisterPlugIn("D678C377-79A0-49e5-88A3-6635FD7B522C", Obsolete = true)]
     public class ToleranceCombo : ITool, IToolItem, IPersistable
     {
         private IMapDocument _doc = null;

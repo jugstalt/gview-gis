@@ -1,17 +1,10 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Xml;
-using System.Windows.Forms;
-using gView.Framework;
-using gView.Framework.Data;
-using gView.Framework.UI;
 using gView.Framework.Carto;
+using gView.Framework.Data;
 using gView.Framework.Symbology;
-using gView.Framework.system;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Controls
 {
@@ -29,7 +22,10 @@ namespace gView.Framework.UI.Controls
             if (_element != null)
             {
                 if (_element.ElementType != TOCElementType.ClosedGroup &&
-                    _element.ElementType != TOCElementType.OpenedGroup) return;
+                    _element.ElementType != TOCElementType.OpenedGroup)
+                {
+                    return;
+                }
 
                 path = _element.Name;
                 ITOCElement parent = _element;
@@ -61,7 +57,11 @@ namespace gView.Framework.UI.Controls
         }
         public override string ToString()
         {
-            if (_map == null) return "null";
+            if (_map == null)
+            {
+                return "null";
+            }
+
             return _map.Name;
         }
 
@@ -71,7 +71,11 @@ namespace gView.Framework.UI.Controls
 
         public void rename(string newName)
         {
-            if (_map == null) return;
+            if (_map == null)
+            {
+                return;
+            }
+
             _map.Name = newName;
         }
 
@@ -192,7 +196,10 @@ namespace gView.Framework.UI.Controls
         {
             get
             {
-                if (_element == null) return 0;
+                if (_element == null)
+                {
+                    return 0;
+                }
 
                 ITOCElement parent = _element.ParentGroup;
                 int l = 0;
@@ -208,12 +215,20 @@ namespace gView.Framework.UI.Controls
         {
             get
             {
-                if (_element == null) return false;
+                if (_element == null)
+                {
+                    return false;
+                }
+
                 return _element.LayerVisible;
             }
             set
             {
-                if (_element == null) return;
+                if (_element == null)
+                {
+                    return;
+                }
+
                 _element.LayerVisible = value;
             }
         }
@@ -229,7 +244,11 @@ namespace gView.Framework.UI.Controls
 
         public void rename(string newName)
         {
-            if (_element == null) return;
+            if (_element == null)
+            {
+                return;
+            }
+
             _element.Name = newName;
         }
 
@@ -264,7 +283,7 @@ namespace gView.Framework.UI.Controls
     {
         private ILegendItem _legendItem;
         private LayerItem _layerItem;
-        private int _level = 0;
+
         public LegendItem(ILegendItem legendItem, LayerItem layerItem)
         {
             _legendItem = legendItem;
@@ -275,48 +294,68 @@ namespace gView.Framework.UI.Controls
         {
             get { return _legendItem; }
         }
-        public int level
-        {
-            get { return _level; }
-            set { _level = value; }
-        }
+        public int level => _layerItem.level;
+
         static public gView.Framework.Symbology.ILegendGroup LegendGroup(LayerItem layerItem)
         {
+            if (layerItem == null)
+            {
+                return null;
+            }
 
-            if (layerItem == null) return null;
             List<ILayer> layers = layerItem.TOCElement.Layers;
-            if (layers.Count == 0) return null;
+            if (layers.Count == 0)
+            {
+                return null;
+            }
 
             ILayer elem = layers[0];
 
-            if (!(elem is IFeatureLayer)) return null;
+            if (!(elem is IFeatureLayer))
+            {
+                return null;
+            }
 
             LegendGroupGroup legendGroup = new LegendGroupGroup();
             ILabelRenderer labelRenderer = ((IFeatureLayer)elem).LabelRenderer;
             if (labelRenderer is ILegendGroup)
+            {
                 legendGroup.Add((ILegendGroup)labelRenderer);
+            }
 
             IFeatureRenderer renderer = ((IFeatureLayer)elem).FeatureRenderer;
 
             if (renderer is ILegendGroup)
+            {
                 legendGroup.Add((ILegendGroup)renderer);
+            }
 
             return legendGroup.Count > 0 ? legendGroup : null;
         }
 
         public override string ToString()
         {
-            if (_legendItem == null) return "";
+            if (_legendItem == null)
+            {
+                return "";
+            }
+
             return _legendItem.LegendLabel;
         }
 
         public void SetSymbol(ISymbol symbol)
         {
             ILegendGroup legendGroup = LegendItem.LegendGroup(_layerItem);
-            if (legendGroup == null) return;
+            if (legendGroup == null)
+            {
+                return;
+            }
+
             legendGroup.SetSymbol(_legendItem, symbol);
             if (_legendItem is ISymbol)
+            {
                 ((ISymbol)_legendItem).Release();
+            }
 
             _legendItem = symbol;
         }
@@ -326,7 +365,9 @@ namespace gView.Framework.UI.Controls
         public void rename(string newName)
         {
             if (_legendItem != null)
+            {
                 _legendItem.LegendLabel = newName;
+            }
         }
 
         #endregion
@@ -338,7 +379,9 @@ namespace gView.Framework.UI.Controls
             public void Add(ILegendGroup legendGroup)
             {
                 if (legendGroup != null && !_legendGroups.Contains(legendGroup))
+                {
                     _legendGroups.Add(legendGroup);
+                }
             }
 
             public int Count { get { return _legendGroups.Count; } }
@@ -351,7 +394,10 @@ namespace gView.Framework.UI.Controls
                 {
                     int count = 0;
                     foreach (ILegendGroup legendGroup in _legendGroups)
+                    {
                         count += legendGroup.LegendItemCount;
+                    }
+
                     return count;
                 }
             }
@@ -362,7 +408,10 @@ namespace gView.Framework.UI.Controls
                 foreach (ILegendGroup legendGroup in _legendGroups)
                 {
                     if (index < legendGroup.LegendItemCount + count)
+                    {
                         return legendGroup.LegendItem(index - count);
+                    }
+
                     count += legendGroup.LegendItemCount;
                 }
                 return null;
@@ -376,7 +425,10 @@ namespace gView.Framework.UI.Controls
                     {
                         ILegendGroup legendGroup = ByIndex(i);
                         if (legendGroup != null)
+                        {
                             legendGroup.SetSymbol(item, symbol);
+                        }
+
                         break;
                     }
                 }
@@ -390,7 +442,10 @@ namespace gView.Framework.UI.Controls
                 foreach (ILegendGroup legendGroup in _legendGroups)
                 {
                     if (index < legendGroup.LegendItemCount + count)
+                    {
                         return legendGroup;
+                    }
+
                     count += legendGroup.LegendItemCount;
                 }
                 return null;
@@ -409,7 +464,11 @@ namespace gView.Framework.UI.Controls
         {
             get
             {
-                if (_element == null) return false;
+                if (_element == null)
+                {
+                    return false;
+                }
+
                 return _element.ElementType == TOCElementType.OpenedGroup;
             }
         }
@@ -417,7 +476,10 @@ namespace gView.Framework.UI.Controls
         {
             get
             {
-                if (_element == null) return 0;
+                if (_element == null)
+                {
+                    return 0;
+                }
 
                 ITOCElement parent = _element.ParentGroup;
                 int l = 0;
@@ -433,12 +495,20 @@ namespace gView.Framework.UI.Controls
         {
             get
             {
-                if (_element == null) return false;
+                if (_element == null)
+                {
+                    return false;
+                }
+
                 return _element.LayerVisible;
             }
             set
             {
-                if (_element == null) return;
+                if (_element == null)
+                {
+                    return;
+                }
+
                 _element.LayerVisible = value;
             }
         }
@@ -453,7 +523,11 @@ namespace gView.Framework.UI.Controls
         #region IRenamable Member
         public void rename(string newName)
         {
-            if (_element == null) return;
+            if (_element == null)
+            {
+                return;
+            }
+
             _element.Name = newName;
         }
         #endregion
@@ -467,7 +541,9 @@ namespace gView.Framework.UI.Controls
         public MapContextMenuItem(IMap map, IMapContextMenuItem item)
         {
             if (item == null)
+            {
                 return;
+            }
 
             base.Text = item.Name;
             base.Enabled = item.Enable(map);
@@ -499,7 +575,9 @@ namespace gView.Framework.UI.Controls
             _tool = tool;
 
             if (tool != null)
+            {
                 this.Image = tool.Image as Image;
+            }
         }
         public LayerContextMenuItem(string name, Image image)
         {
@@ -545,8 +623,16 @@ namespace gView.Framework.UI.Controls
 
         public int Compare(IDatasetElementContextMenuItem x, IDatasetElementContextMenuItem y)
         {
-            if (x.SortOrder < y.SortOrder) return -1;
-            if (x.SortOrder > y.SortOrder) return 1;
+            if (x.SortOrder < y.SortOrder)
+            {
+                return -1;
+            }
+
+            if (x.SortOrder > y.SortOrder)
+            {
+                return 1;
+            }
+
             return 0;
         }
 

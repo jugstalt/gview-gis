@@ -12,7 +12,7 @@ using gView.Framework.system.UI;
 
 namespace gView.Plugins.Editor.Editor
 {
-    [gView.Framework.system.RegisterPlugIn("5434ca46-fc3a-466f-a9d5-88e8d5452bd6", Obsolote = true)]
+    [gView.Framework.system.RegisterPlugIn("5434ca46-fc3a-466f-a9d5-88e8d5452bd6", Obsolete = true)]
     public class EditorRibbonTab : ICartoRibbonTab
     {
         private List<RibbonGroupBox> _groups;

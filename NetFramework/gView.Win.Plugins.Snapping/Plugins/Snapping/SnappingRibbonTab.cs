@@ -8,7 +8,7 @@ using gView.Framework.system.UI;
 
 namespace gView.Plugins.Snapping
 {
-    [gView.Framework.system.RegisterPlugIn("5d4501c0-bc51-493a-a87f-a7a35747611a", Obsolote = true)]
+    [gView.Framework.system.RegisterPlugIn("5d4501c0-bc51-493a-a87f-a7a35747611a", Obsolete = true)]
     public class SnappingRibbonTab : ICartoRibbonTab
     {
         private List<RibbonGroupBox> _groups;

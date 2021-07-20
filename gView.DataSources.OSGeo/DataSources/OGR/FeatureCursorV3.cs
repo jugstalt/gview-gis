@@ -17,31 +17,22 @@ namespace gView.DataSources.OGR
             }
 
             _layer = layer;
-            _layer.ResetReading();
 
             if (filter is ISpatialFilter)
             {
                 IEnvelope env=((ISpatialFilter)filter).Geometry.Envelope;
-                _layer.SetSpatialFilterRect(env.minx, env.miny, env.maxx, env.maxy);
-                if (String.IsNullOrEmpty(filter.WhereClause))
-                {
-                    _layer.SetAttributeFilter(null);
-                }
-                else
+                _layer.SetSpatialFilterRect(0, env.minx, env.miny, env.maxx, env.maxy);
+                if (!String.IsNullOrEmpty(filter.WhereClause))
                 {
                     _layer.SetAttributeFilter(filter.WhereClause);
                 }
             }
             else
             {
-                string where = filter.WhereClause;
-                if (String.IsNullOrEmpty(where))
+                if (!String.IsNullOrEmpty(filter.WhereClause))
                 {
-                    where = null;
+                    _layer.SetAttributeFilter(filter.WhereClause);
                 }
-
-                _layer.SetAttributeFilter(where);
-                _layer.SetSpatialFilter(null);
             }
         }
 
@@ -55,61 +46,58 @@ namespace gView.DataSources.OGR
             }
 
             OSGeo_v3.OGR.Feature ogrfeature = _layer.GetNextFeature();
-            if (ogrfeature == null)
+            //using (OSGeo_v3.OGR.Feature ogrfeature = _layer.GetNextFeature())
             {
-                return Task.FromResult<IFeature>(null);
-            }
-
-            Feature feature = new Feature();
-            feature.OID = (int)ogrfeature.GetFID();
-
-            OSGeo_v3.OGR.FeatureDefn defn = ogrfeature.GetDefnRef();
-            int fieldCount = defn.GetFieldCount();
-            for (int i = 0; i < fieldCount; i++)
-            {
-                OSGeo_v3.OGR.FieldDefn fdefn = defn.GetFieldDefn(i);
-                FieldValue fv = new FieldValue(fdefn.GetName());
-
-                string fieldType = fdefn.GetFieldTypeName(fdefn.GetFieldType()).ToLower();
-                switch (fieldType)
+                if (ogrfeature == null)
                 {
-                    case "integer":
-                        fv.Value = ogrfeature.GetFieldAsInteger(i);
-                        break;
-                    case "real":
-                        fv.Value = ogrfeature.GetFieldAsDouble(i);
-                        break;
-                    default:
-                        //if (fv.Name == "geom")
-                        //{
-                        //    var geom = ogrfeature.GetFieldAsString(i).ToByteArray();
-                        //    if (geom != null)
-                        //    {
-                        //        feature.Shape = gView.Framework.OGC.OGC.WKBToGeometry(geom);
-                        //    }
-                        //}
-                        //else
+                    return Task.FromResult<IFeature>(null);
+                }
+
+                Feature feature = new Feature();
+                feature.OID = (int)ogrfeature.GetFID();
+
+                OSGeo_v3.OGR.FeatureDefn defn = ogrfeature.GetDefnRef();
+                int fieldCount = defn.GetFieldCount();
+                for (int i = 0; i < fieldCount; i++)
+                {
+                    OSGeo_v3.OGR.FieldDefn fdefn = defn.GetFieldDefn(i);
+                    //using (OSGeo_v3.OGR.FieldDefn fdefn = defn.GetFieldDefn(i))
+                    {
+                        FieldValue fv = new FieldValue(fdefn.GetName());
+
+                        string fieldType = fdefn.GetFieldTypeName(fdefn.GetFieldType()).ToLower();
+                        switch (fieldType)
                         {
-                            fv.Value = ogrfeature.GetFieldAsString(i);
+                            case "integer":
+                                fv.Value = ogrfeature.GetFieldAsInteger(i);
+                                break;
+                            case "real":
+                                fv.Value = ogrfeature.GetFieldAsDouble(i);
+                                break;
+                            default:
+                                fv.Value = ogrfeature.GetFieldAsString(i);
+                                break;
                         }
-                        break;
+                        feature.Fields.Add(fv);
+                    }
                 }
-                feature.Fields.Add(fv);
-            }
 
-            if (feature.Shape == null)
-            {
-                OSGeo_v3.OGR.Geometry geom = ogrfeature.GetGeometryRef();
-                if (geom != null)
+                if (feature.Shape == null)
                 {
-                    byte[] buffer = new byte[geom.WkbSize()];
-                    geom.ExportToWkb(buffer);
+                    using (OSGeo_v3.OGR.Geometry geom = ogrfeature.GetGeometryRef())
+                    {
+                        if (geom != null)
+                        {
+                            byte[] buffer = new byte[geom.WkbSize()];
+                            geom.ExportToWkb(buffer);
 
-                    feature.Shape = gView.Framework.OGC.OGC.WKBToGeometry(buffer);
+                            feature.Shape = gView.Framework.OGC.OGC.WKBToGeometry(buffer);
+                        }
+                    }
                 }
-            }
 
-            return Task.FromResult<IFeature>(feature);
+                return Task.FromResult<IFeature>(feature);
+            }
         }
 
         #endregion
