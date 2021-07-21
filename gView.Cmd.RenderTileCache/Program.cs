@@ -93,7 +93,7 @@ namespace gView.Cmd.RenderTileCache
                     Console.WriteLine("gView.Cmd.RenderTileCache <-info|-render> -server <server> -service <service>");
                     Console.WriteLine("       optional paramters: -epsg <epsg-code>                            [default: first]");
                     Console.WriteLine("                           -compact ... create a compact tile cache");
-                    Console.WriteLine("                           -orientation <ul|ll|upperleft|upperright>    [default: upperleft]");
+                    Console.WriteLine("                           -orientation <ul|ll|upperleft|lowerleft>     [default: upperleft]");
                     Console.WriteLine("                           -bbox <minx,miny,maxx,maxy>                  [default: fullextent]");
                     Console.WriteLine("                           -scales <scale1,scale2,...>                  [default: empty => all scales");
                     Console.WriteLine("                           -threads <max-parallel-requests>             [default: 1]");

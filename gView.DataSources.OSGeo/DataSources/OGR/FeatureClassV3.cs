@@ -11,23 +11,22 @@ namespace gView.DataSources.OGR
         private string _shapeFieldName = "SHAPE", _idFieldName, _name;
         private long _countFeatures;
         private Dataset _dataset;
-        private OSGeo_v3.OGR.DataSource _dataSource;
         private bool _hasZ = false, _hasM = false;
         private geometryType _geomType = geometryType.Unknown;
         private int _layerIndex;
         private Fields _fields;
 
-        public FeatureClassV3(Dataset dataset, OSGeo_v3.OGR.DataSource dataSource, int layerIndex)
+        public FeatureClassV3(Dataset dataset, string name)
         {
             _dataset = dataset;
-            _dataSource = dataSource;
-            _layerIndex = layerIndex;
+            _name = name;
 
-            using (var ogrLayer = _dataSource.GetLayerByIndex(layerIndex))
+            using (var dataSource = OSGeo_v3.OGR.Ogr.Open(_dataset.ConnectionString, 0))
+            using (var ogrLayer = dataSource.GetLayerByName(_name))
             {
 
                 OSGeo_v3.OGR.FeatureDefn defn = ogrLayer.GetLayerDefn();
-                _name = defn.GetName();
+                
                 if (dataset.ConnectionString.ToLower().EndsWith(".dxf"))
                 {
                     try
@@ -106,7 +105,7 @@ namespace gView.DataSources.OGR
 
         public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
-            return Task.FromResult<IFeatureCursor>(new FeatureCursorV3(_dataSource.GetLayerByIndex(_layerIndex), filter));
+            return Task.FromResult<IFeatureCursor>(new FeatureCursorV3(_dataset, _name, filter));
         }
 
         #endregion

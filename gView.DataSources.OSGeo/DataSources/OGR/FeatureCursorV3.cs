@@ -7,27 +7,21 @@ namespace gView.DataSources.OGR
 {
     internal class FeatureCursorV3 : IFeatureCursor
     {
+        OSGeo_v3.OGR.DataSource _dataSource;
         OSGeo_v3.OGR.Layer _layer;
 
-        public FeatureCursorV3(OSGeo_v3.OGR.Layer layer, IQueryFilter filter)
+        public FeatureCursorV3(Dataset dataset, string layerName, IQueryFilter filter)
         {
-            if (layer == null)
-            {
-                return;
-            }
+            _dataSource = OSGeo_v3.OGR.Ogr.Open(dataset.ConnectionString, 0);
+            _layer = _dataSource.GetLayerByName(layerName);
 
-            _layer = layer;
-            _layer.ResetReading();
+            if (_layer == null) return;
 
             if (filter is ISpatialFilter)
             {
                 IEnvelope env=((ISpatialFilter)filter).Geometry.Envelope;
                 _layer.SetSpatialFilterRect(env.minx, env.miny, env.maxx, env.maxy);
-                if (String.IsNullOrEmpty(filter.WhereClause))
-                {
-                    _layer.SetAttributeFilter(null);
-                }
-                else
+                if (!String.IsNullOrEmpty(filter.WhereClause))
                 {
                     _layer.SetAttributeFilter(filter.WhereClause);
                 }
@@ -41,7 +35,6 @@ namespace gView.DataSources.OGR
                 }
 
                 _layer.SetAttributeFilter(where);
-                _layer.SetSpatialFilter(null);
             }
         }
 
@@ -80,18 +73,7 @@ namespace gView.DataSources.OGR
                         fv.Value = ogrfeature.GetFieldAsDouble(i);
                         break;
                     default:
-                        //if (fv.Name == "geom")
-                        //{
-                        //    var geom = ogrfeature.GetFieldAsString(i).ToByteArray();
-                        //    if (geom != null)
-                        //    {
-                        //        feature.Shape = gView.Framework.OGC.OGC.WKBToGeometry(geom);
-                        //    }
-                        //}
-                        //else
-                        {
-                            fv.Value = ogrfeature.GetFieldAsString(i);
-                        }
+                        fv.Value = ogrfeature.GetFieldAsString(i);
                         break;
                 }
                 feature.Fields.Add(fv);
@@ -125,6 +107,11 @@ namespace gView.DataSources.OGR
                     _layer.ResetReading();
                     _layer.Dispose();
                     _layer = null;
+                }
+                if(_dataSource!=null)
+                {
+                    _dataSource.Dispose();
+                    _dataSource = null;
                 }
             }
             catch { }
