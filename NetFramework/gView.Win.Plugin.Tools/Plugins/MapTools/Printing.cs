@@ -93,7 +93,7 @@ namespace gView.Plugins.MapTools
         }
     }
 
-    [gView.Framework.system.RegisterPlugIn("23E7CCE3-E370-418f-8B8F-4F8E08A0A6A7", Obsolote = true)]
+    [gView.Framework.system.RegisterPlugIn("23E7CCE3-E370-418f-8B8F-4F8E08A0A6A7", Obsolete = true)]
     public class PrintPageSetup : ITool
     {
         #region ITool Members
@@ -147,7 +147,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("968B39BA-F35D-4ffd-B576-913B81E89EEF", Obsolote = true)]
+    [gView.Framework.system.RegisterPlugIn("968B39BA-F35D-4ffd-B576-913B81E89EEF", Obsolete = true)]
     public class PrintPreview : ITool, IToolControl
     {
         #region ITool Members
@@ -216,7 +216,7 @@ namespace gView.Plugins.MapTools
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("AFDF2582-1B65-4e10-9A36-FEBB470140DA", Obsolote = true)]
+    [gView.Framework.system.RegisterPlugIn("AFDF2582-1B65-4e10-9A36-FEBB470140DA", Obsolete = true)]
     public class Print : ITool, IShortCut
     {
 

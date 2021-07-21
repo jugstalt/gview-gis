@@ -230,11 +230,16 @@ namespace gView.DataSources.OGR
 
         public void Dispose()
         {
-            //if (_dataSource != null)
-            //{
-            //    _dataSource.Dispose();
-            //    _dataSource = null;
-            //}
+            if (_dataSourceV1 != null)
+            {
+                _dataSourceV1.Dispose();
+                _dataSourceV1 = null;
+            }
+            if (_dataSourceV3 != null)
+            {
+                _dataSourceV3.Dispose();
+                _dataSourceV3 = null;
+            }
         }
 
         #endregion

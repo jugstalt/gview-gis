@@ -117,7 +117,7 @@ namespace gView.GraphicsEngine.Skia
                     pixelData.Scan0 = Marshal.AllocHGlobal(_bitmap.RowBytes / 4 * _bitmap.Height * 3);
                     pixelData.Stride = _bitmap.RowBytes / 4 * 3;
 
-                    if(lockMode == BitmapLockMode.ReadOnly || lockMode==BitmapLockMode.ReadWrite)
+                    if (lockMode == BitmapLockMode.ReadOnly || lockMode == BitmapLockMode.ReadWrite)
                     {
                         pixelData.ReadFromArgb(_bitmap.GetPixels());
                     }
@@ -143,7 +143,7 @@ namespace gView.GraphicsEngine.Skia
                 {
                     if (bitmapPixelData.LockMode == BitmapLockMode.WriteOnly ||
                         bitmapPixelData.LockMode == BitmapLockMode.ReadWrite)
-                    { 
+                    {
                         bitmapPixelData.CopyToArgb(_bitmap.GetPixels());
                     }
                 }
@@ -161,7 +161,7 @@ namespace gView.GraphicsEngine.Skia
 
         public void MakeTransparent()
         {
-            using(var canvas = new SKCanvas(_bitmap))
+            using (var canvas = new SKCanvas(_bitmap))
             {
                 canvas.Clear(SKColors.Transparent);
             }
@@ -199,7 +199,7 @@ namespace gView.GraphicsEngine.Skia
 
         #region Helper
 
-        
+
 
         #endregion
     }

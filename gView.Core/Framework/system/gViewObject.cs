@@ -45,7 +45,7 @@ namespace gView.Framework.system
 
         public PluginUsage Usage { get; set; }
 
-        public bool Obsolote { get; set; }
+        public bool Obsolete { get; set; }
     }
 
     public interface IPlugInWrapper

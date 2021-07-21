@@ -104,7 +104,7 @@ namespace gView.Framework.system
                                 continue;
                             }
 
-                            if (registerPluginAttribute.Obsolote == true)
+                            if (registerPluginAttribute.Obsolete == true)
                             {
                                 continue;
                             }

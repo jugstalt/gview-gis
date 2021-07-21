@@ -486,8 +486,15 @@ namespace gView.Framework.UI.Controls
                           {
                               CreateBitmapSnapshot();
                               _iBitmap = null;
+                              myMapRendererInstance.Dispose();
                           }
-                          myMapRendererInstance.Dispose();
+                          else
+                          {
+                              lock (_iBitmap)
+                              {
+                                  myMapRendererInstance.Dispose();
+                              }
+                          }
                       }
                       catch (Exception ex)
                       {
@@ -1614,15 +1621,17 @@ namespace gView.Framework.UI.Controls
             {
                 if (_iBitmap != null)
                 {
-                    try
+                    lock (_iBitmap)
                     {
-                        var oldBitmapSnapShot = _bitmapSnapShot;
-                        _bitmapSnapShot = _iBitmap.CloneToGdiBitmap();
-                        //_bitmapSnapShot.Save($"C:\\temp\\snapshot{ snapshotCounter++ }.png");
+                        try
+                        {
+                            var oldBitmapSnapShot = _bitmapSnapShot;
+                            _bitmapSnapShot = _iBitmap.CloneToGdiBitmap();
 
-                        ReleaseBitmapSnapshot(oldBitmapSnapShot);
+                            ReleaseBitmapSnapshot(oldBitmapSnapShot);
+                        }
+                        catch { }
                     }
-                    catch { }
                 }
 
                 return _bitmapSnapShot != null;
