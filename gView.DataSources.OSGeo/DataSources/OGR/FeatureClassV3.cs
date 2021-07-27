@@ -24,9 +24,8 @@ namespace gView.DataSources.OGR
             using (var dataSource = OSGeo_v3.OGR.Ogr.Open(_dataset.ConnectionString, 0))
             using (var ogrLayer = dataSource.GetLayerByName(_name))
             {
-
                 OSGeo_v3.OGR.FeatureDefn defn = ogrLayer.GetLayerDefn();
-                
+                _name = defn.GetName();
                 if (dataset.ConnectionString.ToLower().EndsWith(".dxf"))
                 {
                     try
@@ -62,6 +61,22 @@ namespace gView.DataSources.OGR
 
                     }
                     _fields.Add(field);
+                }
+
+                using (var spatialRef = defn.GetGeomFieldDefn(0)?.GetSpatialRef())
+                {
+                    if (spatialRef != null)
+                    {
+                        string proj4;
+                        spatialRef.ExportToProj4(out proj4);
+                        if (!String.IsNullOrEmpty(proj4))
+                        {
+                            var sRef = new SpatialReference(spatialRef.GetName());
+                            sRef.Parameters = proj4.Split(' ');
+
+                            this.SpatialReference = sRef;
+                        }
+                    }
                 }
 
                 _countFeatures = ogrLayer.GetFeatureCount(1);
