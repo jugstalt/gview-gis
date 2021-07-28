@@ -57,6 +57,11 @@ ul {
     font-size:14px;
 }
 
+.yaml-code .yaml-comment {
+    color:#0a0;
+    font-weight:bold;
+}
+
 .yaml-code .property-name,
 .yaml-code .property-value{
     display:inline-block;
@@ -87,6 +92,16 @@ ul {
     .html-body form table td.input * {
         min-width:100%;
     }
+
+.html-body a {
+    color: #fff;
+    text-decoration: none;
+    background-color: #337ab7;
+    padding: 1px 10px;
+    border-radius: 15px;
+    margin: 0px 4px 4px 0px;
+    display: inline-block;
+}
 
 
 /***** Header *******/
@@ -222,8 +237,8 @@ table.service-capabilities {
     }
 
     table.service-capabilities tr.interpreter {
-        background-color:#0094ff;
-        color:#fff;
+        background-color: #337ab7;
+        color: #fff;
     }
     table.service-capabilities tr.interpreter td.interpreter-name {
         font-weight:bold;
@@ -410,11 +425,11 @@ input[type="file"] {
             height:43px;
             position:relative;
         }
-        .gview5-manage-body .folders .folder.selected,
-        .gview5-manage-body .users .user.selected {
-            background:#0094ff;
-            color:white;
-        }
+            .gview5-manage-body .folders .folder.selected,
+            .gview5-manage-body .users .user.selected {
+                background: #337ab7;
+                color: white;
+            }
         .gview5-manage-body .folders .folder:hover,
         .gview5-manage-body .users .user:hover {
             background:#eee;
@@ -442,7 +457,8 @@ input[type="file"] {
             }
 
             .gview5-manage-body .services .service.stopped {
-                background-color:#ffffcc;
+                /*background-color:#ffffcc;*/
+                opacity: .25;
             }
             .gview5-manage-body .services .service.running {
                 background-color: #ccffcc;
@@ -451,7 +467,7 @@ input[type="file"] {
                 background-color: #ffcccc;
             }
             .gview5-manage-body .services .service.stopped.has-errors {
-                background-color: #ffeecc;
+                /*background-color: #ffeecc;*/
             }
 
     .gview5-manage-body .user-properties {
@@ -504,13 +520,13 @@ input[type="file"] {
     border-radius: 5px;
 }
 
-    .gview5-manage-body button {
-        background:#0094ff;
-        color:#fff;
-        border:1px solid #0026ff;
-        border-radius:4px;
-        padding:8px;
-    }
+.gview5-manage-body button {
+    background: #337ab7;
+    color: #fff;
+    border: 1px solid #337ab7;
+    border-radius: 19px;
+    padding: 8px 20px;
+}
 
 .gview5-modal-blocker {
     position: fixed;
@@ -649,6 +665,9 @@ input[type="file"] {
 .icon.clickable:hover {
     background-color:#0094ff;
 }
+    .icon.clickable.loading {
+        background-image: url('../images/icons/loader1.gif') !important;
+    }
 
 .icon.settings {
     background-image: url('../images/icons/settings-b-26.png');

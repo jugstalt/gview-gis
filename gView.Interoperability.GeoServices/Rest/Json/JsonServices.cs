@@ -1,8 +1,6 @@
 ﻿using gView.Framework.system;
+using gView.Interoperability.GeoServices.Rest.Reflection;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
@@ -20,6 +18,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
         #region Classes
 
+        [YamlGroupBy("Type")]
         public class AgsService
         {
             [JsonProperty(PropertyName = "name")]
@@ -33,7 +32,9 @@ namespace gView.Interoperability.GeoServices.Rest.Json
                 get
                 {
                     if (this.Name.Contains("/"))
+                    {
                         return Name.Substring(Name.LastIndexOf("/") + 1);
+                    }
 
                     return Name;
                 }

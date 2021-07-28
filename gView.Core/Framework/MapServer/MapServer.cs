@@ -20,6 +20,7 @@ namespace gView.MapServer
         Task<IMetadataProvider> GetMetadtaProviderAsync(IServiceRequestContext context, Guid metadataProviderId);
 
         IMapService GetMapService(string name, string folder);
+        bool IsLoaded(string name, string folder);
 
         bool LoggingEnabled(loggingMethod methode);
         Task LogAsync(string mapName, string header, loggingMethod methode, string msg);
@@ -248,6 +249,8 @@ namespace gView.MapServer
         string IdentityLongName { get; }
 
         InterpreterCapabilities Capabilities { get; }
+
+        int Priority { get; }
     }
 
     public interface IServiceRequestContext : IContext

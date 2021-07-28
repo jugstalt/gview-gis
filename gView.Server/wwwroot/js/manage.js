@@ -266,7 +266,7 @@ window.gview.manage = (function() {
                         .appendTo($row);
 
                     $.each(result.allTypes, function(i, type) {
-                        var title = type;
+                        var title = toUIString(type);
                         if (title.indexOf('_') === 0) title = '#' + title.substr(1).toUpperCase();
                         $('<th>')
                             .addClass('rule')
@@ -350,19 +350,19 @@ window.gview.manage = (function() {
             .addClass('icon clickable start ' + (service.status === 'running' ? 'gray' : ''))
             .appendTo($toolbar)
             .click(function() {
-                setServiceStatus($(this).closest('.service'), 'running');
+                setServiceStatus(this, $(this).closest('.service'), 'running');
             });
         $('<div>')
             .addClass('icon clickable stop ' + (service.status === 'stopped' ? 'gray' : ''))
             .appendTo($toolbar)
             .click(function() {
-                setServiceStatus($(this).closest('.service'), 'stopped');
+                setServiceStatus(this, $(this).closest('.service'), 'stopped');
             });
         $('<div>')
             .addClass('icon clickable refresh')
             .appendTo($toolbar)
             .click(function() {
-                setServiceStatus($(this).closest('.service'), 'refresh');
+                setServiceStatus(this, $(this).closest('.service'), 'refresh');
             });
 
         $('<h4>' + service.name + '</h4>').appendTo($service);
@@ -493,7 +493,7 @@ window.gview.manage = (function() {
                                         .appendTo($row);
 
                                     $.each(result.allTypes, function(i, type) {
-                                        var title = type;
+                                        var title = toUIString(type);
                                         if (title.indexOf('_') === 0)
                                             title = '#' + title.substr(1).toUpperCase();
                                         $('<th>')
@@ -658,7 +658,9 @@ window.gview.manage = (function() {
         });
     };
 
-    var setServiceStatus = function($service, status) {
+    var setServiceStatus = function (sender, $service, status) {
+        $(sender).addClass('loading');
+
         get({
             url:
                 '/manage/setservicestatus?service=' +
@@ -666,7 +668,8 @@ window.gview.manage = (function() {
                 '&status=' +
                 status,
             type: 'post',
-            success: function(result) {
+            success: function (result) {
+                $(sender).removeClass('loading');
                 createServiceListItem($service.closest('.services'), result.service);
             }
         });
@@ -702,8 +705,8 @@ window.gview.manage = (function() {
             .addClass('form')
             .appendTo($page);
         if (user === '') {
-            appendFormInput($form, 'NewUsername');
-            appendFormInput($form, 'NewPassword', 'password');
+            appendFormInput($form, 'NewUsername', 'text', 'New client');
+            appendFormInput($form, 'NewPassword', 'password', 'New secret');
 
             $('<button>Create</button>')
                 .appendTo($form)
@@ -717,7 +720,7 @@ window.gview.manage = (function() {
                 });
         } else {
             appendFormHidden($form, 'Username', user);
-            appendFormInput($form, 'NewPassword', 'password', 'New password');
+            appendFormInput($form, 'NewPassword', 'password', 'New secret');
 
             $('<button>Change</button>')
                 .appendTo($form)
@@ -780,6 +783,22 @@ window.gview.manage = (function() {
             }
         });
     };
+
+    var toUIString = function (type) {
+        if (type) {
+            switch (type.toLowerCase()) {
+                case 'map':
+                    return 'Export Map';
+                case 'query':
+                    return 'Query';
+                case 'edit':
+                    return 'Features';
+                case 'publish':
+                    return 'Publish Serivices';
+            }
+        }
+        return type;
+    }
 
     return {
         pageServices: pageServices,

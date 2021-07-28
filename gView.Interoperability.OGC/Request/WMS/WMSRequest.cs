@@ -125,7 +125,8 @@ namespace gView.Interoperability.OGC
 
         public string IdentityName=> "wms";
         public string IdentityLongName => "OGC Web Map Service";
-        
+
+        public int Priority => 80;
 
         public InterpreterCapabilities Capabilities
         {

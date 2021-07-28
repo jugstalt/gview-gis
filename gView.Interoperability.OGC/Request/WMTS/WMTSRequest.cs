@@ -63,6 +63,8 @@ namespace gView.Interoperability.OGC.Request.WMTS
         public string IdentityName => "wmts";
         public string IdentityLongName => "OGC Web Map Tile Service";
 
+        public int Priority => 70;
+
         public void OnCreate(IMapServer mapServer)
         {
             _mapServer = mapServer;

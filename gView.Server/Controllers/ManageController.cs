@@ -136,7 +136,7 @@ namespace gView.Server.Controllers
                 List<object> mapServiceJson = new List<object>();
                 foreach (var folderService in folderServices)
                 {
-                    mapServiceJson.Add(MapService2Json(folderService, await folderService.GetSettingsAsync()));
+                    mapServiceJson.Add(await MapService2Json(folderService, await folderService.GetSettingsAsync()));
                 }
 
                 return Json(new
@@ -161,7 +161,7 @@ namespace gView.Server.Controllers
                 List<object> mapServiceJson = new List<object>();
                 foreach (var serviceInFolder in servicesInFolder)
                 {
-                    mapServiceJson.Add(MapService2Json(serviceInFolder, await serviceInFolder.GetSettingsAsync()));
+                    mapServiceJson.Add(await MapService2Json(serviceInFolder, await serviceInFolder.GetSettingsAsync()));
                 }
 
                 return Json(new
@@ -186,11 +186,13 @@ namespace gView.Server.Controllers
                 switch (status.ToLower())
                 {
                     case "running":
-                        if (settings.IsRunningOrIdle())
+                        if (!settings.IsRunning() || !_mapServiceMananger.Instance.IsLoaded(mapService.Name, mapService.Folder))
                         {
                             // start
-                            settings.Status = settings.Status;
+                            settings.RefreshService = DateTime.UtcNow;
+                            settings.Status = MapServiceStatus.Running;
                             await mapService.SaveSettingsAsync();
+
                             // reload
                             await _mapServiceMananger.Instance.GetServiceMapAsync(service.ServiceName(), service.FolderName());
                         }
@@ -201,11 +203,14 @@ namespace gView.Server.Controllers
                         await mapService.SaveSettingsAsync();
                         break;
                     case "refresh":
-                        settings.RefreshService = DateTime.UtcNow;
+                        // stop
+                        _mapServiceDeploymentManager.MapDocument.RemoveMap(mapService.Fullname);
 
                         // start
+                        settings.RefreshService = DateTime.UtcNow;
                         settings.Status = MapServiceStatus.Running;
                         await mapService.SaveSettingsAsync();
+
                         // reload
                         await _mapServiceMananger.Instance.GetServiceMapAsync(service.ServiceName(), service.FolderName());
                         break;
@@ -214,7 +219,7 @@ namespace gView.Server.Controllers
                 return Json(new
                 {
                     success = true,
-                    service = MapService2Json(mapService, settings)
+                    service = await MapService2Json(mapService, settings)
                 });
             });
         }
@@ -349,7 +354,7 @@ namespace gView.Server.Controllers
                 return Json(new
                 {
                     success = true,
-                    service = MapService2Json(mapService, settings)
+                    service = await MapService2Json(mapService, settings)
                 });
             });
         }
@@ -485,7 +490,7 @@ namespace gView.Server.Controllers
                 return Json(new
                 {
                     success = true,
-                    folder = MapService2Json(mapService, settings)
+                    folder = await MapService2Json(mapService, settings)
                 });
             });
         }
@@ -591,18 +596,30 @@ namespace gView.Server.Controllers
             }
         }
 
-        private object MapService2Json(IMapService mapService, IMapServiceSettings settings)
+        async private Task<object> MapService2Json(IMapService mapService, IMapServiceSettings settings)
         {
+            var status = settings?.Status ?? MapServiceStatus.Running;
+
+            if(status == MapServiceStatus.Running)
+            {
+                if (!_mapServiceMananger.Instance.IsLoaded(mapService.Name, mapService.Folder))
+                {
+                    status = MapServiceStatus.Idle;
+                }
+            }
+
+            bool hasErrors = await _logger.LogFileExists(mapService.Fullname, loggingMethod.error);
+
             return new
             {
                 name = mapService.Name,
                 folder = mapService.Folder,
-                status = (settings?.Status ?? MapServiceStatus.Running).ToString().ToLower(),
+                status = status.ToString().ToLower(),
                 hasSecurity = settings?.AccessRules != null && settings.AccessRules.Length > 0,
                 runningSince = settings?.Status == MapServiceStatus.Running && mapService.RunningSinceUtc.HasValue ?
                     mapService.RunningSinceUtc.Value.ToShortDateString() + " " + mapService.RunningSinceUtc.Value.ToLongTimeString() + " (UTC)" :
                     String.Empty,
-                hasErrors = _logger.LogFileExists(mapService.Fullname, Framework.system.loggingMethod.error)
+                hasErrors = hasErrors
             };
         }
 

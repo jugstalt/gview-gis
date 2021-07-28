@@ -47,7 +47,9 @@ namespace gView.Server.Services.MapServer
                 AddServices(String.Empty);
 
                 var pluginMananger = new PlugInManager();
-                Interpreters = pluginMananger.GetPlugins(typeof(IServiceRequestInterpreter)).ToArray();
+                Interpreters = pluginMananger.GetPlugins(typeof(IServiceRequestInterpreter))
+                    .OrderByDescending(t => ((IServiceRequestInterpreter)Activator.CreateInstance(t)).Priority)
+                    .ToArray();
 
                 TaskQueue = new TaskQueue<IServiceRequestContext>(Options.TaskQueue_MaxThreads, Options.TaskQueue_QueueLength);
             }

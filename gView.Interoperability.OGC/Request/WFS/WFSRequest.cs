@@ -98,6 +98,8 @@ namespace gView.Interoperability.OGC
         public string IdentityName => "wfs";
         public string IdentityLongName => "OGC Web Feature Service";
 
+        public int Priority => 50;
+
         public InterpreterCapabilities Capabilities
         {
             get

@@ -32,7 +32,7 @@ namespace gView.Server.Services.Logging
 
                 if (!String.IsNullOrWhiteSpace(_mapServerService.Options.LoggingRootPath))
                 {
-                    string fileName = LogFilename(mapName, loggingMethod, true);
+                    string fileName = await LogFilename(mapName, loggingMethod, true);
 
                     await File.AppendAllLinesAsync(fileName,
                         new string[]
@@ -52,7 +52,7 @@ namespace gView.Server.Services.Logging
             }
         }
 
-        public string LogFilename(string mapName, loggingMethod loggingMethod, bool createDir = false)
+        async public Task<string> LogFilename(string mapName, loggingMethod loggingMethod, bool createDir = false)
         {
             if (!String.IsNullOrWhiteSpace(_mapServerService.Options.LoggingRootPath))
             {
@@ -60,11 +60,31 @@ namespace gView.Server.Services.Logging
 
                 var dir = new DirectoryInfo(_mapServerService.Options.LoggingRootPath + "/" + mapName);
                 if (createDir && !dir.Exists)
+                {
                     dir.Create();
+                }
 
                 var mapService = String.IsNullOrWhiteSpace(mapName) ? null : _mapServerService.MapServices.Where(s => s.Fullname?.ToLower() == mapName).FirstOrDefault();
 
-                string fileName = $"{ loggingMethod.ToString() }-{ ((mapService != null && mapService.RunningSinceUtc.HasValue) ? mapService.RunningSinceUtc.Value.Ticks : DateTime.UtcNow.Ticks).ToString().PadLeft(21, '0') }.log";
+                var ticks = (mapService != null && mapService.RunningSinceUtc.HasValue) ? mapService.RunningSinceUtc.Value.Ticks : DateTime.UtcNow.Ticks;
+
+                if (mapService != null)
+                {
+                    if (!mapService.RunningSinceUtc.HasValue)
+                    {
+                        var settings = await mapService?.GetSettingsAsync();
+                        if(settings!=null)
+                        {
+                            ticks = settings.RefreshService.Ticks;
+                        }
+                    }
+                    else
+                    {
+                        ticks = mapService.RunningSinceUtc.Value.Ticks;
+                    }
+                }
+
+                string fileName = $"{ loggingMethod.ToString() }-{ ticks.ToString().PadLeft(21, '0') }.log";
 
                 return dir + "/" + fileName;
             }
@@ -72,9 +92,9 @@ namespace gView.Server.Services.Logging
             return String.Empty;
         }
 
-        public bool LogFileExists(string mapName, loggingMethod loggingMethod)
+        async public Task<bool> LogFileExists(string mapName, loggingMethod loggingMethod)
         {
-            string fileName = LogFilename(mapName, loggingMethod);
+            string fileName = await LogFilename(mapName, loggingMethod);
             if (!String.IsNullOrEmpty(fileName))
             {
                 FileInfo fi = new FileInfo(fileName);
@@ -139,9 +159,13 @@ namespace gView.Server.Services.Logging
             if (context != null && context.ServiceRequest != null)
             {
                 if (!String.IsNullOrWhiteSpace(context.ServiceRequest.Folder))
+                {
                     mapName = context.ServiceRequest.Folder + "/" + context.ServiceRequest.Service;
+                }
                 else
+                {
                     mapName = context.ServiceRequest.Service;
+                }
             }
 
             return mapName;

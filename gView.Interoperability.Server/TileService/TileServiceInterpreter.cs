@@ -252,6 +252,8 @@ namespace gView.Interoperability.Server.TileService
 
         public string IdentityLongName => "Tile Service Interpreter";
 
+        public int Priority => 10;
+
         #endregion
 
         async private Task GetTile(IServiceRequestContext context, IServiceMap serviceMap, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation, bool renderOnTheFly)

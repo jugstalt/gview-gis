@@ -6,10 +6,8 @@ using gView.Interoperability.GeoServices.Request;
 using gView.Interoperability.GeoServices.Rest.Json;
 using gView.Interoperability.GeoServices.Rest.Json.Features;
 using gView.Interoperability.GeoServices.Rest.Json.FeatureServer;
-using gView.Interoperability.GeoServices.Rest.Json.Legend;
 using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
 using gView.Interoperability.GeoServices.Rest.Json.Request;
-using gView.Interoperability.GeoServices.Rest.Json.Response;
 using gView.Interoperability.GeoServices.Rest.Reflection;
 using gView.MapServer;
 using gView.Server.AppCode;
@@ -1271,9 +1269,11 @@ namespace gView.Server.Controllers
         private bool IsRawResultFormat(string resultFormat = null)
         {
             if (String.IsNullOrEmpty(resultFormat))
+            {
                 resultFormat = ResultFormat();
+            }
 
-            switch(resultFormat?.ToLower())
+            switch (resultFormat?.ToLower())
             {
                 case "geojson":
                     return true;
@@ -1331,14 +1331,14 @@ namespace gView.Server.Controllers
 
             sb.Append("<h3>" + typeString + " (YAML):</h3>");
 
+            foreach (var serviceMethodAttribute in obj.GetType().GetCustomAttributes<ServiceMethodAttribute>(false))
+            {
+                sb.Append("<a href='" + _mapServerService.Options.OnlineResource + this.Request.Path + "/" + serviceMethodAttribute.Method + "'>" + serviceMethodAttribute.Name + "</a>");
+            }
+
             sb.Append("<div class='code-block'>");
             sb.Append(ToYamlHtml(obj));
             sb.Append("</div>");
-
-            foreach (var serviceMethodAttribute in obj.GetType().GetCustomAttributes<ServiceMethodAttribute>(false))
-            {
-                sb.Append("<a href='" + _mapServerService.Options.OnlineResource + this.Request.Path + "/" + serviceMethodAttribute.Method + "'>" + serviceMethodAttribute.Name + "</a><br/>");
-            }
 
             sb.Append("</div>");
 
@@ -1405,33 +1405,71 @@ namespace gView.Server.Controllers
                     }
                     else
                     {
+                        List<object> arrayValues = new List<object>();
+                        List<string> groupByValues = new List<string>();
+
                         for (int i = 0; i < array.Length; i++)
                         {
+                            arrayValues.Add(array.GetValue(i));
+                        }
 
-                            var val = array.GetValue(i);
-                            if (val == null)
+                        var firstElement = arrayValues.Where(v => v != null).FirstOrDefault();
+                        YamlGroupByAttribute groupByAttribute = null;
+                        if (firstElement != null && !firstElement.GetType().IsValueType && arrayValues.Where(v=>firstElement.GetType()== v?.GetType()).Count() == arrayValues.Count())
+                        {
+                            groupByAttribute = firstElement.GetType().GetCustomAttribute<YamlGroupByAttribute>();
+                            if (!String.IsNullOrEmpty(groupByAttribute?.GroupByField))
                             {
-                                sb.Append("null");
+                                groupByValues.AddRange(arrayValues.Select(v => v.GetType().GetProperty(groupByAttribute.GroupByField).GetValue(v).ToString())
+                                                                  .Distinct());
                             }
-                            else if (val.GetType().IsValueType || val.GetType() == typeof(string))
+                        }
+
+                        foreach (var groupBy in groupByAttribute!=null ? groupByValues.ToArray() : new string[] { String.Empty })
+                        {
+                            int arrayIndex = 0;
+                            foreach (var val in arrayValues)
                             {
-                                if (i == 0)
+                                if (val == null)
                                 {
-                                    sb.Append("[");
+                                    sb.Append("null");
+                                }
+                                else if (val.GetType().IsValueType || val.GetType() == typeof(string))
+                                {
+                                    if (arrayIndex == 0)
+                                    {
+                                        sb.Append("[");
+                                    }
+                                    else
+                                    {
+                                        sb.Append(", ");
+                                    }
+                                    sb.Append(HtmlYamlValue(linkAttribute, val, obj));
+                                    if (arrayIndex == array.Length - 1)
+                                    {
+                                        sb.Append("]");
+                                    }
                                 }
                                 else
                                 {
-                                    sb.Append(", ");
+                                    if (!String.IsNullOrEmpty(groupByAttribute?.GroupByField))
+                                    {
+                                        if (groupBy != val.GetType().GetProperty(groupByAttribute.GroupByField).GetValue(val)?.ToString())
+                                            continue;
+
+                                        if (arrayIndex == 0)
+                                        {
+                                            sb.Append("<div class='yaml-comment'>");
+                                            sb.Append($"<div>{ HtmlYamlSpaces(spaces + 2) }#</div>");
+                                            sb.Append($"<div>{ HtmlYamlSpaces(spaces + 2) }# { groupByAttribute.GroupByField }: { groupBy }</div>");
+                                            sb.Append($"<div>{ HtmlYamlSpaces(spaces + 2) }#</div>");
+                                            sb.Append("</div>");
+                                        }
+                                    }
+
+                                    sb.Append(ToYamlHtml(val, spaces + 2, true));
                                 }
-                                sb.Append(HtmlYamlValue(linkAttribute, val, obj));
-                                if (i == array.Length - 1)
-                                {
-                                    sb.Append("]");
-                                }
-                            }
-                            else
-                            {
-                                sb.Append(ToYamlHtml(val, spaces + 2, true));
+                                arrayIndex++;
                             }
                         }
                     }

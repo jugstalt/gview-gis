@@ -39,6 +39,8 @@ namespace gView.Interoperability.GeoServices.Request
         public string IdentityName => "geoservices";
         public string IdentityLongName => "OGC/ESRI GeoServices (REST)";
 
+        public int Priority => 100;
+
         public InterpreterCapabilities Capabilities =>
             new InterpreterCapabilities(new InterpreterCapabilities.Capability[]{
                     new InterpreterCapabilities.SimpleCapability("Catalog (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder}","1.0"),

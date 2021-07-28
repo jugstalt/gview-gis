@@ -117,6 +117,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
         #region Classes
 
+        [YamlGroupBy("ParentLayerId")]
         public class Layer : JsonIdName
         {
             public Layer()

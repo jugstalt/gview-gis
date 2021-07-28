@@ -440,6 +440,24 @@ namespace gView.Server.AppCode
             return _mapServiceMananger.TryAddService(name, folder);
         }
 
+        public bool IsLoaded(string name, string folder)
+        {
+            if (!String.IsNullOrEmpty(folder))
+            {
+                name = $"{folder}/{name}";
+            }
+
+            foreach (IMap map in _mapServiceDeploymentMananger.MapDocument.Maps)
+            {
+                if (map.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) && map is Map)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        } 
+
         async private Task<Map> FindMap(string name, IServiceRequestContext context)
         {
             foreach (IMap map in _mapServiceDeploymentMananger.MapDocument.Maps)

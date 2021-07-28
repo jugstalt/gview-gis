@@ -170,6 +170,8 @@ namespace gView.Interoperability.ArcXML
         public string IdentityName => "axl";
         public string IdentityLongName => "ESRI ArcXML (deprecated)";
 
+        public int Priority => 0;
+
         public InterpreterCapabilities Capabilities
         {
             get
