@@ -125,7 +125,6 @@ namespace gView.Interoperability.GeoServices.Rest.Json
                 this.ParentLayerId = -1;
             }
 
-            
 
             [JsonProperty(PropertyName = "parentLayerId")]
             public int ParentLayerId { get; set; }
