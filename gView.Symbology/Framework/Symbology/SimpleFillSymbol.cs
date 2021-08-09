@@ -124,6 +124,8 @@ namespace gView.Framework.Symbology
             set { PenWidth = value; }
         }
 
+        public bool SupportsGeometryType(geometryType geomType) => geomType == geometryType.Polygon;
+
         #region IFillSymbol Member
 
         public void FillPath(IDisplay display, IGraphicsPath path)

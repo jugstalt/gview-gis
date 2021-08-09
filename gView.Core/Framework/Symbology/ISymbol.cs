@@ -20,6 +20,8 @@ namespace gView.Framework.Symbology
 
         SymbolSmoothing SymbolSmothingMode { set; }
 
+        bool SupportsGeometryType(geometryType type);
+
         bool RequireClone();
     }
 

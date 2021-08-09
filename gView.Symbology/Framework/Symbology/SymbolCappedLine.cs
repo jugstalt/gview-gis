@@ -87,6 +87,8 @@ namespace gView.Framework.Symbology
             }
         }
 
+        public bool SupportsGeometryType(geometryType geomType) => geomType == geometryType.Polyline;
+
         public void Draw(IDisplay display, IGeometry geometry)
         {
             try

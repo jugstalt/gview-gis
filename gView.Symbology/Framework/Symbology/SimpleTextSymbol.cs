@@ -152,6 +152,8 @@ namespace gView.Framework.Symbology
             return format;
         }
 
+        public bool SupportsGeometryType(geometryType geomType) => true;
+
         #region ILabel Members
 
         [Browsable(false)]

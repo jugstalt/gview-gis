@@ -222,6 +222,9 @@
     <EmbeddedResource Include="Framework\Symbology\UI\Controls\OfficeLineWidthPicker.resx">
       <DependentUpon>OfficeLineWidthPicker.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Framework\Symbology\UI\Controls\PropertyForm_SimpleFillSymbol.de-DE.resx">
+      <DependentUpon>PropertyForm_SimpleFillSymbol.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Framework\Symbology\UI\Controls\PropertyForm_SimplePointSymbol.de-DE.resx">
       <DependentUpon>PropertyForm_SimplePointSymbol.cs</DependentUpon>
     </EmbeddedResource>

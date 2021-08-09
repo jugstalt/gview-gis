@@ -1,17 +1,10 @@
-using System;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
-using gView.Framework;
-using gView.Framework.Symbology;
 using gView.Framework.UI;
 
 namespace gView.Framework.Symbology.UI
 {
-	/// <summary>
-	/// Zusammenfassung für PropertyForm_SimpleFillSymbol.
-	/// </summary>
+    /// <summary>
+    /// Zusammenfassung für PropertyForm_SimpleFillSymbol.
+    /// </summary>
     internal class PropertyForm_SimpleFillSymbol : System.Windows.Forms.Form, IPropertyPageUI, gView.Framework.Symbology.UI.IPropertyPanel
 	{
 		private System.Windows.Forms.ColorDialog colorDialog1;
@@ -68,43 +61,27 @@ namespace gView.Framework.Symbology.UI
             // 
             // panelLineSymbol
             // 
-            this.panelLineSymbol.AccessibleDescription = null;
-            this.panelLineSymbol.AccessibleName = null;
             resources.ApplyResources(this.panelLineSymbol, "panelLineSymbol");
-            this.panelLineSymbol.BackgroundImage = null;
             this.panelLineSymbol.Controls.Add(this.tabControl1);
-            this.panelLineSymbol.Font = null;
             this.panelLineSymbol.Name = "panelLineSymbol";
             // 
             // tabControl1
             // 
-            this.tabControl1.AccessibleDescription = null;
-            this.tabControl1.AccessibleName = null;
             resources.ApplyResources(this.tabControl1, "tabControl1");
-            this.tabControl1.BackgroundImage = null;
             this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Font = null;
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             // 
             // tabPage1
             // 
-            this.tabPage1.AccessibleDescription = null;
-            this.tabPage1.AccessibleName = null;
             resources.ApplyResources(this.tabPage1, "tabPage1");
-            this.tabPage1.BackgroundImage = null;
             this.tabPage1.Controls.Add(this.propertyGrid);
-            this.tabPage1.Font = null;
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // propertyGrid
             // 
-            this.propertyGrid.AccessibleDescription = null;
-            this.propertyGrid.AccessibleName = null;
             resources.ApplyResources(this.propertyGrid, "propertyGrid");
-            this.propertyGrid.BackgroundImage = null;
-            this.propertyGrid.Font = null;
             this.propertyGrid.HelpForeColor = System.Drawing.SystemColors.Control;
             this.propertyGrid.LineColor = System.Drawing.SystemColors.ScrollBar;
             this.propertyGrid.Name = "propertyGrid";
@@ -113,23 +90,14 @@ namespace gView.Framework.Symbology.UI
             // 
             // panelFillSymbol
             // 
-            this.panelFillSymbol.AccessibleDescription = null;
-            this.panelFillSymbol.AccessibleName = null;
             resources.ApplyResources(this.panelFillSymbol, "panelFillSymbol");
-            this.panelFillSymbol.BackgroundImage = null;
             this.panelFillSymbol.Controls.Add(this.panelLineSymbol);
-            this.panelFillSymbol.Font = null;
             this.panelFillSymbol.Name = "panelFillSymbol";
             // 
             // PropertyForm_SimpleFillSymbol
             // 
-            this.AccessibleDescription = null;
-            this.AccessibleName = null;
             resources.ApplyResources(this, "$this");
-            this.BackgroundImage = null;
             this.Controls.Add(this.panelFillSymbol);
-            this.Font = null;
-            this.Icon = null;
             this.Name = "PropertyForm_SimpleFillSymbol";
             this.Load += new System.EventHandler(this.PropertyForm_SimpleFillSymbol_Load);
             this.panelLineSymbol.ResumeLayout(false);
@@ -148,24 +116,35 @@ namespace gView.Framework.Symbology.UI
 
 		private void propertyGrid_PropertyValueChanged(object s, System.Windows.Forms.PropertyValueChangedEventArgs e)
 		{
-			if(PropertyChanged!=null) PropertyChanged(_symbol);
-		}
+			if(PropertyChanged!=null)
+            {
+                PropertyChanged(_symbol);
+            }
+        }
 
 		#region IPropertryPageUI
+
 		public event PropertyChangedEvent PropertyChanged=null;
+
 		#endregion
 
         #region PropertyPanel Member
 
         public object PropertyPanel(ISymbol symbol)
         {
-            if (symbol is SimpleFillSymbol || symbol is HatchSymbol ||
-                symbol is GradientFillSymbol)
+            if (symbol is SimpleFillSymbol || 
+                symbol is HatchSymbol ||
+                symbol is GradientFillSymbol ||
+                symbol is PolygonMaskSymbol)
             {
                 _symbol = (IFillSymbol)symbol;
             }
 
-            if (_symbol == null) return null;
+            if (_symbol == null)
+            {
+                return null;
+            }
+
             propertyGrid.SelectedObject = new CustomClass(_symbol);
 
             return panelFillSymbol;

@@ -182,6 +182,22 @@ namespace gView.Framework.Symbology
             }
         }
 
+        public bool SupportsGeometryType(geometryType geomType)
+        {
+            foreach (SymbolCollectionItem sSym in _symbols)
+            {
+                if (sSym?.Symbol != null)
+                {
+                    if (sSym.Symbol.SupportsGeometryType(geomType) == false)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
         public void Draw(IDisplay display, IGeometry geometry)
         {
             foreach (SymbolCollectionItem sSym in _symbols)

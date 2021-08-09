@@ -1,4 +1,4 @@
-using gView.Framework.Carto.Rendering.UI;
+﻿using gView.Framework.Carto.Rendering.UI;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
@@ -11,20 +11,15 @@ using System.Reflection;
 
 namespace gView.Framework.Carto.Rendering
 {
-    [gView.Framework.system.RegisterPlugIn("646386E4-D010-4c7d-98AA-8C1903A3D5E4")]
-    public class SimpleRenderer : Cloner, IFeatureRenderer2, IPropertyPage, ILegendGroup, ISymbolCreator
+    [gView.Framework.system.RegisterPlugIn("7B82A53D-63DA-43CA-BE94-23B4B1F1D9DA")]
+    public class SimpleAggregateRenderer : Cloner, IFeatureRenderer2, IPropertyPage, ILegendGroup, ISymbolCreator
     {
-        public enum CartographicMethod { Simple = 0, SymbolOrder = 1 }
-
         private ISymbol _symbol;
-        private SymbolRotation _symbolRotation;
-        private bool _useRefScale = true, _rotate = false;
-        private CartographicMethod _cartoMethod = CartographicMethod.Simple, _actualCartoMethod = CartographicMethod.Simple;
-        private List<IFeature> _features = null;
+        private bool _useRefScale = true;
+        private IAggregateGeometry _aggregateGeometry = null;
 
-        public SimpleRenderer()
+        public SimpleAggregateRenderer()
         {
-            _symbolRotation = new SymbolRotation();
         }
 
         public void Dispose()
@@ -43,7 +38,6 @@ namespace gView.Framework.Carto.Rendering
             set
             {
                 _symbol = value;
-                _rotate = (_symbol is ISymbolRotation && _symbolRotation != null && _symbolRotation.RotationFieldName != "");
             }
         }
 
@@ -62,30 +56,6 @@ namespace gView.Framework.Carto.Rendering
             return RendererFunctions.CreateStandardHighlightSymbol(type);
         }
 
-        public SymbolRotation SymbolRotation
-        {
-            get { return _symbolRotation; }
-            set
-            {
-                if (value == null)
-                {
-                    _symbolRotation.RotationFieldName = "";
-                }
-                else
-                {
-                    _symbolRotation = value;
-                }
-
-                _rotate = (_symbol is ISymbolRotation && _symbolRotation != null && _symbolRotation.RotationFieldName != "");
-            }
-        }
-
-        public CartographicMethod CartoMethod
-        {
-            get { return _cartoMethod; }
-            set { _cartoMethod = value; }
-        }
-
         #region IFeatureRenderer
 
         public bool CanRender(IFeatureLayer layer, IMap map)
@@ -99,10 +69,7 @@ namespace gView.Framework.Carto.Rendering
             {
                 return false;
             }
-            /*
-if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
-   layer.FeatureClass.GeometryType == geometryType.Network) return false;
-* */
+
             if (layer.LayerGeometryType == geometryType.Unknown ||
                 layer.LayerGeometryType == geometryType.Network)
             {
@@ -125,96 +92,25 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
 
         public void PrepareQueryFilter(IFeatureLayer layer, IQueryFilter filter)
         {
-            if (!(_symbol is ISymbolCollection) ||
-                ((ISymbolCollection)_symbol).Symbols.Count < 2)
-            {
-                _actualCartoMethod = CartographicMethod.Simple;
-            }
-            else
-            {
-                _actualCartoMethod = _cartoMethod;
-            }
 
-            if (_rotate && layer.FeatureClass.FindField(_symbolRotation.RotationFieldName) != null)
-            {
-                filter.AddField(_symbolRotation.RotationFieldName);
-            }
         }
 
-        /*
-		public void Draw(IDisplay disp,IFeatureCursor fCursor,DrawPhase drawPhase,ICancelTracker cancelTracker) 
-		{
-			if(_symbol==null) return;
-			IFeature feature;
-			
-			try 
-			{
-				while((feature=fCursor.NextFeature)!=null) 
-				{
-					//_symbol.Draw(disp,feature.Shape);
-					if(cancelTracker!=null) 
-						if(!cancelTracker.Continue) 
-							return;
-					disp.Draw(_symbol,feature.Shape);
-				}
-			} 
-			catch(Exception ex)
-			{
-				string msg=ex.Message;
-			}
-		}
-         * */
         public void Draw(IDisplay disp, IFeature feature)
         {
-            /*
-            if (feature.Shape is IPolyline)
+            if (feature?.Shape != null)
             {
-                ISymbol symbol = RendererFunctions.CreateStandardSymbol(geometryType.Polygon);
-                disp.Draw(symbol, ((ITopologicalOperation)feature.Shape).Buffer(30));
-            }
-            if (feature.Shape is IPoint)
-            {
-                ISymbol symbol = RendererFunctions.CreateStandardSymbol(geometryType.Polygon);
-                disp.Draw(symbol, ((ITopologicalOperation)feature.Shape).Buffer(30));
-            }
-            if (feature.Shape is IPolygon)
-            {
-                IPolygon buffer = ((ITopologicalOperation)feature.Shape).Buffer(4.0);
-                if (buffer != null) disp.Draw(_symbol, buffer);
-            }*/
-
-            if (_actualCartoMethod == CartographicMethod.Simple)
-            {
-                if (_rotate)
+                if (_aggregateGeometry == null)
                 {
-                    object rot = feature[_symbolRotation.RotationFieldName];
-
-                    if (rot != null && rot != DBNull.Value)
-                    {
-                        ((ISymbolRotation)_symbol).Rotation = (float)_symbolRotation.Convert2DEGAritmetic(Convert.ToDouble(rot));
-                    }
-                    else
-                    {
-                        ((ISymbolRotation)_symbol).Rotation = 0;
-                    }
+                    _aggregateGeometry = new AggregateGeometry();
                 }
 
-                disp.Draw(_symbol, feature.Shape);
-            }
-            else if (_actualCartoMethod == CartographicMethod.SymbolOrder)
-            {
-                if (_features == null)
-                {
-                    _features = new List<IFeature>();
-                }
-
-                _features.Add(feature);
+                _aggregateGeometry.AddGeometry(feature.Shape);
             }
         }
 
         public void StartDrawing(IDisplay display)
         {
-            
+
         }
 
         public void FinishDrawing(IDisplay disp, ICancelTracker cancelTracker)
@@ -226,45 +122,50 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
 
             try
             {
-                if (_actualCartoMethod == CartographicMethod.SymbolOrder && _features != null && cancelTracker.Continue)
+                if (cancelTracker.Continue)
                 {
-                    ISymbolCollection sColl = (ISymbolCollection)_symbol;
-                    foreach (ISymbolCollectionItem symbolItem in sColl.Symbols)
+                    // also draw empty aggregates (a MUST for PoygonMask!!)
+                    if (_aggregateGeometry == null)
                     {
-                        if (symbolItem.Visible == false || symbolItem.Symbol == null)
-                        {
-                            continue;
-                        }
+                        _aggregateGeometry = new AggregateGeometry();
+                    }
 
-                        ISymbol symbol = symbolItem.Symbol;
-                        bool isRotatable = symbol is ISymbolRotation;
-
-                        int counter = 0;
-                        if (!cancelTracker.Continue)
+                    if (_symbol is ISymbolCollection)
+                    {
+                        ISymbolCollection sColl = (ISymbolCollection)_symbol;
+                        foreach (ISymbolCollectionItem symbolItem in sColl.Symbols)
                         {
-                            break;
-                        }
-
-                        foreach (IFeature feature in _features)
-                        {
-                            if (_rotate && isRotatable)
+                            if (symbolItem.Visible == false || symbolItem.Symbol == null)
                             {
-                                object rot = feature[_symbolRotation.RotationFieldName];
-                                if (rot != null && rot != DBNull.Value)
+                                continue;
+                            }
+
+                            ISymbol symbol = symbolItem.Symbol;
+
+                            if (symbol.SupportsGeometryType(geometryType.Aggregate))
+                            {
+                                disp.Draw(symbol, _aggregateGeometry);
+                            }
+                            else
+                            {
+                                for (int g = 0; g < _aggregateGeometry.GeometryCount; g++)
                                 {
-                                    ((ISymbolRotation)symbol).Rotation = (float)_symbolRotation.Convert2DEGAritmetic(Convert.ToDouble(rot));
-                                }
-                                else
-                                {
-                                    ((ISymbolRotation)symbol).Rotation = 0;
+                                    disp.Draw(symbol, _aggregateGeometry[g]);
                                 }
                             }
-                            disp.Draw(symbol, feature.Shape);
-
-                            counter++;
-                            if (counter % 100 == 0 && !cancelTracker.Continue)
+                        }
+                    }
+                    else
+                    {
+                        if (_symbol.SupportsGeometryType(geometryType.Aggregate))
+                        {
+                            disp.Draw(_symbol, _aggregateGeometry);
+                        }
+                        else
+                        {
+                            for (int g = 0; g < _aggregateGeometry.GeometryCount; g++)
                             {
-                                break;
+                                disp.Draw(_symbol, _aggregateGeometry[g]);
                             }
                         }
                     }
@@ -272,22 +173,17 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
             }
             finally
             {
-                if (_features != null)
-                {
-                    _features.Clear();
-                }
-
-                _features = null;
+                _aggregateGeometry = null;
             }
         }
 
         public string Name
         {
-            get { return "Single Symbol"; }
+            get { return "Single Symbol (Aggregated)"; }
         }
         public string Category
         {
-            get { return "Features"; }
+            get { return "Aggregated"; }
         }
 
         public bool RequireClone()
@@ -345,20 +241,11 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
         public void Load(IPersistStream stream)
         {
             _symbol = (ISymbol)stream.Load("Symbol");
-            _symbolRotation = (SymbolRotation)stream.Load("SymbolRotation", _symbolRotation, _symbolRotation);
-
-            _rotate = ((_symbol is ISymbolRotation) && _symbolRotation != null && _symbolRotation.RotationFieldName != "");
-            _cartoMethod = (CartographicMethod)stream.Load("CartographicMethod", (int)CartographicMethod.Simple);
         }
 
         public void Save(IPersistStream stream)
         {
             stream.Save("Symbol", _symbol);
-            if (_symbolRotation.RotationFieldName != "")
-            {
-                stream.Save("SymbolRotation", _symbolRotation);
-            }
-            stream.Save("CartographicMethod", (int)_cartoMethod);
         }
 
         #endregion
@@ -405,25 +292,23 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
         #endregion
 
         #region IClone2
+
         public object Clone(CloneOptions options)
         {
-            SimpleRenderer renderer = new SimpleRenderer();
+            SimpleAggregateRenderer renderer = new SimpleAggregateRenderer();
             if (_symbol != null)
             {
                 renderer._symbol = (ISymbol)_symbol.Clone(_useRefScale ? options : null);
             }
 
-            renderer._symbolRotation = (SymbolRotation)_symbolRotation.Clone();
-            renderer._rotate = _rotate;
-            renderer._cartoMethod = _cartoMethod;
-            renderer._actualCartoMethod = _actualCartoMethod;
-
             return renderer;
         }
+
         public void Release()
         {
             Dispose();
         }
+
         #endregion
 
         #region IRenderer Member

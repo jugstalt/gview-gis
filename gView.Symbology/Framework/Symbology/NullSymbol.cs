@@ -18,6 +18,8 @@ namespace gView.Framework.Symbology
             _geomType = geomType;
         }
 
+        public bool SupportsGeometryType(geometryType geomType) => true;
+
         public void Draw(IDisplay display, IGeometry geometry)
         {
         }

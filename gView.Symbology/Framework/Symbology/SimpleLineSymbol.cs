@@ -130,6 +130,8 @@ namespace gView.Framework.Symbology
 
         #region ISymbol Member
 
+        public bool SupportsGeometryType(geometryType geomType) => geomType == geometryType.Polyline;
+
         public void Draw(IDisplay display, IGeometry geometry)
         {
             // Wenn DashStyle nicht Solid (und Antialiasing) soll Geometry erst geclippt werden,
