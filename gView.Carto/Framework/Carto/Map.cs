@@ -317,7 +317,15 @@ namespace gView.Framework.Carto
             }
         }
 
+        internal void FireDrawingLayerFinished(ITimeEvent timeEvent)
+        {
+            DrawingLayerFinished?.Invoke(this, timeEvent);
+        }
 
+        internal void FireStartRefreshMap()
+        {
+            StartRefreshMap?.Invoke(this);
+        }
 
         #region getLayer
 

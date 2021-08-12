@@ -53,7 +53,8 @@ namespace gView.Plugins.Tools.RibbonTabs
                     new RibbonGroupBox("Tools", 
                         new RibbonItem[]{
                             new RibbonItem(new Guid("D185D794-4BC8-4f3c-A5EA-494155692EAC"),"Middle"),  // Measure
-                            new RibbonItem(new Guid("2AC4447E-ACF3-453D-BB2E-72ECF0C8506E"),"Middle")   // XY
+                            new RibbonItem(new Guid("2AC4447E-ACF3-453D-BB2E-72ECF0C8506E"),"Middle"),  // XY
+                            new RibbonItem(new Guid("F1B1602A-DD53-40a2-A504-61DC47A7B261"),"Middle")   // Performance Monitor
                         }
                         )
                 }

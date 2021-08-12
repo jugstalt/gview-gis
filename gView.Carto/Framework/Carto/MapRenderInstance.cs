@@ -81,7 +81,6 @@ namespace gView.Framework.Carto
 
         #region Events
 
-        public override event StartRefreshMapEvent StartRefreshMap;
         public override event NewBitmapEvent NewBitmap;
         public override event DrawingLayerEvent DrawingLayer;
         public override event DrawingLayerFinishedEvent DrawingLayerFinished;
@@ -97,10 +96,7 @@ namespace gView.Framework.Carto
 
             try
             {
-                if (StartRefreshMap != null)
-                {
-                    StartRefreshMap(this);
-                }
+                _original.FireStartRefreshMap();
 
                 using (var datasetCachingContext = new DatasetCachingContext(this))
                 {
@@ -349,10 +345,7 @@ namespace gView.Framework.Carto
                             }
                             // Andere Layer (zB IRasterLayer)
 
-                            if (DrawingLayerFinished != null)
-                            {
-                                DrawingLayerFinished(this, new gView.Framework.system.TimeEvent("Drawing: " + layer.Title, startTime, DateTime.Now, fCounter.Counter));
-                            }
+                            _original.FireDrawingLayerFinished(new gView.Framework.system.TimeEvent("Drawing: " + layer.Title, startTime, DateTime.Now, fCounter.Counter));
 
                             FireRefreshMapView(1000);
                         }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Framework.system
 {
@@ -68,15 +67,24 @@ namespace gView.Framework.system
         public void RemoveTimeEvents()
         {
             _events.Clear();
-            if (TimeEventsRemoved != null) TimeEventsRemoved(this);
+            if (TimeEventsRemoved != null)
+            {
+                TimeEventsRemoved(this);
+            }
         }
 
         public void AddTimeEvent(ITimeEvent timeEvent)
         {
-            if (timeEvent == null) return;
+            if (timeEvent == null)
+            {
+                return;
+            }
 
             _events.Add(timeEvent);
-            if (TimeEventAdded != null) TimeEventAdded(this, timeEvent);
+            if (TimeEventAdded != null)
+            {
+                TimeEventAdded(this, timeEvent);
+            }
         }
 
         public void AddTimeEvent(string name, DateTime startTime, DateTime finishTime)
