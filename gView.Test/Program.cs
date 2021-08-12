@@ -20,7 +20,7 @@ namespace gView.Test
             try
             {
                 //TestProj4();
-                TestPerformance();
+                //TestPerformance();
 
                 //Console.ReadLine();
 
@@ -29,21 +29,21 @@ namespace gView.Test
                 //ParseSQL();
 
                 //Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96);
-                ////Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96);
-                //Current.Encoder = new GraphicsEngine.GdiPlus.GdiBitmapEncoding();
+                Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96);
+                Current.Encoder = new GraphicsEngine.GdiPlus.GdiBitmapEncoding();
                 ////Current.Encoder = new GraphicsEngine.Skia.SkiaBitmapEncoding();
 
-                //using (var bitmap = CreateImage(850, 600))
-                //{
-                //    using (var filteredBitmap = BaseFilter.ApplyFilter(bitmap, FilterImplementations.GrayscaleBT709))
-                //    {
-                //        var start = DateTime.Now;
+                using (var bitmap = CreateImage(850, 600))
+                {
+                    using (var filteredBitmap = BaseFilter.ApplyFilter(bitmap, FilterImplementations.GrayscaleBT709))
+                    {
+                        var start = DateTime.Now;
 
-                //        SaveBitmap(filteredBitmap, "C:\\temp\\graphic.jpg");
+                        SaveBitmap(filteredBitmap, "C:\\temp\\graphic.jpg");
 
-                //        Console.WriteLine($"Encoding Time: { (DateTime.Now - start).TotalMilliseconds }ms");
-                //    }
-                //}
+                        Console.WriteLine($"Encoding Time: { (DateTime.Now - start).TotalMilliseconds }ms");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -314,15 +314,37 @@ namespace gView.Test
                     if (path.PathBuildPerferences == GraphicsPathBuildPerferences.AddPointsPreferred)
                     {
                         path.AddPoint(10, 10);
-                        path.AddPoint(100, 10);
-                        path.AddPoint(100, 100);
-                        path.AddPoint(10, 100);
+                        path.AddPoint(400, 10);
+                        path.AddPoint(400, 400);
+                        path.AddPoint(10, 400);
+
+                        //path.StartFigure();
+                        //path.AddPoint(50, 50);
+                        //path.AddPoint(50, 300);
+                        //path.AddPoint(300, 300);
+                        //path.AddPoint(300, 50);
+
+                        path.StartFigure();
+                        path.AddPoint(50, 50);
+                        path.AddPoint(300, 50);
+                        path.AddPoint(300, 300);
+                        path.AddPoint(50, 300);
                     } 
                     else
                     {
-                        path.AddLine(10, 10, 100, 10);
-                        path.AddLine(100, 10, 100, 100);
-                        path.AddLine(100, 100, 10, 100);
+                        path.AddLine(10, 10, 400, 10);
+                        path.AddLine(400, 10, 400, 100);
+                        path.AddLine(400, 400, 10, 400);
+
+                        //path.StartFigure();
+                        //path.AddLine(50, 50, 50, 300);
+                        //path.AddLine(50, 300, 300, 300);
+                        //path.AddLine(300, 300, 300, 50);
+
+                        path.StartFigure();
+                        path.AddLine(50, 50, 300, 50);
+                        path.AddLine(300, 50, 300, 300);
+                        path.AddLine(300, 300, 50, 300);
                     }
                     path.CloseFigure();
 

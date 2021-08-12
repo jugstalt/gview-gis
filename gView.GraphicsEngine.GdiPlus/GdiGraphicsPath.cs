@@ -11,7 +11,10 @@ namespace gView.GraphicsEngine.GdiPlus
 
         public GdiGraphicsPath()
         {
-            _path = new System.Drawing.Drawing2D.GraphicsPath();
+            _path = new System.Drawing.Drawing2D.GraphicsPath()
+            {
+                FillMode = System.Drawing.Drawing2D.FillMode.Alternate
+            };
         }
 
         #region IGraphicsPath

@@ -14,7 +14,10 @@ namespace gView.GraphicsEngine.Skia
 
         public SkiaGraphicsPath()
         {
-            _path = new SKPath();
+            _path = new SKPath()
+            {
+                FillType = SKPathFillType.EvenOdd
+            };
         }
 
         public object EngineElement => _path;

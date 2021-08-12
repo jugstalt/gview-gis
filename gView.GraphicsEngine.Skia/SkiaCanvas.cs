@@ -299,7 +299,6 @@ namespace gView.GraphicsEngine.Skia
             var skPaint = (SKPaint)brush.EngineElement;
 
             skPaint.IsAntialias = this.SmoothingMode == SmoothingMode.AntiAlias;
-
             return skPaint;
         }
 

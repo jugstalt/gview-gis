@@ -941,7 +941,7 @@ namespace gView.Framework.OGC.DB
 
         public int SuggestedInsertFeatureCountPerTransaction
         {
-            get { return 50; }
+            get { return 100; }
         }
 
         #endregion
