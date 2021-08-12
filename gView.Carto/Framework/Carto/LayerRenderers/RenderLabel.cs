@@ -12,12 +12,16 @@ namespace gView.Framework.Carto.LayerRenderers
         private IFeatureLayer _layer;
         private ICancelTracker _cancelTracker;
         private static object lockThis = new object();
+        private FeatureCounter _counter;
 
-        public RenderLabel(Map map, IFeatureLayer layer, ICancelTracker cancelTracker)
+        public RenderLabel(Map map, IFeatureLayer layer, ICancelTracker cancelTracker, FeatureCounter counter)
         {
             _map = map;
             _layer = layer;
             _cancelTracker = ((cancelTracker == null) ? new CancelTracker() : cancelTracker);
+
+            _counter = counter;
+            _counter.Counter = 0;
         }
 
         async public Task Render()
@@ -110,6 +114,7 @@ namespace gView.Framework.Carto.LayerRenderers
                                 }
                             }
 
+                            _counter.Counter++;
                             labelRenderer.Draw(_map, feature);
                         }
 

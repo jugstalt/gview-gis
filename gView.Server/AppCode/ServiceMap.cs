@@ -657,7 +657,7 @@ namespace gView.Server.AppCode
                                 continue;
                             }
 
-                            RenderLabel rlt = new RenderLabel(this, fLayer, cancelTracker);
+                            RenderLabel rlt = new RenderLabel(this, fLayer, cancelTracker, new FeatureCounter());
                             await rlt.Render();
                         }
                     }

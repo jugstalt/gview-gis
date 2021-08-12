@@ -360,9 +360,10 @@ namespace gView.Framework.Carto
                             {
                                 this.SetGeotransformer(fLayer, geoTransformer);
 
+                                FeatureCounter fCounter = new FeatureCounter();
                                 DateTime startTime = DateTime.Now;
 
-                                RenderLabel rlt = new RenderLabel(this, fLayer, cancelTracker);
+                                RenderLabel rlt = new RenderLabel(this, fLayer, cancelTracker, fCounter);
 
                                 if (cancelTracker.Continue)
                                 {
@@ -371,11 +372,10 @@ namespace gView.Framework.Carto
 
                                 await rlt.Render();
 
-                                if (DrawingLayerFinished != null)
-                                {
-                                    DrawingLayerFinished(this, new gView.Framework.system.TimeEvent("Labelling: " + fLayer.Title, startTime, DateTime.Now));
-                                }
+                                _original.FireDrawingLayerFinished(new gView.Framework.system.TimeEvent("Labelling: " + fLayer.Title, startTime, DateTime.Now, fCounter.Counter));
+
                             }
+
                             DrawStream(_canvas, _msGeometry);
                         }
 
