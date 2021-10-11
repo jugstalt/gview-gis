@@ -119,16 +119,16 @@ namespace gView.Framework.Carto.Rendering.UI
             // 
             // panel1
             // 
-            resources.ApplyResources(this.panel1, "panel1");
             this.panel1.Controls.Add(this.symbolsListView1);
             this.panel1.Controls.Add(this.panel3);
             this.panel1.Controls.Add(this.panel2);
+            resources.ApplyResources(this.panel1, "panel1");
             this.panel1.Name = "panel1";
             // 
             // symbolsListView1
             // 
-            resources.ApplyResources(this.symbolsListView1, "symbolsListView1");
             this.symbolsListView1.AllowDrop = true;
+            resources.ApplyResources(this.symbolsListView1, "symbolsListView1");
             this.symbolsListView1.LegendText = "";
             this.symbolsListView1.Name = "symbolsListView1";
             this.symbolsListView1.ValueText = "";
@@ -138,9 +138,9 @@ namespace gView.Framework.Carto.Rendering.UI
             // 
             // panel3
             // 
-            resources.ApplyResources(this.panel3, "panel3");
             this.panel3.Controls.Add(this.btnCarography);
             this.panel3.Controls.Add(this.btnRotation);
+            resources.ApplyResources(this.panel3, "panel3");
             this.panel3.Name = "panel3";
             // 
             // btnCarography
@@ -159,13 +159,13 @@ namespace gView.Framework.Carto.Rendering.UI
             // 
             // panel2
             // 
-            resources.ApplyResources(this.panel2, "panel2");
             this.panel2.Controls.Add(this.btnInsertAllOthers);
             this.panel2.Controls.Add(this.groupBox2);
             this.panel2.Controls.Add(this.groupBox1);
             this.panel2.Controls.Add(this.btnRemoveAllValues);
             this.panel2.Controls.Add(this.btnInsertValue);
             this.panel2.Controls.Add(this.btnAllValues);
+            resources.ApplyResources(this.panel2, "panel2");
             this.panel2.Name = "panel2";
             // 
             // btnInsertAllOthers
@@ -183,8 +183,8 @@ namespace gView.Framework.Carto.Rendering.UI
             // 
             // cmbGradient
             // 
-            resources.ApplyResources(this.cmbGradient, "cmbGradient");
             this.cmbGradient.AccessibleRole = System.Windows.Forms.AccessibleRole.None;
+            resources.ApplyResources(this.cmbGradient, "cmbGradient");
             this.cmbGradient.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.cmbGradient.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbGradient.FormattingEnabled = true;
@@ -196,15 +196,15 @@ namespace gView.Framework.Carto.Rendering.UI
             // 
             // groupBox1
             // 
-            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Controls.Add(this.cmbFields);
+            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.TabStop = false;
             // 
             // cmbFields
             // 
-            resources.ApplyResources(this.cmbFields, "cmbFields");
             this.cmbFields.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            resources.ApplyResources(this.cmbFields, "cmbFields");
             this.cmbFields.Name = "cmbFields";
             this.cmbFields.SelectedIndexChanged += new System.EventHandler(this.cmbFields_SelectedIndexChanged);
             // 

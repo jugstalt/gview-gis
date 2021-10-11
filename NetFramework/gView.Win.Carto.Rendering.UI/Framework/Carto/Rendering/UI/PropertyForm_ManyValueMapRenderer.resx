@@ -123,10 +123,10 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="symbolsListView1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 155</value>
+    <value>0, 227</value>
   </data>
   <data name="symbolsListView1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>440, 262</value>
+    <value>790, 564</value>
   </data>
   <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="symbolsListView1.TabIndex" type="System.Int32, mscorlib">
@@ -136,28 +136,13 @@
     <value>symbolsListView1</value>
   </data>
   <data name="&gt;&gt;symbolsListView1.Type" xml:space="preserve">
-    <value>gView.Framework.UI.Controls.SymbolsListView, gView.Dialogs, Version=4.0.0.0, Culture=neutral, PublicKeyToken=efad02b76f1a6407</value>
+    <value>gView.Framework.UI.Controls.SymbolsListView, gView.Win.Dialogs, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;symbolsListView1.Parent" xml:space="preserve">
     <value>panel1</value>
   </data>
   <data name="&gt;&gt;symbolsListView1.ZOrder" xml:space="preserve">
     <value>0</value>
-  </data>
-  <data name="btnCarography.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="btnCarography.Location" type="System.Drawing.Point, System.Drawing">
-    <value>138, 6</value>
-  </data>
-  <data name="btnCarography.Size" type="System.Drawing.Size, System.Drawing">
-    <value>96, 32</value>
-  </data>
-  <data name="btnCarography.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
-  </data>
-  <data name="btnCarography.Text" xml:space="preserve">
-    <value>Cartography...</value>
   </data>
   <data name="&gt;&gt;btnCarography.Name" xml:space="preserve">
     <value>btnCarography</value>
@@ -170,21 +155,6 @@
   </data>
   <data name="&gt;&gt;btnCarography.ZOrder" xml:space="preserve">
     <value>0</value>
-  </data>
-  <data name="btnRotation.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="btnRotation.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 6</value>
-  </data>
-  <data name="btnRotation.Size" type="System.Drawing.Size, System.Drawing">
-    <value>99, 32</value>
-  </data>
-  <data name="btnRotation.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="btnRotation.Text" xml:space="preserve">
-    <value>Rotation...</value>
   </data>
   <data name="&gt;&gt;btnRotation.Name" xml:space="preserve">
     <value>btnRotation</value>
@@ -202,10 +172,10 @@
     <value>Bottom</value>
   </data>
   <data name="panel3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 417</value>
+    <value>0, 791</value>
   </data>
   <data name="panel3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>440, 44</value>
+    <value>790, 65</value>
   </data>
   <data name="panel3.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -226,10 +196,10 @@
     <value>NoControl</value>
   </data>
   <data name="btnInsertAllOthers.Location" type="System.Drawing.Point, System.Drawing">
-    <value>168, 117</value>
+    <value>323, 171</value>
   </data>
   <data name="btnInsertAllOthers.Size" type="System.Drawing.Size, System.Drawing">
-    <value>109, 32</value>
+    <value>174, 47</value>
   </data>
   <data name="btnInsertAllOthers.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -252,29 +222,11 @@
   <data name="groupBox2.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
-  <data name="cmbGradient.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="cmbGradient.Items" xml:space="preserve">
-    <value>Choose</value>
-  </data>
-  <data name="cmbGradient.Items1" xml:space="preserve">
-    <value>User Defeined</value>
-  </data>
-  <data name="cmbGradient.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 15</value>
-  </data>
-  <data name="cmbGradient.Size" type="System.Drawing.Size, System.Drawing">
-    <value>213, 21</value>
-  </data>
-  <data name="cmbGradient.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
   <data name="&gt;&gt;cmbGradient.Name" xml:space="preserve">
     <value>cmbGradient</value>
   </data>
   <data name="&gt;&gt;cmbGradient.Type" xml:space="preserve">
-    <value>gView.Framework.Symbology.UI.Controls.ColorGradientComboBox, gView.Symbology.UI, Version=4.0.0.0, Culture=neutral, PublicKeyToken=8fcf29817a1cd643</value>
+    <value>gView.Framework.Symbology.UI.Controls.ColorGradientComboBox, gView.Win.Symbology.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;cmbGradient.Parent" xml:space="preserve">
     <value>groupBox2</value>
@@ -283,10 +235,10 @@
     <value>0</value>
   </data>
   <data name="groupBox2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>202, 0</value>
+    <value>323, 0</value>
   </data>
   <data name="groupBox2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>226, 45</value>
+    <value>448, 66</value>
   </data>
   <data name="groupBox2.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -306,15 +258,6 @@
   <data name="&gt;&gt;groupBox2.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="cmbField3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 70</value>
-  </data>
-  <data name="cmbField3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>176, 21</value>
-  </data>
-  <data name="cmbField3.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
   <data name="&gt;&gt;cmbField3.Name" xml:space="preserve">
     <value>cmbField3</value>
   </data>
@@ -327,15 +270,6 @@
   <data name="&gt;&gt;cmbField3.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="cmbField2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 43</value>
-  </data>
-  <data name="cmbField2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>176, 21</value>
-  </data>
-  <data name="cmbField2.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
   <data name="&gt;&gt;cmbField2.Name" xml:space="preserve">
     <value>cmbField2</value>
   </data>
@@ -347,15 +281,6 @@
   </data>
   <data name="&gt;&gt;cmbField2.ZOrder" xml:space="preserve">
     <value>1</value>
-  </data>
-  <data name="cmbField1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 16</value>
-  </data>
-  <data name="cmbField1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>176, 21</value>
-  </data>
-  <data name="cmbField1.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
   </data>
   <data name="&gt;&gt;cmbField1.Name" xml:space="preserve">
     <value>cmbField1</value>
@@ -373,7 +298,7 @@
     <value>0, 0</value>
   </data>
   <data name="groupBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>200, 100</value>
+    <value>320, 146</value>
   </data>
   <data name="groupBox1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -397,10 +322,10 @@
     <value>NoControl</value>
   </data>
   <data name="btnRemoveAllValues.Location" type="System.Drawing.Point, System.Drawing">
-    <value>319, 117</value>
+    <value>510, 171</value>
   </data>
   <data name="btnRemoveAllValues.Size" type="System.Drawing.Size, System.Drawing">
-    <value>109, 32</value>
+    <value>175, 47</value>
   </data>
   <data name="btnRemoveAllValues.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -424,10 +349,10 @@
     <value>NoControl</value>
   </data>
   <data name="btnInsertValue.Location" type="System.Drawing.Point, System.Drawing">
-    <value>79, 117</value>
+    <value>146, 171</value>
   </data>
   <data name="btnInsertValue.Size" type="System.Drawing.Size, System.Drawing">
-    <value>83, 32</value>
+    <value>148, 47</value>
   </data>
   <data name="btnInsertValue.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -451,10 +376,10 @@
     <value>NoControl</value>
   </data>
   <data name="btnAllValues.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 117</value>
+    <value>13, 171</value>
   </data>
   <data name="btnAllValues.Size" type="System.Drawing.Size, System.Drawing">
-    <value>65, 32</value>
+    <value>127, 47</value>
   </data>
   <data name="btnAllValues.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -481,7 +406,7 @@
     <value>0, 0</value>
   </data>
   <data name="panel2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>440, 155</value>
+    <value>790, 227</value>
   </data>
   <data name="panel2.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -505,7 +430,7 @@
     <value>0, 0</value>
   </data>
   <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>440, 461</value>
+    <value>790, 856</value>
   </data>
   <data name="panel1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -522,14 +447,161 @@
   <data name="&gt;&gt;panel1.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="btnCarography.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btnCarography.Location" type="System.Drawing.Point, System.Drawing">
+    <value>221, 9</value>
+  </data>
+  <data name="btnCarography.Size" type="System.Drawing.Size, System.Drawing">
+    <value>153, 47</value>
+  </data>
+  <data name="btnCarography.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="btnCarography.Text" xml:space="preserve">
+    <value>Cartography...</value>
+  </data>
+  <data name="&gt;&gt;btnCarography.Name" xml:space="preserve">
+    <value>btnCarography</value>
+  </data>
+  <data name="&gt;&gt;btnCarography.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btnCarography.Parent" xml:space="preserve">
+    <value>panel3</value>
+  </data>
+  <data name="&gt;&gt;btnCarography.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="btnRotation.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btnRotation.Location" type="System.Drawing.Point, System.Drawing">
+    <value>13, 9</value>
+  </data>
+  <data name="btnRotation.Size" type="System.Drawing.Size, System.Drawing">
+    <value>158, 47</value>
+  </data>
+  <data name="btnRotation.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="btnRotation.Text" xml:space="preserve">
+    <value>Rotation...</value>
+  </data>
+  <data name="&gt;&gt;btnRotation.Name" xml:space="preserve">
+    <value>btnRotation</value>
+  </data>
+  <data name="&gt;&gt;btnRotation.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btnRotation.Parent" xml:space="preserve">
+    <value>panel3</value>
+  </data>
+  <data name="&gt;&gt;btnRotation.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="cmbGradient.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="cmbGradient.Items" xml:space="preserve">
+    <value>Choose</value>
+  </data>
+  <data name="cmbGradient.Items1" xml:space="preserve">
+    <value>User Defeined</value>
+  </data>
+  <data name="cmbGradient.Location" type="System.Drawing.Point, System.Drawing">
+    <value>11, 22</value>
+  </data>
+  <data name="cmbGradient.Size" type="System.Drawing.Size, System.Drawing">
+    <value>427, 27</value>
+  </data>
+  <data name="cmbGradient.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;cmbGradient.Name" xml:space="preserve">
+    <value>cmbGradient</value>
+  </data>
+  <data name="&gt;&gt;cmbGradient.Type" xml:space="preserve">
+    <value>gView.Framework.Symbology.UI.Controls.ColorGradientComboBox, gView.Win.Symbology.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;cmbGradient.Parent" xml:space="preserve">
+    <value>groupBox2</value>
+  </data>
+  <data name="&gt;&gt;cmbGradient.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="cmbField3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>13, 102</value>
+  </data>
+  <data name="cmbField3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 28</value>
+  </data>
+  <data name="cmbField3.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;cmbField3.Name" xml:space="preserve">
+    <value>cmbField3</value>
+  </data>
+  <data name="&gt;&gt;cmbField3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;cmbField3.Parent" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
+  <data name="&gt;&gt;cmbField3.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="cmbField2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>13, 63</value>
+  </data>
+  <data name="cmbField2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 28</value>
+  </data>
+  <data name="cmbField2.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;cmbField2.Name" xml:space="preserve">
+    <value>cmbField2</value>
+  </data>
+  <data name="&gt;&gt;cmbField2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;cmbField2.Parent" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
+  <data name="&gt;&gt;cmbField2.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="cmbField1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>13, 23</value>
+  </data>
+  <data name="cmbField1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 28</value>
+  </data>
+  <data name="cmbField1.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;cmbField1.Name" xml:space="preserve">
+    <value>cmbField1</value>
+  </data>
+  <data name="&gt;&gt;cmbField1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;cmbField1.Parent" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
+  <data name="&gt;&gt;cmbField1.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
   <data name="$this.AutoScaleBaseSize" type="System.Drawing.Size, System.Drawing">
-    <value>5, 13</value>
+    <value>8, 19</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>440, 461</value>
+    <value>790, 856</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>PropertyPage_ValueMapRenderer</value>
