@@ -67,7 +67,7 @@ namespace gView.Framework.Carto.UI
         }
         public void Draw(GraphicsEngine.Abstraction.ICanvas canvas, GraphicsEngine.CanvasRectangle rectangle, ISymbol symbol, bool cls)
         {
-            if (symbol == null)
+            if (symbol == null || canvas == null)
             {
                 return;
             }

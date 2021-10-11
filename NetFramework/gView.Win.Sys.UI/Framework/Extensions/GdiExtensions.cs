@@ -66,10 +66,10 @@ namespace gView.Framework.Sys.UI.Extensions
             return iBitmap.ToGdiBitmap();
         }
 
-        static public IBitmap CloneToIBitmap(this Bitmap bitmap)
-        {
-            return CloneToIBitmap((Image)bitmap);
-        }
+        //static public IBitmap CloneToIBitmap(this Bitmap bitmap)
+        //{
+        //    return CloneToIBitmap((Image)bitmap);
+        //}
 
         static public IBitmap CloneToIBitmap(this Image image)
         {
@@ -81,6 +81,7 @@ namespace gView.Framework.Sys.UI.Extensions
             using (var ms = new MemoryStream())
             {
                 image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                ms.Position = 0;
 
                 return GraphicsEngine.Current.Engine.CreateBitmap(ms);
             }
