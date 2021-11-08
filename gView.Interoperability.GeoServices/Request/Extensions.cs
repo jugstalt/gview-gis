@@ -67,7 +67,7 @@ namespace gView.Interoperability.GeoServices.Request
 
                 List<double[]> points = new List<double[]>();
 
-                for (int p = 0; p < multiPoint.PointCount; p++)
+                for (int p = 0, pointCount = multiPoint.PointCount; p < pointCount; p++)
                 {
                     var point = multiPoint[p];
                     if (point != null)
