@@ -159,26 +159,26 @@ namespace gView.Interoperability.GeoServices.Request
 
             IGeometry shape = null;
 
-            if(geometry.X.HasValue && geometry.Y.HasValue)
+            if (geometry.X.HasValue && geometry.Y.HasValue)
             {
                 shape = new Point(geometry.X.Value, geometry.Y.Value);
             }
-            else if(geometry.XMin.HasValue && geometry.YMin.HasValue && geometry.XMax.HasValue && geometry.YMax.HasValue)
+            else if (geometry.XMin.HasValue && geometry.YMin.HasValue && geometry.XMax.HasValue && geometry.YMax.HasValue)
             {
                 shape = new Envelope(geometry.XMin.Value, geometry.YMin.Value, geometry.XMax.Value, geometry.YMax.Value);
             }
-            else if(geometry.Paths!=null && geometry.Paths.Length>0)
+            else if (geometry.Paths != null && geometry.Paths.Length > 0)
             {
                 var polyline = new Polyline();
 
-                for(int p=0,pathCount=geometry.Paths.Length;p<pathCount;p++)
+                for (int p = 0, pathCount = geometry.Paths.Length; p < pathCount; p++)
                 {
                     var jsonPath = geometry.Paths[p];
                     if (jsonPath.Length < 1)
                         continue;
 
                     var path = new Path();
-                    for(int i=0,pointCount=jsonPath.GetLength(0);i<pointCount;i++)
+                    for (int i = 0, pointCount = jsonPath.GetLength(0); i < pointCount; i++)
                     {
                         path.AddPoint(new Point(jsonPath[i, 0], jsonPath[i, 1]));
                     }
@@ -187,7 +187,7 @@ namespace gView.Interoperability.GeoServices.Request
 
                 shape = polyline;
             }
-            else if(geometry.Rings!=null && geometry.Rings.Length>0)
+            else if (geometry.Rings != null && geometry.Rings.Length > 0)
             {
                 var polygon = new Polygon();
 
@@ -206,6 +206,21 @@ namespace gView.Interoperability.GeoServices.Request
                 }
 
                 shape = polygon;
+            }
+            else if (geometry.Points != null && geometry.Points.Length > 0)
+            {
+                var multiPoint = new MultiPoint();
+
+                for (int p = 0, pointCount = geometry.Points.Length; p < pointCount; p++)
+                {
+                    var point = geometry.Points[p];
+                    if (point != null && point.Length >= 2)
+                    {
+                        multiPoint.AddPoint(new Point(point[0], point[1]));
+                    }
+                }
+
+                shape = multiPoint;
             }
 
             if(shape != null && geometry.SpatialReference!=null && geometry.SpatialReference.Wkid>0)
