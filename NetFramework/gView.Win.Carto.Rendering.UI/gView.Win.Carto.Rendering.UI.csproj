@@ -272,9 +272,6 @@
     <EmbeddedResource Include="Framework\Carto\Rendering\UI\PropertyForm_LabelGroupRenderer.resx">
       <DependentUpon>PropertyForm_LabelGroupRenderer.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Framework\Carto\Rendering\UI\PropertyForm_ManyValueMapRenderer.de.resx">
-      <DependentUpon>PropertyForm_ManyValueMapRenderer.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Framework\Carto\Rendering\UI\PropertyForm_ManyValueMapRenderer.resx">
       <DependentUpon>PropertyForm_ManyValueMapRenderer.cs</DependentUpon>
     </EmbeddedResource>
@@ -323,16 +320,13 @@
     <EmbeddedResource Include="Framework\Carto\Rendering\UI\PropertyForm_UniversalGeometryRenderer.resx">
       <DependentUpon>PropertyForm_UniversalGeometryRenderer.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Framework\Carto\Rendering\UI\PropertyForm_ValueMapRenderer.de-DE.resx">
-      <DependentUpon>PropertyForm_ValueMapRenderer.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Framework\Carto\Rendering\UI\PropertyForm_ValueMapRenderer.de.resx">
       <DependentUpon>PropertyForm_ValueMapRenderer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Framework\Carto\Rendering\UI\PropertyForm_ValueMapRenderer.resx">
       <DependentUpon>PropertyForm_ValueMapRenderer.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Framework\Carto\Rendering\UI\PropertyForm_ValueMapRenderer_Dialog_InsertValue.de.resx">
+    <EmbeddedResource Include="Framework\Carto\Rendering\UI\PropertyForm_ValueMapRenderer_Dialog_InsertValue.de-DE.resx">
       <DependentUpon>PropertyForm_ValueMapRenderer_Dialog_InsertValue.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Framework\Carto\Rendering\UI\PropertyForm_ValueMapRenderer_Dialog_InsertValue.resx">

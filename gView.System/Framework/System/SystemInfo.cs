@@ -46,6 +46,7 @@ namespace gView.Framework.system
                 return String.Empty;
             }
         }
+
         private static string RemoveUseLess(string st)
         {
             char ch;
