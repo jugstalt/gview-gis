@@ -20,7 +20,11 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Features.Geometry
         [JsonProperty("x", NullValueHandling = NullValueHandling.Ignore)]
         public double? X { get; set; } 
         [JsonProperty("y", NullValueHandling = NullValueHandling.Ignore)]
-        public double? Y { get; set; } 
+        public double? Y { get; set; }
+
+        // MULTI POINT 
+        [JsonProperty("points", NullValueHandling = NullValueHandling.Ignore)]
+        public double[][] Points { get; set; }
 
         // Envelope
         [JsonProperty("xmin", NullValueHandling = NullValueHandling.Ignore)]

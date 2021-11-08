@@ -61,6 +61,28 @@ namespace gView.Interoperability.GeoServices.Request
 
                 return jsonPoint;
             }
+            if (shape is IMultiPoint)
+            {
+                var multiPoint = (IMultiPoint)shape;
+
+                List<double[]> points = new List<double[]>();
+
+                for (int p = 0; p < multiPoint.PointCount; p++)
+                {
+                    var point = multiPoint[p];
+                    if (point != null)
+                    {
+                        points.Add(new double[] { point.X, point.Y });
+                    }
+                }
+
+                var jsonMultipoint = new JsonGeometry()
+                {
+                    Points = points.ToArray()
+                };
+
+                return jsonMultipoint;
+            }
             if(shape is IEnvelope)
             {
                 return new JsonGeometry()
