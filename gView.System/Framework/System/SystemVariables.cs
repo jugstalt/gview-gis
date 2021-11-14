@@ -1,11 +1,8 @@
+using gView.Framework.IO;
+using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using System.Xml;
-using Microsoft.Win32;
-using gView.Framework.UI;
-using gView.Framework.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -140,7 +137,7 @@ namespace gView.Framework.system
         static private float _primaryScreenDPI = -1;
         static public float PrimaryScreenDPI(bool forceRefresh = false)
         {
-            if (_primaryScreenDPI != -1 && forceRefresh == false) 
+            if (_primaryScreenDPI != -1 && forceRefresh == false)
                 return _primaryScreenDPI;
 
             try
@@ -279,7 +276,7 @@ namespace gView.Framework.system
                 return keys.ToArray();
             }
         }
-       
+
         public void CopyUserDataTo(IUserData userData)
         {
             if (userData == null) return;
