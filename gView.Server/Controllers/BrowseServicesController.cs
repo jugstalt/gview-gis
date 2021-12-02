@@ -73,7 +73,7 @@ namespace gView.Server.Controllers
                         return RedirectToAction("Index");
                     }
 
-                    isPublisher |= await folderService.HasPublishAccess(identity);
+                    isPublisher |= (await folderService.HasPublishAccess(identity)) ;
                 }
 
                 List<string> folders = new List<string>();

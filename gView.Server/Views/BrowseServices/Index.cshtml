@@ -32,61 +32,61 @@
 
     @if(Model.IsPublisher)
     {
-<div class="gview5-form-upload">
-    @if(!String.IsNullOrWhiteSpace(Model.Message)) {
-    <div class="gview5-@(Model.Message.ToLower().StartsWith("success:") ? "success" : (Model.Message.ToLower().StartsWith("warnings:") ? "warning": "error"))-message">
-        @Html.Raw(Model.Message.Replace(Environment.NewLine, "<br/>"))
-    </div>
-    }
-    <form action="@Url.Action("AddService")" method="post" enctype="multipart/form-data">
-        <div class="gview5-form-upload-header gview5-form-header">
-            <h4>Publish Service</h4>
-        </div>
-
-        <div class="gview5-form-upload-body gview5-form-body hidden" >
-            <div class="attribute">
-                <div>
-                    <div class="label">Service Name</div>
-                    <input id="service-name-input" name="service" class="form-control" autofocus placeholder="Name..." value="@Model.ServiceName" />
+        <div class="gview5-form-upload">
+            @if(!String.IsNullOrWhiteSpace(Model.Message)) {
+                <div class="gview5-@(Model.Message.ToLower().StartsWith("success:") ? "success" : (Model.Message.ToLower().StartsWith("warnings:") ? "warning": "error"))-message">
+                    @Html.Raw(Model.Message.Replace(Environment.NewLine, "<br/>"))
                 </div>
-            </div>
-            <div class="attribute">
-                <div>
-                    <label for="mxl-file-upload" class="custom-file-upload">
-                        <i class="fa fa-cloud-upload"></i> XML File Upload
-                    </label>
-                    <input id="mxl-file-upload" name="file" type="file" />
-                </div>
-            </div>
+                }
+                <form action="@Url.Action("AddService")" method="post" enctype="multipart/form-data">
+                    <div class="gview5-form-upload-header gview5-form-header">
+                        <h4>Publish Service</h4>
+                    </div>
 
-            <input type="hidden" name="folder" value="@Model.Folder" />
+                    <div class="gview5-form-upload-body gview5-form-body hidden" >
+                        <div class="attribute">
+                            <div>
+                                <div class="label">Service Name</div>
+                                <input id="service-name-input" name="service" class="form-control" autofocus placeholder="Name..." value="@Model.ServiceName" />
+                            </div>
+                        </div>
+                        <div class="attribute">
+                            <div>
+                                <label for="mxl-file-upload" class="custom-file-upload">
+                                    <i class="fa fa-cloud-upload"></i> XML File Upload
+                                </label>
+                                <input id="mxl-file-upload" name="file" type="file" />
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="folder" value="@Model.Folder" />
+                        <br/>
+                        <button type="submit" class="btn btn-primary">Publish Service</button>
+                    </div>
+                </form>
             <br/>
-            <button type="submit" class="btn btn-primary">Publish Service</button>
-        </div>
-    </form>
-    <br/>
-    @if (Model.IsManager && String.IsNullOrEmpty(Model.Folder))
-    {
-    <form action="@Url.Action("CreateFolder")" method="post" enctype="multipart/form-data">
-        <div class="gview5-form-newfolder-header gview5-form-header">
-            <h4>Create Folder</h4>
-        </div>
+            @if (Model.IsManager && String.IsNullOrEmpty(Model.Folder))
+            {
+                <form action="@Url.Action("CreateFolder")" method="post" enctype="multipart/form-data">
+                    <div class="gview5-form-newfolder-header gview5-form-header">
+                        <h4>Create Folder</h4>
+                    </div>
 
-        <div class="gview5-form-newfolder-body gview5-form-body hidden">
-            <div class="attribute">
-                <div>
-                    <div class="label">Folder Name</div>
-                    <input id="folder-name-input" name="newFolder" class="form-control" autofocus placeholder="Name..." value="" />
-                </div>
+                    <div class="gview5-form-newfolder-body gview5-form-body hidden">
+                        <div class="attribute">
+                            <div>
+                                <div class="label">Folder Name</div>
+                                <input id="folder-name-input" name="newFolder" class="form-control" autofocus placeholder="Name..." value="" />
+                            </div>
 
-                <input type="hidden" name="folder" value="@Model.Folder" />
-                <br />
-                <button type="submit" class="btn btn-primary">Create New Folder</button>
-            </div>
+                            <input type="hidden" name="folder" value="@Model.Folder" />
+                            <br />
+                            <button type="submit" class="btn btn-primary">Create New Folder</button>
+                        </div>
+                    </div>
+                </form>
+            }
         </div>
-    </form>
-    }
-</div>
     }
 </div>
 

@@ -53,6 +53,8 @@ namespace gView.Framework.system
 
         public bool IsAdministrator { get; private set; }
 
+        public bool IsAnonymous => String.IsNullOrEmpty(_name) || _name == AnonyomousUsername;
+
         //public string HashedPassword
         //{
         //    get { return _hashedPassword; }
