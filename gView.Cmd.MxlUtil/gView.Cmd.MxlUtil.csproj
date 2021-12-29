@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="LuceneServerNET.Client" Version="1.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\gView.Carto.Rendering\gView.Carto.Rendering.csproj" />
     <ProjectReference Include="..\gView.Carto\gView.Carto.csproj" />
     <ProjectReference Include="..\gView.Core\gView.Core.csproj" />

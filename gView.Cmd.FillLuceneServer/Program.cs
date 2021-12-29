@@ -312,8 +312,13 @@ namespace gView.Cmd.FillLuceneServer
                 if (shape is IPoint)
                 {
                     IPoint point = (IPoint)transformer.Transform2D(feature.Shape);
-                    result["longitude"] = point.X;
-                    result["latitude"] = point.Y;
+                    //result["longitude"] = point.X;
+                    //result["latitude"] = point.Y;
+                    result["geo"] = new LuceneServerNET.Core.Models.Spatial.GeoPoint()
+                    {
+                        Longidute = point.X,
+                        Latitude = point.Y
+                    };
                 }
                 else if (shape is IPolyline)
                 {
@@ -325,8 +330,13 @@ namespace gView.Cmd.FillLuceneServer
                         if (point != null)
                         {
                             point = (IPoint)transformer.Transform2D(point);
-                            result["longitude"] = point.X;
-                            result["latitude"] = point.Y;
+                            //result["longitude"] = point.X;
+                            //result["latitude"] = point.Y;
+                            result["geo"] = new LuceneServerNET.Core.Models.Spatial.GeoPoint()
+                            {
+                                Longidute = point.X,
+                                Latitude = point.Y
+                            };
                         }
 
                         result["bbox"] = GetBBox(env, transformer);
@@ -341,8 +351,13 @@ namespace gView.Cmd.FillLuceneServer
                         if (points != null && points.PointCount > 0)
                         {
                             IPoint point = (IPoint)transformer.Transform2D(points[0]);
-                            result["longitude"] = point.X;
-                            result["latitude"] = point.Y;
+                            //result["longitude"] = point.X;
+                            //result["latitude"] = point.Y;
+                            result["geo"] = new LuceneServerNET.Core.Models.Spatial.GeoPoint()
+                            {
+                                Longidute = point.X,
+                                Latitude = point.Y
+                            };
                         }
 
                         result["bbox"] = GetBBox(env, transformer);

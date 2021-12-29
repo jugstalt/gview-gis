@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "gView.Cmd.FillLuceneServer": {
+      "commandName": "Project",
+      "commandLineArgs": "fill -s https://localhost:44393 -i allgemein"
+    }
+  }
+}
