@@ -7,6 +7,9 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Cmd.FillLuceneServer
@@ -22,6 +25,7 @@ namespace gView.Cmd.FillLuceneServer
             string proxyUrl = String.Empty, proxyUser = String.Empty, proxyPassword = String.Empty;
             string basicAuthUser = String.Empty, basicAuthPassword = String.Empty;
 
+            int packageSize = 50000;
             bool replace = false;
 
             for (int i = 0; i < args.Length; i++)
@@ -54,6 +58,11 @@ namespace gView.Cmd.FillLuceneServer
                 if (args[i] == "-r")
                 {
                     replace = true;
+                }
+
+                if(args[i] == "-packagesize" && i < args.Length - 1)
+                {
+                    packageSize = int.Parse(args[i + 1]);
                 }
 
                 #region Proxy
@@ -110,13 +119,31 @@ namespace gView.Cmd.FillLuceneServer
 
                     var importConfig = JsonConvert.DeserializeObject<ImportConfig>(File.ReadAllText(jsonFile));
 
-                    using (var luceneServerClient = new LuceneServerClient(importConfig.Connection.Url, importConfig.Connection.DefaultIndex))
+                    var httpClientHandler = new HttpClientHandler();
+                    if (!String.IsNullOrEmpty(proxyUrl))
                     {
-                        //var searchContext = new ElasticSearchContext(importConfig.Connection.Url,
-                        //                                             importConfig.Connection.DefaultIndex,
-                        //                                             proxyUri: proxyUrl, proxyUsername: proxyUser, proxyPassword: proxyPassword,
-                        //                                             basicAuthUser: basicAuthUser, basicAuthPassword: basicAuthPassword);
+                        httpClientHandler.Proxy = new WebProxy
+                        {
+                            Address = new Uri(proxyUrl),
+                            BypassProxyOnLocal = false,
+                            UseDefaultCredentials = false,
 
+                            Credentials = new NetworkCredential(proxyUser, proxyPassword)
+                        };
+                    }
+
+                    var httpClient = new HttpClient(handler: httpClientHandler, disposeHandler: true);
+                    if (!String.IsNullOrEmpty(basicAuthUser))
+                    {
+                        var byteArray = Encoding.ASCII.GetBytes($"{ basicAuthUser }:{ basicAuthPassword }");
+                        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                    }
+
+                    using (var luceneServerClient = new LuceneServerClient(
+                        importConfig.Connection.Url, 
+                        importConfig.Connection.DefaultIndex,
+                        httpClient: httpClient))
+                    {
                         if (importConfig.Connection.DeleteIndex)
                         {
                             await luceneServerClient.RemoveIndexAsync();
@@ -225,7 +252,7 @@ namespace gView.Cmd.FillLuceneServer
                                         items.Add(indexItem);
                                         count++;
 
-                                        if (items.Count >= 50000)
+                                        if (items.Count >= packageSize)
                                         {
                                             if (!await luceneServerClient.IndexDocumentsAsync(items.ToArray()))
                                             {
