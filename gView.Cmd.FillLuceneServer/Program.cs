@@ -20,91 +20,92 @@ namespace gView.Cmd.FillLuceneServer
 
         async static Task<int> Main(string[] args)
         {
-            string cmd = "fill", jsonFile = (args.Length == 1 && args[0] != "fill" ? args[0] : String.Empty), indexUrl = String.Empty, indexName = String.Empty, category = String.Empty;
-
-            string proxyUrl = String.Empty, proxyUser = String.Empty, proxyPassword = String.Empty;
-            string basicAuthUser = String.Empty, basicAuthPassword = String.Empty;
-
-            int packageSize = 50000;
-            bool replace = false;
-
-            for (int i = 0; i < args.Length; i++)
-            {
-                if (args[i] == "fill" && i < args.Length - 1)
-                {
-                    cmd = "fill";
-                    jsonFile = args[i + 1];
-                    i++;
-                }
-                if (args[i] == "remove-category")
-                {
-                    cmd = "remove-category";
-                }
-                if (args[i] == "-s" && i < args.Length - 1)
-                {
-                    indexUrl = args[i + 1];
-                }
-
-                if (args[i] == "-i" && i < args.Length - 1)
-                {
-                    indexName = args[i + 1];
-                }
-
-                if (args[i] == "-c" && i < args.Length - 1)
-                {
-                    category = args[i + 1];
-                }
-
-                if (args[i] == "-r")
-                {
-                    replace = true;
-                }
-
-                if(args[i] == "-packagesize" && i < args.Length - 1)
-                {
-                    packageSize = int.Parse(args[i + 1]);
-                }
-
-                #region Proxy
-
-                if (args[i] == "-proxy")
-                {
-                    proxyUrl = args[i + 1];
-                }
-                if (args[i] == "-proxy-user")
-                {
-                    proxyUser = args[i + 1];
-                }
-                if (args[i] == "-proxy-pwd")
-                {
-                    proxyPassword = args[i + 1];
-                }
-
-                #endregion
-
-                #region Basic Authentication
-
-                if (args[i] == "-basic-auth-user")
-                {
-                    basicAuthUser = args[i + 1];
-                }
-
-                if (args[i] == "-basic-auth-pwd")
-                {
-                    basicAuthPassword = args[i + 1];
-                }
-
-                #endregion
-            }
-
-            if (args.Length == 0)
-            {
-                Console.WriteLine("Usage: gView.Cmd.ElasticSearch fill|remove-catetory [Options]");
-                return 1;
-            }
-
             try
             {
+                string cmd = "fill", jsonFile = (args.Length == 1 && args[0] != "fill" ? args[0] : String.Empty), indexUrl = String.Empty, indexName = String.Empty, category = String.Empty;
+
+                string proxyUrl = String.Empty, proxyUser = String.Empty, proxyPassword = String.Empty;
+                string basicAuthUser = String.Empty, basicAuthPassword = String.Empty;
+
+                int packageSize = 50000;
+                bool replace = false;
+
+                for (int i = 0; i < args.Length; i++)
+                {
+                    if (args[i] == "fill" && i < args.Length - 1)
+                    {
+                        cmd = "fill";
+                        jsonFile = args[i + 1];
+                        i++;
+                    }
+                    if (args[i] == "remove-category")
+                    {
+                        cmd = "remove-category";
+                    }
+                    if (args[i] == "-s" && i < args.Length - 1)
+                    {
+                        indexUrl = args[i + 1];
+                    }
+
+                    if (args[i] == "-i" && i < args.Length - 1)
+                    {
+                        indexName = args[i + 1];
+                    }
+
+                    if (args[i] == "-c" && i < args.Length - 1)
+                    {
+                        category = args[i + 1];
+                    }
+
+                    if (args[i] == "-r")
+                    {
+                        replace = true;
+                    }
+
+                    if (args[i] == "-packagesize" && i < args.Length - 1)
+                    {
+                        packageSize = int.Parse(args[i + 1]);
+                    }
+
+                    #region Proxy
+
+                    if (args[i] == "-proxy")
+                    {
+                        proxyUrl = args[i + 1];
+                    }
+                    if (args[i] == "-proxy-user")
+                    {
+                        proxyUser = args[i + 1];
+                    }
+                    if (args[i] == "-proxy-pwd")
+                    {
+                        proxyPassword = args[i + 1];
+                    }
+
+                    #endregion
+
+                    #region Basic Authentication
+
+                    if (args[i] == "-basic-auth-user")
+                    {
+                        basicAuthUser = args[i + 1];
+                    }
+
+                    if (args[i] == "-basic-auth-pwd")
+                    {
+                        basicAuthPassword = args[i + 1];
+                    }
+
+                    #endregion
+                }
+
+                if (args.Length == 0)
+                {
+                    Console.WriteLine("Usage: gView.Cmd.ElasticSearch fill|remove-catetory [Options]");
+                    return 1;
+                }
+
+
                 //gView.Framework.system.SystemVariables.CustomApplicationDirectory =
                 //    System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
@@ -118,6 +119,11 @@ namespace gView.Cmd.FillLuceneServer
                     #region Fill Index (with Json File)
 
                     var importConfig = JsonConvert.DeserializeObject<ImportConfig>(File.ReadAllText(jsonFile));
+
+                    if(importConfig?.Connection==null)
+                    {
+                        throw new Exception("Invalid config. No connection defined");
+                    }
 
                     var httpClientHandler = new HttpClientHandler();
                     if (!String.IsNullOrEmpty(proxyUrl))
@@ -140,7 +146,7 @@ namespace gView.Cmd.FillLuceneServer
                     }
 
                     using (var luceneServerClient = new LuceneServerClient(
-                        importConfig.Connection.Url, 
+                        importConfig.Connection.Url,
                         importConfig.Connection.DefaultIndex,
                         httpClient: httpClient))
                     {
