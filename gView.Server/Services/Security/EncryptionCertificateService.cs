@@ -62,12 +62,18 @@ namespace gView.Server.Services.Security
                     CreateCert(name);
                 }
 
-                _cert = new X509CertificateWrapper(new X509Certificate2(fi.FullName, CertPassword));
+                _cert = new X509CertificateWrapper(
+                    new X509Certificate2(fi.FullName, CertPassword,
+                               X509KeyStorageFlags.MachineKeySet
+                             | X509KeyStorageFlags.PersistKeySet
+                             | X509KeyStorageFlags.Exportable));
             }
             catch (CryptographicException cx)
             {
                 if (throwException == true)
+                {
                     throw new MapServerException("gView internal Certificate: " + cx.Message);
+                }
 
                 CreateCert(name);
                 ReloadCert(name, true);
