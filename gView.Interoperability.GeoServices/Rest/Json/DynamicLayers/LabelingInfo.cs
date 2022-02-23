@@ -24,10 +24,10 @@ namespace gView.Interoperability.GeoServices.Rest.Json.DynamicLayers
         public object Symbol { get; set; }
 
         [JsonProperty("minScale", NullValueHandling = NullValueHandling.Ignore)]
-        public int? MinScale { get; set; }
+        public double? MinScale { get; set; }
 
         [JsonProperty("maxScale", NullValueHandling = NullValueHandling.Ignore)]
-        public int? MaxScale { get; set; }
+        public double? MaxScale { get; set; }
 
         [JsonProperty("where", NullValueHandling = NullValueHandling.Ignore)]
         public string Where { get; set; }

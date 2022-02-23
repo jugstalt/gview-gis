@@ -61,9 +61,6 @@ namespace gView.Framework.Carto
 
             m_imageMerger = new ImageMerger2();
 
-            //m_imageMerger.outputPath=conn.outputPath;
-            //m_imageMerger.outputUrl=conn.outputUrl;
-
             m_activeLayerNames = new ArrayList();
             m_name = "Map1";
             _toc = new TOC(this);

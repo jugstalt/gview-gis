@@ -153,6 +153,7 @@ namespace gView.Interoperability.GeoServices.Dataset
         public void ExplorerObjectDoubleClick(ExplorerObjectEventArgs e)
         {
             FormNewConnection dlg = new FormNewConnection();
+
             if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 string connStr = dlg.ConnectionString;
@@ -253,12 +254,18 @@ namespace gView.Interoperability.GeoServices.Dataset
             try
             {
                 string server = ConfigTextStream.ExtractValue(_connectionString, "server");
-                string usr = ConfigTextStream.ExtractValue(_connectionString, "user");
+                string user = ConfigTextStream.ExtractValue(_connectionString, "user");
                 string pwd = ConfigTextStream.ExtractValue(_connectionString, "pwd");
 
-                // ToDo: GetToken if usr, pwd
+                var url = server.UrlAppendParameters("f=json");
 
-                var jsonServices = await WebFunctions.DownloadObjectAsync<JsonServices>(server.UrlAppendParameters("f=json"));
+                if (!String.IsNullOrEmpty(user) && !String.IsNullOrEmpty(pwd))
+                {
+                    string token = await RequestTokenCache.RefreshTokenAsync(server, user, pwd);
+                    url = url.UrlAppendParameters($"token={token}");
+                }
+
+                var jsonServices = await WebFunctions.DownloadObjectAsync<JsonServices>(url);
 
                 if (jsonServices != null)
                 {
@@ -398,15 +405,20 @@ namespace gView.Interoperability.GeoServices.Dataset
             try
             {
                 string server = ConfigTextStream.ExtractValue(_connectionString, "server");
-                string usr = ConfigTextStream.ExtractValue(_connectionString, "user");
+                string user = ConfigTextStream.ExtractValue(_connectionString, "user");
                 string pwd = ConfigTextStream.ExtractValue(_connectionString, "pwd");
 
-                // ToDo: GetToken if usr, pwd
-
-                var jsonServices = await WebFunctions.DownloadObjectAsync<JsonServices>(
-                    server
+                var url = server
                         .UrlAppendPath(this._name)
-                        .UrlAppendParameters("f=json"));
+                        .UrlAppendParameters("f=json");
+
+                if(!String.IsNullOrEmpty(user) && !String.IsNullOrEmpty(pwd))
+                {
+                    string token = await RequestTokenCache.RefreshTokenAsync(server, user, pwd);
+                    url = url.UrlAppendParameters($"token={token}");
+                }
+
+                var jsonServices = await WebFunctions.DownloadObjectAsync<JsonServices>(url);
 
                 if (jsonServices != null)
                 {
@@ -538,7 +550,7 @@ namespace gView.Interoperability.GeoServices.Dataset
         #endregion
     }
 
-    public class GeoServicesServiceExplorerObject : ExplorerObjectCls, IExplorerSimpleObject
+    public class GeoServicesServiceExplorerObject : ExplorerParentObject, IExplorerSimpleObject
     {
         private IExplorerIcon _icon = new GeoServicesServiceIcon();
         private string _name = "", _connectionString = "", _folder = "";
@@ -598,7 +610,8 @@ namespace gView.Interoperability.GeoServices.Dataset
                 GeoServicesDataset dataset = new GeoServicesDataset(
                     _connectionString,
                     (String.IsNullOrWhiteSpace(_folder) ? "" : $"{_folder}/") + _name);
-                await dataset.Open(); 
+
+                await dataset.Open();
 
                 var elements = await dataset.Elements();
                 if (elements.Count == 0)
@@ -616,6 +629,39 @@ namespace gView.Interoperability.GeoServices.Dataset
         public IExplorerObject CreateInstanceByFullName(string FullName)
         {
             return null;
+        }
+
+        #endregion
+
+        #region IExplorerParentObject Member
+
+        async public override Task<bool> Refresh()
+        {
+            try
+            {
+                await base.Refresh();
+                await GetInstanceAsync();
+
+                if (_class?.Themes != null) {
+
+                    foreach (var theme in _class.Themes) 
+                    {
+                        if (theme?.Class is GeoServicesFeatureClass)
+                        {
+                            base.AddChildObject(new GeoServicesServiceLayerExplorerObject(this,
+                                (GeoServicesFeatureClass)theme.Class));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show(ex.Message);
+
+                return false;
+            }
+
+            return true;
         }
 
         #endregion
@@ -660,6 +706,44 @@ namespace gView.Interoperability.GeoServices.Dataset
         }
 
         #endregion
+    }
+
+    public class GeoServicesServiceLayerExplorerObject : ExplorerObjectCls, IExplorerSimpleObject
+    {
+        private IExplorerIcon _icon = new GeoServicesServiceIcon();
+
+        private readonly GeoServicesFeatureClass _fc;
+        private readonly string _name;
+        private readonly string _id;
+
+        public GeoServicesServiceLayerExplorerObject(IExplorerObject parent, GeoServicesFeatureClass featureClass)
+            : base(parent, typeof(GeoServicesFeatureClass), 1)
+        {
+            _fc = featureClass;
+        }
+
+        public string Name => _fc.Name;
+
+        public string FullName => _fc.Name;
+
+        public string Type => "Service layer";
+
+        public IExplorerIcon Icon => _icon;
+
+        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        {
+            return null;
+        }
+
+        public void Dispose()
+        {
+            
+        }
+
+        public Task<object> GetInstanceAsync()
+        {
+            return Task.FromResult<object>(_fc);
+        }
     }
 
     internal class GeoServicesIcon : IExplorerIcon

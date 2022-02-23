@@ -108,12 +108,12 @@ namespace gView.GraphicsEngine.Skia
 
         public void DrawEllipse(IPen pen, float x1, float y1, float width, float height)
         {
-            _canvas?.DrawOval(new SKRect(x1, y1, x1 + width, y1 + width), GetSKPaint(pen));
+            _canvas?.DrawOval(new SKRect(x1, y1, x1 + width, y1 + height), GetSKPaint(pen));
         }
 
         public void FillEllipse(IBrush brush, float x1, float y1, float width, float height)
         {
-            _canvas?.DrawOval(new SKRect(x1, y1, x1 + width, y1 + width), GetSKPaint(brush));
+            _canvas?.DrawOval(new SKRect(x1, y1, x1 + width, y1 + height), GetSKPaint(brush));
         }
 
         public void DrawRectangle(IPen pen, CanvasRectangle rectangle)

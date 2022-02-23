@@ -7,6 +7,11 @@ using gView.Interoperability.GeoServices.Rest.Json;
 using gView.MapServer;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Net;
+using gView.Core.Framework.Exceptions;
+using System.Text;
+using System;
+using Newtonsoft.Json;
 
 namespace gView.Interoperability.GeoServices.Dataset
 {
@@ -19,9 +24,9 @@ namespace gView.Interoperability.GeoServices.Dataset
         private GeoServicesClass _class = null;
         private IEnvelope _envelope;
         private string _errMsg = "";
-        //internal dotNETConnector _connector = null;
         private DatasetState _state = DatasetState.unknown;
         private ISpatialReference _sRef = null;
+        private string _token;
 
         public GeoServicesDataset() { }
 
@@ -265,17 +270,75 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         async internal Task<T> TryPostAsync<T>(string url)
         {
-            try
+            int i = 0;
+            while (true)
             {
-                var result = await WebFunctions.DownloadObjectAsync<T>(url);
+                try
+                {
+                    string result, tokenParameter = String.Empty;
 
-                return result;
+                    if (!String.IsNullOrWhiteSpace(_token))
+                    {
+                        tokenParameter = "token=" + _token;
+                    }
+
+                    try
+                    {
+                        result = Encoding.UTF8.GetString(await WebFunctions.DownloadRawAsync(url.UrlAppendParameters(tokenParameter), 
+                                                                                             null,
+                                                                                             null, null, string.Empty, string.Empty));
+                    }
+                    catch (WebException ex)
+                    {
+                        if (ex.Message.Contains("(403)") ||
+                                    ex.Message.Contains("(499)") ||
+                                    ex.Message.Contains("(499)"))
+                        {
+                            throw new TokenRequiredException();
+                        }
+                        throw ex;
+                    }
+
+                    if (result.Contains("\"error\":"))
+                    {
+                        JsonError error = JsonConvert.DeserializeObject<JsonError>(result);
+                        if (error.Error == null)
+                        {
+                            throw new Exception("Unknown error");
+                        }
+
+                        if (error.Error.Code == 499 || error.Error.Code == 498 || error.Error.Code == 403) // Token Required (499), Invalid Token (498), No user Persmissions (403)
+                        {
+                            throw new TokenRequiredException();
+                        }
+
+                        throw new Exception("Error:" + error.Error.Code + "\n" + error.Error.Message);
+                    }
+
+                    return JsonConvert.DeserializeObject<T>(result);
+                }
+                catch (TokenRequiredException ex)
+                {
+                    await HandleTokenExceptionAsync(i, ex);
+                }
+                i++;
             }
-            catch  // To Cache auth error
+        }
+
+        async private Task HandleTokenExceptionAsync(int i, TokenRequiredException ex)
+        {
+            if (i < 3)  // drei mal probieren lassen
             {
-            }
+                string serviceUrl = ServiceUrl();
+                string user = ConfigTextStream.ExtractValue(ConnectionString, "user");
+                string pwd = ConfigTextStream.ExtractValue(ConnectionString, "pwd");
 
-            return default(T);
+                _token = await RequestTokenCache.RefreshTokenAsync(serviceUrl, user, pwd, _token);
+            }
+            else
+            {
+                throw ex;
+            }
         }
 
         public string ServiceUrl()

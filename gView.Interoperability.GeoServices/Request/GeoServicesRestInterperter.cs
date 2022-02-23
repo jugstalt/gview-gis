@@ -473,6 +473,10 @@ namespace gView.Interoperability.GeoServices.Request
                 EsriGeometryType esriGeometryType = EsriGeometryType.esriGeometryAny;
                 JsonSpatialReference featureSref = null;
 
+                int limit = query.ReturnIdsOnly == true ?   // return all Ids!
+                                    int.MaxValue :
+                                    _mapServer.FeatureQueryLimit;
+
                 #region GeoJson
 
                 bool returnGeoJson = "geojson".Equals(query.OutputFormat, StringComparison.InvariantCultureIgnoreCase) &&
@@ -615,19 +619,15 @@ namespace gView.Interoperability.GeoServices.Request
 
                         #region Limit/Begin/Order
 
-                        int limit = query.ReturnIdsOnly == true ?   // return all Ids!
-                                    int.MaxValue :
-                                    _mapServer.FeatureQueryLimit;
-
                         filter.Limit = query.ResultRecordCount > 0 ?
                             Math.Min(query.ResultRecordCount, limit) :
                             limit;
+
                         filter.BeginRecord = query.ResultOffset + 1;  // Start is 1 by IQueryFilter definition
 
                         filter.OrderBy = query.OrderByFields;
 
                         #endregion
-
 
                         bool transform = false;
                         using (var geoTransfromer = GeometricTransformerFactory.Create())
@@ -739,7 +739,8 @@ namespace gView.Interoperability.GeoServices.Request
                         GeometryType = esriGeometryType.ToString(),
                         SpatialReference = featureSref,
                         Fields = jsonFields.ToArray(),
-                        Features = jsonFeatures.ToArray()
+                        Features = jsonFeatures.ToArray(),
+                        ExceededTransferLimit = jsonFeatures.Count() >= limit
                     };
                 }
                 else
@@ -749,7 +750,8 @@ namespace gView.Interoperability.GeoServices.Request
                         GeometryType = esriGeometryType.ToString(),
                         SpatialReference = featureSref,
                         Fields = jsonFields.ToArray(),
-                        Features = jsonFeatures.ToArray()
+                        Features = jsonFeatures.ToArray(),
+                        ExceededTransferLimit = jsonFeatures.Count() >= limit
                     };
                 }
             }

@@ -27,6 +27,9 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         [JsonProperty("features")]
         public JsonFeature[] Features { get; set; }
 
+        [JsonProperty("exceededTransferLimit")]
+        public bool ExceededTransferLimit { get; set; }
+
         #region Classes
 
         public class Field

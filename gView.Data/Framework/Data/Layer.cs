@@ -1814,13 +1814,6 @@ namespace gView.Framework.Data
             return Task.FromResult<IFeatureCursor>(null);
         }
 
-        /*
-		IFeatureCursor gView.Framework.Data.IFeatureClass.GetFeatures(List<int> ids, gView.Framework.Data.getFeatureQueryType type)
-		{
-			return null;
-		}
-        */
-
         public Task<int> CountFeatures()
         {
             return Task.FromResult(0);
@@ -1834,13 +1827,6 @@ namespace gView.Framework.Data
             }
             set { _shapeFieldName = value; }
         }
-
-        /*
-		public IFeature GetFeature(int id, gView.Framework.Data.getFeatureQueryType type)
-		{
-			return null;
-		}
-        */
 
         public gView.Framework.Geometry.IEnvelope Envelope
         {

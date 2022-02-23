@@ -1,8 +1,5 @@
 ﻿using gView.Framework.Data;
 using gView.Interoperability.GeoServices.Rest.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Dataset
 {
@@ -16,7 +13,7 @@ namespace gView.Interoperability.GeoServices.Dataset
             var fields = this.Fields as Fields;
             if (fields != null && jsonLayer.Fields != null)
             {
-                foreach(var jsonField in jsonLayer.Fields)
+                foreach (var jsonField in jsonLayer.Fields)
                 {
                     fields.Add(new Field(jsonField.Name, jsonField.GetFieldType())
                     {

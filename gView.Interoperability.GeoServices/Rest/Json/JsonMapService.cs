@@ -29,7 +29,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
             SupportedImageFormats = "PNG32,PNG24,PNG,JPG";
             Capabilities = "Map,Query";
             SupportedQueryFormats = "JSON";
-            DatumTransformations = new GeoTransformation[0];
+            DatumTransformations = new DatumTransformationsClass[0];
             SupportsDatumTransformation = true;
             Units = "esriMeters";
 
@@ -98,7 +98,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         public bool exportTilesAllowed => false;
 
         [JsonProperty(PropertyName = "datumTransformations")]
-        public GeoTransformation[] DatumTransformations { get; set; }
+        public DatumTransformationsClass[] DatumTransformations { get; set; }
 
         [JsonProperty(PropertyName = "supportsDatumTransformation")]
         public bool SupportsDatumTransformation{get;set;}
@@ -216,6 +216,12 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
             [JsonProperty(PropertyName = "Keywords")]
             public string Keywords { get; set; }
+        }
+
+        public class DatumTransformationsClass
+        {
+            [JsonProperty(PropertyName = "geoTransforms")]
+            public GeoTransformation[] GeoTransforms { get; set; }
         }
 
         public class GeoTransformation : SpatialReference

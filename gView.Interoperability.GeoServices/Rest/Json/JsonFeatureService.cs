@@ -24,7 +24,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
                 Keywords = String.Empty
             };
             Capabilities = "Create,Query,Update,Delete";
-            DatumTransformations = new JsonMapService.GeoTransformation[0];
+            DatumTransformations = new JsonMapService.DatumTransformationsClass[0];
             SupportsDatumTransformation = true;
             Units = "esriMeters";
 
@@ -69,7 +69,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         public string Capabilities { get; set; }
 
         [JsonProperty(PropertyName = "datumTransformations")]
-        public JsonMapService.GeoTransformation[] DatumTransformations { get; set; }
+        public JsonMapService.DatumTransformationsClass[] DatumTransformations { get; set; }
 
         [JsonProperty(PropertyName = "supportsDatumTransformation")]
         public bool SupportsDatumTransformation{get;set;}
