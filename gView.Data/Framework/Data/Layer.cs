@@ -1809,7 +1809,7 @@ namespace gView.Framework.Data
 
         #region IFeatureClass Member
 
-        public Task<IFeatureCursor> GetFeatures(IQueryFilter filter/*, gView.Framework.Data.getFeatureQueryType type*/)
+        virtual public Task<IFeatureCursor> GetFeatures(IQueryFilter filter/*, gView.Framework.Data.getFeatureQueryType type*/)
         {
             return Task.FromResult<IFeatureCursor>(null);
         }
@@ -1867,12 +1867,12 @@ namespace gView.Framework.Data
             return null;
         }
 
-        public Task<ICursor> Search(IQueryFilter filter)
+        virtual public Task<ICursor> Search(IQueryFilter filter)
         {
             return Task.FromResult<ICursor>(null);
         }
 
-        public Task<ISelectionSet> Select(IQueryFilter filter)
+        virtual public Task<ISelectionSet> Select(IQueryFilter filter)
         {
             return Task.FromResult<ISelectionSet>(null);
         }

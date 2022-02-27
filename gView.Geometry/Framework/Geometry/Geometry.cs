@@ -885,6 +885,9 @@ namespace gView.Framework.Geometry
     public class PointM : Point
     {
         private object _m;
+
+        public PointM() : base()
+        { }
         public PointM(double x, double y, object m)
             : base(x, y)
         {

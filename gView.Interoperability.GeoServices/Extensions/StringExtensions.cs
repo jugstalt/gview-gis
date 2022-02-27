@@ -6,7 +6,7 @@ namespace gView.Interoperability.GeoServices.Extensions
 {
     static class StringExtensions
     {
-        public static string UrlEncodePassword(this string password)
+        static public string UrlEncodePassword(this string password)
         {
             if (password != null && password.IndexOfAny("+/=&".ToCharArray()) > 0)
             {
@@ -14,6 +14,20 @@ namespace gView.Interoperability.GeoServices.Extensions
             }
 
             return password;
+        }
+
+        static public string UrlEncodeWhereClause(this string whereClause)
+        {
+            if (String.IsNullOrWhiteSpace(whereClause))
+            {
+                return String.Empty;
+            }
+
+            return whereClause.Replace("%", "%25")
+                      .Replace("+", "%2B")
+                      .Replace("/", "%2F")
+                      //.Replace(@"\", "%5C")   // Darf man nicht ersetzen!! Sonst geht beim Kunden der Filter für Usernamen nicht mehr!!!!!!
+                      .Replace("&", "%26");
         }
     }
 }

@@ -2,7 +2,7 @@
   "profiles": {
     "gView.Cmd.FillLuceneServer": {
       "commandName": "Project",
-      "commandLineArgs": "fill -s https://localhost:44393 -i allgemein"
+      "commandLineArgs": "fill C:\\apps\\gview5\\_scripting\\lucene_import_noe_adressen_ags.json"
     }
   }
 }

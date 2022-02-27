@@ -1202,7 +1202,7 @@ namespace gView.Framework.OGC.DB
 
             if (!String.IsNullOrWhiteSpace(filter.OrderBy))
             {
-                orderBy = "order by " + filter.OrderBy;
+                orderBy = " order by " + filter.OrderBy;
             }
 
             if (filter.Limit > 0)
@@ -1216,7 +1216,7 @@ namespace gView.Framework.OGC.DB
             }
 
             DbCommand command = ((OgcSpatialDataset)fc.Dataset).ProviderFactory.CreateCommand();
-            command.CommandText = ("SELECT " + fieldNames + " FROM " + DbTableName(fc.Name) + ((where != "") ? " WHERE " + where : "") + limit).Trim();
+            command.CommandText = ("SELECT " + fieldNames + " FROM " + DbTableName(fc.Name) + ((where != "") ? " WHERE " + where : "") + orderBy + limit).Trim();
 
             return command;
         }

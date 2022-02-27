@@ -65,14 +65,14 @@ namespace gView.Interoperability.GeoServices.Request
             {
                 var multiPoint = (IMultiPoint)shape;
 
-                List<double[]> points = new List<double[]>();
+                List<double?[]> points = new List<double?[]>();
 
                 for (int p = 0, pointCount = multiPoint.PointCount; p < pointCount; p++)
                 {
                     var point = multiPoint[p];
                     if (point != null)
                     {
-                        points.Add(new double[] { point.X, point.Y });
+                        points.Add(new double?[] { point.X, point.Y });
                     }
                 }
 
@@ -97,14 +97,14 @@ namespace gView.Interoperability.GeoServices.Request
             {
                 var polyline = (IPolyline)shape;
 
-                List<double[,]> paths = new List<double[,]>();
+                List<double?[,]> paths = new List<double?[,]>();
                 for (int r = 0, pathCount = polyline.PathCount; r < pathCount; r++)
                 {
                     var path = polyline[r];
                     if (path == null || path.PointCount == 0)
                         continue;
 
-                    double[,] points = new double[path.PointCount, 2];
+                    double?[,] points = new double?[path.PointCount, 2];
                     for (int p = 0, pointCount = path.PointCount; p < pointCount; p++)
                     {
                         var point = path[p];
@@ -125,14 +125,14 @@ namespace gView.Interoperability.GeoServices.Request
             {
                 var polygon = (IPolygon)shape;
 
-                List<double[,]> rings = new List<double[,]>();
+                List<double?[,]> rings = new List<double?[,]>();
                 for (int r = 0, ringCount = polygon.RingCount; r < ringCount; r++)
                 {
                     var ring = polygon[r];
                     if (ring == null || ring.PointCount == 0)
                         continue;
 
-                    double[,] points = new double[ring.PointCount, 2];
+                    double?[,] points = new double?[ring.PointCount, 2];
                     for (int p = 0, pointCount = ring.PointCount; p < pointCount; p++)
                     {
                         var point = ring[p];
@@ -180,7 +180,7 @@ namespace gView.Interoperability.GeoServices.Request
                     var path = new Path();
                     for (int i = 0, pointCount = jsonPath.GetLength(0); i < pointCount; i++)
                     {
-                        path.AddPoint(new Point(jsonPath[i, 0], jsonPath[i, 1]));
+                        path.AddPoint(new Point(jsonPath[i, 0].Value, jsonPath[i, 1].Value));
                     }
                     polyline.AddPath(path);
                 }
@@ -200,7 +200,7 @@ namespace gView.Interoperability.GeoServices.Request
                     var ring = new Ring();
                     for (int i = 0, pointCount = jsonRing.GetLength(0); i < pointCount; i++)
                     {
-                        ring.AddPoint(new Point(jsonRing[i, 0], jsonRing[i, 1]));
+                        ring.AddPoint(new Point(jsonRing[i, 0].Value, jsonRing[i, 1].Value));
                     }
                     polygon.AddRing(ring);
                 }
@@ -216,7 +216,7 @@ namespace gView.Interoperability.GeoServices.Request
                     var point = geometry.Points[p];
                     if (point != null && point.Length >= 2)
                     {
-                        multiPoint.AddPoint(new Point(point[0], point[1]));
+                        multiPoint.AddPoint(new Point(point[0].Value, point[1].Value));
                     }
                 }
 

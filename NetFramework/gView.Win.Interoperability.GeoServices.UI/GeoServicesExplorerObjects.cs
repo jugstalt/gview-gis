@@ -1,14 +1,13 @@
 using gView.Framework.Globalisation;
 using gView.Framework.IO;
+using gView.Framework.system;
 using gView.Framework.system.UI;
 using gView.Framework.UI;
-using System;
-using System.Threading.Tasks;
-using gView.Framework.system;
-using System.Xml;
 using gView.Framework.Web;
 using gView.Interoperability.GeoServices.Rest.Json;
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.GeoServices.Dataset
 {
@@ -28,12 +27,12 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         public string FullName
         {
-            get { return "ESRI.GeoServices"; }
+            get { return "gView.GeoServices"; }
         }
 
         public string Type
         {
-            get { return "ESRI.GeoServices Connections"; }
+            get { return "gView.GeoServices Connections"; }
         }
 
         public IExplorerIcon Icon
@@ -174,7 +173,7 @@ namespace gView.Interoperability.GeoServices.Dataset
         {
             if (cache.Contains(FullName))
             {
-                return  Task.FromResult(cache[FullName]);
+                return Task.FromResult(cache[FullName]);
             }
 
             return Task.FromResult<IExplorerObject>(null);
@@ -201,7 +200,8 @@ namespace gView.Interoperability.GeoServices.Dataset
 
     internal class GeoServicesConnectionExplorerObject : ExplorerParentObject, IExplorerSimpleObject, IExplorerObjectDeletable, IExplorerObjectRenamable
     {
-        private string _name = "", _connectionString = "";
+        private string _name = "";
+        internal string _connectionString = "";
         private IExplorerIcon _icon = new GeoServicesConnectionIcon();
 
         public GeoServicesConnectionExplorerObject() : base(null, null, 0) { }
@@ -322,16 +322,14 @@ namespace gView.Interoperability.GeoServices.Dataset
                 return null;
             }
 
-            group = (GeoServicesExplorerObjects)((cache.Contains(group.FullName)) ? cache[group.FullName] : group);
+            var exObject = (await group.ChildObjects()).Where(e => FullName.Equals(e.FullName)).FirstOrDefault();
 
-            foreach (IExplorerObject exObject in await group.ChildObjects())
+            if (exObject != null)
             {
-                if (exObject.FullName == FullName)
-                {
-                    cache.Append(exObject);
-                    return exObject;
-                }
+                cache.Append(exObject);
+                return exObject;
             }
+
             return null;
         }
 
@@ -412,7 +410,7 @@ namespace gView.Interoperability.GeoServices.Dataset
                         .UrlAppendPath(this._name)
                         .UrlAppendParameters("f=json");
 
-                if(!String.IsNullOrEmpty(user) && !String.IsNullOrEmpty(pwd))
+                if (!String.IsNullOrEmpty(user) && !String.IsNullOrEmpty(pwd))
                 {
                     string token = await RequestTokenCache.RefreshTokenAsync(server, user, pwd);
                     url = url.UrlAppendParameters($"token={token}");
@@ -510,40 +508,49 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         #region ISerializableExplorerObject Member
 
-        async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        async public Task<IExplorerObject> CreateInstanceByFullName(string fullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName))
+            if (cache!=null && cache.Contains(fullName))
             {
-                return cache[FullName];
+                return cache[fullName];
             }
 
-            FullName = FullName.Replace("/", @"\");
-            int lastIndex = FullName.LastIndexOf(@"\");
-            if (lastIndex == -1)
+            fullName = fullName.Replace("/", @"\");
+
+            GeoServicesExplorerObjects group = new GeoServicesExplorerObjects();
+            GeoServicesConnectionExplorerObject connectionExObject = null;
+            foreach (var connectionObject in (await group.ChildObjects()).OrderByDescending(e => e.FullName.Length))
             {
-                return null;
-            }
-
-            string cnName = FullName.Substring(0, lastIndex);
-            string svName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
-
-            GeoServicesConnectionExplorerObject cnObject = new GeoServicesConnectionExplorerObject();
-            cnObject = await cnObject.CreateInstanceByFullName(cnName, cache) as GeoServicesConnectionExplorerObject;
-
-            var childObjects = await cnObject?.ChildObjects();
-            if (cnObject == null || childObjects == null)
-            {
-                return null;
-            }
-
-            foreach (IExplorerObject exObject in childObjects)
-            {
-                if (exObject.Name == svName)
+                if (fullName.StartsWith($@"{ connectionObject.FullName }\"))
                 {
-                    cache.Append(exObject);
-                    return exObject;
+                    connectionExObject = connectionObject as GeoServicesConnectionExplorerObject;
+                    break;
                 }
             }
+
+            if (connectionExObject == null)
+            {
+                return null;
+            }
+
+            string name = fullName.Substring(connectionExObject.FullName.Length + 1);
+
+            if (name.Contains(@"\"))
+            {
+                return null;
+            }
+
+            var folderExObject = new GeoServicesFolderExplorerObject(connectionExObject, name, connectionExObject._connectionString);
+            if (folderExObject != null)
+            {
+                if (cache != null)
+                {
+                    cache.Append(folderExObject);
+                }
+
+                return folderExObject;
+            }
+
             return null;
         }
 
@@ -642,9 +649,10 @@ namespace gView.Interoperability.GeoServices.Dataset
                 await base.Refresh();
                 await GetInstanceAsync();
 
-                if (_class?.Themes != null) {
+                if (_class?.Themes != null)
+                {
 
-                    foreach (var theme in _class.Themes) 
+                    foreach (var theme in _class.Themes)
                     {
                         if (theme?.Class is GeoServicesFeatureClass)
                         {
@@ -668,76 +676,147 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         #region ISerializableExplorerObject Member
 
-        async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        async public Task<IExplorerObject> CreateInstanceByFullName(string fullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName))
+            if (cache != null && cache.Contains(fullName))
             {
-                return cache[FullName];
+                return cache[fullName];
             }
 
-            FullName = FullName.Replace("/", @"\");
-            int lastIndex = FullName.LastIndexOf(@"\");
-            if (lastIndex == -1)
+            fullName = fullName.Replace("/", @"\");
+
+            GeoServicesExplorerObjects group = new GeoServicesExplorerObjects();
+            GeoServicesConnectionExplorerObject connectionExObject = null;
+
+            foreach (var connectionObject in (await group.ChildObjects()).OrderByDescending(e => e.FullName.Length))
             {
-                return null;
-            }
-
-            string cnName = FullName.Substring(0, lastIndex);
-            string svName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
-
-            GeoServicesConnectionExplorerObject cnObject = new GeoServicesConnectionExplorerObject();
-            cnObject = await cnObject.CreateInstanceByFullName(cnName, cache) as GeoServicesConnectionExplorerObject;
-
-            var childObjects = await cnObject?.ChildObjects();
-            if (cnObject == null || childObjects == null)
-            {
-                return null;
-            }
-
-            foreach (IExplorerObject exObject in childObjects)
-            {
-                if (exObject.Name == svName)
+                if (fullName.StartsWith($@"{ connectionObject.FullName }\"))
                 {
-                    cache.Append(exObject);
-                    return exObject;
+                    connectionExObject = connectionObject as GeoServicesConnectionExplorerObject;
+                    break;
                 }
             }
+
+            if (connectionExObject == null)
+            {
+                return null;
+            }
+
+            string name = fullName.Substring(connectionExObject.FullName.Length + 1), folderName = "";
+
+            IExplorerObject parentExObject = null;
+
+            if (name.Contains(@"\"))
+            {
+                folderName = name.Substring(0, name.LastIndexOf(@"\"));
+                name = name.Substring(name.LastIndexOf(@"\") + 1);
+                parentExObject = await new GeoServicesFolderExplorerObject(null, String.Empty, String.Empty).CreateInstanceByFullName($@"{ connectionExObject.FullName }\{ folderName }", null);
+            } 
+            else
+            {
+                parentExObject = connectionExObject;
+            }
+
+
+            var serviceExObject = new GeoServicesServiceExplorerObject(parentExObject, name, folderName, connectionExObject._connectionString);
+            if (serviceExObject != null)
+            {
+                if (cache != null)
+                {
+                    cache.Append(serviceExObject);
+                }
+
+                return serviceExObject;
+            }
+
             return null;
         }
 
         #endregion
     }
 
+    [gView.Framework.system.RegisterPlugIn("5133CFA1-AA5E-47FC-990A-462772158CA5")]
     public class GeoServicesServiceLayerExplorerObject : ExplorerObjectCls, IExplorerSimpleObject
     {
         private IExplorerIcon _icon = new GeoServicesServiceIcon();
 
+        private IExplorerObject _parent;
         private readonly GeoServicesFeatureClass _fc;
         private readonly string _name;
         private readonly string _id;
 
+        public GeoServicesServiceLayerExplorerObject()
+            : base(null, typeof(GeoServicesFeatureClass), 1)
+        {
+        }
+
         public GeoServicesServiceLayerExplorerObject(IExplorerObject parent, GeoServicesFeatureClass featureClass)
             : base(parent, typeof(GeoServicesFeatureClass), 1)
         {
+            _parent = parent;
             _fc = featureClass;
         }
 
         public string Name => _fc.Name;
 
-        public string FullName => _fc.Name;
+        public string FullName
+        {
+            get
+            {
+                if (_parent == null)
+                {
+                    return "";
+                }
+
+                return _parent.FullName +
+                    $@"\{_fc.ID}";
+            }
+        }
 
         public string Type => "Service layer";
 
         public IExplorerIcon Icon => _icon;
 
-        public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        async public Task<IExplorerObject> CreateInstanceByFullName(string fullName, ISerializableExplorerObjectCache cache)
         {
+            if (cache.Contains(fullName))
+            {
+                return cache[fullName];
+            }
+
+            fullName = fullName.Replace("/", @"\");
+            int pos = fullName.LastIndexOf(@"\");
+
+            if (pos < 0)
+            {
+                return null;
+            }
+
+            string layerId = fullName.Substring(pos + 1);
+            string parentFullName = fullName.Substring(0, pos);
+
+            var parentObject =
+                (IExplorerParentObject)(await new GeoServicesFolderExplorerObject(null, String.Empty, String.Empty).CreateInstanceByFullName(parentFullName, null)) ??
+                (IExplorerParentObject)(await new GeoServicesServiceExplorerObject(null, String.Empty, String.Empty, String.Empty).CreateInstanceByFullName(parentFullName, null));
+
+            if (parentObject != null)
+            {
+                foreach (var child in await parentObject.ChildObjects())
+                {
+                    if (child.FullName == fullName)
+                    {
+                        cache.Append(child);
+                        return child;
+                    }
+                }
+            }
+
             return null;
         }
 
         public void Dispose()
         {
-            
+
         }
 
         public Task<object> GetInstanceAsync()

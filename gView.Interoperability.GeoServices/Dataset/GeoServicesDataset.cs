@@ -1,23 +1,26 @@
+using gView.Core.Framework.Exceptions;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Web;
 using gView.Framework.system;
+using gView.Framework.Web.Abstraction;
+using gView.Framework.Web.Services;
 using gView.Interoperability.GeoServices.Rest.Json;
 using gView.MapServer;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Net;
-using gView.Core.Framework.Exceptions;
-using System.Text;
-using System;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace gView.Interoperability.GeoServices.Dataset
 {
     [gView.Framework.system.RegisterPlugIn("C4D644FE-8125-4214-99E1-0F0BC5884EDB")]
     public class GeoServicesDataset : DatasetMetadata, IFeatureDataset, IRequestDependentDataset
     {
+        private readonly IHttpService _http;
+
         internal string _connection = "";
         internal string _name = "";
         internal List<IWebServiceTheme> _themes = new List<IWebServiceTheme>();
@@ -28,9 +31,13 @@ namespace gView.Interoperability.GeoServices.Dataset
         private ISpatialReference _sRef = null;
         private string _token;
 
-        public GeoServicesDataset() { }
+        public GeoServicesDataset()
+        {
+            _http = HttpService.CreateInstance();
+        }
 
         public GeoServicesDataset(string connection, string name)
+            : this()
         {
             _connection = connection;
             _name = name;
@@ -165,6 +172,15 @@ namespace gView.Interoperability.GeoServices.Dataset
                 return Task.FromResult<IDatasetElement>(new DatasetElement(_class));
             }
 
+            if (_class != null && _class.Themes != null)
+            {
+                var theme = _class.Themes.Where(t => t.Title == title).FirstOrDefault();
+                if (theme?.FeatureClass != null)
+                {
+                    return Task.FromResult<IDatasetElement>(new DatasetElement(theme.FeatureClass));
+                }
+            }
+
             return Task.FromResult<IDatasetElement>(null);
         }
 
@@ -222,7 +238,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
                         if (jsonLayer.Type.ToLower() == "feature layer")
                         {
-                            themeClass = new GeoServicesFeatureClass(this, jsonLayer);
+                            themeClass = await GeoServicesFeatureClass.CreateAsync(this, jsonLayer);
 
                             theme = LayerFactory.Create(themeClass, _class as IWebServiceClass) as IWebServiceTheme;
                             if (theme == null)
@@ -268,7 +284,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         #region Helper
 
-        async internal Task<T> TryPostAsync<T>(string url)
+        async internal Task<T> TryPostAsync<T>(string url, string postData = "")
         {
             int i = 0;
             while (true)
@@ -279,14 +295,17 @@ namespace gView.Interoperability.GeoServices.Dataset
 
                     if (!String.IsNullOrWhiteSpace(_token))
                     {
-                        tokenParameter = "token=" + _token;
+                        tokenParameter = (String.IsNullOrWhiteSpace(postData) ? "" : "&") + "token=" + _token;
                     }
 
                     try
                     {
-                        result = Encoding.UTF8.GetString(await WebFunctions.DownloadRawAsync(url.UrlAppendParameters(tokenParameter), 
-                                                                                             null,
-                                                                                             null, null, string.Empty, string.Empty));
+                        result = await _http.PostFormUrlEncodedStringAsync(url.UrlAppendParameters(tokenParameter),
+                                                                              $"{ postData }{ tokenParameter }");
+
+                        //result = Encoding.UTF8.GetString(await WebFunctions.DownloadRawAsync(url.UrlAppendParameters(tokenParameter), 
+                        //                                                                     postData == null ? null : Encoding.UTF8.GetBytes(postData),
+                        //                                                                     null, null, string.Empty, string.Empty));
                     }
                     catch (WebException ex)
                     {
