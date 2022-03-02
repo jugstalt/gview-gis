@@ -537,7 +537,7 @@ namespace gView.Win.Carto
                     if (int.TryParse(((ComboBoxItem)e.AddedItems[0]).Content.ToString()
                         .Replace(".", "")
                         .Replace(",", "")
-                        .Replace(" ",""), out int scale)) 
+                        .Replace(" ", ""), out int scale))
                     {
                         await SetMapScale(scale);
                     }
@@ -727,7 +727,7 @@ namespace gView.Win.Carto
                             {
                                 Fluent.BackstageTabItem backItem = new Fluent.BackstageTabItem();
                                 backItem.Header = tool.Name;
-                                backItem.Icon = 
+                                backItem.Icon =
                                     ImageFactory.FromBitmap(tool.Image as System.Drawing.Image);
 
                                 object control = ((IToolControl)tool).Control;

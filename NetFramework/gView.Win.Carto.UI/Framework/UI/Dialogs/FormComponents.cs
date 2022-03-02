@@ -72,38 +72,33 @@ namespace gView.Framework.UI.Dialogs
             // 
             // lstComponents
             // 
-            this.lstComponents.AccessibleDescription = null;
-            this.lstComponents.AccessibleName = null;
-            resources.ApplyResources(this.lstComponents, "lstComponents");
-            this.lstComponents.BackgroundImage = null;
             this.lstComponents.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lstComponents.Font = null;
+            resources.ApplyResources(this.lstComponents, "lstComponents");
             this.lstComponents.Name = "lstComponents";
             // 
             // mainMenu1
             // 
             this.mainMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.menuItem1});
-            resources.ApplyResources(this.mainMenu1, "mainMenu1");
             // 
             // menuItem1
             // 
-            resources.ApplyResources(this.menuItem1, "menuItem1");
             this.menuItem1.Index = 0;
             this.menuItem1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.menuItem2,
             this.menuItem3});
+            resources.ApplyResources(this.menuItem1, "menuItem1");
             // 
             // menuItem2
             // 
-            resources.ApplyResources(this.menuItem2, "menuItem2");
             this.menuItem2.Index = 0;
+            resources.ApplyResources(this.menuItem2, "menuItem2");
             this.menuItem2.Click += new System.EventHandler(this.menuItem2_Click);
             // 
             // menuItem3
             // 
-            resources.ApplyResources(this.menuItem3, "menuItem3");
             this.menuItem3.Index = 1;
+            resources.ApplyResources(this.menuItem3, "menuItem3");
             this.menuItem3.Click += new System.EventHandler(this.menuItem3_Click);
             // 
             // openFileDialog1
@@ -112,22 +107,14 @@ namespace gView.Framework.UI.Dialogs
             // 
             // splitter1
             // 
-            this.splitter1.AccessibleDescription = null;
-            this.splitter1.AccessibleName = null;
             resources.ApplyResources(this.splitter1, "splitter1");
-            this.splitter1.BackgroundImage = null;
-            this.splitter1.Font = null;
             this.splitter1.Name = "splitter1";
             this.splitter1.TabStop = false;
             // 
             // treeView1
             // 
-            this.treeView1.AccessibleDescription = null;
-            this.treeView1.AccessibleName = null;
-            resources.ApplyResources(this.treeView1, "treeView1");
-            this.treeView1.BackgroundImage = null;
             this.treeView1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.treeView1.Font = null;
+            resources.ApplyResources(this.treeView1, "treeView1");
             this.treeView1.ImageList = this.imageList1;
             this.treeView1.Name = "treeView1";
             // 
@@ -146,16 +133,11 @@ namespace gView.Framework.UI.Dialogs
             // 
             // FormComponents
             // 
-            this.AccessibleDescription = null;
-            this.AccessibleName = null;
             resources.ApplyResources(this, "$this");
-            this.BackgroundImage = null;
             this.Controls.Add(this.treeView1);
             this.Controls.Add(this.splitter1);
             this.Controls.Add(this.lstComponents);
-            this.Font = null;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.Icon = null;
             this.Menu = this.mainMenu1;
             this.Name = "FormComponents";
             this.Load += new System.EventHandler(this.FormComponents_Load);

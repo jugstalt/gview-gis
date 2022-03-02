@@ -41,32 +41,29 @@
             // 
             // tvPlugins
             // 
-            this.tvPlugins.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.tvPlugins.Location = new System.Drawing.Point(6, 6);
+            this.tvPlugins.Dock = System.Windows.Forms.DockStyle.Left;
+            this.tvPlugins.Location = new System.Drawing.Point(0, 0);
             this.tvPlugins.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tvPlugins.Name = "tvPlugins";
-            this.tvPlugins.Size = new System.Drawing.Size(524, 579);
+            this.tvPlugins.Size = new System.Drawing.Size(513, 1117);
             this.tvPlugins.TabIndex = 3;
             this.tvPlugins.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.tvPlugins_BeforeExpand);
             this.tvPlugins.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tvPlugins_AfterSelect);
             // 
             // groupBox1
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.txtPath);
             this.groupBox1.Controls.Add(this.txtGuid);
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.txtAssembly);
-            this.groupBox1.Location = new System.Drawing.Point(542, 11);
+            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox1.Location = new System.Drawing.Point(513, 0);
             this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupBox1.Size = new System.Drawing.Size(598, 658);
+            this.groupBox1.Size = new System.Drawing.Size(635, 1117);
             this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Plugin Info";
@@ -89,7 +86,7 @@
             this.txtPath.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.txtPath.Name = "txtPath";
             this.txtPath.ReadOnly = true;
-            this.txtPath.Size = new System.Drawing.Size(578, 26);
+            this.txtPath.Size = new System.Drawing.Size(615, 26);
             this.txtPath.TabIndex = 4;
             // 
             // txtGuid
@@ -100,7 +97,7 @@
             this.txtGuid.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.txtGuid.Name = "txtGuid";
             this.txtGuid.ReadOnly = true;
-            this.txtGuid.Size = new System.Drawing.Size(578, 26);
+            this.txtGuid.Size = new System.Drawing.Size(615, 26);
             this.txtGuid.TabIndex = 0;
             // 
             // label2
@@ -131,7 +128,7 @@
             this.txtAssembly.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.txtAssembly.Name = "txtAssembly";
             this.txtAssembly.ReadOnly = true;
-            this.txtAssembly.Size = new System.Drawing.Size(578, 26);
+            this.txtAssembly.Size = new System.Drawing.Size(615, 26);
             this.txtAssembly.TabIndex = 1;
             // 
             // PluginManagerControl
@@ -142,7 +139,7 @@
             this.Controls.Add(this.tvPlugins);
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "PluginManagerControl";
-            this.Size = new System.Drawing.Size(1144, 669);
+            this.Size = new System.Drawing.Size(1148, 1117);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
