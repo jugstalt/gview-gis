@@ -233,11 +233,12 @@ namespace gView.Server.Controllers
 
                     var jsonLayers = new JsonLayers();
                     jsonLayers.Layers = map.MapElements
-                        .Where(e => {   // Just show layer in Toc (and not hidden)
+                        .Where(e =>
+                        {   // Just show layer in Toc (and not hidden)
                             var tocElement = map.TOC.GetTOCElement(e as ILayer);
 
                             return tocElement == null ? false : tocElement.IsHidden() == false;
-                            })
+                        })
                         .Select(e => JsonLayer(map, e.ID))
                         .ToArray();
 
@@ -420,7 +421,7 @@ namespace gView.Server.Controllers
             });
         }
 
-        async public Task<IActionResult> Identify(string id, string folder="")
+        async public Task<IActionResult> Identify(string id, string folder = "")
         {
             return await SecureMethodHandler(async (identity) =>
             {
@@ -472,7 +473,7 @@ namespace gView.Server.Controllers
                 {
                     return Result(serviceRequest.Response);
                 }
-                
+
             });
         }
 
@@ -1112,10 +1113,10 @@ namespace gView.Server.Controllers
                 result.Description = map.GetLayerDescription(layerId);
                 result.CopyrightText = map.GetLayerCopyrightText(layerId);
 
-                if(result is JsonFeatureServerLayer)
+                if (result is JsonFeatureServerLayer)
                 {
                     var editorModule = map.GetModule<gView.Plugins.Modules.EditorModule>();
-                    if(editorModule!=null)
+                    if (editorModule != null)
                     {
                         var editLayer = editorModule.GetEditLayer(result.Id);
                         if (editLayer != null)
@@ -1129,11 +1130,11 @@ namespace gView.Server.Controllers
                                 }
                             }
 
-                            if(editOperations.Count>0)
+                            if (editOperations.Count > 0)
                             {
                                 ((JsonFeatureServerLayer)result).IsEditable = true;
                                 ((JsonFeatureServerLayer)result).EditOperations = editOperations.ToArray();
-                            } 
+                            }
                         }
                     }
                 }
@@ -1415,7 +1416,7 @@ namespace gView.Server.Controllers
 
                         var firstElement = arrayValues.Where(v => v != null).FirstOrDefault();
                         YamlGroupByAttribute groupByAttribute = null;
-                        if (firstElement != null && !firstElement.GetType().IsValueType && arrayValues.Where(v=>firstElement.GetType()== v?.GetType()).Count() == arrayValues.Count())
+                        if (firstElement != null && !firstElement.GetType().IsValueType && arrayValues.Where(v => firstElement.GetType() == v?.GetType()).Count() == arrayValues.Count())
                         {
                             groupByAttribute = firstElement.GetType().GetCustomAttribute<YamlGroupByAttribute>();
                             if (!String.IsNullOrEmpty(groupByAttribute?.GroupByField))
@@ -1425,7 +1426,7 @@ namespace gView.Server.Controllers
                             }
                         }
 
-                        foreach (var groupBy in groupByAttribute!=null ? groupByValues.ToArray() : new string[] { String.Empty })
+                        foreach (var groupBy in groupByAttribute != null ? groupByValues.ToArray() : new string[] { String.Empty })
                         {
                             int arrayIndex = 0;
                             foreach (var val in arrayValues)
@@ -1455,7 +1456,9 @@ namespace gView.Server.Controllers
                                     if (!String.IsNullOrEmpty(groupByAttribute?.GroupByField))
                                     {
                                         if (groupBy != val.GetType().GetProperty(groupByAttribute.GroupByField).GetValue(val)?.ToString())
+                                        {
                                             continue;
+                                        }
 
                                         if (arrayIndex == 0)
                                         {
