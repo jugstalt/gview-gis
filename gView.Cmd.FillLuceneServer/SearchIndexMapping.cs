@@ -7,7 +7,7 @@ namespace gView.Cmd.FillLuceneServer
 {
     class SearchIndexMapping : IndexMapping
     {
-        public SearchIndexMapping()
+        public SearchIndexMapping(char[] encodeCharacters)
         {
             this.AddField(new IndexField("id", FieldTypes.StringType));
             this.AddField(new IndexField("suggested_text", FieldTypes.TextType));
@@ -22,6 +22,8 @@ namespace gView.Cmd.FillLuceneServer
             this.AddField(new StoredField("bbox"));
 
             this.PrimaryFields = new string[] { "suggested_text", "subtext", "category" };
+            this.PrimaryFieldsEncodeCharacters = encodeCharacters != null && encodeCharacters.Length > 0 ?
+                encodeCharacters : null;
         }
     }
 }

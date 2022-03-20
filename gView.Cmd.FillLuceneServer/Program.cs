@@ -159,7 +159,7 @@ namespace gView.Cmd.FillLuceneServer
                         {
                             throw new Exception($"Can't create elasticsearch index { importConfig.Connection.DefaultIndex }");
                         }
-                        if (!await luceneServerClient.MapAsync(new SearchIndexMapping()))
+                        if (!await luceneServerClient.MapAsync(new SearchIndexMapping(importConfig.Connection.EncodeCharacters)))
                         {
                             throw new Exception($"Can't map item in elasticsearch index { importConfig.Connection.DefaultIndex }");
                         }

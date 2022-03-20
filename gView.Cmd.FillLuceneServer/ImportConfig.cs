@@ -34,10 +34,27 @@ namespace gView.Cmd.FillLuceneServer
             [JsonProperty(PropertyName = "default_index")]
             public string DefaultIndex { get; set; }
 
+            [JsonProperty(PropertyName = "encode_characters")]
+            public string EncodeCharactersString { get; set; }
+
             [JsonProperty(PropertyName = "delete_index")]
             public bool DeleteIndex { get; set; }
 
             public string MetaIndex => $"{ this.DefaultIndex }.meta";
+
+            [JsonIgnore]
+            public char[] EncodeCharacters
+            {
+                get
+                {
+                    if(!String.IsNullOrEmpty(this.EncodeCharactersString))
+                    {
+                        return this.EncodeCharactersString.Trim().ToCharArray();
+                    }
+
+                    return null;
+                }
+            }
         }
 
         public class DatasetConnection
