@@ -37,6 +37,9 @@ namespace gView.Cmd.FillLuceneServer
             [JsonProperty(PropertyName = "encode_characters")]
             public string EncodeCharactersString { get; set; }
 
+            [JsonProperty(PropertyName = "phonetic_algorithm")]
+            public string PhoneticAlgorithmString { get; set; }
+
             [JsonProperty(PropertyName = "delete_index")]
             public bool DeleteIndex { get; set; }
 
@@ -53,6 +56,18 @@ namespace gView.Cmd.FillLuceneServer
                     }
 
                     return null;
+                }
+            }
+
+            [JsonIgnore]
+            public LuceneServerNET.Core.Phonetics.Algorithm PhoneticAlgorithm
+            {
+                get
+                {
+                    if (String.IsNullOrEmpty(this.PhoneticAlgorithmString))
+                        return LuceneServerNET.Core.Phonetics.Algorithm.None;
+
+                    return Enum.Parse<LuceneServerNET.Core.Phonetics.Algorithm>(this.PhoneticAlgorithmString, true);
                 }
             }
         }

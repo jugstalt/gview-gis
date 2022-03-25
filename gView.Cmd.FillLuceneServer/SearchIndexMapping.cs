@@ -1,4 +1,5 @@
 ﻿using LuceneServerNET.Core.Models.Mapping;
+using LuceneServerNET.Core.Phonetics;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +8,7 @@ namespace gView.Cmd.FillLuceneServer
 {
     class SearchIndexMapping : IndexMapping
     {
-        public SearchIndexMapping(char[] encodeCharacters)
+        public SearchIndexMapping(Algorithm algorithm, char[] encodeCharacters)
         {
             this.AddField(new IndexField("id", FieldTypes.StringType));
             this.AddField(new IndexField("suggested_text", FieldTypes.TextType));
@@ -24,6 +25,8 @@ namespace gView.Cmd.FillLuceneServer
             this.PrimaryFields = new string[] { "suggested_text", "subtext", "category" };
             this.PrimaryFieldsEncodeCharacters = encodeCharacters != null && encodeCharacters.Length > 0 ?
                 encodeCharacters : null;
+
+            this.PrimaryFieldsPhonetics = algorithm;
         }
     }
 }
