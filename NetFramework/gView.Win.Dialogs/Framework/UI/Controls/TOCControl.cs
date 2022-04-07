@@ -1258,15 +1258,15 @@ namespace gView.Framework.UI.Controls
                                     {
                                         switch (((IFeatureLayer)((DatasetLayerItem)item).Layer).FeatureClass.GeometryType)
                                         {
-                                            case geometryType.Point:
-                                            case geometryType.Multipoint:
+                                            case GeometryType.Point:
+                                            case GeometryType.Multipoint:
                                                 imageIndex = 6;
                                                 break;
-                                            case geometryType.Polyline:
+                                            case GeometryType.Polyline:
                                                 imageIndex = 7;
                                                 break;
-                                            case geometryType.Polygon:
-                                            case geometryType.Envelope:
+                                            case GeometryType.Polygon:
+                                            case GeometryType.Envelope:
                                                 imageIndex = 8;
                                                 break;
                                         }

@@ -76,7 +76,7 @@ namespace gView.DataSources.MongoDb
 
         public ISpatialReference SpatialReference { get; set; }
 
-        public geometryType GeometryType { get; private set; }
+        public GeometryType GeometryType { get; private set; }
 
         public Task<int> CountFeatures()
         {

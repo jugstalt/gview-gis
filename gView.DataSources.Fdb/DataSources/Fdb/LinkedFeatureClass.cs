@@ -121,9 +121,9 @@ namespace gView.DataSources.Fdb
             get { return _fc?.SpatialReference; }
         }
 
-        public Framework.Geometry.geometryType GeometryType
+        public Framework.Geometry.GeometryType GeometryType
         {
-            get { return _fc != null ? _fc.GeometryType : gView.Framework.Geometry.geometryType.Unknown; }
+            get { return _fc != null ? _fc.GeometryType : gView.Framework.Geometry.GeometryType.Unknown; }
         }
 
         #endregion

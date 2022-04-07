@@ -51,12 +51,12 @@ namespace gView.Framework.system.UI
 
         private int FeatureBufferSize { get; set; }
 
-        public Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, geometryType? sourceGeometryType = null)
+        public Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, GeometryType? sourceGeometryType = null)
         {
             return ImportToNewFeatureclass(destDS, fcname, sourceFC, fieldTranslation, project, null, sourceGeometryType);
         }
 
-        async public Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters, geometryType? sourceGeometryType = null)
+        async public Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters, GeometryType? sourceGeometryType = null)
         {
             if (destDS == null)
             {
@@ -74,7 +74,7 @@ namespace gView.Framework.system.UI
             return await ImportToNewFeatureclass(destDS, fcname, sourceFC, fieldTranslation, project, filters, nameCase, sourceGeometryType);
         }
 
-        async private Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters, DatasetNameCase namecase, geometryType? sourceGeometryType = null)
+        async private Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters, DatasetNameCase namecase, GeometryType? sourceGeometryType = null)
         {
             if (!_cancelTracker.Continue)
             {
@@ -147,7 +147,7 @@ namespace gView.Framework.system.UI
                 }
 
                 GeometryDef geomDef = new GeometryDef(sourceFC);
-                if (geomDef.GeometryType == geometryType.Unknown && sourceGeometryType != null)
+                if (geomDef.GeometryType == GeometryType.Unknown && sourceGeometryType != null)
                 {
                     geomDef.GeometryType = sourceGeometryType.Value;
                 }

@@ -733,7 +733,7 @@ namespace gView.Plugins.Editor
         #region IToolMouseActions Member
         double _oX = 0, _oY = 0;
         bool _mousePressed = false;
-        HitPositions _hit = null;
+        IHitPositions _hit = null;
 
         public void MouseDown(gView.Framework.Carto.IDisplay display, MouseEventArgs e, IPoint world)
         {

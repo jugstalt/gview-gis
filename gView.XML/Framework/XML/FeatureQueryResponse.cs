@@ -369,7 +369,7 @@ namespace gView.Framework.XML
 	*/
 	internal class selectionGeometry
 	{
-		protected geometryType m_geomType;
+		protected GeometryType m_geomType;
 		protected ArrayList m_points;
 		protected string m_axl;
 		double m_bufferDist;
@@ -382,7 +382,7 @@ namespace gView.Framework.XML
 		{
 			m_points.Clear();
 		}
-		public geometryType GeometryType { get { return m_geomType; } set { m_geomType=value; } }
+		public GeometryType GeometryType { get { return m_geomType; } set { m_geomType=value; } }
 		public double bufferDist { get { return m_bufferDist; } set { m_bufferDist=value; } }
 		public void addPoint(xyPoint point)
 		{
@@ -411,11 +411,11 @@ namespace gView.Framework.XML
 		{
 			get 
 			{
-				if(GeometryType==geometryType.Point && m_points.Count>0) return true;
-				if(GeometryType==geometryType.Polyline && m_points.Count>1) return true;
-				if(GeometryType==geometryType.Polygon && m_points.Count>2) return true;
-				if(GeometryType==geometryType.Envelope && m_points.Count==2) return true;
-				if(GeometryType==geometryType.Unknown) return true;
+				if(GeometryType==GeometryType.Point && m_points.Count>0) return true;
+				if(GeometryType==GeometryType.Polyline && m_points.Count>1) return true;
+				if(GeometryType==GeometryType.Polygon && m_points.Count>2) return true;
+				if(GeometryType==GeometryType.Envelope && m_points.Count==2) return true;
+				if(GeometryType==GeometryType.Unknown) return true;
 				return false;
 			}
 				
@@ -425,7 +425,7 @@ namespace gView.Framework.XML
 			set 
 			{
 				m_axl=value; 
-				GeometryType=geometryType.Unknown;
+				GeometryType=GeometryType.Unknown;
 			}
 		}
 		private void createBufferAXL(ref XmlTextWriter xml) 
@@ -440,7 +440,7 @@ namespace gView.Framework.XML
 			if(!isValid) return;
 			switch(GeometryType) 
 			{
-				case geometryType.Envelope:
+				case GeometryType.Envelope:
 					xyPoint p1=(xyPoint)m_points[0],
 						p2=(xyPoint)m_points[1];
 					double minx=Math.Min(p1.x,p2.x),
@@ -454,7 +454,7 @@ namespace gView.Framework.XML
 					xml.WriteAttributeString("maxy",maxy.ToString());
 					xml.WriteEndElement(); // Enveolpe
 					break;
-				case geometryType.Point:
+				case GeometryType.Point:
 					if(m_bufferDist>1e-7) createBufferAXL(ref xml);
 					xml.WriteStartElement("MULTIPOINT");
 					foreach(xyPoint p in m_points) 
@@ -463,7 +463,7 @@ namespace gView.Framework.XML
 					}
 					xml.WriteEndElement(); // MULTIPOINT
 					break;
-				case geometryType.Polyline:
+				case GeometryType.Polyline:
 					if(m_bufferDist>1e-7) createBufferAXL(ref xml);
 					xml.WriteStartElement("POLYLINE");
 					xml.WriteStartElement("PATH");
@@ -474,7 +474,7 @@ namespace gView.Framework.XML
 					xml.WriteEndElement(); // PATH
 					xml.WriteEndElement(); // POLYLINE
 					break;
-				case geometryType.Polygon:
+				case GeometryType.Polygon:
 					if(m_bufferDist>1e-7) createBufferAXL(ref xml);
 					xml.WriteStartElement("POLYGON");
 					xml.WriteStartElement("RING");
@@ -485,7 +485,7 @@ namespace gView.Framework.XML
 					xml.WriteEndElement(); // RING
 					xml.WriteEndElement(); // POLYGON
 					break;
-				case geometryType.Unknown:
+				case GeometryType.Unknown:
 					if(m_bufferDist>1e-7) createBufferAXL(ref xml);
 					xml.WriteRaw(m_axl);
 					break;
@@ -495,7 +495,7 @@ namespace gView.Framework.XML
 		{
 			if(m_bufferDist<1e-7) return;
 			if(m_points.Count==0) return;
-			if(GeometryType==geometryType.Envelope) return;
+			if(GeometryType==GeometryType.Envelope) return;
 
 			xml.WriteStartElement("LAYER");
 			xml.WriteAttributeString("type","acetate");
@@ -525,7 +525,7 @@ namespace gView.Framework.XML
 		public void createACETATE(ref XmlTextWriter xml) 
 		{
 			if(m_points.Count==0) return;
-			if(GeometryType==geometryType.Envelope) return;
+			if(GeometryType==GeometryType.Envelope) return;
 
 			xml.WriteStartElement("LAYER");
 			xml.WriteAttributeString("type","acetate");
@@ -541,8 +541,8 @@ namespace gView.Framework.XML
 			}
 			xml.WriteEndElement(); // MULTIPOINT
 			axlShapes.closeObject(ref xml);
-			if((GeometryType==geometryType.Polyline && isValid) ||
-				(GeometryType==geometryType.Polygon && m_points.Count==2)) 
+			if((GeometryType==GeometryType.Polyline && isValid) ||
+				(GeometryType==GeometryType.Polygon && m_points.Count==2)) 
 			{
 				axlShapes.openObject(ref xml);
 				axlShapes.LineSymbol(ref xml,3.0,"255,0,0");
@@ -556,7 +556,7 @@ namespace gView.Framework.XML
 				xml.WriteEndElement(); // POLYLINE
 				axlShapes.closeObject(ref xml);
 			}
-			if(GeometryType==geometryType.Polygon && isValid)
+			if(GeometryType==GeometryType.Polygon && isValid)
 			{
 				axlShapes.openObject(ref xml);
 				axlShapes.PolygonSymbol(ref xml,"255,255,0","250,0,0",1.0,0.4);

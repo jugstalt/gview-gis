@@ -128,7 +128,7 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 if (await TableExists("FC_" + dataset.DatasetName + "_IMAGE_POLYGONS"))
                 {
-                    IFeatureClass fc = await SQLiteFDBFeatureClass.Create(this, dataset, new GeometryDef(geometryType.Polygon, sRef, false));
+                    IFeatureClass fc = await SQLiteFDBFeatureClass.Create(this, dataset, new GeometryDef(GeometryType.Polygon, sRef, false));
                     ((SQLiteFDBFeatureClass)fc).Name = dataset.DatasetName + "_IMAGE_POLYGONS";
                     ((SQLiteFDBFeatureClass)fc).Envelope = await this.FeatureClassExtent(fc.Name);
                     ((SQLiteFDBFeatureClass)fc).IDFieldName = "FDB_OID";
@@ -212,11 +212,11 @@ namespace gView.DataSources.Fdb.SQLite
                 GeometryDef geomDef;
                 if (fcRow.Table.Columns["HasZ"] != null)
                 {
-                    geomDef = new GeometryDef((geometryType)fcRow["GeometryType"], null, (bool)fcRow["HasZ"]);
+                    geomDef = new GeometryDef((GeometryType)fcRow["GeometryType"], null, (bool)fcRow["HasZ"]);
                 }
                 else
                 {  // alte Version war immer 3D
-                    geomDef = new GeometryDef((geometryType)fcRow["GeometryType"], null, true);
+                    geomDef = new GeometryDef((GeometryType)fcRow["GeometryType"], null, true);
                 }
 
                 SQLiteFDBDatasetElement layer = await SQLiteFDBDatasetElement.Create(this, dataset, row["Name"].ToString(), geomDef);
@@ -1003,11 +1003,11 @@ namespace gView.DataSources.Fdb.SQLite
             GeometryDef geomDef;
             if (fcRow.Table.Columns["hasz"] != null)
             {
-                geomDef = new GeometryDef((geometryType)Convert.ToInt32(fcRow["geometrytype"]), null, Convert.ToBoolean(fcRow["hasz"]));
+                geomDef = new GeometryDef((GeometryType)Convert.ToInt32(fcRow["geometrytype"]), null, Convert.ToBoolean(fcRow["hasz"]));
             }
             else
             {  // alte Version war immer 3D
-                geomDef = new GeometryDef((geometryType)Convert.ToInt32(fcRow["geometrytype"]), null, true);
+                geomDef = new GeometryDef((GeometryType)Convert.ToInt32(fcRow["geometrytype"]), null, true);
             }
 
             DatasetElement layer = await SQLiteFDBDatasetElement.Create(this, dataset, row["name"].ToString(), geomDef);
@@ -2095,13 +2095,13 @@ namespace gView.DataSources.Fdb.SQLite
                             IGeometry p = null;
                             switch (_geomDef.GeometryType)
                             {
-                                case geometryType.Point:
+                                case GeometryType.Point:
                                     p = new gView.Framework.Geometry.Point();
                                     break;
-                                case geometryType.Polyline:
+                                case GeometryType.Polyline:
                                     p = new gView.Framework.Geometry.Polyline();
                                     break;
-                                case geometryType.Polygon:
+                                case GeometryType.Polygon:
                                     p = new gView.Framework.Geometry.Polygon();
                                     break;
                             }
@@ -2150,7 +2150,7 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 var dsElement = new SQLiteFDBDatasetElement();
 
-                if (geomDef.GeometryType == geometryType.Network)
+                if (geomDef.GeometryType == GeometryType.Network)
                 {
                     dsElement._class = await SQLiteFDBNetworkFeatureClass.Create(fdb, dataset, name, geomDef);
                 }

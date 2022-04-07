@@ -1664,25 +1664,25 @@ namespace gView.Interoperability.ArcXML
                             xWriter.WriteStartElement("FCLASS");
 
                             var geomType = fClass.GeometryType;  // if layer is SQL Spatial with undefined geometrytype...
-                            if (geomType == geometryType.Unknown && fLayer.LayerGeometryType != geometryType.Unknown)  // take the settings from layer-properties
+                            if (geomType == GeometryType.Unknown && fLayer.LayerGeometryType != GeometryType.Unknown)  // take the settings from layer-properties
                             {
                                 geomType = fLayer.LayerGeometryType;
                             }
 
                             switch (geomType)
                             {
-                                case geometryType.Envelope:
-                                case geometryType.Polygon:
+                                case GeometryType.Envelope:
+                                case GeometryType.Polygon:
                                     xWriter.WriteAttributeString("type", "polygon");
                                     break;
-                                case geometryType.Polyline:
+                                case GeometryType.Polyline:
                                     xWriter.WriteAttributeString("type", "line");
                                     break;
-                                case geometryType.Point:
-                                case geometryType.Multipoint:
+                                case GeometryType.Point:
+                                case GeometryType.Multipoint:
                                     xWriter.WriteAttributeString("type", "point");
                                     break;
-                                case geometryType.Network:
+                                case GeometryType.Network:
                                     xWriter.WriteAttributeString("type", "network");
                                     break;
                                 default:
@@ -1737,12 +1737,12 @@ namespace gView.Interoperability.ArcXML
                                 WriteClassMeta(xWriter, fClass);
                             }
 
-                            if (fClass.GeometryType == geometryType.Network)
+                            if (fClass.GeometryType == GeometryType.Network)
                             {
                                 WriteNetworkTracers(xWriter);
                             }
 
-                            if (fClass.GeometryType == geometryType.Network)
+                            if (fClass.GeometryType == GeometryType.Network)
                             {
 
                             }

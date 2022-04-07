@@ -68,7 +68,7 @@ namespace gView.DataSources.Fdb.UI
         {
             return ImportToNewFeatureclass(fdb, dsname, fcname, sourceFC, fieldTranslation, true, filters, null);
         }
-        async public Task<bool> ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters, ISpatialIndexDef sIndexDef, geometryType? sourceGeometryType = null)
+        async public Task<bool> ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters, ISpatialIndexDef sIndexDef, GeometryType? sourceGeometryType = null)
         {
             if (!_cancelTracker.Continue) return true;
 
@@ -142,7 +142,7 @@ namespace gView.DataSources.Fdb.UI
                 }
 
                 GeometryDef geomDef = new GeometryDef(sourceFC);
-                if (geomDef.GeometryType == geometryType.Unknown && sourceGeometryType != null)
+                if (geomDef.GeometryType == GeometryType.Unknown && sourceGeometryType != null)
                     geomDef.GeometryType = sourceGeometryType.Value;
 
                 int fcID = -1;

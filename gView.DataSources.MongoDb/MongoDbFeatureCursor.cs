@@ -25,7 +25,7 @@ namespace gView.DataSources.MongoDb
             IFindFluent<Json.GeometryDocument, Json.GeometryDocument> findFluent = null;
 
             int bestLevel = -1;
-            if (fc.GeneralizationLevel >= 0 && fc.GeometryType != Framework.Geometry.geometryType.Point && filter.MapScale > 0)
+            if (fc.GeneralizationLevel >= 0 && fc.GeometryType != Framework.Geometry.GeometryType.Point && filter.MapScale > 0)
             {
                 var resolution = filter.MapScale / _dpm;
                 bestLevel = resolution.BestResolutionLevel();
@@ -59,7 +59,7 @@ namespace gView.DataSources.MongoDb
                 GeoJsonPolygon<GeoJson2DGeographicCoordinates> box = new GeoJsonPolygon<GeoJson2DGeographicCoordinates>(boxcoord);
 
                 var bsonFilter =
-                    fc.GeometryType == Framework.Geometry.geometryType.Point ?
+                    fc.GeometryType == Framework.Geometry.GeometryType.Point ?
                     Builders<Json.GeometryDocument>.Filter
                         .GeoIntersects(x => x.Shape, box) :
                     Builders<Json.GeometryDocument>.Filter

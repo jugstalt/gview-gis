@@ -22,7 +22,7 @@ namespace gView.Framework.Carto.Rendering
         private string _valueField1 = String.Empty, _valueField2 = String.Empty, _valueField3 = String.Empty;
         private Dictionary<string, ISymbol> _symbolTable = new Dictionary<string, ISymbol>();
         //private ISymbol _defaultSymbol = null;
-        private geometryType _geometryType = geometryType.Unknown;
+        private GeometryType _geometryType = GeometryType.Unknown;
         private SymbolRotation _symbolRotation;
         private bool _useRefscale = true;
         private LegendGroupCartographicMethod _cartoMethod = LegendGroupCartographicMethod.Simple;
@@ -90,7 +90,7 @@ namespace gView.Framework.Carto.Rendering
             }
         }
 
-        public geometryType GeometryType
+        public GeometryType GeometryType
         {
             get { return _geometryType; }
             set { _geometryType = value; }
@@ -204,8 +204,8 @@ namespace gView.Framework.Carto.Rendering
             if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
                 layer.FeatureClass.GeometryType == geometryType.Network) return false;
              * */
-            if (layer.LayerGeometryType == geometryType.Unknown ||
-                layer.LayerGeometryType == geometryType.Network) return false;
+            if (layer.LayerGeometryType == GeometryType.Unknown ||
+                layer.LayerGeometryType == GeometryType.Network) return false;
             return true;
         }
 

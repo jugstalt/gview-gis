@@ -96,7 +96,7 @@ namespace gView.Framework.Carto.Rendering.UI
             cmbHowManyLabels.SelectedIndex = (int)_renderer.HowManyLabels;
             cmbLabelPriority.SelectedIndex = (int)_renderer.LabelPriority;
 
-            gbOrientation.Visible = _fc.GeometryType == Geometry.geometryType.Polyline;
+            gbOrientation.Visible = _fc.GeometryType == Geometry.GeometryType.Polyline;
         }
 
         private void DrawPreview()
@@ -277,7 +277,7 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             switch (_fc.GeometryType)
             {
-                case Geometry.geometryType.Polyline:
+                case Geometry.GeometryType.Polyline:
                     FormLineLabellingOrientation dlgLLO = new FormLineLabellingOrientation(_renderer);
                     if (dlgLLO.ShowDialog() == DialogResult.OK)
                         _renderer.CartoLineLabelling = dlgLLO.CartoLineLabelling;

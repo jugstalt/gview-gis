@@ -11,14 +11,14 @@ namespace gView.Plugins.MapTools
 {
     internal class OpenRendererFilter : ExplorerOpenDialogFilter
     {
-        private geometryType _geomType = geometryType.Unknown;
+        private GeometryType _geomType = GeometryType.Unknown;
 
         public OpenRendererFilter()
             : base("Map Feature Layer")
         {
             ObjectTypes.Add(typeof(ITOCElement));
         }
-        public OpenRendererFilter(geometryType geomType)
+        public OpenRendererFilter(GeometryType geomType)
             : this()
         {
             _geomType = geomType;
@@ -33,7 +33,7 @@ namespace gView.Plugins.MapTools
 
             var instance = await exObject?.GetInstanceAsync();
 
-            if (match && instance is ITOCElement && _geomType != geometryType.Unknown)
+            if (match && instance is ITOCElement && _geomType != GeometryType.Unknown)
             {
                 ITOCElement tocElement = instance as ITOCElement;
                 if (tocElement.Layers != null)

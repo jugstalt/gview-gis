@@ -665,7 +665,7 @@ namespace gView.Framework.Symbology.UI
             }
         }
 
-        virtual public HitPositions HitTest(IDisplay display, IPoint point)
+        virtual public IHitPositions HitTest(IDisplay display, IPoint point)
         {
             IMultiPoint coll = Grabbers(display, true);
             if (coll == null) return null;
@@ -785,8 +785,8 @@ namespace gView.Framework.Symbology.UI
         private double _oldXOffset, _oldYOffset;
         private double _oldAngle;
         private IPoint _oldAnglePoint,_fixPoint,_oldFixPoint;
-        private HitPositions _hit = null;
-        virtual public void Design(IDisplay display, HitPositions hit, double dx, double dy)
+        private IHitPositions _hit = null;
+        virtual public void Design(IDisplay display, IHitPositions hit, double dx, double dy)
         {
             if (display == null || display.GraphicsContainer == null || hit == null) return;
 
@@ -833,7 +833,7 @@ namespace gView.Framework.Symbology.UI
 
         #endregion
 
-        private void DesignPointer(IDisplay display, HitPositions hit, double dx, double dy)
+        private void DesignPointer(IDisplay display, IHitPositions hit, double dx, double dy)
         {
             if (_hit != hit)
             {
@@ -954,7 +954,7 @@ namespace gView.Framework.Symbology.UI
             }
             SnapToFixPoint();
         }
-        private void DesignVertex(IDisplay display, HitPositions hit, double x, double y)
+        private void DesignVertex(IDisplay display, IHitPositions hit, double x, double y)
         {
             //IMultiPoint mPoint = Grabbers(display, false);
             IPointCollection pColl = Vertices(_template, -1);
@@ -1350,7 +1350,7 @@ namespace gView.Framework.Symbology.UI
         static public System.Windows.Forms.Cursor VertexCursor = new System.Windows.Forms.Cursor(gView.Framework.system.SystemVariables.StartupDirectory + @"\Cursors\Vertex.cur");
     }
 
-    internal class HitPosition : HitPositions
+    internal class HitPosition : IHitPositions
     {
         private System.Windows.Forms.Cursor _cursor;
         private int _id;

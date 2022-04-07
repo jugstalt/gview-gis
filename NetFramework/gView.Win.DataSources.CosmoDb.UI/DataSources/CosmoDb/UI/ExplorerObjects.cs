@@ -438,17 +438,17 @@ namespace gView.DataSources.CosmoDb.UI
                 _fc = (IFeatureClass)element.Class;
                 switch (_fc.GeometryType)
                 {
-                    case geometryType.Envelope:
-                    case geometryType.Polygon:
+                    case GeometryType.Envelope:
+                    case GeometryType.Polygon:
                         _icon = new CosmoDbPolygonIcon();
                         _type = "Polygon Featureclass";
                         break;
-                    case geometryType.Multipoint:
-                    case geometryType.Point:
+                    case GeometryType.Multipoint:
+                    case GeometryType.Point:
                         _icon = new CosmoDbPointIcon();
                         _type = "Point Featureclass";
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         _icon = new CosmoDbLineIcon();
                         _type = "Polyline Featureclass";
                         break;

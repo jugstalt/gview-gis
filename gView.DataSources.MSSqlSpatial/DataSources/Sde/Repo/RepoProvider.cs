@@ -227,7 +227,7 @@ SELECT @newid ""Next RowID""";
             return fields;
         }
 
-        async public Task<geometryType> FeatureClassGeometryType(IFeatureClass fc)
+        async public Task<GeometryType> FeatureClassGeometryType(IFeatureClass fc)
         {
             await this.Refresh();
 
@@ -241,19 +241,19 @@ SELECT @newid ""Next RowID""";
                 switch (geomColumn.GeometryType.HasValue ? (SdeTypes.SdeGeometryTppe)geomColumn.GeometryType.Value : SdeTypes.SdeGeometryTppe.unknown)
                 {
                     case SdeTypes.SdeGeometryTppe.point:
-                        return geometryType.Point;
+                        return GeometryType.Point;
                     case SdeTypes.SdeGeometryTppe.multipoint:
-                        return geometryType.Multipoint;
+                        return GeometryType.Multipoint;
                     case SdeTypes.SdeGeometryTppe.linestring:
                     case SdeTypes.SdeGeometryTppe.multilinestring:
-                        return geometryType.Polyline;
+                        return GeometryType.Polyline;
                     case SdeTypes.SdeGeometryTppe.polygon:
                     case SdeTypes.SdeGeometryTppe.multipolygon:
-                        return geometryType.Polygon;
+                        return GeometryType.Polygon;
                 }
             }
 
-            return geometryType.Unknown;
+            return GeometryType.Unknown;
         }
 
         #endregion

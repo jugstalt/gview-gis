@@ -206,7 +206,7 @@ namespace gView.DataSources.Shape.UI
                 {
                     _shapeDataset.Dispose();
                     _shapeDataset = null;
-                    _icon = new ShapeFileIcon(geometryType.Unknown);
+                    _icon = new ShapeFileIcon(GeometryType.Unknown);
                 }
                 else
                 {
@@ -216,7 +216,7 @@ namespace gView.DataSources.Shape.UI
                     }
                     else
                     {
-                        _icon = new ShapeFileIcon(geometryType.Unknown);
+                        _icon = new ShapeFileIcon(GeometryType.Unknown);
                     }
                 }
             }
@@ -229,8 +229,8 @@ namespace gView.DataSources.Shape.UI
 
     internal class ShapeFileIcon : IExplorerIcon
     {
-        private geometryType _geoType;
-        public ShapeFileIcon(geometryType geoType)
+        private GeometryType _geoType;
+        public ShapeFileIcon(GeometryType geoType)
         {
             _geoType = geoType;
         }
@@ -242,13 +242,13 @@ namespace gView.DataSources.Shape.UI
             {
                 switch (_geoType)
                 {
-                    case geometryType.Point:
-                    case geometryType.Multipoint:
+                    case GeometryType.Point:
+                    case GeometryType.Multipoint:
                         return new Guid("A6292F4F-2D10-4E6B-88B6-19E1A40430C3");
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         return new Guid("452D5383-E20D-4CA2-8B39-C376FCA291F1");
-                    case geometryType.Polygon:
-                    case geometryType.Envelope:
+                    case GeometryType.Polygon:
+                    case GeometryType.Envelope:
                         return new Guid("F29A4EA5-9015-453B-B330-BE16D6E2588F");
                     default:
                         return new Guid("BEF8780C-21D6-428D-8F90-2F0FEADCC48C");
@@ -262,13 +262,13 @@ namespace gView.DataSources.Shape.UI
             {
                 switch (_geoType)
                 {
-                    case geometryType.Point:
-                    case geometryType.Multipoint:
+                    case GeometryType.Point:
+                    case GeometryType.Multipoint:
                         return (new Buttons()).imageList1.Images[1];
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         return (new Buttons()).imageList1.Images[2];
-                    case geometryType.Polygon:
-                    case geometryType.Envelope:
+                    case GeometryType.Polygon:
+                    case GeometryType.Envelope:
                         return (new Buttons()).imageList1.Images[3];
                     default:
                         return (new Buttons()).imageList1.Images[0];

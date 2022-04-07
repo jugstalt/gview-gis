@@ -29,11 +29,11 @@ namespace gView.Framework.UI.Dialogs.Network
                         continue;
 
                     IFeatureClass fc = (IFeatureClass)element.Class;
-                    if (fc.GeometryType == geometryType.Polyline)
+                    if (fc.GeometryType == GeometryType.Polyline)
                     {
                         lstEdges.Items.Add(new FcListViewItem(fc));
                     }
-                    else if (fc.GeometryType == geometryType.Point)
+                    else if (fc.GeometryType == GeometryType.Point)
                     {
                         lstNodes.Items.Add(new FcListViewItem(fc));
                     }

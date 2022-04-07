@@ -19,7 +19,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
         private WMSClass.SRS _srs;
         private string _name, _shapefieldName = "wsGeometry", _idFieldname = String.Empty, _targetNamespace = "";
         private Fields _fields=new Fields();
-        private geometryType _geomtype = geometryType.Unknown;
+        private GeometryType _geomtype = GeometryType.Unknown;
         private ISpatialReference _sRef = null;
 
         public WFSFeatureClass(WFSDataset dataset, string name, WMSClass.SRS srs)
@@ -178,7 +178,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
             set { _sRef = value; }
         }
 
-        public gView.Framework.Geometry.geometryType GeometryType
+        public gView.Framework.Geometry.GeometryType GeometryType
         {
             get { return _geomtype; }
         }

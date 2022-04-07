@@ -151,23 +151,23 @@ namespace gView.DataSources.Shape
                 case ShapeType.MultiPoint:
                 case ShapeType.MultiPointM:
                 case ShapeType.MultiPointZ:
-                    _geomDef = new GeometryDef(geometryType.Point, sRef);
+                    _geomDef = new GeometryDef(GeometryType.Point, sRef);
                     break;
                 case ShapeType.PolyLine:
                 case ShapeType.PolyLineM:
                 case ShapeType.PolyLineZ:
-                    _geomDef = new GeometryDef(geometryType.Polyline, sRef);
+                    _geomDef = new GeometryDef(GeometryType.Polyline, sRef);
                     break;
                 case ShapeType.Polygon:
                 case ShapeType.PolygonM:
                 case ShapeType.PolygonZ:
-                    _geomDef = new GeometryDef(geometryType.Polygon, sRef);
+                    _geomDef = new GeometryDef(GeometryType.Polygon, sRef);
                     break;
                 case ShapeType.MultiPatch:
-                    _geomDef = new GeometryDef(geometryType.Aggregate, sRef);
+                    _geomDef = new GeometryDef(GeometryType.Aggregate, sRef);
                     break;
                 default:
-                    _geomDef = new GeometryDef(geometryType.Unknown, sRef);
+                    _geomDef = new GeometryDef(GeometryType.Unknown, sRef);
                     break;
             }
         }
@@ -492,7 +492,7 @@ namespace gView.DataSources.Shape
             get { return _geomDef.HasM; }
         }
 
-        public geometryType GeometryType
+        public GeometryType GeometryType
         {
             get { return _geomDef.GeometryType; }
         }

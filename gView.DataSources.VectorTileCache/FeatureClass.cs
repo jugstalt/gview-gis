@@ -79,7 +79,7 @@ namespace gView.DataSources.VectorTileCache
 
         public ISpatialReference SpatialReference { get; }
 
-        public geometryType GeometryType => geometryType.Unknown;
+        public GeometryType GeometryType => GeometryType.Unknown;
 
         public Task<int> CountFeatures()
         {

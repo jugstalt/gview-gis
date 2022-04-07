@@ -412,7 +412,7 @@ namespace gView.Framework.Carto.Rendering.UI
                 }
             }
 
-            btnRotation.Enabled = (_fc.GeometryType == geometryType.Point || _fc.GeometryType == geometryType.Multipoint);
+            btnRotation.Enabled = (_fc.GeometryType == GeometryType.Point || _fc.GeometryType == GeometryType.Multipoint);
 
             if (cmbFields.SelectedIndex == -1)
             {

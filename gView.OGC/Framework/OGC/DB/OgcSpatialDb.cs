@@ -433,13 +433,13 @@ namespace gView.Framework.OGC.DB
             string geomTypeString = "";
             switch (geomDef.GeometryType)
             {
-                case geometryType.Point:
+                case GeometryType.Point:
                     geomTypeString = "POINT";
                     break;
-                case geometryType.Polyline:
+                case GeometryType.Polyline:
                     geomTypeString = "MULTILINESTRING";
                     break;
-                case geometryType.Polygon:
+                case GeometryType.Polygon:
                     geomTypeString = "MULTIPOLYGON";
                     break;
                 default:

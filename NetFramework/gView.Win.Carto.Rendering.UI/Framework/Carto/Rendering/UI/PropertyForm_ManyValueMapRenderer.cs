@@ -463,7 +463,7 @@ namespace gView.Framework.Carto.Rendering.UI
                     cmbField3.SelectedIndex = cmbField3.Items.Count - 1;
             }
 
-            btnRotation.Enabled = (_fc.GeometryType == geometryType.Point || _fc.GeometryType == geometryType.Multipoint);
+            btnRotation.Enabled = (_fc.GeometryType == GeometryType.Point || _fc.GeometryType == GeometryType.Multipoint);
 
             if (cmbField1.SelectedIndex == -1)
                 cmbField1.SelectedIndex = 0;

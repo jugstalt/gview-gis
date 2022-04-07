@@ -446,7 +446,7 @@ namespace gView.DataSources.MongoDb.UI
 
         public IGeometryDef BeforeCreateFeatureClass(string fcName, IGeometryDef geomDef)
         {
-            if (geomDef.GeometryType == geometryType.Polygon || geomDef.GeometryType == geometryType.Polyline)
+            if (geomDef.GeometryType == GeometryType.Polygon || geomDef.GeometryType == GeometryType.Polyline)
             {
                 var dlg = new FormBeforeCreateFeatureclass();
                 dlg.ShowDialog();
@@ -488,17 +488,17 @@ namespace gView.DataSources.MongoDb.UI
                 _fc = (IFeatureClass)element.Class;
                 switch (_fc.GeometryType)
                 {
-                    case geometryType.Envelope:
-                    case geometryType.Polygon:
+                    case GeometryType.Envelope:
+                    case GeometryType.Polygon:
                         _icon = new MongoDbPolygonIcon();
                         _type = "Polygon Featureclass";
                         break;
-                    case geometryType.Multipoint:
-                    case geometryType.Point:
+                    case GeometryType.Multipoint:
+                    case GeometryType.Point:
                         _icon = new MongoDbPointIcon();
                         _type = "Point Featureclass";
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         _icon = new MongoDbLineIcon();
                         _type = "Polyline Featureclass";
                         break;

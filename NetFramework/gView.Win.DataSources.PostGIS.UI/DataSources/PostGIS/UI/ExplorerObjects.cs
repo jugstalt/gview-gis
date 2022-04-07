@@ -482,17 +482,17 @@ namespace gView.DataSources.PostGIS.UI
                 _fc = (IFeatureClass)element.Class;
                 switch (_fc.GeometryType)
                 {
-                    case geometryType.Envelope:
-                    case geometryType.Polygon:
+                    case GeometryType.Envelope:
+                    case GeometryType.Polygon:
                         _icon = new PostGISPolygonIcon();
                         _type = "Polygon Featureclass";
                         break;
-                    case geometryType.Multipoint:
-                    case geometryType.Point:
+                    case GeometryType.Multipoint:
+                    case GeometryType.Point:
                         _icon = new PostGISPointIcon();
                         _type = "Point Featureclass";
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         _icon = new PostGISLineIcon();
                         _type = "Polyline Featureclass";
                         break;

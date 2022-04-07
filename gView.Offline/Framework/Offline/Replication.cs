@@ -3358,7 +3358,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 get { return _fc?.SpatialReference; }
             }
 
-            public gView.Framework.Geometry.geometryType GeometryType
+            public gView.Framework.Geometry.GeometryType GeometryType
             {
                 get { return _fc.GeometryType; }
             }

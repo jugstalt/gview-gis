@@ -58,7 +58,7 @@ namespace gView.Framework.Network.Tracers
 
             foreach (var networkClass in await network.NetworkClasses())
             {
-                if (networkClass.GeometryType != geometryType.Point)
+                if (networkClass.GeometryType != GeometryType.Point)
                     continue;
 
                 int fcid = await network.NetworkClassId(networkClass.Name);

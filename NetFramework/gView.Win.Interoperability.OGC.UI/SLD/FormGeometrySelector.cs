@@ -16,18 +16,18 @@ namespace gView.Interoperability.OGC.UI.SLD
             InitializeComponent();
         }
 
-        public geometryType GeometryType
+        public GeometryType GeometryType
         {
             get
             {
                 if (radioPoint.Checked)
-                    return geometryType.Point;
+                    return GeometryType.Point;
                 if (radioLine.Checked)
-                    return geometryType.Polyline;
+                    return GeometryType.Polyline;
                 if (radioPolygon.Checked)
-                    return geometryType.Polygon;
+                    return GeometryType.Polygon;
 
-                return geometryType.Unknown;
+                return GeometryType.Unknown;
             }
         }
     }

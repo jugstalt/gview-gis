@@ -108,9 +108,9 @@ namespace gView.Framework.SpatialAlgorithms
 
             switch (geometry.GeometryType)
             {
-                case geometryType.Point:
+                case GeometryType.Point:
                     return PointInBox((IPoint)geometry, envelope);
-                case geometryType.Multipoint:
+                case GeometryType.Multipoint:
                     IPointCollection points = (IPointCollection)geometry;
                     for (int i = 0; i < points.PointCount; i++)
                     {
@@ -120,7 +120,7 @@ namespace gView.Framework.SpatialAlgorithms
                         }
                     }
                     return false;
-                case geometryType.Polyline:
+                case GeometryType.Polyline:
                     IPolyline polyline = (IPolyline)geometry;
                     for (int i = 0; i < polyline.PathCount; i++)
                     {
@@ -139,7 +139,7 @@ namespace gView.Framework.SpatialAlgorithms
                         }
                     }
                     return false;
-                case geometryType.Polygon:
+                case GeometryType.Polygon:
                     IPolygon polygon = (IPolygon)geometry;
                     for (int i = 0; i < polygon.RingCount; i++)
                     {
@@ -179,10 +179,10 @@ namespace gView.Framework.SpatialAlgorithms
                     }
 
                     return false;
-                case geometryType.Envelope:
+                case GeometryType.Envelope:
                     Envelope env = new Envelope((IEnvelope)geometry);
                     return env.Intersects(envelope);
-                case geometryType.Aggregate:
+                case GeometryType.Aggregate:
                     for (int i = 0; i < ((IAggregateGeometry)geometry).GeometryCount; i++)
                     {
                         if (IntersectBox(((IAggregateGeometry)geometry)[i], envelope))

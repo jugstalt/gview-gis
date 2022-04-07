@@ -182,7 +182,7 @@ namespace gView.Framework.Symbology
             }
         }
 
-        public bool SupportsGeometryType(geometryType geomType)
+        public bool SupportsGeometryType(GeometryType geomType)
         {
             foreach (SymbolCollectionItem sSym in _symbols)
             {

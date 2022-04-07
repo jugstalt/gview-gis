@@ -462,13 +462,13 @@ namespace gView.DataSources.Fdb.SQLite
             }
         }
 
-        public geometryType GeometryType
+        public GeometryType GeometryType
         {
             get
             {
                 if (_fc == null)
                 {
-                    return geometryType.Unknown;
+                    return GeometryType.Unknown;
                 }
 
                 return _fc.GeometryType;

@@ -1327,8 +1327,8 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 _fc = (IFeatureClass)element.Class;
                 switch (_fc.GeometryType)
                 {
-                    case geometryType.Envelope:
-                    case geometryType.Polygon:
+                    case GeometryType.Envelope:
+                    case GeometryType.Polygon:
                         if (isLinked)
                         {
                             _icon = new AccessFDBLinkedPolygonIcon();
@@ -1340,8 +1340,8 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                         _type = typePrefix + "Polygon Featureclass";
                         break;
-                    case geometryType.Multipoint:
-                    case geometryType.Point:
+                    case GeometryType.Multipoint:
+                    case GeometryType.Point:
                         if (isLinked)
                         {
                             _icon = new AccessFDBLinkedPointIcon();
@@ -1353,7 +1353,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                         _type = typePrefix + "Point Featureclass";
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         if (isLinked)
                         {
                             _icon = new AccessFDBLinkedLineIcon();
@@ -1365,7 +1365,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                         _type = typePrefix + "Polyline Featureclass";
                         break;
-                    case geometryType.Network:
+                    case GeometryType.Network:
                         _icon = new AccessFDBNetworkIcon();
                         _type = "Networkclass";
                         _isNetwork = true;

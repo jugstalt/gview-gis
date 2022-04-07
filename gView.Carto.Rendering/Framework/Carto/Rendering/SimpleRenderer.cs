@@ -47,17 +47,17 @@ namespace gView.Framework.Carto.Rendering
             }
         }
 
-        public ISymbol CreateStandardSymbol(geometryType type)
+        public ISymbol CreateStandardSymbol(GeometryType type)
         {
             return RendererFunctions.CreateStandardSymbol(type);
         }
 
-        public ISymbol CreateStandardSelectionSymbol(geometryType type)
+        public ISymbol CreateStandardSelectionSymbol(GeometryType type)
         {
             return RendererFunctions.CreateStandardSelectionSymbol(type);
         }
 
-        public ISymbol CreateStandardHighlightSymbol(geometryType type)
+        public ISymbol CreateStandardHighlightSymbol(GeometryType type)
         {
             return RendererFunctions.CreateStandardHighlightSymbol(type);
         }
@@ -103,8 +103,8 @@ namespace gView.Framework.Carto.Rendering
 if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
    layer.FeatureClass.GeometryType == geometryType.Network) return false;
 * */
-            if (layer.LayerGeometryType == geometryType.Unknown ||
-                layer.LayerGeometryType == geometryType.Network)
+            if (layer.LayerGeometryType == GeometryType.Unknown ||
+                layer.LayerGeometryType == GeometryType.Network)
             {
                 return false;
             }

@@ -469,8 +469,8 @@ namespace gView.Plugins.Editor
 
                 IFeatureClass fc = ((IFeatureLayer)layer).FeatureClass;
 
-                if (fc.GeometryType != geometryType.Polyline &&
-                    fc.GeometryType != geometryType.Polygon)
+                if (fc.GeometryType != GeometryType.Polyline &&
+                    fc.GeometryType != GeometryType.Polygon)
                 {
                     continue;
                 }

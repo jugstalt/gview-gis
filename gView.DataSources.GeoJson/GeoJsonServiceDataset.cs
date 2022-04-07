@@ -67,9 +67,9 @@ namespace gView.DataSources.GeoJson
         {
             if (_source != null && _layers.Count == 0)
             {
-                _layers.Add(new DatasetElement(await GeoJsonServiceFeatureClass.CreateInstance(this, geometryType.Point)));
-                _layers.Add(new DatasetElement(await GeoJsonServiceFeatureClass.CreateInstance(this, geometryType.Polyline)));
-                _layers.Add(new DatasetElement(await GeoJsonServiceFeatureClass.CreateInstance(this, geometryType.Polygon)));
+                _layers.Add(new DatasetElement(await GeoJsonServiceFeatureClass.CreateInstance(this, GeometryType.Point)));
+                _layers.Add(new DatasetElement(await GeoJsonServiceFeatureClass.CreateInstance(this, GeometryType.Polyline)));
+                _layers.Add(new DatasetElement(await GeoJsonServiceFeatureClass.CreateInstance(this, GeometryType.Polygon)));
             }
 
             return _layers;

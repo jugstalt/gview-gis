@@ -72,7 +72,7 @@ namespace gView.DataSources.CosmoDb.Json
             public int SrefId { get; set; }
 
             [JsonProperty("geometryType")]
-            public geometryType GeometryType { get; set; }
+            public GeometryType GeometryType { get; set; }
         }
 
         public class Field

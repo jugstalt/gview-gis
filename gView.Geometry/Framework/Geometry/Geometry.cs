@@ -346,11 +346,11 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// The type of the geometry (Envelope)
         /// </summary>
-        public gView.Framework.Geometry.geometryType GeometryType
+        public gView.Framework.Geometry.GeometryType GeometryType
         {
             get
             {
-                return geometryType.Envelope;
+                return GeometryType.Envelope;
             }
         }
 
@@ -763,11 +763,11 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// The type of the geometry (Point)
         /// </summary>
-        public gView.Framework.Geometry.geometryType GeometryType
+        public gView.Framework.Geometry.GeometryType GeometryType
         {
             get
             {
-                return geometryType.Point;
+                return GeometryType.Point;
             }
         }
 
@@ -1414,11 +1414,11 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// The type of the geometry (Multipoint)
         /// </summary>
-        public gView.Framework.Geometry.geometryType GeometryType
+        public gView.Framework.Geometry.GeometryType GeometryType
         {
             get
             {
-                return geometryType.Multipoint;
+                return GeometryType.Multipoint;
             }
         }
 
@@ -1967,11 +1967,11 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// The type of the geometry (Polyline)
         /// </summary>
-        public gView.Framework.Geometry.geometryType GeometryType
+        public gView.Framework.Geometry.GeometryType GeometryType
         {
             get
             {
-                return geometryType.Polyline;
+                return GeometryType.Polyline;
             }
         }
 
@@ -2393,11 +2393,11 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// The type of the geometry (Polygon).
         /// </summary>
-        public gView.Framework.Geometry.geometryType GeometryType
+        public gView.Framework.Geometry.GeometryType GeometryType
         {
             get
             {
-                return geometryType.Polygon;
+                return GeometryType.Polygon;
             }
         }
 
@@ -3160,11 +3160,11 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// The type of the geometry.
         /// </summary>
-        public gView.Framework.Geometry.geometryType GeometryType
+        public gView.Framework.Geometry.GeometryType GeometryType
         {
             get
             {
-                return geometryType.Aggregate;
+                return GeometryType.Aggregate;
             }
         }
 
@@ -3216,24 +3216,24 @@ namespace gView.Framework.Geometry
             for (int i = 0; i < geoms; i++)
             {
                 IGeometry geom = null;
-                switch ((geometryType)r.ReadInt32())
+                switch ((GeometryType)r.ReadInt32())
                 {
-                    case geometryType.Aggregate:
+                    case GeometryType.Aggregate:
                         geom = new AggregateGeometry();
                         break;
-                    case geometryType.Envelope:
+                    case GeometryType.Envelope:
                         geom = new Envelope();
                         break;
-                    case geometryType.Multipoint:
+                    case GeometryType.Multipoint:
                         geom = new MultiPoint();
                         break;
-                    case geometryType.Point:
+                    case GeometryType.Point:
                         geom = new Point();
                         break;
-                    case geometryType.Polygon:
+                    case GeometryType.Polygon:
                         geom = new Polygon();
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         geom = new Polyline();
                         break;
                 }
@@ -3420,22 +3420,22 @@ namespace gView.Framework.Geometry
     {
         private bool _hasZ = false, _hasM = false;
         private ISpatialReference _sRef = null;
-        private geometryType _geomType = geometryType.Unknown;
+        private GeometryType _geomType = GeometryType.Unknown;
         //private gView.Framework.Data.GeometryFieldType _fieldType = gView.Framework.Data.GeometryFieldType.Default;
 
         public GeometryDef()
         {
         }
-        public GeometryDef(geometryType geomType)
+        public GeometryDef(GeometryType geomType)
         {
             _geomType = geomType;
         }
-        public GeometryDef(geometryType geomType, ISpatialReference sRef)
+        public GeometryDef(GeometryType geomType, ISpatialReference sRef)
             : this(geomType)
         {
             _sRef = sRef;
         }
-        public GeometryDef(geometryType geomType, ISpatialReference sRef, bool hasZ)
+        public GeometryDef(GeometryType geomType, ISpatialReference sRef, bool hasZ)
             : this(geomType, sRef)
         {
             _hasZ = hasZ;
@@ -3470,7 +3470,7 @@ namespace gView.Framework.Geometry
             set { _sRef = value; }
         }
 
-        public geometryType GeometryType
+        public GeometryType GeometryType
         {
             get { return _geomType; }
             set { _geomType = value; }
@@ -3503,42 +3503,42 @@ namespace gView.Framework.Geometry
 
             switch (geomDef.GeometryType)
             {
-                case geometryType.Envelope:
+                case GeometryType.Envelope:
                     if (geometry is IEnvelope)
                     {
                         return;
                     }
 
                     break;
-                case geometryType.Point:
+                case GeometryType.Point:
                     if (geometry is IPoint)
                     {
                         return;
                     }
 
                     break;
-                case geometryType.Multipoint:
+                case GeometryType.Multipoint:
                     if (geometry is IMultiPoint)
                     {
                         return;
                     }
 
                     break;
-                case geometryType.Polyline:
+                case GeometryType.Polyline:
                     if (geometry is IPolyline)
                     {
                         return;
                     }
 
                     break;
-                case geometryType.Polygon:
+                case GeometryType.Polygon:
                     if (geometry is IPolygon)
                     {
                         return;
                     }
 
                     break;
-                case geometryType.Aggregate:
+                case GeometryType.Aggregate:
                     if (geometry is IAggregateGeometry)
                     {
                         return;
@@ -3557,7 +3557,7 @@ namespace gView.Framework.Geometry
     {
         static public IGeometry ConvertTo(this IGeometryDef geomDef, IGeometry geometry)
         {
-            if (geomDef.GeometryType == geometryType.Point)
+            if (geomDef.GeometryType == GeometryType.Point)
             {
                 if (geometry is IPoint)
                 {
@@ -3572,7 +3572,7 @@ namespace gView.Framework.Geometry
                 }
             }
 
-            if (geomDef.GeometryType == geometryType.Multipoint)
+            if (geomDef.GeometryType == GeometryType.Multipoint)
             {
                 if (geometry is IMultiPoint)
                 {
@@ -3587,7 +3587,7 @@ namespace gView.Framework.Geometry
                 }
             }
 
-            if (geomDef.GeometryType == geometryType.Polyline)
+            if (geomDef.GeometryType == GeometryType.Polyline)
             {
                 if (geometry is IPolyline)
                 {
@@ -3595,7 +3595,7 @@ namespace gView.Framework.Geometry
                 }
             }
 
-            if (geomDef.GeometryType == geometryType.Polygon)
+            if (geomDef.GeometryType == GeometryType.Polygon)
             {
                 if (geometry is IPolygon)
                 {
@@ -3603,7 +3603,7 @@ namespace gView.Framework.Geometry
                 }
             }
 
-            if (geomDef.GeometryType == geometryType.Envelope)
+            if (geomDef.GeometryType == GeometryType.Envelope)
             {
                 if (geometry is IEnvelope)
                 {
@@ -3615,7 +3615,7 @@ namespace gView.Framework.Geometry
                 }
             }
 
-            if (geomDef.GeometryType == geometryType.Aggregate)
+            if (geomDef.GeometryType == GeometryType.Aggregate)
             {
                 if (geometry is IAggregateGeometry)
                 {

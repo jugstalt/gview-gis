@@ -802,7 +802,7 @@ namespace gView.Framework.Data
         protected Fields _fields = new Fields();
         protected bool _applyRefScale = true, _applyLabelRefScale = true;
         protected FeatureLayerJoins _joins = null;
-        protected geometryType _geometryType = geometryType.Unknown;
+        protected GeometryType _geometryType = GeometryType.Unknown;
 
         public FeatureLayer()
         {
@@ -986,9 +986,9 @@ namespace gView.Framework.Data
                 }
 
                 if(_class is IFeatureClass &&
-                    ((IFeatureClass)_class).GeometryType != geometryType.Unknown)
+                    ((IFeatureClass)_class).GeometryType != GeometryType.Unknown)
                 {
-                    _geometryType = geometryType.Unknown;
+                    _geometryType = GeometryType.Unknown;
                 }
 
                 RefreshFields();
@@ -1042,11 +1042,11 @@ namespace gView.Framework.Data
             }
         }
 
-        public geometryType LayerGeometryType
+        public GeometryType LayerGeometryType
         {
             get
             {
-                if (this.FeatureClass != null && this.FeatureClass.GeometryType != geometryType.Unknown)
+                if (this.FeatureClass != null && this.FeatureClass.GeometryType != GeometryType.Unknown)
                     return this.FeatureClass.GeometryType;
 
                 return _geometryType;
@@ -1083,7 +1083,7 @@ namespace gView.Framework.Data
             this.MaxRefScaleFactor = (float)stream.Load("maxRefScaleFactor", 0f);
             this.MaxLabelRefScaleFactor = (float)stream.Load("maxLabelRefScaleFactor", 0f);
 
-            _geometryType = (geometryType)stream.Load("geomType", (int)geometryType.Unknown);
+            _geometryType = (GeometryType)stream.Load("geomType", (int)GeometryType.Unknown);
 
             string filterQuery = (string)stream.Load("FilterQuery", "");
             if (filterQuery != null)
@@ -1127,7 +1127,7 @@ namespace gView.Framework.Data
             if (this.MaxLabelRefScaleFactor > 0D)
                 stream.Save("maxLabelRefScaleFactor", this.MaxLabelRefScaleFactor);
 
-            if (_geometryType != geometryType.Unknown)
+            if (_geometryType != GeometryType.Unknown)
                 stream.Save("geomType", (int)_geometryType);
 
             if (this.FilterQuery != null)
@@ -1906,7 +1906,7 @@ namespace gView.Framework.Data
         #region IGeometryDef Member
 
         private bool _hasZ = false, _hasM = false;
-        private geometryType _geomType = geometryType.Unknown;
+        private GeometryType _geomType = GeometryType.Unknown;
         private ISpatialReference _sRef = null;
         private GeometryFieldType _geometryFieldType = GeometryFieldType.Default;
 
@@ -1922,7 +1922,7 @@ namespace gView.Framework.Data
             set { _hasM = value; }
         }
 
-        public gView.Framework.Geometry.geometryType GeometryType
+        public gView.Framework.Geometry.GeometryType GeometryType
         {
             get { return _geomType; }
             set { _geomType = value; }
@@ -2201,7 +2201,7 @@ namespace gView.Framework.Data
 
                 if (initalize && theme.FeatureClass != null)
                 {
-                    if (theme.FeatureClass.GeometryType == geometryType.Unknown)
+                    if (theme.FeatureClass.GeometryType == GeometryType.Unknown)
                     {
                         theme.FeatureRenderer = null;
                         theme.LabelRenderer = null;
@@ -2277,7 +2277,7 @@ namespace gView.Framework.Data
 
                 if (initalize && layer.FeatureClass != null)
                 {
-                    if (layer.FeatureClass.GeometryType == geometryType.Unknown)
+                    if (layer.FeatureClass.GeometryType == GeometryType.Unknown)
                     {
                         layer.FeatureRenderer = PlugInManager.Create(KnownObjects.Carto_UniversalGeometryRenderer) as IFeatureRenderer; ;
                         layer.SelectionRenderer = PlugInManager.Create(KnownObjects.Carto_UniversalGeometryRenderer) as IFeatureRenderer;

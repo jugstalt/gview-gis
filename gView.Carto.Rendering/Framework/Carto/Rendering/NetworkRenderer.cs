@@ -47,9 +47,9 @@ namespace gView.Framework.Carto.Rendering
 
                 foreach (IFeatureRenderer renderer in _renderers)
                 {
-                    geometryType geomType = geometryType.Polyline;
+                    GeometryType geomType = GeometryType.Polyline;
                     if (_renderers.IndexOf(renderer) > 0)
-                        geomType = geometryType.Point;
+                        geomType = GeometryType.Point;
 
                     if (renderer is ISymbolCreator && renderer is IFeatureRenderer2)
                     {

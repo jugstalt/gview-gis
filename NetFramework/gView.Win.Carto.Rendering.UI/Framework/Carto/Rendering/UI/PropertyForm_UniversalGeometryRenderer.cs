@@ -27,31 +27,31 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_renderer == null) return;
 
-            e.Graphics.DrawSymbol(_renderer[geometryType.Point], new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10));
+            e.Graphics.DrawSymbol(_renderer[GeometryType.Point], new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10));
         }
 
         private void btnChoosePolygonSymbol_Paint(object sender, PaintEventArgs e)
         {
             if (_renderer == null) return;
 
-            e.Graphics.DrawSymbol(_renderer[geometryType.Polygon], new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10));
+            e.Graphics.DrawSymbol(_renderer[GeometryType.Polygon], new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10));
         }
 
         private void btnChooseLineSymbol_Paint(object sender, PaintEventArgs e)
         {
             if (_renderer == null) return;
 
-            e.Graphics.DrawSymbol(_renderer[geometryType.Polyline], new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10));
+            e.Graphics.DrawSymbol(_renderer[GeometryType.Polyline], new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10));
         }
 
         private void btnChooseSymbol_Click(object sender, EventArgs e)
         {
             if (_renderer == null) return;
 
-            FormSymbol dlg = new FormSymbol(_renderer[geometryType.Point]);
+            FormSymbol dlg = new FormSymbol(_renderer[GeometryType.Point]);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                _renderer[geometryType.Point] = dlg.Symbol;
+                _renderer[GeometryType.Point] = dlg.Symbol;
             }
         }
 
@@ -59,10 +59,10 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_renderer == null) return;
 
-            FormSymbol dlg = new FormSymbol(_renderer[geometryType.Polyline]);
+            FormSymbol dlg = new FormSymbol(_renderer[GeometryType.Polyline]);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                _renderer[geometryType.Polyline] = dlg.Symbol;
+                _renderer[GeometryType.Polyline] = dlg.Symbol;
             }
         }
 
@@ -70,10 +70,10 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_renderer == null) return;
 
-            FormSymbol dlg = new FormSymbol(_renderer[geometryType.Polygon]);
+            FormSymbol dlg = new FormSymbol(_renderer[GeometryType.Polygon]);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                _renderer[geometryType.Polygon] = dlg.Symbol;
+                _renderer[GeometryType.Polygon] = dlg.Symbol;
             }
         }
 

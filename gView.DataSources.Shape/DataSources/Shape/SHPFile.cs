@@ -660,19 +660,19 @@ namespace gView.DataSources.Shape
                 ShapeType type = ShapeType.NullShape;
                 switch (geomDef.GeometryType)
                 {
-                    case geometryType.Point:
+                    case GeometryType.Point:
                         type = ShapeType.Point;
                         if (geomDef.HasZ) type = ShapeType.PointZ;
                         break;
-                    case geometryType.Multipoint:
+                    case GeometryType.Multipoint:
                         type = ShapeType.MultiPoint;
                         if (geomDef.HasZ) type = ShapeType.MultiPointZ;
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         type = ShapeType.PolyLine;
                         if (geomDef.HasZ) type = ShapeType.PolyLineZ;
                         break;
-                    case geometryType.Polygon:
+                    case GeometryType.Polygon:
                         type = ShapeType.Polygon;
                         if (geomDef.HasZ) type = ShapeType.PolygonZ;
                         break;

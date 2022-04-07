@@ -98,28 +98,28 @@ namespace gView.Plugins.Editor
             }
         }
 
-        public geometryType GeometryType
+        public GeometryType GeometryType
         {
             get
             {
                 if (_geometry is IPoint)
                 {
-                    return geometryType.Point;
+                    return GeometryType.Point;
                 }
                 else if (_geometry is IMultiPoint)
                 {
-                    return geometryType.Multipoint;
+                    return GeometryType.Multipoint;
                 }
                 else if (_geometry is IPolyline)
                 {
-                    return geometryType.Polyline;
+                    return GeometryType.Polyline;
                 }
                 else if (_geometry is IPolygon)
                 {
-                    return geometryType.Polygon;
+                    return GeometryType.Polygon;
                 }
 
-                return geometryType.Unknown;
+                return GeometryType.Unknown;
             }
         }
 
@@ -327,7 +327,7 @@ namespace gView.Plugins.Editor
             get { return null; }
         }
 
-        public HitPositions HitTest(IDisplay display, gView.Framework.Geometry.IPoint point)
+        public IHitPositions HitTest(IDisplay display, gView.Framework.Geometry.IPoint point)
         {
             if (_geometry == null)
             {
@@ -378,7 +378,7 @@ namespace gView.Plugins.Editor
             return null;
         }
 
-        public void Design(IDisplay display, HitPositions hit, double dx, double dy)
+        public void Design(IDisplay display, IHitPositions hit, double dx, double dy)
         {
             if (_geometry == null)
             {
@@ -462,7 +462,7 @@ namespace gView.Plugins.Editor
         #endregion
 
         #region Helper Classes
-        internal class HitPosition : HitPositions
+        internal class HitPosition : IHitPositions
         {
             private System.Windows.Forms.Cursor _cursor;
             private int _id;

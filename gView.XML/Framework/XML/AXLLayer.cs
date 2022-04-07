@@ -218,11 +218,11 @@ namespace gView.Framework.XML
             set { }
         }
 
-        public geometryType LayerGeometryType
+        public GeometryType LayerGeometryType
         {
             get
             {
-                return this.FeatureClass != null ? this.FeatureClass.GeometryType : geometryType.Unknown;
+                return this.FeatureClass != null ? this.FeatureClass.GeometryType : GeometryType.Unknown;
             }
             set { }
         }
@@ -715,9 +715,9 @@ namespace gView.Framework.XML
                 m_xWriter.WriteEndElement();  // SPATIALQUERY,QUERY
             }
         }
-        public void AXLaddHighlightSymbol(geometryType type, string color, double trans)
+        public void AXLaddHighlightSymbol(GeometryType type, string color, double trans)
         {
-            if (type == geometryType.Unknown)
+            if (type == GeometryType.Unknown)
             {
                 return;
             }
@@ -725,13 +725,13 @@ namespace gView.Framework.XML
             m_xWriter.WriteStartElement("SIMPLERENDERER");
             switch (type)
             {
-                case geometryType.Polygon:
+                case GeometryType.Polygon:
                     m_xWriter.WriteStartElement("SIMPLEPOLYGONSYMBOL");
                     m_xWriter.WriteAttributeString("transparency", trans.ToString());
                     m_xWriter.WriteAttributeString("fillcolor", color);
                     m_xWriter.WriteEndElement(); // SIMPLEPOLYGONSYMBOL
                     break;
-                case geometryType.Polyline:
+                case GeometryType.Polyline:
                     m_xWriter.WriteStartElement("SIMPLELINESYMBOL");
                     m_xWriter.WriteAttributeString("transparency", trans.ToString());
                     m_xWriter.WriteAttributeString("color", color);

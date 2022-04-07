@@ -107,7 +107,7 @@ namespace gView.Framework.Carto.Rendering.UI
                     if (has) continue;
                 }
 
-                SimpleFillSymbol symbol = (SimpleFillSymbol)RendererFunctions.CreateStandardSymbol(geometryType.Polygon);
+                SimpleFillSymbol symbol = (SimpleFillSymbol)RendererFunctions.CreateStandardSymbol(GeometryType.Polygon);
                 symbol.OutlineSymbol = null;
                 symbol.SymbolSmothingMode = SymbolSmoothing.AntiAlias;
                 if (symbol is ILegendItem)
@@ -146,7 +146,7 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_renderer.OutlineSymbol == null)
             {
-                _renderer.OutlineSymbol = (ILineSymbol)RendererFunctions.CreateStandardSymbol(geometryType.Polyline);
+                _renderer.OutlineSymbol = (ILineSymbol)RendererFunctions.CreateStandardSymbol(GeometryType.Polyline);
             }
             FormSymbol dlg = new FormSymbol(_renderer.OutlineSymbol);
             if (dlg.ShowDialog() == DialogResult.OK)

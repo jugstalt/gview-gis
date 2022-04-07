@@ -184,7 +184,7 @@ namespace gView.Framework.Symbology
 
         #region ISymbol Member
 
-        public bool SupportsGeometryType(geometryType geomType) => geomType == geometryType.Polygon;
+        public bool SupportsGeometryType(GeometryType geomType) => geomType == GeometryType.Polygon;
 
         public void Draw(IDisplay display, IGeometry geometry)
         {

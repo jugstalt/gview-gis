@@ -17,7 +17,7 @@ namespace gView.Framework.Geometry
 
             serializeDelegate serialize = null;
 
-            if (geometry != null && geometry.GeometryType != geometryType.Unknown)
+            if (geometry != null && geometry.GeometryType != GeometryType.Unknown)
             {
                 geomDef.GeometryType = geometry.GeometryType;
                 serialize = geometry.Serialize;
@@ -54,29 +54,29 @@ namespace gView.Framework.Geometry
                     r.BaseStream.Write(sqlbytes.Buffer, 0, sqlbytes.Buffer.Length);
                     r.BaseStream.Position = 0;
 
-                    switch ((geometryType)r.ReadInt32())
+                    switch ((GeometryType)r.ReadInt32())
                     {
-                        case geometryType.Aggregate:
+                        case GeometryType.Aggregate:
                             AggregateGeometry ageom = new AggregateGeometry();
                             ageom.Deserialize(r, geomDef);
                             return ageom;
-                        case geometryType.Envelope:
+                        case GeometryType.Envelope:
                             Envelope env = new Envelope();
                             env.Deserialize(r, geomDef);
                             return env;
-                        case geometryType.Multipoint:
+                        case GeometryType.Multipoint:
                             MultiPoint mp = new MultiPoint();
                             mp.Deserialize(r, geomDef);
                             return mp;
-                        case geometryType.Point:
+                        case GeometryType.Point:
                             Point p = new Point();
                             p.Deserialize(r, geomDef);
                             return p;
-                        case geometryType.Polygon:
+                        case GeometryType.Polygon:
                             Polygon polygon = new Polygon();
                             polygon.Deserialize(r, geomDef);
                             return polygon;
-                        case geometryType.Polyline:
+                        case GeometryType.Polyline:
                             Polyline line = new Polyline();
                             line.Deserialize(r, geomDef);
                             return line;

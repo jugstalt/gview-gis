@@ -1126,7 +1126,7 @@ namespace gView.DataSources.MSSqlSpatial
             featureClass._name =await dataset.TableNamePlusSchema(name, isView);
             featureClass._idfield = idFieldName;
             featureClass._shapefield = shapeFieldName;
-            featureClass._geomType = geometryType.Unknown;
+            featureClass._geomType = GeometryType.Unknown;
 
             featureClass._dataset = dataset;
             if (featureClass._dataset is GeographyDataset)

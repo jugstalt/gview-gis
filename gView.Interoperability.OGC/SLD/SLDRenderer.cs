@@ -210,7 +210,7 @@ namespace gView.Interoperability.OGC.SLD
             //    (layer.Class is WMSThemeClass ||
             //    layer.Class is WFSFeatureClass)) return true;
             if (layer == null && layer.FeatureClass == null &&
-                layer.FeatureClass.GeometryType == geometryType.Network) return false;
+                layer.FeatureClass.GeometryType == GeometryType.Network) return false;
 
             return true;
         }

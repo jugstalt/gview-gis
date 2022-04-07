@@ -14,7 +14,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
         private Fields _fields;
         private string _name;
         private Dataset _dataset;
-        private geometryType _geomType = geometryType.Unknown;
+        private GeometryType _geomType = GeometryType.Unknown;
         private GmlVersion _gmlVersion = GmlVersion.v1;
 
         private FeatureClass(Dataset dataset, string name, Fields fields)
@@ -144,7 +144,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             set;
         }
 
-        public gView.Framework.Geometry.geometryType GeometryType
+        public gView.Framework.Geometry.GeometryType GeometryType
         {
             get { return _geomType; }
             set { _geomType = value; }

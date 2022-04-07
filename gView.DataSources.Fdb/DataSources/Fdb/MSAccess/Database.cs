@@ -555,13 +555,13 @@ namespace gView.DataSources.Fdb.MSAccess
                 field.type = FieldType.ID;
                 fields.Insert(0, field);
                 // SHAPE
-                if (geomDef.GeometryType == geometryType.Point ||
-                    geomDef.GeometryType == geometryType.Polyline ||
-                    geomDef.GeometryType == geometryType.Polygon ||
-                    geomDef.GeometryType == geometryType.Multipoint ||
-                    geomDef.GeometryType == geometryType.Envelope ||
-                    geomDef.GeometryType == geometryType.Aggregate ||
-                    geomDef.GeometryType == geometryType.Unknown)
+                if (geomDef.GeometryType == GeometryType.Point ||
+                    geomDef.GeometryType == GeometryType.Polyline ||
+                    geomDef.GeometryType == GeometryType.Polygon ||
+                    geomDef.GeometryType == GeometryType.Multipoint ||
+                    geomDef.GeometryType == GeometryType.Envelope ||
+                    geomDef.GeometryType == GeometryType.Aggregate ||
+                    geomDef.GeometryType == GeometryType.Unknown)
                 {
                     field = new Field();
                     field.name = field.aliasname = ColumnName("FDB_SHAPE");
@@ -597,13 +597,13 @@ namespace gView.DataSources.Fdb.MSAccess
                     return -1;
                 }
 
-                if (geomDef.GeometryType == geometryType.Point ||
-                    geomDef.GeometryType == geometryType.Polyline ||
-                    geomDef.GeometryType == geometryType.Polygon ||
-                    geomDef.GeometryType == geometryType.Multipoint ||
-                    geomDef.GeometryType == geometryType.Envelope ||
-                    geomDef.GeometryType == geometryType.Aggregate ||
-                    geomDef.GeometryType == geometryType.Unknown)
+                if (geomDef.GeometryType == GeometryType.Point ||
+                    geomDef.GeometryType == GeometryType.Polyline ||
+                    geomDef.GeometryType == GeometryType.Polygon ||
+                    geomDef.GeometryType == GeometryType.Multipoint ||
+                    geomDef.GeometryType == GeometryType.Envelope ||
+                    geomDef.GeometryType == GeometryType.Aggregate ||
+                    geomDef.GeometryType == GeometryType.Unknown)
                 {
                     if (_conn.dbType == DBType.oledb)
                     {
@@ -696,18 +696,18 @@ namespace gView.DataSources.Fdb.MSAccess
                 }
 
                 //this.InitSpatialIndex(name);
-                if (geomDef.GeometryType == geometryType.Point ||
-                    geomDef.GeometryType == geometryType.Polyline ||
-                    geomDef.GeometryType == geometryType.Polygon ||
-                    geomDef.GeometryType == geometryType.Multipoint ||
-                    geomDef.GeometryType == geometryType.Envelope ||
-                    geomDef.GeometryType == geometryType.Aggregate)
+                if (geomDef.GeometryType == GeometryType.Point ||
+                    geomDef.GeometryType == GeometryType.Polyline ||
+                    geomDef.GeometryType == GeometryType.Polygon ||
+                    geomDef.GeometryType == GeometryType.Multipoint ||
+                    geomDef.GeometryType == GeometryType.Envelope ||
+                    geomDef.GeometryType == GeometryType.Aggregate)
                 {
                     if (msSpatial == false)
                         this.InitSpatialIndex2(fcname);
                 }
                 // Index für Netzwerk Graphen
-                if (geomDef.GeometryType == geometryType.Network)
+                if (geomDef.GeometryType == GeometryType.Network)
                 {
                     //_conn.createIndex("GRAPH_" + Guid.NewGuid().ToString("N"),
                     //    "FC_" + fcname,
@@ -754,7 +754,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
             row["Name"] = spatialViewName;
             row["DatasetID"] = dsID;
-            row["GeometryType"] = geometryType.Unknown;
+            row["GeometryType"] = GeometryType.Unknown;
             row["HasZ"] = false;
             row["HasM"] = false;
             row["ShapeField"] = "SHAPE";
@@ -904,7 +904,7 @@ namespace gView.DataSources.Fdb.MSAccess
             foreach (DataRow row in FCs.Rows)
             {
                 fcIDs.Add(Convert.ToInt32(row["ID"]));
-                if ((geometryType)row["GeometryType"] == geometryType.Network)
+                if ((GeometryType)row["GeometryType"] == GeometryType.Network)
                     isNetwork = true;
                 if (deleteFeatureClassesRow)
                     row.Delete();
@@ -1279,7 +1279,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 _errMsg = "Can't find Featureclass...";
                 return false;
             }
-            bool isNetwork = ((geometryType)tab.Rows[0]["GeometryType"] == geometryType.Network);
+            bool isNetwork = ((GeometryType)tab.Rows[0]["GeometryType"] == GeometryType.Network);
             int fcId = Convert.ToInt32(tab.Rows[0]["ID"]);
             // Beim Umbennenen Schema für Datenbank nicht zum Tabellennamen hinzufügen
             if (await TableExists("FCSI_" + FCName))  // Gibts zB nicht bei Sql2008 GEOMETRY; TableExists...DbSchema nicht angeben
@@ -2432,7 +2432,7 @@ namespace gView.DataSources.Fdb.MSAccess
                     fields.Add(field);
             }
 
-            int fcID = await this.CreateFeatureClass(name, name + "_IMAGE_POLYGONS", new GeometryDef(geometryType.Polygon), fields);
+            int fcID = await this.CreateFeatureClass(name, name + "_IMAGE_POLYGONS", new GeometryDef(GeometryType.Polygon), fields);
             if (fcID == -1)
             {
                 // Delete Dataset;
@@ -2963,22 +2963,22 @@ namespace gView.DataSources.Fdb.MSAccess
                 string[] viewNames = SpatialViewNames(FCName);
                 FCName = viewNames[0];
             }
-            if (_conn == null) return new GeometryDef(geometryType.Unknown, null, false); ;
+            if (_conn == null) return new GeometryDef(GeometryType.Unknown, null, false); ;
             string sql = "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + FCName + "'";
 
             DataTable tab = await _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'");
-            if (tab == null || tab.Rows.Count == 0) return new GeometryDef(geometryType.Unknown, null, false);
+            if (tab == null || tab.Rows.Count == 0) return new GeometryDef(GeometryType.Unknown, null, false);
 
             DataRow row = tab.Rows[0];
 
             GeometryDef geomDef;
             if (row.Table.Columns["HasZ"] != null)
             {
-                geomDef = new GeometryDef((geometryType)row["GeometryType"], null, (bool)row["HasZ"]);
+                geomDef = new GeometryDef((GeometryType)row["GeometryType"], null, (bool)row["HasZ"]);
             }
             else
             {  // alte Version war immer 3D
-                geomDef = new GeometryDef((geometryType)row["GeometryType"], null, true);
+                geomDef = new GeometryDef((GeometryType)row["GeometryType"], null, true);
             }
             string dsName = await this.DatasetName(Convert.ToInt32(row["DatasetID"]));
             geomDef.SpatialReference = await this.SpatialReference(dsName);
@@ -3345,13 +3345,13 @@ namespace gView.DataSources.Fdb.MSAccess
                     IGeometry p = null;
                     switch (fc.GeometryType)
                     {
-                        case geometryType.Point:
+                        case GeometryType.Point:
                             p = new gView.Framework.Geometry.Point();
                             break;
-                        case geometryType.Polyline:
+                        case GeometryType.Polyline:
                             p = new gView.Framework.Geometry.Polyline();
                             break;
-                        case geometryType.Polygon:
+                        case GeometryType.Polygon:
                             p = new gView.Framework.Geometry.Polygon();
                             break;
                     }
@@ -3910,7 +3910,7 @@ namespace gView.DataSources.Fdb.MSAccess
             {
                 string nwname = fcname.Substring(0, fcname.LastIndexOf("_"));
                 IFeatureClass nw = await GetFeatureclass(nwname);
-                if (nw != null && nw.GeometryType == geometryType.Network)
+                if (nw != null && nw.GeometryType == GeometryType.Network)
                     return true;
             }
             return false;

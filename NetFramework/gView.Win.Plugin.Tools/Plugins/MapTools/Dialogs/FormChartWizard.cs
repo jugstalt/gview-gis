@@ -257,7 +257,7 @@ namespace gView.Plugins.MapTools.Dialogs
                     if (has) continue;
                 }
 
-                SimpleFillSymbol symbol = (SimpleFillSymbol)RendererFunctions.CreateStandardSymbol(geometryType.Polygon);
+                SimpleFillSymbol symbol = (SimpleFillSymbol)RendererFunctions.CreateStandardSymbol(GeometryType.Polygon);
                 symbol.OutlineSymbol = null;
                 if (symbol is ILegendItem)
                 {

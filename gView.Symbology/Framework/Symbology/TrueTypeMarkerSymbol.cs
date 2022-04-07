@@ -192,7 +192,7 @@ namespace gView.Framework.Symbology
             }
         }
 
-        public bool SupportsGeometryType(geometryType geomType) => geomType == geometryType.Point || geomType == geometryType.Multipoint;
+        public bool SupportsGeometryType(GeometryType geomType) => geomType == GeometryType.Point || geomType == GeometryType.Multipoint;
 
         public void Draw(IDisplay display, IGeometry geometry)
         {

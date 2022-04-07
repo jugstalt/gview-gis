@@ -129,9 +129,9 @@ namespace gView.Framework.Geometry
 
         #region IGeometry Member
 
-        public geometryType GeometryType
+        public GeometryType GeometryType
         {
-            get { return geometryType.Unknown; }
+            get { return GeometryType.Unknown; }
         }
 
         public IEnvelope Envelope

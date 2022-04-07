@@ -117,17 +117,17 @@ namespace gView.Interoperability.OGC.UI.SLD
         #region Toolbar Events
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            geometryType geomType = geometryType.Unknown;
+            GeometryType geomType = GeometryType.Unknown;
             if (_layer != null && _layer.FeatureClass != null)
             {
                 geomType = _layer.FeatureClass.GeometryType;
             }
 
-            if (geomType == geometryType.Unknown)
+            if (geomType == GeometryType.Unknown)
             {
                 FormGeometrySelector geomSel = new FormGeometrySelector();
                 if (geomSel.ShowDialog() != DialogResult.OK ||
-                    geomSel.GeometryType == geometryType.Unknown) return;
+                    geomSel.GeometryType == GeometryType.Unknown) return;
 
                 geomType = geomSel.GeometryType;
             }
@@ -135,13 +135,13 @@ namespace gView.Interoperability.OGC.UI.SLD
             ISymbol symbol = null;
             switch (geomType)
             {
-                case geometryType.Point:
+                case GeometryType.Point:
                     symbol = new SimplePointSymbol();
                     break;
-                case geometryType.Polyline:
+                case GeometryType.Polyline:
                     symbol = new SimpleLineSymbol();
                     break;
-                case geometryType.Polygon:
+                case GeometryType.Polygon:
                     symbol = new SimpleFillSymbol();
                     break;
             }

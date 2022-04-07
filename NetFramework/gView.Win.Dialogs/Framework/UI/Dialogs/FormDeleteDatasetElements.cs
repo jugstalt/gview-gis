@@ -26,13 +26,13 @@ namespace gView.Framework.UI.Dialogs
                 {
                     switch (((IFeatureClass)datasetElement.Class).GeometryType)
                     {
-                        case gView.Framework.Geometry.geometryType.Point:
+                        case gView.Framework.Geometry.GeometryType.Point:
                             imgIndex = 1;
                             break;
-                        case gView.Framework.Geometry.geometryType.Polyline:
+                        case gView.Framework.Geometry.GeometryType.Polyline:
                             imgIndex = 2;
                             break;
-                        case gView.Framework.Geometry.geometryType.Polygon:
+                        case gView.Framework.Geometry.GeometryType.Polygon:
                             imgIndex = 3;
                             break;
                     }

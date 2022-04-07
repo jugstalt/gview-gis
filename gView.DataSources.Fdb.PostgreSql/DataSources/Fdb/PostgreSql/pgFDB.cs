@@ -229,11 +229,11 @@ namespace gView.DataSources.Fdb.PostgreSql
             GeometryDef geomDef;
             if (fcRow.Table.Columns["hasz"] != null)
             {
-                geomDef = new GeometryDef((geometryType)fcRow["geometrytype"], null, (bool)fcRow["hasz"]);
+                geomDef = new GeometryDef((GeometryType)fcRow["geometrytype"], null, (bool)fcRow["hasz"]);
             }
             else
             {  // alte Version war immer 3D
-                geomDef = new GeometryDef((geometryType)fcRow["geometrytype"], null, true);
+                geomDef = new GeometryDef((GeometryType)fcRow["geometrytype"], null, true);
             }
 
             DatasetElement layer = await pgDatasetElement.Create(this, pgDataset, row["name"].ToString(), geomDef);
@@ -676,7 +676,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 if (await TableExists("FC_" + dataset.DatasetName + "_IMAGE_POLYGONS") &&
                     await CheckTablePrivilege(FcTableName(dataset.DatasetName + "_IMAGE_POLYGONS")))
                 {
-                    IFeatureClass fc = await pgFeatureClass.Create(this, dataset, new GeometryDef(geometryType.Polygon, sRef, false));
+                    IFeatureClass fc = await pgFeatureClass.Create(this, dataset, new GeometryDef(GeometryType.Polygon, sRef, false));
                     ((pgFeatureClass)fc).Name = dataset.DatasetName + "_IMAGE_POLYGONS";
                     ((pgFeatureClass)fc).Envelope = await this.FeatureClassExtent(fc.Name);
                     ((pgFeatureClass)fc).IDFieldName = "FDB_OID";
@@ -750,11 +750,11 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 GeometryDef geomDef;
                 if (fcRow.Table.Columns["hasz"] != null)
                 {
-                    geomDef = new GeometryDef((geometryType)fcRow["geometrytype"], null, (bool)fcRow["hasz"]);
+                    geomDef = new GeometryDef((GeometryType)fcRow["geometrytype"], null, (bool)fcRow["hasz"]);
                 }
                 else
                 {  // alte Version war immer 3D
-                    geomDef = new GeometryDef((geometryType)fcRow["geometrytype"], null, true);
+                    geomDef = new GeometryDef((GeometryType)fcRow["geometrytype"], null, true);
                 }
 
                 pgDatasetElement layer = await pgDatasetElement.Create(this, dataset, row["name"].ToString(), geomDef);
@@ -809,7 +809,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             }
 
             BinarySearchTree2 tree = null;
-            bool isNetwork = fClass.GeometryType == geometryType.Network;
+            bool isNetwork = fClass.GeometryType == GeometryType.Network;
 
             await CheckSpatialSearchTreeVersion(fClass.Name);
             if (_spatialSearchTrees[fClass.Name] == null)
@@ -1004,7 +1004,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             if (features.Count == 0) return true;
 
             BinarySearchTree2 tree = null;
-            bool isNetwork = fClass.GeometryType == geometryType.Network;
+            bool isNetwork = fClass.GeometryType == GeometryType.Network;
 
             await CheckSpatialSearchTreeVersion(fClass.Name);
             if (_spatialSearchTrees[fClass.Name] == null)
@@ -1795,7 +1795,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             {
                 var dsElement = new pgDatasetElement();
 
-                if (geomDef.GeometryType == geometryType.Network)
+                if (geomDef.GeometryType == GeometryType.Network)
                 {
                     dsElement._class = await pgNetworkFeatureClass.Create(fdb, dataset, name, geomDef);
                 }
@@ -2109,13 +2109,13 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                                 IGeometry p = null;
                                 switch (_geomDef.GeometryType)
                                 {
-                                    case geometryType.Point:
+                                    case GeometryType.Point:
                                         p = new gView.Framework.Geometry.Point();
                                         break;
-                                    case geometryType.Polyline:
+                                    case GeometryType.Polyline:
                                         p = new gView.Framework.Geometry.Polyline();
                                         break;
-                                    case geometryType.Polygon:
+                                    case GeometryType.Polygon:
                                         p = new gView.Framework.Geometry.Polygon();
                                         break;
                                 }
@@ -2331,13 +2331,13 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             IGeometry p = null;
                             switch (_geomDef.GeometryType)
                             {
-                                case geometryType.Point:
+                                case GeometryType.Point:
                                     p = new gView.Framework.Geometry.Point();
                                     break;
-                                case geometryType.Polyline:
+                                case GeometryType.Polyline:
                                     p = new gView.Framework.Geometry.Polyline();
                                     break;
-                                case geometryType.Polygon:
+                                case GeometryType.Polygon:
                                     p = new gView.Framework.Geometry.Polygon();
                                     break;
                             }

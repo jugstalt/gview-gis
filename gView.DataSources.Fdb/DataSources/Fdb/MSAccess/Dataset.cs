@@ -468,7 +468,7 @@ namespace gView.DataSources.Fdb.MSAccess
         private IDataset _dataset;
         private string _name = "", _aliasname = "";
         private string m_idfield = "", m_shapeField = "";
-        private geometryType m_fClassType;
+        private GeometryType m_fClassType;
         private Fields m_fields;
         private IEnvelope m_envelope = null;
         private BinarySearchTree _searchTree = null;
@@ -737,7 +737,7 @@ namespace gView.DataSources.Fdb.MSAccess
             get { return _geomDef.HasM; }
         }
 
-        public geometryType GeometryType
+        public GeometryType GeometryType
         {
             get { return _geomDef.GeometryType; }
         }

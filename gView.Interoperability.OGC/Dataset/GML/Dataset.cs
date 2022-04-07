@@ -197,7 +197,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 foreach (string elementName in schemaReader.ElementNames)
                 {
                     string shapeFieldName;
-                    geometryType geomType;
+                    GeometryType geomType;
                     Fields fields = schemaReader.ElementFields(elementName, out shapeFieldName, out geomType);
                     FeatureClass fc = await FeatureClass.CreateAsync(this, elementName, fields);
                     fc.ShapeFieldName = shapeFieldName;

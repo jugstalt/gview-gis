@@ -236,8 +236,8 @@ namespace gView.Framework.Carto.Rendering.UI
             btnRotation.Enabled = false;
             if (_featureClass != null)
             {
-                if (_featureClass.GeometryType == geometryType.Point ||
-                    _featureClass.GeometryType == geometryType.Multipoint)
+                if (_featureClass.GeometryType == GeometryType.Point ||
+                    _featureClass.GeometryType == GeometryType.Multipoint)
                     btnRotation.Enabled = true;
             }
 

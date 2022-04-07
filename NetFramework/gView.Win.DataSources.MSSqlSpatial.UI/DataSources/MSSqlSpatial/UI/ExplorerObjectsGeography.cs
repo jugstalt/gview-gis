@@ -391,17 +391,17 @@ namespace gView.DataSources.MSSqlSpatial.UI
                 _fc = (IFeatureClass)element.Class;
                 switch (_fc.GeometryType)
                 {
-                    case geometryType.Envelope:
-                    case geometryType.Polygon:
+                    case GeometryType.Envelope:
+                    case GeometryType.Polygon:
                         _icon = new MsSql2008SpatialGeographyPolygonIcon();
                         _type = "Polygon Featureclass";
                         break;
-                    case geometryType.Multipoint:
-                    case geometryType.Point:
+                    case GeometryType.Multipoint:
+                    case GeometryType.Point:
                         _icon = new MsSql2008SpatialGeographyPointIcon();
                         _type = "Point Featureclass";
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         _icon = new MsSql2008SpatialGeographyLineIcon();
                         _type = "Polyline Featureclass";
                         break;

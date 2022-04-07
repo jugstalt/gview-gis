@@ -230,25 +230,25 @@ namespace gView.Framework.XML
                 switch (value.ToLower())
                 {
                     case "point":
-                        _geomDef.GeometryType = geometryType.Point;
+                        _geomDef.GeometryType = GeometryType.Point;
                         break;
                     case "line":
-                        _geomDef.GeometryType = geometryType.Polyline;
+                        _geomDef.GeometryType = GeometryType.Polyline;
                         break;
                     case "polygon":
-                        _geomDef.GeometryType = geometryType.Polygon;
+                        _geomDef.GeometryType = GeometryType.Polygon;
                         break;
                     case "multipoint":
-                        _geomDef.GeometryType = geometryType.Multipoint;
+                        _geomDef.GeometryType = GeometryType.Multipoint;
                         break;
                     case "aggragate":
-                        _geomDef.GeometryType = geometryType.Aggregate;
+                        _geomDef.GeometryType = GeometryType.Aggregate;
                         break;
                     case "envelope":
-                        _geomDef.GeometryType = geometryType.Envelope;
+                        _geomDef.GeometryType = GeometryType.Envelope;
                         break;
                     default:
-                        _geomDef.GeometryType = geometryType.Unknown;
+                        _geomDef.GeometryType = GeometryType.Unknown;
                         break;
                 }
             }
@@ -813,7 +813,7 @@ namespace gView.Framework.XML
             get { return _geomDef.HasM; }
         }
 
-        public geometryType GeometryType
+        public GeometryType GeometryType
         {
             get { return _geomDef.GeometryType; }
         }

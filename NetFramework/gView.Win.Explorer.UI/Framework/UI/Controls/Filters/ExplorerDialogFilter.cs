@@ -250,14 +250,14 @@ namespace gView.Framework.UI.Controls.Filter
 
     public class OpenFeatureLayerFilter : ExplorerOpenDialogFilter
     {
-        private geometryType _geomType = geometryType.Unknown;
+        private GeometryType _geomType = GeometryType.Unknown;
 
         public OpenFeatureLayerFilter()
             : base("Map Feature Layer")
         {
             ObjectTypes.Add(typeof(IFeatureLayer));
         }
-        public OpenFeatureLayerFilter(geometryType geomType)
+        public OpenFeatureLayerFilter(GeometryType geomType)
             : this()
         {
             _geomType = geomType;
@@ -268,7 +268,7 @@ namespace gView.Framework.UI.Controls.Filter
             bool match = await base.Match(exObject);
 
             var instatnce = await exObject.GetInstanceAsync();
-            if (match && _geomType!=geometryType.Unknown && instatnce is IFeatureLayer && ((IFeatureLayer)instatnce).FeatureClass != null)
+            if (match && _geomType!=GeometryType.Unknown && instatnce is IFeatureLayer && ((IFeatureLayer)instatnce).FeatureClass != null)
             {
                 return ((IFeatureLayer)instatnce).FeatureClass.GeometryType == _geomType;
             }

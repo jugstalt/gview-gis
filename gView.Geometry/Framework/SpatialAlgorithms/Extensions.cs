@@ -7,7 +7,7 @@ namespace gView.Framework.SpatialAlgorithms
 {
     static public class Extensions
     {
-        static public IGeometry MakeValid(this IGeometry geometry, geometryType geometryType= geometryType.Unknown, bool closeRings=false)
+        static public IGeometry MakeValid(this IGeometry geometry, GeometryType geometryType= GeometryType.Unknown, bool closeRings=false)
         {
             if(geometry==null)
             {
@@ -18,23 +18,23 @@ namespace gView.Framework.SpatialAlgorithms
 
             switch(geometryType)
             {
-                case geometryType.Point:
+                case GeometryType.Point:
                     if(!(geometry is IPoint))
                         throw new InvalidGeometryException("Invalid point type: " + geometry.GetType().ToString());
                     break;
-                case geometryType.Multipoint:
+                case GeometryType.Multipoint:
                     if (!(geometry is IMultiPoint))
                         throw new InvalidGeometryException("Invalid multipoint type: " + geometry.GetType().ToString());
                     break;
-                case geometryType.Polyline:
+                case GeometryType.Polyline:
                     if (!(geometry is IPolyline))
                         throw new InvalidGeometryException("Invalid polyline type: " + geometry.GetType().ToString());
                     break;
-                case geometryType.Polygon:
+                case GeometryType.Polygon:
                     if (!(geometry is IPolygon))
                         throw new InvalidGeometryException("Invalid polygon type: " + geometry.GetType().ToString());
                     break;
-                case geometryType.Aggregate:
+                case GeometryType.Aggregate:
                     if (!(geometry is IAggregateGeometry))
                         throw new InvalidGeometryException("Invalid aggregate geometry type: " + geometry.GetType().ToString());
                     break;

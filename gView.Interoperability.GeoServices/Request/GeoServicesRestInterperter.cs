@@ -240,7 +240,7 @@ namespace gView.Interoperability.GeoServices.Request
                                     new JsonError.ErrorDef()
                                     {
                                         Code = 999,
-                                        Message= "MapExport exeption occured",
+                                        Message = "MapExport exeption occured",
                                         Details = ((IMap)serviceMap).RequestExceptions.Select(ex => ex.Message)
                                     } : null
                             };
@@ -468,7 +468,7 @@ namespace gView.Interoperability.GeoServices.Request
                 int featureCount = 0;
                 List<JsonFeature> jsonFeatures = new List<JsonFeature>();
                 List<JsonFeatureResponse.Field> jsonFields = new List<JsonFeatureResponse.Field>();
-                
+
                 string objectIdFieldName = String.Empty;
                 EsriGeometryType esriGeometryType = EsriGeometryType.esriGeometryAny;
                 JsonSpatialReference featureSref = null;
@@ -513,7 +513,7 @@ namespace gView.Interoperability.GeoServices.Request
                         if (tableClass is IFeatureClass)
                         {
                             var geometryType = ((IFeatureClass)tableClass).GeometryType;
-                            if (geometryType == geometryType.Unknown)
+                            if (geometryType == GeometryType.Unknown)
                             {
                                 var featureLayer = serviceMap.MapElements.Where(l => l.ID == query.LayerId).FirstOrDefault() as IFeatureLayer;
                                 if (featureLayer != null)
@@ -640,7 +640,7 @@ namespace gView.Interoperability.GeoServices.Request
 
                             using (var cursor = await tableClass.Search(filter))
                             {
-                                if(cursor == null)
+                                if (cursor == null)
                                 {
                                     throw new ExecuteQueryException();
                                 }
@@ -726,7 +726,7 @@ namespace gView.Interoperability.GeoServices.Request
                         ObjectIds = jsonFeatures.Select(f => Convert.ToInt32(((IDictionary<string, object>)f.Attributes)[objectIdFieldName]))
                     };
                 }
-                else if(returnGeoJson)
+                else if (returnGeoJson)
                 {
                     context.ServiceRequest.Response = Encoding.UTF8.GetBytes(GeoJsonHelper.ToGeoJson(returnGeoJsonFeatures));
                     context.ServiceRequest.ResponseContentType = Constants.JsonContentType;

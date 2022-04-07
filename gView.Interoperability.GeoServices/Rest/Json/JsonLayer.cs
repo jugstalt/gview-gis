@@ -95,47 +95,47 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         //    }
         //}
 
-        public geometryType GetGeometryType()
+        public GeometryType GetGeometryType()
         {
             switch(GeometryType)
             {
                 case "esriGeometryPoint":
-                    return geometryType.Point;
+                    return Framework.Geometry.GeometryType.Point;
                 case "esriGeometryMultipoint":
-                    return geometryType.Multipoint;
+                    return Framework.Geometry.GeometryType.Multipoint;
                 case "esriGeometryPolyline":
-                    return geometryType.Polyline;
+                    return Framework.Geometry.GeometryType.Polyline;
                 case "esriGeometryPolygon":
-                    return geometryType.Polygon;
+                    return Framework.Geometry.GeometryType.Polygon;
                 case "esriGeometryBag":
-                    return geometryType.Aggregate;
+                    return Framework.Geometry.GeometryType.Aggregate;
                 case "esriGeometryEnvelope":
-                    return geometryType.Envelope;
+                    return Framework.Geometry.GeometryType.Envelope;
             }
 
-            return geometryType.Unknown;
+            return Framework.Geometry.GeometryType.Unknown;
         }
 
         #region Static Members
 
-        static public EsriGeometryType ToGeometryType(geometryType type)
+        static public EsriGeometryType ToGeometryType(GeometryType type)
         {
             switch (type)
             {
-                case geometryType.Point:
+                case Framework.Geometry.GeometryType.Point:
                     return EsriGeometryType.esriGeometryPoint;
-                case geometryType.Multipoint:
+                case Framework.Geometry.GeometryType.Multipoint:
                     return EsriGeometryType.esriGeometryMultipoint;
-                case geometryType.Polyline:
+                case Framework.Geometry.GeometryType.Polyline:
                     return EsriGeometryType.esriGeometryPolyline;
-                case geometryType.Polygon:
+                case Framework.Geometry.GeometryType.Polygon:
                     return EsriGeometryType.esriGeometryPolygon;
-                case geometryType.Aggregate:
+                case Framework.Geometry.GeometryType.Aggregate:
                     return EsriGeometryType.esriGeometryBag;
-                case geometryType.Envelope:
+                case Framework.Geometry.GeometryType.Envelope:
                     return EsriGeometryType.esriGeometryEnvelope;
-                case geometryType.Unknown:
-                case geometryType.Network:
+                case Framework.Geometry.GeometryType.Unknown:
+                case Framework.Geometry.GeometryType.Network:
                 default:
                     return EsriGeometryType.esriGeometryNull;
             }

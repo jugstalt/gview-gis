@@ -39,11 +39,11 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             {
                 switch (featureClass._geomType)
                 {
-                    case geometryType.Polygon:
+                    case GeometryType.Polygon:
                         featureClass._fields.Add(new Field($"{ featureClass._shapefield }.STArea()", FieldType.Double));
                         featureClass._fields.Add(new Field($"{ featureClass._shapefield }.STLength()", FieldType.Double));
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         featureClass._fields.Add(new Field($"{ featureClass._shapefield }.STLength()", FieldType.Double));
                         break;
                 }

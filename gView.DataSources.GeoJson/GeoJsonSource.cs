@@ -139,15 +139,15 @@ namespace gView.DataSources.GeoJson
             return features;
         }
 
-        public Task<IEnumerable<IFeature>> GetFeatures(geometryType geometryType)
+        public Task<IEnumerable<IFeature>> GetFeatures(GeometryType geometryType)
         {
             switch(geometryType)
             {
-                case geometryType.Point:
+                case GeometryType.Point:
                     return GetFeatures<IPoint>();
-                case geometryType.Polyline:
+                case GeometryType.Polyline:
                     return GetFeatures<IPolyline>();
-                case geometryType.Polygon:
+                case GeometryType.Polygon:
                     return GetFeatures<IPolygon>();
                 default:
                     throw new Exception($"geometry type { geometryType } not implemented with GeoJsonSource");

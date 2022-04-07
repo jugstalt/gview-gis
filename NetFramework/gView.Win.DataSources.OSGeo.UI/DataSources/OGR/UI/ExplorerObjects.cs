@@ -212,17 +212,17 @@ namespace gView.DataSources.OGR.UI
                 _fc = (IFeatureClass)element.Class;
                 switch (_fc.GeometryType)
                 {
-                    case geometryType.Envelope:
-                    case geometryType.Polygon:
+                    case GeometryType.Envelope:
+                    case GeometryType.Polygon:
                         _icon = new AccessFDBPolygonIcon();
                         _type = "Polygon Featureclass";
                         break;
-                    case geometryType.Multipoint:
-                    case geometryType.Point:
+                    case GeometryType.Multipoint:
+                    case GeometryType.Point:
                         _icon = new AccessFDBPointIcon();
                         _type = "Point Featureclass";
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         _icon = new AccessFDBLineIcon();
                         _type = "Polyline Featureclass";
                         break;
@@ -499,17 +499,17 @@ namespace gView.DataSources.OGR.UI
                 _fc = (IFeatureClass)element.Class;
                 switch (_fc.GeometryType)
                 {
-                    case geometryType.Envelope:
-                    case geometryType.Polygon:
+                    case GeometryType.Envelope:
+                    case GeometryType.Polygon:
                         _icon = new AccessFDBPolygonIcon();
                         _type = "Polygon Featureclass";
                         break;
-                    case geometryType.Multipoint:
-                    case geometryType.Point:
+                    case GeometryType.Multipoint:
+                    case GeometryType.Point:
                         _icon = new AccessFDBPointIcon();
                         _type = "Point Featureclass";
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         _icon = new AccessFDBLineIcon();
                         _type = "Polyline Featureclass";
                         break;
@@ -775,17 +775,17 @@ namespace gView.DataSources.OGR.UI
                 _fc = (IFeatureClass)element.Class;
                 switch (_fc.GeometryType)
                 {
-                    case geometryType.Envelope:
-                    case geometryType.Polygon:
+                    case GeometryType.Envelope:
+                    case GeometryType.Polygon:
                         _icon = new AccessFDBPolygonIcon();
                         _type = "Polygon Featureclass";
                         break;
-                    case geometryType.Multipoint:
-                    case geometryType.Point:
+                    case GeometryType.Multipoint:
+                    case GeometryType.Point:
                         _icon = new AccessFDBPointIcon();
                         _type = "Point Featureclass";
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         _icon = new AccessFDBLineIcon();
                         _type = "Polyline Featureclass";
                         break;
@@ -907,17 +907,17 @@ namespace gView.DataSources.OGR.UI
 
             switch (exObject._fc.GeometryType)
             {
-                case geometryType.Envelope:
-                case geometryType.Polygon:
+                case GeometryType.Envelope:
+                case GeometryType.Polygon:
                     exObject._icon = new AccessFDBPolygonIcon();
                     exObject._type = "OGR Polygon Featureclass";
                     break;
-                case geometryType.Multipoint:
-                case geometryType.Point:
+                case GeometryType.Multipoint:
+                case GeometryType.Point:
                     exObject._icon = new AccessFDBPointIcon();
                     exObject._type = "OGR Point Featureclass";
                     break;
-                case geometryType.Polyline:
+                case GeometryType.Polyline:
                     exObject._icon = new AccessFDBLineIcon();
                     exObject._type = "OGR Polyline Featureclass";
                     break;
@@ -1556,17 +1556,17 @@ namespace gView.DataSources.OGR.UI
                 _fc = (IFeatureClass)element.Class;
                 switch (_fc.GeometryType)
                 {
-                    case geometryType.Envelope:
-                    case geometryType.Polygon:
+                    case GeometryType.Envelope:
+                    case GeometryType.Polygon:
                         _icon = new AccessFDBPolygonIcon();
                         _type = "Polygon Featureclass";
                         break;
-                    case geometryType.Multipoint:
-                    case geometryType.Point:
+                    case GeometryType.Multipoint:
+                    case GeometryType.Point:
                         _icon = new AccessFDBPointIcon();
                         _type = "Point Featureclass";
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         _icon = new AccessFDBLineIcon();
                         _type = "Polyline Featureclass";
                         break;

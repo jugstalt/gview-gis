@@ -41,17 +41,17 @@ namespace gView.Framework.Carto.Rendering
             }
         }
 
-        public ISymbol CreateStandardSymbol(geometryType type)
+        public ISymbol CreateStandardSymbol(GeometryType type)
         {
             return RendererFunctions.CreateStandardSymbol(type);
         }
 
-        public ISymbol CreateStandardSelectionSymbol(geometryType type)
+        public ISymbol CreateStandardSelectionSymbol(GeometryType type)
         {
             return RendererFunctions.CreateStandardSelectionSymbol(type);
         }
 
-        public ISymbol CreateStandardHighlightSymbol(geometryType type)
+        public ISymbol CreateStandardHighlightSymbol(GeometryType type)
         {
             return RendererFunctions.CreateStandardHighlightSymbol(type);
         }
@@ -70,8 +70,8 @@ namespace gView.Framework.Carto.Rendering
                 return false;
             }
 
-            if (layer.LayerGeometryType == geometryType.Unknown ||
-                layer.LayerGeometryType == geometryType.Network)
+            if (layer.LayerGeometryType == GeometryType.Unknown ||
+                layer.LayerGeometryType == GeometryType.Network)
             {
                 return false;
             }
@@ -142,7 +142,7 @@ namespace gView.Framework.Carto.Rendering
 
                             ISymbol symbol = symbolItem.Symbol;
 
-                            if (symbol.SupportsGeometryType(geometryType.Aggregate))
+                            if (symbol.SupportsGeometryType(GeometryType.Aggregate))
                             {
                                 disp.Draw(symbol, _aggregateGeometry);
                             }
@@ -157,7 +157,7 @@ namespace gView.Framework.Carto.Rendering
                     }
                     else
                     {
-                        if (_symbol.SupportsGeometryType(geometryType.Aggregate))
+                        if (_symbol.SupportsGeometryType(GeometryType.Aggregate))
                         {
                             disp.Draw(_symbol, _aggregateGeometry);
                         }

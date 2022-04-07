@@ -14,7 +14,7 @@ namespace gView.DataSources.OGR
         private int _countFeatures;
         private Dataset _dataset;
         private bool _hasZ = false, _hasM = false;
-        private geometryType _geomType = geometryType.Unknown;
+        private GeometryType _geomType = GeometryType.Unknown;
         private Fields _fields;
         private OSGeo_v1.OGR.Layer _ogrLayer = null;
 
@@ -66,15 +66,15 @@ namespace gView.DataSources.OGR
             switch (defn.GetGeomType())
             {
                 case OSGeo_v1.OGR.wkbGeometryType.wkbPoint:
-                    _geomType = geometryType.Point;
+                    _geomType = GeometryType.Point;
                     break;
                 case OSGeo_v1.OGR.wkbGeometryType.wkbLineString:
                 case OSGeo_v1.OGR.wkbGeometryType.wkbMultiLineString:
-                    _geomType = geometryType.Polyline;
+                    _geomType = GeometryType.Polyline;
                     break;
                 case OSGeo_v1.OGR.wkbGeometryType.wkbPolygon:
                 case OSGeo_v1.OGR.wkbGeometryType.wkbMultiPolygon:
-                    _geomType=geometryType.Polygon;
+                    _geomType=GeometryType.Polygon;
                     break;
             }
         }
@@ -179,7 +179,7 @@ namespace gView.DataSources.OGR
             get; set;
         }
 
-        public geometryType GeometryType
+        public GeometryType GeometryType
         {
             get { return _geomType; }
         }

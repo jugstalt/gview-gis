@@ -28,7 +28,7 @@ namespace gView.Framework.Carto.Rendering
             _symbolRotation = new SymbolRotation();
         }
 
-        public ISymbol this[geometryType type]
+        public ISymbol this[GeometryType type]
         {
             get { return _symbol[type]; }
             set { _symbol[type] = value; }
@@ -86,9 +86,9 @@ namespace gView.Framework.Carto.Rendering
         {
             if (layer != null &&
                 layer.FeatureClass != null &&
-                (layer.FeatureClass.GeometryType == geometryType.Unknown ||
-                 layer.FeatureClass.GeometryType == geometryType.Network ||
-                 layer.FeatureClass.GeometryType == geometryType.Aggregate)) return true;
+                (layer.FeatureClass.GeometryType == GeometryType.Unknown ||
+                 layer.FeatureClass.GeometryType == GeometryType.Network ||
+                 layer.FeatureClass.GeometryType == GeometryType.Aggregate)) return true;
 
             else if (layer is IWebServiceTheme)
                 return true;
@@ -232,25 +232,25 @@ namespace gView.Framework.Carto.Rendering
             {
                 case 0:
                     if (_symbol.UsePointSymbol)
-                        return _symbol[geometryType.Point];
+                        return _symbol[GeometryType.Point];
                     if (_symbol.UseLineSymbol)
-                        return _symbol[geometryType.Polyline];
+                        return _symbol[GeometryType.Polyline];
                     if (_symbol.UsePolygonSymbol)
-                        return _symbol[geometryType.Polygon];
+                        return _symbol[GeometryType.Polygon];
                     break;
                 case 1:
                     if (_symbol.UsePointSymbol &&
                         _symbol.UseLineSymbol)
-                        return _symbol[geometryType.Polyline];
+                        return _symbol[GeometryType.Polyline];
                     if (_symbol.UseLineSymbol &&
                         _symbol.UsePolygonSymbol)
-                        return _symbol[geometryType.Polygon];
+                        return _symbol[GeometryType.Polygon];
                     break;
                 case 2:
                     if (_symbol.UsePointSymbol &&
                         _symbol.UseLineSymbol &&
                         _symbol.UsePolygonSymbol)
-                        return _symbol[geometryType.Polygon];
+                        return _symbol[GeometryType.Polygon];
                     break;
             }
             return null;
@@ -260,12 +260,12 @@ namespace gView.Framework.Carto.Rendering
         {
             if (_symbol == null) return;
 
-            if (item == _symbol[geometryType.Point])
-                _symbol[geometryType.Point] = symbol;
-            if (item == _symbol[geometryType.Polyline])
-                _symbol[geometryType.Polyline] = symbol;
-            if (item == _symbol[geometryType.Polygon])
-                _symbol[geometryType.Polygon] = symbol;
+            if (item == _symbol[GeometryType.Point])
+                _symbol[GeometryType.Point] = symbol;
+            if (item == _symbol[GeometryType.Polyline])
+                _symbol[GeometryType.Polyline] = symbol;
+            if (item == _symbol[GeometryType.Polygon])
+                _symbol[GeometryType.Polygon] = symbol;
         }
 
         #endregion
@@ -303,34 +303,34 @@ namespace gView.Framework.Carto.Rendering
             switch (type)
             {
                 case SymbolType.normal:
-                    _pointSymbol = RendererFunctions.CreateStandardSymbol(geometryType.Point);
-                    _lineSymbol = RendererFunctions.CreateStandardSymbol(geometryType.Polyline);
-                    _polygonSymbol = RendererFunctions.CreateStandardSymbol(geometryType.Polygon);
+                    _pointSymbol = RendererFunctions.CreateStandardSymbol(GeometryType.Point);
+                    _lineSymbol = RendererFunctions.CreateStandardSymbol(GeometryType.Polyline);
+                    _polygonSymbol = RendererFunctions.CreateStandardSymbol(GeometryType.Polygon);
                     break;
                 case SymbolType.selection:
-                    _pointSymbol = RendererFunctions.CreateStandardSelectionSymbol(geometryType.Point);
-                    _lineSymbol = RendererFunctions.CreateStandardSelectionSymbol(geometryType.Polyline);
-                    _polygonSymbol = RendererFunctions.CreateStandardSelectionSymbol(geometryType.Polygon);
+                    _pointSymbol = RendererFunctions.CreateStandardSelectionSymbol(GeometryType.Point);
+                    _lineSymbol = RendererFunctions.CreateStandardSelectionSymbol(GeometryType.Polyline);
+                    _polygonSymbol = RendererFunctions.CreateStandardSelectionSymbol(GeometryType.Polygon);
                     break;
                 case SymbolType.highlight:
-                    _pointSymbol = RendererFunctions.CreateStandardHighlightSymbol(geometryType.Point);
-                    _lineSymbol = RendererFunctions.CreateStandardHighlightSymbol(geometryType.Polyline);
-                    _polygonSymbol = RendererFunctions.CreateStandardHighlightSymbol(geometryType.Polygon);
+                    _pointSymbol = RendererFunctions.CreateStandardHighlightSymbol(GeometryType.Point);
+                    _lineSymbol = RendererFunctions.CreateStandardHighlightSymbol(GeometryType.Polyline);
+                    _polygonSymbol = RendererFunctions.CreateStandardHighlightSymbol(GeometryType.Polygon);
                     break;
             }
         }
 
-        public ISymbol this[geometryType type]
+        public ISymbol this[GeometryType type]
         {
             get
             {
                 switch (type)
                 {
-                    case geometryType.Point:
+                    case GeometryType.Point:
                         return _pointSymbol;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         return _lineSymbol;
-                    case geometryType.Polygon:
+                    case GeometryType.Polygon:
                         return _polygonSymbol;
                 }
                 return null;
@@ -341,21 +341,21 @@ namespace gView.Framework.Carto.Rendering
 
                 switch (type)
                 {
-                    case geometryType.Point:
+                    case GeometryType.Point:
                         if (value != _pointSymbol)
                         {
                             _pointSymbol.Release();
                             _pointSymbol = value;
                         }
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         if (value != _lineSymbol)
                         {
                             _lineSymbol.Release();
                             _lineSymbol = value;
                         }
                         break;
-                    case geometryType.Polygon:
+                    case GeometryType.Polygon:
                         if (value != _polygonSymbol)
                         {
                             _polygonSymbol.Release();

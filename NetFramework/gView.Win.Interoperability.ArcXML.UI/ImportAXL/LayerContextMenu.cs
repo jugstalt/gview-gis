@@ -165,21 +165,21 @@ namespace gView.Interoperability.ArcXML.UI.ImportAXL
                 switch (datasetNode.Attributes["type"].Value)
                 {
                     case "point":
-                        if (layer.FeatureClass.GeometryType != geometryType.Point)
+                        if (layer.FeatureClass.GeometryType != GeometryType.Point)
                         {
                             continue;
                         }
 
                         break;
                     case "line":
-                        if (layer.FeatureClass.GeometryType != geometryType.Polyline)
+                        if (layer.FeatureClass.GeometryType != GeometryType.Polyline)
                         {
                             continue;
                         }
 
                         break;
                     case "polygon":
-                        if (layer.FeatureClass.GeometryType != geometryType.Polygon)
+                        if (layer.FeatureClass.GeometryType != GeometryType.Polygon)
                         {
                             continue;
                         }

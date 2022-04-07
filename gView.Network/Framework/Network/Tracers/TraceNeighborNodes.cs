@@ -240,7 +240,7 @@ namespace gView.Framework.Network.Tracers
             {
                 foreach (IFeatureClass fc in fcs)
                 {
-                    if (fc.GeometryType == geometryType.Point)
+                    if (fc.GeometryType == GeometryType.Point)
                     {
                         _properties.AddBoolProperty(fc.Name);
                     }

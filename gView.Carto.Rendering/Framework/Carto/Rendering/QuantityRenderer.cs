@@ -20,7 +20,7 @@ namespace gView.Framework.Carto.Rendering
         private string _valueField = String.Empty;
         private ISymbol _defaultSymbol = null;
         private List<QuantityClass> _quantityClasses;
-        private geometryType _geometryType = geometryType.Unknown;
+        private GeometryType _geometryType = GeometryType.Unknown;
         private SymbolRotation _symbolRotation;
         private bool _useRefscale = true;
 
@@ -90,7 +90,7 @@ namespace gView.Framework.Carto.Rendering
             return true;
         }
 
-        public geometryType GeometryType
+        public GeometryType GeometryType
         {
             get { return _geometryType; }
             set { _geometryType = value; }
@@ -183,8 +183,8 @@ namespace gView.Framework.Carto.Rendering
             if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
                 layer.FeatureClass.GeometryType == geometryType.Network) return false;
              * */
-            if (layer.LayerGeometryType == geometryType.Unknown ||
-                layer.LayerGeometryType == geometryType.Network) return false;
+            if (layer.LayerGeometryType == GeometryType.Unknown ||
+                layer.LayerGeometryType == GeometryType.Network) return false;
             return true;
         }
 

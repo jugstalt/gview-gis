@@ -528,16 +528,16 @@ namespace gView.DataSources.CosmoDb
 
         #endregion
 
-        internal DocumentCollection GetFeatureCollection(geometryType geomType)
+        internal DocumentCollection GetFeatureCollection(GeometryType geomType)
         {
             switch(geomType)
             {
-                case geometryType.Point:
-                case geometryType.Multipoint:
+                case GeometryType.Point:
+                case GeometryType.Multipoint:
                     return _featureCollection_points;
-                case geometryType.Polyline:
+                case GeometryType.Polyline:
                     return _featureCollection_lines;
-                case geometryType.Polygon:
+                case GeometryType.Polygon:
                     return _featureCollection_polygons;
                 default:
                     throw new Exception($"There is no collection for geometry-type '{geomType.ToString()}'");

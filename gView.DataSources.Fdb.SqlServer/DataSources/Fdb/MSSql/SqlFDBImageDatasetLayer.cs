@@ -463,13 +463,13 @@ namespace gView.DataSources.Fdb.MSSql
             }
         }
 
-        public geometryType GeometryType
+        public GeometryType GeometryType
         {
             get
             {
                 if (_fc == null)
                 {
-                    return geometryType.Unknown;
+                    return GeometryType.Unknown;
                 }
 
                 return _fc.GeometryType;
@@ -902,7 +902,7 @@ namespace gView.DataSources.Fdb.MSSql
                             r.BaseStream.Position = 0;
 
                             Polygon polygon = new Polygon();
-                            polygon.Deserialize(r, new GeometryDef(geometryType.Polygon, null, true));
+                            polygon.Deserialize(r, new GeometryDef(GeometryType.Polygon, null, true));
                             r.Close();
 
                             if (gView.Framework.SpatialAlgorithms.Algorithm.IntersectBox(polygon, _dispEnvelope))

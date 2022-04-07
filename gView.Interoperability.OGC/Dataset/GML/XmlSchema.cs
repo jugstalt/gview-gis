@@ -36,10 +36,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
             }
         }
 
-        public Fields ElementFields(string elementName, out string shapeFieldname, out geometryType geomType)
+        public Fields ElementFields(string elementName, out string shapeFieldname, out GeometryType geomType)
         {
             shapeFieldname = "";
-            geomType = geometryType.Unknown;
+            geomType = GeometryType.Unknown;
 
             if (_schema == null) return null;
 
@@ -109,24 +109,24 @@ namespace gView.Interoperability.OGC.Dataset.GML
                         case "multipolygonproperty":
                         case "multipolygonpropertytype":
                             shapeFieldname = name;
-                            geomType = geometryType.Polygon;
+                            geomType = GeometryType.Polygon;
                             continue;
                         case "linestringproperty":
                         case "linestringpropertytype":
                         case "multilinestringproperty":
                         case "multilinestringpropertytype":
                             shapeFieldname = name;
-                            geomType = geometryType.Polyline;
+                            geomType = GeometryType.Polyline;
                             continue;
                         case "pointproperty":
                         case "pointpropertytype":
                             shapeFieldname = name;
-                            geomType = geometryType.Point;
+                            geomType = GeometryType.Point;
                             continue;
                         case "multipointproperty":
                         case "multipointpropertytype":
                             shapeFieldname = name;
-                            geomType = geometryType.Multipoint;
+                            geomType = GeometryType.Multipoint;
                             continue;
                         case "featureidtype":
                         case "gmlobjectidtype":
@@ -154,24 +154,24 @@ namespace gView.Interoperability.OGC.Dataset.GML
                         case "multipolygonproperty":
                         case "multipolygonpropertytype":
                             shapeFieldname = name;
-                            geomType = geometryType.Polygon;
+                            geomType = GeometryType.Polygon;
                             continue;
                         case "linestringproperty":
                         case "linestringpropertytype":
                         case "multilinestringproperty":
                         case "multilinestringpropertytype":
                             shapeFieldname = name;
-                            geomType = geometryType.Polyline;
+                            geomType = GeometryType.Polyline;
                             continue;
                         case "pointproperty":
                         case "pointpropertytype":
                             shapeFieldname = name;
-                            geomType = geometryType.Point;
+                            geomType = GeometryType.Point;
                             continue;
                         case "multipointproperty":
                         case "multipointpropertytype":
                             shapeFieldname = name;
-                            geomType = geometryType.Multipoint;
+                            geomType = GeometryType.Multipoint;
                             continue;
                     }
                 }
@@ -286,16 +286,16 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 string geomTypeName = "gml:GeometryPropertyType";
                 switch (fc.GeometryType)
                 {
-                    case geometryType.Point:
+                    case GeometryType.Point:
                         geomTypeName = "gml:PointPropertyType";
                         break;
-                    case geometryType.Multipoint:
+                    case GeometryType.Multipoint:
                         geomTypeName = "gml:MultiPointPropertyType";
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         geomTypeName = "gml:MultiLineStringPropertyType";
                         break;
-                    case geometryType.Polygon:
+                    case GeometryType.Polygon:
                         geomTypeName = "gml:MultiPolygonPropertyType";
                         break;
                 }

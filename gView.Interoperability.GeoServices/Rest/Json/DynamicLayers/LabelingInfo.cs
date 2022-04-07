@@ -32,15 +32,15 @@ namespace gView.Interoperability.GeoServices.Rest.Json.DynamicLayers
         [JsonProperty("where", NullValueHandling = NullValueHandling.Ignore)]
         public string Where { get; set; }
 
-        public static string DefaultLabelPlacement(geometryType type)
+        public static string DefaultLabelPlacement(GeometryType type)
         {
             switch (type)
             {
-                case geometryType.Point:
+                case GeometryType.Point:
                     return "esriServerPointLabelPlacementAboveRight";
-                case geometryType.Polyline:
+                case GeometryType.Polyline:
                     return "esriServerLinePlacementAboveAlong";
-                case geometryType.Polygon:
+                case GeometryType.Polygon:
                     return "esriServerPolygonPlacementAlwaysHorizontal";
             }
 

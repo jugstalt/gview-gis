@@ -12,41 +12,41 @@ namespace gView.Plugins.Editor.Dialogs
     public partial class FormChooseGeometry : Form
     {
         public FormChooseGeometry()
-            : this(geometryType.Point)
+            : this(GeometryType.Point)
         {
         }
-        public FormChooseGeometry(geometryType type)
+        public FormChooseGeometry(GeometryType type)
         {
             InitializeComponent();
 
             this.GeometryType = type;
         }
 
-        public geometryType GeometryType
+        public GeometryType GeometryType
         {
             get
             {
                 if (chkPoint.Checked)
-                    return geometryType.Point;
+                    return GeometryType.Point;
                 if (chkLine.Checked)
-                    return geometryType.Polyline;
+                    return GeometryType.Polyline;
                 if (chkPolygon.Checked)
-                    return geometryType.Polygon;
+                    return GeometryType.Polygon;
 
-                return geometryType.Unknown;
+                return GeometryType.Unknown;
             }
             set
             {
                 switch (value)
                 {
-                    case geometryType.Point:
-                    case geometryType.Multipoint:
+                    case GeometryType.Point:
+                    case GeometryType.Multipoint:
                         chkPoint.Checked=true;
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         chkLine.Checked = true;
                         break;
-                    case geometryType.Polygon:
+                    case GeometryType.Polygon:
                         chkPolygon.Checked = true;
                         break;
                 }

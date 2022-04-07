@@ -14,7 +14,7 @@ namespace gView.Framework.OGC.DB
     public class OgcSpatialFeatureclass : IFeatureClass2, IDebugging
     {
         protected string _name, _shapefield, _idfield;
-        protected geometryType _geomType;
+        protected GeometryType _geomType;
         protected bool _hasZ = false;
         protected OgcSpatialDataset _dataset;
         protected IEnvelope _envelope;
@@ -66,22 +66,22 @@ namespace gView.Framework.OGC.DB
                     case "POLYGON":
                     case "MULTIPOLYGONM":
                     case "POLYGONM":
-                        featureClass._geomType = geometryType.Polygon;
+                        featureClass._geomType = GeometryType.Polygon;
                         break;
                     case "MULTILINESTRING":
                     case "LINESTRING":
                     case "MULTILINESTRINGM":
                     case "LINESTRINGM":
-                        featureClass._geomType = geometryType.Polyline;
+                        featureClass._geomType = GeometryType.Polyline;
                         break;
                     case "POINT":
                     case "POINTM":
                     case "MULTIPOINT":
                     case "MULTIPOINTM":
-                        featureClass._geomType = geometryType.Point;
+                        featureClass._geomType = GeometryType.Point;
                         break;
                     default:
-                        featureClass._geomType = geometryType.Unknown;
+                        featureClass._geomType = GeometryType.Unknown;
                         break;
                 }
 
@@ -421,7 +421,7 @@ namespace gView.Framework.OGC.DB
             set { _sRef = value; }
         }
 
-        public gView.Framework.Geometry.geometryType GeometryType
+        public gView.Framework.Geometry.GeometryType GeometryType
         {
             get { return _geomType; }
         }

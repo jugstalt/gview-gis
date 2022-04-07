@@ -3,7 +3,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace gView.Framework.IO
 {
@@ -24,7 +23,7 @@ namespace gView.Framework.IO
 
                 return null;
             }
-            set 
+            set
             {
                 if (value == null)
                 {
@@ -97,6 +96,6 @@ namespace gView.Framework.IO
         public string Name { get; set; }
 
         [JsonProperty("data")]
-        public byte[] Data { get; set;  }
+        public byte[] Data { get; set; }
     }
 }

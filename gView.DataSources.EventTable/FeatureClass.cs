@@ -199,9 +199,9 @@ namespace gView.DataSources.EventTable
             }
         }
 
-        public gView.Framework.Geometry.geometryType GeometryType
+        public gView.Framework.Geometry.GeometryType GeometryType
         {
-            get { return geometryType.Point; }
+            get { return GeometryType.Point; }
         }
 
         #endregion

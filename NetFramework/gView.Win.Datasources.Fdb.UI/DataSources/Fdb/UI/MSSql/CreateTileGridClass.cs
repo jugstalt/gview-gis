@@ -149,7 +149,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 if (element != null && element.Class is IFeatureClass)
                 {
                     fc = (IFeatureClass)element.Class;
-                    if (fc.GeometryType == geometryType.Polygon &&
+                    if (fc.GeometryType == GeometryType.Polygon &&
                         fc.FindField("GRID_LEVEL") != null &&
                         fc.FindField("GRID_ROW") != null &&
                         fc.FindField("GRID_COLUMN") != null &&
@@ -177,7 +177,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     fields.Add(new Field("FILE", FieldType.String, 512));
 
                     await _fdb.CreateFeatureClass(_targetDataset.DatasetName, _name,
-                        new GeometryDef(geometryType.Polygon),
+                        new GeometryDef(GeometryType.Polygon),
                         fields);
                     element = await _targetDataset.Element(_name);
                     if (element == null || !(element.Class is IFeatureClass))

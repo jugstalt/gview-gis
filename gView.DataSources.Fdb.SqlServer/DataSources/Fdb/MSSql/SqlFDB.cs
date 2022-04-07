@@ -496,11 +496,11 @@ namespace gView.DataSources.Fdb.MSSql
             GeometryDef geomDef;
             if (fcRow.Table.Columns["HasZ"] != null)
             {
-                geomDef = new GeometryDef((geometryType)fcRow["GeometryType"], null, (bool)fcRow["HasZ"]);
+                geomDef = new GeometryDef((GeometryType)fcRow["GeometryType"], null, (bool)fcRow["HasZ"]);
             }
             else
             {  // alte Version war immer 3D
-                geomDef = new GeometryDef((geometryType)fcRow["GeometryType"], null, true);
+                geomDef = new GeometryDef((GeometryType)fcRow["GeometryType"], null, true);
             }
 
             SqlFDBDatasetElement layer = await SqlFDBDatasetElement.Create(this, sqlDataset, row["Name"].ToString(), geomDef);
@@ -568,7 +568,7 @@ namespace gView.DataSources.Fdb.MSSql
             {
                 if (await TableExists("FC_" + dataset.DatasetName + "_IMAGE_POLYGONS"))
                 {
-                    IFeatureClass fc = await SqlFDBFeatureClass.Create(this, dataset, new GeometryDef(geometryType.Polygon, sRef, false));
+                    IFeatureClass fc = await SqlFDBFeatureClass.Create(this, dataset, new GeometryDef(GeometryType.Polygon, sRef, false));
                     ((SqlFDBFeatureClass)fc).Name = dataset.DatasetName + "_IMAGE_POLYGONS";
                     ((SqlFDBFeatureClass)fc).Envelope = await this.FeatureClassExtent(fc.Name);
                     ((SqlFDBFeatureClass)fc).IDFieldName = "FDB_OID";
@@ -641,11 +641,11 @@ namespace gView.DataSources.Fdb.MSSql
                 GeometryDef geomDef;
                 if (fcRow.Table.Columns["HasZ"] != null)
                 {
-                    geomDef = new GeometryDef((geometryType)fcRow["GeometryType"], null, (bool)fcRow["HasZ"]);
+                    geomDef = new GeometryDef((GeometryType)fcRow["GeometryType"], null, (bool)fcRow["HasZ"]);
                 }
                 else
                 {  // alte Version war immer 3D
-                    geomDef = new GeometryDef((geometryType)fcRow["GeometryType"], null, true);
+                    geomDef = new GeometryDef((GeometryType)fcRow["GeometryType"], null, true);
                 }
 
                 SqlFDBDatasetElement layer = await SqlFDBDatasetElement.Create(this, dataset, row["Name"].ToString(), geomDef);
@@ -1225,7 +1225,7 @@ namespace gView.DataSources.Fdb.MSSql
             BinarySearchTree2 tree = null;
             ISpatialIndexDef si = ((IFDBDataset)fClass.Dataset).SpatialIndexDef;
             bool msSpatial = false;
-            bool isNetwork = fClass.GeometryType == geometryType.Network;
+            bool isNetwork = fClass.GeometryType == GeometryType.Network;
 
             if (si is MSSpatialIndex)
             {
@@ -1293,14 +1293,14 @@ namespace gView.DataSources.Fdb.MSSql
                                 string wkt;
                                 if (si.GeometryType == GeometryFieldType.MsGeometry)
                                 {
-                                    if (fClass.GeometryType == geometryType.Polygon)
+                                    if (fClass.GeometryType == GeometryType.Polygon)
                                         wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "',0).MakeValid()";
                                     else
                                         wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "',0)";
                                 }
                                 else
                                 {
-                                    if (fClass.GeometryType == geometryType.Polygon)
+                                    if (fClass.GeometryType == GeometryType.Polygon)
                                         wkt = "geography::STGeomFromText('" + GeographyMakeValid(connection, transaction, gView.Framework.OGC.WKT.ToWKT(shape)) + "',4326)";
                                     else
                                         wkt = "geography::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "',4326)";
@@ -1513,14 +1513,14 @@ namespace gView.DataSources.Fdb.MSSql
                                 string wkt;
                                 if (si.GeometryType == GeometryFieldType.MsGeometry)
                                 {
-                                    if (fClass.GeometryType == geometryType.Polygon)
+                                    if (fClass.GeometryType == GeometryType.Polygon)
                                         wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(feature.Shape) + "',0).MakeValid()";
                                     else
                                         wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(feature.Shape) + "',0)";
                                 }
                                 else
                                 {
-                                    if (fClass.GeometryType == geometryType.Polygon)
+                                    if (fClass.GeometryType == GeometryType.Polygon)
                                         wkt = "geography::STGeomFromText('" + GeographyMakeValid(connection, transaction, gView.Framework.OGC.WKT.ToWKT(feature.Shape)) + "',4326)";
                                     else
                                         wkt = "geography::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(feature.Shape) + "',4326)";
@@ -1912,13 +1912,13 @@ namespace gView.DataSources.Fdb.MSSql
                         IGeometry p = null;
                         switch (geomDef.GeometryType)
                         {
-                            case geometryType.Point:
+                            case GeometryType.Point:
                                 p = new gView.Framework.Geometry.Point();
                                 break;
-                            case geometryType.Polyline:
+                            case GeometryType.Polyline:
                                 p = new gView.Framework.Geometry.Polyline();
                                 break;
-                            case geometryType.Polygon:
+                            case GeometryType.Polygon:
                                 p = new gView.Framework.Geometry.Polygon();
                                 break;
                         }
@@ -2759,13 +2759,13 @@ namespace gView.DataSources.Fdb.MSSql
                         IGeometry p = null;
                         switch (_geomDef.GeometryType)
                         {
-                            case geometryType.Point:
+                            case GeometryType.Point:
                                 p = new gView.Framework.Geometry.Point();
                                 break;
-                            case geometryType.Polyline:
+                            case GeometryType.Polyline:
                                 p = new gView.Framework.Geometry.Polyline();
                                 break;
-                            case geometryType.Polygon:
+                            case GeometryType.Polygon:
                                 p = new gView.Framework.Geometry.Polygon();
                                 break;
                         }
@@ -3019,13 +3019,13 @@ namespace gView.DataSources.Fdb.MSSql
                             IGeometry p = null;
                             switch (_geomDef.GeometryType)
                             {
-                                case geometryType.Point:
+                                case GeometryType.Point:
                                     p = new gView.Framework.Geometry.Point();
                                     break;
-                                case geometryType.Polyline:
+                                case GeometryType.Polyline:
                                     p = new gView.Framework.Geometry.Polyline();
                                     break;
-                                case geometryType.Polygon:
+                                case GeometryType.Polygon:
                                     p = new gView.Framework.Geometry.Polygon();
                                     break;
                             }
@@ -3289,7 +3289,7 @@ namespace gView.DataSources.Fdb.MSSql
         {
             var dsElement = new SqlFDBDatasetElement();
 
-            if (geomDef.GeometryType == geometryType.Network)
+            if (geomDef.GeometryType == GeometryType.Network)
             {
                 dsElement._class = await SqlFDBNetworkFeatureclass.Create(fdb, dataset, name, geomDef);
             }

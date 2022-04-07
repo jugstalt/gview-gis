@@ -243,13 +243,13 @@ namespace gView.DataSources.Fdb.SQLite
                             IGeometry p = null;
                             switch (_geomDef.GeometryType)
                             {
-                                case geometryType.Point:
+                                case GeometryType.Point:
                                     p = new gView.Framework.Geometry.Point();
                                     break;
-                                case geometryType.Polyline:
+                                case GeometryType.Polyline:
                                     p = new gView.Framework.Geometry.Polyline();
                                     break;
-                                case geometryType.Polygon:
+                                case GeometryType.Polygon:
                                     p = new gView.Framework.Geometry.Polygon();
                                     break;
                             }

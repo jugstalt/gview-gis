@@ -204,14 +204,14 @@ namespace gView.Framework.Carto.Rendering
         {
             return layer != null &&
                 layer.FeatureClass != null &&
-                layer.LayerGeometryType == geometryType.Polyline;
+                layer.LayerGeometryType == GeometryType.Polyline;
         }
 
         public bool HasEffect(gView.Framework.Data.IFeatureLayer layer, IMap map)
         {
             return layer != null &&
                 layer.FeatureClass != null &&
-                layer.FeatureClass.GeometryType == geometryType.Polyline;
+                layer.FeatureClass.GeometryType == GeometryType.Polyline;
         }
 
         public bool UseReferenceScale

@@ -20,14 +20,14 @@ namespace gView.Framework.Symbology
 
         SymbolSmoothing SymbolSmothingMode { set; }
 
-        bool SupportsGeometryType(geometryType type);
+        bool SupportsGeometryType(GeometryType type);
 
         bool RequireClone();
     }
 
     public interface INullSymbol : ISymbol
     {
-        geometryType GeomtryType { get; set; }
+        GeometryType GeomtryType { get; set; }
     }
 
     public interface ILegendItem
@@ -426,9 +426,9 @@ namespace gView.Framework.Symbology
 
     public interface ISymbolCreator
     {
-        ISymbol CreateStandardSymbol(geometryType type);
-        ISymbol CreateStandardSelectionSymbol(geometryType type);
-        ISymbol CreateStandardHighlightSymbol(geometryType type);
+        ISymbol CreateStandardSymbol(GeometryType type);
+        ISymbol CreateStandardSelectionSymbol(GeometryType type);
+        ISymbol CreateStandardHighlightSymbol(GeometryType type);
     }
 
     public interface ISymbolRotation

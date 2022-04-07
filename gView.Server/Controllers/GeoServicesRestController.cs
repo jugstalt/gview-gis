@@ -543,9 +543,9 @@ namespace gView.Server.Controllers
 
                         var geometryType = e.Class is IFeatureClass ?
                             ((IFeatureClass)e.Class).GeometryType :
-                            Framework.Geometry.geometryType.Unknown;
+                            Framework.Geometry.GeometryType.Unknown;
 
-                        if (geometryType == Framework.Geometry.geometryType.Unknown && e is IFeatureLayer)   // if layer is SQL Spatial with undefined geometrytype...
+                        if (geometryType == Framework.Geometry.GeometryType.Unknown && e is IFeatureLayer)   // if layer is SQL Spatial with undefined geometrytype...
                         {
                             geometryType = ((IFeatureLayer)e).LayerGeometryType;                             // take the settings from layer-properties
                         }
@@ -1088,9 +1088,9 @@ namespace gView.Server.Controllers
 
                 var geometryType = datasetElement.Class is IFeatureClass ?
                     ((IFeatureClass)datasetElement.Class).GeometryType :
-                    Framework.Geometry.geometryType.Unknown;
+                    Framework.Geometry.GeometryType.Unknown;
 
-                if (geometryType == Framework.Geometry.geometryType.Unknown && datasetElement is IFeatureLayer)   // if layer is SQL Spatial with undefined geometrytype...
+                if (geometryType == Framework.Geometry.GeometryType.Unknown && datasetElement is IFeatureLayer)   // if layer is SQL Spatial with undefined geometrytype...
                 {
                     geometryType = ((IFeatureLayer)datasetElement).LayerGeometryType;                             // take the settings from layer-properties
                 }

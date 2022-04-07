@@ -961,30 +961,30 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 _fc = (IFeatureClass)element.Class;
                 switch (_fc.GeometryType)
                 {
-                    case geometryType.Envelope:
-                    case geometryType.Polygon:
+                    case GeometryType.Envelope:
+                    case GeometryType.Polygon:
                         if (isLinked)
                             _icon = new AccessFDBLinkedPolygonIcon();
                         else
                             _icon = new AccessFDBPolygonIcon();
                         _type = typePrefix + "Polygon Featureclass";
                         break;
-                    case geometryType.Multipoint:
-                    case geometryType.Point:
+                    case GeometryType.Multipoint:
+                    case GeometryType.Point:
                         if (isLinked)
                             _icon = new AccessFDBLinkedPointIcon();
                         else
                             _icon = new AccessFDBPointIcon();
                         _type = typePrefix + "Point Featureclass";
                         break;
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         if (isLinked)
                             _icon = new AccessFDBLinkedLineIcon();
                         else
                             _icon = new AccessFDBLineIcon();
                         _type = typePrefix + "Polyline Featureclass";
                         break;
-                    case geometryType.Network:
+                    case GeometryType.Network:
                         _icon = new gView.DataSources.Fdb.UI.MSAccess.AccessFDBNetworkIcon();
                         _type = "Networkclass";
                         _isNetwork = true;

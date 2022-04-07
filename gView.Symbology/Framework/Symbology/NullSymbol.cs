@@ -10,15 +10,15 @@ namespace gView.Framework.Symbology
     [gView.Framework.system.RegisterPlugIn("D03DE1E2-B2D1-4C25-A39E-29DE828C43BC")]
     public sealed class NullSymbol : INullSymbol
     {
-        private geometryType _geomType = geometryType.Unknown;
+        private GeometryType _geomType = GeometryType.Unknown;
 
         public NullSymbol() { }
-        public NullSymbol(geometryType geomType)
+        public NullSymbol(GeometryType geomType)
         {
             _geomType = geomType;
         }
 
-        public bool SupportsGeometryType(geometryType geomType) => true;
+        public bool SupportsGeometryType(GeometryType geomType) => true;
 
         public void Draw(IDisplay display, IGeometry geometry)
         {
@@ -35,7 +35,7 @@ namespace gView.Framework.Symbology
 
         public void Load(IPersistStream stream)
         {
-            _geomType = (geometryType)stream.Load("geomtype", (int)geometryType.Unknown);
+            _geomType = (GeometryType)stream.Load("geomtype", (int)GeometryType.Unknown);
         }
 
         public void Save(IPersistStream stream)
@@ -80,7 +80,7 @@ namespace gView.Framework.Symbology
             get { return 0; }
         }
 
-        public geometryType GeomtryType
+        public GeometryType GeomtryType
         {
             get { return _geomType; }
             set { _geomType = value; }

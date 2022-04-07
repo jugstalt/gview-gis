@@ -152,7 +152,7 @@ namespace gView.Framework.Symbology
             return format;
         }
 
-        public bool SupportsGeometryType(geometryType geomType) => true;
+        public bool SupportsGeometryType(GeometryType geomType) => true;
 
         #region ILabel Members
 

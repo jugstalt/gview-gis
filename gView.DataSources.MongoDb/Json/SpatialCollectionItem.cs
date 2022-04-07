@@ -88,7 +88,7 @@ namespace gView.DataSources.MongoDb.Json
             public int SrefId { get; set; }
 
             [BsonElement("geometryType")]
-            public geometryType GeometryType { get; set; }
+            public GeometryType GeometryType { get; set; }
         }
 
         public class Field

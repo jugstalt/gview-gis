@@ -1417,14 +1417,14 @@ namespace gView.Framework.UI.Dialogs
 
             if (_layer is IFeatureLayer)
             {
-                foreach (var geomType in Enum.GetValues(typeof(geometryType)))
+                foreach (var geomType in Enum.GetValues(typeof(GeometryType)))
                 {
                     cmbGeometryType.Items.Add(geomType);
                 }
 
                 cmbGeometryType.SelectedItem = ((IFeatureLayer)_layer).LayerGeometryType;
                 if (((IFeatureLayer)_layer).FeatureClass != null &&
-                   ((IFeatureLayer)_layer).FeatureClass.GeometryType != geometryType.Unknown)
+                   ((IFeatureLayer)_layer).FeatureClass.GeometryType != GeometryType.Unknown)
                 {
                     cmbGeometryType.Enabled = false;
                 }
@@ -1904,9 +1904,9 @@ namespace gView.Framework.UI.Dialogs
             if (_layer is IFeatureLayer)
             {
                 if (((IFeatureLayer)_layer).FeatureClass != null &&
-                   ((IFeatureLayer)_layer).FeatureClass.GeometryType == geometryType.Unknown)
+                   ((IFeatureLayer)_layer).FeatureClass.GeometryType == GeometryType.Unknown)
                 {
-                    ((IFeatureLayer)_layer).LayerGeometryType = (geometryType)cmbGeometryType.SelectedItem;
+                    ((IFeatureLayer)_layer).LayerGeometryType = (GeometryType)cmbGeometryType.SelectedItem;
                 }
 
 

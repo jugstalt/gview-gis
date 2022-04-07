@@ -395,7 +395,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                 await _fdb.ReplaceFeatureClass(_dataset.DatasetName,
                     _networkName + "_ComplexEdges",
-                    new GeometryDef(geometryType.Polyline),
+                    new GeometryDef(GeometryType.Polyline),
                     fields);
                 IDatasetElement element = await _dataset.Element(_networkName + "_ComplexEdges");
                 if (element == null || !(element.Class is IFeatureClass))
@@ -547,7 +547,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                 await _fdb.ReplaceFeatureClass(_dataset.DatasetName,
                     _networkName + "_Nodes",
-                    new GeometryDef(geometryType.Point),
+                    new GeometryDef(GeometryType.Point),
                     fields);
 
                 element = await _dataset.Element(_networkName + "_Nodes");
@@ -601,7 +601,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                 await _fdb.ReplaceFeatureClass(_dataset.DatasetName,
                     _networkName,
-                    new GeometryDef(geometryType.Network),
+                    new GeometryDef(GeometryType.Network),
                     fields);
 
                 element = await _dataset.Element(_networkName);

@@ -369,7 +369,7 @@ namespace gView.Framework.Data
             get { return _fc?.SpatialReference; }
         }
 
-        public Geometry.geometryType GeometryType
+        public Geometry.GeometryType GeometryType
         {
             get { return _fc.GeometryType; }
         }

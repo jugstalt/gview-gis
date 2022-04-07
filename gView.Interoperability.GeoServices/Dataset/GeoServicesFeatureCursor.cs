@@ -68,7 +68,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
                 #region Geometry
 
-                if (_featureClass.GeometryType == geometryType.Polyline && jsonFeature.Geometry?.Paths != null)
+                if (_featureClass.GeometryType == GeometryType.Polyline && jsonFeature.Geometry?.Paths != null)
                 {
                     Polyline polyline = new Polyline();
                     for (int p = 0, to = jsonFeature.Geometry.Paths.Length; p < to; p++)
@@ -88,7 +88,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
                     feature.Shape = polyline;
                 }
-                else if (_featureClass.GeometryType == geometryType.Polygon && jsonFeature.Geometry?.Rings != null)
+                else if (_featureClass.GeometryType == GeometryType.Polygon && jsonFeature.Geometry?.Rings != null)
                 {
                     Polygon polygon = new Polygon();
                     for (int r = 0, to = jsonFeature.Geometry.Rings.Length; r < to; r++)
@@ -112,7 +112,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
                     feature.Shape = polygon;
                 }
-                else if (_featureClass.GeometryType == geometryType.Point &&
+                else if (_featureClass.GeometryType == GeometryType.Point &&
                             (jsonFeature.Geometry?.X != null) &&
                             (jsonFeature.Geometry?.Y != null)
                         )
@@ -133,7 +133,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
                     feature.Shape = shape;
                 }
-                else if (_featureClass.GeometryType == geometryType.Multipoint &&
+                else if (_featureClass.GeometryType == GeometryType.Multipoint &&
                         jsonFeature.Geometry?.Points != null &&
                         jsonFeature.Geometry.Points.Length > 0)
                 {

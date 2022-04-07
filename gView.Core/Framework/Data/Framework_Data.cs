@@ -726,7 +726,7 @@ namespace gView.Framework.Data
 
         FeatureLayerJoins Joins { get; set; }
 
-        geometryType LayerGeometryType { get; set; }
+        GeometryType LayerGeometryType { get; set; }
     }
 
     public delegate void BeforePointIdentifyEventHandler(object sender, IDisplay display, ref IPoint point, ref ISpatialReference sRef, IUserData userdata);

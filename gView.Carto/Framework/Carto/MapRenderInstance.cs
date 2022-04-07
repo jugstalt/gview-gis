@@ -588,28 +588,28 @@ namespace gView.Framework.Carto
                 return;
             }
 
-            geometryType type = geometryType.Unknown;
+            GeometryType type = GeometryType.Unknown;
             if (geometry is IPolygon)
             {
-                type = geometryType.Polygon;
+                type = GeometryType.Polygon;
             }
             else if (geometry is IPolyline)
             {
-                type = geometryType.Polyline;
+                type = GeometryType.Polyline;
             }
             else if (geometry is IPoint)
             {
-                type = geometryType.Point;
+                type = GeometryType.Point;
             }
             else if (geometry is IMultiPoint)
             {
-                type = geometryType.Multipoint;
+                type = GeometryType.Multipoint;
             }
             else if (geometry is IEnvelope)
             {
-                type = geometryType.Envelope;
+                type = GeometryType.Envelope;
             }
-            if (type == geometryType.Unknown)
+            if (type == GeometryType.Unknown)
             {
                 return;
             }

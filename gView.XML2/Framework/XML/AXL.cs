@@ -262,11 +262,11 @@ namespace gView.Framework.XML
             if (!hasAlignment)
             {
                 renderer.TextSymbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignOver;
-                if (fc.GeometryType == geometryType.Polyline)
+                if (fc.GeometryType == GeometryType.Polyline)
                 {
                     renderer.TextSymbol.TextSymbolAlignment = TextSymbolAlignment.Over;
                 }
-                else if (fc.GeometryType == geometryType.Polygon)
+                else if (fc.GeometryType == GeometryType.Polygon)
                 {
                     renderer.TextSymbol.TextSymbolAlignment = TextSymbolAlignment.Center;
                 }

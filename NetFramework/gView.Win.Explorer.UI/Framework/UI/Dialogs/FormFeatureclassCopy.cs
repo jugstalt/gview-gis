@@ -143,11 +143,11 @@ namespace gView.Framework.UI.Dialogs
                     FeatureClassListViewItem item = new FeatureClassListViewItem(fc, _maxFieldLength);
                     switch (fc.GeometryType)
                     {
-                        case geometryType.Point:
-                        case geometryType.Multipoint:
+                        case GeometryType.Point:
+                        case GeometryType.Multipoint:
                             item.ImageIndex = 0;
                             break;
-                        case geometryType.Polyline:
+                        case GeometryType.Polyline:
                             item.ImageIndex = 1;
                             break;
                         default:
@@ -174,11 +174,11 @@ namespace gView.Framework.UI.Dialogs
                         FeatureClassListViewItem item = new FeatureClassListViewItem(fc, database.MaxFieldNameLength);
                         switch (fc.GeometryType)
                         {
-                            case geometryType.Point:
-                            case geometryType.Multipoint:
+                            case GeometryType.Point:
+                            case GeometryType.Multipoint:
                                 item.ImageIndex = 0;
                                 break;
-                            case geometryType.Polyline:
+                            case GeometryType.Polyline:
                                 item.ImageIndex = 1;
                                 break;
                             default:

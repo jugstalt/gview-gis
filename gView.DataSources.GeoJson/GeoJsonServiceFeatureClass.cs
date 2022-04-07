@@ -18,7 +18,7 @@ namespace gView.DataSources.GeoJson
             
         }
 
-        async public static Task<GeoJsonServiceFeatureClass> CreateInstance(GeoJsonServiceDataset dataset, geometryType geometryType)
+        async public static Task<GeoJsonServiceFeatureClass> CreateInstance(GeoJsonServiceDataset dataset, GeometryType geometryType)
         {
             var instance = new GeoJsonServiceFeatureClass(dataset);
             instance.SpatialReference = await dataset.GetSpatialReference();
@@ -97,7 +97,7 @@ namespace gView.DataSources.GeoJson
 
         public ISpatialReference SpatialReference { get; internal set; }
 
-        public geometryType GeometryType { get; private set;  }
+        public GeometryType GeometryType { get; private set;  }
 
         public Task<int> CountFeatures()
         {

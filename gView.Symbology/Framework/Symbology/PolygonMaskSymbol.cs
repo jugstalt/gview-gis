@@ -61,7 +61,7 @@ namespace gView.Framework.Symbology
 
         #region ISymbol Member
 
-        public bool SupportsGeometryType(geometryType geomType) => geomType == geometryType.Polygon || geomType == geometryType.Aggregate;
+        public bool SupportsGeometryType(GeometryType geomType) => geomType == GeometryType.Polygon || geomType == GeometryType.Aggregate;
 
         public void Draw(IDisplay display, IGeometry geometry)
         {

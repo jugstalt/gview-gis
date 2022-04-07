@@ -289,11 +289,11 @@ namespace gView.Framework.UI.Controls
             set { }
         }
 
-        public geometryType LayerGeometryType
+        public GeometryType LayerGeometryType
         {
             get
             {
-                return this.FeatureClass != null ? this.FeatureClass.GeometryType : geometryType.Unknown;
+                return this.FeatureClass != null ? this.FeatureClass.GeometryType : GeometryType.Unknown;
             }
             set
             {

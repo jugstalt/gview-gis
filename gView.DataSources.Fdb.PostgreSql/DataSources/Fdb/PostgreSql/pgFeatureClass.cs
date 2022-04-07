@@ -183,7 +183,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             get { return _geomDef.HasM; }
         }
 
-        public geometryType GeometryType
+        public GeometryType GeometryType
         {
             get { return _geomDef.GeometryType; }
         }

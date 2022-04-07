@@ -366,7 +366,7 @@ namespace gView.Plugins.MapTools.Graphics
 
         int _oX = 0, _oY = 0;
         bool _mousePressed = false;
-        HitPositions _hit = null;
+        IHitPositions _hit = null;
         IGraphicElement2 _hitElement = null;
 
         public void MouseDown(gView.Framework.Carto.IDisplay display, System.Windows.Forms.MouseEventArgs e, IPoint world)
@@ -663,7 +663,7 @@ namespace gView.Plugins.MapTools.Graphics
         #region IToolMouseActions Member
 
         bool _mousePressed = false;
-        HitPositions _hit = null;
+        IHitPositions _hit = null;
         IGraphicElement2 _hitElement = null;
 
         public void MouseDown(IDisplay display, MouseEventArgs e, IPoint world)

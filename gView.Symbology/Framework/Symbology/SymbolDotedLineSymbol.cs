@@ -95,7 +95,7 @@ namespace gView.Framework.Symbology
                    (PointSymbol != null && PointSymbol.RequireClone());
         }
 
-        public bool SupportsGeometryType(geometryType geomType) => geomType == geometryType.Polyline;
+        public bool SupportsGeometryType(GeometryType geomType) => geomType == GeometryType.Polyline;
 
         public void Draw(IDisplay display, IGeometry geometry)
         {

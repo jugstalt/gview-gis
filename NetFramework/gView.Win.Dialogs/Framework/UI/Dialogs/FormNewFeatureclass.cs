@@ -86,17 +86,17 @@ namespace gView.Framework.UI.Dialogs
         {
             get
             {
-                geometryType gType = geometryType.Unknown;
+                GeometryType gType = GeometryType.Unknown;
                 switch (cmbGeometry.SelectedIndex)
                 {
                     case 0:
-                        gType = geometryType.Point;
+                        gType = GeometryType.Point;
                         break;
                     case 1:
-                        gType = geometryType.Polyline;
+                        gType = GeometryType.Polyline;
                         break;
                     case 2:
-                        gType = geometryType.Polygon;
+                        gType = GeometryType.Polygon;
                         break;
                 }
 

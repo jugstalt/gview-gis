@@ -63,15 +63,15 @@ namespace gView.DataSources.Fdb.UI
                     case FieldType.Shape:
                         switch (fc.GeometryType)
                         {
-                            case geometryType.Point:
-                            case geometryType.Multipoint:
+                            case GeometryType.Point:
+                            case GeometryType.Multipoint:
                                 iIndex = 1;
                                 break;
-                            case geometryType.Polyline:
+                            case GeometryType.Polyline:
                                 iIndex = 2;
                                 break;
-                            case geometryType.Envelope:
-                            case geometryType.Polygon:
+                            case GeometryType.Envelope:
+                            case GeometryType.Polygon:
                                 iIndex = 3;
                                 break;
                         }

@@ -60,7 +60,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             if (tab != null && tab.Rows.Count > 0)
             {
                 StringBuilder where = new StringBuilder();
-                where.Append("\"GeometryType\"=" + ((int)geometryType.Polyline).ToString() + " AND \"ID\" in(");
+                where.Append("\"GeometryType\"=" + ((int)GeometryType.Polyline).ToString() + " AND \"ID\" in(");
                 for (int i = 0; i < tab.Rows.Count; i++)
                 {
                     if (i > 0) where.Append(",");
@@ -232,7 +232,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             get { return _geomDef.HasM; }
         }
 
-        public geometryType GeometryType
+        public GeometryType GeometryType
         {
             get { return _geomDef.GeometryType; }
         }

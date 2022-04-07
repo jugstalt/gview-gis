@@ -343,8 +343,8 @@ namespace gView.Plugins.Editor
 
             Feature feature = new Feature();
 
-            geometryType gType = _fc.GeometryType;
-            if (gType == geometryType.Unknown)
+            GeometryType gType = _fc.GeometryType;
+            if (gType == GeometryType.Unknown)
             {
                 FormChooseGeometry dlg = new FormChooseGeometry();
                 if (dlg.ShowDialog() != DialogResult.OK)
@@ -356,16 +356,16 @@ namespace gView.Plugins.Editor
             }
             switch (gType)
             {
-                case geometryType.Point:
+                case GeometryType.Point:
                     feature.Shape = new gView.Framework.Geometry.Point();
                     break;
-                case geometryType.Multipoint:
+                case GeometryType.Multipoint:
                     feature.Shape = new MultiPoint();
                     break;
-                case geometryType.Polyline:
+                case GeometryType.Polyline:
                     feature.Shape = new Polyline();
                     break;
-                case geometryType.Polygon:
+                case GeometryType.Polygon:
                     feature.Shape = new Polygon();
                     break;
                 default:
@@ -553,7 +553,7 @@ namespace gView.Plugins.Editor
 
                 switch (_module.Sketch.GeometryType)
                 {
-                    case geometryType.Polyline:
+                    case GeometryType.Polyline:
                         IPointCollection pColl1 = _module.Sketch.Part;
                         if (pColl1 == null || pColl1.PointCount == 0)
                         {
@@ -569,7 +569,7 @@ namespace gView.Plugins.Editor
 
                         display.Draw(_symbol, pLine1);
                         break;
-                    case geometryType.Polygon:
+                    case GeometryType.Polygon:
                         IPointCollection pColl2 = _module.Sketch.Part;
                         if (pColl2 == null || pColl2.PointCount < 2)
                         {
@@ -602,9 +602,9 @@ namespace gView.Plugins.Editor
 
                     switch (_module.Sketch.GeometryType)
                     {
-                        case geometryType.Point:
+                        case GeometryType.Point:
                             return false;
-                        case geometryType.Polyline:
+                        case GeometryType.Polyline:
                             IPointCollection pColl1 = _module.Sketch.Part;
                             if (pColl1 == null || pColl1.PointCount == 0)
                             {
@@ -612,7 +612,7 @@ namespace gView.Plugins.Editor
                             }
 
                             break;
-                        case geometryType.Polygon:
+                        case GeometryType.Polygon:
                             IPointCollection pColl2 = _module.Sketch.Part;
                             if (pColl2 == null || pColl2.PointCount < 2)
                             {
